@@ -1,4 +1,4 @@
-0.7.1: future
+0.7.1pre1: 01/22/05
   * added support for X10 MouseRemote RF Receiver (Geoffrey Hausheer)
   * added support for Hauppauge PVR150 (Per Jönsson)
   * 2.2.x kernels are no longer supported
