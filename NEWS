@@ -1,4 +1,4 @@
-0.7.1: future
+0.7.1pre2: 02/20/05
   * slight change to decode algorithm:
     decoding was very unreliable since release 0.6.6 for Motorola
     protocol which is mostly used by Grundig remotes
