@@ -1,4 +1,4 @@
-0.7.0-CVS: future
+0.7.0pre5: 06/13/04
   * if no .lircrc file is found in the user's home directory,
     /etc/lircrc is used
   * replaced get_key interface with more flexible add_to_buf method
