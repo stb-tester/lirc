@@ -1,4 +1,4 @@
-0.7.0-CVS: future
+0.7.0pre6: 06/19/04
   * added support for Sasem OnAir Remocon-V (Oliver Stabel)
   * if no .lircrc file is found in the user's home directory,
     /etc/lircrc is used
