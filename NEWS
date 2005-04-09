@@ -1,4 +1,4 @@
-0.7.1: future
+0.7.1pre4: 04/09/05
   * added support for DViCO USB Remote (William Uther)
   * added support for Adaptec AVC-2410 capture card (Trev Jackson)
   * slight change to decode algorithm:
