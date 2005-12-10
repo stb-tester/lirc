@@ -1,4 +1,4 @@
-0.8.0-CVS: future
+0.8.0pre2: 12/10/05
   * added new program lircrcd:
     lircrcd reads the .lircrc config file and synchronises the mode
     that the LIRC clients using this config file (irexec, irxevent,
