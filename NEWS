@@ -1,4 +1,4 @@
-0.8.1: future
+0.8.1pre2: 10/14/06
   * added transmitter support for new version of Windows Media Center
     transceiver (Daniel Melander)
   * added support for Iguanaworks USB IR Transceiver (Joseph Dunn)
