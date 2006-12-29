@@ -1,4 +1,4 @@
-0.8.1: future
+0.8.1pre5: 12/29/06
   * added support for USB-UIRT
   * added transmitter support for new version of Windows Media Center
     transceiver (Daniel Melander)
