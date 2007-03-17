@@ -1,4 +1,4 @@
-0.8.2-CVS: future
+0.8.2pre1: 03/17/07
   * added support for Asus DH remote (Brice DUBOST, Bernhard Frauendienst)
   * fixed show-stopper bug in RC-6 transmit code
   * added support for Kanam Accent (Niccolo Rigacci)
