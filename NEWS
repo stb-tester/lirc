@@ -1,4 +1,4 @@
-0.8.2-CVS: future
+0.8.2pre3: 05/27/07
   * added support for TechnoTrend USB IR receiver (Stefan Macher)
   * automatic release event generation in lircd
   * added support for Apple Mac mini USB IR Receiver (Stephen Williams)
