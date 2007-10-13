@@ -1,4 +1,4 @@
-0.8.3-CVS: future
+0.8.3pre1: 10/13/07
   * added user-space I2C driver (Adam Sampson)
   * added support for Hauppauge HVR-1300 (Jan Frey)
 
