@@ -1,4 +1,4 @@
-/*      $Id: irrecord.c,v 5.78 2008/10/18 18:06:14 lirc Exp $      */
+/*      $Id: irrecord.c,v 5.75.2.1 2008/10/26 14:11:30 lirc Exp $      */
 
 /****************************************************************************
  ** irrecord.c **************************************************************
@@ -120,7 +120,7 @@ lirc_t aeps = 100;
 #define TH_REPEAT      90
 #define TH_TRAIL       90
 #define TH_LEAD        90
-#define TH_IS_BIT      10
+#define TH_IS_BIT      15
 #define TH_RC6_SIGNAL 550
 
 #define MIN_GAP  20000
@@ -427,7 +427,6 @@ int main(int argc,char **argv)
 			progname);
 		exit(EXIT_FAILURE);
 	}
-	aeps = (hw.resolution>aeps ? hw.resolution:aeps);
 	filename=argv[optind];
 	fin=fopen(filename,"r");
 	if(fin!=NULL)
@@ -542,6 +541,7 @@ int main(int argc,char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
+	aeps = (hw.resolution>aeps ? hw.resolution:aeps);
 	
 	if(hw.rec_mode==LIRC_MODE_STRING)
 	{
@@ -608,7 +608,7 @@ int main(int argc,char **argv)
 	switch(hw.rec_mode)
 	{
 	case LIRC_MODE_MODE2:
-		if(!using_template && !get_lengths(&remote, force, 0))
+		if(!using_template && !get_lengths(&remote, force, 1))
 		{
 			if(remote.gap==0)
 			{
@@ -1379,8 +1379,7 @@ void analyse_remote(struct ir_remote *raw_data)
 	ir_code pre, code, post;
 	int repeat_flag;
 	lirc_t min_remaining_gap, max_remaining_gap;
-	struct ir_ncode *new_codes;
-	size_t new_codes_count = 100;
+	struct ir_ncode new_codes[100];
 	int new_index = 0;
 	int ret;
 
@@ -1398,23 +1397,16 @@ void analyse_remote(struct ir_remote *raw_data)
 	current_index = 0;
 	get_lengths(&remote, 0, 0 /* not interactive */ );
 
-	if(is_rc6(&remote) && remote.bits >= 5)
+	if(is_rc6(&remote))
 	{
 		/* have to assume something as it's very difficult to
 		   extract the rc6_mask from the data that we have */
-		remote.rc6_mask = ((ir_code) 0x1ll) << (remote.bits-5);
+		remote.rc6_mask = (ir_code) 0x100000000ll;
 	}
 
 	remote.name = raw_data->name;
 	
-	new_codes = malloc(new_codes_count * sizeof(*new_codes));
-	if(new_codes == NULL)
-	{
-		fprintf(stderr, "%s: out of memory\n",
-			progname);
-		return;
-	}
-	memset(new_codes, 0 , new_codes_count * sizeof(*new_codes));
+	memset(new_codes, 0, sizeof(new_codes));
 	codes = raw_data->codes;
 	while(codes->name!=NULL)
 	{
@@ -1437,25 +1429,6 @@ void analyse_remote(struct ir_remote *raw_data)
 		}
 		else
 		{
-			if(new_index+1 >= new_codes_count)
-			{
-				struct ir_ncode *renew_codes;
-				
-				new_codes_count *= 2;
-				renew_codes = realloc
-					(new_codes,
-					 new_codes_count * sizeof(*new_codes));
-				if(renew_codes == NULL)
-				{
-					fprintf(stderr, "%s: out of memory\n",
-						progname);
-					free(new_codes);
-					return;
-				}
-				memset(&new_codes[new_codes_count/2], 0 , new_codes_count/2 * sizeof(*new_codes));
-				new_codes = renew_codes;
-			}
-			
 			new_codes[new_index].name = codes->name;
 			new_codes[new_index].code = code;
 			new_index++;
@@ -1465,8 +1438,6 @@ void analyse_remote(struct ir_remote *raw_data)
 	new_codes[new_index].name = NULL;
 	remote.codes = new_codes;
 	fprint_remotes(stdout, &remote);
-	remote.codes = NULL;
-	free(new_codes);
 }
 
 #ifdef DEBUG
