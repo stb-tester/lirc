@@ -1,4 +1,4 @@
-0.8.7-CVS: future
+0.8.7pre1: 05/13/10
   * added support for Aureal ATWF@83-W001 ESKY.CC remote (Romain Henriet)
   * added transmit support to driver for ENE CIR port
     (only few devices support that)
