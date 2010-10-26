@@ -1,4 +1,4 @@
-0.9.0-git: UNDER DEVELOPMENT
+0.9.0-pre1: 10/26/10
   * fix oops unplugging igorplugusb receiver while in use (special
     thanks to Timo Boettcher for providing hardware)
   * more error-checking for NULL irctl in various lirc_dev paths
