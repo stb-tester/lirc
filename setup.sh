@@ -1,6 +1,6 @@
 #! /bin/sh
 
-LIRC_VERSION="0.9.1-git"
+LIRC_VERSION="0.9.0"
 
 #############################################################################
 ## Default Values
@@ -101,7 +101,7 @@ GetPortAndIrq ()
         LIRC_PORT=$1
         LIRC_IRQ=$2
         }
-    else 
+    else
 	return 1;
     fi
     }

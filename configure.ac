@@ -3,7 +3,7 @@ dnl $Id: configure.ac,v 1.44 2010/07/12 03:25:55 jarodwilson Exp $
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.1-git])
+AC_INIT([lirc], [0.9.0])
 AC_CONFIG_SRCDIR([daemons/lircd.c])
 AC_CONFIG_MACRO_DIR([m4])
 
