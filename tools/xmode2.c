@@ -69,7 +69,7 @@ Display *d1;
 Window w0, w1;			/*w0 = root */
 char w1_wname[] = "xmode2";
 char w1_iname[] = "xmode2";
-char font1_name[] = "-*-Courier-medium-r-*-*-8-*-*-m-*-iso8859-1";
+char font1_name[]= "-misc-fixed-*-r-*-*-12-*-*-*-*-*-iso8859-1";
 
 int w1_x = 0, w1_y = 0;
 unsigned int w1_w = 640, w1_h = 480, w1_border = 0;
