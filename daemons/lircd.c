@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * lircd - LIRC Decoder Daemon
- * 
+ *
  * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
  * Copyright (C) 1998,99 Christoph Bartelmus <lirc@bartelmus.de>
  *
@@ -61,6 +61,10 @@
 #include <linux/input.h>
 #include <linux/uinput.h>
 #include "input_map.h"
+#endif
+
+#ifdef HAVE_SYSTEMD
+#include "systemd/sd-daemon.h"
 #endif
 
 #if defined __APPLE__  || defined __FreeBSD__
@@ -855,6 +859,7 @@ void start_server(mode_t permission, int nodaemon)
 	int ret;
 	int new = 1;
 	int fd;
+	int n;
 
 	/* create pid lockfile in /var/run */
 	if ((fd = open(pidfile, O_RDWR | O_CREAT, 0644)) == -1 || (pidf = fdopen(fd, "r+")) == NULL) {
@@ -881,51 +886,63 @@ void start_server(mode_t permission, int nodaemon)
 	(void)ftruncate(fileno(pidf), ftell(pidf));
 
 	/* create socket */
-	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (sockfd == -1) {
-		fprintf(stderr, "%s: could not create socket\n", progname);
-		perror(progname);
+	sockfd = -1;
+#ifdef HAVE_SYSTEMD
+        n = sd_listen_fds(0);
+        if (n > 1) {
+                fprintf(stderr, "Too many file descriptors received.\n");
 		goto start_server_failed0;
-	}
+        }
+        else if (n == 1)
+                sockfd  = SD_LISTEN_FDS_START + 0;
+#endif
+        if (sockfd == -1) {
+		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+		if (sockfd == -1) {
+			fprintf(stderr, "%s: could not create socket\n", progname);
+			perror(progname);
+			goto start_server_failed0;
+		}
 
-	/* 
-	   get owner, permissions, etc.
-	   so new socket can be the same since we
-	   have to delete the old socket.  
-	 */
-	ret = stat(lircdfile, &s);
-	if (ret == -1 && errno != ENOENT) {
-		fprintf(stderr, "%s: could not get file information for %s\n", progname, lircdfile);
-		perror(progname);
-		goto start_server_failed1;
-	}
-	if (ret != -1) {
-		new = 0;
-		ret = unlink(lircdfile);
-		if (ret == -1) {
-			fprintf(stderr, "%s: could not delete %s\n", progname, lircdfile);
-			perror(NULL);
+		/*
+		   get owner, permissions, etc.
+		   so new socket can be the same since we
+		   have to delete the old socket.
+		 */
+		ret = stat(lircdfile, &s);
+		if (ret == -1 && errno != ENOENT) {
+			fprintf(stderr, "%s: could not get file information for %s\n", progname, lircdfile);
+			perror(progname);
 			goto start_server_failed1;
 		}
-	}
+		if (ret != -1) {
+			new = 0;
+			ret = unlink(lircdfile);
+			if (ret == -1) {
+				fprintf(stderr, "%s: could not delete %s\n", progname, lircdfile);
+				perror(NULL);
+				goto start_server_failed1;
+			}
+		}
 
-	serv_addr.sun_family = AF_UNIX;
-	strcpy(serv_addr.sun_path, lircdfile);
-	if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
-		fprintf(stderr, "%s: could not assign address to socket\n", progname);
-		perror(progname);
-		goto start_server_failed1;
-	}
+		serv_addr.sun_family = AF_UNIX;
+		strcpy(serv_addr.sun_path, lircdfile);
+		if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+			fprintf(stderr, "%s: could not assign address to socket\n", progname);
+			perror(progname);
+			goto start_server_failed1;
+		}
 
-	if (new ? chmod(lircdfile, permission)
-	    : (chmod(lircdfile, s.st_mode) == -1 || chown(lircdfile, s.st_uid, s.st_gid) == -1)
-	    ) {
-		fprintf(stderr, "%s: could not set file permissions\n", progname);
-		perror(progname);
-		goto start_server_failed1;
-	}
+		if (new ? chmod(lircdfile, permission)
+		    : (chmod(lircdfile, s.st_mode) == -1 || chown(lircdfile, s.st_uid, s.st_gid) == -1)
+		    ) {
+			fprintf(stderr, "%s: could not set file permissions\n", progname);
+			perror(progname);
+			goto start_server_failed1;
+		}
 
-	listen(sockfd, 3);
+		listen(sockfd, 3);
+        }
 	nolinger(sockfd);
 
 	if (useuinput) {

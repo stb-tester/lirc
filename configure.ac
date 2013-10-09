@@ -232,6 +232,9 @@ AH_TEMPLATE([HAVE_SCSI],
 AH_TEMPLATE([HAVE_SOUNDCARD],
 	[defined if soundcard API is available])
 
+AH_TEMPLATE([HAVE_SYSTEMD],
+	[defined if systemd API is available])
+
 AH_TEMPLATE([HAVE_VSYSLOG],
 	[define if you have vsyslog( prio, fmt, va_arg )])
 
@@ -413,6 +416,10 @@ AC_CHECK_HEADERS(linux/i2c-dev.h,[
   possible_drivers="${possible_drivers} (i2cuser)"
   ]
 )
+
+PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],[AC_DEFINE(HAVE_SYSTEMD)],[true])
+CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
+LIBS="$LIBS $SYSTEMD_LIBS"
 
 dnl here we see what driver the user wants.
 
