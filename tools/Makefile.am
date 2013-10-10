@@ -1,15 +1,14 @@
 ## $Id: Makefile.am,v 5.20 2009/12/27 19:04:10 lirc Exp $
 
 ## Process this file with automake to produce Makefile.in
+ACLOCAL_AMFLAGS             = -I m4
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir) @X_CFLAGS@
 
 EXTRA_PROGRAMS = smode2 xmode2 irxevent
 bin_PROGRAMS = irw irpty irexec ircat mode2 irsend \
 	lircrcd \
 	@vga_progs@ @x_progs@
-
-AM_CPPFLAGS = @X_CFLAGS@
 
 ## simple programs
 irw_SOURCES = irw.c

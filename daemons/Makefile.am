@@ -1,11 +1,12 @@
 ## $Id: Makefile.am,v 5.73 2010/05/13 16:23:23 lirc Exp $
 
 ## Process this file with automake to produce Makefile.in
+ACLOCAL_AMFLAGS             = -I m4
 
 ## these are used by programs in the tools directory, but not by
 ## programs in this directory.  So we must make sure they get distributed
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 BUILT_SOURCES = input_map.inc
 

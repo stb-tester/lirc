@@ -3,12 +3,12 @@ dnl $Id: configure.ac,v 1.44 2010/07/12 03:25:55 jarodwilson Exp $
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT
+AC_INIT([lirc], [0.9.1-git])
 AC_CONFIG_SRCDIR([daemons/lircd.c])
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE(lirc, 0.9.1-git)
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS(config.h)
 
 CFLAGS="${CFLAGS--O2 -g -Wall}"
 
@@ -21,7 +21,7 @@ AC_PATH_PROG(mknod, mknod, /bin/mknod)
 AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_PROG_LN_S
-AC_PROG_LIBTOOL
+LT_INIT([disable-static])
 AM_PATH_PYTHON(,, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ""])
 LIBUSB_CONFIG="pkg-config libusb"
@@ -316,7 +316,7 @@ AC_CHECK_LIB(caraca_client, caraca_init,
 )
 AC_CHECK_HEADER(usb.h,
   AC_DEFINE(HAVE_LIBUSB)
-  possible_drivers="${possible_drivers} (atilibusb) (awlibusb) (dfclibusb) (commandir) (srm7500libusb)" 
+  possible_drivers="${possible_drivers} (atilibusb) (awlibusb) (dfclibusb) (commandir) (srm7500libusb)"
 )
 AC_CHECK_HEADER(ftdi.h,
   AC_DEFINE(HAVE_FTDI)
