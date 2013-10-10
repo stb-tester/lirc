@@ -1,6 +1,6 @@
 ## $Id: Makefile.am,v 5.73 2010/05/13 16:23:23 lirc Exp $
 
-## Process this file with automake to produce Makefile.in 
+## Process this file with automake to produce Makefile.in
 
 ## these are used by programs in the tools directory, but not by
 ## programs in this directory.  So we must make sure they get distributed

@@ -1,6 +1,6 @@
 ## $Id: Makefile.am,v 1.12 2007/11/08 20:58:56 lirc Exp $
 
-## Process this file with automake to produce Makefile.in 
+## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST=lirc.css irxevent.keys lirc.hwdb
 

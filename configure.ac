@@ -83,7 +83,7 @@ in its directory.
 ])]
   )]
 )
-	
+
 
 dnl Determine default configuration based on OS
 case "${host_os}" in
@@ -187,7 +187,7 @@ AH_TEMPLATE([DEVDIR],
 AH_TEMPLATE([DYNCODES],
 	[Define to use dynamic IR codes])
 
-AH_TEMPLATE([HAVE_ALSA_SB_RC],	
+AH_TEMPLATE([HAVE_ALSA_SB_RC],
 	[Define if the ALSA library with SB RC support is installed])
 
 AH_TEMPLATE([HAVE_FORKPTY],
@@ -198,7 +198,7 @@ AH_TEMPLATE([HAVE_IGUANAIR],
 
 AH_TEMPLATE([HAVE_FTDI],
 	[Define if the libftdi library is installed])
-	
+
 AH_TEMPLATE([HAVE_LIBALSA],
 	[Define if the ALSA library is installed])
 
@@ -479,7 +479,7 @@ fi
 if test "$driver" = "userspace" -o "$driver" = "all"; then
   AC_DEFINE(LIRC_DRIVER_ANY)
   lirc_driver=$driver
-  
+
   any_possible_drivers=`echo ${possible_drivers} | sed -e's/ /-/g' \
 			  -e's/)-(/ /g'  -e's/(//g' -e's/)//g' \
 			  -e's/-$//g'`
@@ -696,7 +696,7 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
   { for token in $*; do echo $token; done; }
   newline_to_space()
   { echo $*; }
-  
+
   hw_module=$(newline_to_space $(space_to_newline ${hw_module}| sort -u))
 
 fi
@@ -717,7 +717,7 @@ if test "$driver" = "act220l"; then
   lirc_driver="lirc_dev lirc_sir"
   AC_DEFINE(LIRC_SIR_ACTISYS_ACT220L)
 fi
-    
+
 if test "$driver" = "adaptec"; then
   lirc_driver="lirc_dev lirc_i2c"
   lircd_conf="adaptec/lircd.conf.AVC-2410"
@@ -1016,7 +1016,7 @@ fi
 
 if test "$driver" = "imon"; then
   lirc_driver="lirc_dev lirc_imon"
-  lircd_conf="imon/lircd.conf.imon"  
+  lircd_conf="imon/lircd.conf.imon"
 fi
 
 if test "$driver" = "imon_24g"; then
@@ -1037,12 +1037,12 @@ fi
 
 if test "$driver" = "imon_pad"; then
   lirc_driver="lirc_dev lirc_imon"
-  lircd_conf="imon/lircd.conf.imon-pad"  
+  lircd_conf="imon/lircd.conf.imon-pad"
 fi
 
 if test "$driver" = "imon_rsc"; then
   lirc_driver="lirc_dev lirc_imon"
-  lircd_conf="imon/lircd.conf.imon-rsc"  
+  lircd_conf="imon/lircd.conf.imon-rsc"
 fi
 
 if test "$driver" = "irdeo"; then
@@ -1444,7 +1444,7 @@ else
 Get it at:
 
   http://libusb.sourceforge.net/
-  
+
 Or install these packages from your distro:
 
    libusb
@@ -1550,7 +1550,7 @@ devdir=${devdir_default})
 
 default_moduledir=/lib/modules/`uname -r`/misc
 AC_ARG_WITH(moduledir,
-[  --with-moduledir=DIR    kernel modules in DIR (/lib/modules/`uname -r`/misc)], 
+[  --with-moduledir=DIR    kernel modules in DIR (/lib/modules/`uname -r`/misc)],
 moduledir=${withval},
 moduledir=${default_moduledir})
 
@@ -1649,7 +1649,7 @@ fi
 dnl if --prefix is not specified, then $prefix is still set to NONE by
 dnl configure.  That's bad here where we want to expand it!
 cur_prefix=$prefix
-test "x${prefix}" = "xNONE" && prefix=$ac_default_prefix 
+test "x${prefix}" = "xNONE" && prefix=$ac_default_prefix
 test "${sysconfdir}" = "\${prefix}/etc" && sysconfdir=/etc
 test "${localstatedir}" = "\${prefix}/var" && localstatedir=/var
 varrundir="${localstatedir}/run"
@@ -1675,7 +1675,7 @@ AC_SUBST(moduledir)
 AC_SUBST(driver)
 AC_SUBST(lirc_driver)
 AC_SUBST(hw_module_libs)
-AC_SUBST(vga_progs) 
+AC_SUBST(vga_progs)
 AC_SUBST(x_progs)
 AC_SUBST(hw_module)
 AC_SUBST(receive)
