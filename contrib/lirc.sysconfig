@@ -1,0 +1,27 @@
+# Note: in addition to these parameters, you need to have working    -*- sh -*-
+# configuration file for lircd (and lircmd if enabled).
+
+# Options to lircd(8).  Typically, this will be empty, as which driver to use
+# should be specified using the LIRC_DRIVER variable below.
+LIRCD_OPTIONS=""
+
+# The infrared receiver (and/or transmitter) driver to be used by lircd(8),
+# similar to passing "-H driver" to lircd(8).
+# Run "/usr/sbin/lircd -H help" to get a listing of supported drivers.
+LIRC_DRIVER="default"
+
+# Which lirc device will be used by lircd(8).
+# This is the same as passing "-d device" to lircd.
+# An empty value will use the default /dev/lirc0 device.
+LIRC_DEVICE="/dev/lirc0"
+
+# Options to lircmd(8). lircmd always runs with --nodaemon added
+# to LIRCMD_OPTIONS.
+LIRCMD_OPTIONS=""
+
+# The infrared device used by lirc, if any. If set this is set, lircd will
+# enable the lirc protocol using # "echo lirc > /sys/class/rc/$LIRCD_IR_DEVICE"
+# at startup. If unset, this is disabled. An alternative is to install the
+# lirc-disable-kernel-rc subpackage.
+LIRCD_IR_DEVICE=""
+

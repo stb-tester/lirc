@@ -1,0 +1,16 @@
+[Unit]
+Description=LIRC Infrared Signal Decoder
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/sysconfig/lirc
+ExecStartPre=/bin/sh -c 'test -n "$LIRCD_IR_DEVICE" && \
+    echo lirc > /sys/class/rc/$LIRCD_IR_DEVICE/protocols'
+ExecStart=/usr/sbin/lircd $LIRCD_OPTIONS \
+    --driver $LIRC_DRIVER --device $LIRC_DEVICE  --nodaemon
+ExecStartPost=/bin/sh -c 'test -n "$LIRCD_IR_DEVICE" && \
+    echo -lirc > /sys/class/rc/$LIRCD_IR_DEVICE/protocols'
+
+[Install]
+WantedBy=multi-user.target
