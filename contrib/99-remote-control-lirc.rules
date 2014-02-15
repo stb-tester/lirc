@@ -1,0 +1,4 @@
+# Installing this udev rule will disable kernel IR handling, routing
+# everything to lirc. To enable, copy to /etc/udev/rules.d  or
+# /usr/lib/udev/rules.d.
+SUBSYSTEM=="rc", ATTR{protocols}="lirc"
