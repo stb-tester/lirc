@@ -566,9 +566,10 @@ int main(int argc, char **argv)
 	       "distribution of this package. You can use a template files by\n"
 	       "providing the path of the file as command line parameter.\n"
 	       "\n"
-	       "Please send the finished config files to <lirc@bartelmus.de> so that I\n"
-	       "can make them available to others. Don't forget to put all information\n"
-	       "that you can get about the remote control in the header of the file.\n" "\n"
+	       "Please send the finished config files to <lirc-list@lists.sourceforge.net >\n"
+	       "so it can be made available to others. Don't forget to put all information\n"
+	       "that you can get about the remote control in the header of the file.\n"
+	       "Please use the symbols in the namespace where appropriate. \n\n"
 	       "Press RETURN to continue.\n\n");
 
 	getchar();
