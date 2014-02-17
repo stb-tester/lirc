@@ -76,6 +76,17 @@ extern struct ir_remote *repeat_remote;
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
+static inline lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap)
+{
+	__u32 secs,diff;
+
+	secs=current->tv_sec-last->tv_sec;
+
+	diff=1000000*secs+current->tv_usec-last->tv_usec;
+
+	return((lirc_t) (diff<gap ? gap-diff:0));
+}
+
 static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 {
 	int i;
@@ -142,7 +153,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 		/* Enable bit-bang mode, setting output & input pins
 		   direction */
-		if (ftdi_enable_bitbang(&ftdic, 1 << output_pin) < 0) {
+		if (ftdi_set_bitmode(&ftdic, 1 << output_pin,BITMODE_BITBANG) < 0) {
 			logprintf(LOG_ERR, "unable to enable bitbang mode (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
