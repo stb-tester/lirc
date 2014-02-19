@@ -10,7 +10,11 @@ AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 EXTRA_DIST =  setup.sh setup-driver.sh setup.data data2setup.sh ANNOUNCE TODO
 
 ## daemons/ and tools/ should appear before doc/ for help2man to work.
-SUBDIRS = drivers daemons tools doc
+if SYSTEMD_INSTALL
+    SYSTEMD_DIR = systemd
+endif
+
+SUBDIRS = drivers daemons tools doc $(SYSTEMD_DIR)
 
 ## From automake documentation:
 ## Note that EXTRA_DIST can only handle files in the current
