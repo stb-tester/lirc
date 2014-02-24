@@ -28,19 +28,26 @@
 #include "dump_config.h"
 #include "config_file.h"
 
-void fprint_comment(FILE * f, struct ir_remote *rem)
+void fprint_comment(FILE * f, struct ir_remote *rem, const char* commandline)
 {
 	time_t timet;
 	struct tm *tmp;
+        char buff[128];
+
+        if (commandline)
+  		snprintf(buff, sizeof(buff), "# Command line: %s\n", commandline);
+	else
+		strncat(buff, "", sizeof(buff) - 1);
 
 	timet = time(NULL);
 	tmp = localtime(&timet);
-	fprintf(f,
-		"#\n"
-		"# this config file was automatically generated\n"
-		"# using lirc-%s(%s) on %s" "#\n" "# contributed by \n" "#\n" "# brand:                       %s\n"
-		"# model no. of remote control: \n" "# devices being controlled by this remote:\n" "#\n\n", VERSION,
-		hw.name, asctime(tmp), rem->name);
+        fprintf(f,
+                "#\n"
+                "# this config file was automatically generated\n"
+                "# using lirc-%s(%s) on %s" "#\n"
+                "# contributed by \n" "%s"  "#\n" "# brand:                       %s\n"
+                "# model no. of remote control: \n" "# devices being controlled by this remote:\n" "#\n\n", VERSION,
+                hw.name, asctime(tmp), buff, rem->name);
 }
 
 void fprint_flags(FILE * f, int flags)
@@ -63,11 +70,11 @@ void fprint_flags(FILE * f, int flags)
 		fprintf(f, "\n");
 }
 
-void fprint_remotes(FILE * f, struct ir_remote *all)
+void fprint_remotes(FILE * f, struct ir_remote *all, const char* commandline)
 {
 
 	while (all) {
-		fprint_remote(f, all);
+		fprint_remote(f, all, commandline);
 		fprintf(f, "\n\n");
 		all = all->next;
 	}
@@ -250,9 +257,9 @@ void fprint_remote_signals(FILE * f, struct ir_remote *rem)
 	fprint_remote_signal_foot(f, rem);
 }
 
-void fprint_remote(FILE * f, struct ir_remote *rem)
+void fprint_remote(FILE * f, struct ir_remote *rem, const char* commandline)
 {
-	fprint_comment(f, rem);
+	fprint_comment(f, rem, commandline);
 	fprint_remote_head(f, rem);
 	fprint_remote_signals(f, rem);
 	fprint_remote_foot(f, rem);
