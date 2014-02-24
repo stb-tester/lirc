@@ -6,7 +6,6 @@ irw
 irxevent
 lircrcd
 mode2
-pronto2lirc
 xmode2
 
 liblirc_client.la
