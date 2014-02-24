@@ -22,28 +22,7 @@ struct flaglist {
 	int flag;
 };
 
-static struct flaglist all_flags[] = {
-	{"RAW_CODES", RAW_CODES},
-	{"RC5", RC5},
-	{"SHIFT_ENC", SHIFT_ENC},	/* obsolete */
-	{"RC6", RC6},
-	{"RCMM", RCMM},
-	{"SPACE_ENC", SPACE_ENC},
-	{"SPACE_FIRST", SPACE_FIRST},
-	{"GOLDSTAR", GOLDSTAR},
-	{"GRUNDIG", GRUNDIG},
-	{"BO", BO},
-	{"SERIAL", SERIAL},
-	{"XMP", XMP},
-
-	{"REVERSE", REVERSE},
-	{"NO_HEAD_REP", NO_HEAD_REP},
-	{"NO_FOOT_REP", NO_FOOT_REP},
-	{"CONST_LENGTH", CONST_LENGTH},	/* remember to adapt warning
-					   message when changing this */
-	{"REPEAT_HEADER", REPEAT_HEADER},
-	{NULL, 0},
-};
+extern const struct flaglist all_flags[];
 
 /*
   config stuff

@@ -99,7 +99,7 @@ static void addCode(lirc_t data)
 ** that could mess up the system like calling malloc() or free().
 */
 
-static int recordCallback(const void *inputBuffer, void *outputBuffer, __u32 framesPerBuffer,
+static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
 			  const PaStreamCallbackTimeInfo * outTime, PaStreamCallbackFlags status, void *userData)
 {
 	paTestData *data = (paTestData *) userData;

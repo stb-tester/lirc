@@ -41,7 +41,6 @@ static char *hiddev_rec(struct ir_remote *remotes);
 static int sb0540_init();
 static char *sb0540_rec(struct ir_remote *remotes);
 static char *macmini_rec(struct ir_remote *remotes);
-static char *atwf83_rec(struct ir_remote *remotes);
 static int samsung_init();
 static char *samsung_rec(struct ir_remote *remotes);
 

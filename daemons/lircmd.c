@@ -756,7 +756,7 @@ void loop()
 			}
 		}
 		buffer[len + end_len] = 0;
-		ret = sscanf(buffer, "%*llx %x %s %s\n", &rep, button, remote);
+		ret = sscanf(buffer, "%*x %x %s %s\n", &rep, button, remote);
 		end = strchr(buffer, '\n');
 		if (end == NULL) {
 			end_len = 0;

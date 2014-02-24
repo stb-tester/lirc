@@ -133,7 +133,7 @@ static const char *progname = "irxevent";
 static Display *dpy;
 static Window root;
 static XEvent xev;
-static Window w, subw;
+static Window subw;
 
 static Time fake_timestamp()
      /*seems that xfree86 computes the timestamps like this     */

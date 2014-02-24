@@ -24,6 +24,7 @@
 #else
 #include <wait.h>
 #endif
+#include <arpa/inet.h>
 
 #include "lircd.h"
 #include "ir_remote_types.h"

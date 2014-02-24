@@ -90,7 +90,6 @@ static inline lirc_t time_left(struct timeval *current,struct timeval *last, lir
 static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 {
 	int i;
-	int res;
 	lirc_t usecs;
 
 	for (i = 0; i < n; i++) {
@@ -118,7 +117,7 @@ static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 		}
 
 		/* Send the sample */
-		res = write(pipe_rxir_w, &usecs, sizeof usecs);
+		write(pipe_rxir_w, &usecs, sizeof usecs);
 
 		/* Remember last state */
 		laststate = curstate;
@@ -217,7 +216,6 @@ static int hwftdi_init()
 {
 	int flags;
 	int pipe_rx2main[2] = { -1, -1 };
-	int res;
 	unsigned char buf[1];
 
 	char *p;
@@ -330,7 +328,7 @@ next:
 	pipe_tx2main[1] = -1;
 
 	/* wait for child to be started */
-	res = read(pipe_tx2main[0], &buf, 1);
+	read(pipe_tx2main[0], &buf, 1);
 
 	return (1);
 
@@ -424,7 +422,6 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	int pulsewidth;
 	int bufidx;
 	int sendpulse;
-	int res;
 	unsigned char buf[TXBUFSZ];
 
 	logprintf(LOG_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
@@ -485,10 +482,10 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	buf[bufidx++] = 0;
 
 	/* let the child process transmit the pattern */
-	res = write(pipe_main2tx[1], buf, bufidx);
+	write(pipe_main2tx[1], buf, bufidx);
 
 	/* wait for child process to be ready with it */
-	res = read(pipe_tx2main[0], buf, 1);
+	read(pipe_tx2main[0], buf, 1);
 
 	return (1);
 }

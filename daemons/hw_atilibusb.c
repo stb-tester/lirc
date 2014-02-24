@@ -294,7 +294,8 @@ static void usb_read_loop(int fd)
 	for (;;) {
 		char buf[CODE_BYTES];
 		int bytes_r, bytes_w, pos;
-		int channel;
+		/* TODO: accept codes only for a specific channel */
+		// int channel;
 
 		/* read from the USB device */
 		bytes_r =
@@ -315,8 +316,7 @@ static void usb_read_loop(int fd)
 				continue;
 		}
 
-		/* TODO: accept codes only for a specific channel */
-		channel = (buf[bytes_r - 1] >> 4) & 0x0F;
+		// channel = (buf[bytes_r - 1] >> 4) & 0x0F;
 
 		/* pad the code with zeros (if shorter than CODE_BYTES) */
 		memset(buf + bytes_r, 0, sizeof(buf) - bytes_r);
