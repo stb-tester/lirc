@@ -171,7 +171,6 @@ if test x${no_kernel} != xyes; then
         (lirc_dev lirc_imon) \
         (lirc_dev lirc_parallel) \
         (lirc_dev lirc_sasem) \
-        (lirc_dev lirc_serial) \
         (lirc_dev lirc_sir) \
         (lirc_dev lirc_wpc8769l)"
 fi
@@ -260,9 +259,6 @@ AH_TEMPLATE([LIRC_IRTTY],
 AH_TEMPLATE([LIRC_ON_SA1100],
         [Define if you want to cross-compile for the SA1100])
 
-AH_TEMPLATE([LIRC_PORT],
-        [Set the port address for the lirc driver])
-
 AH_TEMPLATE([LIRC_SERIAL_ANIMAX],
         [Define if you have an animax serial port receiver])
 
@@ -280,9 +276,6 @@ AH_TEMPLATE([LIRC_SERIAL_NSLU2],
 
 AH_TEMPLATE([LIRC_SERIAL_SOFTCARRIER],
         [Define if the software needs to generate the carrier frequency])
-
-AH_TEMPLATE([LIRC_SERIAL_TRANSMITTER],
-        [Define if you have a IR diode connected to the serial port])
 
 AH_TEMPLATE([LIRC_SIR_ACTISYS_ACT200L],
         [Define if you want to use a Actisys Act200L])
@@ -452,7 +445,7 @@ AC_ARG_WITH(driver,
                           pcmak_usb, pctv, pixelview_bt878,
                           pixelview_pak, pixelview_pro, provideo,
                           realmagic, remotemaster, sa1100, samsung,
-                          sasem, sb0540, serial, silitek, sir, slinke,
+                          sasem, sb0540, silitek, sir, slinke,
                           srm7500libusb, tekram,
                           tira, tira_raw,
                           tuxbox, tvbox, udp, uirt2, uirt2_raw,
@@ -613,8 +606,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
                 ;;
         lirc_dev-lirc_sasem)
                 ;;
-        lirc_dev-lirc_serial)
-                ;;
         lirc_dev-lirc_sir)
                 ;;
         lirc_dev-lirc_wpc8769l)
@@ -742,7 +733,7 @@ if test "$driver" = "alsa_usb"; then
 fi
 
 if test "$driver" = "animax"; then
-  lirc_driver="lirc_dev lirc_serial"
+  lirc_driver="lirc_dev"
   lircd_conf="animax/lircd.conf.animax"
   lircmd_conf="animax/lircmd.conf.animax"
   AC_DEFINE(LIRC_SERIAL_ANIMAX)
@@ -868,30 +859,6 @@ if test "$driver" = "chronos"; then
   lirc_driver="lirc_dev lirc_gpio"
   lircd_conf="chronos/lircd.conf.chronos"
 #  lircmd_conf="chronos/lircmd.conf.chronos"
-fi
-
-if test "$driver" = "com1"; then
-  lirc_driver="lirc_dev lirc_serial"
-  port=0x3f8
-  irq=4
-fi
-
-if test "$driver" = "com2"; then
-  lirc_driver="lirc_dev lirc_serial"
-  port=0x2f8
-  irq=3
-fi
-
-if test "$driver" = "com3"; then
-  lirc_driver="lirc_dev lirc_serial"
-  port=0x3e8
-  irq=4
-fi
-
-if test "$driver" = "com4"; then
-  lirc_driver="lirc_dev lirc_serial"
-  port=0x2e8
-  irq=3
 fi
 
 if test "$driver" = "commandir"; then
@@ -1055,12 +1022,12 @@ if test "$driver" = "imon_rsc"; then
 fi
 
 if test "$driver" = "irdeo"; then
-  lirc_driver="lirc_dev lirc_serial"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SERIAL_IRDEO)
 fi
 
 if test "$driver" = "irdeo_remote"; then
-  lirc_driver="lirc_dev lirc_serial"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SERIAL_IRDEO_REMOTE)
 fi
 
@@ -1207,12 +1174,12 @@ if test "$driver" = "mplay2"; then
 fi
 
 if test "$driver" = "nslu2"; then
-  lirc_driver="lirc_dev lirc_serial"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SERIAL_NSLU2)
 fi
 
 if test "$driver" = "packard_bell"; then
-  lirc_driver="lirc_dev lirc_serial"
+  lirc_driver="lirc_dev"
   lircd_conf="packard_bell/lircd.conf.packard_bell"
 fi
 
@@ -1300,10 +1267,6 @@ if test "$driver" = "sb0540"; then
   HW_DEFAULT="hw_sb0540"
 # original RM-1500 is included here
   lircd_conf="creative/lircd.conf.alsa_usb"
-fi
-
-if test "$driver" = "serial"; then
-  lirc_driver="lirc_dev lirc_serial"
 fi
 
 if test "$driver" = "silitek"; then
@@ -1508,7 +1471,6 @@ elif test "$lirc_driver" = "all"; then
         lirc_imon \
         lirc_parallel \
         lirc_sasem \
-        lirc_serial \
         lirc_sir \
         lirc_wpc8769l"
 fi
@@ -1562,11 +1524,6 @@ AC_ARG_ENABLE(dyncodes,
 [  --enable-dyncodes       use dynamic codes],
 test x${enableval} = xyes && AC_DEFINE(DYNCODES))
 
-AC_ARG_WITH(port,
-[  --with-port=port        specify the port number for the lirc device.],
-port=${withval}
-)
-
 AC_ARG_WITH(irq,
 [  --with-irq=irq          specify the irq line for the lirc device.],
 irq=${withval}
@@ -1579,15 +1536,6 @@ timer=${withval})
 AC_ARG_WITH(tty,
 [  --with-tty=file         specify the tty to use (Irman, RemoteMaster, etc.)],
 irtty=${withval})
-
-AC_ARG_WITH(soft-carrier,
-[  --without-soft-carrier  use this if your serial hw generates carrier],
-test x${withval} = xyes && AC_DEFINE(LIRC_SERIAL_SOFTCARRIER),
-AC_DEFINE(LIRC_SERIAL_SOFTCARRIER))
-
-AC_ARG_WITH(transmitter,
-[  --with-transmitter      use this if you use a transmitter diode],
-test x${withval} = xyes && AC_DEFINE(LIRC_SERIAL_TRANSMITTER))
 
 AC_ARG_WITH(igor,
 [  --with-igor             use this if you have an Igor Cesko receiver],
@@ -1696,9 +1644,6 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 
 AC_DEFINE_UNQUOTED(LIRC_DRIVER, "$driver")
-if test "$port" != ""; then
-  AC_DEFINE_UNQUOTED(LIRC_PORT, $port)
-fi
 if test "$irq" != ""; then
   AC_DEFINE_UNQUOTED(LIRC_IRQ, $irq)
 fi
@@ -1733,7 +1678,7 @@ AH_TOP([
 #define PID_LIRCD       "lircd.pid"
 
 /* default port number */
-#define LIRC_INET_PORT  8765
+#define        LIRC_INET_PORT  8765
 ])
 
 AH_BOTTOM([
@@ -1794,7 +1739,6 @@ AC_CONFIG_FILES([
   drivers/lirc_imon/Makefile
   drivers/lirc_parallel/Makefile
   drivers/lirc_sasem/Makefile
-  drivers/lirc_serial/Makefile
   drivers/lirc_sir/Makefile
   drivers/lirc_wpc8769l/Makefile
   daemons/Makefile

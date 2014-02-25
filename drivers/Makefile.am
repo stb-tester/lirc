@@ -15,7 +15,6 @@ DIST_SUBDIRS = \
 	lirc_imon \
 	lirc_parallel \
 	lirc_sasem \
-	lirc_serial \
 	lirc_sir \
 	lirc_wpc8769l
 
