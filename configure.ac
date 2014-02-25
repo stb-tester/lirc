@@ -164,7 +164,6 @@ if test x${no_kernel} != xyes; then
   possible_drivers="${possible_drivers} \
         (all) \
         (lirc_dev) \
-        (lirc_dev lirc_i2c) \
         (lirc_dev lirc_igorplugusb) \
         (lirc_dev lirc_wpc8769l)"
 fi
@@ -581,9 +580,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
         irreal)
                 #hw_module="${hw_module} hw_irreal.o serial.o receive.o transmit.o"
                 ;;
-        lirc_dev-lirc_i2c)
-                #lirc_driver="${lirc_driver} lirc_dev lirc_i2c"
-                ;;
         lirc_dev-lirc_igorplugusb)
                 ;;
         lirc_dev-lirc_wpc8769l)
@@ -697,7 +693,7 @@ if test "$driver" = "act220l"; then
 fi
 
 if test "$driver" = "adaptec"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="adaptec/lircd.conf.AVC-2410"
 #  lircmd_conf="adaptec/lircmd.conf.AVC-2410"
 fi
@@ -799,7 +795,7 @@ if test "$driver" = "bestbuy2"; then
 fi
 
 if test "$driver" = "breakoutbox"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="creative/lircd.conf.breakoutbox"
 fi
 
@@ -930,7 +926,7 @@ if test "$driver" = "gvbctv5pci"; then
 fi
 
 if test "$driver" = "hauppauge"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="hauppauge/lircd.conf.hauppauge"
   lircmd_conf="hauppauge/lircmd.conf.hauppauge"
 fi
@@ -942,7 +938,7 @@ if test "$driver" = "hauppauge_dvb"; then
 fi
 
 if test "$driver" = "hercules_smarttv_stereo"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="hercules/lircd.conf.smarttv_stereo"
 fi
 
@@ -1026,7 +1022,7 @@ if test "$driver" = "irreal"; then
 fi
 
 if test "$driver" = "knc_one"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="knc_one/lircd.conf.knc_one"
 #  lircmd_conf="knc_one/lircmd.conf.knc_one"
 fi
@@ -1050,7 +1046,7 @@ if test "$driver" = "leadtek_0010"; then
 fi
 
 if test "$driver" = "leadtek_pvr2000"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="leadtek/lircd.conf.PVR2000"
 #  lircmd_conf="leadtek/lircmd.conf.PVR2000"
 fi
@@ -1168,7 +1164,7 @@ if test "$driver" = "pctv"; then
 fi
 
 if test "$driver" = "pixelview_bt878"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="pixelview/lircd.conf.playtv_bt878"
 #  lircmd_conf="pixelview/lircmd.conf.pixelview_bt878"
 fi
@@ -1187,7 +1183,7 @@ if test "$driver" = "pixelview_pro"; then
 fi
 
 if test "$driver" = "provideo"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="provideo/lircd.conf.pv951"
 #  lircmd_conf="provideo/lircmd.conf.pv951"
 fi
@@ -1281,7 +1277,7 @@ if test "$driver" = "tuxbox"; then
 fi
 
 if test "$driver" = "tvbox"; then
-  lirc_driver="lirc_dev lirc_i2c"
+  lirc_driver="lirc_dev"
   lircd_conf="asus/lircd.conf.asus"
 fi
 
@@ -1414,7 +1410,6 @@ if test "$lirc_driver" = "none" || \
   lirc_driver=
 elif test "$lirc_driver" = "all"; then
   lirc_driver="_dev \
-        lirc_i2c \
         lirc_igorplugusb \
         lirc_wpc8769l"
 fi
@@ -1669,7 +1664,6 @@ AC_CONFIG_FILES([
   Makefile
   drivers/Makefile
   drivers/lirc_dev/Makefile
-  drivers/lirc_i2c/Makefile
   drivers/lirc_igorplugusb/Makefile
   drivers/lirc_wpc8769l/Makefile
   daemons/Makefile
