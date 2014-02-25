@@ -360,8 +360,7 @@ remote |        |       devinput v        |
         irrecord(1)</a>.</li>
       <li>
         If using a predefined lircd.conf, ensure it uses proper key symbols
-        as listed by <em> irrecord -l</em> whenever it makes sense. Don't
-        hesitate to replace the old ones not in namespace.
+        <a href="#appendix-5">(below)</a>. </li>
       <li>
         Install the lircd.conf and start lircd daemon using something like:
         <pre>
@@ -399,7 +398,8 @@ remote |        |       devinput v        |
       strings:
       <ul>
         <li> Read the <a href="configure.html#lircrc_format">.lircrc chapter
-          </a> and create your ~/.lircrc.</li>
+          </a> and create your ~/.lircrc. generate-lircrc.sh can generate
+            a starting point <a href="appendix-5">(below)</a>.</li>
         <li>Restart the lircd daemon. Use <a href="ircat.html">ircat(1)</a>
             to verify your application settings i. e., what your
             application actually recieves when pushing the remote button.</li>
@@ -552,7 +552,7 @@ remote |        |       devinput v        |
     <p>
     The "Required LIRC kernel modules" refers to modules that are part of
     the linux kernel. Some of these are regular modules and should be
-    available in any reasonable updated linux system. However, some of
+    available in any reasonably updated linux system. However, some of
     these modules are part of the staging drivers and might not be
     available on your system.</p>
     <p>
@@ -571,5 +571,112 @@ remote |        |       devinput v        |
     to be sure is actually inspecting he sources. You might try to search
     the web before walking this path, though.</p>
 
+    <A NAME="appendix-4"></A>
+    <h3 align="center"> A4: Normalizing the lircd.conf</h3>
+    <p>
+    Several of the pre-defined remotes uses non-standard key symbols. This
+    is a Bad Thing, which makes it harder to create the ~/.lircrc file
+    in next step. You should replace all non-standard definitions with
+    official key symbols where it's possible. Some buttons might not be
+    possible to map to standard symbols is a sane way, and could be left
+    as-is. But the vast majority of buttons should use standard symbols.
+    The standard symbols a. k. a. the namespace, is listed by irrecord -l.
+    </p>
+    <p>
+    The script generate-lircrc is helpful here. List all non-standard
+    symbols in lircd.conf:
+    <pre>
+        $ generate-lircrc.sh -s -c /etc/lirc/lircd.conf
+    </pre>
+    Update the lircd.conf file with standard key symbols as applicable:
+    <pre>
+        $ sudo generate-lircrc.sh -u -c /etc/lirc/lircd.conf
+    </pre>
+    </p>
+
+    <A NAME="appendix-5"></A>
+    <h3 align="center"> A5: Generating the .lircrc</h3>
+    <p>
+    The .lircrc file basically combines the remote buttons with application
+    capabilities. To actually write a .lircrc file from scratch is not that
+    hard, but it's a lot of work. generate-lircrc.sh can save some of this
+    work by creating a starting point. For this to work , the lircd.conf
+    file must be in place.</p>
+    <p>
+    The first step is to check if your application is supported by the script:
+    <pre>
+        $ ./generate-lircrc.sh -l
+    </pre>
+    if you find your application here, you can make an .lircrc for that app:
+    <pre>
+        $ ./generate-lircrc.sh -o . vlc
+    </pre>
+    If you're using the devinput lircd.conf, create a new version of that
+    file which only contains the key symbols you are actually using. Use
+    this instead in the -c option to let generate-lircrc.sh make it's work.
+    </p>The generated file will look like (excerpt!)</p>
+    <pre>
+
+    # Created by /home/al/bin/generate-lircrc.sh at tis dec  3 23:26:18 CET 2013
+
+    # See http://wiki.videolan.org/How_to_Use_Lirc
+
+	begin
+	    prog   = vlc
+	    button = KEY_REWIND
+	    config = key-rewind
+	end
+
+	begin
+	    prog   = vlc
+	    button = KEY_FASTFORWARD
+	    config = key-faster
+	end
+
+
+	begin
+	    prog   = vlc
+	    button = KEY_NEXT
+	    config = key-next
+	end
+
+    # Unused buttons:
+    #
+    #    KEY_HOME
+    #    KEY_GREEN
+    #    KEY_RED
+    #    KEY_YELLOW
+    #
+    # Unused capabilities:
+    #
+    #
+    #    begin
+    #        prog   = vlc
+    #        button = KEY_EXIT
+    #        config = key-quit
+    #    end
+    #
+    #    begin
+    #        prog   = vlc
+    #        button = KEY_PLAY_PAUSE.
+    #        config = key-play-pause
+    #    end
+    #
+    #    begin
+    #        prog   = vlc
+    #        button = KEY_PLAY
+    #        config = key-play
+    #    end
+    #
+    </pre>
+    <p>
+    The comments are about buttons which havn't found a use, and capabilities
+    in the program (vlc) which are not bound to a button. Obviously, this
+    saves some work.</p>
+    <p>
+    The generate-lircrc.sh has a -h and a manpage option for more info.</p>
+    <p>
+    BEWARE: The configuration file generated this way is starting point. It
+    needs to be inspected and tweaked before it actually does it's job.
   </BODY>
 </HTML>
