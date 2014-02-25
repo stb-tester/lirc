@@ -165,7 +165,6 @@ if test x${no_kernel} != xyes; then
         (all) \
         (lirc_dev) \
         (lirc_dev lirc_atiusb) \
-        (lirc_dev lirc_bt829) \
         (lirc_dev lirc_gpio) \
         (lirc_dev lirc_i2c) \
         (lirc_dev lirc_igorplugusb) \
@@ -456,7 +455,7 @@ AC_ARG_WITH(driver,
                           realmagic, remotemaster, sa1100, samsung,
                           sasem, sb0540, serial, silitek, sir, slinke,
                           srm7500libusb, tekram,
-                          tekram_bt829, tira, tira_raw, ttusbir,
+                          tira, tira_raw, ttusbir,
                           tuxbox, tvbox, udp, uirt2, uirt2_raw,
                           usb_uirt_raw, usbx, wpc8769l],
 driver=${withval},
@@ -1354,12 +1353,6 @@ if test "$driver" = "tekram"; then
   AC_DEFINE(LIRC_SIR_TEKRAM)
 fi
 
-if test "$driver" = "tekram_bt829"; then
-  lirc_driver="lirc_dev lirc_bt829"
-  lircd_conf="tekram/lircd.conf.m230"
-  lircmd_conf="tekram/lircmd.conf.m230"
-fi
-
 if test "$driver" = "tira"; then
   lirc_driver="none"
   hw_module="hw_tira.o serial.o receive.o transmit.o"
@@ -1517,7 +1510,6 @@ if test "$lirc_driver" = "none" || \
 elif test "$lirc_driver" = "all"; then
   lirc_driver="lirc_dev \
         lirc_atiusb \
-        lirc_bt829 \
         lirc_i2c \
         lirc_igorplugusb \
         lirc_imon \
@@ -1803,7 +1795,6 @@ AC_CONFIG_FILES([
   Makefile
   drivers/Makefile
   drivers/lirc_atiusb/Makefile
-  drivers/lirc_bt829/Makefile
   drivers/lirc_dev/Makefile
   drivers/lirc_gpio/Makefile
   drivers/lirc_i2c/Makefile
