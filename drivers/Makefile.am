@@ -1,5 +1,5 @@
 
-## Process this file with automake to produce Makefile.in 
+## Process this file with automake to produce Makefile.in
 
 ## here the correct driver is substituted in by the configure script
 ## (or empty for none)
@@ -11,7 +11,6 @@ DIST_SUBDIRS = \
 	lirc_gpio \
 	lirc_i2c \
 	lirc_igorplugusb \
-	lirc_imon \
 	lirc_sasem \
 	lirc_wpc8769l
 
