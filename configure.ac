@@ -168,7 +168,6 @@ if test x${no_kernel} != xyes; then
         (lirc_dev lirc_i2c) \
         (lirc_dev lirc_igorplugusb) \
         (lirc_dev lirc_imon) \
-        (lirc_dev lirc_parallel) \
         (lirc_dev lirc_sasem) \
         (lirc_dev lirc_sir) \
         (lirc_dev lirc_wpc8769l)"
@@ -290,9 +289,6 @@ AH_TEMPLATE([LIRC_SYSLOG],
 
 AH_TEMPLATE([LIRC_IMON_LCD],
         [Define if your iMON is an LCD and not a VFD.])
-
-AH_TEMPLATE([LIRC_TIMER],
-        [Set the timer for the parallel port driver])
 
 AH_TEMPLATE([LOCALSTATEDIR],
         [modifiable single-machine data])
@@ -440,7 +436,7 @@ AC_ARG_WITH(driver,
                           livedrive_midi, livedrive_seq, logitech,
                           lptX, macmini, mediafocusI,
                           mouseremote, mouseremote_ps2, mp3anywhere,
-                          mplay, nslu2,packard_bell, parallel, pcmak,
+                          mplay, nslu2,packard_bell, pcmak,
                           pcmak_usb, pctv, pixelview_bt878,
                           pixelview_pak, pixelview_pro, provideo,
                           realmagic, remotemaster, sa1100, samsung,
@@ -599,8 +595,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
                 ;;
         lirc_dev-lirc_imon)
                 ;;
-        lirc_dev-lirc_parallel)
-                ;;
         lirc_dev-lirc_sasem)
                 ;;
         lirc_dev-lirc_sir)
@@ -711,7 +705,7 @@ if test "$driver" = "act200l"; then
 fi
 
 if test "$driver" = "act220l"; then
-  lirc_driver="lirc_dev lirc_sir"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SIR_ACTISYS_ACT220L)
 fi
 
@@ -1104,13 +1098,13 @@ if test "$driver" = "logitech"; then
 fi
 
 if test "$driver" = "lpt1"; then
-  lirc_driver="lirc_dev lirc_parallel"
+  lirc_driver="lirc_dev"
   port=0x378
   irq=7
 fi
 
 if test "$driver" = "lpt2"; then
-  lirc_driver="lirc_dev lirc_parallel"
+  lirc_driver="lirc_dev"
   port=0x278
   irq=5
 fi
@@ -1173,10 +1167,6 @@ fi
 if test "$driver" = "packard_bell"; then
   lirc_driver="lirc_dev"
   lircd_conf="packard_bell/lircd.conf.packard_bell"
-fi
-
-if test "$driver" = "parallel"; then
-  lirc_driver="lirc_dev lirc_parallel"
 fi
 
 if test "$driver" = "pcmak" -o "$driver" = "pcmak_usb"; then
@@ -1456,11 +1446,10 @@ if test "$lirc_driver" = "none" || \
         test "$lirc_driver" = "userspace"; then
   lirc_driver=
 elif test "$lirc_driver" = "all"; then
-  lirc_driver="lirc_dev \
+  lirc_driver="_dev \
         lirc_i2c \
         lirc_igorplugusb \
         lirc_imon \
-        lirc_parallel \
         lirc_sasem \
         lirc_sir \
         lirc_wpc8769l"
@@ -1519,10 +1508,6 @@ AC_ARG_WITH(irq,
 [  --with-irq=irq          specify the irq line for the lirc device.],
 irq=${withval}
 )
-
-AC_ARG_WITH(timer,
-[  --with-timer=value      specify the timer value for the parallel driver],
-timer=${withval})
 
 AC_ARG_WITH(tty,
 [  --with-tty=file         specify the tty to use (Irman, RemoteMaster, etc.)],
@@ -1638,9 +1623,6 @@ AC_DEFINE_UNQUOTED(LIRC_DRIVER, "$driver")
 if test "$irq" != ""; then
   AC_DEFINE_UNQUOTED(LIRC_IRQ, $irq)
 fi
-if test "$timer" != ""; then
-  AC_DEFINE_UNQUOTED(LIRC_TIMER, $timer)
-fi
 if test "$irtty" != ""; then
   AC_DEFINE_UNQUOTED(LIRC_IRTTY, "$irtty")
 fi
@@ -1727,7 +1709,6 @@ AC_CONFIG_FILES([
   drivers/lirc_i2c/Makefile
   drivers/lirc_igorplugusb/Makefile
   drivers/lirc_imon/Makefile
-  drivers/lirc_parallel/Makefile
   drivers/lirc_sasem/Makefile
   drivers/lirc_sir/Makefile
   drivers/lirc_wpc8769l/Makefile
