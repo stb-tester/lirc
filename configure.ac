@@ -164,7 +164,6 @@ if test x${no_kernel} != xyes; then
   possible_drivers="${possible_drivers} \
         (all) \
         (lirc_dev) \
-        (lirc_dev lirc_atiusb) \
         (lirc_dev lirc_gpio) \
         (lirc_dev lirc_i2c) \
         (lirc_dev lirc_igorplugusb) \
@@ -424,7 +423,7 @@ AC_ARG_WITH(driver,
 [  --with-driver=X         specify the driver to use, where X is one of:
                           all, none, userspace, accent, act200l,
                           act220l, adaptec, alsa_usb, animax, asusdh,
-                          atilibusb, atiusb, atwf83, audio, audio_alsa
+                          atilibusb, atwf83, audio, audio_alsa
                           avermedia, avermedia_vdomate, avermedia98,
                           awlibusb, bestbuy, bestbuy2, breakoutbox,
                           bte, bw6130, caraca, chronos, commandir,
@@ -590,8 +589,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
         irreal)
                 #hw_module="${hw_module} hw_irreal.o serial.o receive.o transmit.o"
                 ;;
-        lirc_dev-lirc_atiusb)
-                ;;
         lirc_dev-lirc_gpio)
                 #lirc_driver="${lirc_driver} lirc_dev lirc_gpio"
                 ;;
@@ -744,11 +741,6 @@ if test "$driver" = "asusdh"; then
   hw_module="hw_hiddev.o"
   HW_DEFAULT="hw_asusdh"
   lircd_conf="asus/lircd.conf.asusdh"
-fi
-
-if test "$driver" = "atiusb"; then
-  lirc_driver="lirc_dev lirc_atiusb"
-  lircd_conf="atiusb/lircd.conf.atiusb"
 fi
 
 if test "$driver" = "atilibusb"; then
@@ -1465,7 +1457,6 @@ if test "$lirc_driver" = "none" || \
   lirc_driver=
 elif test "$lirc_driver" = "all"; then
   lirc_driver="lirc_dev \
-        lirc_atiusb \
         lirc_i2c \
         lirc_igorplugusb \
         lirc_imon \
@@ -1731,7 +1722,6 @@ dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
   Makefile
   drivers/Makefile
-  drivers/lirc_atiusb/Makefile
   drivers/lirc_dev/Makefile
   drivers/lirc_gpio/Makefile
   drivers/lirc_i2c/Makefile
