@@ -169,7 +169,6 @@ if test x${no_kernel} != xyes; then
         (lirc_dev lirc_igorplugusb) \
         (lirc_dev lirc_imon) \
         (lirc_dev lirc_sasem) \
-        (lirc_dev lirc_sir) \
         (lirc_dev lirc_wpc8769l)"
 fi
 
@@ -440,7 +439,7 @@ AC_ARG_WITH(driver,
                           pcmak_usb, pctv, pixelview_bt878,
                           pixelview_pak, pixelview_pro, provideo,
                           realmagic, remotemaster, sa1100, samsung,
-                          sasem, sb0540, silitek, sir, slinke,
+                          sasem, sb0540, silitek, slinke,
                           srm7500libusb, tekram,
                           tira, tira_raw,
                           tuxbox, tvbox, udp, uirt2, uirt2_raw,
@@ -597,8 +596,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
                 ;;
         lirc_dev-lirc_sasem)
                 ;;
-        lirc_dev-lirc_sir)
-                ;;
         lirc_dev-lirc_wpc8769l)
                 ;;
         lirc_flyvideo)
@@ -700,7 +697,7 @@ if test "$driver" = "accent"; then
 fi
 
 if test "$driver" = "act200l"; then
-  lirc_driver="lirc_dev lirc_sir"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SIR_ACTISYS_ACT200L)
 fi
 
@@ -1227,7 +1224,7 @@ if test "$driver" = "remotemaster"; then
 fi
 
 if test "$driver" = "sa1100"; then
-  lirc_driver="lirc_dev lirc_sir"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_ON_SA1100)
 fi
 
@@ -1259,16 +1256,6 @@ if test "$driver" = "silitek"; then
   lircmd_conf="silitek/lircmd.conf.silitek"
 fi
 
-if test "$driver" = "sir"; then
-  lirc_driver="lirc_dev lirc_sir"
-fi
-
-if test "$driver" = "sir_com3"; then
-  lirc_driver="lirc_dev lirc_sir"
-  port=0x3e8
-  irq=4
-fi
-
 if test "$driver" = "slinke"; then
   echo
   echo "Please use lirc-0.6.5. The Slink-e is no longer supported."
@@ -1291,7 +1278,7 @@ if test "$driver" = "srm7500libusb"; then
 fi
 
 if test "$driver" = "tekram"; then
-  lirc_driver="lirc_dev lirc_sir"
+  lirc_driver="lirc_dev"
   AC_DEFINE(LIRC_SIR_TEKRAM)
 fi
 
@@ -1451,7 +1438,6 @@ elif test "$lirc_driver" = "all"; then
         lirc_igorplugusb \
         lirc_imon \
         lirc_sasem \
-        lirc_sir \
         lirc_wpc8769l"
 fi
 if kernel_module=$(expr "$lirc_driver" : 'lirc_dev \(.*\)'); then
@@ -1710,7 +1696,6 @@ AC_CONFIG_FILES([
   drivers/lirc_igorplugusb/Makefile
   drivers/lirc_imon/Makefile
   drivers/lirc_sasem/Makefile
-  drivers/lirc_sir/Makefile
   drivers/lirc_wpc8769l/Makefile
   daemons/Makefile
   tools/Makefile
