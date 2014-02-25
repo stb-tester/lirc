@@ -164,7 +164,6 @@ if test x${no_kernel} != xyes; then
   possible_drivers="${possible_drivers} \
         (all) \
         (lirc_dev) \
-        (lirc_dev lirc_igorplugusb) \
         (lirc_dev lirc_wpc8769l)"
 fi
 
@@ -580,8 +579,6 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
         irreal)
                 #hw_module="${hw_module} hw_irreal.o serial.o receive.o transmit.o"
                 ;;
-        lirc_dev-lirc_igorplugusb)
-                ;;
         lirc_dev-lirc_wpc8769l)
                 ;;
         lirc_flyvideo)
@@ -946,10 +943,6 @@ if test "$driver" = "i2cuser"; then
   lirc_driver="none"
   hw_module="hw_i2cuser.o receive.o"
   HW_DEFAULT="hw_i2cuser"
-fi
-
-if test "$driver" = "igorplugusb"; then
-  lirc_driver="lirc_dev lirc_igorplugusb"
 fi
 
 if test "$driver" = "iguanaIR"; then
@@ -1409,9 +1402,7 @@ if test "$lirc_driver" = "none" || \
         test "$lirc_driver" = "userspace"; then
   lirc_driver=
 elif test "$lirc_driver" = "all"; then
-  lirc_driver="_dev \
-        lirc_igorplugusb \
-        lirc_wpc8769l"
+  lirc_driver="lirc_dev lirc_wpc8769l"
 fi
 if kernel_module=$(expr "$lirc_driver" : 'lirc_dev \(.*\)'); then
   :
@@ -1664,7 +1655,6 @@ AC_CONFIG_FILES([
   Makefile
   drivers/Makefile
   drivers/lirc_dev/Makefile
-  drivers/lirc_igorplugusb/Makefile
   drivers/lirc_wpc8769l/Makefile
   daemons/Makefile
   tools/Makefile

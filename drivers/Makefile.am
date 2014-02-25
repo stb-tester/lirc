@@ -8,7 +8,6 @@ EXTRA_DIST = lirc.h kcompat.h Makefile.kernel Makefile.common
 
 DIST_SUBDIRS = \
 	lirc_dev \
-	lirc_igorplugusb \
 	lirc_wpc8769l
 
 SUBDIRS = @lirc_driver@
