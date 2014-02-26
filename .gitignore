@@ -16,6 +16,7 @@ core*
 */.deps
 */.libs
 *~
+
 drivers/*/.deps
 drivers/*/.tmp_versions
 drivers/*/.tmp_versions/*
@@ -30,6 +31,7 @@ contrib/hal/20-ircontrol-lirc.fdi
 doc/man-html
 doc/man/*.[1-9]
 doc/man2html
+doc/man2html.o
 doc/html
 doc/lirc.hwdb
 
@@ -45,6 +47,7 @@ config.h.in
 config.sub
 configure
 depcomp
+input_map.inc
 install-sh
 ltmain.sh
 missing
@@ -55,6 +58,7 @@ config.log
 config.status
 configure.sh
 libtool
+paths.h
 stamp-h1
 
 daemons/*.o
