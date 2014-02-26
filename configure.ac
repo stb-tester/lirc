@@ -254,41 +254,8 @@ AH_TEMPLATE([LIRC_IRQ],
 AH_TEMPLATE([LIRC_IRTTY],
         [Set the default tty used by the drivers accessing /dev/ttyX])
 
-AH_TEMPLATE([LIRC_ON_SA1100],
-        [Define if you want to cross-compile for the SA1100])
-
-AH_TEMPLATE([LIRC_SERIAL_ANIMAX],
-        [Define if you have an animax serial port receiver])
-
-AH_TEMPLATE([LIRC_SERIAL_IGOR],
-        [Define if you have an Igor Cesko receiver])
-
-AH_TEMPLATE([LIRC_SERIAL_IRDEO],
-        [Define if you have an IRdeo serial port receiver])
-
-AH_TEMPLATE([LIRC_SERIAL_IRDEO_REMOTE],
-        [Define if you have an IRdeo remote transmitter])
-
-AH_TEMPLATE([LIRC_SERIAL_NSLU2],
-        [Define if you have a Linksys NSLU2 and use CTS2+GreenLED])
-
-AH_TEMPLATE([LIRC_SERIAL_SOFTCARRIER],
-        [Define if the software needs to generate the carrier frequency])
-
-AH_TEMPLATE([LIRC_SIR_ACTISYS_ACT200L],
-        [Define if you want to use a Actisys Act200L])
-
-AH_TEMPLATE([LIRC_SIR_ACTISYS_ACT220L],
-        [Define if you want to use a Actisys Act220L])
-
-AH_TEMPLATE([LIRC_SIR_TEKRAM],
-        [Define if you want to use a Tekram Irmate 210])
-
 AH_TEMPLATE([LIRC_SYSLOG],
         [syslog facility to use])
-
-AH_TEMPLATE([LIRC_IMON_LCD],
-        [Define if your iMON is an LCD and not a VFD.])
 
 AH_TEMPLATE([LOCALSTATEDIR],
         [modifiable single-machine data])
@@ -348,8 +315,9 @@ dnl audio driver requires PortAudio library installed and some linker flags
 AC_CHECK_HEADERS(portaudio.h,[
   AC_CHECK_LIB(portaudio, Pa_Initialize,[
     AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[true])
-    possible_drivers="${possible_drivers/(audio)/}"
+    possible_drivers="${possible_drivers} (audio)"
     ],[
+    possible_drivers="${possible_drivers/(audio)/}"
     AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])
     ],[
     ${portaudio_lib_other}]
@@ -513,7 +481,6 @@ if test "$driver" = "none"; then
 fi
 
 if test "$driver" = "userspace" -o "$driver" = "all"; then
-  AC_DEFINE(LIRC_DRIVER_ANY)
   lirc_driver=$driver
 
   any_possible_drivers=`echo ${possible_drivers} | sed -e's/ /-/g' \
@@ -724,12 +691,10 @@ fi
 
 if test "$driver" = "act200l"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SIR_ACTISYS_ACT200L)
 fi
 
 if test "$driver" = "act220l"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SIR_ACTISYS_ACT220L)
 fi
 
 if test "$driver" = "adaptec"; then
@@ -750,7 +715,6 @@ if test "$driver" = "animax"; then
   lirc_driver="lirc_dev"
   lircd_conf="animax/lircd.conf.animax"
   lircmd_conf="animax/lircmd.conf.animax"
-  AC_DEFINE(LIRC_SERIAL_ANIMAX)
 fi
 
 if test "$driver" = "asusdh"; then
@@ -1008,7 +972,6 @@ fi
 if test "$driver" = "imon_lcd"; then
   lirc_driver="lirc_dev"
   lircd_conf="imon/lircd.conf.imon"
-  AC_DEFINE(LIRC_IMON_LCD)
 fi
 
 if test "$driver" = "imon_pad"; then
@@ -1023,12 +986,10 @@ fi
 
 if test "$driver" = "irdeo"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SERIAL_IRDEO)
 fi
 
 if test "$driver" = "irdeo_remote"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SERIAL_IRDEO_REMOTE)
 fi
 
 if test "$driver" = "irlink"; then
@@ -1175,7 +1136,6 @@ fi
 
 if test "$driver" = "nslu2"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SERIAL_NSLU2)
 fi
 
 if test "$driver" = "packard_bell"; then
@@ -1242,7 +1202,6 @@ fi
 
 if test "$driver" = "sa1100"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_ON_SA1100)
 fi
 
 if test "$driver" = "samsung"; then
@@ -1291,7 +1250,6 @@ fi
 
 if test "$driver" = "tekram"; then
   lirc_driver="lirc_dev"
-  AC_DEFINE(LIRC_SIR_TEKRAM)
 fi
 
 if test "$driver" = "tira"; then
@@ -1352,8 +1310,6 @@ fi
 
 
 #END HARDWARE HEURISTIC
-
-AC_DEFINE_UNQUOTED(HW_DEFAULT, ${HW_DEFAULT})
 
 dnl now check to see if the user is behaving himself
 
