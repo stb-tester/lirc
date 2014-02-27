@@ -1645,12 +1645,6 @@ if test "$driver" = "mediafocusI"; then
 elif test "$driver" = "exaudio"; then
   echo "You will have to use the Exaudio driver from:"
   echo "http://exaudio.sourceforge.net/"
-elif test "$driver" = "alsa_usb"; then
-  echo "You will have to use the snd-usb-audio driver from:"
-  echo "http://www.alsa-project.org/"
-elif test "$driver" = "hauppauge_dvb"; then
-  echo "You will have to use the DVB driver from:"
-  echo "http://www.linuxtv.org"
 elif test "$kernel_module" = ""; then
   echo "Your hardware does not require a special LIRC kernel module."
   if test "${irtty}" != ""; then
