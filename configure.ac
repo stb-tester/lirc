@@ -718,8 +718,7 @@ if test "$driver" = "animax"; then
 fi
 
 if test "$driver" = "asusdh"; then
-  lirc_driver="$driver"
-  hw_module="hw_hiddev.o"
+  lirc_driver="hiddev"
   HW_DEFAULT="hw_asusdh"
   lircd_conf="asus/lircd.conf.asusdh"
 fi
@@ -917,8 +916,7 @@ if test "$driver" = "flyvideo"; then
 fi
 
 if test "$driver" = "ftdi"; then
-  lirc_driver="none"
-  hw_module="hw_ftdi.o receive.o transmit.o"
+  lirc_driver="ftdi"
   HW_DEFAULT="hw_ftdi"
   ftdi_lib="-lftdi"
 fi
@@ -947,8 +945,7 @@ if test "$driver" = "hercules_smarttv_stereo"; then
 fi
 
 if test "$driver" = "i2cuser"; then
-  lirc_driver="none"
-  hw_module="hw_i2cuser.o receive.o"
+  lirc_driver="i2cuser"
   HW_DEFAULT="hw_i2cuser"
 fi
 
@@ -1205,23 +1202,20 @@ if test "$driver" = "sa1100"; then
 fi
 
 if test "$driver" = "samsung"; then
-  lirc_driver="$driver"
-  hw_module="hw_hiddev.o"
+  lirc_driver="hiddev"
   HW_DEFAULT="hw_samsung"
   lircd_conf="samsung/lircd.conf.samsung"
 fi
 
 if test "$driver" = "sb0540"; then
-  lirc_driver="$driver"
-  hw_module="hw_hiddev.o"
+  lirc_driver="hiddev"
   HW_DEFAULT="hw_sb0540"
 # original RM-1500 is included here
   lircd_conf="creative/lircd.conf.alsa_usb"
 fi
 
 if test "$driver" = "silitek"; then
-  lirc_driver="none"
-  hw_module="hw_silitek.o serial.o"
+  lirc_driver="silitek"
   HW_DEFAULT="hw_silitek"
   lircd_conf="silitek/lircd.conf.silitek"
   lircmd_conf="silitek/lircmd.conf.silitek"
