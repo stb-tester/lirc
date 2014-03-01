@@ -4,7 +4,16 @@ ACLOCAL_AMFLAGS             = -I m4
 
 AM_CPPFLAGS = -I @kerneldir@ -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall
 
-EXTRA_PROGRAMS = smode2 xmode2 irxevent
+EXTRA_PROGRAMS =
+
+if BUILD_XTOOLS
+EXTRA_PROGRAMS += xmode2 irxevent
+endif
+
+if BUILD_SMODE2
+EXTRA_PROGRAMS += smode2
+endif
+
 bin_PROGRAMS = irw irpty irexec ircat mode2 irsend lircrcd \
         @vga_progs@ @x_progs@
 

@@ -68,11 +68,14 @@ AC_CHECK_HEADER(vga.h,
     )]
   )]
 )
+AM_CONDITIONAL([BUILD_SMODE2],[ test x$vga_progs != x ])
+
 x_progs="irxevent xmode2"
 AC_PATH_XTRA
 if test "$no_x" = "yes"; then
   x_progs=
 fi
+AM_CONDITIONAL([BUILD_XTOOLS],[ test "x$x_progs" != x ])
 
 dnl getopt_long support
 AC_CHECK_FUNCS(getopt_long,,
