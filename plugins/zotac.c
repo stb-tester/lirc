@@ -20,9 +20,8 @@
 #include <signal.h>
 #include <linux/hiddev.h>
 #include <sys/ioctl.h>
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
+
+#include "lirc_private.h"
 
 enum {
 	RPT_NO = 0,
@@ -65,7 +64,7 @@ static int probe_code = 0;
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Zotac USB iR Receiver */
 struct hardware hw_zotac = {
-	"/dev/usb/hiddev0",		/* "device" */
+	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
 	0,			/* send_mode */
@@ -81,6 +80,8 @@ struct hardware hw_zotac = {
 	"zotac"		/* name */
 };
 #endif
+
+struct hardware* hardwares[] = {&hw_zotac, (struct hardware*) NULL };
 
 static int zotac_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)

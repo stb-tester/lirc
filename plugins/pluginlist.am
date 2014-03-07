@@ -62,3 +62,5 @@ udp_la_SOURCES                   = udp.c
 plugin_LTLIBRARIES              += usbx.la
 usbx_la_SOURCES                  = usbx.c usbx.h
 
+plugin_LTLIBRARIES              += zotac.la
+zotac_la_SOURCES                 = zotac.c
