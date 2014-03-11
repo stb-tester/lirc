@@ -69,10 +69,14 @@ lircd_SOURCES = lircd.c lircd.h \
 		config_file.c config_file.h \
 		input_map.c input_map.h \
 		transmit.c transmit.h \
-		lirc_log.c lirc_log.h
+		lirc_log.c lirc_log.h \
+		dictionary.c dictionary.h \
+	        ciniparser.c ciniparser.h
 lircd_LDADD = @daemon@ libhw_module.a @hw_module_libs@
 
-lircmd_SOURCES = lircmd.c
+lircmd_SOURCES = lircmd.c \
+		dictionary.c dictionary.h \
+	        ciniparser.c ciniparser.h
 lircmd_LDADD = @daemon@
 
 bin_PROGRAMS = irrecord
@@ -96,7 +100,9 @@ lircd_simsend_SOURCES = lircd.c ir_remote.c config_file.c \
 		hw_default.c hw_default.h \
 		receive.c receive.h \
 		release.c release.h \
-		transmit.c transmit.h
+		transmit.c transmit.h \
+		dictionary.c dictionary.h \
+	        ciniparser.c ciniparser.h
 lircd_simsend_CFLAGS = -DSIM_SEND
 lircd_simrec_SOURCES = lircd.c ir_remote.c config_file.c \
 		lircd.h ir_remote.h ir_remote_types.h config_file.h \
@@ -105,7 +111,9 @@ lircd_simrec_SOURCES = lircd.c ir_remote.c config_file.c \
 		hw_default.c hw_default.h \
 		receive.c receive.h \
 		release.c release.h \
-		transmit.c transmit.h
+		transmit.c transmit.h \
+		dictionary.c dictionary.h \
+	        ciniparser.c ciniparser.h
 lircd_simrec_CFLAGS = -DSIM_REC
 
 slinke_SOURCES = slinke.c slinke.h config_file.c config_file.h \
