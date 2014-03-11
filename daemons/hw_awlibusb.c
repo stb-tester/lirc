@@ -41,10 +41,11 @@
 #include <sys/wait.h>
 #include <time.h>
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
 
 #define AW_MODE_LIRCCODE 1
 

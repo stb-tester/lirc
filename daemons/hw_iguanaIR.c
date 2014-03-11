@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
+#include <arpa/inet.h>
 #if defined __APPLE__
 #include <sys/wait.h>
 #include <sys/ioctl.h>
@@ -26,15 +27,14 @@
 #endif
 #include <arpa/inet.h>
 
-#include "lircd.h"
-#include "ir_remote_types.h"
+#include "include/media/lirc.h"
+#include "lirc/ir_remote_types.h"
+#include "lirc/hardware.h"
+#include "lirc/transmit.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
 
 #include "iguanaIR.h"
-
-#include "hardware.h"
-#include "transmit.h"
-#include "receive.h"
-
 static int sendConn = -1;
 static pid_t child = 0;
 static int recvDone = 0;

@@ -64,7 +64,7 @@ int get_pid(int fd, char *message, char *arguments);
 int get_command(int fd);
 void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release);
 void broadcast_message(const char *message);
-int waitfordata(long maxusec);
+static int mywaitfordata(long maxusec);
 void loop(void);
 
 struct protocol_directive {

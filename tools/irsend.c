@@ -47,7 +47,6 @@
 typedef uint32_t __u32;
 #endif
 
-#define PACKET_SIZE 256
 /* three seconds */
 #define TIMEOUT 3
 

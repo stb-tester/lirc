@@ -1387,6 +1387,7 @@ static int lirc_code2char_internal(struct lirc_config *config, char *code, char 
 	return (0);
 }
 
+#undef PACKET_SIZE
 #define PACKET_SIZE 100
 
 char *lirc_nextir(void)

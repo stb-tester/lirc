@@ -40,12 +40,15 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#include "hardware.h"
-#include "serial.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
-#include "transmit.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/serial.h"
+#include "lirc/ir_remote.h"
+#include "lirc/receive.h"
+#include "lirc/transmit.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
+
 #include "hw_uirt2_common.h"
 
 #define NUMBYTES 6

@@ -71,6 +71,9 @@
 #include <sys/ioctl.h>
 #endif
 
+#include "lirc_private.h"
+#include "lircd.h"
+
 #ifndef timersub
 #define timersub(a, b, result)                                            \
   do {                                                                    \
@@ -83,14 +86,6 @@
   } while (0)
 #endif
 
-#include "lircd.h"
-#include "ir_remote.h"
-#include "config_file.h"
-#include "hardware.h"
-#include "hw-types.h"
-#include "release.h"
-#include "lirc_log.h"
-#include "lirc_options.h"
 
 struct ir_remote *remotes;
 struct ir_remote *free_remotes = NULL;
@@ -106,7 +101,6 @@ static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 
 extern struct hardware hw;
 
-char *progname = "lircd";
 const char *configfile = NULL;
 #ifndef USE_SYSLOG
 extern char *logfile ;
@@ -1837,7 +1831,7 @@ void broadcast_message(const char *message)
 	}
 }
 
-int waitfordata(long maxusec)
+static int mywaitfordata(long maxusec)
 {
 	fd_set fds;
 	int maxfd, i, ret, reconnect;
@@ -2029,7 +2023,7 @@ void loop()
 
 	logprintf(LOG_NOTICE, "lircd(%s) ready, using %s", hw.name, lircdfile);
 	while (1) {
-		(void)waitfordata(0);
+		(void)mywaitfordata(0);
 		if (!hw.rec_func)
 			continue;
 		message = hw.rec_func(remotes);
@@ -2177,6 +2171,7 @@ static void lircd_parse_options(int argc, char** argv)
 #       endif
 	;
 
+	progname = "lircd";
 	optind = 1;
 	lircd_add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, lircd_options, NULL))

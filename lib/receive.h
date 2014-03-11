@@ -38,6 +38,8 @@ static inline lirc_t receive_timeout(lirc_t usec)
 	return 2 * usec < MIN_RECEIVE_TIMEOUT ? MIN_RECEIVE_TIMEOUT : 2 * usec;
 }
 
+
+int waitfordata(__u32 maxusec);
 inline lirc_t lirc_t_max(lirc_t a, lirc_t b);
 void init_rec_buffer();
 int clear_rec_buffer(void);

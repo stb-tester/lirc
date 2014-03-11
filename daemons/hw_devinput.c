@@ -32,10 +32,11 @@
 #define EV_SYN EV_RST
 #endif
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
 
 /* from evtest.c - Copyright (c) 1999-2000 Vojtech Pavlik */
 #define BITS_PER_LONG (sizeof(long) * CHAR_BIT)

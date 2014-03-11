@@ -38,8 +38,12 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "serial.h"
-#include "lircd.h"
+
+#include "include/media/lirc.h"
+#include "lirc/serial.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
+
 #include "hw_uirt2_common.h"
 
 #define PRINT_TIME(a) \

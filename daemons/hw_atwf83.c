@@ -14,9 +14,12 @@
 #include <pthread.h>
 #include <sys/fcntl.h>
 #include <signal.h>
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
+
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/lirc_log.h"
+#include "lirc/ir_remote.h"
+//include "lircd.h"
 
 enum {
 	RPT_NO = 0,

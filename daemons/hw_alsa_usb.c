@@ -16,8 +16,10 @@
 #include <stdio.h>
 #include <alsa/asoundlib.h>
 
-#include "lircd.h"
-#include "hardware.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/lirc_log.h"
 
 static int init(void);
 static int deinit(void);

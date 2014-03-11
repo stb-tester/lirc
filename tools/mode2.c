@@ -48,43 +48,6 @@ int daemonized = 0;
 char *progname = "mode2";
 
 
-int waitfordata(unsigned long maxusec)
-{
-	fd_set fds;
-	int ret;
-	struct timeval tv;
-
-	while (1) {
-		FD_ZERO(&fds);
-		FD_SET(hw.fd, &fds);
-		do {
-			do {
-				if (maxusec > 0) {
-					tv.tv_sec = maxusec / 1000000;
-					tv.tv_usec = maxusec % 1000000;
-					ret = select(hw.fd + 1, &fds, NULL, NULL, &tv);
-					if (ret == 0)
-						return (0);
-				} else {
-					ret = select(hw.fd + 1, &fds, NULL, NULL, NULL);
-				}
-			}
-			while (ret == -1 && errno == EINTR);
-			if (ret == -1) {
-				logprintf(LOG_ERR, "select() failed\n");
-				logperror(LOG_ERR, NULL);
-				continue;
-			}
-		}
-		while (ret == -1);
-
-		if (FD_ISSET(hw.fd, &fds)) {
-			/* we will read later */
-			return (1);
-		}
-	}
-}
-
 int main(int argc, char **argv)
 {
 	int fd;

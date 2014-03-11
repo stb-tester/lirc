@@ -23,13 +23,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-#include "hardware.h"
-#include "serial.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "hw_caraca.h"
 #include <caraca/caraca_client.h>
+
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/serial.h"
+#include "lirc/ir_remote.h"
+
+#include "hw_caraca.h"
 
 #define NUMBYTES 34
 #define TIMEOUT 20000

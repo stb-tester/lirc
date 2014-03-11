@@ -30,10 +30,12 @@
 
 #include <irman.h>
 
-#include "hardware.h"
-#include "serial.h"
-#include "ir_remote.h"
-#include "lircd.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/serial.h"
+#include "lirc/lirc_log.h"
+#include "lirc/ir_remote.h"
+
 #include "hw_irman.h"
 
 extern struct ir_remote *repeat_remote, *last_remote;

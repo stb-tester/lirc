@@ -43,20 +43,11 @@
 #include <signal.h>
 #include <syslog.h>
 
-#include "drivers/lirc.h"
-
-#include "hardware.h"
-#include "hw-types.h"
-#include "dump_config.h"
-#include "ir_remote.h"
-#include "config_file.h"
-#include "receive.h"
-#include "input_map.h"
-#include "lirc_log.h"
+#include "lirc_private.h"
 
 void flushhw(void);
 int resethw(void);
-int waitfordata(__u32 maxusec);
+static int mywaitfordata(__u32 maxusec);
 int availabledata(void);
 int get_toggle_bit_mask(struct ir_remote *remote);
 void set_toggle_bit_mask(struct ir_remote *remote, ir_code xor);
@@ -91,7 +82,6 @@ void fprint_copyright(FILE * fout);
 extern struct hardware hw;
 extern struct ir_remote *last_remote;
 
-char *progname;
 const char *usage = "Usage: %s [options] file\n";
 
 struct ir_remote remote;
@@ -708,7 +698,7 @@ int main(int argc, char **argv)
 		while (retries > 0) {
 			int flag;
 
-			if (!waitfordata(10000000)) {
+			if (!mywaitfordata(10000000)) {
 				no_data = 1;
 				break;
 			}
@@ -878,7 +868,7 @@ int resethw(void)
 	return (1);
 }
 
-int waitfordata(__u32 maxusec)
+static int mywaitfordata(__u32 maxusec)
 {
 	fd_set fds;
 	int ret;
@@ -986,7 +976,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 		hw.rec_func(NULL);
 	}
 	while (retval == EXIT_SUCCESS && retries > 0) {
-		if (!waitfordata(10000000)) {
+		if (!mywaitfordata(10000000)) {
 			printf("%s: no data for 10 secs, aborting\n", progname);
 			retval = EXIT_FAILURE;
 			break;
@@ -2305,7 +2295,7 @@ int get_gap_length(struct ir_remote *remote)
 		while (availabledata()) {
 			hw.rec_func(NULL);
 		}
-		if (!waitfordata(10000000)) {
+		if (!mywaitfordata(10000000)) {
 			free_lengths(&gaps);
 			return (0);
 		}

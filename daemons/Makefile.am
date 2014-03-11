@@ -2,12 +2,11 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS             = -I m4
 
-## these are used by programs in the tools directory, but not by
-## programs in this directory.  So we must make sure they get distributed
-
-AM_CPPFLAGS = -I$(top_srcdir) -I@kerneldir@ -Wall
+AM_CPPFLAGS = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
+AM_LDFLAGS  = -lpthread
 
 BUILT_SOURCES = input_map.inc
+lircd_LDADD = ../lib/liblirc.la
 
 noinst_LIBRARIES = libhw_module.a
 libhw_module_a_SOURCES = \
@@ -65,67 +64,29 @@ libhw_module_a_DEPENDENCIES = @hw_module@
 
 sbin_PROGRAMS = lircd lircmd
 
-lircd_SOURCES = lircd.c lircd.h \
-		config_file.c config_file.h \
-		input_map.c input_map.h \
-		transmit.c transmit.h \
-		lirc_log.c lirc_log.h \
-		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h \
-		lirc_options.c lirc_options.h
-lircd_LDADD = @daemon@ libhw_module.a @hw_module_libs@
+lircd_SOURCES = lircd.c lircd.h
+lircd_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
 
-lircmd_SOURCES = lircmd.c \
-		lirc_log.c lirc_log.h \
-		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h \
-		lirc_options.c lirc_options.h
-lircmd_LDADD = @daemon@
+lircmd_SOURCES = lircmd.c
+lircmd_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
 
 bin_PROGRAMS = irrecord
 
-irrecord_SOURCES = irrecord.c \
-		config_file.c config_file.h \
-		dump_config.c dump_config.h \
-		input_map.c input_map.h \
-		transmit.c transmit.h
-
-irrecord_LDADD = libhw_module.a @hw_module_libs@ @receive@
-irrecord_DEPENDENCIES = @receive@
+irrecord_SOURCES = irrecord.c
+irrecord_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
 
 ## maintainer mode stuff
 EXTRA_PROGRAMS = lircd.simsend lircd.simrec slinke
 noinst_PROGRAMS = @maintmode_daemons_extra@
-lircd_simsend_SOURCES = lircd.c ir_remote.c config_file.c \
-		lircd.h ir_remote.h ir_remote_types.h config_file.h \
-		input_map.c input_map.h \
-		hw-types.c hw-types.h hardware.h \
-		hw_default.c hw_default.h \
-		receive.c receive.h \
-		release.c release.h \
-		transmit.c transmit.h \
-		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h lirc_options.c
+lircd_simsend_SOURCES = lircd.c lircd.h
 lircd_simsend_CFLAGS = -DSIM_SEND
 lircd_simsend_LDADD = @daemon@ libhw_module.a @hw_module_libs@
-lircd_simrec_SOURCES = lircd.c ir_remote.c config_file.c \
-		lircd.h ir_remote.h ir_remote_types.h config_file.h \
-		input_map.c input_map.h \
-		hw-types.c hw-types.h hardware.h \
-		hw_default.c hw_default.h \
-		receive.c receive.h \
-		release.c release.h \
-		transmit.c transmit.h \
-		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h lirc_options.c
+lircd_simrec_SOURCES = lircd.c lircd.h
 lircd_simrec_CFLAGS = -DSIM_REC
 lircd_simrec_LDADD = @daemon@ libhw_module.a @hw_module_libs@
 
-slinke_SOURCES = slinke.c slinke.h config_file.c config_file.h \
-		ir_remote.c ir_remote.h ir_remote_types.h \
-		dump_config.c dump_config.h \
-		release.c release.h \
-		transmit.c transmit.h
+slinke_SOURCES = slinke.c slinke.h
+slinke_LDADD   =  -L../lib -llirc
 
 
 if SANDBOXED

@@ -42,10 +42,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/lirc_log.h"
+#include "lirc/receive.h"
 
 #include "hw_srm7500libusb.h"
 

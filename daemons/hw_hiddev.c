@@ -26,10 +26,11 @@
 #include <linux/types.h>
 #include <linux/hiddev.h>
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/lirc_log.h"
+#include "lirc/receive.h"
 
 #define TIMEOUT 20000
 

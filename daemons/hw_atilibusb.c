@@ -32,10 +32,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
+#include "lirc/ir_remote.h"
 
 #define CODE_BYTES 5
 #define USB_TIMEOUT (1000*60)

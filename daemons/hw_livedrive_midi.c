@@ -19,8 +19,9 @@
  *     USA.
  */
 
-#include "hardware.h"
-#include "ir_remote.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
 #include "hw_livedrive_common.h"
 
 char *livedrive_rec_midi(struct ir_remote *remotes)

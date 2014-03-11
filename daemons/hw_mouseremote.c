@@ -34,10 +34,13 @@
 #include <termios.h>
 #include <signal.h>
 
-#include "hardware.h"
-#include "serial.h"
-#include "ir_remote.h"
-#include "lircd.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/serial.h"
+#include "lirc/receive.h"
+#include "lirc/lirc_log.h"
+#include "lirc/ir_remote.h"
+
 #include "hw_mouseremote.h"
 
 #define TIMEOUT 50000

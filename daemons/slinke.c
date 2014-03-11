@@ -24,9 +24,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "ir_remote.h"
-#include "config_file.h"
-#include "dump_config.h"
+#include "lirc_private.h"
 
 const char *usage = "Usage: %s --help | --version | [options] file\n";
 char *progname;

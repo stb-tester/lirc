@@ -22,11 +22,13 @@
 #include <sys/un.h>
 #include <sys/utsname.h>
 
-#include "hardware.h"
-#include "ir_remote.h"
-#include "lircd.h"
-#include "receive.h"
-#include "transmit.h"
+#include "include/media/lirc.h"
+#include "lirc/hardware.h"
+#include "lirc/ir_remote.h"
+#include "lirc/receive.h"
+#include "lirc/transmit.h"
+#include "lirc/lirc_log.h"
+
 #include "hw_commandir.h"
 
 struct hardware hw_commandir = {
