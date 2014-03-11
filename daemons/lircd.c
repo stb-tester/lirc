@@ -2113,6 +2113,7 @@ static void lircd_help(void)
 	printf("\t -p --permission=mode\t\tfile permissions for " LIRCD "\n");
 	printf("\t -H --driver=driver\t\tuse given driver (-H help lists drivers)\n");
 	printf("\t -d --device=device\t\tread from given device\n");
+	printf("\t -U --plugindir=dir\t\tdir where drivers are loaded from\n");
 	printf("\t -l --listen[=[address:]port]\tlisten for network connections\n");
 	printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
 	printf("\t -o --output=socket\t\toutput socket filename\n");
@@ -2147,6 +2148,7 @@ static void lircd_add_defaults(void)
 		"lircd:debug", 		"False",
 		"lircd:release", 	NULL,
 		"lircd:allow_simulate", "False",
+		"lircd:plugindir", 	PLUGINDIR,
 		"lircd:uinput", 	"False",
 		"lircd:repeat-max", 	 DEFAULT_REPEAT_MAX,
 		"lircd:configfile",  	LIRCDCFGFILE,
@@ -2159,7 +2161,7 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** argv)
 {
 	int c;
-	const char* optstring =  "O:hvnp:H:d:o:P:l::c:r::aR:"
+	const char* optstring =  "O:hvnp:H:d:o:U:P:l::c:r::aR:"
 #       if defined(__linux__)
 		"u"
 #       endif
@@ -2236,6 +2238,9 @@ static void lircd_parse_options(int argc, char** argv)
 			options_set_opt("lircd:uinput", "True");
 			break;
 #               endif
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
 		case 'R':
 			options_set_opt("lircd:repeat-max", optarg);
 			break;

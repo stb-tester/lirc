@@ -170,6 +170,9 @@ fi
 AH_TEMPLATE([DAEMONIZE],
         [Define to run daemons as daemons])
 
+AH_TEMPLATE([PLUGINDIR],
+        [The directory userspace drivers are loaded from])
+
 AH_TEMPLATE([DEBUG],
         [Define to enable debugging output])
 
@@ -1540,7 +1543,8 @@ AC_DEFINE_UNQUOTED(LOCALSTATEDIR, "$localstatedir_exp")
 AC_DEFINE_UNQUOTED([VARRUNDIR], "$varrundir_exp", [/var/run])
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-
+AC_DEFINE_UNQUOTED(PLUGINDIR, "$libdir/lirc/plugins",[
+         Where userspace drivers are loaded from])
 AC_DEFINE_UNQUOTED(LIRC_DRIVER, "$driver")
 if test "$irq" != ""; then
   AC_DEFINE_UNQUOTED(LIRC_IRQ, $irq)
@@ -1620,6 +1624,9 @@ AH_BOTTOM([
 
 /* IR transmission packet size. */
 #define PACKET_SIZE             (256)
+
+/* Environment variable holding defaults for PLUGINDIR. */
+#define PLUGINDIR_VAR           "LIRC_PLUGINDIR"
 ])
 
 dnl bug in automake/autoconf?
