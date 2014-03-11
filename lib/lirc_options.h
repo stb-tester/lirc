@@ -7,6 +7,9 @@
  */
 #include "ciniparser.h"
 
+/* Global program name, set by uer in options_load function. */
+extern const char* progname;
+
 /* Global options instance with all option values. */
 extern dictionary* lirc_options;
 

@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ir_remote.h"
+#include "lirc/ir_remote.h"
 
 struct flaglist {
 	char *name;

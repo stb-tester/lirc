@@ -21,13 +21,10 @@
 
 #include <sys/ioctl.h>
 
-#include "drivers/lirc.h"
-
-#include "lircd.h"
-#include "ir_remote.h"
-#include "hardware.h"
-#include "release.h"
-#include "lirc_log.h"
+#include "lirc/ir_remote.h"
+#include "lirc/hardware.h"
+#include "lirc/release.h"
+#include "lirc/lirc_log.h"
 
 struct ir_remote *decoding = NULL;
 

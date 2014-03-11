@@ -12,14 +12,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "input_map.h"
+#include "lirc/input_map.h"
 
 struct {
 	char *name;
 	linux_input_code code;
 
 } input_map[] = {
-#include "input_map.inc"
+#include "lirc/input_map.inc"
 	{
 	NULL, 0}
 };

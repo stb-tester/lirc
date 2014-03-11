@@ -8,8 +8,8 @@
 #endif
 
 #include <stdio.h>
-#include "hardware.h"
-#include "hw-types.h"
+#include "lirc/hardware.h"
+#include "lirc/hw-types.h"
 /* Hardware types */
 extern struct hardware hw_accent;
 extern struct hardware hw_alsa_usb;

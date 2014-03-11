@@ -12,8 +12,8 @@
 #ifndef _HARDWARE_H
 #define _HARDWARE_H
 
-#include "drivers/lirc.h"
-#include "ir_remote_types.h"
+#include "include/media/lirc.h"
+#include "lirc/ir_remote_types.h"
 
 struct hardware {
 	char *device;

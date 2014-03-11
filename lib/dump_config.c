@@ -24,8 +24,8 @@
 # endif
 #endif
 
-#include "dump_config.h"
-#include "config_file.h"
+#include "lirc/dump_config.h"
+#include "lirc/config_file.h"
 
 void fprint_comment(FILE * f, struct ir_remote *rem, const char* commandline)
 {

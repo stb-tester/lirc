@@ -35,7 +35,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "lirc_log.h"
+#include "lirc/lirc_log.h"
 
 #ifndef USE_SYSLOG
 #define HOSTNAME_LEN 128

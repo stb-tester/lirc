@@ -27,11 +27,10 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include "lircd.h"
-#include "ir_remote.h"
-#include "config_file.h"
-#include "transmit.h"
-#include "lirc_log.h"
+#include "lirc/ir_remote.h"
+#include "lirc/config_file.h"
+#include "lirc/transmit.h"
+#include "lirc/lirc_log.h"
 
 #define LINE_LEN 1024
 #define MAX_INCLUDES 10

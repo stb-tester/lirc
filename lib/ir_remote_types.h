@@ -32,8 +32,10 @@ typedef uint64_t __u64;
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <linux/types.h>
 
-#include "drivers/lirc.h"
+#include "include/media/lirc.h"
+
 
 typedef __u64 ir_code;
 

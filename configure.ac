@@ -1617,6 +1617,9 @@ AH_BOTTOM([
 
 /* Default for --repeat-max option. */
 #define DEFAULT_REPEAT_MAX      "600"
+
+/* IR transmission packet size. */
+#define PACKET_SIZE             (256)
 ])
 
 dnl bug in automake/autoconf?
@@ -1627,6 +1630,7 @@ AC_CONFIG_FILES([
   Makefile
   daemons/Makefile
   tools/Makefile
+  lib/Makefile
   doc/Makefile
   systemd/Makefile
 ])

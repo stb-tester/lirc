@@ -27,6 +27,8 @@ static int depth = 0;
 extern int debug;
 #endif
 
+const char* progname = "undefined";
+
 
 void options_set_opt(char* key, char* value)
 {

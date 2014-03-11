@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "lirc/lirc_log.h"
 /* Hardware types */
 extern struct hardware *hw_list[];
 extern struct hardware hw;
