@@ -71,12 +71,15 @@ lircd_SOURCES = lircd.c lircd.h \
 		transmit.c transmit.h \
 		lirc_log.c lirc_log.h \
 		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h
+	        ciniparser.c ciniparser.h \
+		lirc_options.c lirc_options.h
 lircd_LDADD = @daemon@ libhw_module.a @hw_module_libs@
 
 lircmd_SOURCES = lircmd.c \
+		lirc_log.c lirc_log.h \
 		dictionary.c dictionary.h \
-	        ciniparser.c ciniparser.h
+	        ciniparser.c ciniparser.h \
+		lirc_options.c lirc_options.h
 lircmd_LDADD = @daemon@
 
 bin_PROGRAMS = irrecord

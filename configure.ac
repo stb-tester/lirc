@@ -1771,6 +1771,21 @@ AH_BOTTOM([
 #define PIDFILE                 VARRUNDIR "/" PACKAGE "/" PID_LIRCD
 
 #define LIRC_RELEASE_SUFFIX     "_UP"
+
+/* Default options file path. */
+#define LIRC_OPTIONS_PATH       "/etc/lirc/lirc_options.conf"
+
+/* Environment variable overriding options file path. */
+#define LIRC_OPTIONS_VAR        "LIRC_OPTIONS_PATH"
+
+/* Default permissions for /var/run/lircd. */
+#define DEFAULT_PERMISSIONS     "666"
+
+/* Default timeout (ms) while waiting for socket. */
+#define SOCKET_TIMEOUT          "5000"
+
+/* Default for --repeat-max option. */
+#define DEFAULT_REPEAT_MAX      "600"
 ])
 
 dnl bug in automake/autoconf?
