@@ -24,6 +24,7 @@
 # endif
 #endif
 
+#include "include/media/lirc.h"
 #include "lirc/dump_config.h"
 #include "lirc/config_file.h"
 

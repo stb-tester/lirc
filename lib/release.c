@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#include "include/media/lirc.h"
 #include "lirc/release.h"
 #include "lirc/receive.h"
 #include "lirc/lirc_log.h"

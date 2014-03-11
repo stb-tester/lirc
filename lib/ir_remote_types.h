@@ -36,7 +36,6 @@ typedef uint64_t __u64;
 
 #include "include/media/lirc.h"
 
-
 typedef __u64 ir_code;
 
 struct ir_code_node {

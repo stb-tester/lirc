@@ -4,6 +4,8 @@ AM_LDFLAGS                  = -ldl
 
 BUILT_SOURCES               = lirc/input_map.inc
 
+AM_CPPFLAGS                 = -I@kerneldir@
+
 lib_LTLIBRARIES             = liblirc.la
 
 liblirc_la_SOURCES          = config_file.c \

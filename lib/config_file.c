@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 
+#include "include/media/lirc.h"
 #include "lirc/ir_remote.h"
 #include "lirc/config_file.h"
 #include "lirc/transmit.h"

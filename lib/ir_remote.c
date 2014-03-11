@@ -21,6 +21,7 @@
 
 #include <sys/ioctl.h>
 
+#include "include/media/lirc.h"
 #include "lirc/ir_remote.h"
 #include "lirc/hardware.h"
 #include "lirc/release.h"

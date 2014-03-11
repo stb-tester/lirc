@@ -8,6 +8,7 @@
 #endif
 
 #include <stdio.h>
+#include "include/media/lirc.h"
 #include "lirc/hardware.h"
 #include "lirc/hw-types.h"
 /* Hardware types */

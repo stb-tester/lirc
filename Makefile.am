@@ -52,7 +52,7 @@ setup-driver.sh: data2setup.sh setup.data
 
 dist-hook:
 	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)
-	for f in contrib remotes; do \
+	for f in contrib remotes include; do \
 		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog || :
 
