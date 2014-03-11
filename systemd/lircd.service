@@ -4,9 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/sysconfig/lirc
-ExecStart=/usr/sbin/lircd $LIRCD_OPTIONS \
-    --driver $LIRC_DRIVER --device $LIRC_DEVICE  --nodaemon
+ExecStart=/usr/sbin/lircd --nodaemon
 
 [Install]
 WantedBy=multi-user.target

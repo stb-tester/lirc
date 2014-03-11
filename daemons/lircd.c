@@ -90,6 +90,7 @@
 #include "hw-types.h"
 #include "release.h"
 #include "lirc_log.h"
+#include "lirc_options.h"
 
 struct ir_remote *remotes;
 struct ir_remote *free_remotes = NULL;
@@ -2042,184 +2043,281 @@ void loop()
 	}
 }
 
+
+static int opt2host_port(const char* optarg,
+			 struct in_addr* address,
+			 unsigned short* port,
+			 char* errmsg)
+{
+	long p;
+	char *endptr;
+	char *sep = strchr(optarg, ':');
+	const char *port_str = sep ? sep + 1 : optarg;
+
+	p = strtol(port_str, &endptr, 10);
+	if (!*optarg || *endptr || p < 1 || p > USHRT_MAX) {
+		sprintf(errmsg,
+			"%s: bad port number \"%s\"\n", progname, port_str);
+		return -1;
+	}
+	*port = (unsigned short int)p;
+	if (sep) {
+		*sep = 0;
+		if (!inet_aton(optarg, address)) {
+			sprintf(errmsg,
+				"%s: bad address \"%s\"\n", progname, optarg);
+			return -1;
+		}
+	}
+	return 0;
+}
+
+
+static const struct option lircd_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"nodaemon", no_argument, NULL, 'n'},
+	{"options-file", required_argument, NULL, 'O'},
+	{"permission", required_argument, NULL, 'p'},
+	{"driver", required_argument, NULL, 'H'},
+	{"device", required_argument, NULL, 'd'},
+	{"listen", optional_argument, NULL, 'l'},
+	{"connect", required_argument, NULL, 'c'},
+	{"output", required_argument, NULL, 'o'},
+	{"pidfile", required_argument, NULL, 'P'},
+	{"plugindir", required_argument, NULL, 'U'},
+#       ifndef USE_SYSLOG
+	{"logfile", required_argument, NULL, 'L'},
+#       endif
+#       ifdef DEBUG
+	{"debug", optional_argument, NULL, 'D'},
+#       endif
+	{"release", optional_argument, NULL, 'r'},
+	{"allow-simulate", no_argument, NULL, 'a'},
+#        if defined(__linux__)
+	{"uinput", no_argument, NULL, 'u'},
+#        endif
+	{"repeat-max", required_argument, NULL, 'R'},
+	{0, 0, 0, 0}
+};
+
+
+static void lircd_help(void)
+{
+	printf("Usage: %s [options] <config-file>\n", progname);
+	printf("\t -h --help\t\t\tdisplay this message\n");
+	printf("\t -v --version\t\t\tdisplay version\n");
+	printf("\t -O --options-file\t\toptions file\n");
+	printf("\t -n --nodaemon\t\t\tdon't fork to background\n");
+	printf("\t -p --permission=mode\t\tfile permissions for " LIRCD "\n");
+	printf("\t -H --driver=driver\t\tuse given driver (-H help lists drivers)\n");
+	printf("\t -d --device=device\t\tread from given device\n");
+	printf("\t -l --listen[=[address:]port]\tlisten for network connections\n");
+	printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
+	printf("\t -o --output=socket\t\toutput socket filename\n");
+	printf("\t -P --pidfile=file\t\tdaemon pid file\n");
+#       ifndef USE_SYSLOG
+	printf("\t -L --logfile=file\t\tdaemon log file\n");
+#       endif
+#       ifdef DEBUG
+	printf("\t -D[debug_level] --debug[=debug_level]\n");
+#       endif
+	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
+	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
+#       if defined(__linux__)
+	printf("\t -u --uinput\t\t\tgenerate Linux input events\n");
+#       endif
+	printf("\t -R --repeat-max=limit\t\tallow at most this many repeats\n");
+}
+
+
+static void lircd_add_defaults(void)
+{
+	const char* const defaults[] = {
+		"lircd:nodaemon", 	"False",
+		"lircd:permission", 	DEFAULT_PERMISSIONS,
+		"lircd:driver", 	"default",
+		"lircd:device", 	LIRC_DRIVER_DEVICE,
+		"lircd:listen", 	NULL ,
+		"lircd:connect", 	NULL,
+		"lircd:output", 	LIRCD,
+		"lircd:pidfile", 	PIDFILE,
+		"lircd:logfile", 	LOGFILE,
+		"lircd:debug", 		"False",
+		"lircd:release", 	NULL,
+		"lircd:allow_simulate", "False",
+		"lircd:uinput", 	"False",
+		"lircd:repeat-max", 	 DEFAULT_REPEAT_MAX,
+		"lircd:configfile",  	LIRCDCFGFILE,
+		(const char*)NULL, 	(const char*)NULL
+	};
+	options_add_defaults(defaults);
+}
+
+
+static void lircd_parse_options(int argc, char** argv)
+{
+	int c;
+	const char* optstring =  "O:hvnp:H:d:o:P:l::c:r::aR:"
+#       if defined(__linux__)
+		"u"
+#       endif
+#       ifndef USE_SYSLOG
+		"L:"
+#       endif
+#       ifdef DEBUG
+		"D::"
+#       endif
+	;
+
+	optind = 1;
+	lircd_add_defaults();
+	while ((c = getopt_long(argc, argv, optstring, lircd_options, NULL))
+		!= -1 )
+	{
+		switch (c) {
+		case 'h':
+			lircd_help();
+			exit(EXIT_SUCCESS);
+		case 'v':
+			printf("lircmd %s\n", VERSION);
+			exit(EXIT_SUCCESS);
+		case 'O':
+			options_load(argc, argv, optarg, lircd_parse_options);
+			return;
+		case 'n':
+			options_set_opt("lircd:nodaemon", "True");
+			break;
+		case 'p':
+			options_set_opt("lircd:permission", optarg);
+			break;
+		case 'H':
+			options_set_opt("lircd:driver", optarg);
+			break;
+		case 'd':
+			options_set_opt("lircd:device", optarg);
+			break;
+		case 'P':
+			options_set_opt("lircd:pidfile", optarg);
+			break;
+#               ifndef USE_SYSLOG
+		case 'L':
+			options_set_opt("lircd:logfile", optarg);
+			break;
+#               endif
+		case 'o':
+			options_set_opt("lircd:lircdfile", optarg);
+			break;
+		case 'l':
+			options_set_opt("lircd:listen", "True");
+			options_set_opt("lircd:listen_hostport", optarg);
+			break;
+		case 'c':
+			options_set_opt("lircd:connect", optarg);
+			break;
+#               ifdef DEBUG
+		case 'D':
+			options_set_opt("lircd:debug", optarg ? optarg : "1");
+			debug = 1;
+			break;
+#               endif
+		case 'a':
+			options_set_opt("lircd:allow-simulate", "True");
+			break;
+		case 'r':
+			options_set_opt("lircd:release", "True");
+			options_set_opt("lircd:release_suffix",
+				   optarg ? optarg : LIRC_RELEASE_SUFFIX);
+			break;
+#               if defined(__linux__)
+		case 'u':
+			options_set_opt("lircd:uinput", "True");
+			break;
+#               endif
+		case 'R':
+			options_set_opt("lircd:repeat-max", optarg);
+			break;
+		default:
+			printf("Usage: %s [options] [config-file]\n", progname);
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (optind == argc - 1) {
+		options_set_opt("lircd:configfile", argv[optind]);
+	} else if (optind != argc) {
+		fprintf(stderr, "%s: invalid argument count\n", progname);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	struct sigaction act;
 	int nodaemon = 0;
-	mode_t permission = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	mode_t permission;
 	char *device = NULL;
+	char errmsg[128];
+	char* opt;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
-	while (1) {
-		int c;
-		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"nodaemon", no_argument, NULL, 'n'},
-			{"permission", required_argument, NULL, 'p'},
-			{"driver", required_argument, NULL, 'H'},
-			{"device", required_argument, NULL, 'd'},
-			{"listen", optional_argument, NULL, 'l'},
-			{"connect", required_argument, NULL, 'c'},
-			{"output", required_argument, NULL, 'o'},
-			{"pidfile", required_argument, NULL, 'P'},
-#                       ifndef USE_SYSLOG
-			{"logfile", required_argument, NULL, 'L'},
-#                       endif
-#                       ifdef DEBUG
-			{"debug", optional_argument, NULL, 'D'},
-#                       endif
-			{"release", optional_argument, NULL, 'r'},
-			{"allow-simulate", no_argument, NULL, 'a'},
-#                       if defined(__linux__)
-			{"uinput", no_argument, NULL, 'u'},
-#                       endif
-			{"repeat-max", required_argument, NULL, 'R'},
-			{0, 0, 0, 0}
-		};
-		c = getopt_long(argc, argv, "hvnp:H:d:o:P:l::c:r::aR:"
-#                               if defined(__linux__)
-				"u"
-#                               endif
-#                               ifndef USE_SYSLOG
-				"L:"
-#                               endif
-#                               ifdef DEBUG
-				"D::"
-#                               endif
-				, long_options, NULL);
-		if (c == -1)
-			break;
-		switch (c) {
-		case 'h':
-			printf("Usage: %s [options] [config-file]\n", progname);
-			printf("\t -h --help\t\t\tdisplay this message\n");
-			printf("\t -v --version\t\t\tdisplay version\n");
-			printf("\t -n --nodaemon\t\t\tdon't fork to background\n");
-			printf("\t -p --permission=mode\t\tfile permissions for " LIRCD "\n");
-			printf("\t -H --driver=driver\t\tuse given driver\n");
-			printf("\t -d --device=device\t\tread from given device\n");
-			printf("\t -l --listen[=[address:]port]\tlisten for network connections\n");
-			printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
-			printf("\t -o --output=socket\t\toutput socket filename\n");
-			printf("\t -P --pidfile=file\t\tdaemon pid file\n");
-#                       ifndef USE_SYSLOG
-			printf("\t -L --logfile=file\t\tdaemon log file\n");
-#                       endif
-#                       ifdef DEBUG
-			printf("\t -D[debug_level] --debug[=debug_level]\n");
-#                       endif
-			printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
-			printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
-#                       if defined(__linux__)
-			printf("\t -u --uinput\t\tgenerate Linux input events\n");
-#                       endif
-			printf("\t -R --repeat-max=limit\t\tallow at most this many repeats\n");
-			return (EXIT_SUCCESS);
-		case 'v':
-			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
-		case 'n':
-			nodaemon = 1;
-			break;
-		case 'p':
-			if (oatoi(optarg) == -1) {
-				fprintf(stderr, "%s: invalid mode\n", progname);
-				return (EXIT_FAILURE);
-			}
-			permission = oatoi(optarg);
-			break;
-		case 'H':
-			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not supported.\n", optarg);
-				hw_print_drivers(stderr);
-				exit(EXIT_FAILURE);
-			}
-			break;
-		case 'd':
-			device = optarg;
-			break;
-		case 'P':
-			pidfile = optarg;
-			break;
-#                       ifndef USE_SYSLOG
-		case 'L':
-			logfile = optarg;
-			break;
-#                       endif
-		case 'o':
-			lircdfile = optarg;
-			break;
-		case 'l':
-			listen_tcpip = 1;
-			if (optarg) {
-				long p;
-				char *endptr;
-				char *sep = strchr(optarg, ':');
-				char *port_str = sep ? sep + 1 : optarg;
-				p = strtol(port_str, &endptr, 10);
-				if (!*optarg || *endptr || p < 1 || p > USHRT_MAX) {
-					fprintf(stderr, "%s: bad port number \"%s\"\n", progname, port_str);
-					return (EXIT_FAILURE);
-				}
-				port = (unsigned short int)p;
-				if (sep) {
-					*sep = 0;
-					if (!inet_aton(optarg, &address)) {
-						fprintf(stderr, "%s: bad address \"%s\"\n", progname, optarg);
-						return (EXIT_FAILURE);
-					}
-				}
-			} else {
-				port = LIRC_INET_PORT;
-			}
-			break;
-		case 'c':
-			if (!add_peer_connection(optarg))
-				return (EXIT_FAILURE);
-			break;
-#               ifdef DEBUG
-		case 'D':
-			if (optarg == NULL)
-				debug = 1;
-			else {
-				/* don't check for errors */
-				debug = atoi(optarg);
-			}
-			break;
-#               endif
-		case 'r':
-			if (optarg) {
-				set_release_suffix(optarg);
-			} else {
-				set_release_suffix(LIRC_RELEASE_SUFFIX);
-			}
-			userelease = 1;
-			break;
-		case 'a':
-			allow_simulate = 1;
-			break;
-#               if defined(__linux__)
-		case 'u':
-			useuinput = 1;
-			break;
-#               endif
-		case 'R':
-			repeat_max = atoi(optarg);
-			break;
-		default:
-			printf("Usage: %s [options] [config-file]\n", progname);
-			return (EXIT_FAILURE);
-		}
-	}
-	if (optind == argc - 1) {
-		configfile = argv[optind];
-	} else if (optind != argc) {
-		fprintf(stderr, "%s: invalid argument count\n", progname);
-		return (EXIT_FAILURE);
-	}
+	options_load(argc, argv, NULL, lircd_parse_options);
 
+	nodaemon = options_getboolean("lircd:nodaemon");
+	opt = options_getstring("lircd:permission");
+	if (oatoi(opt) == -1) {
+		fprintf(stderr, "%s: Invalid mode %s\n", progname, opt);
+		return(EXIT_FAILURE);
+	}
+	permission = oatoi(opt);
+	opt = options_getstring("lircd:driver");
+	if (strcmp(opt, "help") == 0 || strcmp(opt, "?") == 0){
+		hw_print_drivers(stdout);
+		return(EXIT_SUCCESS);
+	}
+	else if (hw_choose_driver(opt) != 0) {
+		fprintf(stderr, "Driver `%s' not supported.\n", opt);
+		hw_print_drivers(stderr);
+		return(EXIT_FAILURE);
+	}
+	opt = options_getstring("lircd:device");
+	if (opt != NULL)
+		device = opt;
+	pidfile = options_getstring("lircd:pidfile");
+#       ifndef USE_SYSLOG
+		opt = options_getstring("lircd:logfile");
+		if (opt != NULL)
+			lirc_set_logfile(optarg);
+#       endif
+	lircdfile = options_getstring("lircd:output");
+	if (options_getstring("lircd:listen") != NULL){
+		listen_tcpip = 1;
+		opt = options_getstring("lircd:listen_hostport");
+		if (opt){
+			if (opt2host_port(opt, &address, &port, errmsg) != 0){
+				fprintf(stderr, errmsg);
+				return(EXIT_FAILURE);
+			}
+		} else
+			port =  LIRC_INET_PORT;
+	}
+	opt = options_getstring("lircd:connect");
+	if (opt != NULL) {
+		if (!add_peer_connection(optarg))
+			return(EXIT_FAILURE);
+	}
+#       ifdef DEBUG
+	debug = options_getboolean("lircd:debug");
+#       endif
+	userelease = options_getboolean("lircd:release");
+	set_release_suffix(options_getstring("lircd:release_suffix"));
+	allow_simulate = options_getboolean("lircd:allow_simulate");
+#       if defined(__linux__)
+	useuinput = options_getboolean("lircd:uinput");
+#       endif
+	repeat_max = options_getint("lircd:repeat-max");
+	configfile = options_getstring("lircd:configfile");
 	if (device != NULL) {
 		hw.device = device;
 		if (strcmp(hw.name, "devinput") != 0)

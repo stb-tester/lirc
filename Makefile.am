@@ -16,6 +16,12 @@ endif
 
 SUBDIRS = drivers daemons tools doc $(SYSTEMD_DIR)
 
+if SANDBOXED
+else
+lirc_confdir        = $(sysconfdir)/lirc
+dist_lirc_conf_DATA = lircd.conf lirc_options.conf lircmd.conf
+endif
+
 ## From automake documentation:
 ## Note that EXTRA_DIST can only handle files in the current
 ## directory; files in other directories will cause make dist runtime

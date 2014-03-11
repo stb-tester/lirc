@@ -46,6 +46,8 @@ typedef int64_t  __s64;
 typedef uint64_t __u64;
 #endif
 
+#include "lirc_options.h"
+
 #define CLICK_DELAY 50000	/* usecs */
 #define PACKET_SIZE 256
 #define WHITE_SPACE " \t"
@@ -65,6 +67,7 @@ typedef uint64_t __u64;
 
 static int uinputfd = -1;
 static int useuinput = 0;
+int debug = 0;
 
 inline int map_buttons(int b)
 {
@@ -146,7 +149,8 @@ struct state_mouse new_ms, ms = {
 	{button_up, button_up, button_up}
 };
 
-const char *progname = "lircmd";
+#define progname   "lircmd"
+
 static const char *syslogident = "lircmd-" VERSION;
 const char *configfile = NULL;
 
@@ -725,6 +729,92 @@ struct trans_mouse *read_config(FILE * fd)
 	return (tm_list);
 }
 
+
+static const struct option lircmd_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"nodaemon", no_argument, NULL, 'n'},
+	{"options-file", required_argument, NULL, 'O'},
+#       if defined(__linux__)
+	{"uinput", no_argument, NULL, 'u'},
+#       endif
+	{0, 0, 0, 0}
+};
+
+
+static void lircmd_help(void)
+{
+	printf("Usage: %s [options] [config-file]\n", progname);
+	printf("\t -h --help\t\tdisplay this message\n");
+	printf("\t -v --version\t\tdisplay version\n");
+	printf("\t -n --nodaemon\t\tdon't fork to background\n");
+	printf("\t -O --options-file=file\talternative default options file\n");
+#       if defined(__linux__)
+	printf("\t -u --uinput\t\tgenerate Linux input events\n");
+#       endif
+}
+
+
+static void lircmd_add_defaults(void)
+{
+	const char* const defaults[] = {
+		"lircmd:nodaemon", 	"False",
+		"lircmd:uinput", 	"False",
+		"lircmd:configfile",    LIRCMDCFGFILE,
+		(const char*)NULL, 	(const char*)NULL
+	};
+	options_add_defaults(defaults);
+}
+
+
+static void lircmd_parse_options(int argc, char** argv)
+{
+	int c;
+
+#       if defined(__linux__)
+	const char* const optstring =  "hvnuO";
+#       else
+	const char* const optstring = "hvnO"
+#       endif
+
+	lircmd_add_defaults();
+	optind = 1;
+	while ((c = getopt_long(argc, argv, optstring, lircmd_options, NULL))
+		!= -1 )
+	{
+		switch (c) {
+		case 'h':
+			lircmd_help();
+			exit(EXIT_SUCCESS);
+		case 'v':
+			printf("%s %s\n", progname, VERSION);
+			exit(EXIT_SUCCESS);
+		case 'O':
+			options_load(argc, argv, optarg, lircmd_parse_options);
+			return;
+		case 'n':
+			options_set_opt("lircd:nodaemon", "True");
+			break;
+#               if defined(__linux__)
+		case 'u':
+			options_set_opt("lircd:uinput", "True");
+			break;
+#               endif
+		default:
+			fprintf(stderr,
+				"Usage: lircmd [options] [config-file]\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (optind == argc - 1) {
+		options_set_opt("configfile", argv[optind]);
+	} else if (optind != argc) {
+		fprintf(stderr, "%s: invalid argument count\n", progname);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
 void loop()
 {
 	ssize_t len = 0;
@@ -756,7 +846,7 @@ void loop()
 			}
 		}
 		buffer[len + end_len] = 0;
-		ret = sscanf(buffer, "%*x %x %s %s\n", &rep, button, remote);
+		ret = sscanf(buffer, "%*llx %x %s %s\n", &rep, button, remote);
 		end = strchr(buffer, '\n');
 		if (end == NULL) {
 			end_len = 0;
@@ -781,59 +871,12 @@ int main(int argc, char **argv)
 	int nodaemon = 0;
 	const char *filename;
 
-	while (1) {
-		int c;
-		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"nodaemon", no_argument, NULL, 'n'},
-#                       if defined(__linux__)
-			{"uinput", no_argument, NULL, 'u'},
-#                       endif
-			{0, 0, 0, 0}
-		};
-#               if defined(__linux__)
-		c = getopt_long(argc, argv, "hvnu", long_options, NULL);
-#               else
-		c = getopt_long(argc, argv, "hvn", long_options, NULL);
-#               endif
-		if (c == -1)
-			break;
-		switch (c) {
-		case 'h':
-			printf("Usage: %s [options] [config-file]\n", progname);
-			printf("\t -h --help\t\tdisplay this message\n");
-			printf("\t -v --version\t\tdisplay version\n");
-			printf("\t -n --nodaemon\t\tdon't fork to background\n");
-#                       if defined(__linux__)
-			printf("\t -u --uinput\t\tgenerate Linux input events\n");
-#                       endif
-			return (EXIT_SUCCESS);
-		case 'v':
-			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
-		case 'n':
-			nodaemon = 1;
-			break;
-#               if defined(__linux__)
-		case 'u':
-			useuinput = 1;
-			break;
-#               endif
-		default:
-			printf("Usage: %s [options] [config-file]\n", progname);
-			return (EXIT_FAILURE);
-		}
-	}
-	if (optind == argc - 1) {
-		configfile = argv[optind];
-	} else if (optind != argc) {
-		fprintf(stderr, "%s: invalid argument count\n", progname);
-		return (EXIT_FAILURE);
-	}
+	options_load(argc, argv, NULL, lircmd_parse_options);
+	useuinput = options_getboolean("lircmd:uinput");
+	nodaemon = options_getboolean("lircmd:nodaemon");
+	configfile = options_getstring("lircmd:configfile");
 
 	/* connect to lircd */
-
 	addr.sun_family = AF_UNIX;
 	strcpy(addr.sun_path, LIRCD);
 	lircd = socket(AF_UNIX, SOCK_STREAM, 0);
