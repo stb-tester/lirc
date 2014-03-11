@@ -6,7 +6,7 @@ BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I@kerneldir@
 
-lib_LTLIBRARIES             = liblirc.la liblirc_client.la
+lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
@@ -26,7 +26,26 @@ liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 liblirc_client_la_LDFLAGS   = -version-info 2:1:2
 liblirc_client_la_LIBADD    = liblirc.la
 
-dist_include_HEADERS        = lirc_private.h lirc_client.h
+liblirc_driver_la_SOURCES   = hardware.h \
+                              ir_remote.c \
+                              ir_remote.h \
+                              receive.c \
+                              receive.h \
+                              serial.h \
+                              serial.c \
+                              transmit.c \
+                              transmit.h \
+                              ir_remote_types.h \
+                              receive.h \
+                              receive.h \
+                              lirc_log.c \
+                              lirc_log.h \
+                              lirc_options.c \
+                              lirc_options.h \
+                              ciniparser.c \
+                              ciniparser.h
+
+dist_include_HEADERS        = lirc_private.h lirc_client.h lirc_driver.h
 
 lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
