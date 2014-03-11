@@ -13,7 +13,7 @@ noinst_LIBRARIES = libhw_module.a
 libhw_module_a_SOURCES = \
 			hw-types.c hw-types.h hardware.h \
 			ir_remote.c ir_remote.h ir_remote_types.h \
-			release.c release.h
+			release.c release.h lirc_log.c lirc_log.h
 
 EXTRA_libhw_module_a_SOURCES = \
 			hw_accent.c hw_accent.h \
@@ -68,7 +68,8 @@ sbin_PROGRAMS = lircd lircmd
 lircd_SOURCES = lircd.c lircd.h \
 		config_file.c config_file.h \
 		input_map.c input_map.h \
-		transmit.c transmit.h
+		transmit.c transmit.h \
+		lirc_log.c lirc_log.h
 lircd_LDADD = @daemon@ libhw_module.a @hw_module_libs@
 
 lircmd_SOURCES = lircmd.c

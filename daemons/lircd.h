@@ -12,6 +12,7 @@
 #include <sys/time.h>
 
 #include "ir_remote.h"
+#include "lirc_log.h"
 
 #define PACKET_SIZE (256)
 #define WHITE_SPACE " \t"
@@ -40,20 +41,6 @@ void connect_to_peers();
 int get_peer_message(struct peer_connection *peer);
 void start_server(mode_t permission, int nodaemon);
 
-#ifdef DEBUG
-#define LOGPRINTF(level,fmt,args...)	\
-  if(level<=debug) logprintf(LOG_DEBUG,fmt, ## args )
-#define LOGPERROR(level,s) \
-  if(level<=debug) logperror(LOG_DEBUG,s)
-#else
-#define LOGPRINTF(level,fmt,args...)	\
-  do {} while(0)
-#define LOGPERROR(level,s) \
-  do {} while(0)
-#endif
-
-void logprintf(int prio, const char *format_str, ...);
-void logperror(int prio, const char *s);
 
 void daemonize(void);
 void sigalrm(int sig);

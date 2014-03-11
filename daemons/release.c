@@ -20,6 +20,7 @@
 #include "release.h"
 #include "receive.h"
 #include "lircd.h"
+#include "lirc_log.h"
 
 static struct timeval release_time;
 static struct ir_remote *release_remote;

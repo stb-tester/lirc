@@ -32,6 +32,7 @@
 #include <syslog.h>
 
 #include "lirc_client.h"
+#include "daemons/lirc_log.h"
 
 #define MAX_CLIENTS 100
 #define PACKET_SIZE (256)
@@ -99,20 +100,6 @@ char *protocol_string[] = {
 
 static int debug;
 
-#ifdef DEBUG
-#define LOGPRINTF(level,fmt,args...)	\
-  if(level<=debug) logprintf(LOG_DEBUG,fmt, ## args )
-#define LOGPERROR(level,s) \
-  if(level<=debug) logperror(LOG_DEBUG,s)
-#else
-#define LOGPRINTF(level,fmt,args...)	\
-  do {} while(0)
-#define LOGPERROR(level,s) \
-  do {} while(0)
-#endif
-
-#define logprintf syslog
-#define logperror(prio,s) if((s)!=NULL) syslog(prio,"%s: %m\n",(char *) s); else syslog(prio,"%m\n")
 
 const char *progname = "lircrcd";
 

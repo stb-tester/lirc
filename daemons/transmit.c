@@ -19,6 +19,7 @@
 
 #include "lircd.h"
 #include "transmit.h"
+#include "lirc_log.h"
 
 extern struct ir_remote *repeat_remote;
 struct sbuf send_buffer;

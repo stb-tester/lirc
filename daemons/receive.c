@@ -18,6 +18,7 @@
 #include "hardware.h"
 #include "lircd.h"
 #include "receive.h"
+#include "lirc_log.h"
 
 extern struct hardware hw;
 extern struct ir_remote *last_remote;

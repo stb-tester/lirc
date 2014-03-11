@@ -31,6 +31,7 @@
 #include "ir_remote.h"
 #include "config_file.h"
 #include "transmit.h"
+#include "lirc_log.h"
 
 #define LINE_LEN 1024
 #define MAX_INCLUDES 10

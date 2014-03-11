@@ -32,6 +32,7 @@
 #endif
 
 #include "lircd.h"
+#include "lirc_log.h"
 
 int tty_reset(int fd)
 {

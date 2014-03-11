@@ -36,57 +36,17 @@
 #include "daemons/ir_remote.h"
 #include "daemons/hardware.h"
 #include "daemons/hw-types.h"
+#include "daemons/lirc_log.h"
 
 #ifdef DEBUG
 int debug = 10;
 #else
 int debug = 0;
 #endif
-FILE *lf = NULL;
 char *hostname = "";
 int daemonized = 0;
 char *progname;
 
-void logprintf(int prio, char *format_str, ...)
-{
-	va_list ap;
-
-	if (lf) {
-		time_t current;
-		char *currents;
-
-		current = time(&current);
-		currents = ctime(&current);
-
-		fprintf(lf, "%15.15s %s %s: ", currents + 4, hostname, progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(lf, "WARNING: ");
-		vfprintf(lf, format_str, ap);
-		fputc('\n', lf);
-		fflush(lf);
-		va_end(ap);
-	}
-	if (!daemonized) {
-		fprintf(stderr, "%s: ", progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(stderr, "WARNING: ");
-		vfprintf(stderr, format_str, ap);
-		fputc('\n', stderr);
-		fflush(stderr);
-		va_end(ap);
-	}
-}
-
-void logperror(int prio, const char *s)
-{
-	if (s != NULL) {
-		logprintf(prio, "%s: %s", s, strerror(errno));
-	} else {
-		logprintf(prio, "%s", strerror(errno));
-	}
-}
 
 int waitfordata(unsigned long maxusec)
 {

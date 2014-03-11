@@ -6,8 +6,8 @@ AM_CPPFLAGS = -I$(top_srcdir) @X_CFLAGS@
 
 EXTRA_PROGRAMS = smode2 xmode2 irxevent
 bin_PROGRAMS = irw irpty irexec ircat mode2 irsend \
-	lircrcd \
-	@vga_progs@ @x_progs@
+        lircrcd \
+        @vga_progs@ @x_progs@
 
 ## simple programs
 irw_SOURCES = irw.c
@@ -35,7 +35,7 @@ irxevent_LDADD = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ liblirc_client.la
 irxevent_DEPENDENCIES = liblirc_client.la
 xmode2_SOURCES = xmode2.c
 xmode2_LDADD = ../daemons/libhw_module.a @hw_module_libs@ \
-	@X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
+        @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
 
 ## lircrcd
 
@@ -47,7 +47,7 @@ lircrcd_LDADD = liblirc_client.la
 lircincludedir = $(includedir)/lirc
 
 lib_LTLIBRARIES = liblirc_client.la
-liblirc_client_la_SOURCES = lirc_client.c lirc_client.h
+liblirc_client_la_SOURCES = lirc_client.c lirc_client.h ../daemons/lirc_log.c ../daemons/lirc_log.h
 liblirc_client_la_LDFLAGS = -version-info 2:1:2
 
 lircinclude_HEADERS = lirc_client.h

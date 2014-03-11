@@ -88,6 +88,7 @@
 #include "hardware.h"
 #include "hw-types.h"
 #include "release.h"
+#include "lirc_log.h"
 
 struct ir_remote *remotes;
 struct ir_remote *free_remotes = NULL;
@@ -106,9 +107,9 @@ extern struct hardware hw;
 char *progname = "lircd";
 const char *configfile = NULL;
 #ifndef USE_SYSLOG
-char *logfile = LOGFILE;
+extern char *logfile ;
 #else
-static const char *syslogident = "lircd-" VERSION;
+extern const char *syslogident;
 #endif
 FILE *pidf;
 char *pidfile = PIDFILE;
@@ -147,14 +148,13 @@ char *protocol_string[] = {
 	"SIGHUP\n"
 };
 
-static void log_enable(int enabled);
-static int log_enabled = 1;
+extern int log_enabled;
 
 #ifndef USE_SYSLOG
 #define HOSTNAME_LEN 128
 char hostname[HOSTNAME_LEN + 1];
 
-FILE *lf = NULL;
+extern FILE *lf;
 #endif
 
 /* substract one for lirc, sockfd, sockinet, logfile, pidfile, uinput */
@@ -1004,88 +1004,6 @@ start_server_failed0:
 	(void)unlink(pidfile);
 	exit(EXIT_FAILURE);
 }
-
-void log_enable(int enabled)
-{
-	log_enabled = enabled;
-}
-
-#ifdef USE_SYSLOG
-void logprintf(int prio, const char *format_str, ...)
-{
-	int save_errno = errno;
-	va_list ap;
-
-	if (!log_enabled)
-		return;
-
-	va_start(ap, format_str);
-	vsyslog(prio, format_str, ap);
-	va_end(ap);
-
-	errno = save_errno;
-}
-
-void logperror(int prio, const char *s)
-{
-	if (!log_enabled)
-		return;
-
-	if ((s) != NULL)
-		syslog(prio, "%s: %m\n", (char *)s);
-	else
-		syslog(prio, "%m\n");
-}
-#else
-void logprintf(int prio, const char *format_str, ...)
-{
-	int save_errno = errno;
-	va_list ap;
-
-	if (!log_enabled)
-		return;
-
-	if (lf) {
-		time_t current;
-		char *currents;
-
-		current = time(&current);
-		currents = ctime(&current);
-
-		fprintf(lf, "%15.15s %s %s: ", currents + 4, hostname, progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(lf, "WARNING: ");
-		vfprintf(lf, format_str, ap);
-		fputc('\n', lf);
-		fflush(lf);
-		va_end(ap);
-	}
-	if (!daemonized) {
-		fprintf(stderr, "%s: ", progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(stderr, "WARNING: ");
-		vfprintf(stderr, format_str, ap);
-		fputc('\n', stderr);
-		fflush(stderr);
-		va_end(ap);
-	}
-	errno = save_errno;
-}
-
-void logperror(int prio, const char *s)
-{
-	if (!log_enabled)
-		return;
-
-	if (s != NULL) {
-		logprintf(prio, "%s: %s", s, strerror(errno));
-	} else {
-		logprintf(prio, "%s", strerror(errno));
-	}
-}
-#endif
 
 #ifdef DAEMONIZE
 

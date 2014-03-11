@@ -27,6 +27,7 @@
 #include "ir_remote.h"
 #include "hardware.h"
 #include "release.h"
+#include "lirc_log.h"
 
 struct ir_remote *decoding = NULL;
 

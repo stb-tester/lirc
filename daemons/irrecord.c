@@ -52,6 +52,7 @@
 #include "config_file.h"
 #include "receive.h"
 #include "input_map.h"
+#include "lirc_log.h"
 
 void flushhw(void);
 int resethw(void);
@@ -132,7 +133,6 @@ int debug = 10;
 #else
 int debug = 0;
 #endif
-FILE *lf = NULL;
 char *hostname = "";
 int daemonized = 0;
 
@@ -254,47 +254,6 @@ static int i_printf(int interactive, char *format_str, ...)
 		va_end(ap);
 	}
 	return ret;
-}
-
-void logprintf(int prio, const char *format_str, ...)
-{
-	va_list ap;
-
-	if (lf) {
-		time_t current;
-		char *currents;
-
-		current = time(&current);
-		currents = ctime(&current);
-
-		fprintf(lf, "%15.15s %s %s: ", currents + 4, hostname, progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(lf, "WARNING: ");
-		vfprintf(lf, format_str, ap);
-		fputc('\n', lf);
-		fflush(lf);
-		va_end(ap);
-	}
-	if (!daemonized) {
-		fprintf(stderr, "%s: ", progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(stderr, "WARNING: ");
-		vfprintf(stderr, format_str, ap);
-		fputc('\n', stderr);
-		fflush(stderr);
-		va_end(ap);
-	}
-}
-
-void logperror(int prio, const char *s)
-{
-	if (s != NULL) {
-		logprintf(prio, "%s: %s", s, strerror(errno));
-	} else {
-		logprintf(prio, "%s", strerror(errno));
-	}
 }
 
 void dosigterm(int sig)
