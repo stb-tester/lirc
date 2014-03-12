@@ -23,8 +23,6 @@
 #ifndef HW_IRLINK_H
 #define HW_IRLINK_H
 
-#include "drivers/lirc.h"
-
 int irlink_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		  lirc_t * remaining_gapp);
 int irlink_init(void);

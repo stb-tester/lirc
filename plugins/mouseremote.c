@@ -34,12 +34,7 @@
 #include <termios.h>
 #include <signal.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/serial.h"
-#include "lirc/receive.h"
-#include "lirc/lirc_log.h"
-#include "lirc/ir_remote.h"
+#include "lirc_driver.h"
 
 #include "mouseremote.h"
 

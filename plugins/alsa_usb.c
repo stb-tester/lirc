@@ -16,10 +16,7 @@
 #include <stdio.h>
 #include <alsa/asoundlib.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/ir_remote.h"
-#include "lirc/lirc_log.h"
+#include "lirc_driver.h"
 
 static int init(void);
 static int deinit(void);

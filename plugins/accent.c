@@ -96,12 +96,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "include/media/lirc.h"
-#include "lirc/ir_remote.h"
-#include "lirc/hardware.h"
-#include "lirc/serial.h"
-#include "lirc/lirc_log.h"
-#include "lirc/receive.h"
+#include "lirc_driver.h"
 
 #include "accent.h"
 

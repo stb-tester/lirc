@@ -15,11 +15,7 @@
 #include <sys/fcntl.h>
 #include <signal.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/lirc_log.h"
-#include "lirc/ir_remote.h"
-//include "lircd.h"
+#include "lirc_driver.h"
 
 enum {
 	RPT_NO = 0,

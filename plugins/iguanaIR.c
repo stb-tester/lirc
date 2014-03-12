@@ -27,12 +27,7 @@
 #endif
 #include <arpa/inet.h>
 
-#include "include/media/lirc.h"
-#include "lirc/ir_remote_types.h"
-#include "lirc/hardware.h"
-#include "lirc/transmit.h"
-#include "lirc/receive.h"
-#include "lirc/lirc_log.h"
+#include "lirc_driver.h"
 
 #include "iguanaIR.h"
 static int sendConn = -1;

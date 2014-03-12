@@ -66,11 +66,7 @@
 #include <fcntl.h>
 #include <termios.h>
 
-#include "include/media/lirc.h"
-#include "lirc/lirc_log.h"
-#include "lirc/hardware.h"
-#include "lirc/ir_remote.h"
-#include "lirc/serial.h"
+#include "lirc_driver.h"
 
 #include "mplay.h"
 

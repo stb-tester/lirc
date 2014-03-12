@@ -25,10 +25,7 @@
 #include <sys/ioctl.h>
 #include <caraca/caraca_client.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/serial.h"
-#include "lirc/ir_remote.h"
+#include "lirc_driver.h"
 
 #include "caraca.h"
 

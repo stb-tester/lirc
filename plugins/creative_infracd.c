@@ -37,10 +37,7 @@
 #include <scsi/sg.h>
 #include <scsi/scsi.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/lirc_log.h"
-#include "lirc/ir_remote.h"
+#include "lirc_driver.h"
 
 #include "creative_infracd.h"
 

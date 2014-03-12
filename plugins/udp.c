@@ -28,12 +28,7 @@
 #include <netinet/in.h>
 #include <errno.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/ir_remote.h"
-#include "lirc/receive.h"
-#include "lirc/transmit.h"
-#include "lirc/lirc_log.h"
+#include "lirc_driver.h"
 
 #include "default.h"
 

@@ -44,12 +44,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/serial.h"
-#include "lirc/receive.h"
-#include "lirc/lirc_log.h"
-#include "lirc/ir_remote.h"
+#include "lirc_driver.h"
 
 #define NUMBYTES 6
 #define TIMEOUT 20000

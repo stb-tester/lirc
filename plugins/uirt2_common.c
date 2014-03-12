@@ -39,10 +39,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include "include/media/lirc.h"
-#include "lirc/serial.h"
-#include "lirc/receive.h"
-#include "lirc/lirc_log.h"
+#include "lirc_driver.h"
 
 #include "uirt2_common.h"
 

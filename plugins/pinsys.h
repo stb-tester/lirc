@@ -14,8 +14,6 @@
 #ifndef _HW_PINSYS_H
 #define _HW_PINSYS_H
 
-#include "drivers/lirc.h"
-
 int is_it_is_it_huh(int port);
 int autodetect(void);
 

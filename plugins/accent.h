@@ -27,7 +27,6 @@
 #ifndef _HW_ACCENT_H
 #define _HW_ACCENT_H
 
-#include "drivers/lirc.h"
 
 int accent_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
