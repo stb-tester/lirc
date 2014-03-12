@@ -49,6 +49,9 @@ struct hardware hw_alsa_usb = {
 	"alsa_usb"
 };
 
+struct hardware* hardwares[] = { &hw_alsa_usb, (struct hardware*)NULL };
+
+
 static const char *search_device(void)
 {
 	int card, err;

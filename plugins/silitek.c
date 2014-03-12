@@ -65,6 +65,9 @@ struct hardware hw_silitek = {
 	"silitek"
 };
 
+struct hardware* hardwares[] = { &hw_silitek, (struct hardware*)NULL };
+
+
 int silitek_read(int fd, unsigned char *data, long timeout)
 {
 	if (!waitfordata(timeout)) {

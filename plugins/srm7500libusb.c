@@ -86,6 +86,8 @@ struct hardware hw_srm7500libusb = {
 	"srm7500libusb"
 };
 
+struct hardware* hardwares[] = { &hw_srm7500libusb, (struct hardware*)NULL };
+
 typedef struct {
 	u_int16_t vendor;
 	u_int16_t product;

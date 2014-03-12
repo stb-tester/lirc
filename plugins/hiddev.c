@@ -774,3 +774,14 @@ char *samsung_rec(struct ir_remote *remotes)
 	return 0;
 }
 #endif
+
+
+struct hardware* hardwares[] = { &hw_dvico,
+				 &hw_bw6130,
+				 &hw_asusdh,
+				 &hw_macmini,
+#ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
+				 &hw_sb0540,
+				 &hw_samsung,
+#endif
+				 (struct hardware*)NULL };

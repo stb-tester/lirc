@@ -152,6 +152,9 @@ struct hardware hw_mplay2 = {
 	"mplay2"
 };
 
+struct hardware* hardwares[] = { &hw_mplay, &hw_mplay2, (struct hardware*)NULL };
+
+
 /**************************************************************************
  * Lock and initialize the serial port.
  * This function is called by the LIRC daemon when the first client

@@ -66,6 +66,8 @@ struct hardware hw_dfclibusb = {
 	"dfclibusb"
 };
 
+struct hardware* hardwares[] = { &hw_dfclibusb, (struct hardware*)NULL };
+
 typedef struct {
 	u_int16_t vendor;
 	u_int16_t product;

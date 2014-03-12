@@ -48,6 +48,8 @@ struct hardware hw_commandir = {
 	"commandir"
 };
 
+struct hardware* hardwares[] = { &hw_commandir, (struct hardware*)NULL };
+
 lirc_t lirc_zero_buffer[2] = { 0, 0 };
 
 struct commandir_tx_order {

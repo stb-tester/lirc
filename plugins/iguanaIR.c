@@ -352,3 +352,6 @@ struct hardware hw_iguanaIR = {
 	readdata,		/* readdata */
 	"iguanaIR"
 };
+
+struct hardware* hardwares[] = { &hw_iguanaIR, (struct hardware*)NULL };
+

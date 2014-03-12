@@ -540,3 +540,5 @@ struct hardware hw_audio_alsa = {
 	audio_alsa_readdata,
 	"audio_alsa"
 };
+
+struct hardware* hardwares[] = { &hw_audio_alsa, (struct hardware*)NULL };

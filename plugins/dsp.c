@@ -166,3 +166,6 @@ struct hardware hw_dsp = {
 	dsp_readdata,
 	"dsp"
 };
+
+
+struct hardware* hardwares[] = { &hw_dsp, (struct hardware*)NULL };

@@ -522,3 +522,5 @@ struct hardware hw_ftdi = {
 	hwftdi_readdata,	/* readdata */
 	"ftdi"
 };
+
+struct hardware* hardwares[] = { &hw_ftdi, (struct hardware*)NULL };

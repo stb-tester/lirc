@@ -74,6 +74,9 @@ struct hardware hw_default = {
 	"default"
 };
 
+struct hardware* hardwares[] = { &hw_default, (struct hardware*)NULL };
+
+
 /**********************************************************************
  *
  * internal function prototypes

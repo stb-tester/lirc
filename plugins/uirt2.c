@@ -81,6 +81,9 @@ struct hardware hw_uirt2 = {
 	"uirt2"
 };
 
+struct hardware* hardwares[] = { &hw_uirt2, (struct hardware*)NULL };
+
+
 static int uirt2_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 			lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {

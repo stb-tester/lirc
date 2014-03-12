@@ -105,6 +105,9 @@ struct hardware hw_awlibusb = {
 	"awlibusb"
 };
 #endif
+
+struct hardware* hardwares[] = { &hw_awlibusb, (struct hardware*)NULL };
+
 typedef struct {
 	u_int16_t vendor;
 	u_int16_t product;

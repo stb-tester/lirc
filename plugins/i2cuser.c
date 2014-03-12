@@ -94,6 +94,10 @@ struct hardware hw_i2cuser = {
 	"i2cuser"
 };
 
+
+struct hardware* hardwares[] = { &hw_i2cuser, (struct hardware*)NULL };
+
+
 /* FD of the i2c device. Since it's not selectable, we give the lircd core a
    pipe and poll it ourself in a separate process. */
 static int i2c_fd = -1;

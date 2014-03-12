@@ -65,6 +65,9 @@ struct hardware hw_pcmak = {
 	"pcmak"
 };
 
+struct hardware* hardwares[] = { &hw_pcmak, (struct hardware*)NULL };
+
+
 int pcmak_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {

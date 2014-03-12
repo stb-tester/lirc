@@ -77,6 +77,9 @@ struct hardware hw_devinput = {
 	"devinput"
 };
 
+
+struct hardware* hardwares[] = { &hw_devinput, (struct hardware*)NULL };
+
 static ir_code code;
 static ir_code code_compat;
 static int exclusive = 0;

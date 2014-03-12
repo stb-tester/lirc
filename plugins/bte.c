@@ -90,6 +90,8 @@ struct hardware hw_bte = {
 	"bte"
 };
 
+struct hardware* hardwares[] = { &hw_bte, (struct hardware*)NULL };
+
 enum bte_state {
 	BTE_NONE = 0, BTE_INIT, BTE_SET_ECHO, BTE_CHARSET, BTE_SET_ACCESSORY,
 	BTE_START_EVENTS, BTE_STOP_EVENTS, BTE_CREATE_DIALOG, BTE_JUMP_ASIDE

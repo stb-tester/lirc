@@ -61,6 +61,9 @@ struct hardware hw_creative_infracd = {
 	"creative_infracd"
 };
 
+struct hardware* hardwares[] = { &hw_creative_infracd, (struct hardware*)NULL };
+
+
 /*
  opened /dev/sg<x>. I'm not using hw.fd for reasons of lirc design
 */
