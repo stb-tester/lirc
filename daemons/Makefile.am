@@ -7,7 +7,6 @@ AM_LDFLAGS  = -lpthread
 
 varrundir   = $(localstatedir)/run
 
-
 sbin_PROGRAMS = lircd lircmd
 
 lircd_SOURCES = lircd.c lircd.h
@@ -46,17 +45,22 @@ uninstall-local: rmdev
 endif
 endif
 
-install-data-local:
-	test "$(lircd_conf)" = ""  || test -e $(DESTDIR)$(sysconfdir)/$(PACKAGE)/lircd.conf  || ($(mkinstalldirs) $(DESTDIR)$(sysconfdir)/lirc && $(INSTALL_DATA) $(top_srcdir)/remotes/$(lircd_conf) $(DESTDIR)$(sysconfdir)/$(PACKAGE)/lircd.conf)
-	test "$(lircmd_conf)" = "" || test -e $(DESTDIR)$(sysconfdir)/$(PACKAGE)/lircmd.conf || ($(mkinstalldirs) $(DESTDIR)$(sysconfdir)/lirc && $(INSTALL_DATA) $(top_srcdir)/remotes/$(lircmd_conf) $(DESTDIR)$(sysconfdir)/$(PACKAGE)/lircmd.conf)
 
 mkdev:
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd p)
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm p)
+	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
+	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
+	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd p)
+	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm ||\
+	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
+	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm p)
 
 mkfifo:
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd)
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm)
+	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
+	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
+	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd)
+	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || \
+	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
+	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm)
 
 rmdev:
 rmfifo:
