@@ -5,75 +5,18 @@ ACLOCAL_AMFLAGS             = -I m4
 AM_CPPFLAGS = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
 AM_LDFLAGS  = -lpthread
 
-BUILT_SOURCES = input_map.inc
-lircd_LDADD = ../lib/liblirc.la
-
-noinst_LIBRARIES = libhw_module.a
-libhw_module_a_SOURCES = \
-			hw-types.c hw-types.h hardware.h \
-			ir_remote.c ir_remote.h ir_remote_types.h \
-			release.c release.h lirc_log.c lirc_log.h
-
-EXTRA_libhw_module_a_SOURCES = \
-			hw_accent.c hw_accent.h \
-			hw_alsa_usb.c \
-			hw_atilibusb.c \
-			hw_atwf83.c \
-			hw_audio.c \
-			hw_audio_alsa.c \
-			hw_awlibusb.c \
-			hw_bte.c hw_bte.h \
-			hw_caraca.c hw_caraca.h \
-			hw_commandir.c hw_commandir.h \
-			hw_creative.c hw_creative.h \
-			hw_creative_infracd.c hw_creative_infracd.h \
-			hw_default.c hw_default.h \
-			hw_devinput.c \
-			hw_dfclibusb.c \
-			hw_dsp.c \
-			hw_ea65.c hw_ea65.h \
-			hw_ftdi.c \
-			hw_hiddev.c \
-			hw_i2cuser.c \
-			hw_iguanaIR.c \
-			hw_irlink.c hw_irlink.h \
-			hw_irman.c hw_irman.h \
-			hw_livedrive_common.c hw_livedrive_common.h \
-			hw_livedrive_midi.c hw_livedrive_seq.c \
-			hw_logitech.c hw_logitech.h \
-			hw_mouseremote.c hw_mouseremote.h \
-			hw_mp3anywhere.c hw_mp3anywhere.h \
-			hw_mplay.c hw_mplay.h \
-			hw_pcmak.c hw_pcmak.h \
-			hw_pinsys.c hw_pinsys.h \
-			hw_pixelview.c hw_pixelview.h \
-			hw_silitek.c hw_silitek.h \
-			hw_slinke.c hw_slinke.h \
-			hw_srm7500libusb.c hw_srm7500libusb.h \
-			hw_tira.c hw_tira.h \
-			hw_udp.c \
-			hw_uirt2.c hw_uirt2_raw.c \
-			hw_uirt2_common.c hw_uirt2_common.h \
-			hw_usbx.c hw_usbx.h \
-			receive.c receive.h \
-			transmit.c transmit.h \
-			serial.c serial.h
-
-libhw_module_a_LIBADD = @hw_module@
-libhw_module_a_DEPENDENCIES = @hw_module@
-
 sbin_PROGRAMS = lircd lircmd
 
 lircd_SOURCES = lircd.c lircd.h
-lircd_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
+lircd_LDADD = -L../lib -llirc -lpthread @hw_module_libs@
 
 lircmd_SOURCES = lircmd.c
-lircmd_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
+lircmd_LDADD = -L../lib -llirc -lpthread @hw_module_libs@
 
 bin_PROGRAMS = irrecord
 
 irrecord_SOURCES = irrecord.c
-irrecord_LDADD = -L../lib -llirc libhw_module.a @hw_module@ -lpthread @hw_module_libs@
+irrecord_LDADD = -L../lib -llirc -lpthread @hw_module_libs@
 
 ## maintainer mode stuff
 EXTRA_PROGRAMS = lircd.simsend lircd.simrec slinke
@@ -117,10 +60,5 @@ rmfifo:
 	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd
 	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm
 
-input_map.inc:
-	$(srcdir)/input_map.sh >$@
-
-DISTCLEANFILES = input_map.inc
-EXTRA_DIST = input_map.inc input_map.sh
 
 CLEANFILES = *~

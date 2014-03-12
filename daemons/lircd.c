@@ -60,7 +60,7 @@
 #if defined(__linux__)
 #include <linux/input.h>
 #include <linux/uinput.h>
-#include "input_map.h"
+#include "lirc/input_map.h"
 #endif
 
 #ifdef HAVE_SYSTEMD

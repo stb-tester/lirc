@@ -11,8 +11,8 @@
 #include <syslog.h>
 #include <sys/time.h>
 
-#include "ir_remote.h"
-#include "lirc_log.h"
+#include "lirc/ir_remote.h"
+#include "lirc/lirc_log.h"
 
 #define PACKET_SIZE (256)
 #define WHITE_SPACE " \t"
