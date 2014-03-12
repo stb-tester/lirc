@@ -1513,7 +1513,6 @@ if ! echo ${hw_module}|grep " receive.o" >/dev/null; then
         receive="receive.o"
 fi
 
-hw_module_libs="${alsa_lib} ${atilibusb_lib} ${awlibusb_lib} ${caraca_lib} ${commandir_lib} ${dfclibusb_lib} ${ftdi_lib} ${iguanaIR_lib} ${irman_lib} ${portaudio_lib} ${srm7500libusb_lib} ${atwf83_lib}"
 
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
@@ -1523,7 +1522,6 @@ AC_SUBST(sysconfdir)
 AC_SUBST(varrundir)
 AC_SUBST(driver)
 AC_SUBST(lirc_driver)
-AC_SUBST(hw_module_libs)
 AC_SUBST(vga_progs)
 AC_SUBST(x_progs)
 AC_SUBST(hw_module)
