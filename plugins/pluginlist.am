@@ -1,0 +1,63 @@
+## Created by make-pluginlist.sh
+plugin_LTLIBRARIES              += accent.la
+accent_la_SOURCES                = accent.c accent.h
+
+plugin_LTLIBRARIES              += bte.la
+bte_la_SOURCES                   = bte.c bte.h
+
+plugin_LTLIBRARIES              += creative.la
+creative_la_SOURCES              = creative.c creative.h
+
+plugin_LTLIBRARIES              += creative_infracd.la
+creative_infracd_la_SOURCES      = creative_infracd.c creative_infracd.h
+
+plugin_LTLIBRARIES              += default.la
+default_la_SOURCES               = default.c default.h
+
+plugin_LTLIBRARIES              += devinput.la
+devinput_la_SOURCES              = devinput.c
+
+plugin_LTLIBRARIES              += ea65.la
+ea65_la_SOURCES                  = ea65.c ea65.h
+
+plugin_LTLIBRARIES              += hiddev.la
+hiddev_la_SOURCES                = hiddev.c
+
+plugin_LTLIBRARIES              += irlink.la
+irlink_la_SOURCES                = irlink.c irlink.h
+
+plugin_LTLIBRARIES              += logitech.la
+logitech_la_SOURCES              = logitech.c logitech.h
+
+plugin_LTLIBRARIES              += mouseremote.la
+mouseremote_la_SOURCES           = mouseremote.c mouseremote.h
+
+plugin_LTLIBRARIES              += mp3anywhere.la
+mp3anywhere_la_SOURCES           = mp3anywhere.c mp3anywhere.h
+
+plugin_LTLIBRARIES              += mplay.la
+mplay_la_SOURCES                 = mplay.c mplay.h
+
+plugin_LTLIBRARIES              += pcmak.la
+pcmak_la_SOURCES                 = pcmak.c pcmak.h
+
+plugin_LTLIBRARIES              += pinsys.la
+pinsys_la_SOURCES                = pinsys.c pinsys.h
+
+plugin_LTLIBRARIES              += pixelview.la
+pixelview_la_SOURCES             = pixelview.c pixelview.h
+
+plugin_LTLIBRARIES              += silitek.la
+silitek_la_SOURCES               = silitek.c silitek.h
+
+plugin_LTLIBRARIES              += slinke.la
+slinke_la_SOURCES                = slinke.c slinke.h
+
+plugin_LTLIBRARIES              += tira.la
+tira_la_SOURCES                  = tira.c tira.h
+
+plugin_LTLIBRARIES              += udp.la
+udp_la_SOURCES                   = udp.c
+
+plugin_LTLIBRARIES              += usbx.la
+usbx_la_SOURCES                  = usbx.c usbx.h

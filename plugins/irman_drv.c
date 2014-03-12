@@ -30,13 +30,9 @@
 
 #include <irman.h>
 
-#include "include/media/lirc.h"
-#include "lirc/hardware.h"
-#include "lirc/serial.h"
-#include "lirc/lirc_log.h"
-#include "lirc/ir_remote.h"
+#include "lirc_driver.h"
 
-#include "hw_irman.h"
+#include "irman.h"
 
 extern struct ir_remote *repeat_remote, *last_remote;
 
@@ -63,6 +59,9 @@ struct hardware hw_irman = {
 	NULL,			/* readdata */
 	"irman"
 };
+
+struct hardware* hardwares[] = { &hw_irman, (struct hardware*)NULL };
+
 
 int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
