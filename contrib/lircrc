@@ -49,7 +49,7 @@ end
 begin
         prog=xirw
         button = VOL_UP
-        config = Lautst#rke +
+        config = Lautstärke +
 end
 
 begin
@@ -60,7 +60,7 @@ end
 begin
         prog=xirw
         button = VOL_DOWN
-        config = Lautst#rke -
+        config = Lautstärke -
 end
 
 begin
@@ -144,7 +144,7 @@ begin cd
         begin
                 prog = xirw
                 button = CH_UP
-                config = N#chster Titel
+                config = Nächster Titel
         end
         begin
                 prog = irxevent
@@ -272,7 +272,7 @@ begin system
         begin
                 prog = xirw
                 button = CH_UP
-                config = Aufl#sung +
+                config = Auflösung +
         end
         begin
                 prog = irexec
@@ -282,6 +282,6 @@ begin system
         begin
                 prog = xirw
                 button = CH_DOWN
-                config = Aufl#sung -
+                config = Auflösung -
         end
 end system

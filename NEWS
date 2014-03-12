@@ -3,7 +3,7 @@
     thanks to Timo Boettcher for providing hardware)
   * more error-checking for NULL irctl in various lirc_dev paths
   * add support for Monueal Moncaso IR to mplay driver (123justme)
-  * add another PNP device ID to lirc_it87 (Jochen K0hner)
+  * add another PNP device ID to lirc_it87 (Jochen Kühner)
   * drop references to static chardev major number 61, we use dynamic
   * resync lirc_dev with what was merged in the kernel
   * reformat code using indent to look more like Linux kernel code
@@ -141,7 +141,7 @@
   * added support for Streamzap PC remote
   * added support for Soundgraph iMON MultiMedian IR/VFD (Venky Raju)
   * added support for X10 MouseRemote RF Receiver (Geoffrey Hausheer)
-  * added support for Hauppauge PVR150 (Per J0nsson)
+  * added support for Hauppauge PVR150 (Per Jönsson)
   * 2.2.x kernels are no longer supported
   * added support for AOpen XC Cube EA65, EA65-II (Max Krasnyansky)
   * added IGNORE directive to lircmd (Steven Mueller)
@@ -198,7 +198,7 @@
 
 0.6.5: 01/26/02
   * added support for IntelliMouse to lircmd
-  * added support for ITE IT8712/IT8705 CIR port (Hans-Ginter Litke Uphues)
+  * added support for ITE IT8712/IT8705 CIR port (Hans-Günter Lütke Uphues)
   * added support for Prolink PV-BT878P+9B card (Arkadiusz Miskiewicz)
   * added support for Hauppauge DVB-s card
   * more transmit bug fixes

@@ -3,8 +3,7 @@
 # This config file is for remote that comes with cheap TV Card made by
 # Chronos.
 #
-# contributed by T
-nu Raitviir <jussuf@bumpclub.ee>
+# contributed by Tõnu Raitviir <jussuf@bumpclub.ee>
 #
 # brand:             Chronos Video Shuttle II
 # supported devices: Chronos Video Shuttle II TV Card (BTTV ID 0x23)

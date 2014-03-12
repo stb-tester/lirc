@@ -280,7 +280,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.0(any) on Tue Mar 29 17:33:06 2005
 #
-# contributed by Rapha l Doursenaud (rdoursenaud@free.fr)
+# contributed by Raphaël Doursenaud (rdoursenaud@free.fr)
 #
 # brand: Sapphire (ATI)
 # model no. of remote control: 5000023600
@@ -1934,8 +1934,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.2(default) on Sat Sep  1 00:44:52 2007
 #
-# contributed by Michael Gro
-e Burlage mburlage@web.de
+# contributed by Michael Große Burlage mburlage@web.de
 #
 # brand:                       Medion X10
 # model no. of remote control: PN 40013224
