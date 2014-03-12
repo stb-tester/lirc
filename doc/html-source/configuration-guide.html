@@ -14,7 +14,7 @@
     <A NAME="why-use-lirc"></A><HR>
     <h2 align="center">Why should I use LIRC?</h2>
     <p>
-    Recent kernels have built-in support for IR remotes. Using that,
+    Recent Linux kernels have built-in support for IR remotes. Using that,
     pressing an up-arrow on the remote works the same way as pressing the
     up-arrow on a keyboard. This is a modern "just works" solution. On
     the other hand, LIRC is an old style linux application which can be
@@ -27,6 +27,9 @@
       <li>
         If you have a remote which isn't supported at all, LIRC is probably
         your best bet to get it running. </li>
+      <li>
+        You might be on a non-Linux platform supporting lirc e. g., MacOS.
+        </li>
       <li>
         You might have an application which is more or less designed to use
         LIRC. </li>
@@ -141,17 +144,25 @@ remote |        |       devinput v        |
       Applications
     </pre>
 
-    The setup consists of three parts.
+    The overall lirc blues:
     <ul>
-       <li> <A HREF="#determine-driver-and-device">Determine driver and
-         device</a></li>
-       <li> Convert IR pulse data from the driver to key symbols either using
-          <A HREF="#key-symbols-using-linux-input-layer">the linux input
-          layer</a> or <A HREF="#key-symbols-using-lirc-drivers">an lirc
-          driver</a> using the lircd.conf file.</li>
-       <li><A HREF="#converting-key-symbols-to-application-strings">
-          Convert the key symbols to application strings</a> using the
-          ~/.lircrc file.</li>
+       <li> The IR signal is caught by the linux kernel drivers, and
+            the data from the kernel is then caught by LIRC using a
+            lirc driver. The lirc driver often needs to know from
+            which device it should get the kernel data. This is
+            described in
+            <A HREF="#determine-driver-and-device">Determine driver and
+             device</a>.</li>
+       <li> In the next step, lirc converts the IR pulse data from the
+            lirc  driver to key symbols either using
+            <A HREF="#key-symbols-using-linux-input-layer">the linux input
+            layer</a> or <A HREF="#key-symbols-using-lirc-drivers">an lirc
+            driver</a> using the lircd.conf file.</li>
+       <li> In the next step the application converts the key symbols
+            to application-specific strings using the ~/.lircrc file. This
+            is described in
+            <A HREF="#converting-key-symbols-to-application-strings">
+             Convert the key symbols to application strings</a> .</li>
     </ul>
     <A NAME="determine-driver-and-device"></A><HR>
     <h3 align="center">Determine driver and device</h3>
@@ -177,8 +188,7 @@ remote |        |       devinput v        |
     <p>
     Next step is inspect dmesg, possibly after reconnecting your device.
     If you have a standard IR remote which is recognized by the kernel
-    you can find how it's registered as rc0. In this case you don't need
-    any name - ir-keytable provides all necessary info.
+    you can find how it's registered as rc0:
     <pre>
      usb 3-2: Product: eHome Infrared Transceiver
      Registered IR keymap rc-rc6-mce
@@ -225,8 +235,8 @@ remote |        |       devinput v        |
          If you dont wan't to use the decoding done by the kernel, but the
          device is recognized by ir-keytable you can have lirc decode the
          raw signal from the driver. This means using the default driver
-         which is accesible on a /dev/lirc device, normally /dev/lirc0.
-         Use something like:
+         which is accesses the kernel on a /dev/lirc device, normally
+         /dev/lirc0.  Use something like:
          <pre>
                --driver default --device /dev/lirc0
          </pre></li>
@@ -285,15 +295,13 @@ remote |        |       devinput v        |
     and key symbols everything is fine. Otherwise, try to change the
     protocol (see the ir-keytable manpage). If this doesn't work, it
     might be the end of the road and you might need to use the lirc
-    driver option instead.
-    </p>
+    driver option instead.  </p>
     <p>
     Check that all buttons generate output when testing. If there are
     buttons which are not mapped (no key symbol) you might not be
     able to fix this unless you go for the lirc driver option (to change
     the key symbol is perfectly possible, but probably not what you want
-    here).
-    </p>
+    here).  </p>
     <p>
     Then, grab the devinput/lircd.conf.devinput file
     <a href="http://sourceforge.net/p/lirc/git/ci/master/tree/remotes/">
@@ -306,8 +314,12 @@ remote |        |       devinput v        |
     Press remote buttons. You should see the key symbols being printed.
     When so you are done and can proceed to
     <A HREF="#key-symbols-to-app-strings">Convert key symbols to application
-    strings</a>
-    </p>
+    strings</a> </p>
+    <p>
+    Depending on your box, it might be that the event device found this
+    way changes after a reboot. If this becomes o problem, look into
+    <a href="#appendix-2">appendix 6</a>
+
     <A NAME="key-symbols-using-lirc-drivers"></A><HR>
     <h3 align="center">Getting the key symbols using lirc drivers</h3>
     <pre>
@@ -341,7 +353,8 @@ remote |        |       devinput v        |
       implement it and verify that it works <a href="#appendix-1">
       (Appendix 1)</a>. As a last step, fire-up your application
       and make sure the remote does not affect it in any way.</li>
-      <li> Check using mode2(1), verify that you get pulses. </li>
+      <li> Check using mode2(1), verify that you get pulses using
+           the --raw option. </li>
       <li>
       Update the configuration file which is used by lircd to use
       the driver and device (/etc/sysconfig/lirc or
@@ -436,8 +449,10 @@ remote |        |       devinput v        |
      <p>
      Also, some lirc drivers conflicts with the kernel drivers. A common
      example is the lirc atilibusb driver which conflicts with the kernel
-     ati_remote driver. Such conflicts shows up as dmesg output about not
-     being able to open the involved device, plus various other symptoms.
+     ati_remote driver. Another example is lirc serial drivers which
+     conflicts with the kernel default tty driver. Such conflicts shows
+     up as dmesg output about not being able to open the involved device,
+     plus various other symptoms.
      </p>
      <p>
      The kernel driver configuration can be done using the interfaces under
@@ -448,7 +463,7 @@ remote |        |       devinput v        |
     <h4 align="center"> Kernel driver configuration.</h4>
     <p>
     The builtin ir driver subsystem is aware of LIRC, and is capable to send
-    all data through /dev/lirc. To configure:
+    all data through /dev/lirc0. To configure:
     <pre>
         # echo -- 'lirc' > /sys/class/rc/rc0/protocols
     </pre>
@@ -484,6 +499,22 @@ remote |        |       devinput v        |
     After that, connect the device and make a new lsmod. Comparing the
     different outputs might give a clue.
     </p>
+    <A NAME="serial_port_reservation"></A>
+    <h4 align="center">Disabling kernel serial port reservation</h4>
+    <p>
+      Usually the default kernel serial port driver grabs all ports it
+      auto-detects as soon as it is loaded and the LIRC modules won't
+      be able to use any of them.  </p>
+    <P>
+      There are two solutions for this problem. Either you load the
+      LIRC module before the kernel serial port driver is loaded
+      or you call <em>setserial /dev/ttySx uart none</em> to release
+      the according port. setserial usually is already called during
+      boot-up in some init script whose location depends on the
+      distribution you use. You should check your setserial
+      configuration to only configure available ports. Debian users
+      should adjust their <em>/etc/serial.conf</em>.
+    </P>
 
     <A NAME="appendix-2"></A>
     <h3 align="center"> A2: Finding the event device</h3>
@@ -493,12 +524,12 @@ remote |        |       devinput v        |
     <p>
     The first try is to invoke ir-keytable without any options:
     <pre>
-	$ ir-keytable
-	Found /sys/class/rc/rc0/ (/dev/input/event11) with:
-	    Driver em28xx, table rc-pinnacle-pctv-hd
-	    Supported protocols: NEC RC-5 RC-6
-	    Enabled protocols: RC-5
-	    Extra capabilities: <access denied>
+        $ ir-keytable
+        Found /sys/class/rc/rc0/ (/dev/input/event11) with:
+            Driver em28xx, table rc-pinnacle-pctv-hd
+            Supported protocols: NEC RC-5 RC-6
+            Enabled protocols: RC-5
+            Extra capabilities: <access denied>
     </pre>
     </p>
     <p>
@@ -523,10 +554,10 @@ remote |        |       devinput v        |
     </pre>
     Look in foo to find this snippet about your device:
     <pre>
-	I: Bus=0003 Vendor=2013 Product=024f Version=0001
-	N: Name="em28xx IR (em28174 #0)"
-	P: Phys=usb-0000:00:1d.7-1/input0
-	S: Sysfs=/devices/pci0000:00/0000:00:1d.7/usb1/1-1/rc/rc0/input14
+        I: Bus=0003 Vendor=2013 Product=024f Version=0001
+        N: Name="em28xx IR (em28174 #0)"
+        P: Phys=usb-0000:00:1d.7-1/input0
+        S: Sysfs=/devices/pci0000:00/0000:00:1d.7/usb1/1-1/rc/rc0/input14
     </pre>
     Here, the device is /dev/input/event14. </p>
 
@@ -621,24 +652,24 @@ remote |        |       devinput v        |
 
     # See http://wiki.videolan.org/How_to_Use_Lirc
 
-	begin
-	    prog   = vlc
-	    button = KEY_REWIND
-	    config = key-rewind
-	end
+        begin
+            prog   = vlc
+            button = KEY_REWIND
+            config = key-rewind
+        end
 
-	begin
-	    prog   = vlc
-	    button = KEY_FASTFORWARD
-	    config = key-faster
-	end
+        begin
+            prog   = vlc
+            button = KEY_FASTFORWARD
+            config = key-faster
+        end
 
 
-	begin
-	    prog   = vlc
-	    button = KEY_NEXT
-	    config = key-next
-	end
+        begin
+            prog   = vlc
+            button = KEY_NEXT
+            config = key-next
+        end
 
     # Unused buttons:
     #
@@ -676,7 +707,82 @@ remote |        |       devinput v        |
     <p>
     The generate-lircrc.sh has a -h and a manpage option for more info.</p>
     <p>
-    BEWARE: The configuration file generated this way is starting point. It
+    BEWARE: The configuration file generated this way is a starting point. It
     needs to be inspected and tweaked before it actually does it's job.
+
+    <A NAME="appendix-6"></A>
+    <h3 align="center">A6 : Addressing changing event devices</h3>
+    <p>
+    When using the devinput driver, input devices like /dev/input/event12
+    might come up as another device after a reboot. If this becomes a problem,
+    you should address the device using it's name or it's physical bus address.
+    </p> <p>
+    The first step is to inspect dmesg after connecting the device. There you
+    should find something like:
+    <pre>
+    rc0: Media Center Ed. eHome Infrared Remote Transceiver (1784:0001) as
+        /devices/pci0000:00/0000:00:12.0/usb4/4-4/4-4:1.0/rc/rc0
+    </pre>
+    Here you can see the device's name: "Media center Ed. eHome..." and it's
+    address: ...usb4/4-4/4-4:1.0/rc/rc0.</p>
+    <p>
+    As long as you have only one remote of each kind you can use simple
+    name matching like in
+    <pre>
+       --device=name='*eHome*'
+    </pre>
+    If you have several devices with the same name you need to use the address
+    instead. Since this depends on how the device is connected, you lose if you
+    disconnect the device and reconnect it to another socket. With this
+    limitation you can use phys=*usb4/4-4/4-4:1.0* in the same way as name.
+
+    <A NAME="appendix-7"></A>
+    <h3 align="center">A7 : Running irexec</h3>
+    <p>
+    After having configured lirc, you might want to run irexec(1). Using
+    this, you can bind remote buttons to any command you can run. It's
+    typically used to shut down system, system volume controls etc.</p>
+    <p>
+    There is two ways to run irexec, both with their pros and cons.</p>
+    <p>
+    The first way is to run irexec as a system daemon. This can be done in
+    many ways e. g., from a rc.local script or as a systemd service. Any way
+    you will have security problems since running arbitrary commands and
+    scripts as root is generally a bad idea. There is also the problem that
+    irexec runs outside your session which means it's problematic to access
+    the display, sound system and other resources typically bound to the
+    session. On the other hand, this is flexible and since irexec runs as
+    root it can in the end do anything </p>
+    <p>
+    The second way to run irexec is to run is as a part of the session. A
+    standard way to do this is to drop a irexec.desktop file in the config
+    autostart  directory, normally ~/.config/autostart.  Doing so you can
+    use your desktop tools to control the service. Also, since the service
+    runs as part of your session, it can access the display, sound system
+    etc.</p>
+    <p>
+    The drawback is that since it runs as a regular user, it might run into
+    permission problems e. g., when trying to shut down the computer. This
+    can be handled using sudo, giving the user running irexec right to
+    run specific commands otherwise requiring root permission. E. g., the
+    following entry in /etc/sudoers  allows the htpc user to restart gdm,
+    effectively making a soft reboot:
+    <pre>
+        ## Allows members of the htpc group to restart session service
+        %htpc ALL=NOPASSWD: /usr/bin/systemctl restart gdm.service
+    </pre>
+    All in all, to configure irexec:
+    <ul>
+        <li> Copy irexec.desktop from the contrib directory to
+             ~/.config/autostart</li>
+        <li> Possibly add entries to /etc/sudoers (above) if you need to
+             run otherwise restricted commands.</li>
+        <li> Enable the session service using e. g. gnome settings or
+             corresponding tools.</li>
+        <li> Configure the ~/.lircrc file as described in
+             <a href="configure.html#lircrc_format">.lircrc chapter </a>
+             Note that you must specify "program = irexec" for irexec
+             to pick up your configuration.</li>
+    </ul>
   </BODY>
 </HTML>
