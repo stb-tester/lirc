@@ -36,8 +36,6 @@
 #include <vga.h>
 #include <vgagl.h>
 
-#include "drivers/lirc.h"
-
 GraphicsContext *screen;
 GraphicsContext *physicalscreen;
 GraphicsContext *backscreen;

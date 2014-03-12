@@ -59,11 +59,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
-#include "drivers/lirc.h"
-#include "daemons/ir_remote.h"
-#include "daemons/hardware.h"
-#include "daemons/hw-types.h"
-#include "daemons/lirc_log.h"
+#include "lirc_private.h"
 
 Display *d1;
 Window w0, w1;			/*w0 = root */
@@ -91,7 +87,6 @@ int debug = 0;
 #endif
 char *hostname = "";
 int daemonized = 0;
-char *progname;
 
 
 void initscreen(char *geometry)

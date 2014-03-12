@@ -27,7 +27,7 @@
 #include "lirc_private.h"
 
 const char *usage = "Usage: %s --help | --version | [options] file\n";
-char *progname;
+char *prog_name;
 struct hardware hw = {
 	"/dev/null",		/* default device */
 	-1,			/* fd */
@@ -174,21 +174,21 @@ int fill_struct(struct ir_remote *r, FILE * f, char **desc)
 			if (strcasecmp(buffer, "desc") == 0) {
 				/* todo */
 				if (*desc != NULL) {
-					fprintf(stderr, "%s: mulitple descriptions\n", progname);
+					fprintf(stderr, "%s: mulitple descriptions\n", prog_name);
 					break;
 				}
 				*desc = strdup(eq);
 				continue;
 			} else if (strcasecmp(buffer, "name") == 0) {
 				if (r->name != NULL) {
-					fprintf(stderr, "%s: multiple names\n", progname);
+					fprintf(stderr, "%s: multiple names\n", prog_name);
 					break;
 				}
 				if (strlen(eq) == 0)
 					continue;
 				r->name = strdup(eq);
 				if (r->name == NULL) {
-					fprintf(stderr, "%s: out of memory\n", progname);
+					fprintf(stderr, "%s: out of memory\n", prog_name);
 				}
 				strtoupper(r->name);
 				continue;
@@ -326,8 +326,8 @@ int fill_struct(struct ir_remote *r, FILE * f, char **desc)
 
 				nf = fopen(eq, "r");
 				if (nf == NULL) {
-					fprintf(stderr, "%s: could not open file %s\n", progname, eq);
-					perror(progname);
+					fprintf(stderr, "%s: could not open file %s\n", prog_name, eq);
+					perror(prog_name);
 					break;
 				}
 				if (!fill_struct(r, nf, desc)) {
@@ -350,7 +350,7 @@ int fill_struct(struct ir_remote *r, FILE * f, char **desc)
 			if (r->bits == 0)
 				r->bits = bits;
 			else if (r->bits != bits) {
-				fprintf(stderr, "%s: variable bit length!\n", progname);
+				fprintf(stderr, "%s: variable bit length!\n", prog_name);
 				break;
 			}
 			if (!append_code(r, code, dp)) {
@@ -370,14 +370,14 @@ int fill_struct(struct ir_remote *r, FILE * f, char **desc)
 				r->gap = r->repeat_gap;
 				r->repeat_gap = 0;
 			} else {
-				fprintf(stderr, "%s: no gap!\n", progname);
+				fprintf(stderr, "%s: no gap!\n", prog_name);
 				return (0);
 			}
 		}
 		return (1);
 	}
 
-	fprintf(stderr, "%s: can't convert \"%s\"\n", progname, backup);
+	fprintf(stderr, "%s: can't convert \"%s\"\n", prog_name, backup);
 	free_config(r);
 	return (0);
 }
@@ -389,7 +389,7 @@ struct ir_remote *read_slinke(char *filename, char **desc)
 
 	r = malloc(sizeof(*r));
 	if (r == NULL) {
-		fprintf(stderr, "%s: out of memory\n", progname);
+		fprintf(stderr, "%s: out of memory\n", prog_name);
 		return (NULL);
 	}
 	/* set defaults */
@@ -400,15 +400,15 @@ struct ir_remote *read_slinke(char *filename, char **desc)
 
 	r->codes = malloc(sizeof(struct ir_ncode) * (MAX_CODES + 1));
 	if (r->codes == NULL) {
-		fprintf(stderr, "%s: out of memory\n", progname);
+		fprintf(stderr, "%s: out of memory\n", prog_name);
 		free(r);
 		return (NULL);
 	}
 	memset(r->codes, 0, sizeof(struct ir_ncode) * (MAX_CODES + 1));
 	f = fopen(filename, "r");
 	if (f == NULL) {
-		fprintf(stderr, "%s: could not open file %s\n", progname, filename);
-		perror(progname);
+		fprintf(stderr, "%s: could not open file %s\n", prog_name, filename);
+		perror(prog_name);
 		free(r->codes);
 		free(r);
 		return (NULL);
@@ -521,7 +521,7 @@ int main(int argc, char **argv)
 	FILE *fout;
 	int pre, post;
 
-	progname = argv[0];
+	prog_name = argv[0];
 	model = brand = NULL;
 	pre = post = 0;
 	while (1) {
@@ -540,7 +540,7 @@ int main(int argc, char **argv)
 			break;
 		switch (c) {
 		case 'h':
-			printf(usage, progname);
+			printf(usage, prog_name);
 			printf("\t -h --help\t\tdisplay this message\n");
 			printf("\t -v --version\t\tdisplay version\n\n");
 			printf("\t -b --brand\t\tremote control manufacturer\n");
@@ -562,15 +562,15 @@ int main(int argc, char **argv)
 			post = 1;
 			break;
 		default:
-			printf("Try %s -h for help!\n", progname);
+			printf("Try %s -h for help!\n", prog_name);
 			exit(EXIT_FAILURE);
 		}
 	}
 	if (argc == 1) {
-		printf(usage, progname);
+		printf(usage, prog_name);
 	}
 	if (optind + 1 != argc) {
-		fprintf(stderr, "%s: invalid argument count\n", progname);
+		fprintf(stderr, "%s: invalid argument count\n", prog_name);
 		exit(EXIT_FAILURE);
 	}
 	filename = argv[optind];
@@ -584,8 +584,8 @@ int main(int argc, char **argv)
 		path = filename;
 		filename = help;
 		if (getcwd(cwd, PATH_MAX) == NULL) {
-			fprintf(stderr, "%s: can't get current work directory\n", progname);
-			perror(progname);
+			fprintf(stderr, "%s: can't get current work directory\n", prog_name);
+			perror(prog_name);
 			return (EXIT_FAILURE);
 		}
 		chdir(path);
@@ -631,7 +631,7 @@ int main(int argc, char **argv)
 
 		remote->name = strdup(newname);
 		if (remote->name == NULL) {
-			fprintf(stderr, "%s: out of memory\n", progname);
+			fprintf(stderr, "%s: out of memory\n", prog_name);
 			free_config(remote);
 			exit(EXIT_FAILURE);
 		}
@@ -642,8 +642,8 @@ int main(int argc, char **argv)
 	}
 	fd = open(remote->name, O_CREAT | O_EXCL | O_RDWR, 0644);
 	if (fd == -1) {
-		fprintf(stderr, "%s: could not open output file\n", progname);
-		perror(progname);
+		fprintf(stderr, "%s: could not open output file\n", prog_name);
+		perror(prog_name);
 		free_config(remote);
 		if (description != NULL)
 			free(description);
@@ -651,8 +651,8 @@ int main(int argc, char **argv)
 	}
 	fout = fdopen(fd, "w");
 	if (fout == NULL) {
-		fprintf(stderr, "%s: could not reopen output file\n", progname);
-		perror(progname);
+		fprintf(stderr, "%s: could not reopen output file\n", prog_name);
+		perror(prog_name);
 		free_config(remote);
 		if (description != NULL)
 			free(description);

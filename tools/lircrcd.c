@@ -32,7 +32,7 @@
 #include <syslog.h>
 
 #include "lirc_client.h"
-#include "daemons/lirc_log.h"
+#include "lirc/lirc_log.h"
 
 #define MAX_CLIENTS 100
 #define PACKET_SIZE (256)

@@ -32,11 +32,7 @@
 #include <syslog.h>
 #include <time.h>
 
-#include "drivers/lirc.h"
-#include "daemons/ir_remote.h"
-#include "daemons/hardware.h"
-#include "daemons/hw-types.h"
-#include "daemons/lirc_log.h"
+#include "lirc_private.h"
 
 #ifdef DEBUG
 int debug = 10;
@@ -45,7 +41,6 @@ int debug = 0;
 #endif
 char *hostname = "";
 int daemonized = 0;
-char *progname = "mode2";
 
 
 int main(int argc, char **argv)
@@ -63,7 +58,7 @@ int main(int argc, char **argv)
 	int use_raw_access = 0;
 	int have_device = 0;
 
-	progname = "mode2";
+	strncpy(progname, "mode2", sizeof(progname));
 	hw_choose_driver(NULL);
 	while (1) {
 		int c;
