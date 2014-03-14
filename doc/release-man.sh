@@ -28,34 +28,41 @@ select_vars ()
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/tools/
                 PROG_PRE_PARAMS="--include ${SRCDIR}/man-source/mode2-common.inc"
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         lircrcd)
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/tools/
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         smode2)
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/tools/
                 PROG_PRE_PARAMS="--include ${SRCDIR}/man-source/mode2-common.inc"
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         xmode2)
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/tools/
                 PROG_PRE_PARAMS="--include ${SRCDIR}/man-source/mode2-common.inc"
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         irsend)
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/tools/
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         irrecord)
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/daemons/
+                PROG_PARAMS="--include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         lircd)
                 SECTION=8
                 MANPAGE=$PROG.$SECTION
                 DIR=$SRCDIR/wrappers/
                 PROG_PARAMS="--include ${SRCDIR}/man-source/daemons.inc"
+                PROG_PARAMS="$PROG_PARAMS --include ${SRCDIR}/man-source/driver-load.inc"
 
         ;;
         lircd.conf)
@@ -68,6 +75,7 @@ select_vars ()
                 MANPAGE=$PROG.$SECTION
                 DIR=$TOPDIR/daemons/
                 PROG_PARAMS="--include ${SRCDIR}/man-source/daemons.inc"
+                PROG_PARAMS="$PROG_PARAMS --include ${SRCDIR}/man-source/driver-load.inc"
         ;;
         esac
 

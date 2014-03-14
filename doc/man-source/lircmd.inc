@@ -21,3 +21,10 @@ the /dev/lircm device.
 lircmd will use syslogd to output error messages. It depends on your
 system configuration where they will show up.
 
+The options file is by default /etc/lirc/lirc_options.conf; lircmd handles
+the values under the [lircd] section in this file. The location can
+be changed using the -O/--options-file command-line option or using the
+environment variable LIRC_OPTIONS_PATH. The values here are used as
+defaults for any option not present on command line.
+
+

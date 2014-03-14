@@ -9,8 +9,13 @@ lircd through a Unix domain socket which is located in
 \/var/run/lirc/lircd.  Using this socket they will get the infrared
 codes received by lircd and they can send commands to lircd.
 
+The config file is described under FILES below.
+
 [OPTIONS]
 Common options:
+.TP 4
+.B -O, --options-file
+File containing default values for all options. See [FILES] below.
 .TP 4
 .B -d, --device
 Select the character device which lircd should read from. The default
@@ -77,6 +82,11 @@ and write permissions (0666 in octal representation). If
 .TP 4
 .B -p, --pidfile <path>
 Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
+.TP
+.B -U --plugindir
+The --plugindir option sets the directory from which lircd loads it's
+userspace drivers. These are *.so files, by default found in
+/usr/lib/lirc/plugins.
 .TP 4
 .B -r, --release [suffix]
 Enables automatic generation of release events for each button press.
@@ -106,4 +116,10 @@ depends on your system configuration where log messages will show up).
 You can make lircd reread its config file and reopen its log file by
 sending the HUP signal to the program. That way you can rotate old log
 files.
+
+The options file is by default /etc/lirc/lirc_options.conf; lircd handles
+the values under the [lircd] section in this file. The location can
+be changed using the -O/--options-file command-line option or using the
+environment variable LIRC_OPTIONS_PATH. The values here are used as
+defaults for any option not present on command line.
 
