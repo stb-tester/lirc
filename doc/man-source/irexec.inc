@@ -11,14 +11,19 @@ usually ~/.lircrc.
 If irexec executes a program it will wait until this program terminates.
 So append a '&' to the command string if you don't want that.
 
-The config string consists of the command to be run.
+The config string consists of the command to be run. Potential
+uses are shutting down the computer, starting a dial-up connection etc.
 
 [OPTIONS]
-If you add the \-\-daemon option irexec will fork to
-background. That way you can easily start irexec from an init script. In
-this case you should specify a config file on the command line as irexec
-won't be able to find your home directory. Potential uses are shutting
-down the computer, starting a dial-up connection etc.
+.TP 4
+.B  -d, --daemon
+Make irexec will fork to background. That way you can easily start irexec
+from an init script. In this case you should specify a config file on the
+command line as irexec won't be able to find your home directory.
+.TP 4
+.B -n --name <name>
+Use this program name instead of the default 'irexec' as identifier in
+the lircd.conf file.
 
 [NOTE]
 If you start irexec, it reads your ~/.lircrc and reacts only on

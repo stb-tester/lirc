@@ -1,0 +1,14 @@
+#!/bin/sh
+
+usage='Usage: lircd [options] [config file]'
+here=$(dirname $(readlink -fn $0 ))
+
+case $1 in
+        --help) echo $usage
+        ;;
+        --version) $here/../../daemons/lircd --version
+        ;;
+        *) echo "What?"
+        exit 1
+esac
+exit 0

@@ -54,7 +54,7 @@ select_vars ()
         lircd)
                 SECTION=8
                 MANPAGE=$PROG.$SECTION
-                DIR=$TOPDIR/daemons/
+                DIR=$SRCDIR/wrappers/
                 PROG_PARAMS="--include ${SRCDIR}/man-source/daemons.inc"
 
         ;;
