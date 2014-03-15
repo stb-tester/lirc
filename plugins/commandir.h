@@ -14,7 +14,6 @@
 #include <usb.h>
 
 extern struct ir_remote *repeat_remote;
-extern char *progname;
 
 #define TRUE	0
 #define FALSE	1

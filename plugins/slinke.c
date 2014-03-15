@@ -233,7 +233,6 @@ struct hardware* hardwares[] = { &hw_slinke, (struct hardware*)NULL };
 #define MSG_ID_SERIAL_NUMBER_EQUALS                27
 #define MSG_ID_SEEPROM_WRITE_ERROR                 28
 
-#ifdef DEBUG
 /*****************************************************************************/
 char *to_byte_string(unsigned char *b, int n)
 {
@@ -263,7 +262,6 @@ static int signal_to_int(lirc_t signal)
 	    ? (signal & PULSE_MASK)
 	    : -(signal & PULSE_MASK);
 }				/* signal_to_int */
-#endif
 
 /*****************************************************************************/
 static void tx_bytes(unsigned char *b, int n)
@@ -411,7 +409,6 @@ int slinke_deinit(void)
 }				/* slinke_deinit */
 
 /*****************************************************************************/
-#ifdef DEBUG
 char *msgIdReprs[] = {
 	"unknown", "port receive", "port disabled", "port enabled",
 	"transmission timeout", "illegal command", "receive error",
@@ -427,7 +424,6 @@ char *msgIdReprs[] = {
 	"seeprom write error",
 };
 char *slinkePorts[] = { "SL0", "SL1", "SL2", "SL3", "IR0", "PAR", "SER", "SYS" };
-#endif
 
 /*****************************************************************************/
 lirc_t slinke_readdata(int timeout)
@@ -499,7 +495,6 @@ static void end_of_signals()
 	}			/* if */
 }				/* end_of_signals */
 
-#ifdef DEBUG
 static char *signal_queue_to_string()
 {
 	static char buf[10 * QUEUE_BUF_MAX_SIZE];
@@ -518,7 +513,6 @@ static char *signal_queue_to_string()
 	strcat(buf, "}");
 	return buf;
 }				/* signal_queue_to_string */
-#endif
 
 /*****************************************************************************/
 static char *process_rx_bytes(struct port_queue_rec *q, struct ir_remote *remotes)
