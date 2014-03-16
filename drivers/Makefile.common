@@ -8,9 +8,8 @@ LIRC_DEVDIR = $(PWD)
 # when compiling module(s)
 KBUILD_VERBOSE = 1
 LIRC_EXTRA_CFLAGS = -DEXPORT_SYMTAB $(DEFS) \
-		$(DEFAULT_INCLUDES) -I$(LIRC_DEVDIR)/$(srcdir) -I$(LIRC_DEVDIR)/$(builddir) \
-		-I$(LIRC_DEVDIR)/$(top_srcdir) -I$(LIRC_DEVDIR)/$(top_builddir) \
-		-I$(KERNEL_LOCATION)/include/ \
+		$(DEFAULT_INCLUDES) \
+		-I$(KERNEL_LOCATION)/include/ -I$(LIRC_DEVDIR) \
 		-I$(KERNEL_LOCATION)/drivers/media/video/
 export LIRC_EXTRA_CFLAGS KERNEL_LOCATION module_DATA
 
