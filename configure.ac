@@ -98,6 +98,9 @@ case "${host_os}" in
 
     dnl default devdir, on mac os x/darwin, /dev/ can not be used without kernel programming, so use a fifo somewhere else
     devdir_default="/usr/lirc/dev/"
+
+    dnl default devdir
+    devdir_default="/dev"
     use_fifos="yes"
     ;;
   *)
@@ -105,9 +108,6 @@ case "${host_os}" in
 
     dnl PortAudio for UNIX OSS
     portaudio_lib_other="-lm -lpthread ${forkpty}"
-
-    dnl default devdir
-    devdir_default="/dev"
     use_fifos="no"
     ;;
 esac
@@ -411,7 +411,7 @@ dnl here we see what driver the user wants.
 
 AC_ARG_WITH(driver,
 [  --with-driver=X         specify the driver to use, where X is one of:
-                          all, none, userspace, accent, act200l,
+                          none, userspace, accent, act200l,
                           act220l, adaptec, alsa_usb, animax, asusdh,
                           atilibusb, atwf83, audio, audio_alsa
                           avermedia, avermedia_vdomate, avermedia98,
@@ -438,7 +438,7 @@ AC_ARG_WITH(driver,
                           srm7500libusb, tekram,
                           tira, tira_raw,
                           tuxbox, tvbox, udp, uirt2, uirt2_raw,
-                          usb_uirt_raw, usbx, wpc8769l],
+                          usb_uirt_raw, usbx],
 driver=${withval},
 driver="unset"
 )
@@ -1401,13 +1401,6 @@ if test "$lirc_driver" = "none" || \
         test "$lirc_driver" = "srm7500libusb" || \
         test "$lirc_driver" = "userspace"; then
   lirc_driver=
-elif test "$lirc_driver" = "all"; then
-  lirc_driver="lirc_dev lirc_wpc8769l"
-fi
-if kernel_module=$(expr "$lirc_driver" : 'lirc_dev \(.*\)'); then
-  :
-elif test "$lirc_driver" != ""; then
-  kernel_module=$lirc_driver
 fi
 
 dnl slightly more advanced options
@@ -1444,34 +1437,14 @@ AC_ARG_WITH(devdir,
 devdir=${withval},
 devdir=${devdir_default})
 
-default_moduledir=/lib/modules/`uname -r`/misc
-AC_ARG_WITH(moduledir,
-[  --with-moduledir=DIR    kernel modules in DIR (/lib/modules/`uname -r`/misc)],
-moduledir=${withval},
-moduledir=${default_moduledir})
-
 AC_ARG_ENABLE(dyncodes,
 [  --enable-dyncodes       use dynamic codes],
 test x${enableval} = xyes && AC_DEFINE(DYNCODES))
-
-AC_ARG_WITH(irq,
-[  --with-irq=irq          specify the irq line for the lirc device.],
-irq=${withval}
-)
-
-AC_ARG_WITH(tty,
-[  --with-tty=file         specify the tty to use (Irman, RemoteMaster, etc.)],
-irtty=${withval})
-
-AC_ARG_WITH(igor,
-[  --with-igor             use this if you have an Igor Cesko receiver],
-test x${withval} = xyes && AC_DEFINE(LIRC_SERIAL_IGOR))
 
 AC_ARG_ENABLE(debug,
 [  --enable-debug          enable debugging features],
 test x${enableval} = xyes && AC_DEFINE(DEBUG)
 )
-
 AC_ARG_ENABLE(daemonize,
 [  --disable-daemonize     disable daemons from daemonizing],
 test x${enableval} = xyes && AC_DEFINE(DAEMONIZE),
@@ -1549,7 +1522,6 @@ AC_SUBST(forkpty)
 AC_SUBST(devdir)
 AC_SUBST(sysconfdir)
 AC_SUBST(varrundir)
-AC_SUBST(moduledir)
 AC_SUBST(driver)
 AC_SUBST(lirc_driver)
 AC_SUBST(hw_module_libs)
@@ -1653,9 +1625,6 @@ dnl SHELL=/bin/sh AC_SUBST(SHELL)
 dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
   Makefile
-  drivers/Makefile
-  drivers/lirc_dev/Makefile
-  drivers/lirc_wpc8769l/Makefile
   daemons/Makefile
   tools/Makefile
   doc/Makefile
@@ -1663,10 +1632,7 @@ AC_CONFIG_FILES([
 ])
 AC_OUTPUT
 
-echo
-if test "$driver" = "all"; then
-  echo "All kernel modules will be built."
-elif test "$driver" = "mediafocusI"; then
+if test "$driver" = "mediafocusI"; then
   echo "You will have to use the MediaFocus driver from:"
   echo "http://freenet-homepage.de/mediafocus/"
 elif test "$driver" = "exaudio"; then
