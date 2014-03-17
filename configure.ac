@@ -583,6 +583,8 @@ dnl SHELL=/bin/sh AC_SUBST(SHELL)
 dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
   Makefile
+  lirc.pc
+  lirc-driver.pc
   daemons/Makefile
   plugins/Makefile
   tools/Makefile
