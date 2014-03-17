@@ -1,4 +1,3 @@
-# $Id: Makefile.common,v 5.10 2008/09/27 16:08:39 lirc Exp $
 
 # where the kernel sources are located
 KERNEL_LOCATION=@kerneldir@

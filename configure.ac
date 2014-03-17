@@ -1,4 +1,3 @@
-dnl $Id: configure.ac,v 1.44 2010/07/12 03:25:55 jarodwilson Exp $
 
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>

@@ -17,7 +17,6 @@
  *   Vassilis Virvilis <vasvir@iit.demokritos.gr> 2006
  *      reworked the patch for lirc submission
  *
- * $Id: lirc_atiusb.c,v 1.88 2010/07/25 16:43:33 jarodwilson Exp $
  */
 
 /*

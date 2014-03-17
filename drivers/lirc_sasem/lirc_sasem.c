@@ -1,4 +1,3 @@
-/*      $Id: lirc_sasem.c,v 1.42 2010/08/16 20:20:47 jarodwilson Exp $      */
 /*
  * lirc_sasem.c - USB remote support for LIRC
  * Version 0.5

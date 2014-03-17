@@ -1,4 +1,3 @@
-## $Id: acinclude.m4,v 1.12 2008/09/25 17:36:08 lirc Exp $
 ##
 ## additional m4 macros
 ##

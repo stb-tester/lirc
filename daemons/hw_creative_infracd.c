@@ -1,4 +1,3 @@
-/*      $Id: hw_creative_infracd.c,v 5.7 2010/04/11 18:50:38 lirc Exp $      */
 
 /*
  * Remote control driver for the Creative iNFRA CDrom

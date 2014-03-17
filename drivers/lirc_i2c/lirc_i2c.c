@@ -1,4 +1,3 @@
-/*      $Id: lirc_i2c.c,v 1.72 2009/12/28 15:29:03 jarodwilson Exp $      */
 
 /*
  * lirc_i2c.c

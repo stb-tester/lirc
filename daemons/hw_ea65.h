@@ -18,7 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * $Id: hw_ea65.h,v 5.2 2007/07/29 18:20:07 lirc Exp $
  */
 
 #ifndef HW_EA65_H

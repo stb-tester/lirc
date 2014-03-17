@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 5.20 2009/12/27 19:04:10 lirc Exp $
 
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS             = -I m4

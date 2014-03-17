@@ -1,4 +1,3 @@
-/*      $Id: hw_i2cuser.c,v 5.3 2010/04/11 18:50:38 lirc Exp $      */
 
 /*
  * Remote control driver for I2C-attached devices from userspace

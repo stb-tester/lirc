@@ -1,4 +1,3 @@
-## $Id: Makefile.am,v 1.3 2004/04/25 16:29:24 lirc Exp $
 
 ## Process this file with automake to produce Makefile.in
 
