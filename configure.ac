@@ -19,6 +19,10 @@ AC_PROG_MAKE_SET
 AC_PATH_PROG(mknod, mknod, /bin/mknod)
 AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
+AC_CHECK_PROG(HELP2MAN, help2man, [ok], [fail])
+if test "$HELP2MAN" != ok; then
+    AC_MSG_ERROR([help2man is required to build lirc])
+fi
 AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON(,, [:])
@@ -1792,7 +1796,6 @@ AC_CONFIG_FILES([
   daemons/Makefile
   tools/Makefile
   doc/Makefile
-  doc/man/Makefile
   systemd/Makefile
 ])
 AC_OUTPUT

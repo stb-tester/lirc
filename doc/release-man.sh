@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 select_vars ()
 {
         PROG=$1
@@ -88,12 +88,14 @@ install -d man-html
 HELP2MAN=help2man
 MAN2HTML=${BUILDDIR}/man2html
 
-for PROG in irpty irexec ircat irw mode2 smode2 xmode2 irsend irrecord lircd lircmd lircrcd irxevent
-do
+for PROG in "$@"; do
+        PROG=${PROG##*/}
+        PROG=${PROG%.*}
         PROG_PARAMS=""
         PROG_PRE_PARAMS=""
         select_vars $PROG
-
+        test "man/${MANPAGE:-foo}" -nt "${SRCDIR}/man-source/$PROG.inc" \
+                && continue
         #make the manpage
         $HELP2MAN \
                 $PROG_PRE_PARAMS \
@@ -119,6 +121,7 @@ do
                         man/$MANPAGE > man/$MANPAGE.tmp
 
         mv man/$MANPAGE.tmp man/$MANPAGE
+        echo "Created: man/$MANPAGE"
 
 
         #make the html page
@@ -129,5 +132,6 @@ do
                                         -e '/NAME="index"/,/^Time:/d' \
                                         -e '/SEE ALSO/,/^<HR>/d' \
                                                 > man-html/$PROG.html
+        echo "Created: man-html/$PROG.html"
 done
 

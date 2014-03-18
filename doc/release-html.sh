@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 SRCDIR=${srcdir:-.}
 SOURCE_DIR="${SRCDIR}/html-source/"
@@ -21,6 +21,7 @@ echo -n "Pass1:"
 for FILE in $FILES1; do
     {
     echo -n " $FILE"
+    test "$DEST_DIR/${FILE:-foo}" -nt "$SOURCE_DIR/$FILE" && continue
     cat $SOURCE_DIR/head.html > $DEST_DIR/$FILE
     cat $SOURCE_DIR/$FILE     >> $DEST_DIR/$FILE
     cat $SOURCE_DIR/foot.html >> $DEST_DIR/$FILE
@@ -37,7 +38,3 @@ for FILE in $FILES2; do
     cat $SOURCE_DIR/foot.html >> $DEST_DIR/$FILE
     }
 done
-echo
-
-echo "Generating driver overview tables"
-${SRCDIR}/table.sh lirc.hwdb >${DEST_DIR}/table.html
