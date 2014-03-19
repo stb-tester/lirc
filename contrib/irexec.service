@@ -1,0 +1,15 @@
+# Drop in /etc/systemd/system or /etc/systemd/user after editing
+# all bracketed items
+[Unit]
+Description=LIRC command handler
+After=network.target
+
+[Service]
+#User=<user>
+#Group=<group>
+Type=simple
+ExecStart=/usr/bin/irexec </home/who/.lircrc>
+
+[Install]
+WantedBy=multi-user.target
+Wants=lircd.service
