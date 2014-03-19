@@ -9,8 +9,6 @@ AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 EXTRA_DIST =  setup.sh setup-driver.sh setup-functions.sh setup.data data2setup.sh README TODO
 EXTRA_DIST += autogen.sh
 
-dist_noinst_DATA = drivers/lirc.h  # Temporary fix after removing drivers/
-
 ## daemons/ and tools/ should appear before doc/ for help2man to work.
 if SYSTEMD_INSTALL
     SYSTEMD_DIR = systemd
