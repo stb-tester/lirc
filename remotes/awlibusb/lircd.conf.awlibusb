@@ -41,16 +41,16 @@ begin remote
           KEY_LEFT                 0x00A9AD
           KEY_RIGHT                0x01A8AD
           KEY_OK                   0x000B0F
-          KEY_KP1                  0x01CED3
-          KEY_KP2                  0x00CDD1
-          KEY_KP3                  0x01CCD1
-          KEY_KP4                  0x00CBCF
-          KEY_KP5                  0x01CACF
-          KEY_KP6                  0x00C9CD
-          KEY_KP7                  0x01C8CD
-          KEY_KP8                  0x00C7CB
-          KEY_KP9                  0x01C6CB
-          KEY_KP0                  0x00CFD3
+          KEY_1                    0x01CED3                  #  Was: KEY_KP1
+          KEY_2                    0x00CDD1                  #  Was: KEY_KP2
+          KEY_3                    0x01CCD1                  #  Was: KEY_KP3
+          KEY_4                    0x00CBCF                  #  Was: KEY_KP4
+          KEY_5                    0x01CACF                  #  Was: KEY_KP5
+          KEY_6                    0x00C9CD                  #  Was: KEY_KP6
+          KEY_7                    0x01C8CD                  #  Was: KEY_KP7
+          KEY_8                    0x00C7CB                  #  Was: KEY_KP8
+          KEY_9                    0x01C6CB                  #  Was: KEY_KP9
+          KEY_0                    0x00CFD3                  #  Was: KEY_KP0
           KEY_VIDEO                0x015C61
           KEY_REWIND               0x00E2E6
           KEY_PLAY                 0x01EAEF
@@ -111,16 +111,16 @@ begin remote
           KEY_LEFT                 0x00A9C1
           KEY_RIGHT                0x01A8C1
           KEY_OK                   0x000B23
-          KEY_KP1                  0x01CEE7
-          KEY_KP2                  0x00CDE5
-          KEY_KP3                  0x01CCE5
-          KEY_KP4                  0x00CBE3
-          KEY_KP5                  0x01CAE3
-          KEY_KP6                  0x00C9E1
-          KEY_KP7                  0x01C8E1
-          KEY_KP8                  0x00C7DF
-          KEY_KP9                  0x01C6DF
-          KEY_KP0                  0x00CFE7
+          KEY_1                    0x01CEE7                  #  Was: KEY_KP1
+          KEY_2                    0x00CDE5                  #  Was: KEY_KP2
+          KEY_3                    0x01CCE5                  #  Was: KEY_KP3
+          KEY_4                    0x00CBE3                  #  Was: KEY_KP4
+          KEY_5                    0x01CAE3                  #  Was: KEY_KP5
+          KEY_6                    0x00C9E1                  #  Was: KEY_KP6
+          KEY_7                    0x01C8E1                  #  Was: KEY_KP7
+          KEY_8                    0x00C7DF                  #  Was: KEY_KP8
+          KEY_9                    0x01C6DF                  #  Was: KEY_KP9
+          KEY_0                    0x00CFE7                  #  Was: KEY_KP0
           KEY_VIDEO                0x015C75
           KEY_REWIND               0x00E2FA
           KEY_PLAY                 0x01EA03
