@@ -45,8 +45,8 @@ begin remote
           KEY_CHANNELUP                      0x000000000000000A
           KEY_VOLUMEDOWN                     0x000000000000000C
           KEY_VOLUMEUP                     0x0000000000000009
-          *                        0x000000000000001F
-          #                        0x000000000000001E
+          KEY_NUMERIC_STAR         0x000000000000001F
+          KEY_NUMERIC_POUND        0x000000000000001E
           KEY_MUTE                         0x000000000000000B
           BUTTONL_DOWN             0x0000000000000039
           BUTTONR_DOWN             0x000000000000003A

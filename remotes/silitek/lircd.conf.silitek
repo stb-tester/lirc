@@ -44,8 +44,8 @@ begin remote
     KEY_7                        0x0000000000bbc7f8
     KEY_8                        0x0000000000bbc8f7
     KEY_9                        0x0000000000bb4976
-    *                        0x0000000000bbcbf4
-    #                        0x0000000000bb4c73
+    KEY_NUMERIC_STAR         0x0000000000bbcbf4
+    KEY_NUMERIC_POUND        0x0000000000bb4c73
     KEY_REWIND                      0x0000000000bb516e
     KEY_FORWARD                      0x0000000000bbd0ef
     KEY_PAUSE                    0x0000000000bbcef1
@@ -74,8 +74,8 @@ begin remote
     KEY_7                     0x0000000000ccc7f8
     KEY_8                     0x0000000000ccc8f7
     KEY_9                     0x0000000000cc4976
-    *_UP                     0x0000000000cccbf4
-    #_UP                     0x0000000000cc4c73
+    KEY_NUMERIC_START_UP      0x0000000000cccbf4
+    KEY_NUMERIC_POUND_UP      0x0000000000cc4c73
     KEY_REWIND                   0x0000000000cc516e
     KEY_FORWARD                   0x0000000000ccd0ef
     KEY_PAUSE                 0x0000000000cccef1

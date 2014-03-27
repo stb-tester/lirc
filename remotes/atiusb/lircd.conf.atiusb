@@ -1434,9 +1434,9 @@ begin remote
           7                        0x6893
           8                        0x6994
           9                        0x6A95
-          *                        0x0C37
+          KEY_NUMERIC_STAR         0x0C37
           0                        0x6C97
-          #                        0x0D38
+          KEY_NUMERIC_POUND        0x0D38
           Back                     0x75A0
           Info                     0x042F
           Select                   0x709B
@@ -1525,8 +1525,8 @@ begin remote
           8                        0x6994
           9                        0xEA15
           0                        0x6C97
-          *                        0x0C37
-          #                        0x8DB8
+          KEY_NUMERIC_STAR         0x0C37
+          KEY_NUMERIC_POUND        0x8DB8
           clear                    0x0530
           enter                    0x8BB6
       end codes
@@ -1683,7 +1683,7 @@ begin remote
           8                        0xE914
           9                        0x6A95
           0                        0xEC17
-          *                        0x8CB7
+          KEY_NUMERIC_STAR         0x8CB7
           HASH                     0x0D38
           CLEAR                    0x85B0
           ENTER                    0x0B36
@@ -1760,8 +1760,8 @@ begin remote
           8                        0xE914
           9                        0x6A95
           0                        0xEC17
-          *                        0x8CB7
-          #                        0x0D38
+          KEY_NUMERIC_STAR         0x8CB7
+          KEY_NUMERIC_POUND        0x0D38
           clear                    0x85B0
           enter                    0x0B36
       end codes

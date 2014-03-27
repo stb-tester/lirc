@@ -188,9 +188,9 @@ begin remote
           8                    0x800F0408
           9                    0x800F0409
           Zero                 0x800F0400
-          *                    0x800F041D
+          KEY_NUMERIC_STAR     0x800F041D
           Clear                0x800F040A
-          #                    0x800F041C
+          KEY_NUMERIC_POUND    0x800F041C
           Enter                0x800F040B
           Red                  0x800F045B
           Green                0x800F045C

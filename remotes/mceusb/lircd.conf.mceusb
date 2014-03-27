@@ -323,9 +323,9 @@ begin remote
           7                        0x6BF8
           8                        0xEBF7
           9                        0x6BF6
-          *                        0xEBE2
+          KEY_NUMERIC_STAR         0xEBE2
           0                        0x6BFF
-          #                        0xEBE3
+          KEY_NUMERIC_POUND        0xEBE3
           Clear                    0x6BF5
           Enter                    0xEBF4
       end codes
