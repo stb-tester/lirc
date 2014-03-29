@@ -487,17 +487,6 @@ if test -n "${withval}"; then
 fi
 )
 
-dnl if --prefix is not specified, then $prefix is still set to NONE by
-dnl configure.  That's bad here where we want to expand it!
-cur_prefix=$prefix
-test "x${prefix}" = "xNONE" && prefix=$ac_default_prefix
-test "${sysconfdir}" = "\${prefix}/etc" && sysconfdir=/etc
-test "${localstatedir}" = "\${prefix}/var" && localstatedir=/var
-varrundir="${localstatedir}/run"
-sysconfdir_exp=`eval "echo ${sysconfdir}"`
-localstatedir_exp=`eval "echo ${localstatedir}"`
-varrundir_exp=`eval "echo ${varrundir}"`
-prefix=$cur_prefix
 
 receive=""
 if ! echo ${hw_module}|grep " receive.o" >/dev/null; then
@@ -510,7 +499,6 @@ AC_SUBST(daemon)
 AC_SUBST(forkpty)
 AC_SUBST(devdir)
 AC_SUBST(sysconfdir)
-AC_SUBST(varrundir)
 AC_SUBST(driver)
 AC_SUBST(lirc_driver)
 AC_SUBST(vga_progs)
@@ -524,9 +512,6 @@ AC_SUBST(usb_libs)
 
 dnl tell the C code what we decided
 AC_DEFINE_UNQUOTED(DEVDIR, "$devdir")
-AC_DEFINE_UNQUOTED(SYSCONFDIR, "$sysconfdir_exp")
-AC_DEFINE_UNQUOTED(LOCALSTATEDIR, "$localstatedir_exp")
-AC_DEFINE_UNQUOTED([VARRUNDIR], "$varrundir_exp", [/var/run])
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(PLUGINDIR, "$libdir/lirc/plugins",[
@@ -568,6 +553,8 @@ AH_TOP([
 ])
 
 AH_BOTTOM([
+#include      "paths.h"
+
 #ifdef LIRC_HAVE_DEVFS
 #define LIRC_DRIVER_DEVICE      DEVDIR "/" DEV_LIRC "/0"
 #else

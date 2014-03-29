@@ -5,6 +5,9 @@ ACLOCAL_AMFLAGS             = -I m4
 AM_CPPFLAGS = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
 AM_LDFLAGS  = -lpthread
 
+varrundir   = $(localstatedir)/run
+
+
 sbin_PROGRAMS = lircd lircmd
 
 lircd_SOURCES = lircd.c lircd.h
