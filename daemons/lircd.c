@@ -174,7 +174,6 @@ struct in_addr address;
 struct peer_connection *peers[MAX_PEERS];
 int peern = 0;
 
-int debug = 0;
 static int daemonized = 0;
 static int allow_simulate = 0;
 static int userelease = 0;
@@ -846,7 +845,7 @@ int get_peer_message(struct peer_connection *peer)
 	return (1);
 }
 
-void start_server(mode_t permission, int nodaemon)
+void start_server(mode_t permission, int nodaemon, int debug)
 {
 	struct sockaddr_un serv_addr;
 	struct sockaddr_in serv_addr_in;
@@ -855,6 +854,9 @@ void start_server(mode_t permission, int nodaemon)
 	int new = 1;
 	int fd;
 	int n;
+
+
+	lirc_log_open("lircd", nodaemon, debug);
 
 	/* create pid lockfile in /var/run */
 	if ((fd = open(pidfile, O_RDWR | O_CREAT, 0644)) == -1 || (pidf = fdopen(fd, "r+")) == NULL) {
@@ -967,25 +969,6 @@ void start_server(mode_t permission, int nodaemon)
 		listen(sockinet, 3);
 		nolinger(sockinet);
 	}
-#ifdef USE_SYSLOG
-#ifdef DAEMONIZE
-	if (nodaemon) {
-		openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LIRC_SYSLOG);
-	} else {
-		openlog(syslogident, LOG_CONS | LOG_PID, LIRC_SYSLOG);
-	}
-#else
-	openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LIRC_SYSLOG);
-#endif
-#else
-	lf = fopen(logfile, "a");
-	if (lf == NULL) {
-		fprintf(stderr, "%s: could not open logfile\n", progname);
-		perror(progname);
-		goto start_server_failed2;
-	}
-	gethostname(hostname, HOSTNAME_LEN);
-#endif
 	LOGPRINTF(1, "started server socket");
 	return;
 
@@ -2173,7 +2156,7 @@ static void lircd_parse_options(int argc, char** argv)
 #       endif
 	;
 
-	progname = "lircd";
+	strncpy(progname, "lircd", sizeof(progname));
 	optind = 1;
 	lircd_add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, lircd_options, NULL))
@@ -2266,7 +2249,9 @@ int main(int argc, char **argv)
 	char *device = NULL;
 	char errmsg[128];
 	char* opt;
+	int debug = 0;
 
+	lirc_log_open("lircd", 0, LOG_INFO);
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, lircd_parse_options);
@@ -2342,7 +2327,7 @@ int main(int argc, char **argv)
 
 	signal(SIGPIPE, SIG_IGN);
 
-	start_server(permission, nodaemon);
+	start_server(permission, nodaemon, debug);
 
 	act.sa_handler = sigterm;
 	sigfillset(&act.sa_mask);

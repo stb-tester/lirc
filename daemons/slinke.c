@@ -48,16 +48,6 @@ struct hardware hw = {
 #define MAX_LINE_WIDTH 300
 #define MAX_CODES 100
 
-int debug = 0;
-
-void logprintf(int prio, const char *format_str, ...)
-{
-}
-
-void logperror(int prio, const char *s)
-{
-}
-
 int get_val(char *buffer, ...)
 {
 	va_list ap;

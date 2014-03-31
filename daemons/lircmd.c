@@ -47,6 +47,7 @@ typedef uint64_t __u64;
 #endif
 
 #include "lirc_options.h"
+#include "lirc_log.h"
 
 #define CLICK_DELAY 50000	/* usecs */
 #define WHITE_SPACE " \t"
@@ -149,7 +150,6 @@ struct state_mouse new_ms, ms = {
 };
 
 
-static const char *syslogident = "lircmd-" VERSION;
 const char *configfile = NULL;
 
 int lircd = -1;
@@ -775,7 +775,6 @@ static void lircmd_parse_options(int argc, char** argv)
 	const char* const optstring = "hvnO"
 #       endif
 
-	progname = "lircmd";
 	lircmd_add_defaults();
 	optind = 1;
 	while ((c = getopt_long(argc, argv, optstring, lircmd_options, NULL))
@@ -786,7 +785,7 @@ static void lircmd_parse_options(int argc, char** argv)
 			lircmd_help();
 			exit(EXIT_SUCCESS);
 		case 'v':
-			printf("%s %s\n", progname, VERSION);
+			printf("lircmd %s\n",  VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
 			options_load(argc, argv, optarg, lircmd_parse_options);
@@ -808,7 +807,7 @@ static void lircmd_parse_options(int argc, char** argv)
 	if (optind == argc - 1) {
 		options_set_opt("configfile", argv[optind]);
 	} else if (optind != argc) {
-		fprintf(stderr, "%s: invalid argument count\n", progname);
+		fprintf(stderr, "lircmd: invalid argument count\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -874,6 +873,12 @@ int main(int argc, char **argv)
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
+#ifdef DEBUG
+	lirc_log_open("lircmd", nodaemon, LOG_DEBUG);
+#else
+	lirc_log_open("lircmd", nodaemon, 0);
+#endif
+
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;
@@ -947,8 +952,6 @@ int main(int argc, char **argv)
 	if (!nodaemon)
 		daemonize();
 #endif
-	openlog(syslogident, LOG_CONS, LOG_DAEMON);
-
 	signal(SIGPIPE, SIG_IGN);
 
 	act.sa_handler = sigterm;

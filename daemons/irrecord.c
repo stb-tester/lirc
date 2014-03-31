@@ -118,12 +118,6 @@ lirc_t aeps = 100;
 
 #define SAMPLES 80
 
-#ifdef DEBUG
-int debug = 10;
-#else
-int debug = 0;
-#endif
-char *hostname = "";
 int daemonized = 0;
 
 struct ir_remote *emulation_data;
@@ -272,8 +266,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
 #endif
-
-	progname = argv[0];
+	lirc_log_open("irrecord", 0, LOG_WARNING);
 	get_commandline(argc, argv, commandline, sizeof(commandline));
 	force = 0;
 	hw_choose_driver(NULL);

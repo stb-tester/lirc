@@ -34,28 +34,44 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "lirc/lirc_log.h"
 
 #ifndef USE_SYSLOG
 #define HOSTNAME_LEN 128
 char hostname[HOSTNAME_LEN + 1];
-
 FILE *lf = NULL;
 #endif
 
-#ifndef USE_SYSLOG
-char *logfile = LOGFILE;
-#else
+int debug = 0;
+
+#ifdef USE_SYSLOG
 const char *syslogident = "lircd-" VERSION;
+#else
+char *logfile = LOGFILE;
 #endif
 
-static char progname[128] = "lircd";
-static int daemonized = 1;
+char progname[128] = {'?','\0'};
 static int nodaemon = 0;
 
 
 static int log_enabled = 1;
+
+static const char* prio2text(int prio)
+{
+	switch (prio) {
+		case LOG_DEBUG:		return "Debug";
+		case LOG_NOTICE:	return "Notice";
+		case LOG_INFO:		return "Info";
+		case LOG_WARNING:	return "Warning";
+		case LOG_ERR:		return "Error";
+		case LIRC_TRACE:        return "Trace";
+		case LIRC_PEEP:         return "Trace1";
+		case LIRC_STALK:        return "Trace2";
+		default:		return "(Bad prio)";
+	}
+}
 
 void lirc_set_logfile(char* s)
 {
@@ -64,11 +80,11 @@ void lirc_set_logfile(char* s)
 #	endif
 }
 
-int lirc_log_open(int nodaemon_arg, char* progname_arg, int daemonized_arg)
+int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 {
-	strncpy(progname, progname_arg, sizeof(progname));
-	nodaemon = nodaemon_arg;
-	daemonized = daemonized_arg;
+	strncpy(progname, _progname, sizeof(progname));
+	nodaemon = _nodaemon;
+	debug = _debug;
 
 #ifdef USE_SYSLOG
 #ifdef DAEMONIZE
@@ -120,7 +136,20 @@ int lirc_log_reopen(void)
 	return 0;
 }
 
+int lirc_log_setlevel(const char* s)
+{
+	long level = LONG_MAX;
 
+	if (s == NULL)
+		s  = getenv("LIRC_LOGLEVEL");
+	level = strtol(s, NULL, 10);
+	if (level > INT_MAX || level < INT_MIN) {
+		level = DEFAULT_LOGLEVEL;
+		return 0;
+	};
+	debug = (int) level;
+	return 1;
+}
 
 
 void log_enable(int enabled)
@@ -128,7 +157,7 @@ void log_enable(int enabled)
 	log_enabled = enabled;
 }
 
-#ifdef USE_SYSLOG
+
 void logprintf(int prio, const char *format_str, ...)
 {
 	int save_errno = errno;
@@ -137,58 +166,36 @@ void logprintf(int prio, const char *format_str, ...)
 	if (!log_enabled)
 		return;
 
+	if (nodaemon && prio <= debug) {
+		fprintf(stderr, "%s: %s", progname, prio2text(prio));
+		va_start(ap, format_str);
+		vfprintf(stderr, format_str, ap);
+		va_end(ap);
+		fputc('\n', stderr);
+		fflush(stderr);
+	}
+#ifdef USE_SYSLOG
 	va_start(ap, format_str);
 	vsyslog(prio, format_str, ap);
 	va_end(ap);
-
-	errno = save_errno;
-}
-
-void logperror(int prio, const char *s)
-{
-	if (!log_enabled)
-		return;
-
-	if ((s) != NULL)
-		syslog(prio, "%s: %m\n", (char *)s);
-	else
-		syslog(prio, "%m\n");
-}
 #else
-void logprintf(int prio, const char *format_str, ...)
-{
-	int save_errno = errno;
-	va_list ap;
-
-	if (!log_enabled)
-		return;
-
-	if (lf) {
+	if (lf && prio <= debug) {
 		time_t current;
 		char *currents;
 
 		current = time(&current);
 		currents = ctime(&current);
 
-		fprintf(lf, "%15.15s %s %s: ", currents + 4, hostname, progname);
+		fprintf(lf, "%15.15s %s %s: ",
+			currents + 4, hostname, progname);
+		fprintf(lf, prio2text(prio));
 		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(lf, "WARNING: ");
 		vfprintf(lf, format_str, ap);
+		va_end(ap);
 		fputc('\n', lf);
 		fflush(lf);
-		va_end(ap);
 	}
-	if (!daemonized) {
-		fprintf(stderr, "%s: ", progname);
-		va_start(ap, format_str);
-		if (prio == LOG_WARNING)
-			fprintf(stderr, "WARNING: ");
-		vfprintf(stderr, format_str, ap);
-		fputc('\n', stderr);
-		fflush(stderr);
-		va_end(ap);
-	}
+#endif
 	errno = save_errno;
 }
 
@@ -197,12 +204,18 @@ void logperror(int prio, const char *s)
 	if (!log_enabled)
 		return;
 
+#ifdef USE_SYSLOG
+	if ((s) != NULL)
+		syslog(prio, "%s: %m\n", (char *)s);
+	else
+		syslog(prio, "%m\n");
+#else
 	if (s != NULL) {
 		logprintf(prio, "%s: %s", s, strerror(errno));
 	} else {
 		logprintf(prio, "%s", strerror(errno));
 	}
-}
 #endif
+}
 
 

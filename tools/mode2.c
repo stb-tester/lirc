@@ -34,14 +34,6 @@
 
 #include "lirc_private.h"
 
-#ifdef DEBUG
-int debug = 10;
-#else
-int debug = 0;
-#endif
-char *hostname = "";
-int daemonized = 0;
-
 
 int main(int argc, char **argv)
 {

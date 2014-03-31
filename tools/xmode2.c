@@ -80,14 +80,6 @@ XSetWindowAttributes winatt1;
 long event_mask1;
 XEvent event_return1;
 
-#ifdef DEBUG
-int debug = 10;
-#else
-int debug = 0;
-#endif
-char *hostname = "";
-int daemonized = 0;
-
 
 void initscreen(char *geometry)
 {
@@ -156,8 +148,11 @@ int main(int argc, char **argv)
 
 	char *device = LIRC_DRIVER_DEVICE;
 	char *geometry = NULL;
-
-	progname = "xmode2";
+#ifdef DEBUG
+	lirc_log_open("xmode2", 0, LOG_DEBUG);
+#else
+	lirc_log_open("xmode2", 0, 0);
+#endif
 	hw_choose_driver(NULL);
 	while (1) {
 		int c;

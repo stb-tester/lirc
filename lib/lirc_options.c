@@ -23,12 +23,6 @@ dictionary* lirc_options = NULL;
 
 static int depth = 0;
 
-#ifdef DEBUG
-extern int debug;
-#endif
-
-const char* progname = "undefined";
-
 
 void options_set_opt(char* key, char* value)
 {

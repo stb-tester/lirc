@@ -98,10 +98,6 @@ char *protocol_string[] = {
 	"SIGHUP\n"
 };
 
-static int debug;
-
-
-const char *progname = "lircrcd";
 
 static sig_atomic_t term = 0;
 static int termsig;
@@ -810,7 +806,7 @@ int main(int argc, char **argv)
 	struct sockaddr_un addr;
 	char dir[FILENAME_MAX + 1] = { 0 };
 
-	debug = 0;
+	lirc_log_open("lircrcd", 0, 0);
 	while (1) {
 		int c;
 		static struct option long_options[] = {
