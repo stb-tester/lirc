@@ -2300,7 +2300,7 @@ int main(int argc, char **argv)
 			return(EXIT_FAILURE);
 	}
 #       ifdef DEBUG
-	debug = options_getboolean("lircd:debug");
+	debug = options_getint("lircd:debug");
 #       endif
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));

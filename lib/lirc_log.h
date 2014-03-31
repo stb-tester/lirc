@@ -30,7 +30,8 @@ extern char progname[128];
 #define logmax(l) (l > LOG_DEBUG ? LOG_DEBUG : l )
 
 /*
- *  Debug tools. Accepts level 1..3 which are mapped to LIRC_TRACE..LIRC_ALL.
+ *  Debug tools. Accepts level 1..3 which are mapped to
+ *  LIRC_TRACE..LIRC_STALK.
  */
 #define LOGPRINTF(level,fmt,args...) \
 	if (level + 7 <= debug ) logprintf(logmax(level + 7), fmt, ## args )

@@ -57,12 +57,10 @@ typedef void (*remote_func) (struct ir_remote * remotes);
 
 void for_each_remote(struct ir_remote *remotes, remote_func func);
 void analyse_remote(struct ir_remote *raw_data);
-#ifdef DEBUG
 void remove_pre_data(struct ir_remote *remote);
 void remove_post_data(struct ir_remote *remote);
 void invert_data(struct ir_remote *remote);
 void remove_trail(struct ir_remote *remote);
-#endif
 int get_lengths(struct ir_remote *remote, int force, int interactive);
 struct lengths *new_length(lirc_t length);
 int add_length(struct lengths **first, lirc_t length);
@@ -229,9 +227,7 @@ static int i_printf(int interactive, char *format_str, ...)
 	va_list ap;
 	int ret = 0;
 
-#ifndef DEBUG
-	if (interactive)
-#endif
+	if (interactive && lirc_log_is_enabled_for(LOG_DEBUG))
 	{
 		va_start(ap, format_str);
 		ret = vfprintf(stdout, format_str, ap);
@@ -263,9 +259,7 @@ int main(int argc, char **argv)
 	int using_template = 0;
 	int analyse = 0;
 	char commandline[128];
-#ifdef DEBUG
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
-#endif
 	lirc_log_open("irrecord", 0, LOG_WARNING);
 	get_commandline(argc, argv, commandline, sizeof(commandline));
 	force = 0;
@@ -533,11 +527,12 @@ int main(int argc, char **argv)
 			remote.aeps = aeps;
 			break;
 		}
-#               ifdef DEBUG
-		printf("%d %u %u %u %u %u %d %d %d %u\n", remote.bits, (__u32) remote.pone, (__u32) remote.sone,
-		       (__u32) remote.pzero, (__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
-		       remote.aeps, (__u32) remote.gap);
-#               endif
+		if lirc_log_is_enabled_for(LOG_DEBUG) {
+			 printf("%d %u %u %u %u %u %d %d %d %u\n",
+				remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
+				(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
+				remote.aeps, (__u32) remote.gap);
+		}
 		break;
 	case LIRC_MODE_LIRCCODE:
 		remote.bits = hw.code_length;
@@ -1297,7 +1292,6 @@ void analyse_remote(struct ir_remote *raw_data)
 	free(new_codes);
 }
 
-#ifdef DEBUG
 void remove_pre_data(struct ir_remote *remote)
 {
 	struct ir_ncode *codes;
@@ -1421,7 +1415,6 @@ void remove_trail(struct ir_remote *remote)
 	remote->post_data |= extra_bit;
 	remote->ptrail = 0;
 }
-#endif
 
 /* analyse stuff */
 
@@ -1826,13 +1819,14 @@ void merge_lengths(struct lengths *first)
 		}
 		l = l->next;
 	}
-#       ifdef DEBUG
-	l = first;
-	while (l != NULL) {
-		printf("%d x %u [%u,%u]\n", l->count, (__u32) calc_signal(l), (__u32) l->min, (__u32) l->max);
-		l = l->next;
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		l = first;
+		while (l != NULL) {
+			printf("%d x %u [%u,%u]\n",
+			       l->count, (__u32) calc_signal(l), (__u32) l->min, (__u32) l->max);
+			l = l->next;
+		}
 	}
-#       endif
 }
 
 void get_scheme(struct ir_remote *remote, int interactive)
@@ -1844,15 +1838,16 @@ void get_scheme(struct ir_remote *remote, int interactive)
 			length = i;
 		}
 		sum += lengths[i];
-#               ifdef DEBUG
-		if (lengths[i] > 0)
-			printf("%u: %u\n", i, lengths[i]);
-#               endif
+		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+			if (lengths[i] > 0)
+				printf("%u: %u\n", i, lengths[i]);
+		}
 	}
-#       ifdef DEBUG
-	printf("get_scheme(): sum: %u length: %u signals: %u\n" "first_lengths: %u second_lengths: %u\n", sum,
-	       length + 1, lengths[length], first_lengths, second_lengths);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		printf("get_scheme(): sum: %u length: %u signals: %u\n"
+		       "first_lengths: %u second_lengths: %u\n",
+			sum, length + 1, lengths[length], first_lengths, second_lengths);
+	}
 	/* FIXME !!! this heuristic is too bad */
 	if (lengths[length] >= TH_SPACE_ENC * sum / 100) {
 		length++;
@@ -1916,20 +1911,19 @@ struct lengths *get_max_length(struct lengths *first, unsigned int *sump)
 	max_length = first;
 	sum = first->count;
 
-#       ifdef DEBUG
-	if (first->count > 0)
-		printf("%u x %u\n", first->count, (__u32) calc_signal(first));
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (first->count > 0)
+			printf("%u x %u\n", first->count, (__u32) calc_signal(first));
+	}
 	scan = first->next;
 	while (scan) {
 		if (scan->count > max_length->count) {
 			max_length = scan;
 		}
 		sum += scan->count;
-#               ifdef DEBUG
-		if (scan->count > 0)
+		if (lirc_log_is_enabled_for(LOG_DEBUG) && scan->count > 0) {
 			printf("%u x %u\n", scan->count, (__u32) calc_signal(scan));
-#               endif
+		}
 		scan = scan->next;
 	}
 	if (sump != NULL)
@@ -1947,9 +1941,10 @@ int get_trail_length(struct ir_remote *remote, int interactive)
 
 	max_length = get_max_length(first_trail, &sum);
 	max_count = max_length->count;
-#       ifdef DEBUG
-	printf("get_trail_length(): sum: %u, max_count %u\n", sum, max_count);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		logprintf(LOG_DEBUG, "get_trail_length(): sum: %u, max_count %u\n",
+			  sum, max_count);
+	}
 	if (max_count >= sum * TH_TRAIL / 100) {
 		i_printf(interactive, "Found trail pulse: %lu\n", (__u32) calc_signal(max_length));
 		remote->ptrail = calc_signal(max_length);
@@ -1973,9 +1968,9 @@ int get_lead_length(struct ir_remote *remote, int interactive)
 	first_lead = has_header(remote) ? first_3lead : first_1lead;
 	max_length = get_max_length(first_lead, &sum);
 	max_count = max_length->count;
-#       ifdef DEBUG
-	printf("get_lead_length(): sum: %u, max_count %u\n", sum, max_count);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		printf("get_lead_length(): sum: %u, max_count %u\n", sum, max_count);
+	}
 	if (max_count >= sum * TH_LEAD / 100) {
 		i_printf(interactive, "Found lead pulse: %lu\n", (__u32) calc_signal(max_length));
 		remote->plead = calc_signal(max_length);
@@ -2015,16 +2010,16 @@ int get_header_length(struct ir_remote *remote, int interactive)
 		i_printf(interactive, "No header data.\n");
 		return (1);
 	}
-#       ifdef DEBUG
-	printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
+	}
 
 	if (max_count >= sum * TH_HEADER / 100) {
 		max_slength = get_max_length(first_headers, &sum);
 		max_count = max_slength->count;
-#               ifdef DEBUG
-		printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
-#               endif
+		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+			printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
+		}
 		if (max_count >= sum * TH_HEADER / 100) {
 			headerp = calc_signal(max_plength);
 			headers = calc_signal(max_slength);
@@ -2060,16 +2055,16 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 
 	max_plength = get_max_length(first_repeatp, &sum);
 	max_count = max_plength->count;
-#       ifdef DEBUG
-	printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
+	}
 
 	if (max_count >= sum * TH_REPEAT / 100) {
 		max_slength = get_max_length(first_repeats, &sum);
 		max_count = max_slength->count;
-#               ifdef DEBUG
-		printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
-#               endif
+		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+			printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
+		}
 		if (max_count >= sum * TH_REPEAT / 100) {
 			if (count_5repeats > count_3repeats && !has_header(remote)) {
 				printf("Repeat code has header," " but no header found!\n");
@@ -2132,9 +2127,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;
-#       ifdef DEBUG
-	printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
-#       endif
+	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
+	}
 
 	if (max_count >= sum * TH_IS_BIT / 100) {
 		unlink_length(&first_pulse, max_plength);
@@ -2144,20 +2139,20 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			if (max2_plength->count < max_count * TH_IS_BIT / 100)
 				max2_plength = NULL;
 		}
-#               ifdef DEBUG
-		printf("Pulse canditates: ");
-		printf("%u x %u", max_plength->count, (__u32) calc_signal(max_plength));
-		if (max2_plength)
-			printf(", %u x %u", max2_plength->count, (__u32)
-			       calc_signal(max2_plength));
-		printf("\n");
-#               endif
+		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+			printf("Pulse canditates: ");
+			printf("%u x %u", max_plength->count, (__u32) calc_signal(max_plength));
+			if (max2_plength)
+				printf(", %u x %u", max2_plength->count, (__u32)
+				       calc_signal(max2_plength));
+			printf("\n");
+		}
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
-#               ifdef DEBUG
-		printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
-#               endif
+		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+			printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
+		}
 		if (max_count >= sum * TH_IS_BIT / 100) {
 			unlink_length(&first_space, max_slength);
 
@@ -2166,13 +2161,14 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				if (max2_slength->count < max_count * TH_IS_BIT / 100)
 					max2_slength = NULL;
 			}
-#                       ifdef DEBUG
-			printf("Space canditates: ");
-			printf("%u x %u", max_slength->count, (__u32) calc_signal(max_slength));
-			if (max2_slength)
-				printf(", %u x %u", max2_slength->count, (__u32) calc_signal(max2_slength));
-			printf("\n");
-#                       endif
+			if (max_count >= sum * TH_IS_BIT / 100) {
+				printf("Space canditates: ");
+				printf("%u x %u", max_slength->count, (__u32) calc_signal(max_slength));
+				if (max2_slength)
+					printf(", %u x %u",
+					       max2_slength->count, (__u32) calc_signal(max2_slength));
+				printf("\n");
+			}
 
 			remote->eps = eps;
 			remote->aeps = aeps;
