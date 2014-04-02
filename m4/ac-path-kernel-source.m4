@@ -17,35 +17,32 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
   if test `uname` != "Linux"; then
     kerneldir="not running Linux"
   else
-    for dir in /usr/src/kernel-source-`uname -r` /usr/src/linux-`uname -r` /usr/src/linux /lib/modules/`uname -r`/source /lib/modules/`uname -r`/build ${ac_kerneldir}; do
+    shortvers="$( uname -r | sed -r 's/(@<:@2-9@:>@\.@<:@0-9@:>@+).*/\1/' )"
+    for dir in ${ac_kerneldir} \
+        /usr/src/kernel-source-`uname -r` \
+        /usr/src/linux-source-`uname -r` \
+        /usr/src/kernel-source-$shortvers \
+        /usr/src/linux-source-$shortvers \
+        /usr/src/linux /lib/modules/`uname -r`/source \
+        /lib/modules/`uname -r`/build
+    do
       if test -d $dir; then
         kerneldir=`dirname $dir/Makefile`/
         no_kernel=no
+        break
       fi;
     done
   fi
 
   if test x${no_kernel} != xyes; then
     if test -f ${kerneldir}/Makefile; then
-      if test "${ac_pkss_mktemp}" = "yes"; then
-        ac_pkss_makefile=`mktemp /tmp/LIRCMF.XXXXXX`
-      else
-        ac_pkss_makefile=/tmp/LIRCMF.XXXXXX
-      fi
-      cat ${kerneldir}/Makefile >${ac_pkss_makefile}
-
-      echo "lirc_tell_me_what_version_is:" >>${ac_pkss_makefile}
-      echo "	echo \$(VERSION)" >>${ac_pkss_makefile}
-      echo "lirc_tell_me_what_patchlevel_is:" >>${ac_pkss_makefile}
-      echo "	echo \$(PATCHLEVEL)" >>${ac_pkss_makefile}
-      version=$(make -s -C ${kerneldir} -f ${ac_pkss_makefile} lirc_tell_me_what_version_is M=$(pwd))
-      patchlevel=$(make -s -C ${kerneldir} -f ${ac_pkss_makefile} lirc_tell_me_what_patchlevel_is M=$(pwd))
-      if test ${version} -eq 2; then
-        if test ${patchlevel} -lt 5; then
+      version=$( sed -n '/^VERSION/s/.*=\ *//p' ${kerneldir}/Makefile )
+      patchlevel=$( sed -n -e '/^PATCHLEVEL/s/.*=\ *//p' ${kerneldir}/Makefile )
+      if test "${version}" -eq 2; then
+        if test "${patchlevel}" -lt 5; then
           kernelext=o
         fi
       fi
-      rm -f ${ac_pkss_makefile}
     else
       kerneldir="no Makefile found"
       no_kernel=yes
