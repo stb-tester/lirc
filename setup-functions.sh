@@ -1,3 +1,10 @@
+# Use gnu-sed on Macosx
+if test `uname` == "Darwin"; then
+  SED=gsed
+else
+  SED=sed
+fi
+
 setup_seq_init() {
 	local INDEX=1
 	local N
@@ -24,7 +31,7 @@ query_setup_data() {
 	local INDEXES=""
 	local NAME
 	TEMP=$(mktemp /tmp/lirc.XXXXXXXXXX)
-	FULL_ENTRY=$(sed -n \
+	FULL_ENTRY=$($SED -n \
 		-e ': start' \
 		-e 's/\\[ 	]*$//' \
 		-e 't more' \
@@ -37,7 +44,7 @@ query_setup_data() {
 		-e '/^[ 	]*#/d' \
 		-e "/^$QUESTION:.* $DEVICE\>\([^-]\|$\)/,/^ *$/p" \
 		${SETUP_DATA})
-	HACKED_ENTRY=$(echo "$FULL_ENTRY" | sed \
+	HACKED_ENTRY=$(echo "$FULL_ENTRY" | $SED \
 		-e "/^$QUESTION:/d" \
 		-e '/^ *$/d' \
 		-e 's/^[ 	]*//' \
@@ -142,7 +149,7 @@ EOF
 				fi
 			fi
 			echo -n 'LIRC_DRIVER='"${NAME};	" 
-			if [ "$(expr length "$NAME")" -lt 8 ]; then
+			if [ ${#NAME} -lt 8 ]; then
 				echo -n "	"
 			fi
 			echo 	'DRIVER_PARAMETER='"$DEF_PARAM;" \

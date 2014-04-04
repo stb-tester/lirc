@@ -3,7 +3,14 @@
 TYPES="KEY BTN"
 file=${1:-/usr/include/linux/input.h}
 
+# Use gnu-sed on Macosx
+if test "`uname`" = 'Darwin'; then
+  SED=gsed
+else
+  SED=sed
+fi
+
 for type in $TYPES; do
-	grep "^#define ${type}_" < $file|sort|sed -n --expression="s/^#define \([^ 	]*\)[ 	][ 	]*\([0-9][0-9a-fA-FxX]*\).*/{\"\1\", \2},/p"
+	grep "^#define ${type}_" < $file|sort|$SED -n --expression="s/^#define \([^ 	]*\)[ 	][ 	]*\([0-9][0-9a-fA-FxX]*\).*/{\"\1\", \2},/p"
 done
 

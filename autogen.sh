@@ -1,6 +1,6 @@
 #! /bin/sh
 rm -rf Makefile aclocal.m4 config.guess config.h.in* config.sub configure depcomp install-sh install.sh ltmain.sh missing autom4te.cache
-find  -name Makefile.in -exec rm {} \;
+find . -name Makefile.in -exec rm {} \;
 autoreconf -i -f
 
 #depcom is not added to DIST_COMMON by the previous run of automake, strange
