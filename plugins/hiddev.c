@@ -40,6 +40,7 @@ static char *sb0540_rec(struct ir_remote *remotes);
 static char *macmini_rec(struct ir_remote *remotes);
 static int samsung_init();
 static char *samsung_rec(struct ir_remote *remotes);
+static char *sonyir_rec(struct ir_remote *remotes);
 
 struct hardware hw_dvico = {
 	"/dev/usb/hiddev0",	/* "device" */
@@ -168,6 +169,25 @@ struct hardware hw_samsung = {
 	"samsung"		/* name */
 };
 #endif
+
+/* Sony IR Receiver */
+struct hardware hw_sonyir = {
+	"/dev/usb/hiddev0",	/* "device" */
+	-1,			/* fd (device) */
+	LIRC_CAN_REC_LIRCCODE,	/* features */
+	0,			/* send_mode */
+	LIRC_MODE_LIRCCODE,	/* rec_mode */
+	32,			/* code_length */
+	hiddev_init,		/* init_func */
+	hiddev_deinit,		/* deinit_func */
+	NULL,			/* send_func */
+	sonyir_rec,		/* rec_func */
+	hiddev_decode,		/* decode_func */
+	NULL,			/* ioctl_func */
+	NULL,			/* readdata */
+	"sonyir"		/* name */
+};
+
 
 static int old_main_code = 0;
 
@@ -772,10 +792,56 @@ char *samsung_rec(struct ir_remote *remotes)
 #endif
 
 
+/*
+ * Sony IR Receiver  (PCVA-IR5U)
+ *
+ * #define USB_VENDOR_ID_SONY               0x054c
+ * #define USB_DEVICE_ID_SONY_IR_RECEIVER   0x00d4
+ *
+ */
+char *sonyir_rec(struct ir_remote *remotes)
+{
+	struct hiddev_event ev[4];
+	int rd;
+	int i;
+	unsigned char msg[16];
+
+	LOGPRINTF(1, "sonyir_rec");
+
+	// Sony IR receiver has 3 reports:
+	//   0x01 - 5B
+	//   0x02 - 1B
+	//   0x03 - 8B
+	//
+	rd = read(hw.fd, msg, 16);
+
+	// Require 6-character report, usage 0x1
+	if ((rd != 6) || (msg[0] != 0x1)) {
+		return 0;
+	}
+
+	// Ignore release message
+	if ((msg[2] & 0x80) == 0x80) {
+		//repeat_state = RPT_NO;
+		return 0;
+	}
+
+	// Construct event
+	ev[i].value = (msg[3] << 16) | (msg[4] << 8) | ((msg[2]&0x7f) << 0);
+
+	pre_code_length = 0;
+	pre_code = 0;
+	main_code = ev[0].value;
+	repeat_state = RPT_NO;
+
+	return decode_all(remotes);
+}
+
 struct hardware* hardwares[] = { &hw_dvico,
 				 &hw_bw6130,
 				 &hw_asusdh,
 				 &hw_macmini,
+				 &hw_sonyir,
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 				 &hw_sb0540,
 				 &hw_samsung,
