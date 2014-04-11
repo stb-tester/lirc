@@ -97,12 +97,12 @@ GetPortAndIrq ()
            2> $TEMP
     if test "$?" = "0"; then
         {
-	set `cat $TEMP`
+        set `cat $TEMP`
         LIRC_PORT=$1
         LIRC_IRQ=$2
         }
     else
-	return 1;
+        return 1;
     fi
     }
 
@@ -122,7 +122,7 @@ SetPortAndIrq ()
                2> $TEMP
         if test "$?" = "0"; then
             {
-	    set `cat $TEMP`
+            set `cat $TEMP`
             if   test "$1" = "1"; then DRIVER_PARAMETER="com1"
             elif test "$1" = "2"; then DRIVER_PARAMETER="com2"
             elif test "$1" = "3"; then DRIVER_PARAMETER="com3"
@@ -131,8 +131,8 @@ SetPortAndIrq ()
             fi
             GetSelectedDriver
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
         }
     elif test "$DRIVER_PARAM_TYPE" = "lpt"; then
@@ -147,7 +147,7 @@ SetPortAndIrq ()
                  2> $TEMP
         if test "$?" = "0"; then
             {
-	    set `cat $TEMP`
+            set `cat $TEMP`
             if   test "$1" = "1"; then DRIVER_PARAMETER="lpt1"
             elif test "$1" = "2"; then DRIVER_PARAMETER="lpt2"
             elif test "$1" = "3"; then DRIVER_PARAMETER="lpt3"
@@ -155,12 +155,12 @@ SetPortAndIrq ()
             fi
             GetSelectedDriver
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
         }
     elif test "$DRIVER_PARAM_TYPE" = "tty"; then
-	{
+        {
         dialog --clear --backtitle "$BACKTITLE" \
                --title "Select tty to use" \
                --radiolist "$SET_TTY_TEXT" 13 74 6 \
@@ -169,10 +169,10 @@ SetPortAndIrq ()
                  3 "COM3 (/dev/ttyS2)" $COM3 \
                  4 "COM4 (/dev/ttyS3)" $COM4 \
                2> $TEMP
-	}
+        }
         if test "$?" = "0"; then
             {
-	    set `cat $TEMP`
+            set `cat $TEMP`
             if   test "$1" = "1"; then DRIVER_PARAMETER="tty1"
             elif test "$1" = "2"; then DRIVER_PARAMETER="tty2"
             elif test "$1" = "3"; then DRIVER_PARAMETER="tty3"
@@ -180,11 +180,11 @@ SetPortAndIrq ()
             fi
             GetSelectedDriver
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
     elif test "$DRIVER_PARAM_TYPE" = "ttyUSB"; then
-	{
+        {
         dialog --clear --backtitle "$BACKTITLE" \
                --title "Select tty to use" \
                --radiolist "$SET_TTY_TEXT" 13 74 6 \
@@ -193,10 +193,10 @@ SetPortAndIrq ()
                  3 "/dev/ttyUSB2" $COM3 \
                  4 "/dev/ttyUSB3" $COM4 \
                2> $TEMP
-	}
+        }
         if test "$?" = "0"; then
             {
-	    set `cat $TEMP`
+            set `cat $TEMP`
             if   test "$1" = "1"; then DRIVER_PARAMETER="ttyUSB1"
             elif test "$1" = "2"; then DRIVER_PARAMETER="ttyUSB2"
             elif test "$1" = "3"; then DRIVER_PARAMETER="ttyUSB3"
@@ -204,8 +204,8 @@ SetPortAndIrq ()
             fi
             GetSelectedDriver
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
     fi
     return 0;
@@ -226,10 +226,10 @@ DriverOptions ()
                2> $TEMP
         if test "$?" = "0"; then
             {
-	    set -- `cat $TEMP`
+            set -- `cat $TEMP`
             SOFT_CARRIER="off"
-	    TRANSMITTER="off"
-	    IGOR="off"
+            TRANSMITTER="off"
+            IGOR="off"
             for ITEM in $@; do
                 {
                 if   test $ITEM = "1" || test $ITEM = "\"1\""; then TRANSMITTER="on";
@@ -238,10 +238,10 @@ DriverOptions ()
                 fi
                 }
             done
-#	    if test "$TRANSMITTER" = "off"; then SOFT_CARRIER="off"; fi
+#           if test "$TRANSMITTER" = "off"; then SOFT_CARRIER="off"; fi
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
         }
     elif test "$LIRC_DRIVER" = "parallel"; then
@@ -252,11 +252,11 @@ DriverOptions ()
                2> $TEMP
         if test "$?" = "0"; then
             {
-	    set `cat $TEMP`
+            set `cat $TEMP`
             TIMER=$1
             }
-	else
-	    return 1;
+        else
+            return 1;
         fi
         }
     fi
@@ -291,7 +291,7 @@ ConfigSoftware ()
 
     if test "$?" = "0"; then
         {
-	set -- `cat $TEMP`
+        set -- `cat $TEMP`
         X11_WINDOWS="off"; DEBUG="off"; NO_DAEMONIZE="off"; NO_LONG_CODES="off"
         USE_SYSLOG="off"; DYNCODES="off"
         for ITEM in $@; do
@@ -344,13 +344,13 @@ SaveConfig ()
     elif test "$LIRC_DRIVER" = "parallel"; then
         {
         if test "$TIMER" != "0"; then echo "--with-timer=$TIMER \\" >>$START;
-	else echo "--without-timer \\" >>$START;
-	fi
+        else echo "--without-timer \\" >>$START;
+        fi
         }
     elif test "$DRIVER_PARAM_TYPE" = "tty" -o "$DRIVER_PARAM_TYPE" = "ttyUSB" -o "$LIRC_DRIVER" = "bte"; then
         {
-	echo "--with-tty=$IRTTY \\" >>$START
-	}
+        echo "--with-tty=$IRTTY \\" >>$START
+        }
     fi
     if test "$X11_WINDOWS" = "on"; then echo "--with-x \\" >>$START; else echo "--without-x \\" >>$START; fi
     if test "$DEBUG" = "on"; then echo "--enable-debug \\" >>$START; fi
@@ -406,7 +406,7 @@ while test "$EXIT" != "yes"; do
         }
     else
         {
-	set `cat $TEMP`
+        set `cat $TEMP`
         if test "$1" = "1"; then ConfigDriver
         elif test "$1" = "2"; then ConfigSoftware
         elif test "$1" = "3"; then

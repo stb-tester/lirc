@@ -2,18 +2,18 @@
   sendxevent.c
 
   02/04/2002:  This is a quick hack to make a version of this program (irxevent)
-               which takes its input from the commandline, rather than from a 
-               combination of an lirc config file, and an lirc ir code.  
+	       which takes its input from the commandline, rather than from a
+	       combination of an lirc config file, and an lirc ir code.
 
-  NOTE:  it also includes the more general purpose RootWindow support, which 
-         is a nice 3 line addition to the original program as well, allowing
+  NOTE:  it also includes the more general purpose RootWindow support, which
+	 is a nice 3 line addition to the original program as well, allowing
 	 the window id field to understand RootWindow as well as CurrentWindow
 
   I compile with 'gcc -L/usr/X11R6/lib -lX11 -o sendxevent sendxevent.c'
 
   Doug McClendon - <filteredperception@sbcglobal.net>
 */
-	     
+
 #define VERSION "hack"
 
 /*      $Id: sendxevent.c,v 1.1 2002/03/25 17:20:45 lirc Exp $      */
@@ -34,30 +34,30 @@
  *  HISTORY
  *  =======
  *
- * 0.1 
+ * 0.1
  *     -Initial Release
  *
- * 0.2 
+ * 0.2
  *     -no more XWarpPointer... sending Buttonclicks to off-screen
  *      applications works becaus i also fake the EnterNotify and LeaveNotify
  *     -support for keysymbols rather than characters... so you can use
  *      Up or Insert or Control_L ... maybe you could play xquake than :*)
  *
  * 0.3
- *     -bugfix for looking for subwindows of non existing windows 
+ *     -bugfix for looking for subwindows of non existing windows
  *     -finaly a README file
  *
  * 0.3a (done by Christoph Bartelmus)
- *     -read from a shared .lircrc file 
+ *     -read from a shared .lircrc file
  *     -changes to comments
  *     (chris, was that all you changed?)
  *
  * 0.4
- *     -fake_timestamp() to solve gqmpeg problems 
+ *     -fake_timestamp() to solve gqmpeg problems
  *     -Shift Control and other mod-keys may work. (can't check it right now)
  *      try ctrl-c or shift-Page_up or whatever ...
  *      modifiers: shift, caps, ctrl, alt, meta, numlock, mod3, mod4, scrlock
- *     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys. 
+ *     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys.
  *     -updated irxevent.README
  *
  * 0.4.1
@@ -75,8 +75,8 @@
  * 0.5.0
  *     -fixed finding subwindows recursively
  *     -added xy_Key (though xterm and xemacs still don't like me)
- *     -added compilation patch from Ben Hochstedler 
- *      <benh@eeyore.moneng.mei.com> for compiling on systems 
+ *     -added compilation patch from Ben Hochstedler
+ *      <benh@eeyore.moneng.mei.com> for compiling on systems
  * 	without strsep() (like some solaris)
  *
  *
@@ -112,10 +112,10 @@
 #ifdef DEBUG
 void debugprintf(char *format_str, ...)
 {
-        va_list ap;
-        va_start(ap,format_str);
-        vfprintf(stderr,format_str,ap);
-        va_end(ap);
+	va_list ap;
+	va_start(ap,format_str);
+	vfprintf(stderr,format_str,ap);
+	va_end(ap);
 }
 #else
 void debugprintf(char *format_str, ...)
@@ -125,8 +125,8 @@ void debugprintf(char *format_str, ...)
 
 
 struct keymodlist_t {
-        char *name;
-        Mask mask;
+	char *name;
+	Mask mask;
 };
 static struct keymodlist_t keymodlist[]=
 {
@@ -244,7 +244,7 @@ Window find_sub_sub_window(Window top,int *x, int *y)
 
   /* check if we hit a sub window and find the smallest one */
   for(;nc>0;nc--)  {
-    if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y, 
+    if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y,
 		    &width, &height, &border, &depth)){
       if ((rel_x<=*x)&&(*x<=rel_x+width)&&(rel_y<=*y)&&(*y<=rel_y+height)){
 	debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
@@ -256,7 +256,7 @@ Window find_sub_sub_window(Window top,int *x, int *y)
 	  /*bull's eye ...*/
 	  target=find_sub_sub_window(target,&new_x,&new_y);
 	}
-      }	
+      }
     }
   };
   if(children!=NULL) XFree(children);
@@ -288,7 +288,7 @@ Window find_sub_window(Window top,char *name,int *x, int *y)
 
   /* check if we hit a sub window and find the smallest one */
   for(;nc>0;nc--)  {
-    if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y, 
+    if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y,
 		    &width, &height, &border, &depth)){
       if ((rel_x<=*x)&&(*x<=rel_x+width)&&(rel_y<=*y)&&(*y<=rel_y+height)){
 	debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
@@ -300,7 +300,7 @@ Window find_sub_window(Window top,char *name,int *x, int *y)
 	  /*bull's eye ...*/
 	  target=find_sub_sub_window(target,&new_x,&new_y);
 	}
-      }	
+      }
     }
   };
   if(children!=NULL) XFree(children);
@@ -360,7 +360,7 @@ void make_key(char *keyname,int x, int y,XKeyEvent *xev)
 	  kmlptr++;
 	}
       //      debugprintf("--- %s \n",part);
-    } 
+    }
   //  debugprintf("*** %s \n",part);
   //  debugprintf("*** %s \n",part2);
   xev->keycode=XKeysymToKeycode(dpy,XStringToKeysym(part2));
@@ -380,7 +380,7 @@ void sendfocus(Window w,int in_out)
   focev.detail=NotifyPointer;
   XSendEvent(dpy,w,True,FocusChangeMask,(XEvent*)&focev);
   XSync(dpy,True);
-  
+
   return;
 }
 
@@ -438,7 +438,7 @@ void sendbutton(int button, int x, int y, Window w,Window s)
   xev.type = ButtonRelease;
   xev.xkey.state|=0x100;
   usleep(1000);
-  xev.xkey.time = fake_timestamp(); 
+  xev.xkey.time = fake_timestamp();
   XSendEvent(dpy,w,True,ButtonReleaseMask,&xev);
   sendpointer_enter_or_leave(s,LeaveNotify);
   sendpointer_enter_or_leave(w,LeaveNotify);
@@ -468,7 +468,7 @@ int check(char *s)
       free(buffer);
       return(-1);
     }
-  free(buffer);  
+  free(buffer);
   return(0);
 }
 
@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
       return(EXIT_FAILURE);
     }
   }
-  
+
   if (argc == optind+1){
     command = argv[optind];
   } else if (argc > optind+1){
@@ -556,7 +556,7 @@ int main(int argc, char *argv[])
 		    &pointer_x,&pointer_y,
 		    keyname,windowname))
     {
-      
+
       if((w=find_window(root,windowname))&& (subw=find_sub_window(root,windowname,&pointer_x,&pointer_y)))
 	{
 	  debugprintf(" %s\n",command);
@@ -571,7 +571,7 @@ int main(int argc, char *argv[])
   exit(0);
 }
 
-/* 
+/*
  * Local variables:
  * compile-command: "gcc -L/usr/X11R6/lib -lX11 -o sendxevent sendxevent.c"
  * End:

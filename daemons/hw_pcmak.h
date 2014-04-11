@@ -4,8 +4,8 @@
  ** hw_pcmak.h **********************************************************
  ****************************************************************************
  *
- * routines for Logitech receiver 
- * 
+ * routines for Logitech receiver
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
  *      modified for pcmak receiver P_awe_L <pablozrudnika@wp.pl>

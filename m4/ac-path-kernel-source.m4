@@ -49,8 +49,8 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
     fi
   fi
   ac_cv_have_kernel="no_kernel=${no_kernel} \
-		kerneldir=\"${kerneldir}\" \
-		kernelext=\"${kernelext}\""
+                kerneldir=\"${kerneldir}\" \
+                kernelext=\"${kernelext}\""
 ]
 )
 
@@ -61,7 +61,7 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
   AC_MSG_CHECKING(for Linux kernel sources)
 
   AC_ARG_WITH(kerneldir,
-    [  --with-kerneldir=DIR    kernel sources in DIR], 
+    [  --with-kerneldir=DIR    kernel sources in DIR],
 
     ac_kerneldir=${withval}
     AC_PATH_KERNEL_SOURCE_SEARCH,
@@ -69,7 +69,7 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
     ac_kerneldir=""
     AC_CACHE_VAL(ac_cv_have_kernel,AC_PATH_KERNEL_SOURCE_SEARCH)
   )
-  
+
   eval "$ac_cv_have_kernel"
 
   AC_SUBST(kerneldir)

@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * functions that decode IR codes
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */
@@ -397,7 +397,7 @@ inline lirc_t sync_rec_buffer(struct ir_remote * remote)
 			if (deltas == 0)
 				return (0);
 			count++;
-			if (count > REC_SYNC) {	/* no sync found, 
+			if (count > REC_SYNC) {	/* no sync found,
 						   let's try a diffrent remote */
 				return (0);
 			}

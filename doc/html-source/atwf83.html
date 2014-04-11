@@ -4,11 +4,11 @@
 <H2 ALIGN=CENTER>Hardware</H2>
 
 <P>
-  This device is a cheap remote control that can be bought on 
+  This device is a cheap remote control that can be bought on
   the web for a few dollars. It is recognized as both a keyboard
   and a mouse. However not all keys work out of the box as they
   are combinations of several keyboard keys.
-  This driver should work completely with kernel 2.6.34 and 
+  This driver should work completely with kernel 2.6.34 and
   newer. Some keys may not work with older versions of kernel.
   <DIV ALIGN="center">
     <IMG SRC=../images/atwf83.jpg ALT="ATWF83 remote" />
@@ -21,9 +21,9 @@
 <H3 ALIGN=CENTER>Udev</H3>
 
 <P>
-  This rule creates links for the keyboard and the mouse parts 
-  in /dev/lirc. Create a file "lirc_atwf83.rules" in /etc/udev/rules/ 
-  that contains the following lines : 
+  This rule creates links for the keyboard and the mouse parts
+  in /dev/lirc. Create a file "lirc_atwf83.rules" in /etc/udev/rules/
+  that contains the following lines :
 </P>
 
 <PRE>
@@ -40,16 +40,16 @@
   LABEL="atwf83_end"
 
 </PRE>
-		    
+
 <H3 ALIGN=CENTER>Xorg</H3>
 
 <P>
-  Since multimedia keys of the remote work out of the box in xorg, pressing 
-  them may trigger the default actions associated with these keys and the 
+  Since multimedia keys of the remote work out of the box in xorg, pressing
+  them may trigger the default actions associated with these keys and the
   lirc action at the same time.
-  The following rule forces xorg to ignore the remote. Create a file in 
+  The following rule forces xorg to ignore the remote. Create a file in
   /etc/X11 xorg.conf.d and name it 70-atwf83.conf.
-  
+
 </P>
 
 <PRE>
@@ -61,7 +61,7 @@
   Section "InputClass"
     Identifier "Ignore ATWF@83 remote input"
     MatchProduct "ESKY.CC USB_V3B"
-    Option	"Ignore" "on"
+    Option      "Ignore" "on"
   EndSection
 
 </PRE>
@@ -69,10 +69,10 @@
 <H3 ALIGN=CENTER>Starting lirc</H3>
 
 <P>
-Since not all keys belong to a single device, lirc has to be run twice. The following script 
-launches lirc for the mouse and the keyboard parts using symlinks created by the udev rule. 
+Since not all keys belong to a single device, lirc has to be run twice. The following script
+launches lirc for the mouse and the keyboard parts using symlinks created by the udev rule.
 It creates the lirc device /dev/lircd that will be used by lirc client applications.
-This script can be placed in /etc/init.d so that lirc will be run on startup. 
+This script can be placed in /etc/init.d so that lirc will be run on startup.
 
 </P>
 
@@ -89,32 +89,32 @@ This script can be placed in /etc/init.d so that lirc will be run on startup.
 
   case "$1" in
       start)
-	  echo -n "Starting lircd "
+          echo -n "Starting lircd "
 
-	  if [ ! -L /dev/lircd ]; then
-	    rm -f /dev/lircd
-	    ln -s /var/run/lirc/lircd /dev/lircd 
-	  fi
+          if [ ! -L /dev/lircd ]; then
+            rm -f /dev/lircd
+            ln -s /var/run/lirc/lircd /dev/lircd
+          fi
 
-	  lircd_ARGS="--device=/dev/lirc/atwf83_kbd --pidfile=$lircd_PID --driver=atwf83 --output=/var/run/lirc/lircd --connect=localhost:8765"
-	  lircd_ARGS1="--device=/dev/lirc/atwf83_mouse --pidfile=$lircd_PID1 --driver=atwf83 --output=/var/run/lirc/lircd1 --listen"
+          lircd_ARGS="--device=/dev/lirc/atwf83_kbd --pidfile=$lircd_PID --driver=atwf83 --output=/var/run/lirc/lircd --connect=localhost:8765"
+          lircd_ARGS1="--device=/dev/lirc/atwf83_mouse --pidfile=$lircd_PID1 --driver=atwf83 --output=/var/run/lirc/lircd1 --listen"
 
-	  $lircd_BIN ${lircd_ARGS1[@]}
-	  $lircd_BIN ${lircd_ARGS[@]}
-	  ;;
+          $lircd_BIN ${lircd_ARGS1[@]}
+          $lircd_BIN ${lircd_ARGS[@]}
+          ;;
       stop)
-	  echo -n "Shutting down lircd "
-	  killproc -TERM -p $lircd_PID $lircd_BIN
-	  killproc -TERM -p $lircd_PID1 $lircd_BIN
-	  ;;
+          echo -n "Shutting down lircd "
+          killproc -TERM -p $lircd_PID $lircd_BIN
+          killproc -TERM -p $lircd_PID1 $lircd_BIN
+          ;;
       restart)
-	  $0 stop
-	  $0 start
-	  ;;
+          $0 stop
+          $0 start
+          ;;
       *)
       echo "Usage: $0 {start|stop|restart}"
-	  exit 1
-	  ;;
+          exit 1
+          ;;
   esac
 </PRE>
 
@@ -126,9 +126,9 @@ This script can be placed in /etc/init.d so that lirc will be run on startup.
     <B>Some keys don't work</B></BR>
     <UL>
       <LI>
-	Check that your kernel is 2.6.34 or newer.
+        Check that your kernel is 2.6.34 or newer.
       <LI>
-	Maybe your remote is in "mouse mode". Press the "Toggle mouse" button and try again.
+        Maybe your remote is in "mouse mode". Press the "Toggle mouse" button and try again.
     </UL
 </UL>
 

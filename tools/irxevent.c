@@ -16,30 +16,30 @@
  *  HISTORY
  *  =======
  *
- * 0.1 
+ * 0.1
  *     -Initial Release
  *
- * 0.2 
+ * 0.2
  *     -no more XWarpPointer... sending Buttonclicks to off-screen
  *      applications works becaus i also fake the EnterNotify and LeaveNotify
  *     -support for keysymbols rather than characters... so you can use
  *      Up or Insert or Control_L ... maybe you could play xquake than :*)
  *
  * 0.3
- *     -bugfix for looking for subwindows of non existing windows 
+ *     -bugfix for looking for subwindows of non existing windows
  *     -finaly a README file
  *
  * 0.3a (done by Christoph Bartelmus)
- *     -read from a shared .lircrc file 
+ *     -read from a shared .lircrc file
  *     -changes to comments
  *     (chris, was that all you changed?)
  *
  * 0.4
- *     -fake_timestamp() to solve gqmpeg problems 
+ *     -fake_timestamp() to solve gqmpeg problems
  *     -Shift Control and other mod-keys may work. (can't check it right now)
  *      try ctrl-c or shift-Page_up or whatever ...
  *      modifiers: shift, caps, ctrl, alt, meta, numlock, mod3, mod4, scrlock
- *     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys. 
+ *     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys.
  *     -updated irxevent.README
  *
  * 0.4.1
@@ -57,8 +57,8 @@
  * 0.5.0
  *     -fixed finding subwindows recursively
  *     -added xy_Key (though xterm and xemacs still don't like me)
- *     -added compilation patch from Ben Hochstedler 
- *      <benh@eeyore.moneng.mei.com> for compiling on systems 
+ *     -added compilation patch from Ben Hochstedler
+ *      <benh@eeyore.moneng.mei.com> for compiling on systems
  * 	without strsep() (like some solaris)
  *
  *

@@ -4,7 +4,7 @@
  *****************************************************************************
  * Routines for the HomeElectronics TIRA-2 USB dongle.
  *
- * Serial protocol described at: 
+ * Serial protocol described at:
  *    http://www.home-electro.com/Download/Protocol2.pdf
  *
  * Copyright (C) 2003 Gregory McLean <gregm@gxsnmp.org>

@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for diode in microphone input
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  * Copyright (C) 2001, 2002 Pavel Machek <pavel@ucw.cz>
  *

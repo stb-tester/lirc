@@ -1,7 +1,7 @@
 # lircmd.conf file to be used with RemoteMaster 2000
 #
 # lircmd config file
-# 
+#
 
 # ACCELERATOR start max multiplier
 
@@ -9,12 +9,12 @@
 
 ACCELERATOR 2 20 5
 
-ACTIVATE * ENTER                                                                                
+ACTIVATE * ENTER
 
 MOVE_N  * 2
 MOVE_NE * 3
 MOVE_E  * 6
-MOVE_SE * 9                                                                                
+MOVE_SE * 9
 MOVE_SW * 7
 MOVE_W  * 4
 MOVE_NW * 1

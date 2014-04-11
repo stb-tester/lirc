@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * release.c - automatic release event generation
- * 
+ *
  * Copyright (C) 2007 Christoph Bartelmus (lirc@bartelmus.de)
  *
  */

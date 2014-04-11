@@ -2,7 +2,7 @@
 # contributed by  Chris Pascoe
 #
 # brand:                       DVICO
-# model no. of remote control: DVB-T 
+# model no. of remote control: DVB-T
 # devices being controlled by this remote:
 #
 
@@ -134,7 +134,7 @@ begin remote
           stop                     0x0000000000FE0D00
           mute                     0x0000000000FE5700
           record                   0x0000000000FE0100
-	  white_onoff              0x0000000000FE4E00
+          white_onoff              0x0000000000FE4E00
       end codes
 
 end remote
@@ -146,8 +146,8 @@ end remote
 #
 # contributed by: David Bussenschutt <buzz|oska.com>
 #
-# brand:     "DViCO"   
-# model no. of remote control:  "Fusion Remote MCE"     
+# brand:     "DViCO"
+# model no. of remote control:  "Fusion Remote MCE"
 # devices being controlled by this remote: My MythTV install
 #
 
@@ -223,7 +223,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.2(any) on Thu Mar 30 23:54:35 2006
 #
-# contributed by 
+# contributed by
 #
 # brand:                       DViCO
 # model no. of remote control: Utraview MCP

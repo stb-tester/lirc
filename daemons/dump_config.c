@@ -32,22 +32,22 @@ void fprint_comment(FILE * f, struct ir_remote *rem, const char* commandline)
 {
 	time_t timet;
 	struct tm *tmp;
-        char buff[128];
+	char buff[128];
 
-        if (commandline)
-  		snprintf(buff, sizeof(buff), "# Command line: %s\n", commandline);
+	if (commandline)
+		snprintf(buff, sizeof(buff), "# Command line: %s\n", commandline);
 	else
 		strncat(buff, "", sizeof(buff) - 1);
 
 	timet = time(NULL);
 	tmp = localtime(&timet);
-        fprintf(f,
-                "#\n"
-                "# this config file was automatically generated\n"
-                "# using lirc-%s(%s) on %s" "#\n"
-                "# contributed by \n" "%s"  "#\n" "# brand:                       %s\n"
-                "# model no. of remote control: \n" "# devices being controlled by this remote:\n" "#\n\n", VERSION,
-                hw.name, asctime(tmp), buff, rem->name);
+	fprintf(f,
+		"#\n"
+		"# this config file was automatically generated\n"
+		"# using lirc-%s(%s) on %s" "#\n"
+		"# contributed by \n" "%s"  "#\n" "# brand:                       %s\n"
+		"# model no. of remote control: \n" "# devices being controlled by this remote:\n" "#\n\n", VERSION,
+		hw.name, asctime(tmp), buff, rem->name);
 }
 
 void fprint_flags(FILE * f, int flags)

@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for X10 MP3 Mouse Remote
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
  *      modified for X10 receiver by Shawn Nycz <dscordia@eden.rutgers.edu>

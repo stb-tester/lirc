@@ -4,8 +4,8 @@
  ** hw_slinke.c ***********************************************************
  ****************************************************************************
  *
- * routines for Slinke receiver 
- * 
+ * routines for Slinke receiver
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *  modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
  *  modified for Slink-e receiver Max Spring <mspring@employees.org>

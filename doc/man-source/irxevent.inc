@@ -20,7 +20,7 @@ a complete sample .lircrc look at examples/lircrc.
 .RS 3
 begin
         prog = irxevent
-        button = VIDEO_UP    
+        button = VIDEO_UP
         config = Key SHIFT\-KP_Add CurrentWindow
 end
 begin
@@ -67,11 +67,11 @@ end
 .nf
 .RS 3
 config = Key [shift\-][ctrl\-][alt\-]<key> [Focus] <windowname>
-	| WindowID <id> | CurrentWindow | RootWindow
-config = Button <button> <x> <y> [Focus] <windowname> | WindowID <id> 
-	| CurrentWindow | RootWindow
+        | WindowID <id> | CurrentWindow | RootWindow
+config = Button <button> <x> <y> [Focus] <windowname> | WindowID <id>
+        | CurrentWindow | RootWindow
 config = xy_Key <x> <y> [shift\-][ctrl\-][alt\-]<key> [Focus]
-	<windowname> | WindowID id | CurrentWindow | RootWindow
+        <windowname> | WindowID id | CurrentWindow | RootWindow
 .RE
 .fi
 
@@ -196,7 +196,7 @@ Beware: allowing emacs to process SendEvents opens a big security hole.
 In order to allow events you have to evaluate this lisp code (press Meta\-x and
 enter the following expression):
 
-	 (setq x\-allow\-sendevents t)
+         (setq x\-allow\-sendevents t)
 
 Placing this line into your .xemacs\-options file should have the same result.
 .RE

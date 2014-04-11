@@ -25,7 +25,7 @@ probably will change in future.
 If you're using the dev/input driver, you can use \fIname=STRING\fR or
 \fIphys=STRING\fR to select the device; lircd will look in /dev/input
 to find a device with a matching description. This is useful in case
-the device name isn't fixed. \fISTRING\fR may contain the '*' and '?' 
+the device name isn't fixed. \fISTRING\fR may contain the '*' and '?'
 wildcards and '\\' to mark them as literal.
 
 With the \-\-listen option you can let lircd listen for network

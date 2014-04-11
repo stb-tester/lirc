@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for Irman
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */

@@ -13,7 +13,7 @@ begin remote
   toggle_bit    0
 
   begin codes
-	tv/pvr      0x0014814c
+        tv/pvr      0x0014814c
         photo       0x0017810e
         htpc        0x0011811b
         dvd/vcd     0x00128100
@@ -33,7 +33,7 @@ begin remote
         *           0x00328156
         KEY_0           0x00408158
         #           0x0030814d
-        
+
         KEY_MENU        0x00188104
         KEY_EXIT        0x001d8154
         KEY_ENTER       0x001e8101
@@ -42,27 +42,27 @@ begin remote
         KEY_LEFT        0x001c8102
         KEY_RIGHT       0x001b815d
 
- 	KEY_VOLUMEUP        0x00298103
- 	KEY_VOLUMEDOWN        0x002a814e
- 	KEY_CHANNELUP         0x002c8113
- 	KEY_CHANNELDOWN         0x002d8117
- 	KEY_MUTE        0x00288105
- 	tune+       0x002e8144
- 	tune-       0x002f8148
- 	mem         0x00318145
- 	scan        0x00278151
+        KEY_VOLUMEUP        0x00298103
+        KEY_VOLUMEDOWN        0x002a814e
+        KEY_CHANNELUP         0x002c8113
+        KEY_CHANNELDOWN         0x002d8117
+        KEY_MUTE        0x00288105
+        tune+       0x002e8144
+        tune-       0x002f8148
+        mem         0x00318145
+        scan        0x00278151
 
- 	display     0x0034811f
- 	KEY_EJECTCD       0x0035815c
- 	KEY_REWIND        0x00228118
- 	KEY_FASTFORWARD        0x00218110
- 	KEY_RECORD         0x002b810a
- 	KEY_AGAIN     0x0038815a
- 	KEY_PREVIOUS        0x00238107
- 	KEY_NEXT        0x00248114
- 	time/shift  0x00338108
- 	KEY_STOP        0x0020811d
- 	KEY_PLAYPAUSE  0x001f8109
+        display     0x0034811f
+        KEY_EJECTCD       0x0035815c
+        KEY_REWIND        0x00228118
+        KEY_FASTFORWARD        0x00218110
+        KEY_RECORD         0x002b810a
+        KEY_AGAIN     0x0038815a
+        KEY_PREVIOUS        0x00238107
+        KEY_NEXT        0x00248114
+        time/shift  0x00338108
+        KEY_STOP        0x0020811d
+        KEY_PLAYPAUSE  0x001f8109
 
         KEY_PLAYPAUSE  0x0080811d
         stop-eject  0x00238107

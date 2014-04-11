@@ -8,4 +8,4 @@ echo "# DO NOT EDIT"
 echo
 
 setup_seq_init
-gen_hw_type_menu 
+gen_hw_type_menu

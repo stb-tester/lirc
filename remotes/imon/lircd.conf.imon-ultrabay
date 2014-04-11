@@ -7,9 +7,9 @@
 # brand:                       SoundGraph iMon
 # model no. of remote control: PAD (for iMon UltraBay)
 # devices being controlled by this remote:
-#	-iMon Ultrabay
-#	-Thermaltake DH-101
-#	-Misc other HTPC cases with built-in iMon IR/LCD
+#       -iMon Ultrabay
+#       -Thermaltake DH-101
+#       -Misc other HTPC cases with built-in iMon IR/LCD
 #
 
 begin remote
@@ -97,9 +97,9 @@ end remote
 # brand:                       SoundGraph iMon
 # model no. of remote control: UltraBay Front Panel
 # devices being controlled by this remote:
-#	-iMon Ultrabay
-#	-Thermaltake DH-101
-#	-Misc other HTPC cases with built-in iMon IR/LCD
+#       -iMon Ultrabay
+#       -Thermaltake DH-101
+#       -Misc other HTPC cases with built-in iMon IR/LCD
 begin remote
 
   name  imon_ultrabay_panel

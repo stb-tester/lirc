@@ -1840,7 +1840,7 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 			logprintf(LOG_ERR, "USB received: %d, expectingBytes: %d. Hex data (headers: %d %d %d):\t",
 				  numNewValues, expectingBytes, rxBuffer[0], rxBuffer[1], rxBuffer[2]);
 		for (i = 5; i < expectingBytes + 5; i++) {
-/*			if(numNewValues != (expectingBytes + 5)) 	
+/*			if(numNewValues != (expectingBytes + 5))
 				printf("%02x@%d\t", rxBuffer[i], incomingBuffer_Write);
  */
 			incomingBuffer[incomingBuffer_Write++] = rxBuffer[i];
@@ -1929,7 +1929,7 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 					   printf(" Pulse Def, frequency: %f us, pwm: %fus; Duty Cycle: %f%%\n",
 					   1/( ((float)(a_usb_rx_pulse_def->frequency))/48000000),
 					   currentPWM,
-					   100* ((((float)(a_usb_rx_pulse_def->pwm))/48) / 
+					   100* ((((float)(a_usb_rx_pulse_def->pwm))/48) /
 					   (((float)(a_usb_rx_pulse_def->frequency)/48)) ));
 					 */
 					currentPCA_Frequency = a_usb_rx_pulse_def->frequency;

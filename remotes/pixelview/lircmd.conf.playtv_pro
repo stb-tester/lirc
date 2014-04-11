@@ -1,7 +1,7 @@
 # lircmd.conf file to be used with PixeView PlayTV pro
 #
 # lircmd config file
-# 
+#
 
 #PROTOCOL IntelliMouse
 
@@ -12,7 +12,7 @@ ACTIVATE * +100
 MOVE_N  * 2
 MOVE_NE * 3
 MOVE_E  * 6
-MOVE_SE * 9                                                                                
+MOVE_SE * 9
 MOVE_SW * 7
 MOVE_W  * 4
 MOVE_NW * 1

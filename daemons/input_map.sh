@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 TYPES="KEY BTN"
 file=${1:-/usr/include/linux/input.h}
@@ -11,6 +11,6 @@ else
 fi
 
 for type in $TYPES; do
-	grep "^#define ${type}_" < $file|sort|$SED -n --expression="s/^#define \([^ 	]*\)[ 	][ 	]*\([0-9][0-9a-fA-FxX]*\).*/{\"\1\", \2},/p"
+        grep "^#define ${type}_" < $file|sort|$SED -n --expression="s/^#define \([^ \t]*\)[ \t][ \t]*\([0-9][0-9a-fA-FxX]*\).*/{\"\1\", \2},/p"
 done
 

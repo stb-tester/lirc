@@ -1,9 +1,9 @@
-# 
+#
 # lircmd config file for Leadtek WinView 601TV (RM-0007 remote control).
 #
 # Made by Leandro Lucarella <luca@lugmen.org.ar> based on mainstream lirc
 # Leadtek WinFast2000TV (RM-0010 remote control).
-# 
+#
 
 PROTOCOL IntelliMouse
 

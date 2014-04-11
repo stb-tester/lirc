@@ -3,7 +3,7 @@
 #
 # brand:             Pinnacle Systems
 # model:             PCTV Remote (Perhaps other ones as well)
-# supported devices: there's only one I know of. (serial) 
+# supported devices: there's only one I know of. (serial)
 #
 # Mail me if your remote is only partly supported, or if it has different
 # buttons than listed below.
@@ -75,10 +75,10 @@ begin remote
           KEY_STOP                     0xBF0B                     #Stop                     0x000000000000000B
           KEY_FASTFORWARD                 0x4407                     #FForward                 0x0000000000000007
           KEY_EPG                      0x2718                     #EPG                      0x0000000000000018
- 
+
 # here are some more buttons that seem to be mapped differently from
-# the ones above 
- 
+# the ones above
+
 # contributed by InterCeptor ceptor_7@freemail.hu
 #
 # brand:   Pinnacle Systems PCTV Pro Remote

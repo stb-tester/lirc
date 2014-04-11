@@ -5,12 +5,12 @@
  *
  * Only receiving is implemented.
  *
- * It uses a baudrate of 300kps on a USB serial device which, currently, is 
+ * It uses a baudrate of 300kps on a USB serial device which, currently, is
  * only supported by Linux.
- * If someone knows how to set such a baudrate under other OS's, please add 
+ * If someone knows how to set such a baudrate under other OS's, please add
  * that functionality to daemons/serial.c to make this driver work for those
  * OS's.
- * 
+ *
  * Information on how to send with this device is greatly appreciated...
  *
  * Copyright (C) 2007 Jelle Foks <jelle@foks.8m.com>

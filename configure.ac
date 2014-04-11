@@ -43,7 +43,7 @@ dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname gettimeofday mkfifo select socket strdup \
-	strerror strtoul snprintf strsep vsyslog)
+        strerror strtoul snprintf strsep vsyslog)
 
 forkpty=""
 AC_CHECK_FUNCS(forkpty)
@@ -126,192 +126,192 @@ AC_MSG_RESULT()
 # this list must only contain userspace drivers without external
 # (header/library) dependencies!
 possible_drivers="(none) \
-	(userspace) \
-	(accent) \
-	(atwf83) \
-	(bte) \
-	(creative) \
-	(ea65) \
-	(exaudio) \
-	(irlink) \
-	(irreal) \
-	(livedrive_midi) \
-	(livedrive_seq) \
-	(logitech) \
-	(mediafocusI) \
-	(mouseremote) \
-	(mouseremote_ps2) \
-	(mp3anywhere) \
-	(mplay) \
-	(pcmak) \
-	(pcmak_usb) \
-	(pctv) \
-	(remotemaster) \
-	(silitek) \
-	(slinke) \
-	(tira) \
-	(tira_raw) \
-	(uirt2) \
-	(uirt2_raw) \
-	(usb_uirt_raw) \
-	(usbx) \
-	(udp)"
+        (userspace) \
+        (accent) \
+        (atwf83) \
+        (bte) \
+        (creative) \
+        (ea65) \
+        (exaudio) \
+        (irlink) \
+        (irreal) \
+        (livedrive_midi) \
+        (livedrive_seq) \
+        (logitech) \
+        (mediafocusI) \
+        (mouseremote) \
+        (mouseremote_ps2) \
+        (mp3anywhere) \
+        (mplay) \
+        (pcmak) \
+        (pcmak_usb) \
+        (pctv) \
+        (remotemaster) \
+        (silitek) \
+        (slinke) \
+        (tira) \
+        (tira_raw) \
+        (uirt2) \
+        (uirt2_raw) \
+        (usb_uirt_raw) \
+        (usbx) \
+        (udp)"
 
 if test x${no_kernel} != xyes; then
   possible_drivers="${possible_drivers} \
-	(all) \
-	(lirc_dev) \
-	(lirc_dev lirc_atiusb) \
-	(lirc_dev lirc_bt829) \
-	(lirc_dev lirc_gpio) \
-	(lirc_dev lirc_i2c) \
-	(lirc_dev lirc_igorplugusb) \
-	(lirc_dev lirc_ttusbir) \
-	(lirc_dev lirc_imon) \
-	(lirc_dev lirc_parallel) \
-	(lirc_dev lirc_sasem) \
-	(lirc_dev lirc_serial) \
-	(lirc_dev lirc_sir) \
-	(lirc_dev lirc_wpc8769l)"
+        (all) \
+        (lirc_dev) \
+        (lirc_dev lirc_atiusb) \
+        (lirc_dev lirc_bt829) \
+        (lirc_dev lirc_gpio) \
+        (lirc_dev lirc_i2c) \
+        (lirc_dev lirc_igorplugusb) \
+        (lirc_dev lirc_ttusbir) \
+        (lirc_dev lirc_imon) \
+        (lirc_dev lirc_parallel) \
+        (lirc_dev lirc_sasem) \
+        (lirc_dev lirc_serial) \
+        (lirc_dev lirc_sir) \
+        (lirc_dev lirc_wpc8769l)"
 fi
 
 AH_TEMPLATE([DAEMONIZE],
-	[Define to run daemons as daemons])
+        [Define to run daemons as daemons])
 
 AH_TEMPLATE([DEBUG],
-	[Define to enable debugging output])
+        [Define to enable debugging output])
 
 AH_TEMPLATE([DEVDIR],
-	[device files directory])
+        [device files directory])
 
 AH_TEMPLATE([DYNCODES],
-	[Define to use dynamic IR codes])
+        [Define to use dynamic IR codes])
 
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
-	[Define if the ALSA library with SB RC support is installed])
+        [Define if the ALSA library with SB RC support is installed])
 
 AH_TEMPLATE([HAVE_FORKPTY],
-	[Define if forkpty is available])
+        [Define if forkpty is available])
 
 AH_TEMPLATE([HAVE_IGUANAIR],
-	[Define if the iguanaIR library is installed])
+        [Define if the iguanaIR library is installed])
 
 AH_TEMPLATE([HAVE_FTDI],
-	[Define if the libftdi library is installed])
+        [Define if the libftdi library is installed])
 
 AH_TEMPLATE([HAVE_LIBALSA],
-	[Define if the ALSA library is installed])
+        [Define if the ALSA library is installed])
 
 AH_TEMPLATE([HAVE_LIBCARACA],
-	[Define if the caraca library is installed])
+        [Define if the caraca library is installed])
 
 AH_TEMPLATE([HAVE_LIBIRMAN],
-	[Define if the libirman library is installed])
+        [Define if the libirman library is installed])
 
 AH_TEMPLATE([HAVE_LIBIRMAN_SW],
-	[Define if the software only test version of libirman is installed])
+        [Define if the software only test version of libirman is installed])
 
 AH_TEMPLATE([HAVE_LIBPORTAUDIO],
-	[Define if the portaudio library is installed])
+        [Define if the portaudio library is installed])
 
 AH_TEMPLATE([HAVE_LIBUSB],
-	[Define if libusb is installed])
+        [Define if libusb is installed])
 
 AH_TEMPLATE([HAVE_LIBVGA],
-	[Define if the complete vga libraries (vga, vgagl) are installed])
+        [Define if the complete vga libraries (vga, vgagl) are installed])
 
 AH_TEMPLATE([HAVE_LINUX_DEVINPUT],
-	[defined if Linux input interface is available])
+        [defined if Linux input interface is available])
 
 AH_TEMPLATE([HAVE_LINUX_HIDDEV_FLAG_UREF],
-	[defined if Linux hiddev HIDDEV_FLAG_UREF flag is available])
+        [defined if Linux hiddev HIDDEV_FLAG_UREF flag is available])
 
 AH_TEMPLATE([HAVE_SCSI],
-	[defined if SCSI API is available])
+        [defined if SCSI API is available])
 
 AH_TEMPLATE([HAVE_SOUNDCARD],
-	[defined if soundcard API is available])
+        [defined if soundcard API is available])
 
 AH_TEMPLATE([HAVE_SYSTEMD],
-	[defined if systemd API is available])
+        [defined if systemd API is available])
 
 AH_TEMPLATE([HAVE_VSYSLOG],
-	[define if you have vsyslog( prio, fmt, va_arg )])
+        [define if you have vsyslog( prio, fmt, va_arg )])
 
 AH_TEMPLATE([HW_DEFAULT],
-	[The name of the hw_* structure to use by default])
+        [The name of the hw_* structure to use by default])
 
 AH_TEMPLATE([LIRC_DRIVER],
-	[Text string signifying which driver is configured])
+        [Text string signifying which driver is configured])
 
 AH_TEMPLATE([LIRC_DRIVER_ANY],
-	[Define to include most drivers])
+        [Define to include most drivers])
 
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
-	[Define if devfs support is present in current kernel])
+        [Define if devfs support is present in current kernel])
 
 AH_TEMPLATE([LIRC_IRQ],
-	[Set the IRQ for the lirc driver])
+        [Set the IRQ for the lirc driver])
 
 AH_TEMPLATE([LIRC_IRTTY],
-	[Set the default tty used by the drivers accessing /dev/ttyX])
+        [Set the default tty used by the drivers accessing /dev/ttyX])
 
 AH_TEMPLATE([LIRC_ON_SA1100],
-	[Define if you want to cross-compile for the SA1100])
+        [Define if you want to cross-compile for the SA1100])
 
 AH_TEMPLATE([LIRC_PORT],
-	[Set the port address for the lirc driver])
+        [Set the port address for the lirc driver])
 
 AH_TEMPLATE([LIRC_SERIAL_ANIMAX],
-	[Define if you have an animax serial port receiver])
+        [Define if you have an animax serial port receiver])
 
 AH_TEMPLATE([LIRC_SERIAL_IGOR],
-	[Define if you have an Igor Cesko receiver])
+        [Define if you have an Igor Cesko receiver])
 
 AH_TEMPLATE([LIRC_SERIAL_IRDEO],
-	[Define if you have an IRdeo serial port receiver])
+        [Define if you have an IRdeo serial port receiver])
 
 AH_TEMPLATE([LIRC_SERIAL_IRDEO_REMOTE],
-	[Define if you have an IRdeo remote transmitter])
+        [Define if you have an IRdeo remote transmitter])
 
 AH_TEMPLATE([LIRC_SERIAL_NSLU2],
-	[Define if you have a Linksys NSLU2 and use CTS2+GreenLED])
+        [Define if you have a Linksys NSLU2 and use CTS2+GreenLED])
 
 AH_TEMPLATE([LIRC_SERIAL_SOFTCARRIER],
-	[Define if the software needs to generate the carrier frequency])
+        [Define if the software needs to generate the carrier frequency])
 
 AH_TEMPLATE([LIRC_SERIAL_TRANSMITTER],
-	[Define if you have a IR diode connected to the serial port])
+        [Define if you have a IR diode connected to the serial port])
 
 AH_TEMPLATE([LIRC_SIR_ACTISYS_ACT200L],
-	[Define if you want to use a Actisys Act200L])
+        [Define if you want to use a Actisys Act200L])
 
 AH_TEMPLATE([LIRC_SIR_ACTISYS_ACT220L],
-	[Define if you want to use a Actisys Act220L])
+        [Define if you want to use a Actisys Act220L])
 
 AH_TEMPLATE([LIRC_SIR_TEKRAM],
-	[Define if you want to use a Tekram Irmate 210])
+        [Define if you want to use a Tekram Irmate 210])
 
 AH_TEMPLATE([LIRC_SYSLOG],
-	[syslog facility to use])
+        [syslog facility to use])
 
 AH_TEMPLATE([LIRC_IMON_LCD],
-	[Define if your iMON is an LCD and not a VFD.])
+        [Define if your iMON is an LCD and not a VFD.])
 
 AH_TEMPLATE([LIRC_TIMER],
-	[Set the timer for the parallel port driver])
+        [Set the timer for the parallel port driver])
 
 AH_TEMPLATE([LOCALSTATEDIR],
-	[modifiable single-machine data])
+        [modifiable single-machine data])
 
 AH_TEMPLATE([MAINTAINER_MODE],
-	[define in maintainer mode])
+        [define in maintainer mode])
 
 AH_TEMPLATE([SYSCONFDIR],
-	[system configuration directory])
+        [system configuration directory])
 
 AH_TEMPLATE([USE_SYSLOG],
-	[define if you want to log to syslog instead of logfile])
+        [define if you want to log to syslog instead of logfile])
 
 AC_CHECK_LIB(caraca_client, caraca_init,
   AC_DEFINE(HAVE_LIBCARACA)
@@ -491,216 +491,216 @@ if test "$driver" = "userspace" -o "$driver" = "all"; then
   lirc_driver=$driver
 
   any_possible_drivers=`echo ${possible_drivers} | sed -e's/ /-/g' \
-			  -e's/)-(/ /g'  -e's/(//g' -e's/)//g' \
-			  -e's/-$//g'`
+                          -e's/)-(/ /g'  -e's/(//g' -e's/)//g' \
+                          -e's/-$//g'`
   for any_driver in ${any_possible_drivers}; do
   case ${any_driver} in
-	accent)
-		hw_module="${hw_module} hw_accent.o serial.o"
-		;;
-	alsa_usb)
-		hw_module="${hw_module} hw_alsa_usb.o"
-		alsa_lib=-lasound
-		;;
-	asusdh)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	atilibusb)
-		hw_module="${hw_module} hw_atilibusb.o receive.o"
-		atilibusb_lib=`${LIBUSB_CONFIG} --libs`
-		CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
-		;;
-	atwf83)
-		hw_module="${hw_module} hw_atwf83.o"
-		atwf83_lib=-lpthread
-		;;
-	audio)
-		hw_module="${hw_module} hw_audio.o transmit.o receive.o"
-		portaudio_lib="-lportaudio ${portaudio_lib_other}"
-		;;
-	audio_alsa)
-		hw_module="${hw_module} hw_audio_alsa.o receive.o"
-		alsa_lib=-lasound
-		;;
-	awlibusb)
-		hw_module="${hw_module} hw_awlibusb.o receive.o"
-		awlibusb_lib=`${LIBUSB_CONFIG} --libs`
-		CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
-		;;
-	bte)
-		hw_module="${hw_module} hw_bte.o serial.o"
-		;;
-	bw6130)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	caraca)
-		hw_module="${hw_module} hw_caraca.o"
-		caraca_lib=-lcaraca_client
-		;;
-	creative)
-		hw_module="${hw_module} hw_creative.o serial.o"
-		;;
-	creative_infracd)
-		hw_module="${hw_module} hw_creative_infracd.o"
-		;;
-	commandir)
-		hw_module="${hw_module} hw_commandir.o receive.o"
-		commandir_lib=`${LIBUSB_CONFIG} --libs`
-		CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
-		;;
-	devinput)
-		hw_module="${hw_module} hw_devinput.o"
-		;;
-	dfclibusb)
-		hw_module="${hw_module} hw_dfclibusb.o receive.o"
-		dfclibusb_lib=`${LIBUSB_CONFIG} --libs`
-		CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
-		;;
-	dsp)
-		hw_module="${hw_module} hw_dsp.o receive.o"
-		;;
-	dvico)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	ea65)
-		hw_module="${hw_module} hw_ea65.o serial.o"
-		;;
-	exaudio)
-		;;
-	ftdi)
-		hw_module="${hw_module} hw_ftdi.o receive.o transmit.o"
-		ftdi_lib="-lftdi"
-		;;
-	i2cuser)
-		hw_module="${hw_module} hw_i2cuser.o receive.o"
-		;;
-	iguanaIR)
-		hw_module="${hw_module} hw_iguanaIR.o transmit.o receive.o"
-		iguanaIR_lib=-liguanaIR
-		;;
-	irlink)
-		hw_module="${hw_module} hw_irlink.o serial.o receive.o"
-		;;
-	irman)
-		hw_module="${hw_module} hw_irman.o serial.o"
-		irman_lib=-lirman
-		;;
-	# There is not much sense in using 'irman_sw' with driver
-	# 'any' and that would conflict with 'irman' which will
-	# probably also be available.
-	#
-	#irman_sw)
-		#hw_module="${hw_module} hw_irman.o serial.o"
-		#irman_lib=-lirman_sw
-		#;;
-	irreal)
-		#hw_module="${hw_module} hw_irreal.o serial.o receive.o transmit.o"
-		;;
-	lirc_dev-lirc_atiusb)
-		;;
-	lirc_dev-lirc_gpio)
-		#lirc_driver="${lirc_driver} lirc_dev lirc_gpio"
-		;;
-	lirc_dev-lirc_i2c)
-		#lirc_driver="${lirc_driver} lirc_dev lirc_i2c"
-		;;
-	lirc_dev-lirc_igorplugusb)
-		;;
-	lirc_dev-lirc_ttusbir)
-		;;
-	lirc_dev-lirc_imon)
-		;;
-	lirc_dev-lirc_parallel)
-		;;
-	lirc_dev-lirc_sasem)
-		;;
-	lirc_dev-lirc_serial)
-		;;
-	lirc_dev-lirc_sir)
-		;;
-	lirc_dev-lirc_wpc8769l)
-		;;
-	lirc_flyvideo)
-		;;
-	livedrive_midi)
-		hw_module="${hw_module} hw_livedrive_common.o hw_livedrive_midi.o"
-		;;
-	livedrive_seq)
-		hw_module="${hw_module} hw_livedrive_common.o hw_livedrive_seq.o"
-		;;
-	logitech)
-		hw_module="${hw_module} hw_logitech.o serial.o"
-		;;
-	macmini)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	mediafocusI)
-		;;
-	mouseremote)
-		hw_module="${hw_module} hw_mouseremote.o serial.o"
-		;;
-	mouseremote_ps2)
-		hw_module="${hw_module} hw_mouseremote.o serial.o"
-		;;
-	mp3anywhere)
-		hw_module="${hw_module} hw_mp3anywhere.o serial.o"
-		;;
-	mplay)
-		hw_module="${hw_module} hw_mplay.o serial.o"
-		;;
-	mplay2)
-		hw_module="${hw_module} hw_mplay.o serial.o"
-		;;
-	pcmak*)
-		hw_module="${hw_module} hw_pcmak.o serial.o"
-		;;
-	pctv)
-		hw_module="${hw_module} hw_pinsys.o serial.o"
-		;;
-	remotemaster)
-		hw_module="${hw_module} hw_pixelview.o serial.o"
-		;;
-	samsung)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	sb0540)
-		hw_module="${hw_module} hw_hiddev.o"
-		;;
-	silitek)
-		hw_module="${hw_module} hw_silitek.o serial.o"
-		;;
-	#slinke)
-		#hw_module="${hw_module} hw_slinke.o serial.o receive.o"
-		#;;
-	srm7500libusb)
-		hw_module="${hw_module} hw_srm7500libusb.o receive.o"
-		srm7500libusb_lib=`${LIBUSB_CONFIG} --libs`
-		CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
-		;;
-	tira|tira_raw)
-		hw_module="${hw_module} hw_tira.o receive.o transmit.o"
-		;;
-	udp)
-		hw_module="${hw_module} hw_udp.o receive.o"
-		;;
-	uirt2)
-		hw_module="${hw_module} hw_uirt2.o serial.o"
-		;;
-	uirt2_raw|usb_uirt_raw)
-		hw_module="${hw_module} hw_uirt2_raw.o hw_uirt2_common.o serial.o receive.o transmit.o"
-		;;
-	usbx)
-		hw_module="${hw_module} hw_usbx.o serial.o"
-		;;
+        accent)
+                hw_module="${hw_module} hw_accent.o serial.o"
+                ;;
+        alsa_usb)
+                hw_module="${hw_module} hw_alsa_usb.o"
+                alsa_lib=-lasound
+                ;;
+        asusdh)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        atilibusb)
+                hw_module="${hw_module} hw_atilibusb.o receive.o"
+                atilibusb_lib=`${LIBUSB_CONFIG} --libs`
+                CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
+                ;;
+        atwf83)
+                hw_module="${hw_module} hw_atwf83.o"
+                atwf83_lib=-lpthread
+                ;;
+        audio)
+                hw_module="${hw_module} hw_audio.o transmit.o receive.o"
+                portaudio_lib="-lportaudio ${portaudio_lib_other}"
+                ;;
+        audio_alsa)
+                hw_module="${hw_module} hw_audio_alsa.o receive.o"
+                alsa_lib=-lasound
+                ;;
+        awlibusb)
+                hw_module="${hw_module} hw_awlibusb.o receive.o"
+                awlibusb_lib=`${LIBUSB_CONFIG} --libs`
+                CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
+                ;;
+        bte)
+                hw_module="${hw_module} hw_bte.o serial.o"
+                ;;
+        bw6130)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        caraca)
+                hw_module="${hw_module} hw_caraca.o"
+                caraca_lib=-lcaraca_client
+                ;;
+        creative)
+                hw_module="${hw_module} hw_creative.o serial.o"
+                ;;
+        creative_infracd)
+                hw_module="${hw_module} hw_creative_infracd.o"
+                ;;
+        commandir)
+                hw_module="${hw_module} hw_commandir.o receive.o"
+                commandir_lib=`${LIBUSB_CONFIG} --libs`
+                CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
+                ;;
+        devinput)
+                hw_module="${hw_module} hw_devinput.o"
+                ;;
+        dfclibusb)
+                hw_module="${hw_module} hw_dfclibusb.o receive.o"
+                dfclibusb_lib=`${LIBUSB_CONFIG} --libs`
+                CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
+                ;;
+        dsp)
+                hw_module="${hw_module} hw_dsp.o receive.o"
+                ;;
+        dvico)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        ea65)
+                hw_module="${hw_module} hw_ea65.o serial.o"
+                ;;
+        exaudio)
+                ;;
+        ftdi)
+                hw_module="${hw_module} hw_ftdi.o receive.o transmit.o"
+                ftdi_lib="-lftdi"
+                ;;
+        i2cuser)
+                hw_module="${hw_module} hw_i2cuser.o receive.o"
+                ;;
+        iguanaIR)
+                hw_module="${hw_module} hw_iguanaIR.o transmit.o receive.o"
+                iguanaIR_lib=-liguanaIR
+                ;;
+        irlink)
+                hw_module="${hw_module} hw_irlink.o serial.o receive.o"
+                ;;
+        irman)
+                hw_module="${hw_module} hw_irman.o serial.o"
+                irman_lib=-lirman
+                ;;
+        # There is not much sense in using 'irman_sw' with driver
+        # 'any' and that would conflict with 'irman' which will
+        # probably also be available.
+        #
+        #irman_sw)
+                #hw_module="${hw_module} hw_irman.o serial.o"
+                #irman_lib=-lirman_sw
+                #;;
+        irreal)
+                #hw_module="${hw_module} hw_irreal.o serial.o receive.o transmit.o"
+                ;;
+        lirc_dev-lirc_atiusb)
+                ;;
+        lirc_dev-lirc_gpio)
+                #lirc_driver="${lirc_driver} lirc_dev lirc_gpio"
+                ;;
+        lirc_dev-lirc_i2c)
+                #lirc_driver="${lirc_driver} lirc_dev lirc_i2c"
+                ;;
+        lirc_dev-lirc_igorplugusb)
+                ;;
+        lirc_dev-lirc_ttusbir)
+                ;;
+        lirc_dev-lirc_imon)
+                ;;
+        lirc_dev-lirc_parallel)
+                ;;
+        lirc_dev-lirc_sasem)
+                ;;
+        lirc_dev-lirc_serial)
+                ;;
+        lirc_dev-lirc_sir)
+                ;;
+        lirc_dev-lirc_wpc8769l)
+                ;;
+        lirc_flyvideo)
+                ;;
+        livedrive_midi)
+                hw_module="${hw_module} hw_livedrive_common.o hw_livedrive_midi.o"
+                ;;
+        livedrive_seq)
+                hw_module="${hw_module} hw_livedrive_common.o hw_livedrive_seq.o"
+                ;;
+        logitech)
+                hw_module="${hw_module} hw_logitech.o serial.o"
+                ;;
+        macmini)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        mediafocusI)
+                ;;
+        mouseremote)
+                hw_module="${hw_module} hw_mouseremote.o serial.o"
+                ;;
+        mouseremote_ps2)
+                hw_module="${hw_module} hw_mouseremote.o serial.o"
+                ;;
+        mp3anywhere)
+                hw_module="${hw_module} hw_mp3anywhere.o serial.o"
+                ;;
+        mplay)
+                hw_module="${hw_module} hw_mplay.o serial.o"
+                ;;
+        mplay2)
+                hw_module="${hw_module} hw_mplay.o serial.o"
+                ;;
+        pcmak*)
+                hw_module="${hw_module} hw_pcmak.o serial.o"
+                ;;
+        pctv)
+                hw_module="${hw_module} hw_pinsys.o serial.o"
+                ;;
+        remotemaster)
+                hw_module="${hw_module} hw_pixelview.o serial.o"
+                ;;
+        samsung)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        sb0540)
+                hw_module="${hw_module} hw_hiddev.o"
+                ;;
+        silitek)
+                hw_module="${hw_module} hw_silitek.o serial.o"
+                ;;
+        #slinke)
+                #hw_module="${hw_module} hw_slinke.o serial.o receive.o"
+                #;;
+        srm7500libusb)
+                hw_module="${hw_module} hw_srm7500libusb.o receive.o"
+                srm7500libusb_lib=`${LIBUSB_CONFIG} --libs`
+                CFLAGS="$CFLAGS `${LIBUSB_CONFIG} --cflags`"
+                ;;
+        tira|tira_raw)
+                hw_module="${hw_module} hw_tira.o receive.o transmit.o"
+                ;;
+        udp)
+                hw_module="${hw_module} hw_udp.o receive.o"
+                ;;
+        uirt2)
+                hw_module="${hw_module} hw_uirt2.o serial.o"
+                ;;
+        uirt2_raw|usb_uirt_raw)
+                hw_module="${hw_module} hw_uirt2_raw.o hw_uirt2_common.o serial.o receive.o transmit.o"
+                ;;
+        usbx)
+                hw_module="${hw_module} hw_usbx.o serial.o"
+                ;;
   esac
   done
   #remove duplicates
 
   #sed segfaults when $hw_module is too long :(
   #hw_module=`echo ${hw_module}| sed \
-  #			-e':again' \
-  #			-e's/\(.*\)\(\<.*\) \(.*\) \2\(.*\)$/\1\2 \3\4/' \
-  #			-e'tagain'`
+  #                     -e':again' \
+  #                     -e's/\(.*\)\(\<.*\) \(.*\) \2\(.*\)$/\1\2 \3\4/' \
+  #                     -e'tagain'`
 
   space_to_newline()
   { for token in $*; do echo $token; done; }
@@ -1434,19 +1434,19 @@ else
   case $lirc_driver in
   ftdi*)
     AC_MSG_ERROR([*** you need to first install the libftdi package
-	before you can use this driver])
+        before you can use this driver])
     ;;
   irman*)
     AC_MSG_ERROR([*** you need to first install the libirman package
-	(libirman-0.4.2 or better) before you can use this driver])
+        (libirman-0.4.2 or better) before you can use this driver])
     ;;
   caraca*)
     AC_MSG_ERROR([*** you need to first install the caraca package
-	before you can use this driver])
+        before you can use this driver])
     ;;
   all|lirc_*)
     AC_MSG_ERROR([*** you need to have the Linux kernel source installed
-	for this driver])
+        for this driver])
     ;;
   atilibusb|awlibusb|commandir|dfclibusb|srm7500libusb)
     AC_MSG_ERROR([*** you need to have libusb installed for this driver.
@@ -1470,11 +1470,11 @@ to use the audio driver. You can get it at:
     ;;
   audio_alsa)
     AC_MSG_ERROR([*** you need to have the ALSA headers and libraries
-	for this driver])
+        for this driver])
     ;;
   alsa_usb)
     AC_MSG_ERROR([*** you need to have the ALSA libraries and drivers
-	from at least version 1.0.9 for this driver])
+        from at least version 1.0.9 for this driver])
     ;;
   iguanaIR)
     AC_MSG_ERROR([*** you need to have the iguanaIR headers and
@@ -1482,7 +1482,7 @@ to use the audio driver. You can get it at:
     ;;
   *)
     AC_MSG_ERROR([*** it is not possible to install the specified driver
-	on this system])
+        on this system])
     ;;
   esac
 fi
@@ -1490,40 +1490,40 @@ fi
 dnl now we've checked, we can rename things for the drivers/Makefile
 
 if test "$lirc_driver" = "none" || \
-	test "$lirc_driver" = "alsa_usb" || \
-	test "$lirc_driver" = "asusdh" || \
-	test "$lirc_driver" = "atilibusb" || \
-	test "$lirc_driver" = "atwf83" || \
-	test "$lirc_driver" = "audio" || \
-	test "$lirc_driver" = "audio_alsa" || \
-	test "$lirc_driver" = "awlibusb" || \
-	test "$lirc_driver" = "bw6130" || \
-	test "$lirc_driver" = "caraca" || \
-	test "$lirc_driver" = "commandir" || \
-	test "$lirc_driver" = "dfclibusb" || \
-	test "$lirc_driver" = "dvico" || \
-	test "$lirc_driver" = "iguanaIR" || \
-	test "$lirc_driver" = "irman" || \
-	test "$lirc_driver" = "irman_sw" || \
-	test "$lirc_driver" = "macmini" || \
-	test "$lirc_driver" = "samsung" || \
-	test "$lirc_driver" = "sb0540" || \
-	test "$lirc_driver" = "srm7500libusb" || \
-	test "$lirc_driver" = "userspace"; then
+        test "$lirc_driver" = "alsa_usb" || \
+        test "$lirc_driver" = "asusdh" || \
+        test "$lirc_driver" = "atilibusb" || \
+        test "$lirc_driver" = "atwf83" || \
+        test "$lirc_driver" = "audio" || \
+        test "$lirc_driver" = "audio_alsa" || \
+        test "$lirc_driver" = "awlibusb" || \
+        test "$lirc_driver" = "bw6130" || \
+        test "$lirc_driver" = "caraca" || \
+        test "$lirc_driver" = "commandir" || \
+        test "$lirc_driver" = "dfclibusb" || \
+        test "$lirc_driver" = "dvico" || \
+        test "$lirc_driver" = "iguanaIR" || \
+        test "$lirc_driver" = "irman" || \
+        test "$lirc_driver" = "irman_sw" || \
+        test "$lirc_driver" = "macmini" || \
+        test "$lirc_driver" = "samsung" || \
+        test "$lirc_driver" = "sb0540" || \
+        test "$lirc_driver" = "srm7500libusb" || \
+        test "$lirc_driver" = "userspace"; then
   lirc_driver=
 elif test "$lirc_driver" = "all"; then
   lirc_driver="lirc_dev \
-	lirc_atiusb \
-	lirc_bt829 \
-	lirc_i2c \
-	lirc_igorplugusb \
-	lirc_imon \
-	lirc_parallel \
-	lirc_sasem \
-	lirc_serial \
-	lirc_sir \
-	lirc_ttusbir \
-	lirc_wpc8769l"
+        lirc_atiusb \
+        lirc_bt829 \
+        lirc_i2c \
+        lirc_igorplugusb \
+        lirc_imon \
+        lirc_parallel \
+        lirc_sasem \
+        lirc_serial \
+        lirc_sir \
+        lirc_ttusbir \
+        lirc_wpc8769l"
 fi
 if kernel_module=$(expr "$lirc_driver" : 'lirc_dev \(.*\)'); then
   :
@@ -1670,7 +1670,7 @@ prefix=$cur_prefix
 
 receive=""
 if ! echo ${hw_module}|grep " receive.o" >/dev/null; then
-	receive="receive.o"
+        receive="receive.o"
 fi
 
 hw_module_libs="${alsa_lib} ${atilibusb_lib} ${awlibusb_lib} ${caraca_lib} ${commandir_lib} ${dfclibusb_lib} ${ftdi_lib} ${iguanaIR_lib} ${irman_lib} ${portaudio_lib} ${srm7500libusb_lib} ${atwf83_lib}"
@@ -1718,52 +1718,52 @@ AC_DEFINE_UNQUOTED(LIRC_SYSLOG, $facility)
 
 AH_TOP([
 /* device file names - beneath DEVDIR (default /dev) */
-#define DEV_LIRC	"lirc0"
+#define DEV_LIRC        "lirc0"
 
 /* daemon socket file names - beneath $varrundir (default /var/run/lirc) */
-#define DEV_LIRCD	"lircd"
-#define DEV_LIRCM	"lircm"
+#define DEV_LIRCD       "lircd"
+#define DEV_LIRCM       "lircm"
 
 /* config file names - beneath SYSCONFDIR (default /etc) */
-#define CFG_LIRCD	"lircd.conf"
-#define CFG_LIRCM	"lircmd.conf"
+#define CFG_LIRCD       "lircd.conf"
+#define CFG_LIRCM       "lircmd.conf"
 
 /* config file names - beneath $HOME or SYSCONFDIR */
-#define CFG_LIRCRC	"lircrc"
+#define CFG_LIRCRC      "lircrc"
 
 /* log files */
-#define LOG_LIRCD	"lircd"
-#define LOG_LIRMAND	"lirmand"
+#define LOG_LIRCD       "lircd"
+#define LOG_LIRMAND     "lirmand"
 
 /* pid file */
 #define PID_LIRCD       "lircd.pid"
 
 /* default port number */
-#define	LIRC_INET_PORT	8765
+#define LIRC_INET_PORT  8765
 ])
 
 AH_BOTTOM([
 #ifdef LIRC_HAVE_DEVFS
-#define LIRC_DRIVER_DEVICE	DEVDIR "/" DEV_LIRC "/0"
+#define LIRC_DRIVER_DEVICE      DEVDIR "/" DEV_LIRC "/0"
 #else
 #define LIRC_DRIVER_DEVICE      DEVDIR "/" DEV_LIRC
 #endif /* LIRC_HAVE_DEVFS */
 
-#define LIRCD			VARRUNDIR "/" PACKAGE "/" DEV_LIRCD
-#define LIRCM			VARRUNDIR "/" PACKAGE "/" DEV_LIRCM
+#define LIRCD                   VARRUNDIR "/" PACKAGE "/" DEV_LIRCD
+#define LIRCM                   VARRUNDIR "/" PACKAGE "/" DEV_LIRCM
 
-#define LIRCDCFGFILE		SYSCONFDIR "/" PACKAGE "/" CFG_LIRCD
-#define LIRCMDCFGFILE		SYSCONFDIR "/" PACKAGE "/" CFG_LIRCM
+#define LIRCDCFGFILE            SYSCONFDIR "/" PACKAGE "/" CFG_LIRCD
+#define LIRCMDCFGFILE           SYSCONFDIR "/" PACKAGE "/" CFG_LIRCM
 
-#define LIRCDOLDCFGFILE		SYSCONFDIR "/" CFG_LIRCD
-#define LIRCMDOLDCFGFILE	SYSCONFDIR "/" CFG_LIRCM
+#define LIRCDOLDCFGFILE         SYSCONFDIR "/" CFG_LIRCD
+#define LIRCMDOLDCFGFILE        SYSCONFDIR "/" CFG_LIRCM
 
-#define LIRCRC_USER_FILE	"." CFG_LIRCRC
-#define LIRCRC_ROOT_FILE	SYSCONFDIR "/" PACKAGE "/" CFG_LIRCRC
-#define LIRCRC_OLD_ROOT_FILE	SYSCONFDIR "/" CFG_LIRCRC
+#define LIRCRC_USER_FILE        "." CFG_LIRCRC
+#define LIRCRC_ROOT_FILE        SYSCONFDIR "/" PACKAGE "/" CFG_LIRCRC
+#define LIRCRC_OLD_ROOT_FILE    SYSCONFDIR "/" CFG_LIRCRC
 
-#define LOGFILE			LOCALSTATEDIR "/log/" LOG_LIRCD
-#define LIRMAND_LOGFILE		LOCALSTATEDIR "/log/" LOG_LIRMAND
+#define LOGFILE                 LOCALSTATEDIR "/log/" LOG_LIRCD
+#define LIRMAND_LOGFILE         LOCALSTATEDIR "/log/" LOG_LIRMAND
 
 #define PIDFILE                 VARRUNDIR "/" PACKAGE "/" PID_LIRCD
 

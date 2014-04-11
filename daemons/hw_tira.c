@@ -4,14 +4,14 @@
  *****************************************************************************
  * Routines for the HomeElectronics TIRA-2 USB dongle.
  *
- * Serial protocol described at: 
+ * Serial protocol described at:
  *    http://www.home-electro.com/Download/Protocol2.pdf
  *
  * Copyright (C) 2003 Gregory McLean <gregm@gxsnmp.org>
- *  modified for 
- *  IRA support, 
+ *  modified for
+ *  IRA support,
  *  transmit feature,
- *  receive in pulse/space mode feature 
+ *  receive in pulse/space mode feature
  *  by Arnold Pakolitz <spud28@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify

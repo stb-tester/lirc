@@ -302,7 +302,7 @@ function vlc_lircdata
         KEY_NEXT,               key-next
         KEY_PREVIOUS,           key-prev
         KEY_SUBTITLE,           key-subtitle-track
-        KEY_AUDIO,            	key-audiodevice-cycle
+        KEY_AUDIO,              key-audiodevice-cycle
         KEY_LANGUAGE,           key-audiotrack
         KEY_NEXTSONG,           key-next
         KEY_PAGEUP,             key-next
@@ -732,11 +732,11 @@ function translate_key
                             echo $1
                             continue
                         fi
-			case $1 in
-			    '\*') echo KEY_NUMERIC_STAR;;
-			    '#')  echo KEY_NUMERIC_POUND;;
-			    *)    echo X_WTF;;
-			esac
+                        case $1 in
+                            '\*') echo KEY_NUMERIC_STAR;;
+                            '#')  echo KEY_NUMERIC_POUND;;
+                            *)    echo X_WTF;;
+                        esac
                         ;;
         [a-z])          echo "KEY_${1^*}" ;;
         zero|up_zero)   echo "KEY_0" ;;
@@ -1050,8 +1050,8 @@ else
     echo "Created:"
     for target in $( echo ${OPTIONS[t]} )
     do
-	paths=( $( get_path $target ) )
-	print_data $target | make_lircrc >"${paths[0]}"
-	print_created_file ${paths[@]}
+        paths=( $( get_path $target ) )
+        print_data $target | make_lircrc >"${paths[0]}"
+        print_created_file ${paths[@]}
     done
 fi

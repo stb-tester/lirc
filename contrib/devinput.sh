@@ -15,12 +15,12 @@ begin remote
         gap             132799
         toggle_bit      0
 
-	begin codes
+        begin codes
 EOF
 
-sed --expression="s/^{\"\([^\"]*\)\", \(.*\)},/		\1	\2/" <$file
+sed --expression="s/^{\"\([^\"]*\)\", \(.*\)},/         \1      \2/" <$file
 cat <<EOF
-	end codes
+        end codes
 end remote
 EOF
 
@@ -37,11 +37,11 @@ begin remote
         gap             132799
         toggle_bit      0
 
-	begin codes
+        begin codes
 EOF
 
-sed --expression="s/^{\"\([^\"]*\)\", \(.*\)},/		\1	\2/" <$file
+sed --expression="s/^{\"\([^\"]*\)\", \(.*\)},/         \1      \2/" <$file
 cat <<EOF
-	end codes
+        end codes
 end remote
 EOF

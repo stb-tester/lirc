@@ -1,8 +1,8 @@
-#  
+#
 # brand:             PixelView
 # model:             PlayTV Pro remote control
 #
-# supported devices: 
+# supported devices:
 #   works both with home-brew and TV card receiver (use lirc-0.6.6 or better)
 #
 
@@ -67,7 +67,7 @@ end remote
 # This config file was automatically generated
 # using lirc-0.7.2(pixelview_pro) on Mon Dec  5 03:17:25 2005
 #
-# contributed by Thadeu A. Coelho de Paula 
+# contributed by Thadeu A. Coelho de Paula
 # thadeudepaula (at) gmail (dot) com
 # http://mundolivre.hostrix.com.br
 #

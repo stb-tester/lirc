@@ -8,37 +8,37 @@
 #
 
 begin
-	button = MENU
-	mode = mouse
+        button = MENU
+        mode = mouse
 end
 
 begin
-	prog = xirw
-	button = MENU
-	config = Mouse aktivieren
+        prog = xirw
+        button = MENU
+        config = Mouse aktivieren
 end
 
 begin
-	prog = irexec
-	button = 1
-	button = 2
-	button = 3
-	button = 1
-	button = 2
-	button = 3
-	button = 4
-	config = echo "secret code"
+        prog = irexec
+        button = 1
+        button = 2
+        button = 3
+        button = 1
+        button = 2
+        button = 3
+        button = 4
+        config = echo "secret code"
 end
 begin
-	prog = xirw
-	button = 1
-	button = 2
-	button = 3
-	button = 1
-	button = 2
-	button = 3
-	button = 4
-	config = psssst, secret
+        prog = xirw
+        button = 1
+        button = 2
+        button = 3
+        button = 1
+        button = 2
+        button = 3
+        button = 4
+        config = psssst, secret
 end
 
 begin
@@ -47,82 +47,82 @@ begin
         config = mix vb+5 >/dev/null
 end
 begin
-	prog=xirw
-	button = VOL_UP
-	config = Lautstärke +
+        prog=xirw
+        button = VOL_UP
+        config = Lautst#rke +
 end
 
 begin
-	prog = irexec
-	button = VOL_DOWN
+        prog = irexec
+        button = VOL_DOWN
         config = mix vb-5 >/dev/null
 end
 begin
-	prog=xirw
-	button = VOL_DOWN
-	config = Lautstärke -
+        prog=xirw
+        button = VOL_DOWN
+        config = Lautst#rke -
 end
 
-begin 
-	prog = irexec
-	button = TV/R
-	config = xawtv  -geometry +754+0 >/dev/null&
-	mode = tv
-	flags= once
+begin
+        prog = irexec
+        button = TV/R
+        config = xawtv  -geometry +754+0 >/dev/null&
+        mode = tv
+        flags= once
 end
 begin
-	prog=xirw
-	button = TV/R
-	config = Moduswechsel
+        prog=xirw
+        button = TV/R
+        config = Moduswechsel
 end
 begin
-	prog = irexec
-	button = A/B
-	config = kscd -geometry +60+600&
-	mode = cd
-	flags = once
+        prog = irexec
+        button = A/B
+        config = kscd -geometry +60+600&
+        mode = cd
+        flags = once
 end
 begin
-	prog=xirw
-	button = A/B
-	config = Moduswechsel
+        prog=xirw
+        button = A/B
+        config = Moduswechsel
 end
 begin
-	prog = irexec
-	button = BACK
-	mode = system
+        prog = irexec
+        button = BACK
+        mode = system
 end
 begin
-	prog=xirw
-	button = BACK
-	config = Moduswechsel
+        prog=xirw
+        button = BACK
+        config = Moduswechsel
 end
 
 begin tv
-	
-	begin
-		prog = irxevent
-		button = 0
-		config = Key f xawtv
-		config = Key f xawtv
-	end
+
+        begin
+                prog = irxevent
+                button = 0
+                config = Key f xawtv
+                config = Key f xawtv
+        end
         begin
                 prog = xirw
                 button = 0
                 config = Vollbild an
                 config = Vollbild aus
         end
-	begin
+        begin
                 prog = irxevent
-                button = POWER 
+                button = POWER
                 config = Key Escape xawtv
-	end
-	begin
-		prog = xirw
-		button = POWER
-		config = TV beenden
-		flags = mode
-	end
+        end
+        begin
+                prog = xirw
+                button = POWER
+                config = TV beenden
+                flags = mode
+        end
 end tv
 
 begin cd
@@ -144,7 +144,7 @@ begin cd
         begin
                 prog = xirw
                 button = CH_UP
-                config = Nächster Titel
+                config = N#chster Titel
         end
         begin
                 prog = irxevent
@@ -175,7 +175,7 @@ begin cd
                 prog = xirw
                 button = ARROW_UP
                 config = Play
-		config = Pause
+                config = Pause
         end
         begin
                 prog = irxevent
@@ -216,7 +216,7 @@ begin cd
                 prog = xirw
                 button = POWER
                 config = CD beenden
-		flags = mode
+                flags = mode
         end
         begin
                 prog = irxevent
@@ -245,8 +245,8 @@ begin system
         begin
                 prog = irexec
                 button = POWER
-		config = xset dpms force off
-		config = xset dpms force on
+                config = xset dpms force off
+                config = xset dpms force on
         end
         begin
                 prog = xirw
@@ -267,21 +267,21 @@ begin system
         begin
                 prog = irexec
                 button = CH_UP
-		config = xvidtune -next
+                config = xvidtune -next
         end
         begin
                 prog = xirw
                 button = CH_UP
-		config = Auflösung +
+                config = Aufl#sung +
         end
         begin
                 prog = irexec
                 button = CH_DOWN
-		config = xvidtune -prev
+                config = xvidtune -prev
         end
         begin
                 prog = xirw
                 button = CH_DOWN
-		config = Auflösung -
+                config = Aufl#sung -
         end
 end system

@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  * LIRC driver for Vlsys mplay usb ftdi serial port remote control.
- * 
+ *
  * Author:	Benoit Laurent <ben905@free.fr>
  *
  * This program is free software; you can redistribute it and/or modify

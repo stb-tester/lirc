@@ -2,16 +2,16 @@
 # this config file was automatically generated
 # using lirc-0.8.0(imon_pad) on Sun Apr  2 20:21:17 2006
 #
-# contributed by 
+# contributed by
 #
-# brand: iMON Knob SoundGraph 
-# model no. of remote control: iMON Knob 
+# brand: iMON Knob SoundGraph
+# model no. of remote control: iMON Knob
 # devices being controlled by this remote: iMON Knob
 #
 
 begin remote
 
-  name  IMON_KNOB 
+  name  IMON_KNOB
   bits           32
   eps            30
   aeps          100

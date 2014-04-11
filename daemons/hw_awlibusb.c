@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  *  Userspace Lirc plugin for Awox RF/IR usb remote
- * 
+ *
  *  Copyright (C) 2008 Arif <azeemarif@gmail.com>
  *  Copyright (C) 2008 Awox Pte Ltd <marif@awox.com>
  *
@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *  July 2008:    Created along with corresponding kernel space driver
- *  August 2008:  Modified it to work in userspace using libusb. 
+ *  August 2008:  Modified it to work in userspace using libusb.
  *                No kernel driver is needed anymore.
  *               (reference taken from atilibusb)
  */

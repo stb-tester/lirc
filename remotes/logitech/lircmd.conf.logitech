@@ -1,6 +1,6 @@
-# 
+#
 # lircmd config file for the Logitech control
-# 
+#
 
 # ACCELERATOR start max multiplier
 
@@ -56,7 +56,7 @@ MOVE_NW   Logitech   MOUSE_NW
 
 MOVE_N    Logitech   MOUSE_NNW
 MOVE_NW   Logitech   MOUSE_NNW
-  
+
 BUTTON1_DOWN   Logitech   BUTTONL_DOWN
 BUTTON2_DOWN   Logitech   BUTTONR_DOWN
 

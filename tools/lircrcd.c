@@ -362,10 +362,10 @@ static int opensocket(const char *configfile, const char *socketname, mode_t per
 		return -1;
 	}
 
-	/* 
+	/*
 	   get owner, permissions, etc.
 	   so new socket can be the same since we
-	   have to delete the old socket.  
+	   have to delete the old socket.
 	 */
 	ret = stat(addr->sun_path, &s);
 	if (ret == -1 && errno != ENOENT) {

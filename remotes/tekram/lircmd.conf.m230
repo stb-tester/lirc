@@ -1,7 +1,7 @@
-# 
+#
 # lircmd config file for Tekram remote control
 # Contributed by Froenchenko Leonid <lfroen@galileo.co.il>
-# 
+#
 
 PROTOCOL IntelliMouse
 

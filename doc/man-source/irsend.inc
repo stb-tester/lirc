@@ -18,7 +18,7 @@ of electronic devices such as TV boxes, HiFi sets, etc.
 .RE
 .fi
 
-.PP 
+.PP
 \fIREMOTE\fR is the name of a remote, as described in the \fBlircd\fR
 configuration file.
 
@@ -27,7 +27,7 @@ configuration file.
 appears in the \fBlircd\fR configuration file.
 
 .PP
-\fINUM\fR is the transmitter number of the hardware device. 
+\fINUM\fR is the transmitter number of the hardware device.
 
 .PP
 For the \fBLIST\fR \fIDIRECTIVE\fR, \fIREMOTE\fR and/or \fICODE\fR
@@ -49,7 +49,7 @@ enabled in lircd.
 .nf
 .RS 3
 irsend LIST DenonTuner ""
-irsend SEND_ONCE  DenonTuner PROG\-SCAN 
+irsend SEND_ONCE  DenonTuner PROG\-SCAN
 irsend SEND_ONCE  OnkyoAmpli VOL\-UP VOL\-UP VOL\-UP VOL\-UP
 irsend SEND_START OnkyoAmpli VOL\-DOWN ; sleep 3
 irsend SEND_STOP  OnkyoAmpli VOL\-DOWN
@@ -62,7 +62,7 @@ irsend SIMULATE "0000000000000476 00 OK TECHNISAT_ST3004S"
 .TP
 .I /etc/lirc/lircd.conf
 Default \fBlircd\fR configuration file.  It should contain all the
-remotes, their infra-red codes and the corresponding timing and 
+remotes, their infra-red codes and the corresponding timing and
 waveform details.
 
 .SH DIAGNOSTICS
@@ -74,5 +74,5 @@ permissions) \fBirsend\fR aborts with the following diagnostics:
 .fi
 
 [SEE ALSO]
-.BR lircd "(8), " mode2 "(1), " smode2 "(1), " xmode2 "(1), " 
+.BR lircd "(8), " mode2 "(1), " smode2 "(1), " xmode2 "(1), "
 .BR irrecord "(1), " irw "(1), " http://www.lirc.org .

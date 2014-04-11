@@ -7,14 +7,14 @@
 # brand: ATI
 # model no. of remote control: 5000024400
 # devices being controlled by this remote:
-#	ATI Remote Wonder II
+#       ATI Remote Wonder II
 #
-#	Full use of all buttons except the
-#	Aux 1-4, ATI, and PC buttons
+#       Full use of all buttons except the
+#       Aux 1-4, ATI, and PC buttons
 #
-#	Mouse Pad works as well
+#       Mouse Pad works as well
 #
-#	use atilibusb driver
+#       use atilibusb driver
 
 begin remote
 
@@ -89,7 +89,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.2(atilibusb) on Sat Jun 30 23:20:59 2007
 #
-# contributed by 
+# contributed by
 #
 # brand:                       Medion
 # model no. of remote control: MD8800
@@ -171,7 +171,7 @@ end remote
 #
 # contributed by Michael Haas
 #
-# brand: ATI "RF Remote Control" (first generation)                    
+# brand: ATI "RF Remote Control" (first generation)
 # model no. of remote control: Part #: 5000023600
 # FCC ID: B4SUR84A
 # picture: http://www.mythtv.org/wiki/index.php/Image:Remotewonder1.jpg
@@ -190,7 +190,7 @@ begin remote
   one             0     0
   zero            0     0
   gap          147991
-  toggle_bit	0
+  toggle_bit    0
 
       begin codes
           0                        0x14DC170000
@@ -352,7 +352,7 @@ end remote
 #
 # brand: X10 WTI MCE Remote control
 # url: http://www.x10europe.com/pdf/OR22E-23E.pdf
-# model no. of remote control: OR22V 
+# model no. of remote control: OR22V
 # devices being controlled by this remote: mythtv
 #
 

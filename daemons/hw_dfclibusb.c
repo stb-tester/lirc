@@ -3,7 +3,7 @@
 /****************************************************************************
  ** hw_dfclibusb.c **********************************************************
  ****************************************************************************
- *  Userspace (libusb) driver for DFC USB InfraRed Remote Control, based on 
+ *  Userspace (libusb) driver for DFC USB InfraRed Remote Control, based on
  *  hw_atilibusb.c
  *
  *  Copyright (C) 2010 Davio Franke <davio@daviofranke.com>

@@ -4,7 +4,7 @@
  ****************************************************************************
  *
  * adapted routines for Pinnacle Systems PCTV (pro) receiver
- * 
+ *
  * Original routines from hw_pixelview.c :
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
@@ -241,7 +241,7 @@ int pinsys_deinit(void)
 }
 
 /* The first byte is always 0xFE, the second one, is a kind of checksum
-   and the third one is the code itself (6 bits). The 7th bit (0x40) is the 
+   and the third one is the code itself (6 bits). The 7th bit (0x40) is the
    repeat flag.
 */
 

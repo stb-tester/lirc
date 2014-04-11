@@ -26,7 +26,7 @@
 import string
 
 class CodeSequence:           # Handles codesequences parsing and conversion
-   
+
     def ProcessPreamble(self,sPreamble):
         if sPreamble[0]<>"0000":
             raise "Formats other than starting with 0000 are not supported!"
@@ -55,7 +55,7 @@ class CodeSequence:           # Handles codesequences parsing and conversion
         while s<>'':                        # Re-split into group of 4
             sHexTable.append(s[:4])
             s=s[4:]
-            
+
         self.sCodeName=sCodeName.rstrip()  # Name of the Code associated with code sequence
 
         self.ProcessPreamble(sHexTable[:4]) # First four sequences make up Preamble
@@ -81,12 +81,12 @@ class Device:   # Handles devices
     def AddCodes(self,sCodeName,sHexCodes):  # Add new code sequence
         seq=CodeSequence()
         finalgap=seq.AnalyzeCode(sCodeName,sHexCodes)
-        
+
         if finalgap>self.lGap:
             self.lGap=finalgap
 
-        self.sCodes.append(seq)            
-    
+        self.sCodes.append(seq)
+
     def ProcessHEX(self,fHexFile,sLine):    # Process HEX files
         while sLine<>'' and sLine.strip()<>'':   # EOF?
             [sCodeName,sHexCodes]=sLine.split(':')
@@ -104,10 +104,10 @@ class Device:   # Handles devices
 
         for i in self.sCodes:
             i.WriteCodeSection(f)
-        
+
         f.write('\t\tend raw_codes\n')
         f.write('end remote\n')
-            
+
     def __init__(self,sDeviceName):
         self.sDeviceName=sDeviceName    # Name of the device
         self.sCodes=[]                  # Codes contained in file
@@ -125,15 +125,15 @@ class RemoteFilesParser:
         p.StartElementHandler = start_element
         fXMLFile.seek(0)        # Need to start from the beginning
         p.ParseFile(fXMLFile)
-        
+
     def __init__(self,sFileName):
         self.Devices=[]
-        
+
         f=open(sFileName,'r')
         sLine=f.readline()
 
         if sLine.strip()=='<?xml version="1.0"?>':   # Are we dealing with CCF Decompiler XML file?
-                self.ProcessXML(f)   
+                self.ProcessXML(f)
         else:
                 device=Device(sFileName.split('.')[:1][0])
                 self.Devices.append(device)
@@ -146,28 +146,28 @@ class RemoteFilesParser:
 
         for d in self.Devices:
             d.WriteLIRCCConfDevice(f)
-            
+
         f.close()
-# Main 
-    
+# Main
+
 import sys
 import xml.parsers.expat
 
 if len(sys.argv)<>2:
-	print "Pronto codes converter to lircd.conf format (version 1.11)"
-	print 
-	print "Usage:   pronto2lirc.py inputfile"
-	print
-	print "Inputfile can be:"
-	print "         1.An xml file output by CCFTools/CCFDecompiler."
-	print "         2.Text file where each line contains the name of the button and "
-	print "         all codes associated with it"
-	print "         Button1:0000 00ac 000b 00de ..."
-	print
-	print "Result:  lircd.conf file is written to the current directory"
-	print "         containing all the Pronto codes extracted from"
-	print "         the input file"
-	print
+        print "Pronto codes converter to lircd.conf format (version 1.11)"
+        print
+        print "Usage:   pronto2lirc.py inputfile"
+        print
+        print "Inputfile can be:"
+        print "         1.An xml file output by CCFTools/CCFDecompiler."
+        print "         2.Text file where each line contains the name of the button and "
+        print "         all codes associated with it"
+        print "         Button1:0000 00ac 000b 00de ..."
+        print
+        print "Result:  lircd.conf file is written to the current directory"
+        print "         containing all the Pronto codes extracted from"
+        print "         the input file"
+        print
 else:
-	p=RemoteFilesParser(sys.argv[1])
-	p.WriteLIRCConf('lircd.conf')
+        p=RemoteFilesParser(sys.argv[1])
+        p.WriteLIRCConf('lircd.conf')

@@ -7,7 +7,7 @@
  * Routines for UIRT2 receiver/transmitter.
  * Receiving using the raw mode and transmitting using struc or raw mode,
  * depending on code length.
- * 
+ *
  * Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -348,20 +348,20 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 		LOGPRINTF(1, "uirt2_send: succeeded");
 	}
 
-        /*
-         * Some devices send the sequence in the background.  Wait for
-         * the sequence to complete before returning in order to avoid
-         * disturbing DTR which is used by certain hardware revisions
-         * to enable the builtin emitter.  We wait 1.1 times the expected
-         * time in order to handle any differences between the device and
-         * our clock.
-         */
-        delay = remote->min_remaining_gap;
-        for (i = 0; i < length; i++) {
+	/*
+	 * Some devices send the sequence in the background.  Wait for
+	 * the sequence to complete before returning in order to avoid
+	 * disturbing DTR which is used by certain hardware revisions
+	 * to enable the builtin emitter.  We wait 1.1 times the expected
+	 * time in order to handle any differences between the device and
+	 * our clock.
+	 */
+	delay = remote->min_remaining_gap;
+	for (i = 0; i < length; i++) {
 	    delay += signals[i];
 	}
-        delay = (delay * 11) / 10;
-        usleep (delay);
+	delay = (delay * 11) / 10;
+	usleep (delay);
 
 	return res;
 }

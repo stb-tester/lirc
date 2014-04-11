@@ -228,7 +228,7 @@ static int lirc_cdev_add(struct irctl *ir)
 	int retval;
 	struct lirc_driver *d = &ir->d;
 	struct cdev *cdev = &cdevs[d->minor];
- 
+
 	if (d->fops) {
 		cdev_init(cdev, d->fops);
 		cdev->owner = d->owner;

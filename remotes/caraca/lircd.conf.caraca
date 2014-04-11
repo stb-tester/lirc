@@ -1,19 +1,19 @@
 #
 #
-# contributed by Konrad Riedel <k.riedel@gmx.de>  
+# contributed by Konrad Riedel <k.riedel@gmx.de>
 #
 # brand:             CARACA
 # model:             RC5 Remote Control
 #
-# supported devices: 
-#	CARACA nodes - see http://caraca.sourceforge.net
+# supported devices:
+#       CARACA nodes - see http://caraca.sourceforge.net
 #       first byte: node address
-#       2nd   byte: ir code 
+#       2nd   byte: ir code
 #
 
 begin remote
 
-  name  Caraca 
+  name  Caraca
   bits           16
 
       begin codes

@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for Slink-e
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
  *  modified for Slink-e receiver by Max Spring <mspring@employees.org>

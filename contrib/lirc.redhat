@@ -21,30 +21,30 @@ PATH=/usr/local/sbin:/usr/local/bin:$PATH
 # See how we were called.
 case "$1" in
   start)
-	echo -n "Starting Infrared Remote Control: "
-	daemon lircd
-	daemon lircmd
-	echo
-	touch /var/lock/subsys/lirc
-	;;
+        echo -n "Starting Infrared Remote Control: "
+        daemon lircd
+        daemon lircmd
+        echo
+        touch /var/lock/subsys/lirc
+        ;;
   stop)
-	echo -n "Shutting down Infrared Remote Control: "
-	killproc lircmd
-	killproc lircd
-	echo
-	rm -f /var/lock/subsys/lirc
-	;;
+        echo -n "Shutting down Infrared Remote Control: "
+        killproc lircmd
+        killproc lircd
+        echo
+        rm -f /var/lock/subsys/lirc
+        ;;
   status)
-	status lircd
-	status lircmd
-	;;
+        status lircd
+        status lircmd
+        ;;
   restart)
-	$0 stop
-	$0 start
-	;;
+        $0 stop
+        $0 start
+        ;;
   *)
-	echo "Usage: lirc {start|stop|status|restart}"
-	exit 1
+        echo "Usage: lirc {start|stop|status|restart}"
+        exit 1
 esac
 
 exit 0

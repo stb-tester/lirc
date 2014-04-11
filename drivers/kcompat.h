@@ -130,8 +130,8 @@ static inline void device_set_wakeup_capable(struct device *dev, int val) {}
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29)
 #define DIV_ROUND_CLOSEST(x, divisor)(                  \
 {                                                       \
-        typeof(divisor) __divisor = divisor;            \
-        (((x) + ((__divisor) / 2)) / (__divisor));      \
+	typeof(divisor) __divisor = divisor;            \
+	(((x) + ((__divisor) / 2)) / (__divisor));      \
 }                                                       \
 )
 #endif

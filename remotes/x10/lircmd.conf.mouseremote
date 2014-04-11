@@ -1,6 +1,6 @@
-# 
+#
 # lircmd config file for the mouseremote control
-# 
+#
 
 # ACCELERATOR start max multiplier
 
@@ -280,7 +280,7 @@ MOVE_N    mouseremote   MOUSE_FAST_NNW
 MOVE_NW   mouseremote   MOUSE_FAST_NNW
 MOVE_N    mouseremote   MOUSE_FAST_NNW
 MOVE_NW   mouseremote   MOUSE_FAST_NNW
-  
+
 BUTTON1_DOWN   mouseremote   BUTTONL_DOWN
 BUTTON2_DOWN   mouseremote   BUTTONR_DOWN
 

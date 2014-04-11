@@ -5,10 +5,10 @@
  ****************************************************************************
  *
  * routines for UIRT2 receiver using the UIR mode
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *      modified for UIRT2 receiver by 
+ *      modified for UIRT2 receiver by
  *      Mikael Magnusson <mikma@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify

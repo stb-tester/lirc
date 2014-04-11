@@ -1,9 +1,9 @@
 #
 # This is an example of ~/.lircrc file
 # It is a copy of actual setup from my home machine.
-# Contributed by Konrad Riedel <k.riedel@gmx.de>  
+# Contributed by Konrad Riedel <k.riedel@gmx.de>
 #
-begin 
+begin
     prog = irexec
     button = tv/fm
     config = xawtv -geometry +64+64 &
@@ -12,54 +12,54 @@ begin
 end
 
 begin tv
-    begin 
-	prog 	= 	xawtv
-	button 	= 	power
-	config 	= 	quit
-	flags 	=	mode
-    end
-    begin 
-	prog 	= 	xawtv
-	button 	= 	source
-	repeat	=	1
-	config 	= 	setinput next
+    begin
+        prog    =       xawtv
+        button  =       power
+        config  =       quit
+        flags   =       mode
     end
     begin
-	prog   = 	xawtv
-	button = 	zoom
-	repeat = 	1
-	config = 	fullscreen
-    end
-    begin 
-	prog	=	xawtv
-	button	=	ch-
-	repeat	=	1
-	config	=	setstation prev
+        prog    =       xawtv
+        button  =       source
+        repeat  =       1
+        config  =       setinput next
     end
     begin
-	prog	=	xawtv
-	button	=	ch+
-	repeat	=	1
-	config	=	setstation next
+        prog   =        xawtv
+        button =        zoom
+        repeat =        1
+        config =        fullscreen
     end
     begin
-	prog	=	xawtv
-	button	=	record
-        repeat	=	1
-	#config	=	snap jpeg
-	config 	= 	quit
+        prog    =       xawtv
+        button  =       ch-
+        repeat  =       1
+        config  =       setstation prev
     end
     begin
-	prog	=	xawtv
-	button	=	scan
-	repeat	=	1
-	config	=	Key ctrl-z xawtv
+        prog    =       xawtv
+        button  =       ch+
+        repeat  =       1
+        config  =       setstation next
+    end
+    begin
+        prog    =       xawtv
+        button  =       record
+        repeat  =       1
+        #config =       snap jpeg
+        config  =       quit
+    end
+    begin
+        prog    =       xawtv
+        button  =       scan
+        repeat  =       1
+        config  =       Key ctrl-z xawtv
     end
     begin
         prog   = xawtv
-	button = MUTE
-	config = volume mute
-    end    
+        button = MUTE
+        config = volume mute
+    end
 end tv
 begin
     prog = irexec
@@ -108,7 +108,7 @@ begin xmms
     prog = xmms
     button = mute
     config = MUTE
-    end    
+    end
   begin
     prog = xmms
     button = seek+

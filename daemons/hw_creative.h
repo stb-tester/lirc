@@ -4,8 +4,8 @@
  ** hw_creative.h **********************************************************
  ****************************************************************************
  *
- * routines for Creative receiver 
- * 
+ * routines for Creative receiver
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *	modified for creative receiver by Isaac Lauer <inl101@alumni.psu.edu>
  */

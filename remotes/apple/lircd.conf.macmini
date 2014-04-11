@@ -2,7 +2,7 @@
 # this config file was automatically generated
 # using lirc-0.8.2(macmini) on Tue Dec 11 11:35:26 2007
 #
-# contributed by Sebastian Schaetzel 
+# contributed by Sebastian Schaetzel
 #
 # brand:                       Apple
 # model no. of remote control: A1156
@@ -26,12 +26,12 @@ begin remote
   ignore_mask 0x0000ff01
 
       begin codes
-          KEY_VOLUMEUP		0x0B
-          KEY_VOLUMEDOWN	0x0D
-          KEY_REWIND		0x08
-          KEY_FORWARD		0x07
-          KEY_PLAYPAUSE		0x04
-          KEY_MENU		0x02
+          KEY_VOLUMEUP          0x0B
+          KEY_VOLUMEDOWN        0x0D
+          KEY_REWIND            0x08
+          KEY_FORWARD           0x07
+          KEY_PLAYPAUSE         0x04
+          KEY_MENU              0x02
       end codes
 
 end remote

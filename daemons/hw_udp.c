@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  * receive mode2 input via UDP
- * 
+ *
  * Copyright (C) 2002 Jim Paris <jim@jtan.com>
  *
  * Distribute under GPL version 2 or later.
@@ -129,7 +129,7 @@ lirc_t udp_readdata(lirc_t timeout)
 	packed[0] = buffer[bufptr++];
 	packed[1] = buffer[bufptr++];
 
-	/* TODO: This assumes the receiver is active low.  Should 
+	/* TODO: This assumes the receiver is active low.  Should
 	   be specified by user, or autodetected.  */
 	data = (packed[1] & 0x80) ? 0 : PULSE_BIT;
 

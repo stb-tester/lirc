@@ -2,7 +2,7 @@
 #
 # This is an init script for a S.u.S.E. 7.1 distribution.
 #
-# This script was adapted from a version for S.U.S.E. 6.2. 
+# This script was adapted from a version for S.U.S.E. 6.2.
 # The original author was CW Zuckschwerdt <zany@triq.net>.
 #
 # /etc/init.d/lircd
@@ -30,55 +30,55 @@ rc_reset
 
 case "$1" in
     start)
-	## Start daemon with startproc(8). If this fails,
-	## set the echo return value appropriately.
+        ## Start daemon with startproc(8). If this fails,
+        ## set the echo return value appropriately.
 
-	echo -n "Starting daemon lircd"
-	startproc /usr/sbin/lircd
+        echo -n "Starting daemon lircd"
+        startproc /usr/sbin/lircd
 
-	# remember status and be verbose
-	rc_status -v
-	;;
+        # remember status and be verbose
+        rc_status -v
+        ;;
     stop)
-	## Stop daemon with killproc(8). If this fails,
-	## set the echo return value appropriately.
+        ## Stop daemon with killproc(8). If this fails,
+        ## set the echo return value appropriately.
 
-	echo -n "Shutting down daemon lircd"
-	killproc -TERM /usr/sbin/lircd
+        echo -n "Shutting down daemon lircd"
+        killproc -TERM /usr/sbin/lircd
 
-	# remember status and be verbose
-	rc_status -v
-	;;
+        # remember status and be verbose
+        rc_status -v
+        ;;
     restart)
-	## If the first command returns OK, call the second. If the 
-	## first or second command fails, set the echo return value.
+        ## If the first command returns OK, call the second. If the
+        ## first or second command fails, set the echo return value.
 
-	$0 stop  &&  $0 start
+        $0 stop  &&  $0 start
 
-	# remember status and be quiet
-	rc_status
-	;;
+        # remember status and be quiet
+        rc_status
+        ;;
     reload)
-	## Both lircd and lircmd will re-read their
-	## config files on receipt of SIGHUP.
+        ## Both lircd and lircmd will re-read their
+        ## config files on receipt of SIGHUP.
 
-	echo -n "Reload daemon lircd"
-	killproc -HUP /usr/sbin/lircd
+        echo -n "Reload daemon lircd"
+        killproc -HUP /usr/sbin/lircd
 
-	# remember status and be verbose
-	rc_status -v
-	;;
+        # remember status and be verbose
+        rc_status -v
+        ;;
     status)
-	## Check status with checkproc(8). If process is running,
-	## checkproc will return with exit status 0.
+        ## Check status with checkproc(8). If process is running,
+        ## checkproc will return with exit status 0.
 
-	echo -n "Checking for daemon lircd: "
-	checkproc /usr/sbin/lircd && echo OK || echo No process
-	;;
+        echo -n "Checking for daemon lircd: "
+        checkproc /usr/sbin/lircd && echo OK || echo No process
+        ;;
     *)
-	echo "Usage: $0 {start|stop|status|restart|reload}"
-	exit 1
-	;;
+        echo "Usage: $0 {start|stop|status|restart|reload}"
+        exit 1
+        ;;
 esac
 rc_exit
 

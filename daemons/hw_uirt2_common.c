@@ -7,7 +7,7 @@
  * Routines for UIRT2 receiver/transmitter
  *
  * UIRT2 web site: http://users.skynet.be/sky50985/
- * 
+ *
  * Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -314,7 +314,7 @@ static __u32 calc_struct1_length(int repeat, remstruct1_data_t * buf)
 }
 
 /*
- * Exported functions 
+ * Exported functions
  */
 
 uirt2_t *uirt2_init(int fd)
@@ -430,10 +430,10 @@ int uirt2_getversion(uirt2_t * dev, int *version)
 		return 0;
 	}
 
-	/* 
-	 * Ok, that command didn't work.  Maybe we're 
-	 * dealing with a newer version of the UIRT2 
-	 * protocol, which sends extended information when 
+	/*
+	 * Ok, that command didn't work.  Maybe we're
+	 * dealing with a newer version of the UIRT2
+	 * protocol, which sends extended information when
 	 * the version is requested.
 	 */
 	LOGPRINTF(0, "uirt2: detection of uirt2 failed");

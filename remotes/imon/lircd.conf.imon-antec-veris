@@ -7,8 +7,8 @@
 # brand:                       Antec Veris
 # model no. of remote control: RM200 (Rebadged iMon PAD)
 # devices being controlled by this remote:
-# 	-Antec Veris Multimedia Station Premiere
-# 	-Antec Veris Multimedia Station Elite, possibly
+#       -Antec Veris Multimedia Station Premiere
+#       -Antec Veris Multimedia Station Elite, possibly
 #
 # nb: most codes appear to come in with an initial keypress value, as well as
 # a "this key is no longer being pressed" value, which is "key | 0x00004000"
@@ -108,7 +108,7 @@ end remote
 # brand:                       Antec Veris
 # model no. of remote control: Multimedia Station Premiere Front Panel
 # devices being controlled by this remote:
-# 	-Antec Veris Multimedia Station Premiere
+#       -Antec Veris Multimedia Station Premiere
 #
 
 begin remote
@@ -157,7 +157,7 @@ end remote
 # brand:                       Antec Veris
 # model no. of remote control: RM100 (Rebadged iMon PAD)
 # devices being controlled by this remote:
-# 	-Antec Veris Fusion 350
+#       -Antec Veris Fusion 350
 #
 # nb: most codes appear to come in with an initial keypress value, as well as
 # a "this key is no longer being pressed" value, which is "key | 0x00004000"

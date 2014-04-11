@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for PixelView Play TV receiver
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */

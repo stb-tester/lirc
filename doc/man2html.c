@@ -29,7 +29,7 @@
 ** found, that page will be displayed.
 **
 ** man2html will add links to the converted manpages. The function add_links
-** is used for that. At the moment it will add links as follows, where   
+** is used for that. At the moment it will add links as follows, where
 **     indicates what should match to start with:
 ** ^^^
 ** Recognition           Item            Link
@@ -748,7 +748,7 @@ char *scan_escape(char *c)
 	h = expand_string(i);
 	break;
     case 'f':
-	c++;	
+	c++;
 	if (*c=='\\') {
 	    c++;
 	    c=scan_escape(c);
@@ -1579,7 +1579,7 @@ char *section_list[] = {
     "8S", "Maintenance Commands",
     "8V", "Maintenance Commands",
     "L", "Local Commands",
-/* for Solaris: 
+/* for Solaris:
     "1", "User Commands",
     "1B", "SunOS/BSD Compatibility Package Commands",
     "1b", "SunOS/BSD Compatibility Package Commands",
@@ -1924,7 +1924,7 @@ char *scan_request(char *c)
 		c=skip_till_newline(c+j);
 	    break;
 	case V('i','e'):
-	    /* .ie c anything : then part of if else */	
+	    /* .ie c anything : then part of if else */
 	case V('i','f'):
 	    /* .if c anything
 	     * .if !c anything
@@ -2013,7 +2013,7 @@ char *scan_request(char *c)
 		if (stat(h, &stbuf)!=-1) l=stbuf.st_size;
 		buf = (char*) malloc((l+4)*sizeof(char));
 #if NOCGI
-                if (!out_length) {
+		if (!out_length) {
 		    char *t,*s;
 		    t=strrchr(fname, '/');
 		    if (!t) t=fname;
@@ -2026,12 +2026,12 @@ char *scan_request(char *c)
 			   s, h, h);
 		} else
 #endif
-                {
+		{
 		    /* this works alright, except for section 3 */
 		    f=fopen(h,"r");
 		    if (!f || !buf || !l)
 			fprintf(stderr, "Unable to open or read file %s.\n",
-				h); 
+				h);
 		    else {
 			i=fread(buf+1,1,l,f);
 			fclose(f);
@@ -2082,7 +2082,7 @@ char *scan_request(char *c)
 	case V('B','\n'):
 	case V('I',' '):
 	case V('I','\n'):
-            /* parse one line in a certain font */
+	    /* parse one line in a certain font */
 	    out_html(change_to_font(*c));
 	    trans_char(c,'"','\a');
 	    c=c+j;
@@ -2093,7 +2093,7 @@ char *scan_request(char *c)
 	    if (fillout) curpos++; else curpos=0;
 	    break;
 	case V('O','P'):  /* groff manpages use this construction */
-            /* .OP a b : [ <B>a</B> <I>b</I> ] */
+	    /* .OP a b : [ <B>a</B> <I>b</I> ] */
 	    mode=1;
 	    c[0]='B'; c[1]='I';
 	    out_html(change_to_font('R'));
@@ -2132,12 +2132,12 @@ char *scan_request(char *c)
 	case V('I','P'):
 	    sl=fill_words(c+j, wordlist, &words);
 	    c=sl+1;
-            if (!dl_set[itemdepth]) {
+	    if (!dl_set[itemdepth]) {
 		out_html("<DL COMPACT>\n");
 		dl_set[itemdepth]=1;
 	    }
 	    out_html("<DT>");
-            if (words) {
+	    if (words) {
 		scan_troff(wordlist[0], 1,NULL);
 	    }
 	    out_html("<DD>");
@@ -2158,14 +2158,14 @@ char *scan_request(char *c)
 	    curpos=0;
 	    break;
 	case V('I','X'):
-            /* general index */
+	    /* general index */
 	    sl = fill_words(c+j, wordlist, &words);
 	    c=sl+1;
 	    j=4;
 	    while (idxlabel[j]=='Z') idxlabel[j--]='A';
 	    idxlabel[j]++;
 #ifdef MAKEINDEX
-            fprintf(idxfile, "%s@%s@", fname, idxlabel);
+	    fprintf(idxfile, "%s@%s@", fname, idxlabel);
 	    for (j=0; j<words; j++) {
 		h=NULL;
 		scan_troff(wordlist[j], 1, &h);
@@ -2174,7 +2174,7 @@ char *scan_request(char *c)
 	    }
 	    fprintf(idxfile,"\n");
 #endif
-            out_html("<A NAME=\"");
+	    out_html("<A NAME=\"");
 	    out_html(idxlabel);
 	    /* this will not work in mosaic (due to a bug).
 	    ** Adding '&nbsp;' between '>' and '<' solves it, but creates
@@ -2317,9 +2317,9 @@ char *scan_request(char *c)
 	    c=sl+1;
 	    break;
 	case V('r','m'):
-            /* .rm xx : Remove request, macro or string */
+	    /* .rm xx : Remove request, macro or string */
 	case V('r','n'):
-            /* .rn xx yy : Rename request, macro or string xx to yy */
+	    /* .rn xx yy : Rename request, macro or string xx to yy */
 	    {
 		STRDEF *de;
 		c=c+j;
@@ -2341,13 +2341,13 @@ char *scan_request(char *c)
 		break;
 	    }
 	case V('n','x'):
-            /* .nx filename : next file. */
+	    /* .nx filename : next file. */
 	case V('i','n'):
-            /* .in +-N : Indent */
+	    /* .in +-N : Indent */
 	    c=skip_till_newline(c);
 	    break;
 	case V('n','r'):
-            /* .nr R +-N M: define and set number register R by +-N;
+	    /* .nr R +-N M: define and set number register R by +-N;
 	    **  auto-increment by M
 	    */
 	    {
@@ -2375,12 +2375,12 @@ char *scan_request(char *c)
 		break;
 	    }
 	case V('a','m'):
-            /* .am xx yy : append to a macro. */
-            /* define or handle as .ig yy */
+	    /* .am xx yy : append to a macro. */
+	    /* define or handle as .ig yy */
 	    mode=1;
 	case V('d','e'):
-            /* .de xx yy : define or redefine macro xx; end at .yy (..) */
-            /* define or handle as .ig yy */
+	    /* .de xx yy : define or redefine macro xx; end at .yy (..) */
+	    /* define or handle as .ig yy */
 	    {
 		STRDEF *de;
 		int olen=0;
@@ -2428,7 +2428,7 @@ char *scan_request(char *c)
 	    c=skip_till_newline(c);
 	    break;
 	default:
-            /* search macro database of self-defined macros */
+	    /* search macro database of self-defined macros */
 	    owndef = defdef;
 	    while (owndef && owndef->nr!=i) owndef=owndef->next;
 	    if (owndef) {
@@ -2927,7 +2927,7 @@ int main(int argc, char **argv)
 	       "Sorry, the manpage for %s does not exist%s%s",
 	       h,h,h, (sectionname? " in section ":""),
 	       (sectionname?sectionname:""));
-       	i=search_manpath_all(h);
+	i=search_manpath_all(h);
 	if (!i) {
 	    if (sectionname)
 		printf(",nor in any other section.\n");

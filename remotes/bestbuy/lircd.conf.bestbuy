@@ -6,7 +6,7 @@
 #
 # brand:             BESTBUY
 # model:             Easy TV (BT848)
-# supported devices: 
+# supported devices:
 #
 
 begin remote
@@ -22,7 +22,7 @@ begin remote
   pre_data      0x0
 #  gap          149990
   gap           199989
-  toggle_bit      2 
+  toggle_bit      2
 
 
       begin codes

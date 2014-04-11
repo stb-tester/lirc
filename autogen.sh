@@ -9,7 +9,7 @@ automake
 TMPFILE=$(mktemp)
 
 cat >$TMPFILE <<EOF
-#! /bin/sh      
+#! /bin/sh
 if test "\$#" = "0"; then
   if ! ./setup.sh; then
     echo "Please read the documentation!!!"

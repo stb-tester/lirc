@@ -3,10 +3,10 @@
 # contributed by Vadim Shliakhov <svadim@nm.ru>
 #
 # brand:  Ericsson
-# model:  Mobile Phone over Bluetooth (BTE)   
+# model:  Mobile Phone over Bluetooth (BTE)
 #
-# supported devices: 
-#	      Ericsson t520m, t630
+# supported devices:
+#             Ericsson t520m, t630
 #
 
 begin remote

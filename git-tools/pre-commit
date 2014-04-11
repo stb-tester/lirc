@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# lirc pre-commit hook: remove trailing space, use tabs for indent.
+
+C_SOURCES=( $( git diff --cached --name-status | \
+              grep -v ^D | awk '$1 $2 { print $2}' | grep -e '.c$|.h$' ))
+
+OTHERS=( $( git diff --cached --name-status | \
+              grep -v ^D | awk '$1 $2 { print $2}' | \
+              grep -Ev  '.c$|.h$|.png$|.gif$|.jpg$|Makefile'))
+
+for f in ${C_SOURCES[@]} ; do
+       test -L $f && continue
+       unexpand $f | sed -r 's/[ \t]+$//' > $f.tmp && mv -f $f.tmp $f
+done
+for f in ${OTHERS[@]} ; do
+       test -L $f && continue
+       expand $f | sed -r 's/[ \t]+$//' > $f.tmp && \
+           cat $f.tmp > $f && rm $f.tmp
+done
+

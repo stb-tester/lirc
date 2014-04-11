@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  * receive keycodes input via /dev/usb/hiddev...
- * 
+ *
  * Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
  * Copyright (C) 2004 Chris Pascoe <c.pascoe@itee.uq.edu.au>
  * Copyright (C) 2005 William Uther <william.uther@nicta.com.au>
@@ -275,11 +275,11 @@ char *hiddev_rec(struct ir_remote *remotes)
 	 */
 
 	if (event.hid == 0x90001) {
-		/* This is the DVICO Remote. It actually sends two hid 
-		 * events, the first of which has 0 as the hid.value and 
-		 * is of no use in decoding the remote code. If we 
-		 * receive this type of event, read the next event 
-		 * (which should be immediately available) and 
+		/* This is the DVICO Remote. It actually sends two hid
+		 * events, the first of which has 0 as the hid.value and
+		 * is of no use in decoding the remote code. If we
+		 * receive this type of event, read the next event
+		 * (which should be immediately available) and
 		 * use it to obtain the remote code.
 		 */
 

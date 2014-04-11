@@ -191,7 +191,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.0-CVS(atiusb) on Sat May 15 10:44:51 2004
 #
-# contributed by Jurgen Kramer 
+# contributed by Jurgen Kramer
 #
 # brand: ATI
 # model no. of remote control: 5000023600
@@ -280,7 +280,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.0(any) on Tue Mar 29 17:33:06 2005
 #
-# contributed by Raphaël Doursenaud (rdoursenaud@free.fr)
+# contributed by Rapha l Doursenaud (rdoursenaud@free.fr)
 #
 # brand: Sapphire (ATI)
 # model no. of remote control: 5000023600
@@ -365,7 +365,7 @@ end remote
 # matching MythTV configuration file at http://wendy.seltzer.org/mythtv/lircrc
 #
 #
-# brand:	X-10 Lola                       
+# brand:        X-10 Lola
 # model no. of remote control:  UR89A
 # devices being controlled by this remote: mythtv
 #
@@ -379,7 +379,7 @@ begin remote
 
   one             0     0
   zero            0     0
-  
+
   pre_data_bits   8
   pre_data       0x14
   post_data_bits  16
@@ -440,7 +440,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.0pre6(atiusb) on Fri Jul  9 10:08:10 2004
 #
-# contributed by 		Julien Damon
+# contributed by                Julien Damon
 #
 # brand:                       microapp6in1
 # see http://www.microapp.com/fiche_produit.cfm?ref_produit=4184
@@ -525,10 +525,10 @@ end remote
 # contributed by Martin Tomasek <mtd@centrum.cz>
 #
 # brand: ATI Remote Wonder
-# model no. of remote control: 
+# model no. of remote control:
 # devices being controlled by this remote: ATI USB Receiver (X10).
 #
-# * remote is set to channel 1, driver reports channel 16. don't know 
+# * remote is set to channel 1, driver reports channel 16. don't know
 # which is true.
 
 #
@@ -615,7 +615,7 @@ end remote
 # contributed by Phil Speights
 #
 # brand: nvidia
-# model no. of remote control: UR88A 
+# model no. of remote control: UR88A
 # devices being controlled by this remote: nvidia personal cinema
 #
 
@@ -702,9 +702,9 @@ end remote
 #
 # contributed by Dirk Aust
 #
-# brand:	Medion, Made by X10, China
-# Remote P/N:	20016398
-# Receiver P/N:	20016397
+# brand:        Medion, Made by X10, China
+# Remote P/N:   20016398
+# Receiver P/N: 20016397
 #
 # bundled with bundled with Titanium TD8008 and TD8080 Aldi PC
 
@@ -875,10 +875,10 @@ end remote
 # this config file was automatically generated
 # using lirc-0.7.0(any) on Sun Jan 16 14:58:13 2005
 #
-# contributed by 
+# contributed by
 #
 # brand:                       Niveus
-# model no. of remote control: 
+# model no. of remote control:
 # devices being controlled by this remote: Niveus X10
 #
 
@@ -1024,7 +1024,7 @@ begin remote
         Info            0x84af
         Menu            0x6e99
         left            0x729d
-        up_0            0x4d78  
+        up_0            0x4d78
         up_1            0x4e79
         up_2            0x4f7a
         up_3            0x507b
@@ -1064,7 +1064,7 @@ begin remote
         Record          0x7ca7
         FastForward     0x7ba6
 
-    end codes  
+    end codes
 end remote
 
 
@@ -1076,7 +1076,7 @@ end remote
 #
 # brand: MEDION X10 RF
 # model no. of remote control: remote P/N:20014752, receiver P/N:20014751
-# devices being controlled by this remote: 
+# devices being controlled by this remote:
 #
 
 begin remote
@@ -1214,14 +1214,14 @@ begin remote
           Power                    0xD702
           setup                    0x709B
           ok                       0xF31E
-	  VideoDesktop		   0x86B1
-	  TvRadio		   0xF11C
-	  rename		   0x0B36
-	  acquireImage		   0x0C37
-	  editImage		   0x0D38
-	  Fullscreen		   0x0E39
- 	  dvdAudio		   0x0F3A	    
-	  channelList		   0x0530
+          VideoDesktop             0x86B1
+          TvRadio                  0xF11C
+          rename                   0x0B36
+          acquireImage             0x0C37
+          editImage                0x0D38
+          Fullscreen               0x0E39
+          dvdAudio                 0x0F3A
+          channelList              0x0530
       end codes
 
 end remote
@@ -1458,7 +1458,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.0(atiusb) on Mon Dec 11 20:45:22 2006
 #
-# contributed by Wim Lemmers 
+# contributed by Wim Lemmers
 #
 # brand:                       Medion
 # model no. of remote control: OR24E RF MCE Remote Control
@@ -1540,7 +1540,7 @@ end remote
 #
 # contributed by Harald Wild - www.wild-technology.de
 #
-# brand: Q-Sonic Master Remote PC / TV 
+# brand: Q-Sonic Master Remote PC / TV
 # model no. of remote control: Art.Nr. PE-9999
 # frequency: 433.92 MHz
 # distributor Germany: PEARL AGENCY - www.pearl.de
@@ -1772,9 +1772,9 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.2-CVS(atilibusb) on Fri Jun  8 13:19:29 2007
 #
-# contributed by 
+# contributed by
 #
-# brand:                       
+# brand:
 # model no. of remote control: ATI/X10 RF USB Remote Control v. 2.2.1
 # devices being controlled by this remote:
 #
@@ -1934,9 +1934,10 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.2(default) on Sat Sep  1 00:44:52 2007
 #
-# contributed by Michael Große Burlage mburlage@web.de
+# contributed by Michael Gro
+e Burlage mburlage@web.de
 #
-# brand:                       Medion X10  
+# brand:                       Medion X10
 # model no. of remote control: PN 40013224
 # devices being controlled by this remote: Medion MD97000
 #
@@ -2012,7 +2013,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.1(default) on Sun Jun 17 20:19:04 2007
 #
-# contributed by 
+# contributed by
 #
 # brand: Jasco
 # model no. of remote control: 97685T
@@ -2081,16 +2082,16 @@ end remote
 #
 # contributed by Frank Reimann, Berlin (capital city of Germany)
 #
-# brand:                       	Toshiba
+# brand:                        Toshiba
 #
-# model no. of remote control:  Toshiba MCE Remote Control (X10), 
-# 				model no. PX1246E-1ETC, model type OR23E,
-# 				Universal Remote Control
+# model no. of remote control:  Toshiba MCE Remote Control (X10),
+#                               model no. PX1246E-1ETC, model type OR23E,
+#                               Universal Remote Control
 #
-# devices being controlled by this remote: 
+# devices being controlled by this remote:
 #                               RF USB receiver: X10 Wireless Technology, Inc.
 #                               Manufacturer: X10 WTI (Made in China by X10)
-#                               USB Vendor Id: 0bc7, 
+#                               USB Vendor Id: 0bc7,
 #                               USB Product Id: 0006,
 #                               Revision Number:  1.00
 #                               Toshiba MCE Remote Control Receiver,
@@ -2110,13 +2111,13 @@ end remote
 # One more tip:
 # ~~~~~~~~~~~~~
 # You should add a line with "options lirc_atiusb repeat=15" to the distribution
-# specific module parameters file (like /etc/modules.conf 
-# or /etc/modprobe.conf) for an accurate key recognition. Consult the 
+# specific module parameters file (like /etc/modules.conf
+# or /etc/modprobe.conf) for an accurate key recognition. Consult the
 # documentation of your distribution for further information concerning module
 # parameters.
-# Two or more button codes are sent in case default value "repeat=10" is used 
+# Two or more button codes are sent in case default value "repeat=10" is used
 # and when a button is pressed once. You can try greater values for slower
-# button code repetition. 
+# button code repetition.
 #
 # More driver options (module parameters) and additional information are shown
 # with command "modinfo lirc_atiusb".
@@ -2156,7 +2157,7 @@ begin remote
           TIMESHIFT                0x6D98
           GUIDE                    0x0631
           LIVE                     0x719C
-          DVD	                   0x5984
+          DVD                      0x5984
           VOLUME+                  0x5E89
           VOLUME-                  0x5D88
           SYSTEM-LOGO              0x709B
@@ -2220,102 +2221,102 @@ begin remote
   toggle_bit_mask 0x80800000
 
       begin codes
-	  KEY_MAX                  0x812C
-	  KEY_MAX                  0x01AC
-	  KEY_CLOSE                0x5702
-	  KEY_CLOSE                0xD782
-	  KEY_1                    0x620D
-	  KEY_1                    0xE28D
-	  KEY_2                    0x630E
-	  KEY_2                    0xE38E
-	  KEY_3                    0x640F
-	  KEY_3                    0xE48F
-	  KEY_4                    0x6510
-	  KEY_4                    0xE590
-	  KEY_5                    0x6611
-	  KEY_5                    0xE691
-	  KEY_6                    0x6712
-	  KEY_6                    0xE792
-	  KEY_7                    0x6813
-	  KEY_7                    0xE893
-	  KEY_8                    0x6914
-	  KEY_8                    0xE994
-	  KEY_9                    0x6A15
-	  KEY_9                    0xEA95
-	  KEY_0                    0x6C17
-	  KEY_0                    0xEC97
-	  KEY_BACK                 0x6B16
-	  KEY_BACK                 0xEB96
-	  KEY_ENTER                0x6D18
-	  KEY_ENTER                0xED98
-	  KEY_VOLUMEUP             0x5E09
-	  KEY_VOLUMEUP             0xDE89
-	  KEY_VOLUMEDOWN           0x5D08
-	  KEY_VOLUMEDOWN           0xDD88
-	  KEY_MUTE                 0x5F0A
-	  KEY_MUTE                 0xDF8A
-	  KEY_VENDOR               0x5500
-	  KEY_VENDOR               0xD580
-	  KEY_CHANNELUP            0x600B
-	  KEY_CHANNELUP            0xE08B
-	  KEY_CHANNELDOWN          0x610C
-	  KEY_CHANNELDOWN          0xE18C
-	  KEY_INFO                 0x832E
-	  KEY_INFO                 0x03AE
-	  KEY_OPTION               0x842F
-	  KEY_OPTION               0x04AF
-	  KEY_UP                   0x6F1A
-	  KEY_UP                   0xEF9A
-	  KEY_LEFT                 0x721D
-	  KEY_LEFT                 0xF29D
-	  KEY_DOWN                 0x7722
-	  KEY_DOWN                 0xF7A2
-	  KEY_RIGHT                0x741F
-	  KEY_RIGHT                0xF49F
-	  KEY_OK                   0x731E
-	  KEY_OK                   0xF39E
-	  KEY_MENU                 0x711C
-	  KEY_MENU                 0xF19C
-	  KEY_EXIT                 0x7520
-	  KEY_EXIT                 0xF5A0
-	  KEY_RECORD               0x7C27
-	  KEY_RECORD               0xFCA7
-	  KEY_PLAY                 0x7A25
-	  KEY_PLAY                 0xFAA5
-	  KEY_STOP                 0x7D28
-	  KEY_STOP                 0xFDA8
-	  KEY_REWIND               0x7924
-	  KEY_REWIND               0xF9A4
-	  KEY_FORWARD              0x7B26
-	  KEY_FORWARD              0xFBA6
-	  KEY_PREVIOUS             0x802B
-	  KEY_PREVIOUS             0x00AB
-	  KEY_PAUSE                0x7E29
-	  KEY_PAUSE                0xFEA9
-	  KEY_NEXT                 0x7F2A
-	  KEY_NEXT                 0xFFAA
-	  KEY_AUDIO                0x5B06
-	  KEY_AUDIO                0xDB86
-	  PHOTOS                   0x5A05
-	  PHOTOS                   0xDA85
-	  KEY_DVD                  0x5904
-	  KEY_DVD                  0xD984
-	  KEY_TV                   0x5803
-	  KEY_TV                   0xD883
-	  KEY_VIDEO                0x5C07
-	  KEY_VIDEO                0xDC87
-	  KEY_HELP                 0x5601
-	  KEY_HELP                 0xD681
-	  MOUSE                    0x822D
-	  MOUSE                    0x02AD
-	  KEY_A                    0x6E19
-	  KEY_A                    0xEE99
-	  KEY_B                    0x701B
-	  KEY_B                    0xF09B
-	  KEY_C                    0x7621
-	  KEY_C                    0xF6A1
-	  KEY_D                    0x7823
-	  KEY_D                    0xF8A3
+          KEY_MAX                  0x812C
+          KEY_MAX                  0x01AC
+          KEY_CLOSE                0x5702
+          KEY_CLOSE                0xD782
+          KEY_1                    0x620D
+          KEY_1                    0xE28D
+          KEY_2                    0x630E
+          KEY_2                    0xE38E
+          KEY_3                    0x640F
+          KEY_3                    0xE48F
+          KEY_4                    0x6510
+          KEY_4                    0xE590
+          KEY_5                    0x6611
+          KEY_5                    0xE691
+          KEY_6                    0x6712
+          KEY_6                    0xE792
+          KEY_7                    0x6813
+          KEY_7                    0xE893
+          KEY_8                    0x6914
+          KEY_8                    0xE994
+          KEY_9                    0x6A15
+          KEY_9                    0xEA95
+          KEY_0                    0x6C17
+          KEY_0                    0xEC97
+          KEY_BACK                 0x6B16
+          KEY_BACK                 0xEB96
+          KEY_ENTER                0x6D18
+          KEY_ENTER                0xED98
+          KEY_VOLUMEUP             0x5E09
+          KEY_VOLUMEUP             0xDE89
+          KEY_VOLUMEDOWN           0x5D08
+          KEY_VOLUMEDOWN           0xDD88
+          KEY_MUTE                 0x5F0A
+          KEY_MUTE                 0xDF8A
+          KEY_VENDOR               0x5500
+          KEY_VENDOR               0xD580
+          KEY_CHANNELUP            0x600B
+          KEY_CHANNELUP            0xE08B
+          KEY_CHANNELDOWN          0x610C
+          KEY_CHANNELDOWN          0xE18C
+          KEY_INFO                 0x832E
+          KEY_INFO                 0x03AE
+          KEY_OPTION               0x842F
+          KEY_OPTION               0x04AF
+          KEY_UP                   0x6F1A
+          KEY_UP                   0xEF9A
+          KEY_LEFT                 0x721D
+          KEY_LEFT                 0xF29D
+          KEY_DOWN                 0x7722
+          KEY_DOWN                 0xF7A2
+          KEY_RIGHT                0x741F
+          KEY_RIGHT                0xF49F
+          KEY_OK                   0x731E
+          KEY_OK                   0xF39E
+          KEY_MENU                 0x711C
+          KEY_MENU                 0xF19C
+          KEY_EXIT                 0x7520
+          KEY_EXIT                 0xF5A0
+          KEY_RECORD               0x7C27
+          KEY_RECORD               0xFCA7
+          KEY_PLAY                 0x7A25
+          KEY_PLAY                 0xFAA5
+          KEY_STOP                 0x7D28
+          KEY_STOP                 0xFDA8
+          KEY_REWIND               0x7924
+          KEY_REWIND               0xF9A4
+          KEY_FORWARD              0x7B26
+          KEY_FORWARD              0xFBA6
+          KEY_PREVIOUS             0x802B
+          KEY_PREVIOUS             0x00AB
+          KEY_PAUSE                0x7E29
+          KEY_PAUSE                0xFEA9
+          KEY_NEXT                 0x7F2A
+          KEY_NEXT                 0xFFAA
+          KEY_AUDIO                0x5B06
+          KEY_AUDIO                0xDB86
+          PHOTOS                   0x5A05
+          PHOTOS                   0xDA85
+          KEY_DVD                  0x5904
+          KEY_DVD                  0xD984
+          KEY_TV                   0x5803
+          KEY_TV                   0xD883
+          KEY_VIDEO                0x5C07
+          KEY_VIDEO                0xDC87
+          KEY_HELP                 0x5601
+          KEY_HELP                 0xD681
+          MOUSE                    0x822D
+          MOUSE                    0x02AD
+          KEY_A                    0x6E19
+          KEY_A                    0xEE99
+          KEY_B                    0x701B
+          KEY_B                    0xF09B
+          KEY_C                    0x7621
+          KEY_C                    0xF6A1
+          KEY_D                    0x7823
+          KEY_D                    0xF8A3
       end codes
 
 end remote
@@ -2409,7 +2410,7 @@ end remote
 # this config file was hand crafted for
 # lirc-0.8.5(atiusb) 2009-10-17
 #
-# original medion 8802 (which seems very similar): 
+# original medion 8802 (which seems very similar):
 # contributed by Ted Schipper <t.schipper@tsux.org>
 #
 # channels added by Michael Markstaller mm at elabnet.de
@@ -2418,7 +2419,7 @@ end remote
 # Remote P/N:                  2002 9725
 # Receiver P/N:                20017629
 # devices being controlled by this remote: EIB-Installation/Multiroom-Audio/Homecinema
-# Other numbers: CD0536 (remote) 
+# Other numbers: CD0536 (remote)
 # You can use 16 remotes with 16 channels separately using only one USB-receiver!
 #
 # - ATTENTION! multiple channels are broken with lirc <0.8.6!

@@ -4,7 +4,7 @@
  ****************************************************************************
  *
  * adapted routines for Pinnacle Systems PCTV (pro) receiver
- * 
+ *
  * Original routines from hw_pixelview.h :
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *

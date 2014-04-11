@@ -8,7 +8,7 @@
 #
 # explanation:
 #   mandatory parameters:
-#     macShortAddress:       802.15.4 short address (2 byte hex) 
+#     macShortAddress:       802.15.4 short address (2 byte hex)
 #                            to be assigned to the receiver
 #     remoteShortAddress:    802.15.4 short address (2 byte hex)
 #                            to be assigned to the remote
@@ -33,7 +33,7 @@
 # Things that do not work yet
 #     - signal strength monitoring (via 'rf settings' in the remotes setup menu)
 #     - displaying infos on the remote's display
-#   
+#
 
 begin remote
 

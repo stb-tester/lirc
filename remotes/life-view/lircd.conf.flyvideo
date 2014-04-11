@@ -66,7 +66,7 @@ begin remote
           RETURN                   0x00000000000018E7
           CENTER                   0x000000000000C837
 
-          CHANELS	           0x00000000000047B8
+          CHANELS                  0x00000000000047B8
           REV                      0x0000000000008778
           KEY_FORWARD                      0x000000000000C738
           KEY_VIDEO                    0x0000000000008877
@@ -79,7 +79,7 @@ begin remote
           TAB_RIGHT                0x00000000000038C7
           CENTER                   0x000000000000C837
           KEY_LEFT                     0x00000000000048B7
- 
+
       end codes
 
 end remote

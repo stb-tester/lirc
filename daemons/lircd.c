@@ -888,15 +888,15 @@ void start_server(mode_t permission, int nodaemon)
 	/* create socket */
 	sockfd = -1;
 #ifdef HAVE_SYSTEMD
-        n = sd_listen_fds(0);
-        if (n > 1) {
-                fprintf(stderr, "Too many file descriptors received.\n");
+	n = sd_listen_fds(0);
+	if (n > 1) {
+		fprintf(stderr, "Too many file descriptors received.\n");
 		goto start_server_failed0;
-        }
-        else if (n == 1)
-                sockfd  = SD_LISTEN_FDS_START + 0;
+	}
+	else if (n == 1)
+		sockfd  = SD_LISTEN_FDS_START + 0;
 #endif
-        if (sockfd == -1) {
+	if (sockfd == -1) {
 		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (sockfd == -1) {
 			fprintf(stderr, "%s: could not create socket\n", progname);
@@ -942,7 +942,7 @@ void start_server(mode_t permission, int nodaemon)
 		}
 
 		listen(sockfd, 3);
-        }
+	}
 	nolinger(sockfd);
 
 	if (useuinput) {

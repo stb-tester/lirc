@@ -14,7 +14,7 @@
 
 begin remote
 
-  name GV-BCTV5/PCI    
+  name GV-BCTV5/PCI
   bits            8
   eps            30
   aeps          100

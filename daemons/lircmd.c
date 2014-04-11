@@ -5,10 +5,10 @@
  ****************************************************************************
  *
  * lircmd - LIRC Mouse Daemon
- * 
+ *
  * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
  *
- * Wheel support based on lirc-imps2 by 
+ * Wheel support based on lirc-imps2 by
  * Ryan Gammon <rggammon@engmail.uwaterloo.ca>
  *
  */
@@ -540,7 +540,7 @@ void mouse_conv(int rep, char *button, char *remote)
 					}
 					if (toggle) {
 						/*
-						   assert(down==up); 
+						   assert(down==up);
 						   assert(up==BUTTON1
 						   || up==BUTTON2
 						   || up==BUTTON3);

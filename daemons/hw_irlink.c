@@ -82,7 +82,7 @@ typedef enum {
 #define IRLINK_DETECT_CMD 0x81
 
 #define IRLINK_PERIOD(value,timescale) \
-        (((1000000 * ((unsigned int)value))/timescale)&PULSE_MASK)
+	(((1000000 * ((unsigned int)value))/timescale)&PULSE_MASK)
 
 static int is_long_pause = 0;
 static int is_long_pulse = 0;

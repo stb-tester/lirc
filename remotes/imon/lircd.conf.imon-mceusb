@@ -7,8 +7,8 @@
 # brand:                       Philips
 # model no. of remote control: Windows Media Center Edition
 # devices being controlled by this remote:
-# 	-Antec Veris Multimedia Station Premiere & Elite
-# 	-iMON UltraBay, Touch, VFD, LCD (any recent iMON device)
+#       -Antec Veris Multimedia Station Premiere & Elite
+#       -iMON UltraBay, Touch, VFD, LCD (any recent iMON device)
 #
 # Note that these codes CANNOT be used with a standard mceusb
 # receivers, as they're decoded values passed along by the iMON
@@ -92,7 +92,7 @@ end remote
 # brand:                       Antec Veris
 # model no. of remote control: Multimedia Station Premiere Front Panel
 # devices being controlled by this remote:
-# 	-Antec Veris Multimedia Station Premiere
+#       -Antec Veris Multimedia Station Premiere
 #
 
 begin remote

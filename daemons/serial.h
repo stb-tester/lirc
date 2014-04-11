@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * common routines for hardware that uses the standard serial port driver
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */

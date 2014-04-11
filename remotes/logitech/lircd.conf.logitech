@@ -1,15 +1,15 @@
 #
 #
-# contributed by Isaac Lauer 
+# contributed by Isaac Lauer
 #
 # brand:             Logitech
 # model:             Value Infrared Remote Control
-# supported devices: 
+# supported devices:
 #
 
 begin remote
 
-  name  Logitech 
+  name  Logitech
   bits           8
   flags SPACE_ENC|CONST_LENGTH
   eps            30
@@ -45,35 +45,35 @@ begin remote
           KEY_CHANNELUP                      0x000000000000000A
           KEY_VOLUMEDOWN                     0x000000000000000C
           KEY_VOLUMEUP                     0x0000000000000009
-          *			   0x000000000000001F
-          #			   0x000000000000001E
-          KEY_MUTE			   0x000000000000000B
-          BUTTONL_DOWN		   0x0000000000000039
-	  BUTTONR_DOWN		   0x000000000000003A
-          KEY_UP		   0x0000000000000038
-          KEY_ENTER			   0x0000000000000008
-          KEY_CLOSE			   0x0000000000000023
-          KEY_TV			   0x0000000000000004
-          GDE			   0x0000000000000005
-          KEY_CD			   0x0000000000000006
-          MSG			   0x0000000000000007
-          KEY_PHONE			   0x0000000000000003
-          MOUSE_N		   0x0000000000000040
-          MOUSE_NNE		   0x0000000000000041
-          MOUSE_NE		   0x0000000000000042
-          MOUSE_NEE		   0x0000000000000043
-          MOUSE_E		   0x0000000000000044
-          MOUSE_SEE		   0x0000000000000045
-          MOUSE_SE		   0x0000000000000046
-	  MOUSE_SSE		   0x0000000000000047
-	  MOUSE_S		   0x0000000000000048
-	  MOUSE_SSW		   0x0000000000000049
-	  MOUSE_SW		   0x000000000000004A
-          MOUSE_SWW		   0x000000000000004B
-          MOUSE_W		   0x000000000000004C
-          MOUSE_NWW		   0x000000000000004D
-          MOUSE_NW		   0x000000000000004E
-          MOUSE_NNW		   0x000000000000004F
+          *                        0x000000000000001F
+          #                        0x000000000000001E
+          KEY_MUTE                         0x000000000000000B
+          BUTTONL_DOWN             0x0000000000000039
+          BUTTONR_DOWN             0x000000000000003A
+          KEY_UP                   0x0000000000000038
+          KEY_ENTER                        0x0000000000000008
+          KEY_CLOSE                        0x0000000000000023
+          KEY_TV                           0x0000000000000004
+          GDE                      0x0000000000000005
+          KEY_CD                           0x0000000000000006
+          MSG                      0x0000000000000007
+          KEY_PHONE                        0x0000000000000003
+          MOUSE_N                  0x0000000000000040
+          MOUSE_NNE                0x0000000000000041
+          MOUSE_NE                 0x0000000000000042
+          MOUSE_NEE                0x0000000000000043
+          MOUSE_E                  0x0000000000000044
+          MOUSE_SEE                0x0000000000000045
+          MOUSE_SE                 0x0000000000000046
+          MOUSE_SSE                0x0000000000000047
+          MOUSE_S                  0x0000000000000048
+          MOUSE_SSW                0x0000000000000049
+          MOUSE_SW                 0x000000000000004A
+          MOUSE_SWW                0x000000000000004B
+          MOUSE_W                  0x000000000000004C
+          MOUSE_NWW                0x000000000000004D
+          MOUSE_NW                 0x000000000000004E
+          MOUSE_NNW                0x000000000000004F
           MOUSE_N                  0x0000000000000050
           MOUSE_NNE                0x0000000000000051
           MOUSE_NE                 0x0000000000000052
@@ -105,7 +105,7 @@ begin remote
           MOUSE_W                  0x000000000000006C
           MOUSE_NWW                0x000000000000006D
           MOUSE_NW                 0x000000000000006E
-          MOUSE_NWW                0x000000000000006F 
+          MOUSE_NWW                0x000000000000006F
       end codes
 
 end remote

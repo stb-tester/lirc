@@ -11,11 +11,11 @@
 # brand:             Leadtek
 # model:             RM-0010 (bundeled with TV2000 TV-card)
 #
-# modifications based on the config files from 
-# Juan Toledo <toledo@users.sourceforge.net> and 
+# modifications based on the config files from
+# Juan Toledo <toledo@users.sourceforge.net> and
 # Markus Lischka <mlischka@users.sourceforge.net>
 # Reza Naima
-# 
+#
 # Only CH_UP, CH_DOWN, VOL_UP and VOL_DOWN will repeat. This seems to
 # be a hardware limitation.
 #

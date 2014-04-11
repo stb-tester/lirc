@@ -2,7 +2,7 @@
 # this config file was automatically generated
 # using lirc-0.8.5-CVS(awlibusb) on Thu Oct 30 11:03:30 2008
 #
-# contributed by 
+# contributed by
 # Arif <marif@awox.com>
 # brand: AW_USB_REMOTE_AWOX
 # model no. of remote control: AWOX RF/IR USB remote
@@ -72,7 +72,7 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.5-CVS(awlibusb) on Thu Oct 30 11:03:30 2008
 #
-# contributed by 
+# contributed by
 # Arif <marif@awox.com>
 # brand: AW_USB_REMOTE_THOMSON
 # model no. of remote control: AWOX RF/IR USB remote

@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  * receive keycodes input via /dev/input/...
- * 
+ *
  * Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
  *
  * Distribute under GPL version 2 or later.

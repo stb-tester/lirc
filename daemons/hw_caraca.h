@@ -4,8 +4,8 @@
  ** hw_caraca.h **********************************************************
  ****************************************************************************
  *
- * routines for caraca receiver 
- * 
+ * routines for caraca receiver
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *	modified for caraca RC5 receiver by Konrad Riedel <k.riedel@gmx.de>
  */

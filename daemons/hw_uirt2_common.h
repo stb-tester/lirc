@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * Routines for UIRT2 receiver/transmitter
- * 
+ *
  * Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify

@@ -3,7 +3,7 @@
     <A NAME="dependencies"></A><HR>
     <H1 ALIGN="CENTER">Dependencies</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       To use LIRC's <em>setup.sh</em> script you need the dialog
       package. It already should be installed on most systems. The
@@ -16,8 +16,8 @@
       installed <em>svgalib</em> (used by <em>smode2</em>) and the X
       Windows header files (needed by <em>irxevent</em> and
       <em>xmode2</em>). You can get svgalib from <A
-	HREF="ftp://sunsite.unc.edu/pub/Linux/libs/graphics/">
-	ftp://sunsite.unc.edu/pub/Linux/libs/graphics/</A>. The
+        HREF="ftp://sunsite.unc.edu/pub/Linux/libs/graphics/">
+        ftp://sunsite.unc.edu/pub/Linux/libs/graphics/</A>. The
       configure script will notify you if some necessary files are
       missing and the according tools won't be compiled.
     </P>
@@ -119,7 +119,7 @@
       configuration to only configure available ports. Debian users
       should adjust their <em>/etc/serial.conf</em>.
     </P>
-    
+
     <P>
       <B>TV cards:</B> To use any remote control receivers connected
       directly to a bttv based TV card you will need a working bttv
@@ -131,10 +131,10 @@
     </P>
     <P>
       <B>Technisat MediaFocus I:</B> You will have to install the <A
-	HREF="http://freenet-homepage.de/mediafocus/">driver</A> for this
+        HREF="http://freenet-homepage.de/mediafocus/">driver</A> for this
       card.
     </P>
-    
+
     <!-- Supported Hardware ++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="hardware"></A><HR>
@@ -154,13 +154,13 @@
 
     <UL>
       <LI><A HREF="http://www.lirc.org/receivers.html">
-	  Building a serial port receiver</A></LI>
+          Building a serial port receiver</A></LI>
       <LI><A HREF="http://www.lirc.org/transmitters.html">
-	  Building a serial port transmitter</A></LI>
+          Building a serial port transmitter</A></LI>
       <LI><A HREF="http://www.lirc.org/parallel.html">
-	  Building a parallel port transceiver</A></LI>
+          Building a parallel port transceiver</A></LI>
     </UL>
-    
+
     <P>
       Current versions of LIRC now support many more commercially
       available solutions. Examples are the Irman, built-in IrDA ports
@@ -173,13 +173,13 @@
       of supported devices</A> and see if there is additional
       information available regarding the setup of your device.
     </P>
-    
+
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="compiling"></A><HR>
     <H1 ALIGN="CENTER">Compiling</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       Before compiling the binaries you have to choose which driver to
       use. This can easily be done with the <em>setup.sh</em>
@@ -201,23 +201,23 @@
     <DL>
       <DT>all</DT>
       <DD>
-	will build multiple drivers into lircd and runtime selection
-	will be possible using the <em>--driver</em> option.  However,
-	not all drivers are included, so in some cases you will have
-	to select the appropriate driver and not <em>all</em>. This
-	option will also compile all available kernel modules. Some
-	kernel modules are only supported with recent kernel
-	versions. That means that compilation of these drivers might
-	fail with older kernel versions. If this happens for you, you
-	should consider using the <em>userspace</em> driver described
-	below and only compile the kernel modules that you need
-	separately.
+        will build multiple drivers into lircd and runtime selection
+        will be possible using the <em>--driver</em> option.  However,
+        not all drivers are included, so in some cases you will have
+        to select the appropriate driver and not <em>all</em>. This
+        option will also compile all available kernel modules. Some
+        kernel modules are only supported with recent kernel
+        versions. That means that compilation of these drivers might
+        fail with older kernel versions. If this happens for you, you
+        should consider using the <em>userspace</em> driver described
+        below and only compile the kernel modules that you need
+        separately.
       </DD>
 
       <DT>none</DT>
       <DD>
-	will only let lircd talk to other lircd's though the network and
-	not to any local hardware.
+        will only let lircd talk to other lircd's though the network and
+        not to any local hardware.
       </DD>
 
       <DT>userspace</DT>
@@ -226,7 +226,7 @@
         kernel modules will be built.
       </DD>
     </DL>
-    
+
     <P>
       When running the configure script, please pay attention at its
       output. At the end of the configuration checks, it will tell you
@@ -235,20 +235,20 @@
       HREF="table.html">device table</A>. After having configured the
       package just type <em>make</em> and lean back.
     </P>
-    
+
     <P>
       <B>Note:</B> You won't find a configure script in the source repo
       version of LIRC. You will have to generate it first by executing
       <em>./autogen.sh</em>. You need at least libtool-1.3.3,
       automake-1.4 and autoconf-2.13 to do this properly.
     </P>
-    
+
     <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="installing"></A><HR>
     <H1 ALIGN="CENTER">Installation</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       Installing the compiled programs is really easy, just type
       <em>make install</em>. All binaries and modules should be
@@ -275,7 +275,7 @@
       <em>/etc/udev/rules.d/</em>. This will make sure that the device
       node will be created.
     </P>
-    
+
     <P>
       The core program of LIRC is <em>lircd</em>, the LIRC system
       daemon that does all of the decoding of infrared signals. LIRC
@@ -292,13 +292,13 @@
       available in the <em>contrib/</em> directory of the LIRC
       package.
     </P>
-    
+
     <P>
       <B>Warning:</B> Never compile daemons with &quot;Disable
       daemonize&quot; turned on and place them in some init script
       unless you have a rescue disc nearby...
     </P>
-    
+
     <P>
       Now you should adjust the file permissions of
       <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
@@ -309,7 +309,7 @@
     <P>
       should do. You can also create a special group for this purpose.
     </P>
-    
+
     <P>
       If your hardware requires a kernel module you should make sure
       that the kernel will find the correct module if a program tries
@@ -318,24 +318,24 @@
       (<em>/etc/modules.conf</em> for current kernel versions):
     </P>
     <PRE>
-	alias char-major-61  lirc_driver</PRE>
+        alias char-major-61  lirc_driver</PRE>
     <P>
       Note that here <em>driver</em> is a placeholder for the actual
       driver you are using (serial, parallel, etc.).
     </P>
-    
+
     <P>
       If your driver requires some special parameters to work you can
       specify them at the same place. For example you can set the IRQ
       and I/O base the serial port drivers shall use by adding the
       following line to <em>/etc/conf.modules</em>:</P>
     <PRE>
-	options lirc_serial irq=4 io=0x3e8</PRE>
+        options lirc_serial irq=4 io=0x3e8</PRE>
     <P>
       This will override the default values you have selected during setup.
       The configure script will tell you which kernel module you need.
     </P>
-    
+
     <P>
       Finally you might want to add <em>/usr/local/lib</em> to
       <em>/etc/ld.so.conf</em> so the <em>lirc_client</em> library is
@@ -344,11 +344,11 @@
     </P>
 
     <!-- Testing +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="testing"></A><HR>
     <H1 ALIGN="CENTER">Testing your hardware &amp; configuration</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       If you have build the infrared hardware yourself you are
       probably eager to find out if it really works. If you have not
@@ -356,7 +356,7 @@
       most receivers it even won't work because it makes no
       sense.
     </P>
-    
+
     <P>
       Type <em>su</em> to get root privileges and start <em>mode2</em>
       (<B>Warning:</B> don't confuse mode2 with mode3: mode3 will set
@@ -367,23 +367,23 @@
       output like this (the values of your remote will probably be
       different):
     </P>
-    
+
     <PRE>
-	pulse 93
-	space 4965
-	pulse 108
-	space 4969
-	pulse 93
-	space 7496
-	pulse 93
-	space 7489
-	pulse 93
-	space 47915
-	pulse 138
-	space 7475
-	pulse 93
-	space 7494
-	pulse 93</PRE>
+        pulse 93
+        space 4965
+        pulse 108
+        space 4969
+        pulse 93
+        space 7496
+        pulse 93
+        space 7489
+        pulse 93
+        space 47915
+        pulse 138
+        space 7475
+        pulse 93
+        space 7494
+        pulse 93</PRE>
     <P>
       If you don't see anything, try to find out: (a) if you selected
       the correct driver with the correct settings (I/O base address,
@@ -392,14 +392,14 @@
       should be 5V +/- 0.5V, the output pin of the receiver should be
       about 0.5V less than the input voltage.
     </P>
-    
+
     <P>
       From time to time there should be long spaces (&gt;30000). If you
       can see very long pulses this usually means that sense auto
       detection of your serial port IR receiver circuit has
       failed. You can override sense auto detection by loading the
       device driver with the following option:</P>
-    
+
     <P>
       <em>modprobe lirc_serial sense=0</em> if your receiver circuit is active
       high or<BR>
@@ -425,26 +425,26 @@
       Then start the decoder daemon with (make sure it is in your
       path): <em>lircd</em> [config file]
     </P>
-    
+
     <P>
       The following program dumps the decoded key codes from lircd to
       stdout: <em>irw</em>
     </P>
-    
+
     <P>
       This looks like this (depending on your remote):
     </P>
     <PRE>
-	0000000000f40bf0 00 1_DOWN ANIMAX
-	0000000000f40bf0 01 1_DOWN ANIMAX
-	0000000000f40bf0 02 1_DOWN ANIMAX
-	0000000000f40bf0 03 1_DOWN ANIMAX
-	0000000000f40bf0 04 1_DOWN ANIMAX
-	0000000000f40bf0 05 1_DOWN ANIMAX
-	0000000000748bf0 00 1_UP ANIMAX
-	0000000000748bf0 01 1_UP ANIMAX
-	0000000000748bf0 02 1_UP ANIMAX
-	0000000000718ef0 00 RED_BUTTON_UP ANIMAX</PRE>
+        0000000000f40bf0 00 1_DOWN ANIMAX
+        0000000000f40bf0 01 1_DOWN ANIMAX
+        0000000000f40bf0 02 1_DOWN ANIMAX
+        0000000000f40bf0 03 1_DOWN ANIMAX
+        0000000000f40bf0 04 1_DOWN ANIMAX
+        0000000000f40bf0 05 1_DOWN ANIMAX
+        0000000000748bf0 00 1_UP ANIMAX
+        0000000000748bf0 01 1_UP ANIMAX
+        0000000000748bf0 02 1_UP ANIMAX
+        0000000000718ef0 00 RED_BUTTON_UP ANIMAX</PRE>
     <P>
       If the driver test did work, but you now see nothing, then check
       <em>/var/log/lircd</em>. If you still see nothing suspicious
@@ -452,11 +452,11 @@
       debug mode lircd has an additional command line option that lets
       you choose the detail level of debug information.
     </P>
-    
+
     <A NAME="sending"></A><HR>
     <H1 ALIGN="CENTER">Sending infrared signals</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The LIRC package contains the <A HREF="irsend.html">irsend</A> tool for
       sending infrared signals to e.g. your TV or CD player. For
@@ -464,7 +464,7 @@
       than for receiving. A discussion of all the infrared protocols
       is way beyond the scope of this manual but when creating a
       config file at least read the <A
-	HREF="help.html#new_remote">hints</A> at the end of this
+        HREF="help.html#new_remote">hints</A> at the end of this
       manual. You can find exact timing specifications for most common
       inside the remotes/generic/ directory of the LIRC package.
     </P>
@@ -478,32 +478,32 @@
     </P>
 
     <!-- Uninstall LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="uninstall"></A><HR>
     <H1 ALIGN="CENTER">Uninstall</H1>
     <HR WIDTH="70%">
-    
+
     <UL>
       <LI>Remove the installed binaries, and device nodes:<BR>
-	<BR>
-	<em>make uninstall</em><BR>
-	<BR>
+        <BR>
+        <em>make uninstall</em><BR>
+        <BR>
       </LI>
       <LI>Remove the config files, if you don't need them anymore:<BR>
-	<BR>
-	<em>rm /etc/lirc/lircd.conf /etc/lirc/lircmd.conf /etc/lirc/lircrc ~/.lircrc</em><BR>
-	<BR>
+        <BR>
+        <em>rm /etc/lirc/lircd.conf /etc/lirc/lircmd.conf /etc/lirc/lircrc ~/.lircrc</em><BR>
+        <BR>
       </LI>
     </UL>
-    
+
     <!-- Module specific information +++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="specific"></A><HR>
     <H1 ALIGN="CENTER">Module specific information</H1>
     <HR WIDTH="70%">
-    
+
     <H3>lirc_gpio</H3>
-    
+
     <P>
       This module receives scan codes from the GPIO register of bt8[47]8
       chips using polling or interrupts if the card supports this. It is a
@@ -523,27 +523,27 @@
     </P>
     <UL>
       <LI><B>debug</B> (0) - value other than 0 (zero) enables
-	printing more log messages</LI>
+        printing more log messages</LI>
       <LI><B>card</B> (0) - number of TV card from which receive scan
-	codes</LI>
+        codes</LI>
       <LI><B>minor</B> (-1) - minor device number for
-	/dev/lirc device</LI>
+        /dev/lirc device</LI>
       <LI><B>gpio_mask</B> (0) - bit mask used for extracting usable
-	bits from GPIO value<BR> If this parameter is equal to 0 then
-	the module tries to autodetect the TV card and the remaining
-	parameters are ignored.</LI>
+        bits from GPIO value<BR> If this parameter is equal to 0 then
+        the module tries to autodetect the TV card and the remaining
+        parameters are ignored.</LI>
       <LI><B>gpio_lock_mask</B> (0) - if this value &quot;anded&quot;
-	with GPIO value is non zero than it indicates that scan code
-	is not ready (value of 0 of this parameter disables
-	checking)</LI>
+        with GPIO value is non zero than it indicates that scan code
+        is not ready (value of 0 of this parameter disables
+        checking)</LI>
       <LI><B>gpio_xor_mask</B> (0) - bitmask applied (by xor
-	operation) to GPIO value before lock_mask is checked</LI>
+        operation) to GPIO value before lock_mask is checked</LI>
       <LI><B>soft_gap</B> (0) - minimal gap (in milliseconds) between
-	two scan codes (value of 0 disables checking)</LI>
+        two scan codes (value of 0 disables checking)</LI>
       <LI><B>sample_rate</B> (10) - how often (times per second) GPIO
-	will be polled, set to 0 for interrupt driven input</LI>
+        will be polled, set to 0 for interrupt driven input</LI>
       <LI><B>bttv_id</B> (unknown) - force given bttv id, signals from
-	some cards are translated to match original codes</LI>
+        some cards are translated to match original codes</LI>
     </UL>
     <P>
       Usage example would be e.g:
@@ -554,13 +554,13 @@
       module - this means that if <em>bttv</em> doesn't properly
       recognize the card type the remote control won't work.
     </P>
-    
+
     <!-- Updating from lirc-0.5.4 ++++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="updating054"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.5.4</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       This section only describes changes that break compatibility
       with older versions. Please read the <EM>NEWS</EM> file to learn
@@ -603,35 +603,35 @@
       also has been removed as it is now supported by the lirc_gpio
       driver.
     </P>
-    
+
     <P>
       The <em>lirc_haup</em> module has been renamed to <em>lirc_i2c</em>.
     </P>
-    
+
     <P>
       The transmit code in <em>lirc_serial</em> has been modified
       slightly. If you have problems transmitting decrease the
       frequency value in the lircd config file by approximately 2000.
     </P>
-    
+
     <P>
       There have been major changes to the SIR driver. If you used
       this driver before you may have to generate new config files for
       your remotes. Transmitting is now more likely to work.
     </P>
-    
+
     <P>
       The config file for the old AVerMedia TVCapture and TVPhone
       cards (pre 98) has changed. Please use the new config file that
       you can find in <em>remotes/avermedia/lircd.conf.avermedia</em>.
     </P>
-    
+
     <A NAME="updating063"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.6.3</H1>
     <HR WIDTH="70%">
-    
+
     <P>lircd.conf and lircmd.conf are in /etc again.</P>
-    
+
     <P>
       Two independend bugs were fixed in the IRdeo and home-brew
       transmitter code that affected correct pulse/space timings in
@@ -642,7 +642,7 @@
     <A NAME="updating064"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.6.4</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       AVerMedia TV cards with ID 0x00011461 and 0x00041461 should
       finally work with the provided config files. That means they
@@ -658,7 +658,7 @@
     <A NAME="updating065"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.6.5</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The config file for the Pixelview PlayTV pro and compatible TV
       cards has changed. Please use the config file in
@@ -673,7 +673,7 @@
     <A NAME="updating066"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.6.6</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The config files for all FlyVideo TV cards have changed. Please
       use the config file in
@@ -701,17 +701,17 @@
       line in its header:
     </P>
     <pre>
-	bits 32
+        bits 32
     </pre>
     <P>
       Otherwise lircd will not recoginise any events.
     </P>
-    
+
 
     <A NAME="updating07x"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.7.x</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       There is a new program that you probably want to use: <A
       HREF="lircrcd.html">lircrcd</a> reads the .lircrc config file
@@ -728,7 +728,7 @@
     <A NAME="updating081"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.8.1</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The config file for the Pinnacle Systems PCTV (pro) receiver has
       changed. Please use the config file in
@@ -742,7 +742,7 @@
     <A NAME="updating084"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.8.4</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       Newly added iMon LCD displays with device ids 15c2:0038 and 15c2:0045
       use a larger buffer to enable all remote and panel buttons. Consequently,
@@ -755,7 +755,7 @@
     </P>
     <P>
       The behaviour of the <em>quit</em> flag in the <A
-	HREF="configure.html#lircrc_format">.lircrc</A> config file
+        HREF="configure.html#lircrc_format">.lircrc</A> config file
       has changed slightly concerning button sequences. Previously the
       quit flag had no effect on button sequences which had partly
       been entered. Now the quit flag will make execution of further
@@ -778,7 +778,7 @@ lirc_serial: Unknown symbol lirc_register_driver
     <A NAME="updating085"></A><HR>
     <H1 ALIGN="CENTER">Updating from lirc-0.8.5</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The lircd socket was moved from <em>/dev/lircd</em> to
       <em>/var/run/lirc/lircd</em> to conform to the Filesystem Hierarchy

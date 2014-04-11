@@ -29,9 +29,9 @@
 #
 # Updated with codes for MCE 2007 Remote additional buttons
 # Visualization, Aspect, SlideShow, Eject
-# Note: 
+# Note:
 # Renamed some buttons: DVD->DVDMenu, More->MoreInfo, Star->Asterisk, Hash->Pound
-# Note: 
+# Note:
 # Blue, Yellow, Green, Red, and Teletext buttons do not exist on the HP remote
 
 begin remote
@@ -55,18 +55,18 @@ begin remote
       begin codes
 
 #seen on HP Pavilion dv3t remote  --Tim Mann, 3 Nov 2009
-	Media         0x00007b7f
-	PlayPause     0x00007b91
+        Media         0x00007b7f
+        PlayPause     0x00007b91
 
 
 #unused by HP remote
-	KEY_BLUE	      0x00007ba1
-	KEY_YELLOW	      0x00007ba2
-	KEY_GREEN	      0x00007ba3
-	KEY_RED	      0x00007ba4
-	Teletext      0x00007ba5
+        KEY_BLUE              0x00007ba1
+        KEY_YELLOW            0x00007ba2
+        KEY_GREEN             0x00007ba3
+        KEY_RED       0x00007ba4
+        Teletext      0x00007ba5
 
-#ba6 - bae unused 
+#ba6 - bae unused
         BA6           0x00007ba6
         BA7           0x00007ba7
         BA8           0x00007ba8
@@ -80,7 +80,7 @@ begin remote
         KEY_RADIO         0x00007baf
         Print         0x00007bb1
 
-#bb2 - bb4 unused  
+#bb2 - bb4 unused
         BB2           0x00007bb2
         BB3           0x00007bb3
         BB4           0x00007bb4
@@ -91,14 +91,14 @@ begin remote
         KEY_AUDIO         0x00007bb8
         KEY_TV            0x00007bb9
 
-#bba - bbf unused 
+#bba - bbf unused
         BBA           0x00007bba
         BBB           0x00007bbb
         BBC           0x00007bbc
         BBD           0x00007bbd
         BBE           0x00007bbe
         BBF           0x00007bbf
-#bc1 - bca unused 
+#bc1 - bca unused
         BC1           0x00007bc1
         BC2           0x00007bc2
         BC3           0x00007bc3
@@ -114,10 +114,10 @@ begin remote
         SlideShow     0x00007bcc
         Visualization 0x00007bcd
 
-#bce - bcf unused 
+#bce - bcf unused
         BCE           0x00007bce
         BCF           0x00007bcf
-#bd1 - bd7 unused 
+#bd1 - bd7 unused
         BD1           0x00007bd1
         BD2           0x00007bd2
         BD3           0x00007bd3
@@ -180,10 +180,10 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.4a(default) on Mon Feb 23 23:55:04 2009
 #
-# contributed by 
+# contributed by
 #
 # brand:                       Hauppauge
-# model no. of remote control: 
+# model no. of remote control:
 # devices being controlled by this remote: PVR-150 Remote (MCE kit)
 # SMK dongle 0609:031d
 #
@@ -260,10 +260,10 @@ end remote
 # this config file was automatically generated
 # using lirc-0.8.4a(default) on Tue Mar 10 19:27:09 2009
 #
-# contributed by 
+# contributed by
 #
 # brand:  SIIG Vista MCE remote
-# model no. of remote control: 
+# model no. of remote control:
 # devices being controlled by this remote:
 #
 

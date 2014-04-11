@@ -5,7 +5,7 @@
  ****************************************************************************
  *
  * routines for Creative receiver
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */

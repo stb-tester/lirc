@@ -6,7 +6,7 @@ lircrcd - daemon to handle consistent .lircrc state among client applications
 .B lircrcd
 reads the given .lircrc config file and synchronises the mode
 that the LIRC clients using this config file (\fBirexec\fR(1),
-\fBirxevent\fR(1) , etc.) are in. Using 
+\fBirxevent\fR(1) , etc.) are in. Using
 .B lircrcd
 has to be explicitly
 enabled in the config file by adding the following line at the

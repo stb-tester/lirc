@@ -5,14 +5,14 @@
  ****************************************************************************
  *
  * routines for using a IR receiver in microphone input using portaudio library
- * 
+ *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  * Copyright (C) 2001, 2002 Pavel Machek <pavel@ucw.cz>
  * Copyright (C) 2002 Matthias Ringwald <ringwald@inf.ethz.ch>
  *
  * Distribute under GPL version 2 or later.
  *
- * Using ... hardware ... 
+ * Using ... hardware ...
  *
  */
 
@@ -468,7 +468,7 @@ int audio_init()
 
 	LOGPRINTF(1, "hw_audio_init()");
 
-	// 
+	//
 	logprintf(LOG_INFO, "Initializing %s...", hw.device);
 	init_rec_buffer();
 	rewind_rec_buffer();

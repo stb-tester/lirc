@@ -4,7 +4,7 @@
  ** hw_srm7500libusb.c ******************************************************
  ****************************************************************************
  *  Userspace (libusb) driver for Philips SRM7500 RF Remote.
- *  
+ *
  *  Copyright (C) 2009 Henning Glawe <glaweh@debian.org>
  *
  *  based on Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
@@ -856,7 +856,7 @@ static int usb_read_loop(int fd)
 			break;
 		case MCPS_DATA_indication:
 			/* nomal key on remote pressed
-			 *   press: 1242  02 b59e 0027  02 b59e 4a61 
+			 *   press: 1242  02 b59e 0027  02 b59e 4a61
 			 *            04  00 00 46 01  ff 10
 			 *  repeat: 1242  02 b59e 0027  02 b59e 4a61
 			 *            04  00 00 46 02  ff 10

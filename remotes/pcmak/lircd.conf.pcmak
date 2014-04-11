@@ -58,7 +58,7 @@ begin remote
           KEY_MUTE                     0x0000000000000021
           KEY_VOLUMEUP                   0x0000000000000022
           KEY_PLAY                     0x0000000000000024
-    	  KEY_PREVIOUS                     0x0000000000000026
+          KEY_PREVIOUS                     0x0000000000000026
           KEY_PAUSE                    0x0000000000000027
           KEY_NEXT                     0x0000000000000028
           SKIP_BACK                0x0000000000000029
@@ -110,7 +110,7 @@ begin remote
           KEY_NEXT                  0x0000000000000031
           KEY_PAUSE                 0x000000000000005F
           KEY_BACK                  0x0000000000000075
-	  KEY_FORWARD                  0x0000000000000079
+          KEY_FORWARD                  0x0000000000000079
       end codes
 
 end remote

@@ -2,7 +2,7 @@
     <A NAME="overview"></A><HR>
     <CENTER><H1>Driver Model</H1></CENTER>
     <HR WIDTH="70%">
-    
+
     <PRE>
   |  +---------------------------------------------------------------+
 S |  | 'gpm -t msc -m /var/run/lirc/lircm' or a well configured X    |
@@ -36,7 +36,7 @@ E |                                 |            |
   | Kernel space                    |              (character device
   |                                 |                  driver ==&gt;
   |                    +------------+----------+    one connection)
-  |                    |                       |  
+  |                    |                       |
   |                /dev/lirc               /dev/ttySx
   |                    |                       |
   |       +------------+-------------+   +-----+---------------+
@@ -53,102 +53,102 @@ H | | serial / parallel port | | TV cards | | Irman/RemoteMaster/etc. |
 W | +------------------------+ +----------+ +-------------------------+
   |
 </PRE>
-    
+
     <A NAME="formats"></A><HR>
     <H1 ALIGN="CENTER">Formats</H1>
     <HR WIDTH="70%">
-    
+
     <UL>
       <LI><B>/dev/lirc:</B><BR>
-	<P>
-	  highly depends on the mode selected with ioctls:
-	</P>
-	<DL>
-	  <DT>LIRC_MODE_MODE2</DT>
-	  <DD>
-	    <P>
-	      outputs packets containing an int value describing a IR
-	      signal
-	    </P>
-	    <UL>
-	      <LI>bits 0-23 contain the length of the pulse/space in
-		microseconds</LI>
-	      <LI>bits 31-24 can be:
-		<UL>
-		  <LI>0: space</LI>
-		  <LI>1: pulse</LI>
-		  <LI>2: timeout (has to be enabled using
-		    LIRC_SET_REC_TIMEOUT ioctl and is not supported by
-		    all receivers)</LI>
-		</UL>
-	      </LI> 
-	      <LI>all other values are reserved</LI>
-	    </UL>
-	    <P>
-	      Lengths greater than or equal to 16 seconds are clamped to
-	      0xffffff.
-	    </P>
-	    <P>References:</P>
-	    <UL>
-	      <LI>drivers/lirc_serial/lirc_serial.c</LI>
-	      <LI>drivers/lirc_parallel/lirc_parallel.c</LI>
-	      <LI>tools/mode2.c (dumps the output from the driver to
-		stdout)</LI>
-	    </UL>
-	    <BR>
-	  </DD>
-	  <DT>LIRC_MODE_LIRCCODE</DT>
-	  <DD>
-	    <P>
-	      outputs codes of configurable length in big endian byte
-	      order
-	    </P>
-	  </DD>
-	</DL>
+        <P>
+          highly depends on the mode selected with ioctls:
+        </P>
+        <DL>
+          <DT>LIRC_MODE_MODE2</DT>
+          <DD>
+            <P>
+              outputs packets containing an int value describing a IR
+              signal
+            </P>
+            <UL>
+              <LI>bits 0-23 contain the length of the pulse/space in
+                microseconds</LI>
+              <LI>bits 31-24 can be:
+                <UL>
+                  <LI>0: space</LI>
+                  <LI>1: pulse</LI>
+                  <LI>2: timeout (has to be enabled using
+                    LIRC_SET_REC_TIMEOUT ioctl and is not supported by
+                    all receivers)</LI>
+                </UL>
+              </LI>
+              <LI>all other values are reserved</LI>
+            </UL>
+            <P>
+              Lengths greater than or equal to 16 seconds are clamped to
+              0xffffff.
+            </P>
+            <P>References:</P>
+            <UL>
+              <LI>drivers/lirc_serial/lirc_serial.c</LI>
+              <LI>drivers/lirc_parallel/lirc_parallel.c</LI>
+              <LI>tools/mode2.c (dumps the output from the driver to
+                stdout)</LI>
+            </UL>
+            <BR>
+          </DD>
+          <DT>LIRC_MODE_LIRCCODE</DT>
+          <DD>
+            <P>
+              outputs codes of configurable length in big endian byte
+              order
+            </P>
+          </DD>
+        </DL>
       </LI>
       <LI><B>/var/run/lirc/lircd:</B><BR>
-	<P>
-	  outputs strings containing all information about the remote and the
-	  pressed button.
-	</P>
-	<P>References:</P>
-	<UL>
-	  <LI>daemons/lircd.c</LI>
-	  <LI>tools/irw.c</LI>
-	</UL>
-	<BR>
+        <P>
+          outputs strings containing all information about the remote and the
+          pressed button.
+        </P>
+        <P>References:</P>
+        <UL>
+          <LI>daemons/lircd.c</LI>
+          <LI>tools/irw.c</LI>
+        </UL>
+        <BR>
       </LI>
       <LI><B>/var/run/lirc/lircm:</B><BR>
-	<BR>
-	<UL>
-	  <LI>MouseSystems<BR>
-	    5 byte packets:
-	    <UL>
-	      <LI>byte 1: button information</LI>
-	      <LI>byte 2: change on X axis</LI>
-	      <LI>byte 3: change on Y axis</LI>
-	      <LI>byte 4,5: 0</LI>
-	    </UL>
-	  </LI>
-	  <LI>IMPS/2<BR>
-	    4 byte packets: check the source code for details
-	  </LI>
-	  <LI>IntelliMouse<BR>
-	    4 byte packets: check the source code for details
-	  </LI>
-	</UL>
-	
-	<P>References:</P>
-	<UL>
-	  <LI>daemons/lircmd.c</LI>
-	</UL>
+        <BR>
+        <UL>
+          <LI>MouseSystems<BR>
+            5 byte packets:
+            <UL>
+              <LI>byte 1: button information</LI>
+              <LI>byte 2: change on X axis</LI>
+              <LI>byte 3: change on Y axis</LI>
+              <LI>byte 4,5: 0</LI>
+            </UL>
+          </LI>
+          <LI>IMPS/2<BR>
+            4 byte packets: check the source code for details
+          </LI>
+          <LI>IntelliMouse<BR>
+            4 byte packets: check the source code for details
+          </LI>
+        </UL>
+
+        <P>References:</P>
+        <UL>
+          <LI>daemons/lircmd.c</LI>
+        </UL>
       </LI>
     </UL>
-    
+
     <A NAME="lirc_dev"></A><HR>
     <H1 ALIGN="CENTER">Writing TV card drivers using lirc_dev</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       The <em>lirc_dev</em> module is a helper and abstraction layer
       for other modules.  It registers <em>/dev/lirc</em> device in a
@@ -176,15 +176,15 @@ W | +------------------------+ +----------+ +-------------------------+
       <B>Warning:</B> Due to the used kernel API it requires kernel
       2.2.4 or higher.<br> Any suggestions and questions are
       welcome. <A href="mailto:alipowski@interia.pl">Artur
-	Lipowski</A>
+        Lipowski</A>
     </P>
-    
+
     <!-- Writing LIRC Applications +++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="applications"></A><HR>
     <H1 ALIGN="CENTER">Writing Applications for LIRC</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       As LIRC is able to both receive and send IR commands there are
       two possible types of applications. Programs that send IR
@@ -211,7 +211,7 @@ W | +------------------------+ +----------+ +-------------------------+
       control name</em> are defined in the lircd config file. Their
       purpose should be quite self-explanatory. They must not contain
       any whitespace.<BR>
-      
+
       The only other situation when lircd broadcasts to all clients is
       when it receives the SIGHUP signal and successfully re-reads its
       config file. Then it will send a SIGHUP packet to its clients
@@ -238,7 +238,7 @@ W | +------------------------+ +----------+ +-------------------------+
       to 600.  If <var>repeat count</var> is
       not specified or is less than the minimum number of repeats
       for the selected remote control, the minimum value will be
-      used. SEND_START tells lircd to start repeating the 
+      used. SEND_START tells lircd to start repeating the
       given button until it receives a SEND_STOP command. However, the
       number of repeats is limited to <var>repeat_max</var>. lircd
       won't accept any new send commands while it is repeating.
@@ -252,7 +252,7 @@ W | +------------------------+ +----------+ +-------------------------+
     <P>
       The response to the VERSION command will be a packet containing
       lircd's version.<BR>
-      
+
       The LIST command without further arguments can be used to get a
       list of all remote controls known to lircd. If a name of a
       supported remote control is given as argument all buttons of the
@@ -291,14 +291,14 @@ W | +------------------------+ +----------+ +-------------------------+
       commands that return some information. Note that a packet
       containing 0 lines of data can be a valid reply.
     </P>
-    
+
     <!-- Writing LIRC Applications +++++++++++++++++++++++++++++++++++++++ -->
-    
+
     <A NAME="library"></A><HR>
-    
+
     <H2 ALIGN="CENTER">The lirc_client library</H2>
     <HR WIDTH="70%">
-    
+
     <P>
       If you only want to make your application receive IR commands
       and if you don't want to mess with all the protocol stuff you
@@ -336,43 +336,43 @@ char *progname;
 
 int main(int argc, char *argv[])
 {
-	struct lirc_config *config;
+        struct lirc_config *config;
 
-	progname=argv[0];
-	if(argc&gt;2)
-	{
-		fprintf(stderr,"Usage: %s &lt;config file&gt;\n",progname);
-		exit(EXIT_FAILURE);
-	}
-	if(lirc_init("irexec",1)==-1) exit(EXIT_FAILURE);
+        progname=argv[0];
+        if(argc&gt;2)
+        {
+                fprintf(stderr,"Usage: %s &lt;config file&gt;\n",progname);
+                exit(EXIT_FAILURE);
+        }
+        if(lirc_init("irexec",1)==-1) exit(EXIT_FAILURE);
 
-	if(lirc_readconfig(argc==2 ? argv[1]:NULL,&amp;config,NULL)==0)
-	{
-		char *code;
-		char *c;
-		int ret;
+        if(lirc_readconfig(argc==2 ? argv[1]:NULL,&amp;config,NULL)==0)
+        {
+                char *code;
+                char *c;
+                int ret;
 
-		while(lirc_nextcode(&amp;code)==0)
-		{
-			if(code==NULL) continue;
-			while((ret=lirc_code2char(config,code,&amp;c))==0 &amp;&amp;
-			      c!=NULL)
-			{
+                while(lirc_nextcode(&amp;code)==0)
+                {
+                        if(code==NULL) continue;
+                        while((ret=lirc_code2char(config,code,&amp;c))==0 &amp;&amp;
+                              c!=NULL)
+                        {
 #ifdef DEBUG
-				printf("Execing command \"%s\"\n",c);
+                                printf("Execing command \"%s\"\n",c);
 #endif
-				system(c);
-			}
-			free(code);
-			if(ret==-1) break;
-		}
-		lirc_freeconfig(config);
-	}
+                                system(c);
+                        }
+                        free(code);
+                        if(ret==-1) break;
+                }
+                lirc_freeconfig(config);
+        }
 
-	lirc_deinit();
-	exit(EXIT_SUCCESS);
+        lirc_deinit();
+        exit(EXIT_SUCCESS);
 }</PRE>
-    
+
     <P>
       Before anything else you have to include the header file for the
       lirc_client library. This is done with
@@ -407,7 +407,7 @@ int lirc_init(char *prog,int verbose);</PRE>
     </P>
     <PRE>
 int lirc_readconfig(char *file,struct lirc_config **config,
-		    int (check)(char *s));</PRE>
+                    int (check)(char *s));</PRE>
     <P>
       If you want to load the default config file you should pass NULL
       as first argument. If you want to load some other config file
@@ -509,7 +509,7 @@ int lirc_deinit();</PRE>
     <P>
       I encourage you to use autoconf and automake for your
       projects. To check for the lirc_client library all you have to
-      insert into your <em>configure.ac</em> (or <em>configure.in</em>) 
+      insert into your <em>configure.ac</em> (or <em>configure.in</em>)
       file is the following:
     </P>
     <PRE>
@@ -534,7 +534,7 @@ fi</PRE>
     </P>
     <P>
       While developing LIRC applications you might find a <A
-	HREF="http://www.fi.muni.cz/~xkutale1/en/lircemu/">emulator</A>
+        HREF="http://www.fi.muni.cz/~xkutale1/en/lircemu/">emulator</A>
       for lircd useful. With this emulator you don't need a remote
       control to generate LIRC events. That way you can develop LIRC
       applications even if you don't have a LIRC compatible device
@@ -552,28 +552,28 @@ fi</PRE>
     <DL>
       <DT>IDENT <em>ident</em></DT>
       <DD>
-	<P>
-	  Each program connecting to lircrcd identifies itself using
-	  this program. <em>ident</em> is the string that is used in
-	  the prog token inside the .lircrc file.
+        <P>
+          Each program connecting to lircrcd identifies itself using
+          this program. <em>ident</em> is the string that is used in
+          the prog token inside the .lircrc file.
         </P>
       </DD>
       <DT>CODE <em>code</em></DT>
       <DD>
-	<P>
-	  When the client receives the <em>code</em> string from lircd
-	  it will send it to lircrcd and will receive back the
-	  applicable config string from the .lircrc config file. It
-	  should resend the CODE command until nothing is returned
-	  back which means that nothing (more) should happen in
-	  response to <em>code</em>. This command is used each time
-	  the lirc_code2char() function is called by a client.
+        <P>
+          When the client receives the <em>code</em> string from lircd
+          it will send it to lircrcd and will receive back the
+          applicable config string from the .lircrc config file. It
+          should resend the CODE command until nothing is returned
+          back which means that nothing (more) should happen in
+          response to <em>code</em>. This command is used each time
+          the lirc_code2char() function is called by a client.
         </P>
       </DD>
       <DT>GETMODE</DT>
       <DD>
-	<P>
-	  lircrcd will return the current mode string.
+        <P>
+          lircrcd will return the current mode string.
         </P>
       </DD>
     </DL>
@@ -581,15 +581,15 @@ fi</PRE>
     <A NAME="packagers"></A><HR>
     <H1 ALIGN="CENTER">Note for packagers</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       If you want to make a binary package for lirc (.deb, .rpm, ...),
       there are a couple of goodies you can take advantage of:
       <dl>
       <dt>--with-driver=all
       <dd>
-	Builds support for as many devices as possible into a single
-	lircd binary.
+        Builds support for as many devices as possible into a single
+        lircd binary.
       </dd>
       <dt>--with-driver=userspace
       <dd>
@@ -598,31 +598,31 @@ fi</PRE>
       </dd>
       <dt>--enable-sandboxed
       <dd>
-	Prevents any changes out of the installation directory on "make
-	install":
+        Prevents any changes out of the installation directory on "make
+        install":
           <ul>
           <li>will not create device nodes on /dev/</li>
-	  <li>will not run depmod</li>
-	  </ul>
+          <li>will not run depmod</li>
+          </ul>
       </dd>
       <dt>DESTDIR
       <dd>
-	You should use <em>DESTDIR</em> and not <em>prefix</em> to install
-	into the sandbox, modules will be installed to <em>/lib/</em>
-	otherwise.
+        You should use <em>DESTDIR</em> and not <em>prefix</em> to install
+        into the sandbox, modules will be installed to <em>/lib/</em>
+        otherwise.
       </dd>
-	<br>Finally, you should consider installing the doc/lirc.hwdb file.
-	This one is a parseable list of LIRC supported devices, which
-	is useful for LIRC configuration applications.<br>
-	You should also have a look at the below HAL integration description.<br>
-	For more information, refer to the next section.
+        <br>Finally, you should consider installing the doc/lirc.hwdb file.
+        This one is a parseable list of LIRC supported devices, which
+        is useful for LIRC configuration applications.<br>
+        You should also have a look at the below HAL integration description.<br>
+        For more information, refer to the next section.
       </dl>
     </P>
 
     <A NAME="hal"></A><HR>
     <H1 ALIGN="CENTER">Hardware Abstraction Layer (HAL) integration</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       If your system support the <a href="http://www.freedesktop.org/wiki/Software/hal">FreeDesktop Hardware Abstraction Layer (HAL)</a>,
       you will want to install the file <em>contrib/hal/20-ircontrol-lirc.fdi</em> in
@@ -642,64 +642,64 @@ fi</PRE>
     <A NAME="config"></A><HR>
     <H1 ALIGN="CENTER">Note for configuration application developers</H1>
     <HR WIDTH="70%">
-    
+
     <P>
       If you want to make a configuration application, lirc provides
-			a parseable list of LIRC supported devices.<br>
-			<br>
-			This file is generated at compilation time, along with its <a href="table.html">HTML
-			equivalent</a> and is available as doc/lirc.hwdb in the source tree.
-			It should also be installed by the binary packages of your prefered
-			distribution (bug report otherwise!).
-			<br><br>
-			The format is:
-			<br>
-			[remote controls type]<br>
-			description;driver;lirc driver;HW_DEFAULT;lircd_conf;<br>
+                        a parseable list of LIRC supported devices.<br>
+                        <br>
+                        This file is generated at compilation time, along with its <a href="table.html">HTML
+                        equivalent</a> and is available as doc/lirc.hwdb in the source tree.
+                        It should also be installed by the binary packages of your prefered
+                        distribution (bug report otherwise!).
+                        <br><br>
+                        The format is:
+                        <br>
+                        [remote controls type]<br>
+                        description;driver;lirc driver;HW_DEFAULT;lircd_conf;<br>
     </P>
 
     <A NAME="bugs"></A><HR>
     <H1 ALIGN="CENTER">Known bugs</H1>
     <HR WIDTH="70%">
-    
+
     <UL>
       <LI>
-	<P>
-	  If you use the <em>lirc_serial</em> or
-	  <em>lirc_parallel</em> driver regularly to transmit
-	  infra-red signals you might notice that your system clock
-	  will slow down. During transmit the driver turns off
-	  interrupts and hence some clock interrupts might get lost
-	  causing system clock inaccuracy. Unfortunately in order to
-	  ensure a good signal timing interrupts have to be
-	  disabled. Currently no work-around is known for this problem
-	  except using a program like <em>netdate</em> to synchronize
-	  your system clock regularly.
-	</P>
+        <P>
+          If you use the <em>lirc_serial</em> or
+          <em>lirc_parallel</em> driver regularly to transmit
+          infra-red signals you might notice that your system clock
+          will slow down. During transmit the driver turns off
+          interrupts and hence some clock interrupts might get lost
+          causing system clock inaccuracy. Unfortunately in order to
+          ensure a good signal timing interrupts have to be
+          disabled. Currently no work-around is known for this problem
+          except using a program like <em>netdate</em> to synchronize
+          your system clock regularly.
+        </P>
       </LI>
       <LI>
-	<P>
-	  The <em>lirc_serial</em> and <em>lirc_parallel</em> drivers
-	  measure the time between interrupts on the serial resp.
-	  parallel port to get a pulse and space representation of the
-	  incoming infra-red signal. If interrupts are disabled by the
-	  CPU for a rather long time (&gt;100 &micro;s, which happens
-	  often e.g. during heavy IDE disk activity) some interrupts
-	  might get lost and the incoming data stream becomes
-	  disturbed. In this case decoding of the infra-red signal
-	  will fail. This is the downside of the really simple
-	  receiver circuits and can't be addressed in software except
-	  keeping the time where interrupts are disabled to a minimum.
-	</P>
-	<P>
-	  If you are using an IDE system you might want to try calling
-	  <em>hdparm -u1 -d1</em> for all of your drives. This enables
-	  DMA for the drive and allows the driver to unmask other
-	  interrupts during handling of a disk interrupt. But be aware
-	  that this can be dangerous for some (buggy) IDE
-	  chipsets. Consult the hdparm man page for further
-	  information.
-	</P>
+        <P>
+          The <em>lirc_serial</em> and <em>lirc_parallel</em> drivers
+          measure the time between interrupts on the serial resp.
+          parallel port to get a pulse and space representation of the
+          incoming infra-red signal. If interrupts are disabled by the
+          CPU for a rather long time (&gt;100 &micro;s, which happens
+          often e.g. during heavy IDE disk activity) some interrupts
+          might get lost and the incoming data stream becomes
+          disturbed. In this case decoding of the infra-red signal
+          will fail. This is the downside of the really simple
+          receiver circuits and can't be addressed in software except
+          keeping the time where interrupts are disabled to a minimum.
+        </P>
+        <P>
+          If you are using an IDE system you might want to try calling
+          <em>hdparm -u1 -d1</em> for all of your drives. This enables
+          DMA for the drive and allows the driver to unmask other
+          interrupts during handling of a disk interrupt. But be aware
+          that this can be dangerous for some (buggy) IDE
+          chipsets. Consult the hdparm man page for further
+          information.
+        </P>
       </LI>
     </UL>
-    
+

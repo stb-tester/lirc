@@ -3,7 +3,7 @@
  ****************************************************************************
  *
  *  routines for Bluetooth for Ericsson mobile phone receiver (BTE)
- * 
+ *
  *  Copyright (C) 2003 Vadim Shliakhov <svadim@nm.ru>
  *
  *
@@ -23,8 +23,8 @@
  *
  *  20-02-05 VSS filter out 'e' (cancel) code triggered by other keys at t630
  *  21-01-05 VSS Pause after BTE menu aborted by user to allow turn off bluetooth at t630
- *  12-04-04 VSS t630 2 char key codes handling 
- *               changes in connection reestablishing 
+ *  12-04-04 VSS t630 2 char key codes handling
+ *               changes in connection reestablishing
  *  02-02-04 VSS read loop opened to make use of main select() inside lircd
  *               connection reestablishing dropped for a while
  *  16-01-04 VSS workaround for "NO" button, some cleanups

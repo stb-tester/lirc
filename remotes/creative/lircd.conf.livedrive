@@ -2,7 +2,7 @@
 # contributed by Andrew de Quincey
 #
 # brand:                       rm1000w
-# model no. of remote control: 
+# model no. of remote control:
 # devices being controlled by this remote:
 #
 
@@ -23,7 +23,7 @@ begin remote
   toggle_bit      0
 
   repeat          9000 2250
-  
+
   frequency    38000
   duty_cycle   33
 
@@ -60,16 +60,16 @@ begin remote
           KEY_LEFT                     0x0000000000008778
           KEY_RIGHT                    0x000000000000758A
           KEY_OK                       0x000000000000817E
-	  KEY_POWER                    0x000000000000619e
-	  cmss                     0x000000000000718e
-	  KEY_RECORD                   0x000000000000738c
-	  
+          KEY_POWER                    0x000000000000619e
+          cmss                     0x000000000000718e
+          KEY_RECORD                   0x000000000000738c
+
       end codes
 
 end remote
 
 #
-# contributed by Stefan Brüns
+# contributed by Stefan Br#ns
 #
 # brand: Creative Audigy 2 ZS Platinum LiveDrive
 # model no. of remote control:

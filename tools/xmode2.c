@@ -6,12 +6,12 @@
  *
  * xmode2 - shows the ir waveform of an IR signal
  *
- * patched together on Feb. 18th 1999 by 
+ * patched together on Feb. 18th 1999 by
  * Heinrich Langos <heinrich@mad.scientist.com>
  *
  * This program is based on the smode2.c file by Sinkovics Zoltan
  * <sinko@szarvas.hu> which is a part of the LIRC distribution. It is
- * just a conversion from svga to X with some basic support for resizing. 
+ * just a conversion from svga to X with some basic support for resizing.
  * I copied most of this comment.
  *
  * This program is based on the mode2.c file which is a part of the
@@ -25,7 +25,7 @@
  * mode2.
  *
  * Usage: xmode2 [-t (ms/div)] , default division is 5 ms/div
- * 
+ *
  *
  * compile: gcc -o xmode2 xmode2.c -L/usr/X11R6/lib -lX11
  *

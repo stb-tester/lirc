@@ -4,28 +4,28 @@
  *
  * LIRC driver for Kanam/Accent serial port remote control.
  *
- * The Kanam/Accent is a remote control with an IR receiver 
- * connecting to the serial port. The receiver communicate with the 
- * host system at 1200 8N1, so the standard serial driver provided 
+ * The Kanam/Accent is a remote control with an IR receiver
+ * connecting to the serial port. The receiver communicate with the
+ * host system at 1200 8N1, so the standard serial driver provided
  * by the Linux kernel is used.
  *
- * For each keypress on the remote control, a sequence of 13 or 14 
- * bytes is transmitted. We can consider just the first 8 bytes as 
- * significative. Each sequence begins with the three bytes: 0x90 
- * 0x46 0x42. If a key is held-down, a sequence of zeroes is 
- * transmitted. The gap between two different full codes is about 
- * 188500 microseconds. The gap between each zero on a key-hold is 
+ * For each keypress on the remote control, a sequence of 13 or 14
+ * bytes is transmitted. We can consider just the first 8 bytes as
+ * significative. Each sequence begins with the three bytes: 0x90
+ * 0x46 0x42. If a key is held-down, a sequence of zeroes is
+ * transmitted. The gap between two different full codes is about
+ * 188500 microseconds. The gap between each zero on a key-hold is
  * about 56000 microseconds.
  *
- * Sometimes the receiver jams, especially on very short key press. 
- * In this case a uninterrupted stream of zeroes is transmitted, 
- * without the gap of 56000 us. The stream is interrupted if 
- * another key is pressed on the remote or if the driver closes and 
+ * Sometimes the receiver jams, especially on very short key press.
+ * In this case a uninterrupted stream of zeroes is transmitted,
+ * without the gap of 56000 us. The stream is interrupted if
+ * another key is pressed on the remote or if the driver closes and
  * reopen the serial port.
  *
- * Unfortunately the LIRC source code is not well documented, so I 
- * hope to have guessed well the workflow of lircd. Please, contact 
- * me if the comments in this source code are not accurate or 
+ * Unfortunately the LIRC source code is not well documented, so I
+ * hope to have guessed well the workflow of lircd. Please, contact
+ * me if the comments in this source code are not accurate or
  * clear.
  *
  * Author:	Niccolo Rigacci <niccolo@rigacci.org>
@@ -34,7 +34,7 @@
  *
  * Original routines from hw_pixelview.c and hw_pinsys.c.
  * First working code for this remote from Leandro Dardini.
- * 
+ *
  * Christoph Bartelmus <lirc@bartelmus.de>
  * Bart Alewijnse <scarfboy@yahoo.com>
  * Leandro Dardini <ldardini@tiscali.it>
@@ -258,7 +258,7 @@ char *accent_rec(struct ir_remote *remotes)
 		}
 	}			// End for
 
-	// Timestamp of key press end.  
+	// Timestamp of key press end.
 	gettimeofday(&end, NULL);
 
 	// The bytes sequence is complete, check its validity.

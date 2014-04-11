@@ -1,0 +1,17 @@
+#!/bin/dash
+#
+# Fix whitespace issues: convert blanks to tabs, strip trailing blanks.
+
+# C sources: use hard tabs indentation
+for f in $(git ls-files | grep -E '[.]c$|[.]h$' ); do
+       test -L $f && continue
+       unexpand $f | sed -r 's/[ \t]+$//' > $f.tmp && mv -f $f.tmp $f
+done
+
+# All others besides Makefiles: use space indentation.
+for f in $(git ls-files | grep -vE '[.]c$|[.]h$.png$|.gif$|.jpg$|Makefile' )
+do
+       test -L $f && continue
+       unexpand $f | sed -r 's/[ \t]+$//' > $f.tmp && \
+           cat $f.tmp > $f && rm $f.tmp
+done

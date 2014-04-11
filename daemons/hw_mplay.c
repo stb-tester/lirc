@@ -9,7 +9,7 @@
  * The vlsys mplay is a remote control with an Ir receiver connected to the
  * usb bus via a ftdi driver. The device communicate with the host at 38400
  * 8N1.
- * 
+ *
  * For each keypress on the remote controle, one code byte is transmitted
  * follow by regular fixe code byte for repetition if the key is held-down.
  * For example, if you press key 1, the remote first send 0x4d (key code)
@@ -310,8 +310,8 @@ char *mplay_rec(struct ir_remote *remotes)
 	len = read(hw.fd, &rc_code, 1);
 	gettimeofday(&current_time, NULL);
 	if (len != 1) {
-		/* Something go wrong during the read, we close the device 
-		   for prevent endless looping when the device 
+		/* Something go wrong during the read, we close the device
+		   for prevent endless looping when the device
 		   is disconnected */
 		LOGPRINTF(1, "Reading error in mplay_rec()");
 		mplay_deinit();
@@ -330,9 +330,9 @@ char *mplay_rec(struct ir_remote *remotes)
 					/* We save the reception time */
 					mplay_local_data.last_reception_time = current_time;
 				} else {
-					/* To much time between repetition, 
-					   the receiver have  probably miss 
-					   a valide key code. We ignore the 
+					/* To much time between repetition,
+					   the receiver have  probably miss
+					   a valide key code. We ignore the
 					   repetition */
 					mplay_local_data.timeout_repetition_flag = 1;
 					mplay_local_data.repeat_flag = 0;
