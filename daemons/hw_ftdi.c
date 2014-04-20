@@ -127,7 +127,7 @@ static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 
 static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 {
-	int ret;
+	int ret = 0;
 	struct ftdi_context ftdic;
 
 	alarm(0);
