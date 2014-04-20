@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 		strcpy(addr.sun_path, LIRCD);
 	} else if (argc == optind + 1) {
 		/* one argument */
-		strcpy(addr.sun_path, argv[optind]);
+		strncpy(addr.sun_path, argv[optind], sizeof(addr.sun_path) -1);
 	} else {
 		fprintf(stderr, "%s: incorrect number of arguments.\n", progname);
 		fprintf(stderr, "Try `%s --help' for more information.\n", progname);
