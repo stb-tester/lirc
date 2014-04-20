@@ -522,7 +522,7 @@ int check(char *s)
 	int d;
 	char *buffer;
 
-	buffer = malloc(strlen(s));
+	buffer = malloc(strlen(s) + 1);
 	if (buffer == NULL) {
 		fprintf(stderr, "%s: out of memory\n", progname);
 		return (-1);
