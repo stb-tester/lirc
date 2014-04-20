@@ -171,7 +171,7 @@ int default_init()
 	if (S_ISSOCK(s.st_mode)) {
 		struct sockaddr_un addr;
 		addr.sun_family = AF_UNIX;
-		strncpy(addr.sun_path, hw.device, sizeof(addr.sun_path));
+		strncpy(addr.sun_path, hw.device, sizeof(addr.sun_path) - 1);
 
 		hw.fd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (hw.fd == -1) {
