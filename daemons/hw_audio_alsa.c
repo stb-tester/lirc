@@ -198,7 +198,7 @@ error:		unlink(tmp_name);
 	unlink(tmp_name);
 
 	/* Examine the device name, if it contains a sample rate */
-	strncpy(tmp_name, hw.device, sizeof(tmp_name));
+	strncpy(tmp_name, hw.device, sizeof(tmp_name) - 1);
 	pcm_rate = strchr(tmp_name, '@');
 	if (pcm_rate) {
 		int rate;
