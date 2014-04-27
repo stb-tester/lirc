@@ -8,6 +8,7 @@ ACLOCAL_AMFLAGS             = -I m4
 AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 
 EXTRA_DIST =  setup.sh setup-driver.sh setup.data data2setup.sh ANNOUNCE TODO
+EXTRA_DIST += m4
 
 ## daemons/ and tools/ should appear before doc/ for help2man to work.
 if SYSTEMD_INSTALL
@@ -35,9 +36,6 @@ DISTCHECK_LIGHT_FLAGS = --with-driver=none --enable-sandboxed
 distcheck-light:
 	$(MAKE) $(AM_MAKEFLAGS) DISTCHECK_FLAGS="$(DISTCHECK_LIGHT_FLAGS)" distcheck
 
-m4dir                       = m4
-dist_m4_DATA                = m4/ac-path-kernel-source.m4
-
 # ----------------------------------------------------------------------
 
 setup-driver.sh: data2setup.sh setup.data
@@ -48,6 +46,7 @@ dist-hook:
 	for f in contrib remotes; do \
 		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog
+	find m4 -mindepth 1 -not -name ac-path-kernel-source.m4 -delete || :
 
 DISTCLEANFILES = configure.sh .setup.config
 
