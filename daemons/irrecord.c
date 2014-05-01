@@ -384,7 +384,7 @@ int main(int argc, char **argv)
 	if (device != NULL) {
 		hw.device = device;
 	}
-	if (strcmp(hw.name, "null") == 0) {
+	if (strcmp(hw.name, "null") == 0 && !analyse) {
 		fprintf(stderr, "%s: irrecord does not make sense without hardware\n", progname);
 		exit(EXIT_FAILURE);
 	}
