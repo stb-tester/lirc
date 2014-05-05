@@ -77,15 +77,17 @@ void options_load(int argc, char** argv,
 		path = buff;
 	}
 	if (access(path, R_OK) != 0) {
-		logprintf(LOG_ERR, "Error: cannot open %s\n", path);
-		exit(EXIT_FAILURE);
+		lirc_options = ciniparser_load(path);
+		if (lirc_options == NULL) {
+			logprintf(LOG_WARNING,
+				 "Cannot load options file %s\n", path);
+			lirc_options = dictionary_new(0);
+		}
 	}
-	lirc_options = ciniparser_load(path);
-	if (lirc_options == NULL) {
-		logprintf(LOG_WARNING,
-			 "Warning: cannot load options file %s\n", path);
+        else {
+		logprintf(LOG_WARNING, "Warning: cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
-	}
+        }
 	parse_options(argc, argv);
 #	ifdef DEBUG
 	if (debug && lirc_options != NULL ) {
