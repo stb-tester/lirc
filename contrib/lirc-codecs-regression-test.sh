@@ -9,30 +9,38 @@
 #
 
 # old known-good LIRC version
-OLD=~/src/lirc/lirc-0.8.7/daemons/
+OLD=lirc-0.9.0/daemons/
 # new LIRC version
-NEW=~/src/lirc/lirc-git/daemons/
+NEW=lirc-0.9.1/daemons/
 # where the config files are located -- these can be downloaded from
 # http://lirc.org/remotes.tar.bz2
-REMOTES=~/src/lirc/remotes/
 
-find $REMOTES -type f -print0|xargs -0 -n 1 echo|while read;
+REMOTES=remotes
+
+find -L $REMOTES -type f -print0|xargs -0 -n 1 echo|while read;
 do
+        # Skip invalid configs with 'one   0  0', see
+        # http://sourceforge.net/p/lirc/mailman/message/32297923
+	grep  '  one *0 *0' $REPLY && {
+ 		echo "Skipping invalid config (one '0'): $REPLY"
+                continue
+	}
         if echo $REPLY|grep "remove.sh\|lircmd\|\.png$\|\.jpg$\|\.irman$\|\.tira\|\.gif$\|\.lircrc$\|\.html$">/dev/null; then
                 continue
         fi
         name="output/`basename $REPLY`"
 
-#       echo "$REPLY"
+#       echo "REPLY: $REPLY"
 
 #
 # send
 #
 #echo send1
-        $NEW/lircd.simsend -n --pidfile=/tmp/lircd.sim.pid --output=/tmp/lircd.sim --logfile=/tmp/lircd.log $REPLY >${name}.new 2>/dev/null
+	echo "Using remote: $REPLY" >> /tmp/lircd.log
+        $NEW/lircd.simsend -n --pidfile=/tmp/lircd.sim.pid --output=/tmp/lircd.sim --logfile=/tmp/lircd.log $REPLY >${name}.new 2>/dev/null || continue
         while test -e /tmp/lircd.sim.pid; do sleep .1; done
 #echo send2
-        $OLD/lircd.simsend -n --pidfile=/tmp/lircd.sim.pid --output=/tmp/lircd.sim --logfile=/tmp/lircd.log $REPLY >${name}.old 2>/dev/null
+        $OLD/lircd.simsend -n --pidfile=/tmp/lircd.sim.pid --output=/tmp/lircd.sim --logfile=/tmp/lircd.log $REPLY >${name}.old 2>/dev/null || continue
         while test -e /tmp/lircd.sim.pid; do sleep .1; done
 #
 # receive
