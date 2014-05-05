@@ -19,18 +19,11 @@ Steps for a pre-release snapshot:
         git commit -a -s -m "Update for lirc <version>-preX snapshot release"
         git tag -a -m "lirc <version>-preX snapshot release" lirc-<version>-pre1
         git push origin lirc-<version>-preX-branch
-4) Switch back to master:
-        git checkout master
-5) Clean checkout in new directory:
-        git clone -b lirc-<version>-preX-branch git://lirc.git.sourceforge.net/gitroot/lirc/lirc lirc-<version>-preX
 6) Create tarball:
         ./autogen.sh
         cp INSTALL.txt INSTALL
         ./configure --with-driver=all --enable-sandboxed
-        make clean
-        make
-        make dist
-        make dist-bzip2
+        make distcheck
 7) Get it to Christoph to post at http://lirc.org/software/snapshots/
 
 Steps for a new release:
