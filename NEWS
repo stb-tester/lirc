@@ -1,4 +1,4 @@
-0.9.1-pre1
+0.9.1-pre2
   * Added systemd support: unit files, socket activation.
   * Building kernel modules is not supported.
   * New config file lirc_options.conf with cli options default values.

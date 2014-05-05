@@ -2,7 +2,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.1-pre1])
+AC_INIT([lirc], [0.9.1-pre2])
 AC_CONFIG_SRCDIR([daemons/lircd.c])
 AC_CONFIG_MACRO_DIR([m4])
 
