@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS             = -I m4
 AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 
 EXTRA_DIST =  setup.sh setup-driver.sh setup-functions.sh setup.data data2setup.sh ANNOUNCE TODO
-EXTRA_DIST += m4
+EXTRA_DIST += m4 autogen.sh
 
 ## daemons/ and tools/ should appear before doc/ for help2man to work.
 if SYSTEMD_INSTALL
