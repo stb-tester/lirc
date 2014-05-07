@@ -2288,7 +2288,7 @@ int main(int argc, char **argv)
 #       ifndef USE_SYSLOG
 		opt = options_getstring("lircd:logfile");
 		if (opt != NULL)
-			lirc_set_logfile(optarg);
+			lirc_set_logfile(opt);
 #       endif
 	lircdfile = options_getstring("lircd:output");
 	if (options_getstring("lircd:listen") != NULL){
