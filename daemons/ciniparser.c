@@ -385,7 +385,8 @@ dictionary *ciniparser_load(const char *ininame)
 	dictionary *dict;
 
 	if ((in = fopen(ininame, "r")) == NULL) {
-		fprintf(stderr, "ciniparser: cannot open %s\n", ininame);
+		fprintf(stderr, "ciniparser: cannot open %s\n (ignored)",
+                        ininame);
 		return NULL;
 	}
 
