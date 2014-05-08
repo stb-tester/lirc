@@ -16,8 +16,7 @@ endif
 
 SUBDIRS = drivers daemons tools doc $(SYSTEMD_DIR)
 
-if SANDBOXED
-else
+if INSTALL_ETC
 lirc_confdir        = $(sysconfdir)/lirc
 dist_lirc_conf_DATA = lircd.conf lirc_options.conf lircmd.conf
 endif

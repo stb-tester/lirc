@@ -1556,6 +1556,13 @@ AC_ARG_ENABLE(sandboxed,
 [ enable_sandboxed="no"])
 AM_CONDITIONAL(SANDBOXED, test x$enable_sandboxed = xyes)
 
+AC_ARG_ENABLE(install_etc,
+[  --install-etc           Install /etc/lirc configuration files(default=yes)],
+[ install_etc="${enableval}" ],
+[ install_etc="yes"])
+AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
+
+
 AC_ARG_WITH(devdir,
 [  --with-devdir=DIR       Install device files in DIR (/dev)],
 devdir=${withval},
