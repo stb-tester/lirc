@@ -18,38 +18,25 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
   else
     shortvers="$( uname -r | sed -r 's/(@<:@2-9@:>@\.@<:@0-9@:>@+).*/\1/' )"
     for dir in ${ac_kerneldir} \
-        /usr/src/kernel-source-`uname -r` \
-        /usr/src/linux-source-`uname -r` \
-        /usr/src/kernel-source-$shortvers \
-        /usr/src/linux-source-$shortvers \
-        /usr/src/linux /lib/modules/`uname -r`/source \
-        /lib/modules/`uname -r`/build
+        /usr/src/kernel-source-* \
+        /usr/src/linux-source-* \
+        /usr/src/linux /lib/modules/*/source \
+        /lib/modules/*/build
     do
       if test -d $dir; then
-        kerneldir=`dirname $dir/Makefile`/
+        kerneldir=`dirname $dir/Makefile`/ || continue
         no_kernel=no
         break
       fi;
     done
   fi
 
-  if test x${no_kernel} != xyes; then
-    if test -f ${kerneldir}/Makefile; then
-      version=$( sed -n '/^VERSION/s/.*=\ *//p' ${kerneldir}/Makefile )
-      patchlevel=$( sed -n -e '/^PATCHLEVEL/s/.*=\ *//p' ${kerneldir}/Makefile )
-      if test "${version}" -eq 2; then
-        if test "${patchlevel}" -lt 5; then
-          kernelext=o
-        fi
-      fi
-    else
-      kerneldir="no Makefile found"
-      no_kernel=yes
-    fi
+  if test x${no_kernel} = xyes; then
+      kerneldir=`pwd`
   fi
   ac_cv_have_kernel="no_kernel=${no_kernel} \
                 kerneldir=\"${kerneldir}\" \
-                kernelext=\"${kernelext}\""
+                kernelext=\"ko\""
 ]
 )
 
