@@ -3,12 +3,11 @@
   * Building kernel modules is not supported.
   * New config file lirc_options.conf with cli options default values.
   * Automagically sets the lirc protocol for /dev/rc devices.
-  * Whitespcew cleanup and git hook to enforce whitespace handling
+  * Whitespace cleanup and git hook to enforce whitespace handling.
   * Docs are built s part of normal build process.
   * Bugfixes
   * Autotools update and Darwin fixes.
   * docs: Added new Configuration Guide.
-
 
 0.9.0: 03/25/11
   * Remove mceusb, streamzap, it8x, ene0100 drivers, as they're

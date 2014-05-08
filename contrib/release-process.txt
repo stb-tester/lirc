@@ -8,47 +8,55 @@ Pre-requisites:
         current:release:age
         http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html#Libtool-versioning
 - git master branch is committed and pushed
+- Update NEWS and doc/html-source/install.html (the Updating stuff).
+- Create a new git release branch:
+      git checkout -b <version>
 
 
-Steps for a pre-release snapshot:
-1) Create a new git branch:
-        git checkout -b lirc-<version>-preX-branch
-2) Change version number from <version>-git to <version>-preX in:
+Steps for a new release (pre or final)
+
+1) Checkout the release branch.
+
+2) Update NEWS and doc/html-source/install.html (the Updating stuff).
+
+3) Update version number in:
         index.html, ANNOUNCE, NEWS, setup.sh, configure.ac
-3) Commit, tag and push branch:
-        git commit -a -s -m "Update for lirc <version>-preX snapshot release"
-        git tag -a -m "lirc <version>-preX snapshot release" lirc-<version>-pre1
-        git push origin lirc-<version>-preX-branch
-6) Create tarball:
+
+4) Commit, tag and push branch:
+        git commit -a -s -m "Update for lirc <version> release"
+        git tag -a  lirc-<version> HEAD    # Using version like lirc-0_9_0
+        git push --tags origin <release-branch>
+
+5) Create tarball:
         ./autogen.sh
-        cp INSTALL.txt INSTALL
         ./configure --with-driver=all --enable-sandboxed
         make distcheck
-7) Get it to Christoph to post at http://lirc.org/software/snapshots/
 
-Steps for a new release:
-1) Create a new git branch:
-        git checkout -b lirc-<version>-branch
-2) Change version number from <version>-git to <version> in:
-        index.html, ANNOUNCE, NEWS, setup.sh, configure.ac
-3) Commit, tag and push branch:
-        git commit -a -s -m "Update for lirc <version> release"
-        git tag -a -m "lirc <version> release" lirc-<version>
-        git push origin lirc-<version>-branch
-4) Switch back to master:
-        git checkout master
-5) Clean checkout in new directory:
-        git clone -b lirc-<version>-branch git://lirc.git.sourceforge.net/gitroot/lirc/lirc lirc-<version>
-6) Create tarball:
-        ./autogen.sh
-        cp INSTALL.txt INSTALL
-        ./configure --with-driver=all --enable-sandboxed
-        make clean
-        make
-        make dist
-        make dist-bzip2
-7) Upload tarball to sourceforge
-8) Back in original checkout, increment <version> in the files in step 2 for the next version
+6) Merge release branch into the 'release' branch:
+       git checkout release
+       git merge -X theirs <release branch>
+   Check that the tags are present also in the release branch (no rebase
+   problems):
+       git log --oneline --decorate -25
+
+7) Merge release branch into master:
+       git checkout -b tmp <release-branch>
+       git rebase master
+       git checkout master
+       git merge tmp
+       git branch -d tmp
+
+8) Get tarballs to Christoph to post at http://lirc.org/software/snapshots/,
+   or publish it elsewhere.
+
+9) Announce on the list.
+
+For final release:
+
+1) Upload tarball to sourceforge
+
+2) Back in master, increment <version> in the files in step 3 for the next
+   version
 
 
 Send announcement email to lirc-list@lists.sourceforge.net

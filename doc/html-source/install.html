@@ -798,3 +798,32 @@ lirc_serial: Unknown symbol lirc_register_driver
       <em>lirc_mceusb2</em> driver is now obsolete and has been
       removed. You should use <em>lirc_mceusb</em> from now on.
     </P>
+    <A NAME="updating090"></A><HR>
+    <H1 ALIGN="CENTER">Updating from lirc-0.9.0</H1>
+    <HR WIDTH="70%">
+    <p>
+    Building kernel modules is not supported from 0.9.1.  Most tests are
+    done using 'with-driver=userspace'. Using other options is deprecated
+    and will not be supported in upcoming releases.</p>
+    <p>
+    From 0.9.1 it's not necessary to setup the kernel rc driver using
+    something like 'echo "lirc" > /sys/class/rc/rco/protocol"; this is
+    done automagically by lircd. Doing it twice does no harm. </p>
+    <p>
+    From 0.9.1 lirc uses a new configuration file for default option
+    values, normally /etc/lirc/lirc_options.conf. The idea is that
+    setting up the lirc services should not be distribution dependent. </p>
+    <p>
+    From 0.9.1 lirc has a rather complete systemd support. By default,
+    services are installed in /usr/lib/systemd/system. Note that the
+    service to run lircd is lircd.socket, not lircd.service. </p>
+    <p>
+    From 0.9.1 the documentation is built by a plain make (earlier, this
+    required a specific target). As a result, the built docs are not part
+    of the distribution. Note that ./ configure affects how the docs
+    are generated. </p>
+    <p>
+    By default, stub configuration files are installed. This can be disabled
+    using the new --with-install-etc configure option. </p>
+
+
