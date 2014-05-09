@@ -52,17 +52,7 @@ if HAVE_PYTHON
 dist_bin_SCRIPTS = pronto2lirc lirc-setup
 dist_noinst_SCRIPTS = make_rel_symlink.py
 dist_pkgdata_DATA = lirc-setup.ui
-
-pronto2lirc: $(srcdir)/pronto2lirc.py
-	echo "#! ${PYTHON}" >$@
-	cat $< >>$@
-	chmod +x $@
 endif
-
-EXTRA_DIST = pronto2lirc.py
-
-CLEANFILES = *~ pronto2lirc
-
 
 # Ugly fix until we deploy the script as a regular python thing.
 install-data-hook:

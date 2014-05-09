@@ -21,7 +21,7 @@ AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_PROG_LN_S
 LT_INIT([disable-static])
-AM_PATH_PYTHON(,, [:])
+AM_PATH_PYTHON([3.1],,[:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ""])
 LIBUSB_CONFIG="pkg-config libusb"
 
