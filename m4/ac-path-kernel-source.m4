@@ -16,7 +16,6 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
   if test `uname` != "Linux"; then
     kerneldir="not running Linux"
   else
-    shortvers="$( uname -r | sed -r 's/(@<:@2-9@:>@\.@<:@0-9@:>@+).*/\1/' )"
     for dir in ${ac_kerneldir} \
         /usr/src/kernel-source-* \
         /usr/src/linux-source-* \
@@ -32,11 +31,11 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE_SEARCH],
   fi
 
   if test x${no_kernel} = xyes; then
-      kerneldir=`pwd`
+     ac_cv_have_kernel="no_kernel=yes kerneldir=srcdir kernelext=ko"
+
+  else
+     ac_cv_have_kernel="no_kernel=no kerneldir=${kerneldir} kernelext=ko"
   fi
-  ac_cv_have_kernel="no_kernel=${no_kernel} \
-                kerneldir=\"${kerneldir}\" \
-                kernelext=\"ko\""
 ]
 )
 
@@ -55,9 +54,10 @@ AC_DEFUN([AC_PATH_KERNEL_SOURCE],
     ac_kerneldir=""
     AC_CACHE_VAL(ac_cv_have_kernel,AC_PATH_KERNEL_SOURCE_SEARCH)
   )
-
   eval "$ac_cv_have_kernel"
-
+  if test "$kerneldir" = "srcdir"; then
+    kerneldir='$(top_srcdir)'
+  fi
   AC_SUBST(kerneldir)
   AC_SUBST(kernelext)
   AC_MSG_RESULT(${kerneldir})
