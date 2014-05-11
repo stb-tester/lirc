@@ -32,13 +32,13 @@ all: $(nodist_man_MANS) $(nodist_html_DATA) lirc.hwdb
 $(generated_html): $(nodist_man_MANS)
 
 $(nodist_man_MANS): $(man_sources) man2html
-	test -d man || mkdir man
+	-test -d man || mkdir man
 	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
 	        builddir="$(builddir)"  top_builddir="$(top_builddir)" \
 	        $(srcdir)/release-man.sh $(nodist_man_MANS)
 
 $(nodist_html_DATA) : $(html_sources) $(nodist_man_MANS)
-	test -d html || mkdir html
+	-test -d html || mkdir html
 	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
 	    builddir="$(builddir)" top_builddir="$(top_builddir)" \
 	    $(srcdir)/release-html.sh
@@ -46,7 +46,7 @@ $(nodist_html_DATA) : $(html_sources) $(nodist_man_MANS)
 
 lirc.hwdb: html/table.html
 html/table.html:
-	test -d html || mkdir html
+	-test -d html || mkdir html
 	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
 	        builddir="$(builddir)" top_builddir="$(top_builddir)" \
 	        $(srcdir)/table.sh lirc.hwdb > html/table.html
@@ -130,6 +130,5 @@ generated_html          += html/alsa-usb.html \
                            html/mode2.html \
                            html/programs.html \
                            html/pronto2lirc.html \
-                           html/table.html \
                            html/technical.html \
                            html/tira.html
