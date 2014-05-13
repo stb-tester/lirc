@@ -45,7 +45,7 @@ int debug = 0;
 #endif
 char *hostname = "";
 int daemonized = 0;
-char *progname;
+char *progname = "mode2";
 
 
 int waitfordata(unsigned long maxusec)
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 	} else {
 		if (have_device)
 			hw.device = device;
-		if (!hw.init_func()) {
+		if (!hw.init_func || !hw.init_func()) {
 			return EXIT_FAILURE;
 		}
 		fd = hw.fd;	/* please compiler */
