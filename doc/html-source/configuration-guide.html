@@ -444,7 +444,11 @@ remote |        |       devinput v        |
      When using an LIRC ir driver, the kernel ir driver must be
      configured to send the data only to the /dev/lirc device and not
      to the general input layer. If not, each button event will delivered
-     twice to the application, both through /var/run/lirc and /dev/input.
+     twice to the application, both through /var/run/lirc and /dev/input.</p>
+     <p>
+     <i> As of 0.9.1 this is configured automatically by lircd, and
+     neither the echo 'lirc' >/sys/class/rc/... nor the udev rule should
+     normally be required. </i>
      </p>
      <p>
      Also, some lirc drivers conflicts with the kernel drivers. A common
