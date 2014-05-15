@@ -5,7 +5,7 @@ ACLOCAL_AMFLAGS             = -I m4
 ## these are used by programs in the tools directory, but not by
 ## programs in this directory.  So we must make sure they get distributed
 
-AM_CPPFLAGS = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir) -Wall
 
 BUILT_SOURCES = input_map.inc
 
