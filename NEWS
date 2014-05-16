@@ -1,10 +1,11 @@
 0.9.1-pre3
   * Added systemd support: unit files, socket activation.
+  * Default config files are installed in /etc, use --install-etc to disable.
   * Building kernel modules is not supported.
   * New config file lirc_options.conf with cli options default values.
   * Automagically sets the lirc protocol for /dev/rc devices.
   * Whitespace cleanup and git hook to enforce whitespace handling.
-  * Docs are built s part of normal build process.
+  * Docs are built as part of normal build process.
   * Bugfixes
   * Autotools update and Darwin fixes.
   * docs: Added new Configuration Guide.

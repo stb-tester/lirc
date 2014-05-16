@@ -1,18 +1,18 @@
-This is the README file for LIRC, the Linux Infrared Remote Control
-package. The main documentation of this package is available in HTML
-format.  Please refer to the file doc/html/index.html for more
-information.
+0.9.1-pre3 README
 
-If you want to know what LIRC is and where you can get current
-versions of LIRC read the ANNOUNCE file.
-
-LIRC uses autoconf to make installation as easy as possible for its
-users. The INSTALL file describes generic installation instructions
-for packages that use autoconf. However you will only have to read
-this file if you want to do something unusual during the installation
-process which is described in the documentation very detailed.
-
-If you are upgrading from an older version of LIRC take a look at the
-NEWS file which contains all user visible changes between
-releases. Also at least read the "Updating from lirc-x.y.z" sections
-in the main documentation.
+  * Added systemd support: unit files, socket activation. Clients such as
+    irexec can now trust that the lircd socket is available from start.
+  * Building kernel modules is not supported (although the code is still
+    in place).
+  * New config file lirc_options.conf with cli options default values.
+    Using this file there is no need for environment files in the
+    lircd.socket systemd configuration.
+  * 'make install' now installs default configuration files inte /etc. This
+    can be disabled using the --install-etc configure option.
+  * Automagically sets the lirc protocol for /sys/class/rc devices - no need
+    for 'echo lirc > /sys/class/rc/rc0/protocols' or similar udev rule.
+  * Whitespace cleanup and git hook to enforce whitespace handling.
+  * Bugfixes
+  * docs: Added new Configuration Guide.
+  * Docs are built s part of normal build process.
+  * Autotools update and Darwin fixes.

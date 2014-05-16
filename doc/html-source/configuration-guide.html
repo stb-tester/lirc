@@ -611,8 +611,11 @@ remote |        |       devinput v        |
     <p>
     Several of the pre-defined remotes uses non-standard key symbols. This
     is a Bad Thing, which makes it harder to create the ~/.lircrc file
-    in next step. You should replace all non-standard definitions with
-    official key symbols where it's possible. Some buttons might not be
+    in next step. It's also a prblem when using the uinput option, or when
+    converting to use the build-in decoding.</p>
+    <p>
+    You should replace all non-standard definitions with standard key symbols
+    where it's possible. Some buttons might not be
     possible to map to standard symbols is a sane way, and could be left
     as-is. But the vast majority of buttons should use standard symbols.
     The standard symbols a. k. a. the namespace, is listed by irrecord -l.
