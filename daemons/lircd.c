@@ -1786,31 +1786,38 @@ void input_message(const char *message, const char *remote_name, const char *but
 		broadcast_message(message);
 	}
 #ifdef __linux__
-	if (uinputfd != -1) {
-		linux_input_code input_code;
+	if (uinputfd == -1 || reps >= 2) {
+		return;
+	}
 
-		if (reps < 2 && get_input_code(button_name, &input_code) != -1) {
-			struct input_event event;
+	linux_input_code input_code;
 
-			memset(&event, 0, sizeof(event));
-			event.type = EV_KEY;
-			event.code = input_code;
-			event.value = release ? 0 : (reps > 0 ? 2 : 1);
-			if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-				logprintf(LOG_ERR, "writing to uinput failed");
-				logperror(LOG_ERR, NULL);
-			}
+	if (get_input_code(button_name, &input_code) != -1) {
+		struct input_event event;
 
-			/* Need to write sync event */
-			memset(&event, 0, sizeof(event));
-			event.type = EV_SYN;
-			event.code = SYN_REPORT;
-			event.value = 0;
-			if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-				logprintf(LOG_ERR, "writing EV_SYN to uinput failed");
-				logperror(LOG_ERR, NULL);
-			}
+		memset(&event, 0, sizeof(event));
+		event.type = EV_KEY;
+		event.code = input_code;
+		event.value = release ? 0 : (reps > 0 ? 2 : 1);
+		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
+			logprintf(LOG_ERR, "writing to uinput failed");
+			logperror(LOG_ERR, NULL);
 		}
+
+		/* Need to write sync event */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_SYN;
+		event.code = SYN_REPORT;
+		event.value = 0;
+		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
+			logprintf(LOG_ERR, "writing EV_SYN to uinput failed");
+			logperror(LOG_ERR, NULL);
+		}
+	}
+	else {
+		logprintf(LOG_DEBUG,
+                          "Dropping non-standard symbol %s in uinput mode",
+                           button_name == NULL ? "Null" : button_name);
 	}
 #endif
 }
