@@ -58,6 +58,11 @@ select_vars ()
                 PROG_PARAMS="--include ${SRCDIR}/man-source/daemons.inc"
 
         ;;
+        lircd.conf)
+                SECTION=5
+                MANPAGE=$PROG.$SECTION
+                DIR=$SRCDIR/wrappers/
+        ;;
         lircmd)
                 SECTION=8
                 MANPAGE=$PROG.$SECTION
@@ -97,14 +102,23 @@ for PROG in "$@"; do
         test "man/${MANPAGE:-foo}" -nt "${SRCDIR}/man-source/$PROG.inc" \
                 && continue
         #make the manpage
-        $HELP2MAN \
-                $PROG_PRE_PARAMS \
-                --section $SECTION \
-                --no-info \
-                --include ${SRCDIR}/man-source/help2man.inc \
-                --opt-include ${SRCDIR}/man-source/$PROG.inc \
-                $PROG_PARAMS \
-                $DIR$PROG -o man/$MANPAGE
+        case $PROG in
+            *lircd.conf)
+                cp -a man-source/lircd.conf.5 man
+                MANPAGE=lircd.conf.5
+                PROG=${MANPAGE%.*}
+                ;;
+            *)
+                $HELP2MAN \
+                    $PROG_PRE_PARAMS \
+                    --section $SECTION \
+                    --no-info \
+                    --include ${SRCDIR}/man-source/help2man.inc \
+                    --opt-include ${SRCDIR}/man-source/$PROG.inc \
+                    $PROG_PARAMS \
+                    $DIR$PROG -o man/$MANPAGE
+                ;;
+        esac
 
         # since libtool is used help2man prepends "lt-" to some executable
         # names, we could require lirc to be installed and this wouldn't

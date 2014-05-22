@@ -75,7 +75,8 @@ man_sources             =  man-source/daemons.inc \
                            man-source/ircat.inc \
                            man-source/irsend.inc \
                            man-source/lircmd.inc \
-                           man-source/xmode2.inc
+                           man-source/xmode2.inc \
+                           man-source/lircd.conf.5
 
 html_sources            =  html-source/alsa-usb.html \
                            html-source/atwf83.html \
@@ -105,7 +106,8 @@ nodist_man_MANS         += man/irexec.1 \
                            man/lircmd.8 \
                            man/lircrcd.1 \
                            man/mode2.1 \
-                           man/irsend.1
+                           man/irsend.1 \
+                           man/lircd.conf.5
 
 generated_html          += html/alsa-usb.html \
                            html/audio-alsa.html \
@@ -125,6 +127,7 @@ generated_html          += html/alsa-usb.html \
                            html/irsend.html \
                            html/irw.html \
                            html/lircd.html \
+                           html/lircd.conf.html \
                            html/lircmd.html \
                            html/lircrcd.html \
                            html/mode2.html \

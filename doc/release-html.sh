@@ -15,7 +15,7 @@ alsa-usb.html devinput.html imon.html imon-24g.html pronto2lirc.html
 tira.html"
 FILES2="irexec.html ircat.html irw.html irpty.html irrecord.html
 irxevent.html lircd.html lircmd.html lircrcd.html mode2.html
-smode2.html xmode2.html irsend.html"
+smode2.html xmode2.html irsend.html lircd.conf.html"
 
 echo -n "Pass1:"
 for FILE in $FILES1; do
