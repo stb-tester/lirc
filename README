@@ -1,18 +1,85 @@
-0.9.1-pre3 README
+# LIRC - Linux Infrared Remote Control README.
 
-  * Added systemd support: unit files, socket activation. Clients such as
-    irexec can now trust that the lircd socket is available from start.
-  * Building kernel modules is not supported (although the code is still
-    in place).
-  * New config file lirc_options.conf with cli options default values.
-    Using this file there is no need for environment files in the
-    lircd.socket systemd configuration.
-  * 'make install' now installs default configuration files inte /etc. This
-    can be disabled using the --install-etc configure option.
-  * Automagically sets the lirc protocol for /sys/class/rc devices - no need
-    for 'echo lirc > /sys/class/rc/rc0/protocols' or similar udev rule.
-  * Whitespace cleanup and git hook to enforce whitespace handling.
-  * Bugfixes
-  * docs: Added new Configuration Guide.
-  * Docs are built s part of normal build process.
-  * Autotools update and Darwin fixes.
+Copyright (C) 1996 Ralph Metzler <rjkm@thp.uni-koeln.de>
+Copyright (C) 1998-2010 Christoph Bartelmus <lirc@bartelmus.de>
+Copyright (C) 2010-2011 Jarod Wilson <jarod@redhat.com>
+(according to GNU General Public Licence 2.0 or later)
+
+## General
+
+This is the README file for LIRC, the Linux Infrared Remote rol
+package. The main documentation of this package is available in HTML
+format at http://lirc.org. After building the documentation is also
+available at doc/html/index.html.
+
+Updated versions of lirc is available using the website http://lirc.org.
+
+## Last version: 0.9.1
+
+  - Added systemd support: unit files, socket activation.
+  - Building kernel modules is not supported.
+  - New config file lirc_options.conf with cli options default values.
+  - Automagically sets the lirc protocol for /dev/rc devices.
+  - Whitespace cleanup and git hook to enforce whitespace handling.
+  - Docs are built s part of normal build process.
+  - Bugfixes
+  - Autotools update and Darwin fixes.
+  - docs: Added new Configuration Guide.
+  - Licensing: Added some MIT-licensed files from CCAN, complete
+    license now is GPLv2 + MIT.
+
+
+## Build and install.
+
+More complete build and install instructions are available in the
+manual, the Installation chapter. The fast track:
+
+   $ ./autogen.sh
+   $ ./configure --with-syslog --with-driver=userspace
+   $ make
+   $ sudo make install
+
+If you are upgrading from an older version of LIRC take a look at the
+NEWS file which contains all user visible changes between
+releases. Also at least read the "Updating from lirc-x.y.z" sections
+in the main documentation.
+
+
+## What is LIRC?
+
+LIRC is a package that allows you to decode and send infra-red signals
+of many (but not all) commonly used remote controls.
+Pre-release versions are currently available at the LIRC homepage:
+http://www.lirc.org/
+
+Former versions focussed on home-brew hardware connected to the serial
+or parallel port. Descriptions how to build this hardware can be found
+on the LIRC homepage. Current versions of LIRC also support a variety
+of other hardware. An up-to-date list of all supported devices and the
+status of the according drivers is available on the LIRC homepage.
+
+The most important part of LIRC is the lircd daemon that will decode
+IR signals received by the device drivers and provide the information
+on a socket. It will also accept commands for IR signals to be sent if
+the hardware supports this. The second daemon program called lircmd
+will connect to lircd and translate the decoded IR signals to mouse
+movements. You can e.g. configure X to use your remote control as an
+input device.
+
+The user space applications will allow you to control your computer
+with your remote control. You can send X events to applications, start
+programs and much more on just one button press.  The possible
+applications are obvious: Infra-red mouse, remote control for your TV
+tuner card or CD-ROM, shutdown by remote, program your VCR and/or
+satellite tuner with your computer, etc.
+
+Adding new remotes is still problematic but since version 0.5.2 there
+is a program (irrecord)  that will try to add new remote controls
+automatically.
+
+Don't expect much documentation. This is only a pre-release version
+and there is still much to be done before LIRC becomes easily
+configurable and usable.
+For people with a little C/C++ knowledge this should already be possible
+with this pre-release. Otherwise, wait for version 1.0.
+

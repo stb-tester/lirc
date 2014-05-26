@@ -20,8 +20,9 @@ Steps for a new release (pre or final)
 2) Update NEWS and doc/html-source/install.html (the Updating stuff).
 
 3) Update version number in:
-        index.html, ANNOUNCE, NEWS, setup.sh, configure.ac
+        index.html, README, NEWS, setup.sh, configure.ac
    Possibly update doc/html-source/foot.html (new date).
+   Update the news entry in README.
 
 4) Commit, tag and push branch:
         git commit -a -s -m "Update for lirc <version> release"
