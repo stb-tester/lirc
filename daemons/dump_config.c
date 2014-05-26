@@ -42,11 +42,23 @@ void fprint_comment(FILE * f, struct ir_remote *rem, const char* commandline)
 	tmp = localtime(&timet);
 	fprintf(f,
 		"#\n"
-		"# this config file was automatically generated\n"
-		"# using lirc-%s(%s) on %s" "#\n"
-		"# contributed by \n" "%s"  "#\n" "# brand:                       %s\n"
-		"# model no. of remote control: \n" "# devices being controlled by this remote:\n" "#\n\n", VERSION,
-		hw.name, asctime(tmp), buff, rem->name);
+		"# This config file was automatically generated\n"
+		"# using lirc-%s(%s) on %s"
+		"#\n"
+		"# Command line used: %s"
+		"# Remote name (as of config file): %s\n\n"
+		"# Brand of remote device, the thing you hold in your hand:\n"
+		"# Remote device model nr: \n"
+		"# Remote device info url: \n"
+		"# Does remote device has a bundled capture device e. g., a usb"
+		"#     dongle? : \n"
+		"# For bundled USB capture devices: usb vendor id, product id \n"
+		"#     and device string (use dmesg or lsusb): \n"
+		"# Type of device controlled \n"
+		"#     (TV, VCR, Audio, DVD, Satellite, Cable, PVR, HTPC, ...) : \n"
+		"# Device(s) controlled by this remote: \n"
+		"# Kernel version (uname -r): \n\n",
+		VERSION, hw.name, asctime(tmp), buff, rem->name);
 }
 
 void fprint_flags(FILE * f, int flags)

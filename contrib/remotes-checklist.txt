@@ -13,23 +13,26 @@ MUST:
 
           + Name of remote device, the thing you hold in your hand.
 
-          + Name of device used to receive data (possibly bundled).
+          + Does remote device has a bundled capture device e. g., a usb
+            dongle?
 
-          + For USB devices: usb vendor id, product id and device string
-            (using dmesg or lsusb).
+          + For bundled USB capture  devices: usb vendor id, product id and
+            device string (using dmesg or lsusb).
 
-          + Type of device controlled (TV, VCR, Amplifier, ...)
+          + Type of device controlled (TV, VCR, Audio, DVD, Satellite, Cable,
+            PVR, HTPC, ...)
 
           + Device(s) controlled.
 
+          + Remote layout (ascii art showing symbol for each button).
 
-    - Config file must use proper name symbols from namespace where
+    - Config file should use proper name symbols from namespace where
       applicable (use generate-lircrc -sc to check status).
 
     - Files with raw data should if possible be converted using
       irrecord -a
 
-    - The toggle_bit_mask be non-zero if RC5, RC6 or RCMM is in flags.
+    - The toggle_bit_mask should be non-zero if RC5, RC6 or RCMM is in flags.
       If not try with the default values:
           + 0x800 for RC5 protocol.
           + 0x8000 or 0x10000 for RC6 and RCMM protocol.
@@ -38,12 +41,13 @@ MUST:
 SHOULD:
 
     - Is there any known kernel configuration e. g., blacklisted kernel
-      modules?
+      modules or specific kernel drivers?
 
     - URL with device information.
 
-    - Photo or sketch (scale to ~100kb). The best alternative is a picture
-      of device showing key symbol for each button.
+    - Photo of remote (scale to ~100 kb).
+
+    - Ascii art or a sketch of device showing key symbol for each button.
 
 
 
@@ -56,6 +60,7 @@ NOTES:
          symbol prefixed with KEY_ is supposed to be a standard symbol.
        + For mouse clicks use BTN_LEFT, BTN_RIGHT
        + For mouse movements use MOUSE_N, MOUSE_S, MOUSE_NW, MOUSE_SE, etc.
+       + KEY_RED..KEY_BLUE is preferred to KEY_A..KEY_D.
 
     generate-lircrc -sc scans file for "bad" symbols. generate-lircrc -uc can
     update many ad-hoc symbols using heuristics - results must be checked!
