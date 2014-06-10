@@ -57,3 +57,9 @@ dist-hook:
 DISTCLEANFILES = configure.sh .setup.config
 
 CLEANFILES = *~ remotes/*~ contrib/*~
+
+lirc.org: .phony
+	tar czf lirc.org.tar.gz lirc.org --dereference
+
+.phony:
+
