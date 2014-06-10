@@ -1,4 +1,4 @@
-0.9.1-pre3
+0.9.1
   * Added systemd support: unit files, socket activation.
   * Default config files are installed in /etc, use --install-etc to disable.
   * Building kernel modules is not supported.
