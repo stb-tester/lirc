@@ -1,13 +1,13 @@
 # LIRC - Linux Infrared Remote Control README.
 
-Copyright (C) 1996 Ralph Metzler <rjkm@thp.uni-koeln.de>
-Copyright (C) 1998-2010 Christoph Bartelmus <lirc@bartelmus.de>
-Copyright (C) 2010-2011 Jarod Wilson <jarod@redhat.com>
-(according to GNU General Public Licence 2.0 or later)
+    Copyright (C) 1996 Ralph Metzler <rjkm@thp.uni-koeln.de>
+    Copyright (C) 1998-2010 Christoph Bartelmus <lirc@bartelmus.de>
+    Copyright (C) 2010-2011 Jarod Wilson <jarod@redhat.com>
+    (according to GNU General Public Licence 2.0 or later)
 
 ## General
 
-This is the README file for LIRC, the Linux Infrared Remote rol
+This is the README file for LIRC, the Linux Infrared Remote Control
 package. The main documentation of this package is available in HTML
 format at http://lirc.org. After building the documentation is also
 available at doc/html/index.html.
@@ -34,10 +34,10 @@ Updated versions of lirc is available using the website http://lirc.org.
 More complete build and install instructions are available in the
 manual, the Installation chapter. The fast track:
 
-   $ ./autogen.sh
-   $ ./configure --with-syslog --with-driver=userspace
-   $ make
-   $ sudo make install
+    $ ./autogen.sh
+    $ ./configure --with-syslog --with-driver=userspace
+    $ make
+    $ sudo make install
 
 If you are upgrading from an older version of LIRC take a look at the
 NEWS file which contains all user visible changes between
@@ -52,7 +52,7 @@ of many (but not all) commonly used remote controls.
 Pre-release versions are currently available at the LIRC homepage:
 http://www.lirc.org/
 
-Former versions focussed on home-brew hardware connected to the serial
+Former versions focused on home-brew hardware connected to the serial
 or parallel port. Descriptions how to build this hardware can be found
 on the LIRC homepage. Current versions of LIRC also support a variety
 of other hardware. An up-to-date list of all supported devices and the
