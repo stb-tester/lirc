@@ -14,20 +14,7 @@ available at doc/html/index.html.
 
 Updated versions of lirc is available using the website http://lirc.org.
 
-## Last version: 0.9.1
-
-  - Added systemd support: unit files, socket activation.
-  - Building kernel modules is not supported.
-  - New config file lirc_options.conf with cli options default values.
-  - Automagically sets the lirc protocol for /dev/rc devices.
-  - Whitespace cleanup and git hook to enforce whitespace handling.
-  - Docs are built s part of normal build process.
-  - Bugfixes
-  - Autotools update and Darwin fixes.
-  - docs: Added new Configuration Guide.
-  - Licensing: Added some MIT-licensed files from CCAN, complete
-    license now is GPLv2 + MIT.
-
+## Last version: 0.9.2
 
 ## Build and install.
 
