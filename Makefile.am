@@ -58,7 +58,7 @@ install-data-hook:
 
 dist-hook:
 	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)
-	for f in contrib remotes lirc.org include; do \
+	for f in contrib remotes lirc.org include configs; do \
 		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog || :
 
