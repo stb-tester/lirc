@@ -31,3 +31,10 @@ prog= entries that point to irexec. If you have included more than one
 program in your .lircrc, then start all these programs, they react
 itself only to their according entries in .lircrc.
 
+irexec should run as a service. The contrib directory contains a .desktop
+file which could be dropped in ~/.local/autostart. Doing so creates a
+service which can be handled by regular desktop tools on all major
+desktops. If you need to run run restricted commands such as powering
+off the maching, you can use sudo to allow regular users to run specific
+commands. See the Configuration Guide in the html documentation.
+
