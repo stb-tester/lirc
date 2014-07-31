@@ -76,7 +76,7 @@ void options_load(int argc, char** argv,
 			 "%s/lirc/%s", SYSCONFDIR, path);
 		path = buff;
 	}
-	if (access(path, R_OK) != 0) {
+	if (access(path, R_OK) == 0) {
 		lirc_options = ciniparser_load(path);
 		if (lirc_options == NULL) {
 			logprintf(LOG_WARNING,
