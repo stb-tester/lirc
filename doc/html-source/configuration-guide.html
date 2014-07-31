@@ -349,31 +349,49 @@ remote |        |       devinput v        |
     </p>
     <ul>
       <li>
-      Choose a method to configure the kernel built-in handling,
-      implement it and verify that it works <a href="#appendix-1">
-      (Appendix 1)</a>. As a last step, fire-up your application
-      and make sure the remote does not affect it in any way.</li>
-      <li> Check using mode2(1), verify that you get pulses using
-           the --raw option. </li>
+      Check if you need to configure the kernel <a href="#appendix-1">
+      (Appendix 1)</a>.</li>
       <li>
-      Update the configuration file which is used by lircd to use
-      the driver and device (/etc/sysconfig/lirc or
-      /etc/lirc/hardware.conf on many systems) </li>
+      Using mode2(1), verify that you get pulses using the --raw option. </li>
+      <li>
+      Update /etc/lirc/lirc_options.conf to use  the driver and device </li>
     </ul>
     <p>
        lirc pass 1: Using lircd.conf, convert pulses to key symbols
-       like KEY_UP:
+       like KEY_UP:</p>
+    <p>
+       The lircd.conf is the file which lircd uses to read data from the
+       driver and then convert (or decode) it to key symbols.  It's the
+       single most important lirc configuration file. There are three
+       ways to install such a file:
+    <ul>
+       <li>
+       If you used one of the drivers from the driver table it might
+       need a specific lircd.conf. Such drivers are best installed using
+       the lirc-setup tool, but can be manually installed after checking
+       the hardware.yaml config file.</li>
+       <li>
+       You can use one of the already existing configuration files the
+       lirc website. </li>
+       <li>
+       You can create your own configuration using the irrecord program.</li>
+    </ul>
+    To install the lircd.conf first read the
+    <a href="configure.html#lircd.conf">lircd.conf </a> chapter. After that,
+    decide on one of the following ways.
     </p>
     <ul>
       <li>
-        Read the <a href="configure.html#lircd.conf">lircd.conf </a>
-        chapter. Either use a pre-existing lircd.conf
-        <a href="http://sourceforge.net/p/lirc/git/ci/master/tree/remotes/">
-        (remotes)</a> or roll your own using <a href="irrecord.html">
-        irrecord(1)</a>.</li>
+        If you have been using a userspace driver from the driver list, make
+        sure that it has the required config file (not all drivers requires a
+        specific file, though)</li>
       <li>
-        If using a predefined lircd.conf, ensure it uses proper key symbols
-        <a href="#appendix-5">(below)</a>. </li>
+        Otherwise, if your userspace driver can be used with any config file,
+        you can pick one from the
+        <a href="http://sourceforge.net/p/lirc/git/ci/master/tree/remotes/">
+        website</a>  Before you use the file you should make sure it
+        uses proper key symbols from the namespace <a href="#appendix-5">
+       (below)</a>.</li>
       <li>
         Install the lircd.conf and start lircd daemon using something like:
         <pre>
@@ -446,7 +464,7 @@ remote |        |       devinput v        |
      to the general input layer. If not, each button event will delivered
      twice to the application, both through /var/run/lirc and /dev/input.</p>
      <p>
-     <i> As of 0.9.1 this is configured automatically by lircd, and
+     <i> As of 0.9.1+ this is configured automatically by lircd, and
      neither the echo 'lirc' >/sys/class/rc/... nor the udev rule should
      normally be required. </i>
      </p>
@@ -459,15 +477,16 @@ remote |        |       devinput v        |
      plus various other symptoms.
      </p>
      <p>
-     The kernel driver configuration can be done using the interfaces under
-     /sys/class/rc or using a udev rule. Conflicting kernel drivers must
-     be blacklisted. Conflicts on serial ports can be handled by disabling
-     the kernel serial driver for that port.</p>
+     If required, the kernel driver configuration can be done using the
+     interfaces under /sys/class/rc or using a udev rule. Conflicting kernel
+     drivers must be blacklisted. Conflicts on serial ports can be handled by
+     disabling the kernel serial driver for that port.</p>
     <A NAME="kernel-driver-configuration"></A>
     <h4 align="center"> Kernel driver configuration.</h4>
     <p>
     The builtin ir driver subsystem is aware of LIRC, and is capable to send
-    all data through /dev/lirc0. To configure:
+    all data through /dev/lirc0. If lircd fails to configure this
+    automatically it can be done manually:
     <pre>
         # echo -- 'lirc' > /sys/class/rc/rc0/protocols
     </pre>
@@ -478,8 +497,8 @@ remote |        |       devinput v        |
     stopping LIRC. </>
     <A NAME="udev-rules"></A>
     <h4 align="center">Udev rules</h4>
-    <p>Instead of issuing commands, you can create a file
-      /etc/udev/rules.d/99-remote-control-lirc like:
+    <p>Likewise, if lircd fails to configure the kernel automatically
+    you can create a file /etc/udev/rules.d/99-remote-control-lirc like:
     <pre>
        SUBSYSTEM=="rc", ATTR{protocols}="lirc"
     </pre>
@@ -600,6 +619,11 @@ remote |        |       devinput v        |
     If it's listed, kernel should load it automatically on-demand. If it's
     not you have to build the staging drivers, also outside the scope of
     this document.  </p>
+    <p> The Supported Remotes column reflects what kind of lircd.conf files
+    which are supported. Common values are 'Any' meaning that any file
+    from the website could be used or 'bundled' meaning that the driver
+    requires a specific config file. In some cases any file can be used
+    if it conforms to some limitation. </p>
     <p>
     Unfortunately, the driver list does not provide information on the
     device which should be used for a particular driver. The only way

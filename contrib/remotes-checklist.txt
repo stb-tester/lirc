@@ -69,28 +69,29 @@ NOTES:
     Can be done like this:
 
 
-    # +---------------------------------+
-    # |                                 |
-    # |  VIDEO   AUDIO   MUTE   (POWER) |
-    # |                                 |
-    # |  LNB     RADIO   MONO/   EXT    |
-    # |                   ST            |
-    # | (  1  ) (  2  ) (  3  )  STATUS |
-    # |                                 |
-    # | (  4  ) (  5  ) (  6  )  STORE  |
-    # |                                 |
-    # | (  7  ) (  8  ) (  9  )  RECALL |
-    # |                                 |
-    # |         (  0  ) (+100 )  LIST   |
-    # |                                 |
-    # |  SLEEP   AFC     1_UP    10_UP  |
-    # |                                 |
-    # |  TIMER   HEAD    1_DN    10_DN  |
-    # |          PHONE                  |
-    # |                                 |
-    # +---------------------------------+
+    # +---------------------------------------+
+    # |                                       |
+    # |  VIDEO   AUDIO   MUTE   (POWER)       |
+    # |                                       |
+    # |  Lnb     RADIO   Mono/   Ext          |
+    # |                   st                  |
+    # | (  1  ) (  2  ) (  3  )  Status       |
+    # |                                       |
+    # | (  4  ) (  5  ) (  6  )  Store        |
+    # |                                       |
+    # | (  7  ) (  8  ) (  9  )  Recall       |
+    # |                                       |
+    # |         (  0  ) (+100 )  LIST         |
+    # |                                       |
+    # |  SLEEP   Afc  CHANNELUP  10CHANNELS   |
+    # !                          DOWN
+    # |                                       |
+    # |  Timer   Head   CHANNEL  10CHANNELSUP |
+    # |          phone  DOWN                  |
+    # |                                       |
+    # +---------------------------------------+
 
-    Or this:
+    Or like this:
 
     #    ---------------------------------
     #   / X                               \  POWER
