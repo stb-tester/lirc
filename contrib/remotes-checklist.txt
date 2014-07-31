@@ -43,11 +43,9 @@ SHOULD:
     - Is there any known kernel configuration e. g., blacklisted kernel
       modules or specific kernel drivers?
 
-    - URL with device information.
+    - URL with remote device information.
 
     - Photo of remote (scale to ~100 kb).
-
-    - Ascii art or a sketch of device showing key symbol for each button.
 
 
 
@@ -65,6 +63,59 @@ NOTES:
     generate-lircrc -sc scans file for "bad" symbols. generate-lircrc -uc can
     update many ad-hoc symbols using heuristics - results must be checked!
 
+    Remote sketch
+    -------------
+
+    Can be done like this:
+
+
+    # +---------------------------------+
+    # |                                 |
+    # |  VIDEO   AUDIO   MUTE   (POWER) |
+    # |                                 |
+    # |  LNB     RADIO   MONO/   EXT    |
+    # |                   ST            |
+    # | (  1  ) (  2  ) (  3  )  STATUS |
+    # |                                 |
+    # | (  4  ) (  5  ) (  6  )  STORE  |
+    # |                                 |
+    # | (  7  ) (  8  ) (  9  )  RECALL |
+    # |                                 |
+    # |         (  0  ) (+100 )  LIST   |
+    # |                                 |
+    # |  SLEEP   AFC     1_UP    10_UP  |
+    # |                                 |
+    # |  TIMER   HEAD    1_DN    10_DN  |
+    # |          PHONE                  |
+    # |                                 |
+    # +---------------------------------+
+
+    Or this:
+
+    #    ---------------------------------
+    #   / X                               \  POWER
+    #   |                                 |
+    #   | X                            X  |  BACK, MENU
+    #   |                                 |
+    #   |                X                |  UP
+    #   |                                 |
+    #   |         X      X     X          |  LEFT, OK, RIGHT
+    #   |                                 |
+    #   |                X                |  DOWN
+    #   |                                 |
+    #   | X                            X  |  SEARCH, Fullscreen
+    #   |                                 |
+    #   |        X   X   X   X   X        |  ORANGE, YELLOW, GREEN, BLUE, Purple
+    #   |                                 |
+    #   |                X                |  HOME
+    #   \                                 /
+    #    ---------------------------------
+
+
+    Examples made according to new standards:
+    -----------------------------------------
+
+        - http://lirc.sourceforge.net/remotes/samsung/AA59-00600A.conf
 
 
 
