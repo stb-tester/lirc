@@ -419,9 +419,16 @@ remote |        |       devinput v        |
   ---------------
 </pre>
     <p> By now you should know the driver and device used when running
-       lircd. Update the configuration files used to control the service
-       with these (e. g., /etc/sysconfig/lirc or /etc/lirc/hardware.conf).
-       </p>
+       lircd. Update the configuration file /etc/lirc/lirc_options.conf
+       with the driver and device you have determined. You should then
+       be able to start, stop and inspect the service status using:
+<pre>
+          # systemctl start lircd.socket
+          # systemctl stop lircd.socket
+          # systemctl status lircd.socket lircd.service
+          # journalctl -b 0  /usr/sbin/lircd
+</pre>
+    </p>
     <ul><li>
       Check that you can start/stop a working service, irw is your friend.
     </li></ul>

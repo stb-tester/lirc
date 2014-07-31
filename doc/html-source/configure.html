@@ -44,11 +44,9 @@
     <HR WIDTH="70%">
 
     <P>
-      A description of the <A
-        HREF="http://winlirc.sourceforge.net/technicaldetails.html">file
-        format</A> is available on the WinLIRC pages. In fact you don't
-      need to know anything about it except that it's maybe the most
-      important part of the package.
+      A description of the  format is available in the lircd.conf(5) manpage.
+      In fact you probably  don't need to know anything about it except that
+      it's maybe the most important part of the package.
     </P>
 
     <!-- multiple devices ++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -74,15 +72,7 @@
       installed. The further steps depend on which user-space driver
       is used in lircd for your devices. Most devices (actually all
       devices that use a kernel module) use the <em>default</em>
-      driver. You can check which user-space driver is used for your
-      device by running <em>lircd --driver=?</em>. Remember that this
-      might change each time you compile lircd for a different
-      device. If you want to use devices that use different user-space
-      drivers then you have to compile LIRC once again using
-      <em>./configure --with-driver=any</em>. This will compile almost
-      any user-space driver into lircd that is available (but does not
-      compile any kernel modules, that's why you had to build them
-      individually before). After that you should check if the drivers
+      driver.  You should check if the drivers
       you want are listed now with <em>lircd --driver=?</em>. You
       should get something like this:
     </P>
@@ -126,7 +116,7 @@ Supported drivers:
     </P>
 <pre>
 &gt; ls -l /dev/lirc*
-crw-r--r--    1 root     root      61,   0 Apr 25  2001 /dev/lirc
+crw-r--r--    1 root     root      61,   0 Apr 25  2001 /dev/lirc0
 crw-r--r--    1 root     root      61,   1 Nov  6 19:24 /dev/lirc1
 </pre>
     <P>
