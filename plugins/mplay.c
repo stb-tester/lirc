@@ -72,7 +72,7 @@
 #include "lirc/ir_remote.h"
 #include "lirc/serial.h"
 
-#include "hw_mplay.h"
+#include "mplay.h"
 
 /* The mplay code length in bit */
 #define MPLAY_CODE_LENGTH 8

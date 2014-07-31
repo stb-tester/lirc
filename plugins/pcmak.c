@@ -1,12 +1,12 @@
+
 /****************************************************************************
- ** hw_mp3anywhere.c ********************************************************
+ ** hw_pcmak.c ***********************************************************
  ****************************************************************************
  *
- * routines for X10 MP3 Anywhere receiver
+ * routines for Logitech receiver
  *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *	modified for X10 receiver by Shawn Nycz <dscordia@eden.rutgers.edu>
+ * 	modified for pcmak serial/USB-ftdi receiver P_awe_L <pablozrudnika@wp.pl>
  *
  */
 
@@ -15,7 +15,8 @@
 #endif
 
 #ifndef LIRC_IRTTY
-#define LIRC_IRTTY "/dev/ttyS0"
+/* could also be /dev/ttyS0 if it's a serial receiver */
+#define LIRC_IRTTY "/dev/ttyUSB0"
 #endif
 
 #include <stdio.h>
@@ -35,39 +36,39 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_mp3anywhere.h"
+#include "pcmak.h"
 
-#define NUMBYTES 16
 #define TIMEOUT 50000
 
 extern struct ir_remote *repeat_remote, *last_remote;
 
-static unsigned char b[NUMBYTES];
+static unsigned char b;
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
+static int repeat_counter, pressed_key;
 
-struct hardware hw_mp3anywhere = {
+struct hardware hw_pcmak = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
 	0,			/* send_mode */
 	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	8,			/* code_length */
-	mp3anywhere_init,	/* init_func */
-	mp3anywhere_deinit,	/* deinit_func */
+	16,			/* code_length */
+	pcmak_init,		/* init_func */
+	pcmak_deinit,		/* deinit_func */
 	NULL,			/* send_func */
-	mp3anywhere_rec,	/* rec_func */
-	mp3anywhere_decode,	/* decode_func */
+	pcmak_rec,		/* rec_func */
+	pcmak_decode,		/* decode_func */
 	NULL,			/* ioctl_func */
 	NULL,			/* readdata */
-	"mp3anywhere"
+	"pcmak"
 };
 
-int mp3anywhere_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int pcmak_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
-	if (!map_code(remote, prep, codep, postp, 24, pre, 8, code, 0, 0)) {
+	if (!map_code(remote, prep, codep, postp, 8, pre, 8, code, 0, 0)) {
 		return (0);
 	}
 
@@ -76,9 +77,9 @@ int mp3anywhere_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep
 	return (1);
 }
 
-int mp3anywhere_init(void)
+int pcmak_init(void)
 {
-	signal_length = hw.code_length * 1000000 / 9600;
+	signal_length = hw.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(hw.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
@@ -86,70 +87,79 @@ int mp3anywhere_init(void)
 	}
 	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LOG_ERR, "could not open %s", hw.device);
-		logperror(LOG_ERR, "mp3anywhere_init()");
+		logperror(LOG_ERR, "pcmak_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(hw.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
-		mp3anywhere_deinit();
+		pcmak_deinit();
 		return (0);
 	}
-	if (!tty_setbaud(hw.fd, 9600)) {
+	if (!tty_setbaud(hw.fd, 1200)) {
 		logprintf(LOG_ERR, "could not set baud rate");
-		mp3anywhere_deinit();
+		pcmak_deinit();
 		return (0);
 	}
 	return (1);
 }
 
-int mp3anywhere_deinit(void)
+int pcmak_deinit(void)
 {
 	close(hw.fd);
 	tty_delete_lock();
 	return (1);
 }
 
-char *mp3anywhere_rec(struct ir_remote *remotes)
+char *pcmak_rec(struct ir_remote *remotes)
 {
 	char *m;
 	int i = 0;
-	b[0] = 0x00;
-	b[1] = 0xd5;
-	b[2] = 0xaa;
-	b[3] = 0xee;
-	b[5] = 0xad;
 
 	last = end;
 	gettimeofday(&start, NULL);
-	while (b[i] != 0xAD) {
+
+	while (1) {
 		i++;
-		if (i >= NUMBYTES) {
-			LOGPRINTF(0, "buffer overflow at byte %d", i);
-			break;
-		}
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
 				LOGPRINTF(0, "timeout reading byte %d", i);
-				return (NULL);
+				return NULL;
 			}
 		}
-		if (read(hw.fd, &b[i], 1) != 1) {
+
+		if (read(hw.fd, &b, 1) != 1) {
 			logprintf(LOG_ERR, "reading of byte %d failed", i);
 			logperror(LOG_ERR, NULL);
-			return (NULL);
+			return NULL;
 		}
-		if (b[1] != 0xd5 || b[2] != 0xaa || b[3] != 0xee || b[5] != 0xad) {
-			logprintf(LOG_ERR, "bad envelope");
-			return (NULL);
+		LOGPRINTF(1, "byte %d: %02x", i, b);
+		if (b == 0xAA) {
+			repeat_counter = 0;
+		} else {
+			/* Range of allowed button codes */
+			if (	/* PCMAK codes */
+				   (b >= 0x01 && b <= 0x2B) ||
+				   /* codes with shift button */
+				   (b >= 0x41 && b <= 0x6B) ||
+				   /* MINIMAK/MINIMAK LASER codes */
+				   (b >= 0x2F && b <= 0x31) ||
+				   /* MINIMAK codes with shift */
+				   b == 0x5F || b == 0x79 || b == 0x75) {
+				if (repeat_counter < 1) {
+					repeat_counter++;
+					pressed_key = b;
+				} else {
+					if (pressed_key == b) {
+						gettimeofday(&end, NULL);
+						pre = 0xAA;
+						code = (ir_code) b;
+						m = decode_all(remotes);
+						return m;
+					}
+				}
+			}
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
 	}
-	gettimeofday(&end, NULL);
-
-	pre = 0xD5AAEE;
-	code = (ir_code) b[4];
-
-	m = decode_all(remotes);
-	return (m);
+	return NULL;
 }

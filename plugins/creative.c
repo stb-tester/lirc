@@ -34,7 +34,7 @@
 #include "lirc/ir_remote.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_creative.h"
+#include "creative.h"
 
 #define NUMBYTES 6
 #define TIMEOUT 20000

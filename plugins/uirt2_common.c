@@ -44,7 +44,7 @@
 #include "lirc/receive.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_uirt2_common.h"
+#include "uirt2_common.h"
 
 #define PRINT_TIME(a) \
 LOGPRINTF(1, "time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)

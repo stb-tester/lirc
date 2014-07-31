@@ -49,7 +49,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_irlink.h"
+#include "irlink.h"
 
 struct hardware hw_irlink = {
 	LIRC_IRTTY,		/* Default device */

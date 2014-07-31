@@ -46,7 +46,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_ea65.h"
+#include "ea65.h"
 
 #define TIMEOUT     60000
 #define CODE_LENGTH 24

@@ -22,14 +22,14 @@
 #include "include/media/lirc.h"
 #include "lirc/hardware.h"
 #include "lirc/ir_remote.h"
-#include "hw_livedrive_common.h"
+#include "livedrive_common.h"
 
-char *livedrive_rec_seq(struct ir_remote *remotes)
+char *livedrive_rec_midi(struct ir_remote *remotes)
 {
 	int i;
-	struct sequencer_packet seq;
 	struct midi_packet midi;
 	unsigned char *bytep = (unsigned char *)&midi;
+	unsigned char buf;
 	ir_code bit[4];
 
 	last = end;
@@ -38,15 +38,15 @@ char *livedrive_rec_seq(struct ir_remote *remotes)
 	/* poll for system exclusive status byte so we don't try to
 	   record other midi events */
 	do {
-		read(hw.fd, &seq, sizeof(seq));
+		read(hw.fd, &buf, sizeof(buf));
 	}
-	while (seq.data != SYSEX);
+	while (buf != SYSEX);
 
 	for (i = 0; i < sizeof(midi); i++) {
-		read(hw.fd, &seq, sizeof(seq));
+		read(hw.fd, &buf, sizeof(buf));
 		if (midi.dev == NONREMOTE && i == 4)	/* skip 2 missing filler bytes for audigy2 non-infrared messages */
 			i += 2;
-		*(bytep + i) = seq.data;
+		*(bytep + i) = buf;
 	}
 	gettimeofday(&end, NULL);
 
@@ -66,8 +66,8 @@ char *livedrive_rec_seq(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-struct hardware hw_livedrive_seq = {
-	"/dev/sequencer",	/* simple device */
+struct hardware hw_livedrive_midi = {
+	"/dev/midi",		/* simple device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
 	0,			/* send_mode */
@@ -76,9 +76,9 @@ struct hardware hw_livedrive_seq = {
 	livedrive_init,		/* init_func */
 	livedrive_deinit,	/* deinit_func */
 	NULL,			/* send_func */
-	livedrive_rec_seq,	/* rec_func */
+	livedrive_rec_midi,	/* rec_func */
 	livedrive_decode,	/* decode_func */
 	NULL,			/* ioctl_func */
 	NULL,
-	"livedrive_seq"
+	"livedrive_midi"
 };

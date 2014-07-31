@@ -36,7 +36,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_silitek.h"
+#include "silitek.h"
 
 #define NUMBYTES 3
 #define TIMEOUT 20000

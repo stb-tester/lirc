@@ -38,7 +38,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_livedrive_common.h"
+#include "livedrive_common.h"
 
 struct timeval start, end, last;
 ir_code pre, code;

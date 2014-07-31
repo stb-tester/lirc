@@ -48,7 +48,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
 
-#include "hw_srm7500libusb.h"
+#include "srm7500libusb.h"
 
 #define CODE_BYTES 3
 #define USB_TIMEOUT (1000*10)

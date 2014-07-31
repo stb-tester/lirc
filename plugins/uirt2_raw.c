@@ -49,7 +49,7 @@
 #include "lirc/receive.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_uirt2_common.h"
+#include "uirt2_common.h"
 
 #define NUMBYTES 6
 

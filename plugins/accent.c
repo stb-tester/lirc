@@ -103,7 +103,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
 
-#include "hw_accent.h"
+#include "accent.h"
 
 // Max number of bytes received in a sequence.
 #define ACCENT_MAX_READ_BYTES 16

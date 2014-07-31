@@ -42,7 +42,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_creative_infracd.h"
+#include "creative_infracd.h"
 
 struct hardware hw_creative_infracd = {
 	0,			/* determine device by probing */

@@ -28,11 +28,10 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#include "lirc_driver.h"
 #include <irman.h>
 
-#include "lirc_driver.h"
-
-#include "irman.h"
+#include "irman_drv.h"
 
 extern struct ir_remote *repeat_remote, *last_remote;
 

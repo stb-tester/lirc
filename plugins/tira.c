@@ -58,7 +58,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_tira.h"
+#include "tira.h"
 
 const char failwrite[] = "failed writing to device";
 const char strreconly[] = "receive";

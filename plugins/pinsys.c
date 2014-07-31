@@ -36,7 +36,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_pinsys.h"
+#include "pinsys.h"
 #include <termios.h>
 
 extern struct ir_remote *repeat_remote, *last_remote;

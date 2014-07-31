@@ -35,7 +35,7 @@
 #include "lirc/transmit.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_default.h"
+#include "default.h"
 
 static int zerofd;		/* /dev/zero */
 static int sockfd;		/* the socket */

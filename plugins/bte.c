@@ -56,7 +56,7 @@
 #include "lirc/ir_remote.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_bte.h"
+#include "bte.h"
 
 struct timeval start, end, last;
 lirc_t gap, signal_length;

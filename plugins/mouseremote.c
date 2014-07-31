@@ -41,7 +41,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_mouseremote.h"
+#include "mouseremote.h"
 
 #define TIMEOUT 50000
 

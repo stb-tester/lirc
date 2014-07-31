@@ -42,7 +42,7 @@
 #include "lirc/ir_remote.h"
 #include "lirc/receive.h"
 
-#include "hw_slinke.h"
+#include "slinke.h"
 
 void *slinke_malloc(size_t size)
 {

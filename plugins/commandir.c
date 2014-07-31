@@ -29,7 +29,7 @@
 #include "lirc/transmit.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_commandir.h"
+#include "commandir.h"
 
 struct hardware hw_commandir = {
 	0,			/* default device */

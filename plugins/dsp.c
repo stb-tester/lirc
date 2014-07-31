@@ -43,7 +43,7 @@
 #include "lirc/transmit.h"
 #include "lirc/lirc_log.h"
 
-#include "hw_default.h"
+#include "default.h"
 
 extern struct ir_remote *repeat_remote;
 

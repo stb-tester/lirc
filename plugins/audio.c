@@ -42,7 +42,7 @@
 #include "lirc/receive.h"
 #include "lirc/transmit.h"
 #include "lirc/lirc_log.h"
-#include "hw_default.h"
+#include "default.h"
 
 static int ptyfd;		/* the pty */
 

@@ -57,7 +57,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_usbx.h"
+#include "usbx.h"
 
 static unsigned char b[6];
 static ir_code code;

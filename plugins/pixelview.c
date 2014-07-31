@@ -1,12 +1,11 @@
 
 /****************************************************************************
- ** hw_logitech.c ***********************************************************
+ ** hw_pixelview.c **********************************************************
  ****************************************************************************
  *
- * routines for Logitech receiver
+ * routines for PixelView Play TV receiver
  *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
  *
  */
 
@@ -35,39 +34,43 @@
 #include "lirc/lirc_log.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_logitech.h"
-
-#define NUMBYTES 16
-#define TIMEOUT 50000
+#include "pixelview.h"
 
 extern struct ir_remote *repeat_remote, *last_remote;
 
-static unsigned char b[NUMBYTES];
+static unsigned char b[3];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 
-struct hardware hw_logitech = {
+struct hardware hw_pixelview = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
 	0,			/* send_mode */
 	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	16,			/* code_length */
-	logitech_init,		/* init_func */
-	logitech_deinit,	/* deinit_func */
+	30,			/* code_length */
+	pixelview_init,		/* init_func */
+	pixelview_deinit,	/* deinit_func */
 	NULL,			/* send_func */
-	logitech_rec,		/* rec_func */
-	logitech_decode,	/* decode_func */
+	pixelview_rec,		/* rec_func */
+	pixelview_decode,	/* decode_func */
 	NULL,			/* ioctl_func */
 	NULL,			/* readdata */
-	"logitech"
+	"pixelview"
 };
 
-int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int pixelview_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		     lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
-	if (!map_code(remote, prep, codep, postp, 8, pre, 8, code, 0, 0)) {
+#if 0
+	if (remote->pone != 0 || remote->sone != 833)
+		return (0);
+	if (remote->pzero != 833 || remote->szero != 0)
+		return (0);
+#endif
+
+	if (!map_code(remote, prep, codep, postp, 10, pre, 20, code, 0, 0)) {
 		return (0);
 	}
 
@@ -76,7 +79,7 @@ int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, i
 	return (1);
 }
 
-int logitech_init(void)
+int pixelview_init(void)
 {
 	signal_length = hw.code_length * 1000000 / 1200;
 
@@ -86,48 +89,41 @@ int logitech_init(void)
 	}
 	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LOG_ERR, "could not open %s", hw.device);
-		logperror(LOG_ERR, "logitech_init()");
+		logperror(LOG_ERR, "pixelview_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(hw.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
-		logitech_deinit();
+		pixelview_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(hw.fd, 1200)) {
 		logprintf(LOG_ERR, "could not set baud rate");
-		logitech_deinit();
+		pixelview_deinit();
 		return (0);
 	}
 	return (1);
 }
 
-int logitech_deinit(void)
+int pixelview_deinit(void)
 {
 	close(hw.fd);
 	tty_delete_lock();
 	return (1);
 }
 
-char *logitech_rec(struct ir_remote *remotes)
+char *pixelview_rec(struct ir_remote *remotes)
 {
 	char *m;
-	int i = 0;
-	int repeat, mouse_event;
-	b[i] = 0x00;
+	int i;
 
 	last = end;
 	gettimeofday(&start, NULL);
-	while (b[i] != 0xAA) {
-		i++;
-		if (i >= NUMBYTES) {
-			LOGPRINTF(0, "buffer overflow at byte %d", i);
-			break;
-		}
+	for (i = 0; i < 3; i++) {
 		if (i > 0) {
-			if (!waitfordata(TIMEOUT)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+			if (!waitfordata(50000)) {
+				logprintf(LOG_ERR, "timeout reading byte %d", i);
 				return (NULL);
 			}
 		}
@@ -137,25 +133,13 @@ char *logitech_rec(struct ir_remote *remotes)
 			return (NULL);
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
-		if (b[i] >= 0x40 && b[i] <= 0x6F) {
-			mouse_event = b[i];
-			b[1] = 0xA0;
-			b[2] = mouse_event;
-			LOGPRINTF(1, "mouse event: %02x", mouse_event);
-			break;
-		}
 	}
 	gettimeofday(&end, NULL);
 
-	if (b[1] == 0xA0)
-		repeat = 0;
-	else
-		repeat = 1;
-	if (!repeat)
-		pre = (ir_code) b[1];
-	else
-		pre = 0xA0;
-	code = (ir_code) b[2];
+	pre = (reverse((ir_code) b[0], 8) << 1) | 1;
+	code = (reverse((ir_code) b[1], 8) << 1) | 1;
+	code = code << 10;
+	code |= (reverse((ir_code) b[2], 8) << 1) | 1;
 
 	m = decode_all(remotes);
 	return (m);

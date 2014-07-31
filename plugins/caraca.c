@@ -30,7 +30,7 @@
 #include "lirc/serial.h"
 #include "lirc/ir_remote.h"
 
-#include "hw_caraca.h"
+#include "caraca.h"
 
 #define NUMBYTES 34
 #define TIMEOUT 20000
