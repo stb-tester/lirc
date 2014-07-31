@@ -42,7 +42,7 @@ $(nodist_html_DATA) : $(html_sources) $(nodist_man_MANS)
 	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
 	    builddir="$(builddir)" top_builddir="$(top_builddir)" \
 	    $(srcdir)/release-html.sh
-	cp $(srcdir)/html-source/lirc.css html
+	test -f "html/lirc.css" || cp $(srcdir)/html-source/lirc.css html
 
 lirc.hwdb: html/table.html
 html/table.html:
