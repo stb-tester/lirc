@@ -55,7 +55,7 @@ dist_m4_DATA                = m4/ac-path-kernel-source.m4
 
 dist-hook:
 	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)
-	for f in contrib remotes include; do \
+	for f in contrib remotes lirc.org include; do \
 		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog || :
 

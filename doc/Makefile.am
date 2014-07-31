@@ -67,6 +67,7 @@ dist_image_DATA         =  images/atwf83.jpg \
                            images/marb18.jpg
 
 man_sources             =  man-source/daemons.inc \
+                           man-source/driver-load.inc \
                            man-source/irexec.inc \
                            man-source/irw.inc \
                            man-source/lircrcd.inc \
