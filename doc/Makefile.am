@@ -41,7 +41,7 @@ $(manpage_html): $(nodist_man_MANS)
 	    dest=man-html/$$(basename $$f); \
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
-	    man2html $$f |  \
+	    man2html -M ../html/index.html $$f |  \
 	        sed  -e '1,/<BODY>/d' \
                     -e '/<\/BODY>/,$$d' \
                     -e '/HREF="#index"/d' \
@@ -68,7 +68,6 @@ $(nodist_man_MANS): $(man_sources)
 	cd man; cp mode2.1 smode2.1; cp mode2.1 xmode2.1
 
 
-
 imagedir                = $(docdir)/images
 dist_image_DATA         =  images/atwf83.jpg \
                            images/audio_transmitter.png \
@@ -78,17 +77,17 @@ dist_image_DATA         =  images/atwf83.jpg \
                            images/marb18.jpg
 
 man_sources             =  $(srcdir)/man-source/ircat.1 \
-			   $(srcdir)/man-source/irexec.1 \
-			   $(srcdir)/man-source/irpty.1 \
-			   $(srcdir)/man-source/irrecord.1 \
-			   $(srcdir)/man-source/irsend.1 \
-			   $(srcdir)/man-source/irw.1 \
-			   $(srcdir)/man-source/irxevent.1 \
-			   $(srcdir)/man-source/lircd.8 \
-			   $(srcdir)/man-source/lircd.conf.5 \
-			   $(srcdir)/man-source/lircmd.8 \
-			   $(srcdir)/man-source/lircrcd.1 \
-			   $(srcdir)/man-source/mode2.1
+                           $(srcdir)/man-source/irexec.1 \
+                           $(srcdir)/man-source/irpty.1 \
+                           $(srcdir)/man-source/irrecord.1 \
+                           $(srcdir)/man-source/irsend.1 \
+                           $(srcdir)/man-source/irw.1 \
+                           $(srcdir)/man-source/irxevent.1 \
+                           $(srcdir)/man-source/lircd.8 \
+                           $(srcdir)/man-source/lircd.conf.5 \
+                           $(srcdir)/man-source/lircmd.8 \
+                           $(srcdir)/man-source/lircrcd.1 \
+                           $(srcdir)/man-source/mode2.1
 
 html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/atwf83.html \
@@ -110,17 +109,17 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
 html_includes           =  $(srcdir)/html-source/foot.html \
                            $(srcdir)/html-source/head.html
 
-nodist_man_MANS         += man/irexec.1 \
-                           man/ircat.1 \
+nodist_man_MANS         += man/ircat.1 \
+                           man/irexec.1 \
                            man/irpty.1 \
                            man/irrecord.1 \
+                           man/irsend.1 \
                            man/irw.1 \
                            man/lircd.8 \
+                           man/lircd.conf.5 \
                            man/lircmd.8 \
                            man/lircrcd.1 \
-                           man/mode2.1 \
-                           man/irsend.1 \
-                           man/lircd.conf.5
+                           man/mode2.1
 
 manpage_html            =  man-html/ircat.html \
                            man-html/irexec.html \
