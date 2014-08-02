@@ -1,7 +1,10 @@
-[NAME]
+.TH IRXEVENT "1" "Last change: August 2014" "irxevent @version@" "User Commands"
+.SH NAME
 irxevent - infrared X-event sender
-
-[DESCRIPTION]
+.SH SYNOPSIS
+.B irxevent
+[\fIoption\fR]... [\fIconfig file\fR]
+.SH DESCRIPTION
 Irxevent is a program that I wrote to send button clicks and key presses to X
 applications triggered by a LIRC driven remote control. You can control your
 favorite CD/MP3 player or your TV tuner program or any other X application
@@ -9,8 +12,17 @@ that responds to keyboard or mouse input. If you like to you can send emacs
 ^X^S from your armchair.
 
 Irxevent is a complement to irexec and irpty.
-
-[FILES]
+.SH OPTIONS
+.TP
+\fB\-d\fR \fB\-\-daemon\fR
+fork and run in background
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display usage summary
+.TP
+\fB\-V\fR \fB\-\-version\fR
+display version
+.SH FILES
 Irxevent works with the same config file as irexec and irpty (~/.lircrc). For
 a complete sample .lircrc look at examples/lircrc.
 
@@ -150,8 +162,7 @@ input focus. This of course does not make much sense when combined with
 CurrentWindow.
 .RE
 .RE
-
-[TROUBLESHOOTING]
+.SH TROUBLESHOOTING
 
 If you have problems finding the coordinates for a button click you can try
 xev \-id <window_id>. The window_id can be found using xwininfo. If xev and
@@ -202,6 +213,10 @@ Placing this line into your .xemacs\-options file should have the same result.
 .RE
 
 If you have problems sending events please drop me an email.
-
-[AUTHOR]
+.SH AUTHOR
 Written by Heinrich Langos <heinrich@mad.scientist.com>.
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

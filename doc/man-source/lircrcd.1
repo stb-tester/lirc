@@ -1,7 +1,10 @@
-[NAME]
+.TH LIRCRCD "1" "Last change: August 2014" "lircrcd @version@" "User Commands"
+.SH NAME
 lircrcd - daemon to handle consistent .lircrc state among client applications
-
-[DESCRIPTION]
+.SH SYNOPSIS
+.B lircrcd
+[\fIoptions\fR] \fIconfig-file\fR
+.SH DESCRIPTION
 
 .B lircrcd
 reads the given .lircrc config file and synchronises the mode
@@ -13,10 +16,15 @@ enabled in the config file by adding the following line at the
 beginning of the file:
 .br
 #! lircrcd
-
-[OPTIONS]
+.SH OPTIONS
 .TP
-.BI \-p,\ \-\-premission= mode
+\fB\-h\fR \fB\-\-help\fR
+display help message
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version
+.TP
+.BI \-p,\ \-\-permission= mode
 The \-\-permission option gives the file permission of the Unix domain
 socket lircrcd creates on startup in octal representation. Read the
 documentation for chmod for further details. If no \-\-permission option
@@ -28,3 +36,19 @@ representation).
 With the \-\-output option you can select the Unix domain socket, which
 lircrcd will create. The default is to append a "d" character to the
 config filename given.
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. The directory used for this is determined by (falling
+priority):
+.IP \- 2
+The --plugindir option if available.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

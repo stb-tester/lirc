@@ -20,8 +20,7 @@ Steps for a new release (pre or final)
 2) Update NEWS and doc/html-source/install.html (the Updating stuff).
 
 3) Update version number in:
-        index.html, README, NEWS, setup.sh, configure.ac
-   Possibly update doc/html-source/foot.html (new date).
+        README, NEWS, configure.ac
    Update the news entry in README.
 
 4) Commit, tag and push branch:

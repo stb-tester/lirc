@@ -1,7 +1,10 @@
-[NAME]
+.TH IRSEND "1" "Last change: August 2014" "irsend @version@" "User Commands"
+.SH NAME
 irsend - basic LIRC program to send infra-red commands
-
-[DESCRIPTION]
+.SH SYNOPSIS
+.B irsend
+[\fIoptions\fR] \fIDIRECTIVE REMOTE CODE \fR[\fICODE\fR...]
+.SH DESCRIPTION
 Asks the \fBlircd\fR daemon to send one or more CIR
 (Consumer Infra-Red) commands. This is intended for remote control
 of electronic devices such as TV boxes, HiFi sets, etc.
@@ -44,21 +47,23 @@ can be empty:
 .PP
 The \fBSIMULATE\fR command only works if it has been explicitly
 enabled in lircd.
-
-[EXAMPLES]
-.nf
-.RS 3
-irsend LIST DenonTuner ""
-irsend SEND_ONCE  DenonTuner PROG\-SCAN
-irsend SEND_ONCE  OnkyoAmpli VOL\-UP VOL\-UP VOL\-UP VOL\-UP
-irsend SEND_START OnkyoAmpli VOL\-DOWN ; sleep 3
-irsend SEND_STOP  OnkyoAmpli VOL\-DOWN
-irsend SET_TRANSMITTERS 1
-irsend SET_TRANSMITTERS 1 3 4
-irsend SIMULATE "0000000000000476 00 OK TECHNISAT_ST3004S"
-.RE
-.fi
-[FILES]
+.SH OPTIONS
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display usage summary
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version
+.TP
+\fB\-d\fR \fB\-\-device\fR
+use given lircd socket [/var/run/lirc/lircd]
+.TP
+\fB\-a\fR \fB\-\-address\fR=\fIhost[\fR:port]
+connect to lircd at this address
+.TP
+\-# \fB\-\-count\fR=\fIn\fR
+send command n times
+.SH FILES
 .TP
 .I /etc/lirc/lircd.conf
 Default \fBlircd\fR configuration file.  It should contain all the
@@ -72,7 +77,35 @@ permissions) \fBirsend\fR aborts with the following diagnostics:
 "irsend: could not connect to socket"
 "irsend: Connection refused" (or "Permission denied").
 .fi
+.SH EXAMPLES
+.nf
+.RS 3
+irsend LIST DenonTuner ""
+irsend SEND_ONCE  DenonTuner PROG\-SCAN
+irsend SEND_ONCE  OnkyoAmpli VOL\-UP VOL\-UP VOL\-UP VOL\-UP
+irsend SEND_START OnkyoAmpli VOL\-DOWN ; sleep 3
+irsend SEND_STOP  OnkyoAmpli VOL\-DOWN
+irsend SET_TRANSMITTERS 1
+irsend SET_TRANSMITTERS 1 3 4
+irsend SIMULATE "0000000000000476 00 OK TECHNISAT_ST3004S"
+.RE
+.fi
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. The directory used for this is determined by (falling
+priority):
+.IP \- 2
+The --plugindir option if available.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.
 
-[SEE ALSO]
 .BR lircd "(8), " mode2 "(1), " smode2 "(1), " xmode2 "(1), "
 .BR irrecord "(1), " irw "(1), " http://www.lirc.org .

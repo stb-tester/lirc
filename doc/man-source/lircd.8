@@ -1,8 +1,11 @@
-[NAME]
+.TH LIRCD "8" "Last change: August 2014" "lircd @version@" "System Administration Utilities"
+.SH NAME
 lircd - LIRC daemon decodes infrared signals and provides them on a Unix
 domain socket.
-
-[DESCRIPTION]
+.SH SYNOPSIS
+.B lircd
+[\fIoptions\fR] [\fIconfig file\fR]
+.SH DESCRIPTION
 The main task of lircd is to decode the infrared signals and provide
 an uniform interface for client applications. Clients can connect to
 lircd through a Unix domain socket which is located in
@@ -10,8 +13,9 @@ lircd through a Unix domain socket which is located in
 codes received by lircd and they can send commands to lircd.
 
 The config file is described under FILES below.
+.PP
 
-[OPTIONS]
+.SH OPTIONS
 Common options:
 .TP 4
 .B -O, --options-file
@@ -31,8 +35,8 @@ always usable).
 .TP
 .B -H, --driver
 The driver to use.  Using
-.I --driver help lists
-all available drivers, see DRIVER LOAD PATH beelow.
+.I --driver help
+lists all available drivers, see DRIVER LOAD PATH beelow.
 .TP
 .B -h, --help
 Displays short thelp message.
@@ -106,8 +110,7 @@ key events to the Linux kernel. The key code depends on the name that
 was given a button in the lircd config file, e.g. if the button is
 named KEY_1, the '1' key code will be generated. You will find a
 complete list of possible button names in /usr/include/linux/input.h.
-
-[FILES]
+.SH FILES
 
 The config file for lircd is located in /etc/lirc/lircd.conf. lircd
 has its own log file in /var/log/lircd (beginning with LIRC version
@@ -122,4 +125,29 @@ the values under the [lircd] section in this file. The location can
 be changed using the -O/--options-file command-line option or using the
 environment variable LIRC_OPTIONS_PATH. The values here are used as
 defaults for any option not present on command line.
+.SH DAEMONS
+lircd and lircmd are daemons. You should start them in some init script
+depending on your system. Besides the preferred systemd setup which is
+installed by default there are also example scripts for other distros
+and init systems in the contrib directory. lircmd has to be started after
+lircd as it connects to the socket lircd provides.
 
+If you start lircd or lircmd from your shell prompt you will usually get
+back immediately to the prompt. This is not an error, daemons always run
+ in background.
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. The directory used for this is determined by (falling
+priority):
+.IP \- 2
+The --plugindir option if available.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.
