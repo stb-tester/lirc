@@ -22,7 +22,7 @@ More complete build and install instructions are available in the
 manual, the Installation chapter. The fast track:
 
     $ ./autogen.sh
-    $ ./configure --with-syslog --with-driver=userspace
+    $ ./configure --with-syslog
     $ make
     $ sudo make install
 
