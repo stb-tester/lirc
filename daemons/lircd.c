@@ -2134,7 +2134,7 @@ static void lircd_add_defaults(void)
 		"lircd:logfile", 	LOGFILE,
 		"lircd:debug", 		"False",
 		"lircd:release", 	NULL,
-		"lircd:allow_simulate", "False",
+		"lircd:allow-simulate", "False",
 		"lircd:plugindir", 	PLUGINDIR,
 		"lircd:uinput", 	"False",
 		"lircd:repeat-max", 	 DEFAULT_REPEAT_MAX,
@@ -2308,7 +2308,7 @@ int main(int argc, char **argv)
 #       endif
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
-	allow_simulate = options_getboolean("lircd:allow_simulate");
+	allow_simulate = options_getboolean("lircd:allow-simulate");
 #       if defined(__linux__)
 	useuinput = options_getboolean("lircd:uinput");
 #       endif
