@@ -9,6 +9,10 @@ OTHERS=( $( git diff --cached --name-status | \
               grep -v ^D | awk '$1 $2 { print $2}' | \
               grep -Ev  '.c$|.h$|.png$|.gif$|.jpg$|Makefile'))
 
+MAN_SOURCES=( $( git diff --cached --name-status | \
+              grep -v ^D | awk '$1 $2 { print $2}' | \
+              grep -E  '.1$|.5$|.8$'))
+
 for f in ${C_SOURCES[@]} ; do
        test -L $f && continue
        unexpand $f | sed -r 's/[ \t]+$//' > $f.tmp && mv -f $f.tmp $f
@@ -19,3 +23,7 @@ for f in ${OTHERS[@]} ; do
            cat $f.tmp > $f && rm $f.tmp
 done
 
+if test -n "$MAN_SOURCES"; then
+    now=$( date +"%b %Y" )
+    sed -i '/Last change:/s/:.*20../'": $now/" $MAN_SOURCES
+fi
