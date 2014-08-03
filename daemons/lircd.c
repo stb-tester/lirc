@@ -2251,10 +2251,15 @@ int main(int argc, char **argv)
 	char* opt;
 	int debug = 0;
 
-	lirc_log_open("lircd", 0, LOG_INFO);
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, lircd_parse_options);
+#       ifndef USE_SYSLOG
+        opt = options_getstring("lircd:logfile");
+        if (opt != NULL)
+                lirc_set_logfile(opt);
+#       endif
+        lirc_log_open("lircd", 0, LOG_INFO);
 
 	nodaemon = options_getboolean("lircd:nodaemon");
 	opt = options_getstring("lircd:permission");
@@ -2277,11 +2282,6 @@ int main(int argc, char **argv)
 	if (opt != NULL)
 		device = opt;
 	pidfile = options_getstring("lircd:pidfile");
-#       ifndef USE_SYSLOG
-		opt = options_getstring("lircd:logfile");
-		if (opt != NULL)
-			lirc_set_logfile(opt);
-#       endif
 	lircdfile = options_getstring("lircd:output");
 	if (options_getstring("lircd:listen") != NULL){
 		listen_tcpip = 1;
