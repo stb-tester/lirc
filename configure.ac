@@ -131,14 +131,6 @@ AC_MSG_RESULT()
 
 # this list must only contain userspace drivers without external
 # (header/library) dependencies!
-possible_drivers=$(for f in $( ls plugins/*.c); do
-                      f=$(basename $f);
-                      f=${f#hw_}; f=${f%.c}; echo -n "($f) ";
-                   done)
-possible_drivers="(lirc_dev lirc_wpc8769l) $possible_drivers"
-possible_drivers="(none) (userspace) (all) $possible_drivers"
-all_drivers="$possible_drivers"
-
 
 AH_TEMPLATE([DAEMONIZE],
         [Define to run daemons as daemons])
@@ -241,7 +233,6 @@ AH_TEMPLATE([USE_SYSLOG],
 
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
-  possible_drivers="${possible_drivers/(caraca)/}"
   ],[
   AM_CONDITIONAL([BUILD_CARACA],[false])]
 )
@@ -249,35 +240,26 @@ AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
   usb_libs=`${LIBUSB_CONFIG} --libs`
-  possible_drivers="${possible_drivers/(atilibusb)/}"
-  possible_drivers="${possible_drivers/(awlibusb)/}"
-  possible_drivers="${possible_drivers/(dfclibusb)/}"
-  possible_drivers="${possible_drivers/(commandir)/}"
-  possible_drivers="${possible_drivers/(srm7500libusb)/}"
   ],[
   AM_CONDITIONAL([BUILD_USB],[false])]
 )
 AC_CHECK_HEADER(ftdi.h,[
   AM_CONDITIONAL([BUILD_FTDI],[true])
-  possible_drivers="${possible_drivers} (ftdi)"
   ],[
   AM_CONDITIONAL([BUILD_FTDI],[false])]
 )
 AC_CHECK_HEADER(iguanaIR.h,[
   AM_CONDITIONAL([BUILD_IGUANAIR],[true])
-  possible_drivers="${possible_drivers/(iguanaIR)/}"
   ],[
   AM_CONDITIONAL([BUILD_IGUANAIR],[false])]
 )
 AC_CHECK_LIB(irman, ir_strerror,[
   AM_CONDITIONAL([BUILD_LIBIRMAN],[true])
-  possible_drivers="${possible_drivers/(irman)/}"
   ],[
   AM_CONDITIONAL([BUILD_LIBIRMAN],[false])]
 )
 AC_CHECK_LIB(irman_sw, ir_strerror,[
   AM_CONDITIONAL([BUILD_LIBIRMAN_SW],[true])
-  possible_drivers="${possible_drivers/(irman_sw)/}"
   ],[
   AM_CONDITIONAL([BUILD_LIBIRMAN_SW],[false])]
 )
@@ -286,11 +268,12 @@ AC_CHECK_HEADERS(portaudio.h,[
   AC_CHECK_LIB(portaudio, Pa_Initialize,[
     AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[true])
     ],[
-    possible_drivers="${possible_drivers/(audio)/}"
     AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])
     ],[
     ${portaudio_lib_other}]
-  )]
+  )
+  ],[
+  AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])]
 )
 dnl audio_alsa driver requires ALSA library installed and some linker flags
 have_alsa=no
@@ -299,10 +282,11 @@ AC_CHECK_HEADERS(alsa/asoundlib.h,[
     AM_CONDITIONAL([BUILD_LIBALSA],[true])
     AC_DEFINE(HAVE_LIBALSA)
     have_alsa=yes
-    possible_drivers="${possible_drivers/(audio_alsa)/}"
     ],[
     AM_CONDITIONAL([BUILD_LIBALSA],[false])],
-  )]
+    )
+    ],[
+    AM_CONDITIONAL([BUILD_LIBALSA],[false])]
 )
 dnl alsa_usb driver requires an ALSA that knows about our hwdep device
 if test "$have_alsa" = "yes"; then
@@ -315,7 +299,6 @@ if test "$have_alsa" = "yes"; then
     AC_MSG_RESULT(yes)
     AC_DEFINE(HAVE_ALSA_SB_RC)
     AM_CONDITIONAL([BUILD_ALSA_SB_RC],[true])
-    possible_drivers="${possible_drivers/(alsa_usb)/}"
     ],[
     AC_MSG_RESULT(no)
     AM_CONDITIONAL([BUILD_ALSA_SB_RC],[false])
@@ -324,13 +307,11 @@ fi
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[
   AC_DEFINE(HAVE_SCSI)
-  possible_drivers="${possible_drivers} (creative_infracd)"
   ]
 )
 dnl dev_input driver requires linux input device api
 AC_CHECK_HEADERS(linux/input.h,[
   AC_DEFINE(HAVE_LINUX_DEVINPUT)
-  possible_drivers="${possible_drivers} (devinput)"
   ]
 )
 dnl check if hiddev is available
@@ -346,17 +327,12 @@ AC_CHECK_HEADERS([linux/hiddev.h],[
     AC_MSG_RESULT(yes)
     AC_DEFINE(HAVE_LINUX_HIDDEV_FLAG_UREF)
     AM_CONDITIONAL([BUILD_HIDDEV],[true])
-    possible_drivers="${possible_drivers/(samsung)/}"
-    possible_drivers="${possible_drivers}/(sb0540)/}"
-    possible_drivers="${possible_drivers/(asusdh)/}"
-    possible_drivers="${possible_drivers/(bw6130)/}"
-    possible_drivers="${possible_drivers/(dvico)/}"
-    possible_drivers="${possible_drivers/(macmini)/}"
     ],[
     AC_MSG_RESULT(no)
     AM_CONDITIONAL([BUILD_HIDDEV],[false])
     ])
   ],[
+  AM_CONDITIONAL([BUILD_HIDDEV],[false])
   ],
 [#ifdef HAVE_LINUX_TYPES_H
 #include <linux/types.h>
@@ -367,14 +343,12 @@ AC_CHECK_HEADERS([linux/hiddev.h],[
 AC_CHECK_HEADERS(sys/soundcard.h,[
   AM_CONDITIONAL([BUILD_DSP],[true])
   AC_DEFINE(HAVE_SOUNDCARD)
-  possible_drivers="${possible_drivers/(dsp/})"
   ],[
   AM_CONDITIONAL([BUILD_DSP],[false])]
 )
 dnl i2cuser driver requires the Linux I2C API
 AC_CHECK_HEADERS(linux/i2c-dev.h,[
   AM_CONDITIONAL([BUILD_I2CUSER],[true])
-  possible_drivers="${possible_drivers/(i2cuser)/}"
   ],[
   AM_CONDITIONAL([BUILD_I2CUSER],[false])]
 )
