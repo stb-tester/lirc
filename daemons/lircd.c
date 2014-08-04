@@ -2297,7 +2297,7 @@ int main(int argc, char **argv)
 		if (opt != NULL)
 			lirc_set_logfile(opt);
 #       endif
-	lircdfile = options_getstring("lircd:output");
+	lircdfile = options_getstring("lircd:lircdfile");
 	if (options_getstring("lircd:listen") != NULL){
 		listen_tcpip = 1;
 		opt = options_getstring("lircd:listen_hostport");
