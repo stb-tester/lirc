@@ -14,7 +14,10 @@ available at doc/html/index.html.
 
 Updated versions of lirc is available using the website http://lirc.org.
 
-## Last version: 0.9.1
+## Last version: 0.9.1a
+  - Hotfixes: configuration file, --output option
+
+## Last major version: 0.9.1
 
   - Added systemd support: unit files, socket activation.
   - Building kernel modules is not supported.
@@ -34,8 +37,7 @@ Updated versions of lirc is available using the website http://lirc.org.
 More complete build and install instructions are available in the
 manual, the Installation chapter. The fast track:
 
-    $ ./autogen.sh
-    $ ./configure --with-syslog --with-driver=userspace
+    $ ./configure --with-syslog --with-debug --with-driver=userspace
     $ make
     $ sudo make install
 
