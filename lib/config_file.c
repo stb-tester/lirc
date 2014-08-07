@@ -1070,9 +1070,6 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 	}
 
 	top_rem = sort_by_bit_count(top_rem);
-#       if defined(DEBUG) && !defined(DAEMONIZE)
-	/*fprint_remotes(stderr, top_rem); */
-#       endif
 	return (top_rem);
 }
 

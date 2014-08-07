@@ -87,15 +87,13 @@ int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 	debug = _debug;
 
 #ifdef USE_SYSLOG
-#ifdef DAEMONIZE
 	if (nodaemon) {
-		openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LIRC_SYSLOG);
+		openlog(syslogident,
+                        LOG_CONS | LOG_PID | LOG_PERROR,
+                        LIRC_SYSLOG);
 	} else {
 		openlog(syslogident, LOG_CONS | LOG_PID, LIRC_SYSLOG);
 	}
-#else
-	openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LIRC_SYSLOG);
-#endif
 #else
 	lf = fopen(logfile, "a");
 	if (lf == NULL) {

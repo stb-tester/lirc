@@ -224,7 +224,7 @@ void dohup(void)
 	}
 }
 
-#ifdef DAEMONIZE
+
 void daemonize(void)
 {
 	if (daemon(0, 0) == -1) {
@@ -234,7 +234,7 @@ void daemonize(void)
 	}
 	umask(0);
 }
-#endif /* DAEMONIZE */
+
 
 int setup_uinputfd(const char *name)
 {
@@ -948,10 +948,8 @@ int main(int argc, char **argv)
 		ms = new_ms;
 	}
 
-#ifdef DAEMONIZE
 	if (!nodaemon)
 		daemonize();
-#endif
 	signal(SIGPIPE, SIG_IGN);
 
 	act.sa_handler = sigterm;

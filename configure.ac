@@ -47,6 +47,14 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname gettimeofday mkfifo select socket strdup \
         strerror strtoul snprintf strsep vsyslog)
+AC_CHECK_FUNCS(daemon)
+if test "$ac_cv_func_daemon" != yes; then
+  daemon=""
+  AC_CHECK_LIB(bsd,daemon,daemon="-lbsd")
+  if test "$daemon" = ""; then
+    AC_MSG_ERROR([*** daemon() function not available on this system, giving up])
+  fi
+fi
 
 forkpty=""
 AC_CHECK_FUNCS(forkpty)
@@ -131,9 +139,6 @@ AC_MSG_RESULT()
 
 # this list must only contain userspace drivers without external
 # (header/library) dependencies!
-
-AH_TEMPLATE([DAEMONIZE],
-        [Define to run daemons as daemons])
 
 AH_TEMPLATE([PLUGINDIR],
         [The directory userspace drivers are loaded from])
@@ -409,20 +414,6 @@ AC_ARG_ENABLE(debug,
 [  --enable-debug          enable debugging features],
 test x${enableval} = xyes && AC_DEFINE(DEBUG)
 )
-AC_ARG_ENABLE(daemonize,
-[  --disable-daemonize     disable daemons from daemonizing],
-test x${enableval} = xyes && AC_DEFINE(DAEMONIZE),
-[
-AC_CHECK_FUNCS(daemon)
-if test "$ac_cv_func_daemon" != yes; then
-  daemon=""
-  AC_CHECK_LIB(bsd,daemon,daemon="-lbsd")
-  if test "$daemon" = ""; then
-    AC_MSG_ERROR([*** daemon() function not available on this system and --disable-daemonize not specified])
-  fi
-fi
-AC_DEFINE(DAEMONIZE)
-])
 
 AC_ARG_WITH(syslog,
 [  --with-syslog=facility  use syslog instead of logfile],

@@ -26,11 +26,6 @@
 # include <config.h>
 #endif
 
-/* disable daemonise if maintainer mode SIM_REC / SIM_SEND defined */
-#if defined(SIM_REC) || defined (SIM_SEND)
-# undef DAEMONIZE
-#endif
-
 #define _GNU_SOURCE
 #define _BSD_SOURCE
 
@@ -988,7 +983,6 @@ start_server_failed0:
 	exit(EXIT_FAILURE);
 }
 
-#ifdef DAEMONIZE
 
 void daemonize(void)
 {
@@ -1005,7 +999,6 @@ void daemonize(void)
 	daemonized = 1;
 }
 
-#endif /* DAEMONIZE */
 
 void sigalrm(int sig)
 {
@@ -2357,13 +2350,11 @@ int main(int argc, char **argv)
 	act.sa_flags = SA_RESTART;	/* don't fiddle with EINTR */
 	sigaction(SIGHUP, &act, NULL);
 
-#ifdef DAEMONIZE
 	/* ready to accept connections */
 	if (!nodaemon)
 		daemonize();
-#endif
 
-#if defined(SIM_SEND) && !defined(DAEMONIZE)
+#if defined(SIM_SEND)
 	{
 		struct ir_remote *r;
 		struct ir_ncode *c;

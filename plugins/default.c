@@ -25,11 +25,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-/* disable daemonise if maintainer mode SIM_REC / SIM_SEND defined */
-#if defined(SIM_REC) || defined (SIM_SEND)
-# undef DAEMONIZE
-#endif
-
 #include "lirc_driver.h"
 
 #include "default.h"
@@ -262,12 +257,10 @@ int default_init()
 
 int default_deinit(void)
 {
-#ifdef DAEMONIZE
 	if (hw.fd != -1) {
 		close(hw.fd);
 		hw.fd = -1;
 	}
-#endif
 	return (1);
 }
 
@@ -286,7 +279,6 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 	if (hw.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
-#ifdef DAEMONIZE
 	if (hw.features & LIRC_CAN_SET_SEND_CARRIER) {
 		unsigned int freq;
 
@@ -307,15 +299,12 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 			return (0);
 		}
 	}
-#endif
 	if (!init_send(remote, code))
 		return (0);
-
 	if (write_send_buffer(hw.fd) == -1) {
 		logprintf(LOG_ERR, "write failed");
 		logperror(LOG_ERR, NULL);
 		return (0);
-	} else {
 	}
 	return (1);
 }
