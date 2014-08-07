@@ -25,7 +25,7 @@ do
  		echo "Skipping invalid config (one '0'): $REPLY"
                 continue
 	}
-        if echo $REPLY|grep "remove.sh\|lircmd\|\.png$\|\.jpg$\|\.irman$\|\.tira\|\.gif$\|\.lircrc$\|\.html$">/dev/null; then
+        if echo $REPLY | grep "lircmd\|\.png$\|\.jpg$\|\.irman$\|\.tira\|\.gif$\|lircrc\|\.html$\|\.txt$\|\.JPG\|\.sh\|htaccess" >/dev/null; then
                 continue
         fi
         name="output/`basename $REPLY`"
