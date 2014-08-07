@@ -2125,7 +2125,7 @@ static void lircd_add_defaults(void)
 		"lircd:device", 	LIRC_DRIVER_DEVICE,
 		"lircd:listen", 	NULL ,
 		"lircd:connect", 	NULL,
-		"lircd:output", 	LIRCD,
+		"lircd:lircdfile", 	LIRCD,
 		"lircd:pidfile", 	PIDFILE,
 		"lircd:logfile", 	LOGFILE,
 		"lircd:debug", 		"False",
@@ -2282,7 +2282,7 @@ int main(int argc, char **argv)
 	if (opt != NULL)
 		device = opt;
 	pidfile = options_getstring("lircd:pidfile");
-	lircdfile = options_getstring("lircd:output");
+	lircdfile = options_getstring("lircd:lircdfile");
 	if (options_getstring("lircd:listen") != NULL){
 		listen_tcpip = 1;
 		opt = options_getstring("lircd:listen_hostport");
