@@ -232,7 +232,6 @@ inline int write_socket(int fd, const char *buf, int len)
 #ifdef SIM_REC
 		do {
 			done = write(fd, buf, todo);
-logprintf(LOG_NOTICE, "write_socket: iterate" );
 		}
 		while (done < 0 && errno == EAGAIN);
 #else

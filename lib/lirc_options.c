@@ -88,7 +88,7 @@ void options_load(int argc, char** argv,
 #	ifdef DEBUG
 	if (debug && lirc_options != NULL ) {
 		fprintf(stderr, "Dumping parsed option values:\n" );
-		ciniparser_dump(lirc_options, stdout);
+		ciniparser_dump(lirc_options, stderr);
 	}
 #	endif
 }
