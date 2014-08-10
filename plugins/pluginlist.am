@@ -50,6 +50,12 @@ pixelview_la_SOURCES             = pixelview.c pixelview.h
 plugin_LTLIBRARIES              += silitek.la
 silitek_la_SOURCES               = silitek.c silitek.h
 
+plugin_LTLIBRARIES              += simreceive.la
+simreceive_la_SOURCES            = simreceive.c
+
+plugin_LTLIBRARIES              += simsend.la
+simsend_la_SOURCES               = simsend.c
+
 plugin_LTLIBRARIES              += slinke.la
 slinke_la_SOURCES                = slinke.c slinke.h
 
@@ -64,3 +70,4 @@ usbx_la_SOURCES                  = usbx.c usbx.h
 
 plugin_LTLIBRARIES              += zotac.la
 zotac_la_SOURCES                 = zotac.c
+
