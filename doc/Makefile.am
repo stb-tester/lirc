@@ -96,6 +96,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/configuration-guide.html \
                            $(srcdir)/html-source/configure.html \
                            $(srcdir)/html-source/devinput.html \
+                           $(srcdir)/html-source/driver-api.html \
                            $(srcdir)/html-source/help.html \
                            $(srcdir)/html-source/imon-24g.html \
                            $(srcdir)/html-source/imon.html \
@@ -139,6 +140,7 @@ generated_html          += $(srcdir)/html/alsa-usb.html \
                            $(srcdir)/html/configuration-guide.html \
                            $(srcdir)/html/configure.html \
                            $(srcdir)/html/devinput.html \
+                           $(srcdir)/html/driver-api.html \
                            $(srcdir)/html/help.html \
                            $(srcdir)/html/imon-24g.html \
                            $(srcdir)/html/imon.html \
