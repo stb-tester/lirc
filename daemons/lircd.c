@@ -311,13 +311,19 @@ void dosigterm(int sig)
 	int i;
 
 	signal(SIGALRM, SIG_IGN);
+	logprintf(LOG_NOTICE, "caught signal");
 
+#ifdef USE_SYSLOG
+	closelog();
+#else
+	if (lf)
+		fclose(lf);
+#endif
 	if (free_remotes != NULL) {
 		free_config(free_remotes);
 	}
 	free_config(remotes);
 	repeat_remote = NULL;
-	logprintf(LOG_NOTICE, "caught signal");
 	for (i = 0; i < clin; i++) {
 		shutdown(clis[i], 2);
 		close(clis[i]);
@@ -340,14 +346,8 @@ void dosigterm(int sig)
 	(void)unlink(pidfile);
 	if (use_hw() && hw.deinit_func)
 		hw.deinit_func();
-#ifdef USE_SYSLOG
-	closelog();
-#else
-	if (lf)
-		fclose(lf);
-#endif
 	signal(sig, SIG_DFL);
-	raise(sig);
+	raise(sig == SIGUSR1 ? SIGTERM: sig);
 }
 
 void sighup(int sig)
@@ -2343,6 +2343,11 @@ int main(int argc, char **argv)
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_RESTART;	/* don't fiddle with EINTR */
 	sigaction(SIGALRM, &act, NULL);
+
+	act.sa_handler = dosigterm;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;
+	sigaction(SIGUSR1, &act, NULL);
 
 	remotes = NULL;
 	config();		/* read config file */
