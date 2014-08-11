@@ -90,6 +90,7 @@
 #include <unistd.h>
 
 #include "lirc_client.h"
+#include "lirc_log.h"
 
 static int bDaemon = 0;
 static int bInError = 0;
@@ -114,7 +115,7 @@ static const char *key_delimiter = "-";
 static const char *active_window_name = "CurrentWindow";
 static const char *root_window_name = "RootWindow";
 
-static const char *progname = "irxevent";
+static const char *prog = "irxevent";
 static Display *dpy;
 static Window root;
 static XEvent xev;
@@ -509,7 +510,7 @@ int check(char *s)
 
 	buffer = malloc(strlen(s) + 1);
 	if (buffer == NULL) {
-		fprintf(stderr, "%s: out of memory\n", progname);
+		fprintf(stderr, "%s: out of memory\n", prog);
 		return (-1);
 	}
 
@@ -525,7 +526,7 @@ int check(char *s)
 	    4 != sscanf(s, "xy_Key %d %d %s WindowID %i %s", &d, &d, buffer, &d, buffer) &&
 	    4 != sscanf(s, "xy_Key %d %d %s Focus WindowID %i %s", &d, &d, buffer, &d, buffer) &&
 	    4 != sscanf(s, "xy_Key %d %d %s %s", &d, &d, buffer, buffer)) {
-		fprintf(stderr, "%s: bad config string \"%s\"\n", progname, s);
+		fprintf(stderr, "%s: bad config string \"%s\"\n", prog, s);
 		free(buffer);
 		return (-1);
 	}
@@ -559,14 +560,14 @@ int main(int argc, char *argv[])
 			printf("Usage: %s [option]... [config file]\n"
 			       "       -d --daemon     fork and run in background\n"
 			       "       -h --help       display usage summary\n"
-			       "       -V --version    display version\n", progname);
+			       "       -V --version    display version\n", prog);
 			return (EXIT_SUCCESS);
 		case 'V':
-			printf("%s %s\n", progname, VERSION);
+			printf("%s %s\n", prog, VERSION);
 			return (EXIT_SUCCESS);
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr, "Try `%s --help' for more information.\n", progname);
+			fprintf(stderr, "Try `%s --help' for more information.\n", prog);
 			return (EXIT_FAILURE);
 		}
 	}
@@ -574,8 +575,8 @@ int main(int argc, char *argv[])
 	if (argc == optind + 1) {
 		config_file = argv[optind];
 	} else if (argc > optind + 1) {
-		fprintf(stderr, "%s: incorrect number of arguments.\n", progname);
-		fprintf(stderr, "Try `%s --help' for more information.\n", progname);
+		fprintf(stderr, "%s: incorrect number of arguments.\n", prog);
+		fprintf(stderr, "Try `%s --help' for more information.\n", prog);
 		return (EXIT_FAILURE);
 	}
 

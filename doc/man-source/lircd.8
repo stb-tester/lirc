@@ -68,9 +68,9 @@ The listening lircd instance will send all IR events to the connecting
 lircd instances.
 .TP 4
 .B -L, --logfile
-Select the lircd daemon log file.  The default currently is
-/var/log/lircd. Note that this option will only be available if you
-compiled lircd without syslog support.
+Select the lircd daemon log file. logfile is either the string 'syslog'
+indicating that syslog(1) should be used or a log file path. The default
+is to use syslog.
 .TP 4
 .B -o, --output <output socket>
 Select Unix domain socket, which lircd will write remote key codes to.

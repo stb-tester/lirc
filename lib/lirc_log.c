@@ -38,25 +38,22 @@
 
 #include "lirc/lirc_log.h"
 
-#ifndef USE_SYSLOG
 #define HOSTNAME_LEN 128
 char hostname[HOSTNAME_LEN + 1];
 FILE *lf = NULL;
-#endif
 
 int debug = 0;
 
-#ifdef USE_SYSLOG
+static int use_syslog = 1;
+
+static int log_enabled = 1;
+
 const char *syslogident = "lircd-" VERSION;
-#else
 char *logfile = LOGFILE;
-#endif
 
 char progname[128] = {'?','\0'};
 static int nodaemon = 0;
 
-
-static int log_enabled = 1;
 
 static const char* prio2text(int prio)
 {
@@ -73,12 +70,23 @@ static const char* prio2text(int prio)
 	}
 }
 
+
+int lirc_log_use_syslog()
+{
+	return use_syslog;
+}
+
+
 void lirc_set_logfile(char* s)
 {
-#	ifndef USE_SYSLOG
-	logfile = s;
-#	endif
+	if (strcmp(s, "syslog") == 0) {
+            use_syslog  = 1;
+        } else {
+	    logfile = s;
+            use_syslog = 0;
+	}
 }
+
 
 int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 {
@@ -86,34 +94,46 @@ int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 	nodaemon = _nodaemon;
 	debug = _debug;
 
-#ifdef USE_SYSLOG
-	if (nodaemon) {
-		openlog(syslogident,
-                        LOG_CONS | LOG_PID | LOG_PERROR,
-                        LIRC_SYSLOG);
+	if (use_syslog) {
+		if (nodaemon) {
+			openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LOG_LOCAL0);
+		} else {
+			openlog(syslogident, LOG_CONS | LOG_PID, LOG_LOCAL0);
+		}
 	} else {
-		openlog(syslogident, LOG_CONS | LOG_PID, LIRC_SYSLOG);
+		lf = fopen(logfile, "a");
+		if (lf == NULL) {
+			fprintf(stderr, "%s: could not open logfile\n", progname);
+			perror(progname);
+			return 1;
+		}
+		gethostname(hostname, HOSTNAME_LEN);
 	}
-#else
-	lf = fopen(logfile, "a");
-	if (lf == NULL) {
-		fprintf(stderr,
-                        "%s: could not open logfile %s\n",
-                        progname, logfile);
-		perror(progname);
-		return 1;
-	}
-	gethostname(hostname, HOSTNAME_LEN);
-#endif
 	return 0;
 }
 
+
+int lirc_log_close()
+{
+	if (use_syslog){
+        	closelog();
+                return(0);
+	}
+	else if (lf)
+		return( fclose(lf));
+	else
+		return(0);
+}
+
+
+
 int lirc_log_reopen(void)
 {
-#ifdef USE_SYSLOG
-	/* we don't need to do anyting as this is syslogd's task */
-#else
 	struct stat s;
+
+	if (use_syslog)
+		/* Don't need to do anything; this is syslogd's task */
+		return(0);
 
 	logprintf(LOG_INFO, "closing logfile");
 	if (-1 == fstat(fileno(lf), &s)) {
@@ -132,9 +152,9 @@ int lirc_log_reopen(void)
 		logprintf(LOG_WARNING, "could not set file permissions");
 		logperror(LOG_WARNING, NULL);
 	}
-#endif
 	return 0;
 }
+
 
 int lirc_log_setlevel(const char* s)
 {
@@ -174,12 +194,11 @@ void logprintf(int prio, const char *format_str, ...)
 		fputc('\n', stderr);
 		fflush(stderr);
 	}
-#ifdef USE_SYSLOG
-	va_start(ap, format_str);
-	vsyslog(prio, format_str, ap);
-	va_end(ap);
-#else
-	if (lf && prio <= debug) {
+	if (use_syslog) {
+		va_start(ap, format_str);
+		vsyslog(prio, format_str, ap);
+		va_end(ap);
+	} else if (lf && prio <= debug) {
 		time_t current;
 		char *currents;
 
@@ -195,27 +214,27 @@ void logprintf(int prio, const char *format_str, ...)
 		fputc('\n', lf);
 		fflush(lf);
 	}
-#endif
 	errno = save_errno;
 }
+
 
 void logperror(int prio, const char *s)
 {
 	if (!log_enabled)
 		return;
 
-#ifdef USE_SYSLOG
-	if ((s) != NULL)
-		syslog(prio, "%s: %m\n", (char *)s);
-	else
-		syslog(prio, "%m\n");
-#else
-	if (s != NULL) {
-		logprintf(prio, "%s: %s", s, strerror(errno));
+	if (use_syslog){
+		if ((s) != NULL)
+			syslog(prio, "%s: %m\n", (char *)s);
+		else
+			syslog(prio, "%m\n");
 	} else {
-		logprintf(prio, "%s", strerror(errno));
+		if (s != NULL) {
+			logprintf(prio, "%s: %s", s, strerror(errno));
+		} else {
+			logprintf(prio, "%s", strerror(errno));
+		}
 	}
-#endif
 }
 
 void hexdump(char *prefix, unsigned char* buf, int len)

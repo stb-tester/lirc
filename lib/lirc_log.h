@@ -51,11 +51,20 @@ int lirc_log_setlevel(const char* level);
  */
 #define lirc_log_is_enabled_for(level) (level <= debug)
 
+/* Check if log is set up to use syslog or not. */
+int lirc_log_use_syslog();
+
 void logprintf(int prio, const char *format_str, ...);
 void logperror(int prio, const char *s);
 int lirc_log_reopen(void);
 int lirc_log_open(const char* progname, int _nodaemon, int _debug);
+int lirc_log_close();
 void log_enable(int enabled);
+
+/*
+ * Set logfile. Either a regular path or the string 'suslog'; the latter
+ * does indeed use syslog(1) instead.
+ * */
 void lirc_set_logfile(char* s);
 void hexdump(char *prefix, unsigned char* buf, int len);
 

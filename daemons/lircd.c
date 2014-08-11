@@ -97,11 +97,8 @@ static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 extern struct hardware hw;
 
 const char *configfile = NULL;
-#ifndef USE_SYSLOG
 extern char *logfile ;
-#else
 extern const char *syslogident;
-#endif
 FILE *pidf;
 char *pidfile = PIDFILE;
 char *lircdfile = LIRCD;
@@ -141,12 +138,10 @@ char *protocol_string[] = {
 
 extern int log_enabled;
 
-#ifndef USE_SYSLOG
 #define HOSTNAME_LEN 128
 char hostname[HOSTNAME_LEN + 1];
 
 extern FILE *lf;
-#endif
 
 /* substract one for lirc, sockfd, sockinet, logfile, pidfile, uinput */
 #define MAX_PEERS	((FD_SETSIZE-6)/2)
@@ -155,6 +150,8 @@ extern FILE *lf;
 int sockfd, sockinet;
 static int uinputfd = -1;
 int clis[MAX_CLIENTS];
+int nodaemon = 0;
+int debug = 0;
 
 #define CT_LOCAL  1
 #define CT_REMOTE 2
@@ -308,12 +305,6 @@ void dosigterm(int sig)
 	signal(SIGALRM, SIG_IGN);
 	logprintf(LOG_NOTICE, "caught signal");
 
-#ifdef USE_SYSLOG
-	closelog();
-#else
-	if (lf)
-		fclose(lf);
-#endif
 	if (free_remotes != NULL) {
 		free_config(free_remotes);
 	}
@@ -341,6 +332,7 @@ void dosigterm(int sig)
 	(void)unlink(pidfile);
 	if (use_hw() && hw.deinit_func)
 		hw.deinit_func();
+	lirc_log_close();
 	signal(sig, SIG_DFL);
 	raise(sig == SIGUSR1 ? SIGTERM: sig);
 }
@@ -352,31 +344,29 @@ void sighup(int sig)
 
 void dosighup(int sig)
 {
-#ifndef USE_SYSLOG
 	struct stat s;
-#endif
 	int i;
 
 	/* reopen logfile first */
-#ifdef USE_SYSLOG
-	/* we don't need to do anyting as this is syslogd's task */
-#else
-	logprintf(LOG_INFO, "closing logfile");
-	if (-1 == fstat(fileno(lf), &s)) {
-		dosigterm(SIGTERM);	/* shouldn't ever happen */
+
+	if (! lirc_log_use_syslog()){
+		logprintf(LOG_INFO, "closing logfile");
+		if (-1 == fstat(fileno(lf), &s)) {
+			dosigterm(SIGTERM);	/* shouldn't ever happen */
+		}
+  		lirc_log_close();
+                lirc_log_open("lircd", nodaemon, debug);
+		lf = fopen(logfile, "a");
+		if (lf == NULL) {
+			/* can't print any error messagees */
+			dosigterm(SIGTERM);
+		}
+		logprintf(LOG_INFO, "reopened logfile");
+		if (-1 == fchmod(fileno(lf), s.st_mode)) {
+			logprintf(LOG_WARNING, "could not set file permissions");
+			logperror(LOG_WARNING, NULL);
+		}
 	}
-	fclose(lf);
-	lf = fopen(logfile, "a");
-	if (lf == NULL) {
-		/* can't print any error messagees */
-		dosigterm(SIGTERM);
-	}
-	logprintf(LOG_INFO, "reopened logfile");
-	if (-1 == fchmod(fileno(lf), s.st_mode)) {
-		logprintf(LOG_WARNING, "could not set file permissions");
-		logperror(LOG_WARNING, NULL);
-	}
-#endif
 
 	config();
 
@@ -2067,9 +2057,7 @@ static const struct option lircd_options[] = {
 	{"output", required_argument, NULL, 'o'},
 	{"pidfile", required_argument, NULL, 'P'},
 	{"plugindir", required_argument, NULL, 'U'},
-#       ifndef USE_SYSLOG
 	{"logfile", required_argument, NULL, 'L'},
-#       endif
 	{"debug", optional_argument, NULL, 'D'},
 	{"release", optional_argument, NULL, 'r'},
 	{"allow-simulate", no_argument, NULL, 'a'},
@@ -2096,9 +2084,7 @@ static void lircd_help(void)
 	printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
 	printf("\t -o --output=socket\t\toutput socket filename\n");
 	printf("\t -P --pidfile=file\t\tdaemon pid file\n");
-#       ifndef USE_SYSLOG
-	printf("\t -L --logfile=file\t\tdaemon log file\n");
-#       endif
+	printf("\t -L --logfile=file\t\tLog file path or 'syslog'\n");
 	printf("\t -D[debug_level] --debug[=debug_level]\n");
 	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
 	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
@@ -2137,12 +2123,9 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** argv)
 {
 	int c;
-	const char* optstring =  "O:hvnp:H:d:o:U:P:l::c:r::aR:D::"
+	const char* optstring =  "O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::"
 #       if defined(__linux__)
 		"u"
-#       endif
-#       ifndef USE_SYSLOG
-		"L:"
 #       endif
 	;
 
@@ -2177,11 +2160,9 @@ static void lircd_parse_options(int argc, char** argv)
 		case 'P':
 			options_set_opt("lircd:pidfile", optarg);
 			break;
-#               ifndef USE_SYSLOG
 		case 'L':
 			options_set_opt("lircd:logfile", optarg);
 			break;
-#               endif
 		case 'o':
 			options_set_opt("lircd:lircdfile", optarg);
 			break;
@@ -2232,12 +2213,10 @@ static void lircd_parse_options(int argc, char** argv)
 int main(int argc, char **argv)
 {
 	struct sigaction act;
-	int nodaemon = 0;
 	mode_t permission;
 	char *device = NULL;
 	char errmsg[128];
 	char* opt;
-	int debug = 0;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
@@ -2271,6 +2250,9 @@ int main(int argc, char **argv)
 		device = opt;
 	pidfile = options_getstring("lircd:pidfile");
 	lircdfile = options_getstring("lircd:lircdfile");
+	opt = options_getstring("lircd:logfile");
+	if (opt != NULL)
+		lirc_set_logfile(opt);
 	if (options_getstring("lircd:listen") != NULL){
 		listen_tcpip = 1;
 		opt = options_getstring("lircd:listen_hostport");

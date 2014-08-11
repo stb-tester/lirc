@@ -230,9 +230,6 @@ AH_TEMPLATE([MAINTAINER_MODE],
 AH_TEMPLATE([SYSCONFDIR],
         [system configuration directory])
 
-AH_TEMPLATE([USE_SYSLOG],
-        [define if you want to log to syslog instead of logfile])
-
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
   ],[
@@ -406,44 +403,6 @@ devdir=${devdir_default})
 AC_ARG_ENABLE(dyncodes,
 [  --enable-dyncodes       use dynamic codes],
 test x${enableval} = xyes && AC_DEFINE(DYNCODES))
-
-
-AC_ARG_WITH(syslog,
-[  --with-syslog=facility  use syslog instead of logfile],
-if test -n "${withval}"; then
-  facility="${withval}"
-  if test "${withval}" = yes; then
-    facility=LOG_DAEMON;
-  elif test "${withval}" = LOG_AUTH; then
-    true;
-  elif test "${withval}" = LOG_AUTHPRIV; then
-    true;
-  elif test "${withval}" = LOG_DAEMON; then
-    true;
-  elif test "${withval}" = LOG_LOCAL0; then
-    true;
-  elif test "${withval}" = LOG_LOCAL1; then
-    true;
-  elif test "${withval}" = LOG_LOCAL2; then
-    true;
-  elif test "${withval}" = LOG_LOCAL3; then
-    true;
-  elif test "${withval}" = LOG_LOCAL4; then
-    true;
-  elif test "${withval}" = LOG_LOCAL5; then
-    true;
-  elif test "${withval}" = LOG_LOCAL6; then
-    true;
-  elif test "${withval}" = LOG_LOCAL7; then
-    true;
-  elif test "${withval}" = LOG_USER; then
-    true;
-  else
-    AC_MSG_ERROR([*** invalid facility (see syslog(3) for possible facilities) ])
-  fi
-  AC_DEFINE(USE_SYSLOG)
-fi
-)
 
 
 receive=""
