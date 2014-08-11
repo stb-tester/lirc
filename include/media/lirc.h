@@ -1,8 +1,26 @@
+/**
+ * @file lirc.c
+ * This file contains some general definitions, like feature flags.
+ * It's a bundled copy from the kernel sources. Being part of
+ * kernel sources is a bug, see
+ * https://bugzilla.kernel.org/show_bug.cgi?id=75751
+ */
+
 #ifndef LIRC_BASE_H
 #define LIRC_BASE_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+/**
+ * This data type, with its extremely carefully selected name, is used as
+ * data type for the signal durations.
+ */
 #define lirc_t int
-#define PACKET_SIZE (256)
+#ifndef PACKET_SIZE
+#define PACKET_SIZE 256
+#endif
 /*
  * lirc.h - linux infrared remote control header file
  * last modified 2010/06/03 by Jarod Wilson
@@ -62,8 +80,16 @@
 
 #define LIRC_CAN_SEND_MASK             0x0000003f
 
+/** This flag indicates that the transmitter is capable of setting the
+ * IR carrier frequency. */
 #define LIRC_CAN_SET_SEND_CARRIER      0x00000100
+
+/** This flag indicates that the transmitter is capable of setting the
+ *  duty cycle of generated IR signals. */
 #define LIRC_CAN_SET_SEND_DUTY_CYCLE   0x00000200
+
+/** This flag indicates that the transmitter is capable of setting a
+ *  transmitter mask, i.e., probably has several transmitters. */
 #define LIRC_CAN_SET_TRANSMITTER_MASK  0x00000400
 
 #define LIRC_CAN_REC_RAW               LIRC_MODE2REC(LIRC_MODE_RAW)
@@ -82,9 +108,14 @@
 #define LIRC_CAN_SET_REC_TIMEOUT          0x10000000
 #define LIRC_CAN_SET_REC_FILTER           0x08000000
 
+/** This flag indicates that the receiver is capable of estimating
+ *  the carrier frequency of received IR signals. */
 #define LIRC_CAN_MEASURE_CARRIER          0x02000000
 
+/** Extract sending features from its argument. */
 #define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
+
+/** Extract receiving features from its argument. */
 #define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
 
 #define LIRC_CAN_NOTIFY_DECODE            0x01000000
@@ -168,5 +199,8 @@
 #define LIRC_SETUP_START               _IO('i', 0x00000021)
 #define LIRC_SETUP_END                 _IO('i', 0x00000022)
 
+#ifdef	__cplusplus
+}
+#endif
 
 #endif //LIRC_BASE_H

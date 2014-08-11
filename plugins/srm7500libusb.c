@@ -525,7 +525,7 @@ static int philipsrf_input(philipsrf_incoming_t * buffer_in)
 										      time[1] << 8) | (buffer_in->
 												       time[0])),
 			  buffer_in->length, buffer_in->type);
-		HEXDUMP("in  data:", buffer_in->data, buffer_in->length - 1);
+		hexdump("in  data:", buffer_in->data, buffer_in->length - 1);
 	}
 	return ret;
 }
@@ -535,7 +535,7 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 	int ret = 0;
 
 	LOGPRINTF(1, "out: length 0x%02x, type 0x%02x", buffer_out.length, buffer_out.type);
-	HEXDUMP("out data:", buffer_out.data, buffer_out.length - 1);
+	hexdump("out data:", buffer_out.data, buffer_out.length - 1);
 
 	ret =
 	    usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, (char *)&buffer_out, buffer_out.length + 1,
@@ -830,7 +830,7 @@ static int usb_read_loop(int fd)
 				  ((packet_buffer_in.zig.SrcPANId[0] << 8) | (packet_buffer_in.zig.SrcPANId[1])),
 				  ((packet_buffer_in.zig.SrcAddr[0] << 8) | (packet_buffer_in.zig.SrcAddr[1]))
 			    );
-			HEXDUMP("MCPS_DATA_indication payload:", packet_buffer_in.zig.data,
+			hexdump("MCPS_DATA_indication payload:", packet_buffer_in.zig.data,
 				packet_buffer_in.zig.msduLength);
 			if ((packet_buffer_in.zig.data[0] == 0x00) && (packet_buffer_in.zig.msduLength == 4)) {
 				int bytes_w, pos;

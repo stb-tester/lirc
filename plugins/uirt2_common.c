@@ -180,7 +180,7 @@ static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
 
 	LOGPRINTF(1, "writing command %02x", buf[0]);
 
-	HEXDUMP(tmp, len + 2);
+	hexdump("Command: ", tmp, len + 2);
 	res = write(dev->fd, tmp, len + 2);
 
 	if (res < len + 2) {
@@ -203,7 +203,7 @@ static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
 	}
 
 	LOGPRINTF(1, "cmd res %d:", res);
-	HEXDUMP(out + 1, out[0]);
+	hexdump("Result: ", out + 1, out[0]);
 	LOGPRINTF(1, "");
 
 	if (out[0] > 1) {

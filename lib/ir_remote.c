@@ -10,6 +10,15 @@
  *
  */
 
+/**
+ * @file    ir_remote.c
+ * @authors  Ralph Metzler, Christoph Bartelmus
+ * @copyright
+ * Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
+ * Copyright (C) 1998 Christoph Bartelmus (lirc@bartelmus.de)
+ * @brief Sends and decodes the signals from IR remotes.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -27,10 +36,24 @@
 #include "lirc/release.h"
 #include "lirc/lirc_log.h"
 
+/**
+ * TODO
+ */
 struct ir_remote *decoding = NULL;
 
+/**
+ * TODO
+ */
 struct ir_remote *last_remote = NULL;
+
+/**
+ * Global pointer to the remote that contains the code currently repeating. Defined in ir_remote.c.
+ */
 struct ir_remote *repeat_remote = NULL;
+
+/**
+ * Global pointer to the code currently repeating. Defined in ir_remote.c.
+ */
 struct ir_ncode *repeat_code;
 
 extern struct hardware hw;
@@ -52,6 +75,12 @@ static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
 		|| (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask)));
 }
 
+/**
+ *
+ * @param remotes
+ * @param min_freq
+ * @param max_freq
+ */
 void get_frequency_range(struct ir_remote *remotes, unsigned int *min_freq, unsigned int *max_freq)
 {
 	struct ir_remote *scan;
@@ -78,6 +107,15 @@ void get_frequency_range(struct ir_remote *remotes, unsigned int *min_freq, unsi
 	}
 }
 
+/**
+ *
+ * @param remotes
+ * @param max_gap_lengthp
+ * @param min_pulse_lengthp
+ * @param min_space_lengthp
+ * @param max_pulse_lengthp
+ * @param max_space_lengthp
+ */
 void get_filter_parameters(struct ir_remote *remotes, lirc_t * max_gap_lengthp, lirc_t * min_pulse_lengthp,
 			   lirc_t * min_space_lengthp, lirc_t * max_pulse_lengthp, lirc_t * max_space_lengthp)
 {
@@ -117,6 +155,12 @@ void get_filter_parameters(struct ir_remote *remotes, lirc_t * max_gap_lengthp, 
 	*max_space_lengthp = max_space_length;
 }
 
+/**
+ *
+ * @param remotes
+ * @param remote
+ * @return
+ */
 struct ir_remote *is_in_remotes(struct ir_remote *remotes, struct ir_remote *remote)
 {
 	while (remotes != NULL) {
@@ -128,6 +172,12 @@ struct ir_remote *is_in_remotes(struct ir_remote *remotes, struct ir_remote *rem
 	return NULL;
 }
 
+/**
+ *
+ * @param remotes
+ * @param name
+ * @return
+ */
 struct ir_remote *get_ir_remote(struct ir_remote *remotes, char *name)
 {
 	struct ir_remote *all;
@@ -143,6 +193,20 @@ struct ir_remote *get_ir_remote(struct ir_remote *remotes, char *name)
 	return (NULL);
 }
 
+/**
+ *
+ * @param remote
+ * @param prep
+ * @param codep
+ * @param postp
+ * @param pre_bits
+ * @param pre
+ * @param bits
+ * @param code
+ * @param post_bits
+ * @param post
+ * @return
+ */
 int map_code(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int pre_bits, ir_code pre,
 	     int bits, ir_code code, int post_bits, ir_code post)
 {
@@ -171,6 +235,16 @@ int map_code(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code 
 	return (1);
 }
 
+/**
+ *
+ * @param remote
+ * @param start
+ * @param last
+ * @param signal_length
+ * @param repeat_flagp
+ * @param min_remaining_gapp
+ * @param max_remaining_gapp
+ */
 void map_gap(struct ir_remote *remote, struct timeval *start, struct timeval *last, lirc_t signal_length,
 	     int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
@@ -230,6 +304,12 @@ void map_gap(struct ir_remote *remote, struct timeval *start, struct timeval *la
 
 }
 
+/**
+ *
+ * @param remote
+ * @param name
+ * @return
+ */
 struct ir_ncode *get_code_by_name(struct ir_remote *remote, char *name)
 {
 	struct ir_ncode *all;
@@ -244,7 +324,7 @@ struct ir_ncode *get_code_by_name(struct ir_remote *remote, char *name)
 	return (0);
 }
 
-struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post,
+static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post,
 			  ir_code * toggle_bit_mask_statep)
 {
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
@@ -403,7 +483,7 @@ struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, i
 	return (found);
 }
 
-__u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, int repeat_flag,
+static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, int repeat_flag,
 	       lirc_t min_remaining_gap, lirc_t max_remaining_gap)
 {
 	__u64 code;
@@ -483,6 +563,18 @@ __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggl
 	return (code);
 }
 
+/**
+ * Formats the arguments into a readable string (first argument, size the second argument).
+ * The arguments start at the third position.) into a nice
+ * @param buffer
+ * @param size
+ * @param remote_name
+ * @param button_name
+ * @param button_suffix
+ * @param code
+ * @param reps
+ * @return
+ */
 int write_message(char *buffer, size_t size, const char *remote_name, const char *button_name,
 		  const char *button_suffix, ir_code code, int reps)
 {
@@ -494,6 +586,11 @@ int write_message(char *buffer, size_t size, const char *remote_name, const char
 	return len;
 }
 
+/**
+ * Tries to decode current signal trying all known remotes.
+ * @param remotes
+ * @return
+ */
 char *decode_all(struct ir_remote *remotes)
 {
 	struct ir_remote *remote;
@@ -565,6 +662,12 @@ char *decode_all(struct ir_remote *remotes)
 	return (NULL);
 }
 
+/**
+ * Transmits the actual code in the second  argument by calling the current hardware driver.
+ * @param remote Currently active remote, used as data base for timing, and as keeper of an internal state.
+ * @param code IR code to be transmitted
+ * @return nonzero if success
+ */
 int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code)
 {
 	int ret;

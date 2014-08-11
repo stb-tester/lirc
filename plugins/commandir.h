@@ -13,7 +13,7 @@
 
 #include <usb.h>
 
-extern struct ir_remote *repeat_remote;
+//extern struct ir_remote *repeat_remote;
 
 #define TRUE	0
 #define FALSE	1
@@ -270,8 +270,8 @@ static int commandir_receive_decode(struct ir_remote *remote, ir_code * prep, ir
 
 /*** USB Thread Functions ***/
 static void commandir_child_init();
-int do_we_know_device(unsigned int bus_num, int devnum);
-int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct usb_device *dev);
+static int do_we_know_device(unsigned int bus_num, int devnum);
+static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct usb_device *dev);
 static void hardware_scan();
 static void hardware_setorder();
 static void hardware_disconnect(struct commandir_device *a);

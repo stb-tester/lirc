@@ -9,6 +9,12 @@
  *
  */
 
+/**
+ * @file serial.c
+ * @author Christoph Bartelmus
+ * @brief Common routines for hardware that uses the standard serial port driver.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -283,6 +289,11 @@ int tty_setcsize(int fd, int csize)
 	return (1);
 }
 
+/**
+ * Creates a lock file of the type /var/local/LCK.. + name
+ * @param name Name of the device
+ * @return non-zero if successful
+ */
 int tty_create_lock(char *name)
 {
 	char filename[FILENAME_MAX + 1];

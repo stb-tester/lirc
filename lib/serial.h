@@ -12,6 +12,10 @@
 #ifndef _SERIAL_H
 #define _SERIAL_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 int tty_reset(int fd);
 int tty_setrtscts(int fd, int enable);
 int tty_setdtr(int fd, int enable);
@@ -24,5 +28,9 @@ int tty_clear(int fd, int rts, int dtr);
 int tty_write(int fd, char byte);
 int tty_read(int fd, char *byte);
 int tty_write_echo(int fd, char byte);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif

@@ -22,6 +22,11 @@
  *
  */
 
+/**
+ * @file lircd.c
+ * This file implements the main daemon lircd.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -67,7 +72,74 @@
 #endif
 
 #include "lirc_private.h"
-#include "lircd.h"
+
+/****************************************************************************
+ ** lircd.h *****************************************************************
+ ****************************************************************************
+ *
+ */
+
+#ifndef PACKET_SIZE
+#define PACKET_SIZE 256
+#endif
+#define WHITE_SPACE " \t"
+
+struct peer_connection {
+	char *host;
+	unsigned short port;
+	struct timeval reconnect;
+	int connection_failure;
+	int socket;
+};
+
+//extern int debug;
+
+void sigterm(int sig);
+void dosigterm(int sig);
+void sighup(int sig);
+void dosighup(int sig);
+int setup_uinput(const char *name);
+void config(void);
+void nolinger(int sock);
+void remove_client(int fd);
+void add_client(int);
+int add_peer_connection(char *server);
+void connect_to_peers();
+int get_peer_message(struct peer_connection *peer);
+void start_server(mode_t permission, int nodaemon, int debug);
+
+
+void daemonize(void);
+void sigalrm(int sig);
+void dosigalrm(int sig);
+int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, struct ir_ncode **code, int *reps,
+	     int n, int *err);
+int send_success(int fd, char *message);
+int send_error(int fd, char *message, char *format_str, ...);
+int send_remote_list(int fd, char *message);
+int send_remote(int fd, char *message, struct ir_remote *remote);
+int send_name(int fd, char *message, struct ir_ncode *code);
+int list(int fd, char *message, char *arguments);
+int set_transmitters(int fd, char *message, char *arguments);
+int simulate(int fd, char *message, char *arguments);
+int send_once(int fd, char *message, char *arguments);
+int send_start(int fd, char *message, char *arguments);
+int send_stop(int fd, char *message, char *arguments);
+int send_core(int fd, char *message, char *arguments, int once);
+int version(int fd, char *message, char *arguments);
+int get_pid(int fd, char *message, char *arguments);
+int get_command(int fd);
+void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release);
+void broadcast_message(const char *message);
+static int mywaitfordata(long maxusec);
+void loop(void);
+
+struct protocol_directive {
+	char *name;
+	int (*function) (int fd, char *message, char *arguments);
+};
+
+/* ////////////////////////////////// end lircd.h ///////////////////// */
 
 #ifndef timersub
 #define timersub(a, b, result)                                            \
@@ -82,8 +154,8 @@
 #endif
 
 
-struct ir_remote *remotes;
-struct ir_remote *free_remotes = NULL;
+static struct ir_remote *remotes;
+static struct ir_remote *free_remotes = NULL;
 
 extern struct ir_remote *decoding;
 extern struct ir_remote *last_remote;
@@ -96,14 +168,14 @@ static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 
 extern struct hardware hw;
 
-const char *configfile = NULL;
+static const char *configfile = NULL;
 extern char *logfile ;
 extern const char *syslogident;
-FILE *pidf;
-char *pidfile = PIDFILE;
-char *lircdfile = LIRCD;
+static FILE *pidf;
+static const char *pidfile = PIDFILE;
+static const char *lircdfile = LIRCD;
 
-struct protocol_directive directives[] = {
+static const struct protocol_directive const directives[] = {
 	{"LIST", list},
 	{"SEND_ONCE", send_once},
 	{"SEND_START", send_start},
@@ -127,7 +199,7 @@ enum protocol_string_num {
 	P_SIGHUP
 };
 
-char *protocol_string[] = {
+static const char *protocol_string[] = {
 	"BEGIN\n",
 	"DATA\n",
 	"END\n",
@@ -139,7 +211,7 @@ char *protocol_string[] = {
 extern int log_enabled;
 
 #define HOSTNAME_LEN 128
-char hostname[HOSTNAME_LEN + 1];
+static const char hostname[HOSTNAME_LEN + 1];
 
 extern FILE *lf;
 
@@ -147,24 +219,25 @@ extern FILE *lf;
 #define MAX_PEERS	((FD_SETSIZE-6)/2)
 #define MAX_CLIENTS     ((FD_SETSIZE-6)/2)
 
-int sockfd, sockinet;
+static int sockfd, sockinet;
 static int uinputfd = -1;
-int clis[MAX_CLIENTS];
-int nodaemon = 0;
-int debug = 0;
+static int clis[MAX_CLIENTS];
+
+static int nodaemon = 0;
+static int debug_opt = 0;
 
 #define CT_LOCAL  1
 #define CT_REMOTE 2
 
 static int cli_type[MAX_CLIENTS];
-static int clin = 0;
+static int clin = 0; /* Number of clients */
 
-int listen_tcpip = 0;
-unsigned short int port = LIRC_INET_PORT;
-struct in_addr address;
+static int listen_tcpip = 0;
+static unsigned short int port = LIRC_INET_PORT;
+static struct in_addr address;
 
-struct peer_connection *peers[MAX_PEERS];
-int peern = 0;
+static struct peer_connection *peers[MAX_PEERS];
+static int peern = 0;
 
 static int daemonized = 0;
 static int allow_simulate = 0;
@@ -179,6 +252,7 @@ static lirc_t setup_max_gap = 0;
 static lirc_t setup_min_pulse = 0, setup_min_space = 0;
 static lirc_t setup_max_pulse = 0, setup_max_space = 0;
 
+/* Use already opened hardware? */
 inline int use_hw()
 {
 	return (clin > 0 || (useuinput && uinputfd != -1) || repeat_remote != NULL);
@@ -355,7 +429,7 @@ void dosighup(int sig)
 			dosigterm(SIGTERM);	/* shouldn't ever happen */
 		}
   		lirc_log_close();
-                lirc_log_open("lircd", nodaemon, debug);
+                lirc_log_open("lircd", nodaemon, debug_opt);
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
 			/* can't print any error messagees */
@@ -2175,7 +2249,7 @@ static void lircd_parse_options(int argc, char** argv)
 			break;
 		case 'D':
 			options_set_opt("lircd:debug", optarg ? optarg : "1");
-			debug = 1;
+			debug_opt = 1;
 			break;
 		case 'a':
 			options_set_opt("lircd:allow-simulate", "True");
@@ -2269,7 +2343,7 @@ int main(int argc, char **argv)
 		if (!add_peer_connection(optarg))
 			return(EXIT_FAILURE);
 	}
-	debug = options_getint("lircd:debug");
+	debug_opt = options_getint("lircd:debug");
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
 	allow_simulate = options_getboolean("lircd:allow-simulate");
@@ -2295,7 +2369,7 @@ int main(int argc, char **argv)
 
 	signal(SIGPIPE, SIG_IGN);
 
-	start_server(permission, nodaemon, debug);
+	start_server(permission, nodaemon, debug_opt);
 
 	act.sa_handler = sigterm;
 	sigfillset(&act.sa_mask);

@@ -1,3 +1,12 @@
+/**
+ *  @file hw-types.c
+ *  @author Alec Leamas
+ *  @date August 2014
+ *  @copyright GPL2 or later
+ *
+ * Routines for dynamic drivers. This file was previously used for other purposes, and should possibly be renamed.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -9,12 +18,21 @@
 #include "lirc/hardware.h"
 #include "lirc/hw-types.h"
 #include "lirc/lirc_options.h"
+#include "lirc_log.h"
 
-struct hardware hw;             // Set by hw_choose_driver(), the driver in use.
+/**
+ * The global hardware that drivers etc are accessing.
+ * Defined in hw-types.c.
+ * Set by hw_choose_driver().
+ */
+struct hardware hw;
 
+/** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
-
+/**
+ * Just local usage  within this file.
+ */
 typedef struct hardware* (*hw_guest_func)(struct hardware*, void*);
 
 struct hardware hw_default = {
@@ -34,22 +52,28 @@ struct hardware hw_default = {
 	"null",                 /* name */
 };
 
-
+/**
+ * Return true if and only if str ends with ".so".
+ * @param str
+ * @return
+ */
 static int ends_with_so(const char *str)
-// Return 0 if str ends with ".so".
 {
     char *dot = strrchr(str, '.');
 
-    if (NULL == dot) return 0;
-    return strcmp(dot, ".so") == 0;
+    return (NULL == dot) ? 0 : strcmp(dot + 1, PLUGIN_FILE_EXTENSION) == 0;
 }
 
-
+/**
+ * hw_guest_func which prints name of *hw on file.
+ * @param hw
+ * @param file
+ * @return NULL
+ */
 static struct hardware* print_hw_name(struct hardware* hw, void* file)
-// hw_guest_func which prints name of *hw on file. Returns NULL.
 {
 	fprintf((FILE*)file, "\t%s\n", hw->name);
-	return (struct hardware*)NULL;
+	return NULL;
 }
 
 
@@ -131,17 +155,23 @@ static struct hardware* for_each_driver(hw_guest_func func, void* arg)
 	return result;
 }
 
-
-void hw_print_drivers(FILE* file)
+/**
+ * @brief Prints all drivers known to the system to the file given as argument.
+ * @param file File to print to.
+ */
+ void hw_print_drivers(FILE* file)
 // Print list of all hardware names (i. e., drivers) on file.
 {
 	for_each_driver(print_hw_name, (void*)file);
 }
 
-
+/**
+ * Search for driver, update global hw with driver data if found.
+ *
+ * @param name
+ * @return Returns 0 if found and hw updated, else -1.
+ */
 int hw_choose_driver(char* name)
-// Search for driver, update global hw with driver data if found.
-// Returns 0 if found and hw updated, else -1.
 {
 	struct hardware* found;
 

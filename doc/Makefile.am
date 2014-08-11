@@ -35,13 +35,13 @@ clean-local:
 	rm -rf man
 	rm -rf man-html
 
-$(manpage_html): $(nodist_man_MANS)
+$(manpage_html): $(nodist_man_MANS) man2html
 	test -d man-html || mkdir man-html
 	for f in  $(nodist_man_MANS); do \
 	    dest=man-html/$$(basename $$f); \
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
-	    man2html -M ../html/index.html $$f |  \
+	    ./man2html -M ../html/index.html $$f |  \
 	        sed  -e '1,/<BODY>/d' \
                     -e '/<\/BODY>/,$$d' \
                     -e '/HREF="#index"/d' \

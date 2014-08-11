@@ -8,21 +8,18 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <limits.h>
 #include <signal.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/wait.h>
-#include <sys/un.h>
-#include <sys/utsname.h>
 
 #include "lirc_driver.h"
+
+//#include "lirc/hardware.h" // struct hardware, extern hardware hw
+//#include "lirc/lirc_log.h" // logging
+//#include "lirc/receive.h"  // only if receiving
+//#include "lirc/transmit.h" // only if transmitting
+
+#include "lirc/lirc_dyndriver.h"
 
 #include "commandir.h"
 
@@ -43,7 +40,7 @@ struct hardware hw_commandir = {
 	"commandir"
 };
 
-struct hardware* hardwares[] = { &hw_commandir, (struct hardware*)NULL };
+struct hardware* hardwares[] = { &hw_commandir, NULL };
 
 lirc_t lirc_zero_buffer[2] = { 0, 0 };
 
@@ -83,12 +80,12 @@ static int commandir_receive_decode(struct ir_remote *remote, ir_code * prep, ir
 				    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
 
-	int i, j;
+	int i;
 	i = receive_decode(remote, prep, codep, postp, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
 
 	if (i > 0) {
 		static char rx_char[3] = { 3, 0, RXDECODE_HEADER_LIRC };
-		j = write(tochild_write, rx_char, 3);
+		(void)write(tochild_write, rx_char, 3);
 	}
 
 	return i;
@@ -97,10 +94,9 @@ static int commandir_receive_decode(struct ir_remote *remote, ir_code * prep, ir
 static int commandir_init()
 {
 	long fd_flags;
-	int j;
 	if (haveInited) {
 		static char init_char[3] = { 3, 0, INIT_HEADER_LIRC };
-		j = write(tochild_write, init_char, 3);
+		(void)write(tochild_write, init_char, 3);
 		return 1;
 	}
 
@@ -154,10 +150,9 @@ static int commandir_deinit(void)
 {
 	/* Trying something a bit new with this driver. Keeping the driver
 	 * connected so in the future we can still monitor in the client */
-	int j;
 	if (USB_KEEP_WARM && (!strncmp(progname, "lircd", 5))) {
 		static char deinit_char[3] = { 3, 0, DEINIT_HEADER_LIRC };
-		j = write(tochild_write, deinit_char, 3);
+		(void)write(tochild_write, deinit_char, 3);
 		logprintf(LOG_ERR, "LIRC_deinit but keeping warm");
 	} else {
 		if (tochild_read >= 0) {
@@ -191,7 +186,7 @@ static int commandir_deinit(void)
 
 static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 {
-	int length, j;
+	int length;
 	lirc_t *signals;
 
 	if (!init_send(remote, code)) {
@@ -205,7 +200,7 @@ static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 		return 0;
 	}
 
-	int cmdir_cnt = 0;
+	//int cmdir_cnt = 0;
 	char cmdir_char[70];
 
 	// Set the frequency of the signal along with the signal + transmitters
@@ -218,9 +213,9 @@ static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 	cmdir_char[5] = (remote->freq >> 8) & (0xff);
 	cmdir_char[6] = (remote->freq & 0xff);
 
-	j = write(tochild_write, cmdir_char, cmdir_char[0]);
+	(void)write(tochild_write, cmdir_char, cmdir_char[0]);
 
-	cmdir_cnt = 3;
+	//cmdir_cnt = 3;
 
 	unsigned char *send_signals = malloc(sizeof(signals) * length + 4);
 
@@ -253,7 +248,6 @@ static char *commandir_rec(struct ir_remote *remotes)
 static int commandir_ioctl(unsigned int cmd, void *arg)
 {
 	struct send_tx_mask send_this_mask;
-	int j;
 
 	switch (cmd) {
 	case LIRC_SET_TRANSMITTER_MASK:
@@ -265,7 +259,7 @@ static int commandir_ioctl(unsigned int cmd, void *arg)
 		send_this_mask.idByte = CHANNEL_EN_MASK;
 		send_this_mask.new_tx_mask = *(unsigned int *)arg;
 
-		j = write(tochild_write, &send_this_mask, sizeof(send_this_mask));
+		(void)write(tochild_write, &send_this_mask, sizeof(send_this_mask));
 		return (0);
 
 	default:
@@ -309,20 +303,20 @@ static struct detected_commandir *detected_commandirs = NULL;
 static struct commandir_tx_order *ordered_commandir_devices = NULL;
 static struct commandir_device *rx_device = NULL;
 
-int rx_hold = 0;
-int shutdown_pending = 0;
-int read_delay = WAIT_BETWEEN_READS_US;
-int insert_fast_zeros = 0;	// changed from 2, Aug 4/2010
+static int rx_hold = 0;
+static int shutdown_pending = 0;
+static int read_delay = WAIT_BETWEEN_READS_US;
+static int insert_fast_zeros = 0;	// changed from 2, Aug 4/2010
 
 // Interface Functions:
 
 static void commandir_child_init()
 {
-	unsigned int emitter_set_test[4];
-	emitter_set_test[0] = 2;	//     0101
-	emitter_set_test[1] = 4;
-	emitter_set_test[2] = 5;	// 1100
-	emitter_set_test[3] = 6;
+	//unsigned int emitter_set_test[4];
+	//emitter_set_test[0] = 2;	//     0101
+	//emitter_set_test[1] = 4;
+	//emitter_set_test[2] = 5;	// 1100
+	//emitter_set_test[3] = 6;
 
 	logprintf(LOG_ERR, "Child Initializing CommandIR Hardware");
 
@@ -341,7 +335,7 @@ static void commandir_child_init()
 	commandir_read_loop();
 }
 
-int do_we_know_device(unsigned int bus_num, int devnum)
+static int do_we_know_device(unsigned int bus_num, int devnum)
 {
 	struct commandir_device *pcd;
 
@@ -353,7 +347,7 @@ int do_we_know_device(unsigned int bus_num, int devnum)
 	return FALSE;
 }
 
-void commandir_iii_update_status(struct commandir_device *cd)
+static void commandir_iii_update_status(struct commandir_device *cd)
 {
 	int receive_status;
 	struct commandirIII_status *sptr;
@@ -382,7 +376,7 @@ void commandir_iii_update_status(struct commandir_device *cd)
 }
 
 // Create a new commandir_device, set it up, add it to the linked list
-int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct usb_device *dev)
+static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct usb_device *dev)
 {
 	struct commandir_device *new_commandir;
 	int x;
@@ -880,7 +874,7 @@ static void commandir_read_loop()
 	int curCommandLength = 0;
 	int bytes_read;
 	unsigned char periodic_checks = 0;
-	int send_status = 0;
+	//int send_status = 0;
 	int repeats = 0;
 
 	struct commandir_device *pcd;
@@ -907,7 +901,7 @@ static void commandir_read_loop()
 					for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 						if (pcd->hw_type == HW_COMMANDIR_2) {
 							if (pcd->cmdir_udev > 0) {
-								send_status = usb_bulk_write(pcd->cmdir_udev, 2,	// endpoint2
+								(void) usb_bulk_write(pcd->cmdir_udev, 2,	// endpoint2
 											     (char *)deinit_led, 7,	// bytes
 											     USB_TIMEOUT_MS);
 							}
@@ -920,7 +914,7 @@ static void commandir_read_loop()
 					for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 						if (pcd->hw_type == HW_COMMANDIR_2) {
 							if (pcd->cmdir_udev > 0) {
-								send_status = usb_bulk_write(pcd->cmdir_udev, 2,	// endpoint2
+								(void)usb_bulk_write(pcd->cmdir_udev, 2,	// endpoint2
 											     (char *)init_led, 7,	// bytes
 											     USB_TIMEOUT_MS);
 							}
@@ -934,7 +928,7 @@ static void commandir_read_loop()
 					for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 						if (rx_device && (rx_device->cmdir_udev > 0)
 						    && (pcd->hw_type == HW_COMMANDIR_2)) {
-							send_status = usb_bulk_write(rx_device->cmdir_udev, 2,	// endpoint2
+							(void) usb_bulk_write(rx_device->cmdir_udev, 2,	// endpoint2
 										     (char *)rx_decode_led, 7,	// bytes
 										     USB_TIMEOUT_MS);
 						}
@@ -1258,10 +1252,10 @@ static int check_irsend_commandir(unsigned char *command)
 				lightchange[2] = ledhigh;
 				lightchange[3] = ledlow;
 				lightchange[4] = ledprog;
-				int send_status = 0;
+				//int send_status = 0;
 
 				if (first_commandir_device) {
-					send_status = usb_bulk_write(first_commandir_device->cmdir_udev, 2,	// endpoint2
+					(void)usb_bulk_write(first_commandir_device->cmdir_udev, 2,	// endpoint2
 								     (char *)lightchange, 7,	// bytes
 								     USB_TIMEOUT_MS);
 				}
@@ -1379,10 +1373,10 @@ static int commandir_read()
 			if (commandir_data_buffer[0] == RX_HEADER_TXAVAIL) {
 				update_tx_available(pcd);
 
-				int tmp4 = 0;
+				//int tmp4 = 0;
 				if (zeroterminated > 1001) {
 					if (insert_fast_zeros > 0) {
-						tmp4 =
+						//tmp4 =
 						    write(child_pipe_write, lirc_zero_buffer,
 							  sizeof(lirc_t) * insert_fast_zeros);
 					}
@@ -1520,7 +1514,7 @@ static void commandir_2_transmit_next(struct commandir_device *pcd)
 	 */
 
 	int sent = 0, tosend = 0;
-	int total_signals = 0;
+	//int total_signals = 0;
 	lirc_t *signals;	// have bytes/sizeof(lirc_t) signals
 	int i;
 	char cmdir_char[66];
@@ -1531,7 +1525,7 @@ static void commandir_2_transmit_next(struct commandir_device *pcd)
 
 	char freqPulseWidth = DEFAULT_PULSE_WIDTH;
 
-	total_signals = pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t);
+	//total_signals = pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t);
 	signals = (lirc_t *) pcd->next_tx_signal->raw_signal;
 
 	switch (pcd->hw_type) {
@@ -1815,11 +1809,11 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 	static int incomingBuffer_Write = 0, incomingBuffer_Read = 0;
 	static lirc_t buffer_write;
 	static int currentPCA_Frequency = (48000000 / 38000);
-	static float currentPWM = 0;
+	//static float currentPWM = 0;
 
-	int i, mySize, read_num;
+	int i, mySize;//, read_num;
 	int currentSize, expectingBytes;
-	int packet_number;
+	//int packet_number;
 	static int mcu_rx_top_location;
 
 	struct usb_rx_pulse3 *a_usb_rx_pulse;
@@ -1828,7 +1822,7 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 	struct usb_rx_demod_pulse *a_usb_rx_demod_pulse;
 
 	if (numNewValues > 0) {
-		packet_number = rxBuffer[0];
+		//packet_number = rxBuffer[0];
 		expectingBytes = rxBuffer[1] + rxBuffer[2] * 256;
 		if (numNewValues != (expectingBytes + 5))
 			logprintf(LOG_ERR, "MCU top is now: %d (a change of: %d)\n", rxBuffer[3] + rxBuffer[4] * 256,
@@ -1872,7 +1866,7 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 				mySize = 4;
 				break;
 			case USB_NO_DATA_BYTE:
-				read_num =
+				//read_num =
 				    write(child_pipe_write, lirc_zero_buffer, sizeof(lirc_t) * insert_fast_zeros);
 				mySize = 0;
 				break;
@@ -1923,7 +1917,7 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 				case USB_RX_PULSE_DEF:
 					a_usb_rx_pulse_def = (struct usb_rx_pulse_def3 *)
 					    &incomingBuffer[incomingBuffer_Read];
-					currentPWM = ((float)(a_usb_rx_pulse_def->pwm)) / 48;
+					//currentPWM = ((float)(a_usb_rx_pulse_def->pwm)) / 48;
 					/*  We have no way to tell irrecord the detected frequency, do we?
 					   printf(" Pulse Def, frequency: %f us, pwm: %fus; Duty Cycle: %f%%\n",
 					   1/( ((float)(a_usb_rx_pulse_def->frequency))/48000000),

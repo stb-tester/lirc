@@ -12,6 +12,10 @@
 #include <sys/time.h>
 #include <stdio.h>
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 /*
  * The maximum level logged. Either one of the syslog levels LOG_CRIT..
  * LOG_DEBUG, or one of LIRC_TRACE=8, LIRC_PEEP=9, LIRC_STALK=10.
@@ -67,5 +71,9 @@ void log_enable(int enabled);
  * */
 void lirc_set_logfile(char* s);
 void hexdump(char *prefix, unsigned char* buf, int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LIRC_LOG_H */

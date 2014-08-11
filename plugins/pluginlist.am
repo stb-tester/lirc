@@ -60,7 +60,7 @@ plugin_LTLIBRARIES              += slinke.la
 slinke_la_SOURCES                = slinke.c slinke.h
 
 plugin_LTLIBRARIES              += tira.la
-tira_la_SOURCES                  = tira.c tira.h
+tira_la_SOURCES                  = tira.c
 
 plugin_LTLIBRARIES              += udp.la
 udp_la_SOURCES                   = udp.c

@@ -45,7 +45,9 @@ liblirc_driver_la_SOURCES   = hardware.h \
                               ciniparser.c \
                               ciniparser.h
 
-dist_include_HEADERS        = lirc_private.h lirc_client.h lirc_driver.h
+dist_include_HEADERS        = lirc_client.h \
+                              lirc_driver.h \
+                              lirc_private.h
 
 lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
@@ -58,6 +60,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               ir_remote.h \
                               ir_remote_types.h \
                               lirc_client.h \
+			      lirc_dyndriver.h \
                               lirc_log.h \
                               lirc_options.h \
                               release.h \

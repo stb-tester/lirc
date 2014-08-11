@@ -14,11 +14,19 @@
 
 #include "ir_remote.h"
 
-#define WBUF_SIZE (256)
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
+#define WBUF_SIZE 256
+
+/**
+ * Struct for the global sending buffer.
+ */
 struct sbuf {
 	lirc_t *data;
-	lirc_t _data[WBUF_SIZE];
+
+	lirc_t _data[WBUF_SIZE]; /**< Actual sending data. */
 	int wptr;
 	int too_long;
 	int is_biphase;
@@ -28,10 +36,15 @@ struct sbuf {
 };
 
 void init_send_buffer(void);
-inline void set_bit(ir_code * code, int bit, int data);
 int init_send(struct ir_remote *remote, struct ir_ncode *code);
+/** @cond */
 int init_sim(struct ir_remote *remote, struct ir_ncode *code, int repeat_preset);
+/** @endcond */
 
 extern struct sbuf send_buffer;
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif

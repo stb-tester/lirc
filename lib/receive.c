@@ -9,6 +9,12 @@
  *
  */
 
+/**
+ * @file receive.c
+ * @author Christoph Bartelmus
+ * @brief Functions that decode IR codes.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -24,20 +30,23 @@
 extern struct hardware hw;
 extern struct ir_remote *last_remote;
 
+/**
+ * Global receiver buffer.
+ */
 struct rbuf rec_buffer;
 
-inline lirc_t lirc_t_max(lirc_t a, lirc_t b)
+static inline lirc_t lirc_t_max(lirc_t a, lirc_t b)
 {
 	return (a > b ? a : b);
 }
 
-inline void set_pending_pulse(lirc_t deltap)
+static inline void set_pending_pulse(lirc_t deltap)
 {
 	LOGPRINTF(5, "pending pulse: %lu", deltap);
 	rec_buffer.pendingp = deltap;
 }
 
-inline void set_pending_space(lirc_t deltas)
+static inline void set_pending_space(lirc_t deltas)
 {
 	LOGPRINTF(5, "pending space: %lu", deltas);
 	rec_buffer.pendings = deltas;
@@ -95,6 +104,12 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 	return (0);
 }
 
+/**
+ * When this function returns, with a non-zero return value, data on the file descriptor hw.fd is available.
+ * If argument is positive, may wait for that time, otherwise return immediately.
+ * @param maxusec timeout in micro seconds
+ * @return
+ */
 int waitfordata(__u32 maxusec)
 {
 	fd_set fds;
@@ -133,7 +148,7 @@ int waitfordata(__u32 maxusec)
 }
 
 
-lirc_t get_next_rec_buffer(lirc_t maxusec)
+static lirc_t get_next_rec_buffer(lirc_t maxusec)
 {
 	return get_next_rec_buffer_internal(receive_timeout(maxusec));
 }
@@ -197,7 +212,7 @@ int clear_rec_buffer(void)
 	return (1);
 }
 
-inline void unget_rec_buffer(int count)
+static inline void unget_rec_buffer(int count)
 {
 	LOGPRINTF(5, "unget: %d", count);
 	if (count == 1 || count == 2) {
@@ -210,14 +225,14 @@ inline void unget_rec_buffer(int count)
 	}
 }
 
-inline void unget_rec_buffer_delta(lirc_t delta)
+static inline void unget_rec_buffer_delta(lirc_t delta)
 {
 	rec_buffer.rptr--;
 	rec_buffer.sum -= delta & (PULSE_MASK);
 	rec_buffer.data[rec_buffer.rptr] = delta;
 }
 
-inline lirc_t get_next_pulse(lirc_t maxusec)
+static inline lirc_t get_next_pulse(lirc_t maxusec)
 {
 	lirc_t data;
 
@@ -231,7 +246,7 @@ inline lirc_t get_next_pulse(lirc_t maxusec)
 	return (data & (PULSE_MASK));
 }
 
-inline lirc_t get_next_space(lirc_t maxusec)
+static inline lirc_t get_next_space(lirc_t maxusec)
 {
 	lirc_t data;
 
@@ -245,7 +260,7 @@ inline lirc_t get_next_space(lirc_t maxusec)
 	return (data);
 }
 
-inline int sync_pending_pulse(struct ir_remote *remote)
+static inline int sync_pending_pulse(struct ir_remote *remote)
 {
 	if (rec_buffer.pendingp > 0) {
 		lirc_t deltap;
@@ -260,7 +275,7 @@ inline int sync_pending_pulse(struct ir_remote *remote)
 	return 1;
 }
 
-inline int sync_pending_space(struct ir_remote *remote)
+static inline int sync_pending_space(struct ir_remote *remote)
 {
 	if (rec_buffer.pendings > 0) {
 		lirc_t deltas;
@@ -275,7 +290,7 @@ inline int sync_pending_space(struct ir_remote *remote)
 	return 1;
 }
 
-int expectpulse(struct ir_remote *remote, int exdelta)
+static int expectpulse(struct ir_remote *remote, int exdelta)
 {
 	lirc_t deltap;
 	int retval;
@@ -300,7 +315,7 @@ int expectpulse(struct ir_remote *remote, int exdelta)
 	return (retval);
 }
 
-int expectspace(struct ir_remote *remote, int exdelta)
+static int expectspace(struct ir_remote *remote, int exdelta)
 {
 	lirc_t deltas;
 	int retval;
@@ -325,7 +340,7 @@ int expectspace(struct ir_remote *remote, int exdelta)
 	return (retval);
 }
 
-inline int expectone(struct ir_remote *remote, int bit)
+static inline int expectone(struct ir_remote *remote, int bit)
 {
 	if (is_biphase(remote)) {
 		int all_bits = bit_count(remote);
@@ -371,7 +386,7 @@ inline int expectone(struct ir_remote *remote, int bit)
 	return (1);
 }
 
-inline int expectzero(struct ir_remote *remote, int bit)
+static inline int expectzero(struct ir_remote *remote, int bit)
 {
 	if (is_biphase(remote)) {
 		int all_bits = bit_count(remote);
@@ -417,7 +432,7 @@ inline int expectzero(struct ir_remote *remote, int bit)
 	return (1);
 }
 
-inline lirc_t sync_rec_buffer(struct ir_remote * remote)
+static inline lirc_t sync_rec_buffer(struct ir_remote * remote)
 {
 	int count;
 	lirc_t deltas, deltap;
@@ -453,7 +468,7 @@ inline lirc_t sync_rec_buffer(struct ir_remote * remote)
 	return (deltas);
 }
 
-inline int get_header(struct ir_remote *remote)
+static inline int get_header(struct ir_remote *remote)
 {
 	if (is_rcmm(remote)) {
 		lirc_t deltap, deltas, sum;
@@ -511,7 +526,7 @@ inline int get_header(struct ir_remote *remote)
 	return (1);
 }
 
-inline int get_foot(struct ir_remote *remote)
+static inline int get_foot(struct ir_remote *remote)
 {
 	if (!expectspace(remote, remote->sfoot))
 		return (0);
@@ -520,7 +535,7 @@ inline int get_foot(struct ir_remote *remote)
 	return (1);
 }
 
-inline int get_lead(struct ir_remote *remote)
+static inline int get_lead(struct ir_remote *remote)
 {
 	if (remote->plead == 0)
 		return 1;
@@ -530,7 +545,7 @@ inline int get_lead(struct ir_remote *remote)
 	return 1;
 }
 
-inline int get_trail(struct ir_remote *remote)
+static inline int get_trail(struct ir_remote *remote)
 {
 	if (remote->ptrail != 0) {
 		if (!expectpulse(remote, remote->ptrail))
@@ -543,7 +558,7 @@ inline int get_trail(struct ir_remote *remote)
 	return (1);
 }
 
-inline int get_gap(struct ir_remote *remote, lirc_t gap)
+static inline int get_gap(struct ir_remote *remote, lirc_t gap)
 {
 	lirc_t data;
 
@@ -563,7 +578,7 @@ inline int get_gap(struct ir_remote *remote, lirc_t gap)
 	return (1);
 }
 
-inline int get_repeat(struct ir_remote *remote)
+static inline int get_repeat(struct ir_remote *remote)
 {
 	if (!get_lead(remote))
 		return (0);
@@ -589,7 +604,7 @@ inline int get_repeat(struct ir_remote *remote)
 	return (1);
 }
 
-ir_code get_data(struct ir_remote * remote, int bits, int done)
+static ir_code get_data(struct ir_remote * remote, int bits, int done)
 {
 	ir_code code;
 	int i;
@@ -926,7 +941,7 @@ ir_code get_data(struct ir_remote * remote, int bits, int done)
 	return (code);
 }
 
-ir_code get_pre(struct ir_remote * remote)
+static ir_code get_pre(struct ir_remote * remote)
 {
 	ir_code pre;
 
@@ -944,7 +959,7 @@ ir_code get_pre(struct ir_remote * remote)
 	return (pre);
 }
 
-ir_code get_post(struct ir_remote * remote)
+static ir_code get_post(struct ir_remote * remote)
 {
 	ir_code post;
 

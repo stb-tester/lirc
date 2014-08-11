@@ -37,7 +37,6 @@
 #endif
 
 #include "lirc_driver.h"
-#include "default.h"
 
 static int ptyfd;		/* the pty */
 
@@ -645,7 +644,8 @@ struct hardware hw_audio = {
 	audio_send,		/* send_func */
 	audio_rec,		/* rec_func */
 	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */	audio_readdata,
+	NULL,			/* ioctl_func */
+	audio_readdata,
 	"audio"
 };
 

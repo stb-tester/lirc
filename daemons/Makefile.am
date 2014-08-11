@@ -9,7 +9,7 @@ varrundir   = $(localstatedir)/run
 
 sbin_PROGRAMS = lircd lircmd
 
-lircd_SOURCES = lircd.c lircd.h
+lircd_SOURCES = lircd.c
 lircd_LDADD = ../lib/liblirc.la
 
 lircmd_SOURCES = lircmd.c
@@ -23,10 +23,10 @@ irrecord_LDADD = ../lib/liblirc.la
 ## maintainer mode stuff
 EXTRA_PROGRAMS = lircd.simsend lircd.simrec slinke
 noinst_PROGRAMS = @maintmode_daemons_extra@
-lircd_simsend_SOURCES = lircd.c lircd.h
+lircd_simsend_SOURCES = lircd.c
 lircd_simsend_CFLAGS = -DSIM_SEND
 lircd_simsend_LDADD = ../lib/liblirc.la
-lircd_simrec_SOURCES = lircd.c lircd.h
+lircd_simrec_SOURCES = lircd.c
 lircd_simrec_CFLAGS = -DSIM_REC
 lircd_simrec_LDADD = ../lib/liblirc.la
 

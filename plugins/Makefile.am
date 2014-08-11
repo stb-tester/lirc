@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS             = -I m4
 
 AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver
 AM_CFLAGS                   =
-AM_CPPFLAGS                 = -I../lib -I@kerneldir@
+AM_CPPFLAGS                 = -I../lib  -I../../lib -I@kerneldir@
 
 DISTCLEANFILES              = pluginlist.am
 

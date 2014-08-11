@@ -177,7 +177,12 @@ void log_enable(int enabled)
 	log_enabled = enabled;
 }
 
-
+/**
+ * Prints the log request to the log, if the priority fits.
+ * @param prio Priority of log request
+ * @param format_str Format string in the usual C sense.
+ * @param ... Additional vararg parameters.
+ */
 void logprintf(int prio, const char *format_str, ...)
 {
 	int save_errno = errno;
@@ -217,7 +222,11 @@ void logprintf(int prio, const char *format_str, ...)
 	errno = save_errno;
 }
 
-
+/**
+ * Prints a description of the last error to the log.
+ * @param prio Priority of log request.
+ * @param s Text string, typically the name of the function invoking the log request.
+ */
 void logperror(int prio, const char *s)
 {
 	if (!log_enabled)
