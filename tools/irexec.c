@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+
 #include "lirc_client.h"
 
 char *progname;
@@ -92,11 +93,10 @@ int main(int argc, char *argv[])
 			if (code == NULL)
 				continue;
 			while ((ret = lirc_code2char(config, code, &c)) == 0 && c != NULL) {
-#ifdef DEBUG
 				if (!daemonize) {
-					printf("Execing command \"%s\"\n", c);
+					logprintf(LOG_DEBUG,
+                                                  "Execing command \"%s\"\n", c);
 				}
-#endif
 				system(c);
 			}
 			free(code);

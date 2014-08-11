@@ -514,44 +514,6 @@ static int srm7500_initialize_802154_stack()
 	return 1;
 }
 
-#ifdef DEBUG
-#define HEXDUMP(prefix, buf, len) \
-	hexdump(prefix, buf, len)
-#else
-#define HEXDUMP(prefix, buf, len)
-#endif
-
-#ifdef DEBUG
-static void hexdump(char *prefix, u_int8_t * buf, int len)
-{
-	int i;
-	char str[1024];
-	int pos = 0;
-	if (prefix != NULL) {
-		strncpy(str, prefix, sizeof(str));
-		pos = strnlen(str, sizeof(str));
-	}
-	if (len > 0) {
-		for (i = 0; i < len; i++) {
-			if (pos + 3 >= sizeof(str)) {
-				break;
-			}
-
-			if (!(i % 8)) {
-				str[pos++] = ' ';
-			}
-
-			sprintf(str + pos, "%02x ", buf[i]);
-
-			pos += 3;
-		}
-	} else {
-		strncpy(str + pos, "NO DATA", sizeof(str));
-	}
-	LOGPRINTF(1, "%s", str);
-}
-#endif
-
 static int philipsrf_input(philipsrf_incoming_t * buffer_in)
 {
 	int ret = 0;

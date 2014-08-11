@@ -357,9 +357,7 @@ int main(int argc, char *argv[])
                         while((ret=lirc_code2char(config,code,&amp;c))==0 &amp;&amp;
                               c!=NULL)
                         {
-#ifdef DEBUG
-                                printf("Execing command \"%s\"\n",c);
-#endif
+                                logprintf(LOG_DEBUG, "Execing command \"%s\"\n",c);
                                 system(c);
                         }
                         free(code);

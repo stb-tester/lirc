@@ -78,7 +78,6 @@ int tty_setdtr(int fd, int enable)
 {
 	int cmd, sts;
 
-#ifdef DEBUG
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
 		LOGPRINTF(1, "%s: ioctl(TIOCMGET) failed", __FUNCTION__);
 		LOGPERROR(1, __FUNCTION__);
@@ -89,7 +88,6 @@ int tty_setdtr(int fd, int enable)
 	} else if ((!enable) && (sts & TIOCM_DTR)) {
 		LOGPRINTF(1, "%s: 1->0", __FUNCTION__);
 	}
-#endif
 	if (enable) {
 		cmd = TIOCMBIS;
 	} else {

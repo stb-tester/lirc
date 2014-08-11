@@ -55,25 +55,6 @@
  *
  */
 
-/* Functions available for logging (see tools/lircrcd.c).
- *
- * NOTE: if compiled without the DEBUG option and with SYSLOG,
- * you cannot control the amount of debug info sent to syslog,
- * even the LOG_DEBUG messages will be logged.
- *
- * void logprintf(int priority, const char *format, ...)
- * 	Calls the syslog(3) function.
- *
- * void logperror(int priority, const char *s)
- *	Uses the syslog(3) to print a message followed by the error message
- *	strerror (%m) associated to the present errno.
- *
- * void LOGPRINTF(int priority, const char *format, ...)
- *	Calls logprintf(), but only if compiled with DEBUG option.
- *
- * void LOGPERROR(int priority, const char *s)
- *	Calls logperror(), but only if compiled with DEBUG option.
-*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -363,7 +344,7 @@ int accent_open_serial_port(char *device)
 	int fd;
 	struct termios options;
 
-	logprintf(1, "Entering accent_open_serial_port(), device = %s", device);
+	logprintf(LOG_DEBUG, "Entering accent_open_serial_port(), device = %s", device);
 
 	// Open the serial device.
 	if ((fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC)) < 0) {

@@ -873,12 +873,7 @@ int main(int argc, char **argv)
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
-#ifdef DEBUG
 	lirc_log_open("lircmd", nodaemon, LOG_DEBUG);
-#else
-	lirc_log_open("lircmd", nodaemon, 0);
-#endif
-
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;

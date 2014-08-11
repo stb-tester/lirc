@@ -143,9 +143,6 @@ AC_MSG_RESULT()
 AH_TEMPLATE([PLUGINDIR],
         [The directory userspace drivers are loaded from])
 
-AH_TEMPLATE([DEBUG],
-        [Define to enable debugging output])
-
 AH_TEMPLATE([DEVDIR],
         [device files directory])
 
@@ -410,10 +407,6 @@ AC_ARG_ENABLE(dyncodes,
 [  --enable-dyncodes       use dynamic codes],
 test x${enableval} = xyes && AC_DEFINE(DYNCODES))
 
-AC_ARG_ENABLE(debug,
-[  --enable-debug          enable debugging features],
-test x${enableval} = xyes && AC_DEFINE(DEBUG)
-)
 
 AC_ARG_WITH(syslog,
 [  --with-syslog=facility  use syslog instead of logfile],

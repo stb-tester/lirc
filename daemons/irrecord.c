@@ -116,6 +116,7 @@ lirc_t aeps = 100;
 
 #define SAMPLES 80
 
+int debug = LOG_WARNING;  // Actual loglevel as per -D option, see lirc_log.h.
 int daemonized = 0;
 
 struct ir_remote *emulation_data;
@@ -245,6 +246,7 @@ int main(int argc, char **argv)
 {
 	char *filename;
 	FILE *fout, *fin;
+        long debug_opt = LONG_MIN;
 	int flags;
 	int retval = EXIT_SUCCESS;
 	ir_code pre, code, post;
@@ -260,7 +262,6 @@ int main(int argc, char **argv)
 	int analyse = 0;
 	char commandline[128];
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
-	lirc_log_open("irrecord", 0, LOG_WARNING);
 	get_commandline(argc, argv, commandline, sizeof(commandline));
 	force = 0;
 	hw_choose_driver(NULL);
@@ -271,24 +272,19 @@ int main(int argc, char **argv)
 			{"version", no_argument, NULL, 'v'},
 			{"analyse", no_argument, NULL, 'a'},
 			{"device", required_argument, NULL, 'd'},
+			{"debug", required_argument, NULL, 'D'},
 			{"driver", required_argument, NULL, 'H'},
 			{"force", no_argument, NULL, 'f'},
 			{"disable-namespace", no_argument, NULL, 'n'},
 			{"list-namespace", no_argument, NULL, 'l'},
-#ifdef DEBUG
 			{"pre", no_argument, NULL, 'p'},
 			{"post", no_argument, NULL, 'P'},
 			{"test", no_argument, NULL, 't'},
 			{"invert", no_argument, NULL, 'i'},
 			{"trail", no_argument, NULL, 'T'},
-#endif
 			{0, 0, 0, 0}
 		};
-#ifdef DEBUG
-		c = getopt_long(argc, argv, "hvad:H:fnlpPtiT", long_options, NULL);
-#else
-		c = getopt_long(argc, argv, "hvad:H:fnl", long_options, NULL);
-#endif
+		c = getopt_long(argc, argv, "hvad:H:fnlpPtiTD:", long_options, NULL);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -302,6 +298,7 @@ int main(int argc, char **argv)
 			printf("\t -l --list-namespace\t\tlist valid button names\n");
 			printf("\t -H --driver=driver\tuse given driver\n");
 			printf("\t -d --device=device\tread from given device\n");
+			printf("\t -D --debug=level\tSet debug level (1..10)\n");
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("irrecord %s\n", IRRECORD_VERSION);
@@ -319,6 +316,15 @@ int main(int argc, char **argv)
 		case 'd':
 			device = optarg;
 			break;
+                case 'D':
+                        debug_opt = strtol(optarg, NULL, 10);
+                        if (debug_opt < 1 || debug_opt >  12){
+                        	fprintf(stderr, "Bad debug value %s\n",
+                               		optarg);
+ 				exit(EXIT_FAILURE);
+ 			}
+                       	debug = (int)debug_opt;
+			break;
 		case 'f':
 			force = 1;
 			break;
@@ -329,7 +335,6 @@ int main(int argc, char **argv)
 			fprint_namespace(stdout);
 			exit(EXIT_SUCCESS);
 			break;
-#ifdef DEBUG
 		case 'p':
 			get_pre = 1;
 			break;
@@ -345,7 +350,6 @@ int main(int argc, char **argv)
 		case 'T':
 			trail = 1;
 			break;
-#endif
 		default:
 			printf("Try %s -h for help!\n", progname);
 			exit(EXIT_FAILURE);
@@ -358,6 +362,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s: invalid argument count\n", progname);
 		exit(EXIT_FAILURE);
 	}
+	lirc_log_open("irrecord", 0, debug);
 	if (device != NULL) {
 		hw.device = device;
 	}
@@ -388,7 +393,6 @@ int main(int argc, char **argv)
 			return EXIT_SUCCESS;
 		}
 		using_template = 1;
-#ifdef DEBUG
 		if (test) {
 			if (trail)
 				for_each_remote(remotes, remove_trail);
@@ -405,7 +409,6 @@ int main(int argc, char **argv)
 			free_config(remotes);
 			return (EXIT_SUCCESS);
 		}
-#endif
 		remote = *remotes;
 		remote.name = NULL;
 		remote.codes = NULL;
@@ -1028,9 +1031,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	}
 	if (seq > 0)
 		remote->min_repeat = repeats / seq;
-#       ifdef DEBUG
-	printf("min_repeat=%d\n", remote->min_repeat);
-#       endif
+	logprintf(LOG_DEBUG, "min_repeat=%d\n", remote->min_repeat);
 	return (found);
 }
 

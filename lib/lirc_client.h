@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <syslog.h>
 
 #ifndef __u32
 typedef uint32_t __u32;

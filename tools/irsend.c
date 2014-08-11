@@ -40,6 +40,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <limits.h>
+#include <syslog.h>
 
 #include <stdint.h>
 
@@ -99,9 +100,7 @@ const char *read_string(int fd)
 
 	end[0] = 0;
 	ptr = strlen(buffer) + 1;
-#       ifdef DEBUG
-	printf("buffer: -%s-\n", buffer);
-#       endif
+	logprintf(LOG_DEBUG, "buffer: -%s-\n", buffer);
 	return (buffer);
 }
 

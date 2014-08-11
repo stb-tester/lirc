@@ -551,7 +551,6 @@ int tira_init(void)
 	else if (check_ira())
 		device_type = 'i';
 
-#ifdef DEBUG
 	const char *device_string;
 
 	switch (device_type) {
@@ -565,7 +564,6 @@ int tira_init(void)
 		device_string = "unknown";
 	}
 	LOGPRINTF(1, "device type %s", device_string);
-#endif
 
 	if (device_type == 0) {
 		tira_deinit();

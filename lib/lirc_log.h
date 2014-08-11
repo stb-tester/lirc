@@ -57,6 +57,6 @@ int lirc_log_reopen(void);
 int lirc_log_open(const char* progname, int _nodaemon, int _debug);
 void log_enable(int enabled);
 void lirc_set_logfile(char* s);
-
+void hexdump(char *prefix, unsigned char* buf, int len);
 
 #endif /* _LIRC_LOG_H */

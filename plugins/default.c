@@ -187,7 +187,6 @@ int default_init()
 		default_deinit();
 		return (0);
 	}
-#       ifdef DEBUG
 	else {
 		if (!(LIRC_CAN_SEND(hw.features) || LIRC_CAN_REC(hw.features))) {
 			LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
@@ -200,7 +199,6 @@ int default_init()
 			LOGPRINTF(1, "driver supports receiving");
 		}
 	}
-#       endif
 
 	/* set send/receive method */
 	hw.send_mode = 0;

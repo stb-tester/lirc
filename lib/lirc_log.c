@@ -218,4 +218,32 @@ void logperror(int prio, const char *s)
 #endif
 }
 
+void hexdump(char *prefix, unsigned char* buf, int len)
+// Dump a byte array as hex code, adding a prefix.
+{
+	int i;
+	char str[1024];
+	int pos = 0;
+	if (prefix != NULL) {
+		strncpy(str, prefix, sizeof(str));
+		pos = strnlen(str, sizeof(str));
+	}
+	if (len > 0) {
+		for (i = 0; i < len; i++) {
+			if (pos + 3 >= sizeof(str)) {
+				break;
+			}
 
+			if (!(i % 8)) {
+				str[pos++] = ' ';
+			}
+
+			sprintf(str + pos, "%02x ", buf[i]);
+
+			pos += 3;
+		}
+	} else {
+		strncpy(str + pos, "NO DATA", sizeof(str));
+	}
+	LOGPRINTF(1, "%s", str);
+}

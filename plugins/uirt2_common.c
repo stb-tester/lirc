@@ -28,7 +28,6 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-//#define DEBUG
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,12 +44,6 @@
 
 #define PRINT_TIME(a) \
 LOGPRINTF(1, "time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)
-
-#ifdef DEBUG
-#define HEXDUMP(buf, len) hexdump(buf, len)
-#else
-#define HEXDUMP(buf, len)
-#endif
 
 struct tag_uirt2_t {
 	int fd;
@@ -101,31 +94,6 @@ static ssize_t readagain(int fd, void *buf, size_t count)
 	}
 	return (pos == 0) ? -1 : pos;
 }
-
-#ifdef DEBUG
-static void hexdump(byte_t * buf, int len)
-{
-	int i;
-	char str[200];
-	int pos = 0;
-
-	for (i = 0; i < len; i++) {
-		if (pos + 3 >= sizeof(str)) {
-			break;
-		}
-
-		if (!(i % 8)) {
-			str[pos++] = ' ';
-		}
-
-		sprintf(str + pos, "%02x ", buf[i]);
-
-		pos += 3;
-	}
-
-	logprintf(LOG_DEBUG, "%s", str);
-}
-#endif /* DEBUG */
 
 static int mywaitfordata(uirt2_t * dev, long usec)
 {

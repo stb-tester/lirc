@@ -2070,9 +2070,7 @@ static const struct option lircd_options[] = {
 #       ifndef USE_SYSLOG
 	{"logfile", required_argument, NULL, 'L'},
 #       endif
-#       ifdef DEBUG
 	{"debug", optional_argument, NULL, 'D'},
-#       endif
 	{"release", optional_argument, NULL, 'r'},
 	{"allow-simulate", no_argument, NULL, 'a'},
 #        if defined(__linux__)
@@ -2101,9 +2099,7 @@ static void lircd_help(void)
 #       ifndef USE_SYSLOG
 	printf("\t -L --logfile=file\t\tdaemon log file\n");
 #       endif
-#       ifdef DEBUG
 	printf("\t -D[debug_level] --debug[=debug_level]\n");
-#       endif
 	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
 	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
 #       if defined(__linux__)
@@ -2141,15 +2137,12 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** argv)
 {
 	int c;
-	const char* optstring =  "O:hvnp:H:d:o:U:P:l::c:r::aR:"
+	const char* optstring =  "O:hvnp:H:d:o:U:P:l::c:r::aR:D::"
 #       if defined(__linux__)
 		"u"
 #       endif
 #       ifndef USE_SYSLOG
 		"L:"
-#       endif
-#       ifdef DEBUG
-		"D::"
 #       endif
 	;
 
@@ -2199,12 +2192,10 @@ static void lircd_parse_options(int argc, char** argv)
 		case 'c':
 			options_set_opt("lircd:connect", optarg);
 			break;
-#               ifdef DEBUG
 		case 'D':
 			options_set_opt("lircd:debug", optarg ? optarg : "1");
 			debug = 1;
 			break;
-#               endif
 		case 'a':
 			options_set_opt("lircd:allow-simulate", "True");
 			break;
@@ -2296,9 +2287,7 @@ int main(int argc, char **argv)
 		if (!add_peer_connection(optarg))
 			return(EXIT_FAILURE);
 	}
-#       ifdef DEBUG
 	debug = options_getint("lircd:debug");
-#       endif
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
 	allow_simulate = options_getboolean("lircd:allow-simulate");

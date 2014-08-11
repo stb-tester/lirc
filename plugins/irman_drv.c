@@ -108,7 +108,6 @@ char *irman_rec(struct ir_remote *remotes)
 	codestring = ir_get_code();
 	gettimeofday(&end, NULL);
 	if (codestring == NULL) {
-#               ifdef DEBUG
 		if (errno == IR_EDUPCODE) {
 			LOGPRINTF(1, "received \"%s\" (dup)", text ? text : "(null - bug)");
 		} else if (errno == IR_EDISABLED) {
@@ -116,7 +115,6 @@ char *irman_rec(struct ir_remote *remotes)
 		} else {
 			LOGPRINTF(1, "error reading code: \"%s\"", ir_strerror(errno));
 		}
-#               endif
 		if (errno == IR_EDUPCODE) {
 			return decode_all(remotes);
 		}

@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: August 2009" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: Aug 2014" "irrecord @version@" "User Commands"
 .SH NAME
 irrecord - application for recording IR-codes for usage with LIRC
 .SH SYNOPSIS
@@ -37,10 +37,13 @@ display this message
 display version
 .TP
 \fB\-a\fR \fB\-\-analyse\fR
-analyse raw_codes config files
+Analyse a raw_codes config file, trying to convert it to a
+regular configuration.
 .TP
 \fB\-f\fR \fB\-\-force\fR
-force raw mode
+Force raw mode. Use this if recording fails otherwise. This
+creates a raw codes configuration file which can be used as-is
+or converted using the -a option.
 .TP
 \fB\-n\fR \fB\-\-disable\-namespace\fR
 disables namespace checks
@@ -49,10 +52,14 @@ disables namespace checks
 list valid button names
 .TP
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
-use given driver
+Use given driver. -H help lists available drivers.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
 read from given device
+.TP
+\fB\-D\fR \fB\-\-debug\fR=\fIlevel\fR
+Set debug level, a value between 1 and 10. 10 gives most output. Values
+0..7 corresponds to the syslog levels LOG_CRIT..LOG_DEBUG.
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The directory used for this is determined by (falling
 priority):
