@@ -1,6 +1,6 @@
 
 /****************************************************************************
- ** default.c ************************************************************
+ ** hw_default.c ************************************************************
  ****************************************************************************
  *
  * routines for hardware that supports ioctl() interface
@@ -25,11 +25,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-/* disable daemonise if maintainer mode SIM_REC / SIM_SEND defined */
-#if defined(SIM_REC) || defined (SIM_SEND)
-# undef DAEMONIZE
-#endif
-
 #include "lirc_driver.h"
 
 #include "default.h"
@@ -53,7 +48,7 @@ static __u32 supported_rec_modes[] = {
 };
 
 static const struct hardware hw_default = {
-	"/dev/lirc0",		/* default device */
+	LIRC_DRIVER_DEVICE,	/* default device */
 	-1,			/* fd */
 	0,			/* features */
 	0,			/* send_mode */
@@ -70,7 +65,7 @@ static const struct hardware hw_default = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_default,  (struct hardware*)NULL };
+struct hardware* hardwares[] = { &hw_default,  (struct hardware*)NULL };
 
 
 /**********************************************************************
@@ -94,27 +89,6 @@ int default_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-#if defined(SIM_REC) && !defined(DAEMONIZE)
-	while (1) {
-		__u32 scan;
-
-		ret = fscanf(stdin, "space %u\n", &scan);
-		if (ret == 1) {
-			data = (int) scan;
-			break;
-		}
-
-		ret = fscanf(stdin, "pulse %u\n", &scan);
-		if (ret == 1) {
-			data = (int) scan | PULSE_BIT;
-			break;
-		}
-
-		ret = fscanf(stdin, "%*s\n");
-		if (ret == EOF)
-			dosigterm(SIGTERM);
-	}
-#else
 	ret = read(hw.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
 		logprintf(LOG_ERR, "error reading from %s (ret %d, expected %d)",
@@ -134,7 +108,6 @@ int default_readdata(lirc_t timeout)
 		}
 		data = 1;
 	}
-#endif
 	return data ;
 }
 
@@ -144,17 +117,6 @@ int default_readdata(lirc_t timeout)
 
 int default_init()
 {
-#if defined(SIM_SEND) && !defined(DAEMONIZE)
-	hw.fd = STDOUT_FILENO;
-	hw.features = LIRC_CAN_SEND_PULSE;
-	hw.send_mode = LIRC_MODE_PULSE;
-	hw.rec_mode = 0;
-#elif defined(SIM_REC) && !defined(DAEMONIZE)
-	hw.fd = STDIN_FILENO;
-	hw.features = LIRC_CAN_REC_MODE2;
-	hw.send_mode = 0;
-	hw.rec_mode = LIRC_MODE_MODE2;
-#else
 	struct stat s;
 	int i;
 
@@ -172,7 +134,7 @@ int default_init()
 	if (S_ISSOCK(s.st_mode)) {
 		struct sockaddr_un addr;
 		addr.sun_family = AF_UNIX;
-		strncpy(addr.sun_path, hw.device, sizeof(addr.sun_path));
+		strncpy(addr.sun_path, hw.device, sizeof(addr.sun_path) - 1);
 
 		hw.fd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (hw.fd == -1) {
@@ -225,7 +187,6 @@ int default_init()
 		default_deinit();
 		return (0);
 	}
-#       ifdef DEBUG
 	else {
 		if (!(LIRC_CAN_SEND(hw.features) || LIRC_CAN_REC(hw.features))) {
 			LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
@@ -238,7 +199,6 @@ int default_init()
 			LOGPRINTF(1, "driver supports receiving");
 		}
 	}
-#       endif
 
 	/* set send/receive method */
 	hw.send_mode = 0;
@@ -290,44 +250,25 @@ int default_init()
 		default_deinit();
 		return (0);
 	}
-#endif
 	return (1);
 }
 
 int default_deinit(void)
 {
-#if (!defined(SIM_SEND) || !defined(SIM_SEND)) || defined(DAEMONIZE)
 	if (hw.fd != -1) {
 		close(hw.fd);
 		hw.fd = -1;
 	}
-#endif
 	return (1);
 }
 
 static int write_send_buffer(int lirc)
 {
-#if defined(SIM_SEND) && !defined(DAEMONIZE)
-	int i;
-
-	if (send_buffer.wptr == 0) {
-		LOGPRINTF(1, "nothing to send");
-		return (0);
-	}
-	for (i = 0;;) {
-		printf("pulse %u\n", (__u32) send_buffer.data[i++]);
-		if (i >= send_buffer.wptr)
-			break;
-		printf("space %u\n", (__u32) send_buffer.data[i++]);
-	}
-	return (send_buffer.wptr * sizeof(lirc_t));
-#else
 	if (send_buffer.wptr == 0) {
 		LOGPRINTF(1, "nothing to send");
 		return (0);
 	}
 	return (write(lirc, send_buffer.data, send_buffer.wptr * sizeof(lirc_t)));
-#endif
 }
 
 int default_send(struct ir_remote *remote, struct ir_ncode *code)
@@ -336,7 +277,6 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 	if (hw.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
-#if !defined(SIM_SEND) || defined(DAEMONIZE)
 	if (hw.features & LIRC_CAN_SET_SEND_CARRIER) {
 		unsigned int freq;
 
@@ -357,18 +297,12 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 			return (0);
 		}
 	}
-#endif
 	if (!init_send(remote, code))
 		return (0);
-
 	if (write_send_buffer(hw.fd) == -1) {
 		logprintf(LOG_ERR, "write failed");
 		logperror(LOG_ERR, NULL);
 		return (0);
-	} else {
-#if defined(SIM_SEND) && !defined(DAEMONIZE)
-		printf("space %u\n", (__u32) remote->min_remaining_gap);
-#endif
 	}
 	return (1);
 }

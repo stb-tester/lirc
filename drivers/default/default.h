@@ -1,4 +1,3 @@
-/*      $Id: hw_default.h,v 5.12 2010/01/16 17:17:42 lirc Exp $      */
 
 /****************************************************************************
  ** hw_default.h ************************************************************
@@ -13,7 +12,9 @@
 #ifndef _HW_DEFAULT_H
 #define _HW_DEFAULT_H
 
-#include "lirc_driver.h"
+#include "lirc/ir_remote.h"
+
+#define LIRC_DRIVER_DEVICE "/dev/lirc0"
 
 int default_init(void);
 int default_config(struct ir_remote *remotes);
