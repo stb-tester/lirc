@@ -30,8 +30,6 @@
 
 #include "lirc_driver.h"
 
-#include "logitech.h"
-
 #define NUMBYTES 16
 #define TIMEOUT 50000
 
@@ -41,6 +39,13 @@ static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
+
+//Forwards
+int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int logitech_init(void);
+int logitech_deinit(void);
+char *logitech_rec(struct ir_remote *remotes);
 
 struct hardware hw_logitech = {
 	LIRC_IRTTY,		/* default device */

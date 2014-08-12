@@ -28,11 +28,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 
 #include "lirc_driver.h"
 
-#include "pinsys.h"
-#include <termios.h>
 
 extern struct ir_remote *repeat_remote, *last_remote;
 
@@ -60,6 +59,17 @@ static unsigned char b[3];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code code;
+
+//Forwards:
+int is_it_is_it_huh(int port);
+int autodetect(void);
+
+int pinsys_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int pinsys_init(void);
+int pinsys_deinit(void);
+char *pinsys_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_pinsys = {
 	LIRC_IRTTY,		/* default device */

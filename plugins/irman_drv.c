@@ -31,8 +31,6 @@
 #include "lirc_driver.h"
 #include <irman.h>
 
-#include "irman_drv.h"
-
 extern struct ir_remote *repeat_remote, *last_remote;
 
 unsigned char *codestring;
@@ -41,6 +39,16 @@ lirc_t gap;
 ir_code code;
 
 #define CODE_LENGTH 64
+
+//Forwards:
+int irman_decode(struct ir_remote *remote,
+                 ir_code * prep, ir_code * codep, ir_code * postp,
+                 int *repeat_flagp,
+		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int irman_init(void);
+int irman_deinit(void);
+char *irman_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_irman = {
 	LIRC_IRTTY,		/* default device */

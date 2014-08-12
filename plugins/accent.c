@@ -79,8 +79,6 @@
 
 #include "lirc_driver.h"
 
-#include "accent.h"
-
 // Max number of bytes received in a sequence.
 #define ACCENT_MAX_READ_BYTES 16
 // Only the first bytes of the sequence are meaning.
@@ -102,6 +100,18 @@ static lirc_t signal_length;
 // The code of the pressed key and the previous one.
 // Type ir_code is __u64.
 static ir_code code, last_code = 0;
+
+// Forwards
+int accent_decode(struct ir_remote *remote,
+                  ir_code* prep, ir_code* codep, ir_code* postp,
+                  int* repeat_flagp,
+		  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
+
+int accent_open_serial_port(char *device);
+int accent_init(void);
+int accent_deinit(void);
+char *accent_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_accent = {
 	LIRC_IRTTY,		/* default device */

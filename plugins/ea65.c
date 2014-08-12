@@ -41,13 +41,21 @@
 
 #include "lirc_driver.h"
 
-#include "ea65.h"
-
 #define TIMEOUT     60000
 #define CODE_LENGTH 24
 
 struct timeval start, end, last;
 ir_code code;
+
+//Forwards:
+int ea65_decode(struct ir_remote *remote,
+                ir_code * prep, ir_code * codep, ir_code * postp,
+                int *repeat_flagp,
+		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int ea65_init(void);
+int ea65_release(void);
+char *ea65_receive(struct ir_remote *remote);
+
 
 const struct hardware hw_ea65 = {
 	LIRC_IRTTY,		/* default device */

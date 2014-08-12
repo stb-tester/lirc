@@ -27,8 +27,6 @@
 
 #include "lirc_driver.h"
 
-#include "default.h"
-
 extern struct ir_remote *repeat_remote;
 
 static __u32 supported_send_modes[] = {
@@ -46,6 +44,17 @@ static __u32 supported_rec_modes[] = {
 	/* LIRC_CAN_REC_RAW, */
 	0
 };
+
+//Forwards:
+int default_init(void);
+int default_config(struct ir_remote *remotes);
+int default_deinit(void);
+int default_send(struct ir_remote *remote, struct ir_ncode *code);
+char *default_rec(struct ir_remote *remotes);
+int default_ioctl(unsigned int cmd, void *arg);
+lirc_t default_readdata(lirc_t timeout);
+
+
 
 static const const struct hardware hw_default = {
 	LIRC_DRIVER_DEVICE,	/* default device */

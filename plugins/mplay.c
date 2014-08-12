@@ -49,8 +49,6 @@
 
 #include "lirc_driver.h"
 
-#include "mplay.h"
-
 /* The mplay code length in bit */
 #define MPLAY_CODE_LENGTH 8
 
@@ -63,6 +61,18 @@
 /* Max time in micro seconde between the reception of repetition code. After
    this time, we ignore the key repeat */
 #define MAX_TIME_BETWEEN_TWO_REPETITION_CODE 500000
+
+//Forwards:
+extern int mplay_decode(struct ir_remote *remote,
+                        ir_code * prep, ir_code * codep, ir_code * postp,
+                        int *repeat_flagp,
+			lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+
+extern int mplay_init(void);
+extern int mplay2_init(void);
+extern int mplay_deinit(void);
+extern char *mplay_rec(struct ir_remote *remotes);
+
 
 /**************************************************************************
  * Definition of local struct that permit to save data from call to call

@@ -31,8 +31,6 @@
 
 #include "lirc_driver.h"
 
-#include "pcmak.h"
-
 #define TIMEOUT 50000
 
 extern struct ir_remote *repeat_remote, *last_remote;
@@ -42,6 +40,16 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 static int repeat_counter, pressed_key;
+
+//Forwards:
+int pcmak_decode(struct ir_remote *remote,
+                 ir_code * prep, ir_code * codep, ir_code * postp,
+                 int *repeat_flagp,
+		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int pcmak_init(void);
+int pcmak_deinit(void);
+char *pcmak_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_pcmak = {
 	LIRC_IRTTY,		/* default device */

@@ -31,8 +31,6 @@
 
 #include "lirc_driver.h"
 
-#include "silitek.h"
-
 #define NUMBYTES 3
 #define TIMEOUT 20000
 
@@ -42,6 +40,16 @@ unsigned char b[NUMBYTES];
 ir_code code;
 struct timeval current, last;
 int do_repeat;
+
+//Forwards:
+int silitek_decode(struct ir_remote *remote,
+                   ir_code * prep, ir_code * codep, ir_code * postp,
+                   int *repeat_flagp,
+		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int silitek_init(void);
+int silitek_deinit(void);
+char *silitek_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_silitek = {
 	LIRC_IRTTY,		/* default device */

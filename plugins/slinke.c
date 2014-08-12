@@ -37,8 +37,6 @@
 
 #include "lirc_driver.h"
 
-#include "slinke.h"
-
 void *slinke_malloc(size_t size)
 {
 	void *ptr = malloc(size);
@@ -89,6 +87,18 @@ extern struct ir_remote *repeat_remote, *last_remote;
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
+
+//Forwards:
+int slinke_decode(struct ir_remote *remote,
+                  ir_code * prep, ir_code * codep, ir_code * postp,
+                  int *repeat_flagp,
+		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+
+int slinke_init(void);
+int slinke_deinit(void);
+char *slinke_rec(struct ir_remote *remotes);
+lirc_t slinke_readdata(lirc_t timetout);
+
 
 const struct hardware hw_slinke = {
 	LIRC_IRTTY,		/* default device */

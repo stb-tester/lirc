@@ -36,8 +36,6 @@
 
 #include "lirc_driver.h"
 
-#include "mouseremote.h"
-
 #define TIMEOUT 50000
 
 extern struct ir_remote *repeat_remote, *last_remote;
@@ -46,6 +44,17 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 static int serial_input;
+
+//Forwards:
+int mouseremote_decode(struct ir_remote *remote,
+                       ir_code * prep, ir_code * codep, ir_code * postp,
+                       int *repeat_flagp,
+		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int mouseremote_init(void);
+int mouseremote_ps2_init(void);
+int mouseremote_deinit(void);
+char *mouseremote_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_mouseremote = {
 	LIRC_IRTTY,		/* default device */

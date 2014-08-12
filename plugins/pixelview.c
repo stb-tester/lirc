@@ -29,14 +29,22 @@
 
 #include "lirc_driver.h"
 
-#include "pixelview.h"
-
 extern struct ir_remote *repeat_remote, *last_remote;
 
 static unsigned char b[3];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
+
+//forwards:
+int pixelview_decode(struct ir_remote *remote,
+                     ir_code * prep, ir_code * codep, ir_code * postp,
+                     int *repeat_flagp,
+		     lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int pixelview_init(void);
+int pixelview_deinit(void);
+char *pixelview_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_pixelview = {
 	LIRC_IRTTY,		/* default device */

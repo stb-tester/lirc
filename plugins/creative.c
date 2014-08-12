@@ -29,7 +29,6 @@
 
 #include "lirc_driver.h"
 
-#include "creative.h"
 
 #define NUMBYTES 6
 #define TIMEOUT 20000
@@ -40,6 +39,16 @@ unsigned char b[NUMBYTES];
 struct timeval start, end, last;
 lirc_t gap, signal_length;
 ir_code pre, code;
+
+//Forwards:
+int creative_decode(struct ir_remote *remote,
+                    ir_code * prep, ir_code * codep, ir_code * postp,
+                    int *repeat_flagp,
+		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int creative_init(void);
+int creative_deinit(void);
+char *creative_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_creative = {
 	LIRC_IRTTY,		/* default device */

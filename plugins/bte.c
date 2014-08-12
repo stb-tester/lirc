@@ -51,11 +51,17 @@
 
 #include "lirc_driver.h"
 
-#include "bte.h"
-
 struct timeval start, end, last;
 lirc_t gap, signal_length;
 ir_code pre, code;
+
+// Forwards:
+int bte_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+	       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int bte_init(void);
+int bte_deinit(void);
+char *bte_rec(struct ir_remote *remotes);
+
 
 #define BTE_CAN_SEND 0
 const struct hardware hw_bte = {

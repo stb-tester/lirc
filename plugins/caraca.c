@@ -27,8 +27,6 @@
 
 #include "lirc_driver.h"
 
-#include "caraca.h"
-
 #define NUMBYTES 34
 #define TIMEOUT 20000
 
@@ -38,6 +36,15 @@ static unsigned char msg[NUMBYTES];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code code;
+
+// Forwards:
+int caraca_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int caraca_init(void);
+int caraca_deinit(void);
+char *caraca_rec(struct ir_remote *remotes);
+
+
 
 const struct hardware hw_caraca = {
 	NULL,			/* default device */

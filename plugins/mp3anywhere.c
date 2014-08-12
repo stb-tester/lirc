@@ -30,8 +30,6 @@
 
 #include "lirc_driver.h"
 
-#include "mp3anywhere.h"
-
 #define NUMBYTES 16
 #define TIMEOUT 50000
 
@@ -41,6 +39,14 @@ static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
+
+//Forwards:
+int mp3anywhere_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
+		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int mp3anywhere_init(void);
+int mp3anywhere_deinit(void);
+char *mp3anywhere_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_mp3anywhere = {
 	LIRC_IRTTY,		/* default device */

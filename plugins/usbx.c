@@ -52,13 +52,21 @@
 
 #include "lirc_driver.h"
 
-#include "usbx.h"
-
 static unsigned char b[6];
 static ir_code code;
 
 #define REPEAT_FLAG ((ir_code) 0x1)
 #define CODE_LENGTH 48
+
+//Forwards:
+int usbx_decode(struct ir_remote *remote,
+                ir_code * prep, ir_code * codep, ir_code * postp,
+                int *repeat_flagp,
+		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int usbx_init(void);
+int usbx_deinit(void);
+char *usbx_rec(struct ir_remote *remotes);
+
 
 const struct hardware hw_usbx = {
 	LIRC_IRTTY,		/* Default device */

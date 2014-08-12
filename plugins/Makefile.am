@@ -12,7 +12,7 @@ plugin_LTLIBRARIES          =
 
 if BUILD_CARACA
 plugin_LTLIBRARIES          += caraca.la
-caraca_la_SOURCES           = caraca.c caraca.h
+caraca_la_SOURCES           = caraca.c
 caraca_la_LDFLAGS           = $(AM_LDFLAGS) -lcaraca_client
 endif
 
@@ -63,7 +63,7 @@ endif
 
 if BUILD_LIBIRMAN_SW
 plugin_LTLIBRARIES          += irman_sw.la
-irman_sw_la_SOURCES         = irman_drv.c irman_drv.h
+irman_sw_la_SOURCES         = irman_drv.c
 irman_sw_la_LDFLAGS         = $(AM_LDFLAGS) -lirman_sw
 endif
 
