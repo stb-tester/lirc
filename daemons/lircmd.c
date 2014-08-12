@@ -69,7 +69,7 @@ static int uinputfd = -1;
 static int useuinput = 0;
 int debug = 0;
 
-inline int map_buttons(int b)
+int map_buttons(int b)
 {
 	switch (b) {
 	case BUTTON1:

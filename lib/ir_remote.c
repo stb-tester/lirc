@@ -58,7 +58,7 @@ struct ir_ncode *repeat_code;
 
 extern struct hardware hw;
 
-static inline lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
+static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
 {
 	unsigned long secs, diff;
 

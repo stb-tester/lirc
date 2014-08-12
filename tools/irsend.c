@@ -41,8 +41,9 @@
 #include <signal.h>
 #include <limits.h>
 #include <syslog.h>
-
 #include <stdint.h>
+
+#include "lirc_log.h"
 
 #ifndef __u32
 typedef uint32_t __u32;
@@ -52,7 +53,7 @@ typedef uint32_t __u32;
 #define TIMEOUT 3
 
 int timeout = 0;
-char *progname;
+char *prog;
 
 void sigalrm(int sig)
 {
@@ -76,7 +77,7 @@ const char *read_string(int fd)
 	alarm(TIMEOUT);
 	while (end == NULL) {
 		if (PACKET_SIZE <= ptr) {
-			fprintf(stderr, "%s: bad packet\n", progname);
+			fprintf(stderr, "%s: bad packet\n", prog);
 			ptr = 0;
 			return (NULL);
 		}
@@ -84,7 +85,7 @@ const char *read_string(int fd)
 
 		if (ret <= 0 || timeout) {
 			if (timeout) {
-				fprintf(stderr, "%s: timeout\n", progname);
+				fprintf(stderr, "%s: timeout\n", prog);
 			} else {
 				alarm(0);
 			}
@@ -128,8 +129,8 @@ int send_packet(int fd, const char *packet)
 	while (todo > 0) {
 		done = write(fd, (void *)data, todo);
 		if (done < 0) {
-			fprintf(stderr, "%s: could not send packet\n", progname);
-			perror(progname);
+			fprintf(stderr, "%s: could not send packet\n", prog);
+			perror(prog);
 			return (-1);
 		}
 		data += done;
@@ -165,7 +166,7 @@ int send_packet(int fd, const char *packet)
 				status = 0;
 				return (status);
 			} else if (strcasecmp(string, "ERROR") == 0) {
-				fprintf(stderr, "%s: command failed: %s", progname, packet);
+				fprintf(stderr, "%s: command failed: %s", prog, packet);
 				status = -1;
 			} else {
 				goto bad_packet;
@@ -193,7 +194,7 @@ int send_packet(int fd, const char *packet)
 			}
 			break;
 		case P_DATA_N:
-			fprintf(stderr, "%s: %s\n", progname, string);
+			fprintf(stderr, "%s: %s\n", prog, string);
 			n++;
 			if (n == data_n)
 				state = P_END;
@@ -207,7 +208,7 @@ int send_packet(int fd, const char *packet)
 		}
 	}
 bad_packet:
-	fprintf(stderr, "%s: bad return packet\n", progname);
+	fprintf(stderr, "%s: bad return packet\n", prog);
 	return (-1);
 }
 
@@ -226,7 +227,7 @@ int main(int argc, char **argv)
 	char buffer[PACKET_SIZE + 1];
 	struct sigaction act;
 
-	progname = "irsend";
+	prog = "irsend";
 
 	while (1) {
 		int c;
@@ -243,7 +244,7 @@ int main(int argc, char **argv)
 			break;
 		switch (c) {
 		case 'h':
-			printf("Usage: %s [options] DIRECTIVE REMOTE CODE [CODE...]\n", progname);
+			printf("Usage: %s [options] DIRECTIVE REMOTE CODE [CODE...]\n", prog);
 			printf("\t -h --help\t\t\tdisplay usage summary\n");
 			printf("\t -v --version\t\t\tdisplay version\n");
 			printf("\t -d --device\t\t\tuse given lircd socket [%s]\n", LIRCD);
@@ -251,7 +252,7 @@ int main(int argc, char **argv)
 			printf("\t -# --count=n\t\t\tsend command n times\n");
 			return (EXIT_SUCCESS);
 		case 'v':
-			printf("%s %s\n", progname, VERSION);
+			printf("%s %s\n", prog, VERSION);
 			return (EXIT_SUCCESS);
 		case 'd':
 			lircd = optarg;
@@ -264,14 +265,14 @@ int main(int argc, char **argv)
 
 				address = strdup(optarg);
 				if (!address) {
-					fprintf(stderr, "%s: out of memory\n", progname);
+					fprintf(stderr, "%s: out of memory\n", prog);
 					return (EXIT_FAILURE);
 				}
 				p = strchr(address, ':');
 				if (p != NULL) {
 					val = strtoul(p + 1, &end, 10);
 					if (!(*(p + 1)) || *end || val < 1 || val > USHRT_MAX) {
-						fprintf(stderr, "%s: invalid port number: %s\n", progname, p + 1);
+						fprintf(stderr, "%s: invalid port number: %s\n", prog, p + 1);
 						return (EXIT_FAILURE);
 					}
 					port = (unsigned short)val;
@@ -285,7 +286,7 @@ int main(int argc, char **argv)
 
 				count = strtoul(optarg, &end, 10);
 				if (!*optarg || *end) {
-					fprintf(stderr, "%s: invalid count value: %s\n", progname, optarg);
+					fprintf(stderr, "%s: invalid count value: %s\n", prog, optarg);
 					return (EXIT_FAILURE);
 				}
 				break;
@@ -295,7 +296,7 @@ int main(int argc, char **argv)
 		}
 	}
 	if (optind + 2 > argc) {
-		fprintf(stderr, "%s: not enough arguments\n", progname);
+		fprintf(stderr, "%s: not enough arguments\n", prog);
 		return (EXIT_FAILURE);
 	}
 
@@ -304,7 +305,7 @@ int main(int argc, char **argv)
 	} else {
 		if (strlen(lircd) + 1 > sizeof(addr_un.sun_path)) {
 			/* lircd is longer than sockaddr_un.sun_path field */
-			fprintf(stderr, "%s: socket name is too long\n", progname);
+			fprintf(stderr, "%s: socket name is too long\n", prog);
 			return (EXIT_FAILURE);
 		}
 	}
@@ -323,7 +324,7 @@ int main(int argc, char **argv)
 
 		hostInfo = gethostbyname(address);
 		if (hostInfo == NULL) {
-			fprintf(stderr, "%s: host %s unknown\n", progname, address);
+			fprintf(stderr, "%s: host %s unknown\n", prog, address);
 			return (EXIT_FAILURE);
 		}
 		addr_in.sin_family = hostInfo->h_addrtype;
@@ -333,16 +334,16 @@ int main(int argc, char **argv)
 	}
 
 	if (fd == -1) {
-		fprintf(stderr, "%s: could not open socket\n", progname);
-		perror(progname);
+		fprintf(stderr, "%s: could not open socket\n", prog);
+		perror(prog);
 		exit(EXIT_FAILURE);
 	};
 
 	if (connect(fd,
 		    address ? (struct sockaddr *)&addr_in :
 		    (struct sockaddr *)&addr_un, address ? sizeof(addr_in) : sizeof(addr_un)) == -1) {
-		fprintf(stderr, "%s: could not connect to socket\n", progname);
-		perror(progname);
+		fprintf(stderr, "%s: could not connect to socket\n", prog);
+		perror(prog);
 		exit(EXIT_FAILURE);
 	};
 
@@ -357,7 +358,7 @@ int main(int argc, char **argv)
 		if (strlen(directive) + strlen(code) + 2 < PACKET_SIZE) {
 			sprintf(buffer, "%s %s", directive, code);
 		} else {
-			fprintf(stderr, "%s: input too long\n", progname);
+			fprintf(stderr, "%s: input too long\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		while (optind < argc) {
@@ -365,7 +366,7 @@ int main(int argc, char **argv)
 			if (strlen(buffer) + strlen(code) + 2 < PACKET_SIZE) {
 				sprintf(buffer + strlen(buffer), " %s", code);
 			} else {
-				fprintf(stderr, "%s: input too long\n", progname);
+				fprintf(stderr, "%s: input too long\n", prog);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -377,13 +378,13 @@ int main(int argc, char **argv)
 	if (strcasecmp(directive, "simulate") == 0) {
 		code = argv[optind++];
 		if (optind != argc) {
-			fprintf(stderr, "%s: invalid argument count\n", progname);
+			fprintf(stderr, "%s: invalid argument count\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		if (strlen(directive) + strlen(code) + 2 < PACKET_SIZE) {
 			sprintf(buffer, "%s %s\n", directive, code);
 		} else {
-			fprintf(stderr, "%s: input too long\n", progname);
+			fprintf(stderr, "%s: input too long\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		if (send_packet(fd, buffer) == -1) {
@@ -393,7 +394,7 @@ int main(int argc, char **argv)
 		remote = argv[optind++];
 
 		if (optind == argc) {
-			fprintf(stderr, "%s: not enough arguments\n", progname);
+			fprintf(stderr, "%s: not enough arguments\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		while (optind < argc) {
@@ -409,7 +410,7 @@ int main(int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 			} else {
-				fprintf(stderr, "%s: input too long\n", progname);
+				fprintf(stderr, "%s: input too long\n", prog);
 				exit(EXIT_FAILURE);
 			}
 		}

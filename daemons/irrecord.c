@@ -1438,7 +1438,7 @@ __u32 lengths[MAX_SIGNALS];
 __u32 first_length, first_lengths, second_lengths;
 unsigned int count, count_spaces, count_3repeats, count_5repeats, count_signals;
 
-inline lirc_t calc_signal(struct lengths *len)
+lirc_t calc_signal(struct lengths *len)
 {
 	return ((lirc_t) (len->sum / len->count));
 }

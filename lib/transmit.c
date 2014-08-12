@@ -31,12 +31,6 @@ struct sbuf send_buffer;
 static void send_signals(lirc_t * signals, int n);
 static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int sim, int repeat_preset);
 
-static inline void set_bit(ir_code * code, int bit, int data)
-{
-	(*code) &= ~((((ir_code) 1) << bit));
-	(*code) |= ((ir_code) (data ? 1 : 0) << bit);
-}
-
 /*
   sending stuff
 */
@@ -49,7 +43,7 @@ void init_send_buffer(void)
 	memset(&send_buffer, 0, sizeof(send_buffer));
 }
 
-static inline void clear_send_buffer(void)
+static  void clear_send_buffer(void)
 {
 	LOGPRINTF(3, "clearing transmit buffer");
 	send_buffer.wptr = 0;
@@ -60,7 +54,7 @@ static inline void clear_send_buffer(void)
 	send_buffer.sum = 0;
 }
 
-static inline void add_send_buffer(lirc_t data)
+static  void add_send_buffer(lirc_t data)
 {
 	if (send_buffer.wptr < WBUF_SIZE) {
 		LOGPRINTF(3, "adding to transmit buffer: %u", data);
@@ -72,7 +66,7 @@ static inline void add_send_buffer(lirc_t data)
 	}
 }
 
-static inline void send_pulse(lirc_t data)
+static  void send_pulse(lirc_t data)
 {
 	if (send_buffer.pendingp > 0) {
 		send_buffer.pendingp += data;
@@ -85,7 +79,7 @@ static inline void send_pulse(lirc_t data)
 	}
 }
 
-static inline void send_space(lirc_t data)
+static  void send_space(lirc_t data)
 {
 	if (send_buffer.wptr == 0 && send_buffer.pendingp == 0) {
 		LOGPRINTF(1, "first signal is a space!");
@@ -102,7 +96,7 @@ static inline void send_space(lirc_t data)
 	}
 }
 
-static inline int bad_send_buffer(void)
+static  int bad_send_buffer(void)
 {
 	if (send_buffer.too_long != 0)
 		return (1);
@@ -134,7 +128,7 @@ static int check_send_buffer(void)
 	return 1;
 }
 
-static inline void flush_send_buffer(void)
+static  void flush_send_buffer(void)
 {
 	if (send_buffer.pendingp > 0) {
 		add_send_buffer(send_buffer.pendingp);
@@ -146,7 +140,7 @@ static inline void flush_send_buffer(void)
 	}
 }
 
-static inline void sync_send_buffer(void)
+static  void sync_send_buffer(void)
 {
 	if (send_buffer.pendingp > 0) {
 		add_send_buffer(send_buffer.pendingp);
@@ -156,7 +150,7 @@ static inline void sync_send_buffer(void)
 		send_buffer.wptr--;
 }
 
-static inline void send_header(struct ir_remote *remote)
+static  void send_header(struct ir_remote *remote)
 {
 	if (has_header(remote)) {
 		send_pulse(remote->phead);
@@ -164,7 +158,7 @@ static inline void send_header(struct ir_remote *remote)
 	}
 }
 
-static inline void send_foot(struct ir_remote *remote)
+static  void send_foot(struct ir_remote *remote)
 {
 	if (has_foot(remote)) {
 		send_space(remote->sfoot);
@@ -172,21 +166,21 @@ static inline void send_foot(struct ir_remote *remote)
 	}
 }
 
-static inline void send_lead(struct ir_remote *remote)
+static  void send_lead(struct ir_remote *remote)
 {
 	if (remote->plead != 0) {
 		send_pulse(remote->plead);
 	}
 }
 
-static inline void send_trail(struct ir_remote *remote)
+static  void send_trail(struct ir_remote *remote)
 {
 	if (remote->ptrail != 0) {
 		send_pulse(remote->ptrail);
 	}
 }
 
-static inline void send_data(struct ir_remote *remote, ir_code data, int bits, int done)
+static  void send_data(struct ir_remote *remote, ir_code data, int bits, int done)
 {
 	int i;
 	int all_bits = bit_count(remote);
@@ -290,7 +284,7 @@ static inline void send_data(struct ir_remote *remote, ir_code data, int bits, i
 	}
 }
 
-static inline void send_pre(struct ir_remote *remote)
+static  void send_pre(struct ir_remote *remote)
 {
 	if (has_pre(remote)) {
 		send_data(remote, remote->pre_data, remote->pre_data_bits, 0);
@@ -301,7 +295,7 @@ static inline void send_pre(struct ir_remote *remote)
 	}
 }
 
-static inline void send_post(struct ir_remote *remote)
+static  void send_post(struct ir_remote *remote)
 {
 	if (has_post(remote)) {
 		if (remote->post_p > 0 && remote->post_s > 0) {
@@ -312,7 +306,7 @@ static inline void send_post(struct ir_remote *remote)
 	}
 }
 
-static inline void send_repeat(struct ir_remote *remote)
+static  void send_repeat(struct ir_remote *remote)
 {
 	send_lead(remote);
 	send_pulse(remote->prepeat);
@@ -320,7 +314,7 @@ static inline void send_repeat(struct ir_remote *remote)
 	send_trail(remote);
 }
 
-static inline void send_code(struct ir_remote *remote, ir_code code, int repeat)
+static  void send_code(struct ir_remote *remote, ir_code code, int repeat)
 {
 	if (!repeat || !(remote->flags & NO_HEAD_REP))
 		send_header(remote);

@@ -45,7 +45,7 @@ struct void_array {
 
 void **init_void_array(struct void_array *ar, size_t chunk_size, size_t item_size);
 int add_void_array(struct void_array *ar, void *data);
-inline void *get_void_array(struct void_array *ar);
+ void *get_void_array(struct void_array *ar);
 
 /* some safer functions */
 void *s_malloc(size_t size);

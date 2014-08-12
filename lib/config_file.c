@@ -101,7 +101,7 @@ int add_void_array(struct void_array *ar, void *dataptr)
 	return (1);
 }
 
-inline void *get_void_array(struct void_array *ar)
+ void *get_void_array(struct void_array *ar)
 {
 	return (ar->ptr);
 }
@@ -118,7 +118,7 @@ void *s_malloc(size_t size)
 	return (ptr);
 }
 
-inline char *s_strdup(char *string)
+ char *s_strdup(char *string)
 {
 	char *ptr;
 	if (!(ptr = strdup(string))) {
@@ -129,7 +129,7 @@ inline char *s_strdup(char *string)
 	return (ptr);
 }
 
-inline ir_code s_strtocode(const char *val)
+ ir_code s_strtocode(const char *val)
 {
 	ir_code code = 0;
 	char *endptr;

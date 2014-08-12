@@ -253,7 +253,7 @@ static lirc_t setup_min_pulse = 0, setup_min_space = 0;
 static lirc_t setup_max_pulse = 0, setup_max_space = 0;
 
 /* Use already opened hardware? */
-inline int use_hw()
+int use_hw()
 {
 	return (clin > 0 || (useuinput && uinputfd != -1) || repeat_remote != NULL);
 }
@@ -261,7 +261,7 @@ inline int use_hw()
 /* set_transmitters only supports 32 bit int */
 #define MAX_TX (CHAR_BIT*sizeof(__u32))
 
-inline int max(int a, int b)
+int max(int a, int b)
 {
 	return (a > b ? a : b);
 }
@@ -290,7 +290,7 @@ char *s;
 /* A safer write(), since sockets might not write all but only some of the
    bytes requested */
 
-inline int write_socket(int fd, const char *buf, int len)
+int write_socket(int fd, const char *buf, int len)
 {
 	int done, todo = len;
 
@@ -311,7 +311,7 @@ inline int write_socket(int fd, const char *buf, int len)
 	return (len);
 }
 
-inline int write_socket_len(int fd, const char *buf)
+int write_socket_len(int fd, const char *buf)
 {
 	int len;
 
@@ -321,7 +321,7 @@ inline int write_socket_len(int fd, const char *buf)
 	return (1);
 }
 
-inline int read_timeout(int fd, char *buf, int len, int timeout)
+int read_timeout(int fd, char *buf, int len, int timeout)
 {
 	fd_set fds;
 	struct timeval tv;

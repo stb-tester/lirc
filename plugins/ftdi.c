@@ -71,7 +71,7 @@ extern struct ir_remote *repeat_remote;
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
-static inline lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap)
+static lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap)
 {
 	__u32 secs,diff;
 
