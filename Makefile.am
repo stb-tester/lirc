@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS             = -I m4
 AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
 
 EXTRA_DIST =  setup-driver.sh setup-functions.sh  README TODO
-EXTRA_DIST += autogen.sh
+EXTRA_DIST += autogen.sh CONTRIBUTE.md
 
 BUILT_SOURCES = paths.h
 

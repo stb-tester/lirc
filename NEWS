@@ -1,5 +1,19 @@
 0.9.2-devel
-  * Old, non-functional kernel modules removed.
+  * Old, non-functional kernel modules are removed.
+  * The former with-syslog=, --enable-debug and disable-daemonize are gone.
+    All builds have DEBUG and DAEMONIZE enabled. Logging defaults to using
+    syslog, but using the --logfile option switches to file loggging.
+  * The --with-driver= configuration is gone, the build always builds all
+    drivers.
+  * Drivers are loaded dynamically. Many programs including lircd now
+    needs to know where the drivers are located to be able to use
+    them. There are new options, environment variables and hard-coded
+    defaults. See the manpages for more.
+  * The program is now re-structured into a common library and clients
+    linking to this. This has some consequences when installing.
+  * There are examples in the sources how to build new drivers. The
+    documentation in this area is also improved (see the driver-api guide).
+  * Support scripts now requires python3.
 
 0.9.1
   * Added systemd support: unit files, socket activation.
