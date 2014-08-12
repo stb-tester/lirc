@@ -84,17 +84,19 @@ do
 	logecho send1
 	logecho "Using remote: $REPLY"
         $NEW/daemons/lircd.simsend --pidfile=/tmp/lircd.sim.pid \
-                                  --output=/tmp/lircd.sim \
-                                  --logfile=$logfile \
-                                  $(get_new_args 'send') \
-            $REPLY >${name}.new 2>/dev/null || :
+                                   --output=/tmp/lircd.sim \
+                                   --logfile=$logfile \
+	  			   --nodaemon \
+                                   $(get_new_args 'send') \
+            $REPLY >${name}.new 2>send1.log || :
         while test -e /tmp/lircd.sim.pid; do sleep .1; done
 
 	logecho send2
         $OLD/daemons/lircd.simsend --pidfile=/tmp/lircd.sim.pid \
                                    --output=/tmp/lircd.sim \
                                    --logfile=$logfile \
-            $REPLY >${name}.old 2>/dev/null || :
+				   --nodaemon \
+            $REPLY >${name}.old 2>send2.log || :
         while test -e /tmp/lircd.sim.pid; do sleep .1; done
 #
 # receive
@@ -103,8 +105,9 @@ do
         $NEW/daemons/lircd.simrec --pidfile=/tmp/lircd.sim.pid \
                                   --output=/tmp/lircd.sim \
                                   --logfile=$logfile \
+				  --nodaemon \
                                   $(get_new_args 'receive') \
-            $REPLY <${name}.new >fail 2>&1 &
+            $REPLY <${name}.new >rec1.log 2>&1 &
         while ! tail -5 $logfile | grep ready >/dev/null; do sleep .12; done
         if ! $NEW/tools/irw /tmp/lircd.sim 2>>$logfile >${name}.rec_new; then
                 logecho "ERROR: new irw failed!!!"
@@ -115,7 +118,8 @@ do
         $OLD/daemons/lircd.simrec --pidfile=/tmp/lircd.sim.pid \
                                   --output=/tmp/lircd.sim \
                                   --logfile=$logfile \
-            $REPLY <${name}.new >fail 2>&1&
+				  --nodaemon \
+            $REPLY <${name}.new >rec2.log 2>&1 &
         while ! tail -1 $logfile | grep ready >/dev/null; do sleep .14; done
         if ! $OLD/tools/irw /tmp/lircd.sim 2>/dev/null >${name}.rec_old; then
                 logecho "ERROR: old irw failed!!!"
