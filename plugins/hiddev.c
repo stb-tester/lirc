@@ -42,7 +42,7 @@ static int samsung_init();
 static char *samsung_rec(struct ir_remote *remotes);
 static char *sonyir_rec(struct ir_remote *remotes);
 
-struct hardware hw_dvico = {
+const struct hardware hw_dvico = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -78,7 +78,7 @@ enum {
 static int repeat_state = RPT_UNKNOWN;
 
 /* Remotec Mediamaster specific */
-struct hardware hw_bw6130 = {
+const struct hardware hw_bw6130 = {
 	"/dev/usb/hid/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -95,7 +95,7 @@ struct hardware hw_bw6130 = {
 	"bw6130"
 };
 
-struct hardware hw_asusdh = {
+const struct hardware hw_asusdh = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -114,7 +114,7 @@ struct hardware hw_asusdh = {
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Creative USB IR Receiver (SB0540) */
-struct hardware hw_sb0540 = {
+const struct hardware hw_sb0540 = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -133,7 +133,7 @@ struct hardware hw_sb0540 = {
 #endif
 
 /* Apple Mac mini USB IR Receiver */
-struct hardware hw_macmini = {
+const struct hardware hw_macmini = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -152,7 +152,7 @@ struct hardware hw_macmini = {
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Samsung USB IR Receiver */
-struct hardware hw_samsung = {
+const struct hardware hw_samsung = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -171,7 +171,7 @@ struct hardware hw_samsung = {
 #endif
 
 /* Sony IR Receiver */
-struct hardware hw_sonyir = {
+const struct hardware hw_sonyir = {
 	"/dev/usb/hiddev0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -837,13 +837,13 @@ char *sonyir_rec(struct ir_remote *remotes)
 	return decode_all(remotes);
 }
 
-struct hardware* hardwares[] = { &hw_dvico,
-				 &hw_bw6130,
-				 &hw_asusdh,
-				 &hw_macmini,
-				 &hw_sonyir,
+const struct hardware* hardwares[] = { &hw_dvico,
+				       &hw_bw6130,
+				       &hw_asusdh,
+				       &hw_macmini,
+				       &hw_sonyir,
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
-				 &hw_sb0540,
-				 &hw_samsung,
+				       &hw_sb0540,
+			               &hw_samsung,
 #endif
-				 (struct hardware*)NULL };
+				       (const struct hardware*)NULL };

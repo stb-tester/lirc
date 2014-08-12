@@ -186,6 +186,7 @@ int hw_choose_driver(char* name)
 	found = for_each_driver(match_hw_name, (void*)name);
 	if (found != (struct hardware*)NULL){
 		memcpy(&hw, found, sizeof(struct hardware));
+		hw.fd = -1;
 		return 0;
 	}
 	return -1;

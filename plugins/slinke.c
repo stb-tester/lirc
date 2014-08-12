@@ -90,7 +90,7 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 
-struct hardware hw_slinke = {
+const struct hardware hw_slinke = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2,	/* features */
@@ -107,7 +107,7 @@ struct hardware hw_slinke = {
 	"slinke"
 };
 
-struct hardware* hardwares[] = { &hw_slinke, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_slinke, (const struct hardware*)NULL };
 
 
 /*****************************************************************************/

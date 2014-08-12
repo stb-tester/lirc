@@ -49,7 +49,7 @@
 struct timeval start, end, last;
 ir_code code;
 
-struct hardware hw_ea65 = {
+const struct hardware hw_ea65 = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd             */
 	LIRC_CAN_REC_LIRCCODE,	/* features       */
@@ -66,7 +66,7 @@ struct hardware hw_ea65 = {
 	"ea65"
 };
 
-struct hardware* hardwares[] = { &hw_ea65, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_ea65, (const struct hardware*)NULL };
 
 
 int ea65_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

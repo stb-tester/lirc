@@ -42,7 +42,7 @@ ir_code code;
 
 #define CODE_LENGTH 64
 
-struct hardware hw_irman = {
+const struct hardware hw_irman = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -59,7 +59,7 @@ struct hardware hw_irman = {
 	"irman"
 };
 
-struct hardware* hardwares[] = { &hw_irman, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_irman, (const struct hardware*)NULL };
 
 
 int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

@@ -44,7 +44,7 @@ static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
 
-struct hardware hw_atilibusb = {
+const struct hardware hw_atilibusb = {
 	NULL,			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -61,7 +61,7 @@ struct hardware hw_atilibusb = {
 	"atilibusb"
 };
 
-struct hardware* hardwares[] = { &hw_atilibusb, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_atilibusb, (const struct hardware*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

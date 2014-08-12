@@ -45,7 +45,7 @@ static char *dfc_rec(struct ir_remote *remotes);
 static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 
-struct hardware hw_dfclibusb = {
+const struct hardware hw_dfclibusb = {
 	NULL,			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -62,7 +62,7 @@ struct hardware hw_dfclibusb = {
 	"dfclibusb"
 };
 
-struct hardware* hardwares[] = { &hw_dfclibusb, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_dfclibusb, (const struct hardware*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

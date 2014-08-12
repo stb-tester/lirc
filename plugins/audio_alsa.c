@@ -520,7 +520,7 @@ char *audio_alsa_rec(struct ir_remote *remotes)
 
 #define audio_alsa_decode receive_decode
 
-struct hardware hw_audio_alsa = {
+const struct hardware hw_audio_alsa = {
 	"hw",			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2,	/* features */
@@ -537,4 +537,4 @@ struct hardware hw_audio_alsa = {
 	"audio_alsa"
 };
 
-struct hardware* hardwares[] = { &hw_audio_alsa, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_audio_alsa, (const struct hardware*)NULL };

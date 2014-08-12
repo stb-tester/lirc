@@ -66,7 +66,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout);
 static int uirt2_send_mode2_raw(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
 static int uirt2_send_mode2_struct1(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
 
-struct hardware hw_uirt2_raw = {
+const struct hardware hw_uirt2_raw = {
 #ifndef LIRC_IRTTY
 	"/dev/ttyS0",
 #else
@@ -87,7 +87,7 @@ struct hardware hw_uirt2_raw = {
 	"uirt2_raw"
 };
 
-struct hardware hw_usb_uirt_raw = {
+const struct hardware hw_usb_uirt_raw = {
 #ifndef LIRC_IRTTY
 	"/dev/ttyUSB0",
 #else
@@ -109,7 +109,7 @@ struct hardware hw_usb_uirt_raw = {
 };
 
 
-struct hardware* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, NULL };
 
 /*
  * queue

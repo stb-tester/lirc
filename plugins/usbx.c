@@ -60,7 +60,7 @@ static ir_code code;
 #define REPEAT_FLAG ((ir_code) 0x1)
 #define CODE_LENGTH 48
 
-struct hardware hw_usbx = {
+const struct hardware hw_usbx = {
 	LIRC_IRTTY,		/* Default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* Features */
@@ -77,7 +77,7 @@ struct hardware hw_usbx = {
 	"usbx"
 };
 
-struct hardware* hardwares[] = { &hw_usbx, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_usbx, (const struct hardware*)NULL };
 
 
 int usbx_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

@@ -27,16 +27,16 @@ struct hardware {
         /** The name of the device as text string. */
 	char *device;
 
-        /** Typically a file descriptor associated with the driver. (note that file descriptors are in fact nothing but integers). */
+        /** Internally used by lirc_lib, no initialization needed. */
 	int fd;
 
         /** Code for the features of the present device. */
 	__u32 features;
 
-        /** possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2, LIRC_MODE_LIRCCODE. These can be combined using bitwise or.*/
+        /** Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2, LIRC_MODE_LIRCCODE. These can be combined using bitwise or.*/
 	__u32 send_mode;
 
-        /** possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2, LIRC_MODE_LIRCCODE. These can be combined using bitwise or. */
+        /** Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2, LIRC_MODE_LIRCCODE. These can be combined using bitwise or. */
 	__u32 rec_mode;
 
         /** Length in bits of the code. */

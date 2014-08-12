@@ -23,7 +23,7 @@
 
 #include "commandir.h"
 
-struct hardware hw_commandir = {
+const struct hardware hw_commandir = {
 	0,			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_SET_SEND_CARRIER | LIRC_CAN_SEND_PULSE | LIRC_CAN_SET_TRANSMITTER_MASK | LIRC_CAN_REC_MODE2,
@@ -40,7 +40,7 @@ struct hardware hw_commandir = {
 	"commandir"
 };
 
-struct hardware* hardwares[] = { &hw_commandir, NULL };
+const struct hardware* hardwares[] = { &hw_commandir, NULL };
 
 lirc_t lirc_zero_buffer[2] = { 0, 0 };
 

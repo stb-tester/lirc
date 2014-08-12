@@ -43,7 +43,7 @@ static lirc_t signal_length;
 static ir_code pre, code;
 static int repeat_counter, pressed_key;
 
-struct hardware hw_pcmak = {
+const struct hardware hw_pcmak = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -60,7 +60,7 @@ struct hardware hw_pcmak = {
 	"pcmak"
 };
 
-struct hardware* hardwares[] = { &hw_pcmak, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_pcmak, (const struct hardware*)NULL };
 
 
 int pcmak_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

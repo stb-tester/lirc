@@ -499,7 +499,7 @@ static int hwftdi_ioctl(unsigned int cmd, void *arg)
 	return res;
 }
 
-struct hardware hw_ftdi = {
+const struct hardware hw_ftdi = {
 	"",			/* "device" -> used as configuration */
 	-1,			/* fd */
 
@@ -518,4 +518,4 @@ struct hardware hw_ftdi = {
 	"ftdi"
 };
 
-struct hardware* hardwares[] = { &hw_ftdi, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_ftdi, (const struct hardware*)NULL };

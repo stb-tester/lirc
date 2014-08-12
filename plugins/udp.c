@@ -143,7 +143,7 @@ lirc_t udp_readdata(lirc_t timeout)
 	return (data);
 }
 
-struct hardware hw_udp = {
+const struct hardware hw_udp = {
 	"8765",			/* "device" (port) */
 	-1,			/* fd (socket) */
 	LIRC_CAN_REC_MODE2,	/* features */
@@ -160,4 +160,4 @@ struct hardware hw_udp = {
 	"udp"
 };
 
-struct hardware* hardwares[] = { &hw_udp, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_udp, (const struct hardware*)NULL };

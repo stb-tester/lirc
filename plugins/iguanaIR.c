@@ -330,7 +330,7 @@ static lirc_t readdata(lirc_t timeout)
 	return code;
 }
 
-struct hardware hw_iguanaIR = {
+const struct hardware hw_iguanaIR = {
 	"0",			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2 |	/* features */
@@ -348,5 +348,5 @@ struct hardware hw_iguanaIR = {
 	"iguanaIR"
 };
 
-struct hardware* hardwares[] = { &hw_iguanaIR, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_iguanaIR, (const struct hardware*)NULL };
 

@@ -47,7 +47,7 @@ static lirc_t signal_length;
 static ir_code pre, code;
 static int serial_input;
 
-struct hardware hw_mouseremote = {
+const struct hardware hw_mouseremote = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -64,7 +64,7 @@ struct hardware hw_mouseremote = {
 	"mouseremote"
 };
 
-struct hardware hw_mouseremote_ps2 = {
+const struct hardware hw_mouseremote_ps2 = {
 	"/dev/psaux",		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -81,7 +81,9 @@ struct hardware hw_mouseremote_ps2 = {
 	"mouseremote_ps2"
 };
 
-struct hardware* hardwares[] = { &hw_mouseremote, &hw_mouseremote_ps2, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_mouseremote,
+                                       &hw_mouseremote_ps2,
+                                       (const struct hardware*)NULL };
 
 
 int mouseremote_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

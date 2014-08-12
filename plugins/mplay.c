@@ -91,7 +91,7 @@ static struct {
  * Definition of the standard internal hardware interface
  * use by lirc for the mplay device
  **************************************************************************/
-struct hardware hw_mplay = {
+const struct hardware hw_mplay = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -112,7 +112,7 @@ struct hardware hw_mplay = {
  * Definition of the standard internal hardware interface
  * use by lirc for the mplay v2 (Monueal Moncaso) devices
  **************************************************************************/
-struct hardware hw_mplay2 = {
+const struct hardware hw_mplay2 = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -129,7 +129,7 @@ struct hardware hw_mplay2 = {
 	"mplay2"
 };
 
-struct hardware* hardwares[] = { &hw_mplay, &hw_mplay2, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_mplay, &hw_mplay2, NULL };
 
 
 /**************************************************************************

@@ -65,7 +65,7 @@ static int philipsrf_input(philipsrf_incoming_t * buffer_in);
 static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
 
-struct hardware hw_srm7500libusb = {
+const struct hardware hw_srm7500libusb = {
 	NULL,			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -82,7 +82,7 @@ struct hardware hw_srm7500libusb = {
 	"srm7500libusb"
 };
 
-struct hardware* hardwares[] = { &hw_srm7500libusb, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_srm7500libusb, NULL };
 
 typedef struct {
 	u_int16_t vendor;

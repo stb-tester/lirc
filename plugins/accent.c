@@ -103,7 +103,7 @@ static lirc_t signal_length;
 // Type ir_code is __u64.
 static ir_code code, last_code = 0;
 
-struct hardware hw_accent = {
+const struct hardware hw_accent = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -120,7 +120,7 @@ struct hardware hw_accent = {
 	"accent"
 };
 
-struct hardware* hardwares[] = { &hw_accent, (struct hardware*) NULL};
+const struct hardware* hardwares[] = { &hw_accent, (const struct hardware*) NULL};
 
 
 //-------------------------------------------------------------------------

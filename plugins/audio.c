@@ -632,7 +632,7 @@ char *audio_rec(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-struct hardware hw_audio = {
+const struct hardware hw_audio = {
 	"",			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,	/* features */
@@ -649,4 +649,4 @@ struct hardware hw_audio = {
 	"audio"
 };
 
-struct hardware* hardwares[] = { &hw_audio, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_audio, (const struct hardware*)NULL };

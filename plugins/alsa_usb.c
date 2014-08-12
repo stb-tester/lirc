@@ -29,7 +29,7 @@ static snd_hwdep_t *hwdep;
 static struct timeval last_time;
 static int repeat_flag;
 
-struct hardware hw_alsa_usb = {
+const struct hardware hw_alsa_usb = {
 	"",			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -46,7 +46,7 @@ struct hardware hw_alsa_usb = {
 	"alsa_usb"
 };
 
-struct hardware* hardwares[] = { &hw_alsa_usb, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_alsa_usb, (const struct hardware*)NULL };
 
 
 static const char *search_device(void)

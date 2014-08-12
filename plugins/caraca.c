@@ -39,7 +39,7 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code code;
 
-struct hardware hw_caraca = {
+const struct hardware hw_caraca = {
 	NULL,			/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -56,7 +56,7 @@ struct hardware hw_caraca = {
 	"caraca"
 };
 
-struct hardware* hardwares[] = { &hw_caraca, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_caraca, (const struct hardware*)NULL };
 
 
 int caraca_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

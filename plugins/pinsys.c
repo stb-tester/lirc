@@ -61,7 +61,7 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code code;
 
-struct hardware hw_pinsys = {
+const struct hardware hw_pinsys = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -79,7 +79,7 @@ struct hardware hw_pinsys = {
 	"pinsys"
 };
 
-struct hardware* hardwares[] = { &hw_pinsys, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_pinsys, (const struct hardware*)NULL };
 
 
 /**** start of autodetect code ***************************/

@@ -38,7 +38,7 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 
-struct hardware hw_pixelview = {
+const struct hardware hw_pixelview = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -55,7 +55,7 @@ struct hardware hw_pixelview = {
 	"pixelview"
 };
 
-struct hardware* hardwares[] = { &hw_pixelview, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_pixelview, (const struct hardware*)NULL };
 
 
 int pixelview_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

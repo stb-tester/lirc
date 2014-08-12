@@ -56,7 +56,7 @@ enum locate_type {
 	locate_by_phys,
 };
 
-struct hardware hw_devinput = {
+const struct hardware hw_devinput = {
 	"/dev/input/event0",	/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -74,7 +74,7 @@ struct hardware hw_devinput = {
 };
 
 
-struct hardware* hardwares[] = { &hw_devinput, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_devinput, (const struct hardware*)NULL };
 
 static ir_code code;
 static ir_code code_compat;

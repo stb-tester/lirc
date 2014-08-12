@@ -53,7 +53,7 @@ static struct timeval start, end, last;
 static int repeat_state = RPT_NO;
 
 /* Aureal USB iR Receiver */
-struct hardware hw_atwf83 = {
+const struct hardware hw_atwf83 = {
 	"/dev/hidraw0",		/* "device" */
 	-1,			/* fd (device) */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -70,7 +70,7 @@ struct hardware hw_atwf83 = {
 	"atwf83"		/* name */
 };
 
-struct hardware* hardwares[] = { &hw_atwf83, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_atwf83, (const struct hardware*)NULL };
 
 
 static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

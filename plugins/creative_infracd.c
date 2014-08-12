@@ -41,7 +41,7 @@
 
 #include "creative_infracd.h"
 
-struct hardware hw_creative_infracd = {
+const struct hardware hw_creative_infracd = {
 	0,			/* determine device by probing */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -58,7 +58,7 @@ struct hardware hw_creative_infracd = {
 	"creative_infracd"
 };
 
-struct hardware* hardwares[] = { &hw_creative_infracd, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_creative_infracd, (const struct hardware*)NULL };
 
 
 /*

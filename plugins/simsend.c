@@ -47,7 +47,7 @@ static __u32 supported_rec_modes[] = {
 	0
 };
 
-static const struct hardware hw_simsend = {
+static const const struct hardware hw_simsend = {
 	LIRC_DRIVER_DEVICE,	/* default device */
 	-1,			/* fd */
 	0,			/* features */
@@ -64,7 +64,7 @@ static const struct hardware hw_simsend = {
 	"simsend"
 };
 
-struct hardware* hardwares[] = { &hw_simsend, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_simsend, (const struct hardware*)NULL };
 
 
 /**********************************************************************

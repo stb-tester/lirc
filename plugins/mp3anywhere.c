@@ -42,7 +42,7 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
 
-struct hardware hw_mp3anywhere = {
+const struct hardware hw_mp3anywhere = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -59,7 +59,7 @@ struct hardware hw_mp3anywhere = {
 	"mp3anywhere"
 };
 
-struct hardware* hardwares[] = { &hw_mp3anywhere, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_mp3anywhere, (const struct hardware*)NULL };
 
 
 int mp3anywhere_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

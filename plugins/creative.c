@@ -41,7 +41,7 @@ struct timeval start, end, last;
 lirc_t gap, signal_length;
 ir_code pre, code;
 
-struct hardware hw_creative = {
+const struct hardware hw_creative = {
 	LIRC_IRTTY,		/* default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_LIRCCODE,	/* features */
@@ -58,7 +58,7 @@ struct hardware hw_creative = {
 	"creative"
 };
 
-struct hardware* hardwares[] = { &hw_creative, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_creative, (const struct hardware*)NULL };
 
 
 int creative_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

@@ -32,7 +32,7 @@
 
 extern struct ir_remote *repeat_remote;
 
-static const struct hardware hw_simreceive = {
+static const const struct hardware hw_simreceive = {
 	LIRC_DRIVER_DEVICE,	/* default device */
 	-1,			/* fd */
 	0,			/* features */
@@ -50,7 +50,7 @@ static const struct hardware hw_simreceive = {
 };
 
 
-struct hardware* hardwares[] = { &hw_simreceive, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_simreceive, (const struct hardware*)NULL };
 
 
 /**********************************************************************

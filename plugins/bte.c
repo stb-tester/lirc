@@ -58,7 +58,7 @@ lirc_t gap, signal_length;
 ir_code pre, code;
 
 #define BTE_CAN_SEND 0
-struct hardware hw_bte = {
+const struct hardware hw_bte = {
 	LIRC_DRIVER_DEVICE,	/* default device */
 	-1,			/* fd */
 #if BTE_CAN_SEND
@@ -85,7 +85,7 @@ struct hardware hw_bte = {
 	"bte"
 };
 
-struct hardware* hardwares[] = { &hw_bte, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_bte, (const struct hardware*)NULL };
 
 enum bte_state {
 	BTE_NONE = 0, BTE_INIT, BTE_SET_ECHO, BTE_CHARSET, BTE_SET_ACCESSORY,

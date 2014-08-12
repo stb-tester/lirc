@@ -46,7 +46,7 @@
 
 #include "irlink.h"
 
-struct hardware hw_irlink = {
+const struct hardware hw_irlink = {
 	LIRC_IRTTY,		/* Default device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2,	/* Features */
@@ -63,7 +63,7 @@ struct hardware hw_irlink = {
 	"irlink"
 };
 
-struct hardware* hardwares[] = { &hw_irlink, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_irlink, (const struct hardware*)NULL };
 
 typedef enum {
 	BLOCK,

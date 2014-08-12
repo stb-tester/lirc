@@ -47,7 +47,7 @@ static __u32 supported_rec_modes[] = {
 	0
 };
 
-static const struct hardware hw_default = {
+static const const struct hardware hw_default = {
 	LIRC_DRIVER_DEVICE,	/* default device */
 	-1,			/* fd */
 	0,			/* features */
@@ -65,7 +65,7 @@ static const struct hardware hw_default = {
 };
 
 
-struct hardware* hardwares[] = { &hw_default,  (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_default,  (const struct hardware*)NULL };
 
 
 /**********************************************************************

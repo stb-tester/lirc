@@ -143,7 +143,7 @@ char *dsp_rec(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-struct hardware hw_dsp = {
+const struct hardware hw_dsp = {
 	"/dev/dsp",		/* simple device */
 	-1,			/* fd */
 	LIRC_CAN_REC_MODE2,	/* features */
@@ -161,4 +161,4 @@ struct hardware hw_dsp = {
 };
 
 
-struct hardware* hardwares[] = { &hw_dsp, (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_dsp, (const struct hardware*)NULL };
