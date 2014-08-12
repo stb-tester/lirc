@@ -50,6 +50,7 @@
 #include <errno.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 struct timeval start, end, last;
 lirc_t gap, signal_length;

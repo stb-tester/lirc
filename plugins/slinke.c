@@ -36,6 +36,7 @@
 #include <sys/ioctl.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 void *slinke_malloc(size_t size)
 {

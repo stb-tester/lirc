@@ -48,6 +48,7 @@
 #include <termios.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 /* The mplay code length in bit */
 #define MPLAY_CODE_LENGTH 8

@@ -78,6 +78,7 @@
 #include <sys/types.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 // Max number of bytes received in a sequence.
 #define ACCENT_MAX_READ_BYTES 16

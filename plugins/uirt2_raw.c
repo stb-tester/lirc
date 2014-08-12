@@ -40,6 +40,7 @@
 #include <sys/ioctl.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 #include "uirt2_common.h"
 

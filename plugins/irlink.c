@@ -43,6 +43,7 @@
 #include <termios.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 //Forwards:
 int irlink_decode(struct ir_remote *remote,

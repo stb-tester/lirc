@@ -40,6 +40,7 @@
 #include <sys/ioctl.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 #define TIMEOUT     60000
 #define CODE_LENGTH 24

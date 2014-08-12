@@ -13,12 +13,6 @@
 #include <sys/wait.h>
 
 #include "lirc_driver.h"
-
-//#include "lirc/hardware.h" // struct hardware, extern hardware hw
-//#include "lirc/lirc_log.h" // logging
-//#include "lirc/receive.h"  // only if receiving
-//#include "lirc/transmit.h" // only if transmitting
-
 #include "lirc/lirc_dyndriver.h"
 
 #include "commandir.h"

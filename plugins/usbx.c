@@ -51,6 +51,7 @@
 #include <termios.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 static unsigned char b[6];
 static ir_code code;

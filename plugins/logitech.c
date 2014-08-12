@@ -29,6 +29,7 @@
 #include <sys/ioctl.h>
 
 #include "lirc_driver.h"
+#include "lirc/serial.h"
 
 #define NUMBYTES 16
 #define TIMEOUT 50000
