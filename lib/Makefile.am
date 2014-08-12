@@ -60,6 +60,8 @@ dist_lircinclude_HEADERS    = config_file.h \
                               ir_remote.h \
                               ir_remote_types.h \
                               lirc_client.h \
+			      lirc_config1.h \
+			      lirc_config2.h \
 			      lirc_dyndriver.h \
                               lirc_log.h \
                               lirc_options.h \
