@@ -47,20 +47,21 @@ char *pixelview_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_pixelview = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	30,			/* code_length */
-	pixelview_init,		/* init_func */
-	pixelview_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	pixelview_rec,		/* rec_func */
-	pixelview_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"pixelview"
+	.name		=	"pixelview",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	30,
+	.init_func	=	pixelview_init,
+	.deinit_func	=	pixelview_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	pixelview_rec,
+	.decode_func	=	pixelview_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_pixelview, (const struct hardware*)NULL };

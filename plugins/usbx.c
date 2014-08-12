@@ -69,20 +69,21 @@ char *usbx_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_usbx = {
-	LIRC_IRTTY,		/* Default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* Features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_LENGTH,		/* code_length */
-	usbx_init,		/* init_func */
-	usbx_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	usbx_rec,		/* rec_func */
-	usbx_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"usbx"
+	.name		=	"usbx",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_LENGTH,
+	.init_func	=	usbx_init,
+	.deinit_func	=	usbx_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	usbx_rec,
+	.decode_func	=	usbx_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_usbx, (const struct hardware*)NULL };

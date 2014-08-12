@@ -47,20 +47,21 @@ char *caraca_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_caraca = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	16,			/* code_length */
-	caraca_init,		/* init_func */
-	caraca_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	caraca_rec,		/* rec_func */
-	caraca_decode		/* decode_func */
-	    NULL,		/* ioctl_func */
-	NULL,			/* readdata */
-	"caraca"
+	.name		=	"caraca"
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	16,
+	.init_func	=	caraca_init,
+	.deinit_func	=	caraca_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	caraca_rec,
+	.decode_func	=	caraca_decode
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_caraca, (const struct hardware*)NULL };

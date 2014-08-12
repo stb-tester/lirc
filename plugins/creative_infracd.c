@@ -42,20 +42,21 @@
 #include "creative_infracd.h"
 
 const struct hardware hw_creative_infracd = {
-	0,			/* determine device by probing */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	8,			/* code_length */
-	creative_infracd_init,	/* init_func */
-	creative_infracd_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	creative_infracd_rec,	/* rec_func */
-	creative_infracd_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,
-	"creative_infracd"
+	.name		=	"creative_infracd",
+	.device		=	0,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	8,
+	.init_func	=	creative_infracd_init,
+	.deinit_func	=	creative_infracd_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	creative_infracd_rec,
+	.decode_func	=	creative_infracd_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_creative_infracd, (const struct hardware*)NULL };

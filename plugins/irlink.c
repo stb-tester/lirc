@@ -57,20 +57,21 @@ lirc_t irlink_readdata(lirc_t timeout);
 
 
 const struct hardware hw_irlink = {
-	LIRC_IRTTY,		/* Default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2,	/* Features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	irlink_init,		/* init_func */
-	irlink_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	irlink_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	irlink_readdata,	/* readdata */
-	"irlink"
+	.name		=	"irlink",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	irlink_init,
+	.deinit_func	=	irlink_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	irlink_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	irlink_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_irlink, (const struct hardware*)NULL };

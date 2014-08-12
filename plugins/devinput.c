@@ -57,20 +57,21 @@ enum locate_type {
 };
 
 const struct hardware hw_devinput = {
-	"/dev/input/event0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	64,			/* code_length */
-	devinput_init_fwd,	/* init_func */
-	devinput_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	devinput_rec,		/* rec_func */
-	devinput_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"devinput"
+	.name		=	"devinput",
+	.device		=	"/dev/input/event0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	64,
+	.init_func	=	devinput_init_fwd,
+	.deinit_func	=	devinput_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	devinput_rec,
+	.decode_func	=	devinput_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

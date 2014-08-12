@@ -331,21 +331,24 @@ static lirc_t readdata(lirc_t timeout)
 }
 
 const struct hardware hw_iguanaIR = {
-	"0",			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2 |	/* features */
-	    LIRC_CAN_SEND_PULSE | LIRC_CAN_SET_SEND_CARRIER | LIRC_CAN_SET_TRANSMITTER_MASK,
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	sizeof(int),		/* code_length */
-	iguana_init,		/* init_func */
-	iguana_deinit,		/* deinit_func */
-	iguana_send,		/* send_func */
-	iguana_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	iguana_ioctl,		/* ioctl_func */
-	readdata,		/* readdata */
-	"iguanaIR"
+	.name		=	"iguanaIR",
+	.device		=	"0",
+	.features	=	LIRC_CAN_REC_MODE2 | \
+				LIRC_CAN_SEND_PULSE | \
+				LIRC_CAN_SET_SEND_CARRIER | \
+				LIRC_CAN_SET_TRANSMITTER_MASK,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	sizeof(int),
+	.init_func	=	iguana_init,
+	.deinit_func	=	iguana_deinit,
+	.send_func	=	iguana_send,
+	.rec_func	=	iguana_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	iguana_ioctl,
+	.readdata	=	readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_iguanaIR, (const struct hardware*)NULL };

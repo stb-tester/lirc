@@ -48,20 +48,21 @@ int logitech_deinit(void);
 char *logitech_rec(struct ir_remote *remotes);
 
 struct hardware hw_logitech = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	16,			/* code_length */
-	logitech_init,		/* init_func */
-	logitech_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	logitech_rec,		/* rec_func */
-	logitech_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"logitech"
+	.name		=	"logitech",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	16,
+	.init_func	=	logitech_init,
+	.deinit_func	=	logitech_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	logitech_rec,
+	.decode_func	=	logitech_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 struct hardware* hardwares[] = { &hw_logitech, (struct hardware*)NULL };

@@ -49,20 +49,21 @@ char *mp3anywhere_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_mp3anywhere = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	8,			/* code_length */
-	mp3anywhere_init,	/* init_func */
-	mp3anywhere_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	mp3anywhere_rec,	/* rec_func */
-	mp3anywhere_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"mp3anywhere"
+	.name		=	"mp3anywhere",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	8,
+	.init_func	=	mp3anywhere_init,
+	.deinit_func	=	mp3anywhere_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	mp3anywhere_rec,
+	.decode_func	=	mp3anywhere_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_mp3anywhere, (const struct hardware*)NULL };

@@ -57,20 +57,21 @@ lirc_t default_readdata(lirc_t timeout);
 
 
 static const const struct hardware hw_default = {
-	LIRC_DRIVER_DEVICE,	/* default device */
-	-1,			/* fd */
-	0,			/* features */
-	0,			/* send_mode */
-	0,			/* rec_mode */
-	0,			/* code_length */
-	default_init,		/* init_func */
-	default_deinit,		/* deinit_func */
-	default_send,		/* send_func */
-	default_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	default_ioctl,		/* ioctl_func */
-	default_readdata,
-	"default"
+	.name		=	"default",
+	.device		=	LIRC_DRIVER_DEVICE,
+	.features	=	0,
+	.send_mode	=	0,
+	.rec_mode	=	0,
+	.code_length	=	0,
+	.init_func	=	default_init,
+	.deinit_func	=	default_deinit,
+	.send_func	=	default_send,
+	.rec_func	=	default_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	default_ioctl,
+	.readdata	=	default_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

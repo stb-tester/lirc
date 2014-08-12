@@ -144,20 +144,21 @@ lirc_t udp_readdata(lirc_t timeout)
 }
 
 const struct hardware hw_udp = {
-	"8765",			/* "device" (port) */
-	-1,			/* fd (socket) */
-	LIRC_CAN_REC_MODE2,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	udp_init,		/* init_func */
-	udp_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	udp_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	udp_readdata,		/* readdata */
-	"udp"
+	.name		=	"udp",
+	.device		=	"8765",
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	udp_init,
+	.deinit_func	=	udp_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	udp_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	udp_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_udp, (const struct hardware*)NULL };

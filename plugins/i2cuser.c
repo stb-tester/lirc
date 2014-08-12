@@ -74,20 +74,21 @@ static void i2cuser_read_loop(int fd);
 static char *i2cuser_rec(struct ir_remote *remotes);
 
 const struct hardware hw_i2cuser = {
-	NULL,			/* determine device by probing */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_SIZE_BITS,		/* code_length */
-	i2cuser_init,		/* init_func */
-	i2cuser_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	i2cuser_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,
-	"i2cuser"
+	.name		=	"i2cuser",
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_SIZE_BITS,
+	.init_func	=	i2cuser_init,
+	.deinit_func	=	i2cuser_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	i2cuser_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

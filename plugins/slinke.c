@@ -101,20 +101,21 @@ lirc_t slinke_readdata(lirc_t timetout);
 
 
 const struct hardware hw_slinke = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	slinke_init,		/* init_func */
-	slinke_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	slinke_rec,		/* rec_func */
-	slinke_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	slinke_readdata,	/* readdata */
-	"slinke"
+	.name		=	"slinke",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	slinke_init,
+	.deinit_func	=	slinke_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	slinke_rec,
+	.decode_func	=	slinke_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	slinke_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_slinke, (const struct hardware*)NULL };

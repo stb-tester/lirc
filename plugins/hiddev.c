@@ -43,20 +43,19 @@ static char *samsung_rec(struct ir_remote *remotes);
 static char *sonyir_rec(struct ir_remote *remotes);
 
 const struct hardware hw_dvico = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	64,			/* code_length */
-	hiddev_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	hiddev_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"dvico"
+	.name		=	"dvico",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	64,
+	.init_func	=	hiddev_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	hiddev_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL
 };
 
 static int dvico_repeat_mask = 0x8000;
@@ -79,113 +78,117 @@ static int repeat_state = RPT_UNKNOWN;
 
 /* Remotec Mediamaster specific */
 const struct hardware hw_bw6130 = {
-	"/dev/usb/hid/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	64,			/* code_length */
-	hiddev_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	hiddev_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"bw6130"
+	.name		=	"bw6130",
+	.device		=	"/dev/usb/hid/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	64,
+	.init_func	=	hiddev_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	hiddev_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL
 };
 
 const struct hardware hw_asusdh = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	64,			/* code_length */
-	hiddev_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	hiddev_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"asusdh"		/* name */
+	.name		=	"asusdh",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	64,
+	.init_func	=	hiddev_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	hiddev_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Creative USB IR Receiver (SB0540) */
 const struct hardware hw_sb0540 = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	sb0540_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	sb0540_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"sb0540"		/* name */
+	.name		=	"sb0540",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	sb0540_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	sb0540_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 #endif
 
 /* Apple Mac mini USB IR Receiver */
 const struct hardware hw_macmini = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	hiddev_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	macmini_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"macmini"		/* name */
+	.name		=	"macmini",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	hiddev_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	macmini_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Samsung USB IR Receiver */
 const struct hardware hw_samsung = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	samsung_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	samsung_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"samsung"		/* name */
+	.name		=	"samsung",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	samsung_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	samsung_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 #endif
 
 /* Sony IR Receiver */
 const struct hardware hw_sonyir = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	hiddev_init,		/* init_func */
-	hiddev_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	sonyir_rec,		/* rec_func */
-	hiddev_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"sonyir"		/* name */
+	.name		=	"sonyir",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	hiddev_init,
+	.deinit_func	=	hiddev_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	sonyir_rec,
+	.decode_func	=	hiddev_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

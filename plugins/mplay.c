@@ -102,20 +102,21 @@ static struct {
  * use by lirc for the mplay device
  **************************************************************************/
 const struct hardware hw_mplay = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	MPLAY_CODE_LENGTH,	/* code_length */
-	mplay_init,		/* init_func */
-	mplay_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	mplay_rec,		/* rec_func */
-	mplay_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"mplay"
+	.name		=	"mplay",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	MPLAY_CODE_LENGTH,
+	.init_func	=	mplay_init,
+	.deinit_func	=	mplay_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	mplay_rec,
+	.decode_func	=	mplay_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 /**************************************************************************
@@ -123,20 +124,21 @@ const struct hardware hw_mplay = {
  * use by lirc for the mplay v2 (Monueal Moncaso) devices
  **************************************************************************/
 const struct hardware hw_mplay2 = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	MPLAY_CODE_LENGTH,	/* code_length */
-	mplay2_init,		/* init_func */
-	mplay_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	mplay_rec,		/* rec_func */
-	mplay_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"mplay2"
+	.name		=	"mplay2",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	MPLAY_CODE_LENGTH,
+	.init_func	=	mplay2_init,
+	.deinit_func	=	mplay_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	mplay_rec,
+	.decode_func	=	mplay_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_mplay, &hw_mplay2, NULL };

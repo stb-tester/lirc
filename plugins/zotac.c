@@ -64,20 +64,21 @@ static int probe_code = 0;
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Zotac USB iR Receiver */
 const struct hardware hw_zotac = {
-	"/dev/usb/hiddev0",	/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	zotac_init,		/* init_func */
-	zotac_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	zotac_rec,		/* rec_func */
-	zotac_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"zotac"		/* name */
+	.name		=	"zotac",
+	.device		=	"/dev/usb/hiddev0",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	zotac_init,
+	.deinit_func	=	zotac_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	zotac_rec,
+	.decode_func	=	zotac_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 #endif
 

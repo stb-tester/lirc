@@ -45,20 +45,22 @@ static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
 
 const struct hardware hw_atilibusb = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_BYTES * CHAR_BIT,	/* code_length */
-	ati_init,		/* init_func */
-	ati_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	ati_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"atilibusb"
+	.name		=	"atilibusb",
+	.device		=	NULL,
+	.fd		=	-1,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_BYTES * CHAR_BIT,
+	.init_func	=	ati_init,
+	.deinit_func	=	ati_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	ati_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_atilibusb, (const struct hardware*)NULL };

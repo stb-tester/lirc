@@ -66,20 +66,21 @@ char *livedrive_rec_seq(struct ir_remote *remotes)
 }
 
 struct hardware hw_livedrive_seq = {
-	"/dev/sequencer",	/* simple device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	livedrive_init,		/* init_func */
-	livedrive_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	livedrive_rec_seq,	/* rec_func */
-	livedrive_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,
-	"livedrive_seq"
+	.name		=	"livedrive_seq",
+	.device		=	"/dev/sequencer",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	livedrive_init,
+	.deinit_func	=	livedrive_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	livedrive_rec_seq,
+	.decode_func	=	livedrive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 struct hardware* hardwares[] = { &hw_livedrive_seq, (struct hardware*)NULL };

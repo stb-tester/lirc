@@ -46,20 +46,21 @@ static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 
 const struct hardware hw_dfclibusb = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_BYTES * CHAR_BIT,	/* code_length */
-	dfc_init,		/* init_func */
-	dfc_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	dfc_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"dfclibusb"
+	.name		=	"dfclibusb",
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_BYTES * CHAR_BIT,
+	.init_func	=	dfc_init,
+	.deinit_func	=	dfc_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	dfc_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_dfclibusb, (const struct hardware*)NULL };

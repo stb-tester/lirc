@@ -24,20 +24,24 @@
 #include "commandir.h"
 
 const struct hardware hw_commandir = {
-	0,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_SET_SEND_CARRIER | LIRC_CAN_SEND_PULSE | LIRC_CAN_SET_TRANSMITTER_MASK | LIRC_CAN_REC_MODE2,
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	sizeof(lirc_t),		/* code_length in BITS */
-	commandir_init,		/* init_func */
-	commandir_deinit,	/* deinit_func */
-	commandir_send,		/* send_func */
-	commandir_rec,		/* rec_func  */
-	commandir_receive_decode,	/* decode_func */
-	commandir_ioctl,	/* ioctl_func */
-	commandir_readdata,	/* readdata */
-	"commandir"
+	.name		=	"commandir",
+	.device		=	0,
+	.features	=	LIRC_CAN_SET_SEND_CARRIER | \
+			   	    LIRC_CAN_SEND_PULSE | \
+			   	    LIRC_CAN_SET_TRANSMITTER_MASK | \
+				    LIRC_CAN_REC_MODE2,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	sizeof(lirc_t),
+	.init_func	=	commandir_init,
+	.deinit_func	=	commandir_deinit,
+	.send_func	=	commandir_send,
+	.rec_func	=	commandir_rec,
+	.decode_func	=	commandir_receive_decode,
+	.ioctl_func	=	commandir_ioctl,
+	.readdata	=	commandir_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_commandir, NULL };

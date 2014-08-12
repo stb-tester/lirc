@@ -60,20 +60,21 @@ static int uirt2_deinit(void);
 static char *uirt2_rec(struct ir_remote *remotes);
 
 const struct hardware hw_uirt2 = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	8 * NUMBYTES,		/* code_length */
-	uirt2_init,		/* init_func */
-	uirt2_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	uirt2_rec,		/* rec_func */
-	uirt2_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"uirt2"
+	.name		=	"uirt2",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	8 * NUMBYTES,
+	.init_func	=	uirt2_init,
+	.deinit_func	=	uirt2_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	uirt2_rec,
+	.decode_func	=	uirt2_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_uirt2, (const struct hardware*)NULL };

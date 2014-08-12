@@ -80,39 +80,39 @@ static ir_code code;
 
 #define CODE_LENGTH 64
 const struct hardware hw_tira = {
-	LIRC_IRTTY,		/* Default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE |	/* Features */
-	    LIRC_CAN_SEND_PULSE,
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_LENGTH,		/* code_length */
-	tira_init,		/* init_func */
-	tira_deinit,		/* deinit_func */
-	tira_send,		/* send_func */
-	tira_rec,		/* rec_func */
-	tira_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"tira"
+	.name		=	"tira",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_PULSE,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_LENGTH,
+	.init_func	=	tira_init,
+	.deinit_func	=	tira_deinit,
+	.send_func	=	tira_send,
+	.rec_func	=	tira_rec,
+	.decode_func	=	tira_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware hw_tira_raw = {
-	LIRC_IRTTY,		/* Default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2,	/* Features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	CODE_LENGTH,		/* code_length */
-	tira_init,		/* init_func */
-	tira_deinit,		/* deinit_func */
-	NULL,			/* send_func, tira cannot
-				   transmit in timing mode */
-	tira_rec_mode2,		/* rec_func */
-	tira_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	tira_readdata,		/* readdata */
-	"tira_raw"
+	.name		=	"tira_raw",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	CODE_LENGTH,
+	.init_func	=	tira_init,
+	.deinit_func	=	tira_deinit,
+	.send_func	=	NULL,	/* Cannot transmit in timing mode */
+	.rec_func	=	tira_rec_mode2,
+	.decode_func	=	tira_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	tira_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };

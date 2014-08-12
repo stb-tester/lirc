@@ -58,20 +58,21 @@ char *ea65_receive(struct ir_remote *remote);
 
 
 const struct hardware hw_ea65 = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd             */
-	LIRC_CAN_REC_LIRCCODE,	/* features       */
-	0,			/* send_mode      */
-	LIRC_MODE_LIRCCODE,	/* rec_mode       */
-	CODE_LENGTH,		/* code_length    */
-	ea65_init,		/* init_func      */
-	ea65_release,		/* deinit_func    */
-	NULL,			/* send_func      */
-	ea65_receive,		/* rec_func       */
-	ea65_decode,		/* decode_func    */
-	NULL,			/* ioctl_func     */
-	NULL,			/* readdata       */
-	"ea65"
+	.name		=	"ea65",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_LENGTH,
+	.init_func	=	ea65_init,
+	.deinit_func	=	ea65_release,
+	.send_func	=	NULL,
+	.rec_func	=	ea65_receive,
+	.decode_func	=	ea65_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_ea65, (const struct hardware*)NULL };

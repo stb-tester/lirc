@@ -51,20 +51,21 @@ char *creative_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_creative = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	creative_init,		/* init_func */
-	creative_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	creative_rec,		/* rec_func */
-	creative_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"creative"
+	.name		=	"creative",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	creative_init,
+	.deinit_func	=	creative_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	creative_rec,
+	.decode_func	=	creative_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_creative, (const struct hardware*)NULL };

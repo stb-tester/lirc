@@ -65,30 +65,31 @@ char *bte_rec(struct ir_remote *remotes);
 
 #define BTE_CAN_SEND 0
 const struct hardware hw_bte = {
-	LIRC_DRIVER_DEVICE,	/* default device */
-	-1,			/* fd */
+	.name		=	"bte",
+	.device		=	LIRC_DRIVER_DEVICE,
 #if BTE_CAN_SEND
-	LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_LIRCCODE,	/* features */
-	LIRC_MODE_LIRCCODE,	/* send_mode */
+	.features	=	LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_LIRCCODE,	/* features */
+	.send_mode	=	LIRC_MODE_LIRCCODE,
 #else
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
 #endif
 
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	16,			/* code_length */
-	bte_init,		/* init_func */
-	bte_deinit,		/* deinit_func */
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	16,
+	.init_func	=	bte_init,
+	.deinit_func	=	bte_deinit,
 #if BTE_CAN_SEND
-	bte_send,		/* send_func */
+	.send_func	=	bte_send,
 #else
-	NULL,			/* send_func */
+	.send_func	=	NULL,
 #endif
-	bte_rec,		/* rec_func */
-	bte_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"bte"
+	.rec_func	=	bte_rec,
+	.decode_func	=	bte_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_bte, (const struct hardware*)NULL };

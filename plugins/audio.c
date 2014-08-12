@@ -633,20 +633,21 @@ char *audio_rec(struct ir_remote *remotes)
 }
 
 const struct hardware hw_audio = {
-	"",			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,	/* features */
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	audio_init,		/* init_func */
-	audio_deinit,		/* deinit_func */
-	audio_send,		/* send_func */
-	audio_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	audio_readdata,
-	"audio"
+	.name		=	"audio",
+	.device		=	"",
+	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	audio_init,
+	.deinit_func	=	audio_deinit,
+	.send_func	=	audio_send,
+	.rec_func	=	audio_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	audio_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_audio, (const struct hardware*)NULL };

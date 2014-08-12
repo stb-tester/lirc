@@ -66,20 +66,21 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
 
 const struct hardware hw_srm7500libusb = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	CODE_BYTES * CHAR_BIT,	/* code_length */
-	srm7500_init,		/* init_func */
-	srm7500_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	srm7500_rec,		/* rec_func */
-	srm7500_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"srm7500libusb"
+	.name		=	"srm7500libusb",
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	CODE_BYTES * CHAR_BIT,
+	.init_func	=	srm7500_init,
+	.deinit_func	=	srm7500_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	srm7500_rec,
+	.decode_func	=	srm7500_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_srm7500libusb, NULL };

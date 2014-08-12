@@ -54,20 +54,22 @@ static int repeat_state = RPT_NO;
 
 /* Aureal USB iR Receiver */
 const struct hardware hw_atwf83 = {
-	"/dev/hidraw0",		/* "device" */
-	-1,			/* fd (device) */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	atwf83_init,		/* init_func */
-	atwf83_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	atwf83_rec,		/* rec_func */
-	atwf83_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"atwf83"		/* name */
+	.name		=	"atwf83",
+	.device		=	"/dev/hidraw0",
+	.fd		=	-1,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	atwf83_init,
+	.deinit_func	=	atwf83_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	atwf83_rec,
+	.decode_func	=	atwf83_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_atwf83, (const struct hardware*)NULL };

@@ -521,20 +521,22 @@ char *audio_alsa_rec(struct ir_remote *remotes)
 #define audio_alsa_decode receive_decode
 
 const struct hardware hw_audio_alsa = {
-	"hw",			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	audio_alsa_init,	/* init_func */
-	audio_alsa_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	audio_alsa_rec,		/* rec_func */
-	audio_alsa_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	audio_alsa_readdata,
-	"audio_alsa"
+	.name		=	"audio_alsa",
+	.device		=	"hw",
+	.fd		=	-1,
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	audio_alsa_init,
+	.deinit_func	=	audio_alsa_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	audio_alsa_rec,
+	.decode_func	=	audio_alsa_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	audio_alsa_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_audio_alsa, (const struct hardware*)NULL };

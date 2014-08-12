@@ -52,20 +52,21 @@ char *silitek_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_silitek = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	24,			/* code_length */
-	silitek_init,		/* init_func */
-	silitek_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	silitek_rec,		/* rec_func */
-	silitek_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"silitek"
+	.name		=	"silitek",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	24,
+	.init_func	=	silitek_init,
+	.deinit_func	=	silitek_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	silitek_rec,
+	.decode_func	=	silitek_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_silitek, (const struct hardware*)NULL };

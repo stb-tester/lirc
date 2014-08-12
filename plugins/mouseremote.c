@@ -57,37 +57,39 @@ char *mouseremote_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_mouseremote = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	mouseremote_init,	/* init_func */
-	mouseremote_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	mouseremote_rec,	/* rec_func */
-	mouseremote_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"mouseremote"
+	.name		=	"mouseremote",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	mouseremote_init,
+	.deinit_func	=	mouseremote_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	mouseremote_rec,
+	.decode_func	=	mouseremote_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware hw_mouseremote_ps2 = {
-	"/dev/psaux",		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	32,			/* code_length */
-	mouseremote_ps2_init,	/* init_func */
-	mouseremote_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	mouseremote_rec,	/* rec_func */
-	mouseremote_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"mouseremote_ps2"
+	.name		=	"mouseremote_ps2",
+	.device		=	"/dev/psaux",
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	32,
+	.init_func	=	mouseremote_ps2_init,
+	.deinit_func	=	mouseremote_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	mouseremote_rec,
+	.decode_func	=	mouseremote_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_mouseremote,

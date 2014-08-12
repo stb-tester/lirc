@@ -500,22 +500,23 @@ static int hwftdi_ioctl(unsigned int cmd, void *arg)
 }
 
 const struct hardware hw_ftdi = {
-	"",			/* "device" -> used as configuration */
-	-1,			/* fd */
-
-	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE | LIRC_CAN_SET_SEND_CARRIER,	/* features */
-
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	hwftdi_init,		/* init_func */
-	hwftdi_deinit,		/* deinit_func */
-	hwftdi_send,		/* send_func */
-	hwftdi_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	hwftdi_ioctl,		/* ioctl_func */
-	hwftdi_readdata,	/* readdata */
-	"ftdi"
+	.name		=	"ftdi",
+	.device		=	"",
+	.features	=	LIRC_CAN_REC_MODE2 | \
+				LIRC_CAN_SEND_PULSE | \
+				LIRC_CAN_SET_SEND_CARRIER,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	hwftdi_init,
+	.deinit_func	=	hwftdi_deinit,
+	.send_func	=	hwftdi_send,
+	.rec_func	=	hwftdi_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	hwftdi_ioctl,
+	.readdata	=	hwftdi_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware* hardwares[] = { &hw_ftdi, (const struct hardware*)NULL };

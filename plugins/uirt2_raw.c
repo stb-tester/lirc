@@ -66,46 +66,44 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout);
 static int uirt2_send_mode2_raw(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
 static int uirt2_send_mode2_struct1(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
 
-const struct hardware hw_uirt2_raw = {
 #ifndef LIRC_IRTTY
-	"/dev/ttyS0",
-#else
-	LIRC_IRTTY,		/* default device */
+#define LIRC_IRTTY "/dev/ttyS0"
 #endif
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,	/* features */
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	uirt2_raw_init,		/* init_func */
-	uirt2_raw_deinit,	/* deinit_func */
-	uirt2_send,		/* send_func */
-	uirt2_raw_rec,		/* rec_func */
-	uirt2_raw_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	uirt2_raw_readdata,	/* readdata */
-	"uirt2_raw"
+
+const struct hardware hw_uirt2_raw = {
+	.name		=	"uirt2_raw",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	uirt2_raw_init,
+	.deinit_func	=	uirt2_raw_deinit,
+	.send_func	=	uirt2_send,
+	.rec_func	=	uirt2_raw_rec,
+	.decode_func	=	uirt2_raw_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	uirt2_raw_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 const struct hardware hw_usb_uirt_raw = {
-#ifndef LIRC_IRTTY
-	"/dev/ttyUSB0",
-#else
-	LIRC_IRTTY,		/* default device */
-#endif
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,	/* features */
-	LIRC_MODE_PULSE,	/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	uirt2_raw_init,		/* init_func */
-	uirt2_raw_deinit,	/* deinit_func */
-	uirt2_send,		/* send_func */
-	uirt2_raw_rec,		/* rec_func */
-	uirt2_raw_decode,	/* decode_func */
-	NULL,			/* ioctl_func */
-	uirt2_raw_readdata,	/* readdata */
-	"usb_uirt_raw"
+	.name		=	"usb_uirt_raw",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	=	LIRC_MODE_PULSE,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	uirt2_raw_init,
+	.deinit_func	=	uirt2_raw_deinit,
+	.send_func	=	uirt2_send,
+	.rec_func	=	uirt2_raw_rec,
+	.decode_func	=	uirt2_raw_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	uirt2_raw_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

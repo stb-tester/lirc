@@ -144,20 +144,21 @@ char *dsp_rec(struct ir_remote *remotes)
 }
 
 const struct hardware hw_dsp = {
-	"/dev/dsp",		/* simple device */
-	-1,			/* fd */
-	LIRC_CAN_REC_MODE2,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_MODE2,	/* rec_mode */
-	0,			/* code_length */
-	dsp_init,		/* init_func */
-	dsp_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	dsp_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	dsp_readdata,
-	"dsp"
+	.name		=	"dsp",
+	.device		=	"/dev/dsp",
+	.features	=	LIRC_CAN_REC_MODE2,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_MODE2,
+	.code_length	=	0,
+	.init_func	=	dsp_init,
+	.deinit_func	=	dsp_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	dsp_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	dsp_readdata,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 
 

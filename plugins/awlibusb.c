@@ -68,37 +68,37 @@ static int find_device_endpoints(struct usb_device *dev);
 
 #ifdef AW_MODE_LIRCCODE
 const struct hardware hw_awlibusb = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	(AWUSB_RECEIVE_BYTES - 1) * CHAR_BIT,	/* code_length */
-	awlibusb_init,		/* init_func */
-	awlibusb_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	awlibusb_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"awlibusb"
+	.name		=	"awlibusb",
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	(AWUSB_RECEIVE_BYTES - 1) * CHAR_BIT,
+	.init_func	=	awlibusb_init,
+	.deinit_func	=	awlibusb_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	awlibusb_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
 };
 #else
 const struct hardware hw_awlibusb = {
-	NULL,			/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_CODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_CODE,		/* rec_mode */
-	CHAR_BIT,		/* code_length */
-	awlibusb_init,		/* init_func */
-	awlibusb_deinit,	/* deinit_func */
-	NULL,			/* send_func */
-	awlibusb_rec,		/* rec_func */
-	receive_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"awlibusb"
+	.name		=	"awlibusb",
+	.device		=	NULL,
+	.features	=	LIRC_CAN_REC_CODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_CODE,
+	.code_length	=	CHAR_BIT,
+	.init_func	=	awlibusb_init,
+	.deinit_func	=	awlibusb_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	awlibusb_rec,
+	.decode_func	=	receive_decode,
+	.ioctl_func	=	NULL,
+	.readdata	=	NULL
 };
 #endif
 

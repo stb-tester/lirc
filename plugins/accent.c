@@ -114,20 +114,23 @@ char *accent_rec(struct ir_remote *remotes);
 
 
 const struct hardware hw_accent = {
-	LIRC_IRTTY,		/* default device */
-	-1,			/* fd */
-	LIRC_CAN_REC_LIRCCODE,	/* features */
-	0,			/* send_mode */
-	LIRC_MODE_LIRCCODE,	/* rec_mode */
-	ACCENT_CODE_LENGTH,	/* code_length */
-	accent_init,		/* init_func */
-	accent_deinit,		/* deinit_func */
-	NULL,			/* send_func */
-	accent_rec,		/* rec_func */
-	accent_decode,		/* decode_func */
-	NULL,			/* ioctl_func */
-	NULL,			/* readdata */
-	"accent"
+	.name		=	"accent",
+	.device		=	LIRC_IRTTY,
+	.features	=	LIRC_CAN_REC_LIRCCODE,
+	.send_mode	=	0,
+	.rec_mode	=	LIRC_MODE_LIRCCODE,
+	.code_length	=	ACCENT_CODE_LENGTH,
+	.init_func	=	accent_init,
+	.deinit_func	=	accent_deinit,
+	.send_func	=	NULL,
+	.rec_func	=	accent_rec,
+	.decode_func 	=	accent_decode,
+	.ioctl_func	= 	NULL,
+	.readdata	= 	NULL,
+      	.resolution	= 	300,
+	.api_version	=	2,
+	.driver_version = 	"0.9.2"
+
 };
 
 const struct hardware* hardwares[] = { &hw_accent, (const struct hardware*) NULL};
