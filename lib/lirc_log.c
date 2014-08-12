@@ -212,7 +212,7 @@ void logprintf(int prio, const char *format_str, ...)
 
 		fprintf(lf, "%15.15s %s %s: ",
 			currents + 4, hostname, progname);
-		fprintf(lf, prio2text(prio));
+		fprintf(lf, "%s: ", prio2text(prio));
 		va_start(ap, format_str);
 		vfprintf(lf, format_str, ap);
 		va_end(ap);
