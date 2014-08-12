@@ -388,7 +388,8 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		if (analyse) {
-			hw = hw_emulation;
+			memcpy(&hw, &hw_emulation, sizeof(struct hardware));
+			// hw = hw_emulation;
 			for_each_remote(remotes, analyse_remote);
 			return EXIT_SUCCESS;
 		}

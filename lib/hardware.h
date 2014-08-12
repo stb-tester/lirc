@@ -24,6 +24,8 @@ extern "C" {
 #endif
 
 struct hardware {
+        // Old-style implicit API version 1:
+
         /** The name of the device as text string. */
 	char *device;
 
@@ -40,49 +42,71 @@ struct hardware {
 	__u32 rec_mode;
 
         /** Length in bits of the code. */
-	__u32 code_length;
+	const __u32 code_length;
 
         /** Function called for initializing the driver and the hardware. Zero return value indicates failure, all other return values success. */
-        int (*init_func) (void);
+        int (*const init_func) (void);
 
         /** Function called when terminating the driver. Zero return value indicates failure, all other return values success. */
-        int (*deinit_func) (void);
+        int (*const deinit_func) (void);
 
         /**
          * TODO
          */
-        int (*send_func) (struct ir_remote * remote, struct ir_ncode * code);
+        int (*const send_func) (struct ir_remote * remote,
+                                struct ir_ncode * code);
 
         /**
          *
          */
-        char *(*rec_func) (struct ir_remote * remotes);
+        char *(*const rec_func) (struct ir_remote * remotes);
 
         /**
          * TODO
          */
-        int (*decode_func) (struct ir_remote * remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			    int *repeat_flag, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+        int (*const decode_func)(struct ir_remote * remote,
+		    	   	 ir_code * prep, ir_code * codep,
+                                 ir_code * postp,
+			    	 int *repeat_flag, lirc_t * min_remaining_gapp,
+			    	 lirc_t * max_remaining_gapp);
 
         /**
-         * Depending on the particular driver and hardware, other functionality can be implemented here, with syntax and semantic to be determined by the driver.
-         */
-         int (*ioctl_func) (unsigned int cmd, void *arg);
+ 	* Generic driver control function with semantics as defined by driver.
+ 	* Will eventually be removed, don't use in new code.
+ 	*
+        * @deprecated
+        */
+        int (*const ioctl_func) (unsigned int cmd, void *arg);
 
         /**
          * TODO
          */
-	 lirc_t(*readdata) (lirc_t timeout);
+	 lirc_t(*const readdata) (lirc_t timeout);
 
          /**
-          * The name of the driver, as to be used as argument to --driver.
+          * Driver name, as listed by -H help and used as argument to --driver.
           */
-	char *name;
+	const char *name;
 
         /**
          * The resolution in microseconds of the recorded durations when reading signals.
          */
 	unsigned int resolution;
+
+        // API version 2 addons:
+
+	const int api_version;           /**< API version available from version 2+. */
+        const char* driver_version;      /**< Driver version (free text). */
+	int (*const close_func)(void);   /**< Hard closing. */
+
+        /**
+         * Depending on the particular driver and hardware, other
+         * functionality can be implemented here, with semantics
+         * as determined by the driver.
+         */
+        void* (*const aux_func) (int cmd, void* arg);
+
+
 };
 
 extern struct hardware hw;
