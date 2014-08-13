@@ -2214,7 +2214,7 @@ static void lircd_parse_options(int argc, char** argv)
 			lircd_help();
 			exit(EXIT_SUCCESS);
 		case 'v':
-			printf("lircmd %s\n", VERSION);
+			printf("lircd %s\n", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
 			options_load(argc, argv, optarg, lircd_parse_options);
