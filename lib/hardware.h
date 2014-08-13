@@ -99,14 +99,6 @@ struct hardware {
         const char* driver_version;      /**< Driver version (free text). */
 	int (*const close_func)(void);   /**< Hard closing. */
 
-        /**
-         * Depending on the particular driver and hardware, other
-         * functionality can be implemented here, with semantics
-         * as determined by the driver.
-         */
-        void* (*const aux_func) (int cmd, void* arg);
-
-
 };
 
 extern struct hardware hw;
