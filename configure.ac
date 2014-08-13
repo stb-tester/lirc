@@ -105,9 +105,6 @@ case "${host_os}" in
 
     dnl default devdir, on mac os x/darwin, /dev/ can not be used without kernel programming, so use a fifo somewhere else
     devdir_default="/usr/lirc/dev/"
-
-    dnl default devdir
-    devdir_default="/dev"
     use_fifos="yes"
     ;;
   *)
@@ -115,6 +112,8 @@ case "${host_os}" in
 
     dnl PortAudio for UNIX OSS
     portaudio_lib_other="-lm -lpthread ${forkpty}"
+    dnl default devdir
+    devdir_default="/dev"
     use_fifos="no"
     ;;
 esac
