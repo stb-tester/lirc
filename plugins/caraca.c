@@ -22,7 +22,6 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
 #include <caraca/caraca_client.h>
 
 #include "lirc_driver.h"
