@@ -19,10 +19,6 @@ AC_PROG_MAKE_SET
 AC_PATH_PROG(mknod, mknod, /bin/mknod)
 AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
-AC_CHECK_PROG(HELP2MAN, help2man, [ok], [fail])
-if test "$HELP2MAN" != ok; then
-    AC_MSG_ERROR([help2man is required to build lirc])
-fi
 AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON(,, [:])
@@ -203,32 +199,11 @@ AH_TEMPLATE([HAVE_VSYSLOG],
 AH_TEMPLATE([HW_DEFAULT],
         [The name of the hw_* structure to use by default])
 
-AH_TEMPLATE([LIRC_DRIVER],
-        [Text string signifying which driver is configured])
-
-AH_TEMPLATE([LIRC_DRIVER_ANY],
-        [Define to include most drivers])
-
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
         [Define if devfs support is present in current kernel])
 
-AH_TEMPLATE([LIRC_IRQ],
-        [Set the IRQ for the lirc driver])
-
-AH_TEMPLATE([LIRC_IRTTY],
-        [Set the default tty used by the drivers accessing /dev/ttyX])
-
-AH_TEMPLATE([LIRC_SYSLOG],
-        [syslog facility to use])
-
-AH_TEMPLATE([LOCALSTATEDIR],
-        [modifiable single-machine data])
-
 AH_TEMPLATE([MAINTAINER_MODE],
         [define in maintainer mode])
-
-AH_TEMPLATE([SYSCONFDIR],
-        [system configuration directory])
 
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
@@ -363,8 +338,6 @@ AM_CONDITIONAL([SYSTEMD_INSTALL],[test x"$has_systemd_system" = xtrue])
 lirc_driver="userspace"
 
 AC_MSG_NOTICE([Building all userspace drivers.])
-lirc_driver="userspace"
-
 
 dnl slightly more advanced options
 
@@ -437,11 +410,6 @@ AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 AC_DEFINE(LIRC_OPTIONS_PATH,["/etc/lirc/lirc_options.conf"],[
         Default path for lircd_options.conf])
-
-if test "$irtty" != ""; then
-  AC_DEFINE_UNQUOTED(LIRC_IRTTY, "$irtty")
-fi
-AC_DEFINE_UNQUOTED(LIRC_SYSLOG, $facility)
 
 AH_TOP([
 #include     "lirc_config1.h"
