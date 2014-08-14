@@ -1,12 +1,10 @@
-
 ## Process this file with automake to produce Makefile.in
 ## Makefile.am, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 ACLOCAL_AMFLAGS         = -I m4
 
 AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2
 
-EXTRA_DIST              =  setup-driver.sh setup-functions.sh  README TODO
-EXTRA_DIST              += autogen.sh CONTRIBUTE.md ChangeLog
+EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 
