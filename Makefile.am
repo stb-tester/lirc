@@ -57,7 +57,7 @@ install-data-hook:
 	sed -i '/^plugindir/s|/usr|$(prefix)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 	for f in contrib remotes lirc.org include configs; do \
-		cp -pr $$f $(DESTDIR)$(pkgdatadir); \
+		cp -pr $(srcdir)/$$f $(DESTDIR)$(pkgdatadir); \
 	done
 
 dist-hook:
@@ -65,6 +65,10 @@ dist-hook:
 	for f in contrib remotes lirc.org include configs; do \
 		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog || :
+
+uninstall-local:
+	chmod -R a+w $(DESTDIR)$(pkgdatadir)
+	rm -rf $(DESTDIR)$(pkgdatadir)
 
 paths.h: Makefile
 	@echo '#define DATADIR          "$(datadir)"' >$@

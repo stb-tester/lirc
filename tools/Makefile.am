@@ -49,7 +49,7 @@ lircrcd_SOURCES = lircrcd.c
 lircrcd_LDADD = $(LIRC_LIBS)
 
 if HAVE_PYTHON
-bin_SCRIPTS = pronto2lirc lirc-setup
+dist_bin_SCRIPTS = pronto2lirc lirc-setup
 dist_noinst_SCRIPTS = make_rel_symlink.py
 dist_pkgdata_DATA = lirc-setup.ui
 

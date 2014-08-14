@@ -2,7 +2,6 @@
 ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
-noinst_PROGRAMS         = man2html
 
 nodist_man_MANS         =
 generated_html          =
@@ -35,13 +34,13 @@ clean-local:
 	rm -rf man
 	rm -rf man-html
 
-$(manpage_html): $(nodist_man_MANS) man2html
+$(manpage_html): $(man_sources)
 	test -d man-html || mkdir man-html
-	for f in  $(nodist_man_MANS); do \
+	for f in  $(man_sources); do \
 	    dest=man-html/$$(basename $$f); \
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
-	    ./man2html -M ../html/index.html $$f |  \
+	    man2html -M ../html/index.html $$f |  \
 	        sed  -e '1,/<BODY>/d' \
                     -e '/<\/BODY>/,$$d' \
                     -e '/HREF="#index"/d' \
@@ -83,6 +82,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irsend.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/irxevent.1 \
+                           $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
@@ -116,6 +116,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irrecord.1 \
                            man/irsend.1 \
                            man/irw.1 \
+                           man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
@@ -128,6 +129,7 @@ manpage_html            =  man-html/ircat.html \
                            man-html/irrecord.html \
                            man-html/irsend.html \
                            man-html/irw.html \
+                           man-html/lirc-setup.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \

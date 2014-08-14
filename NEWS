@@ -14,6 +14,8 @@
   * There are examples in the sources how to build new drivers. The
     documentation in this area is also improved (see the driver-api guide).
   * Support scripts now requires python3.
+  * The bundled man2html has been dropped, you now need man2html to build.
+    OTOH, help2man is no longer required.
 
 0.9.1
   * Added systemd support: unit files, socket activation.
