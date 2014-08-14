@@ -1,37 +1,41 @@
 
 ## Process this file with automake to produce Makefile.in
-ACLOCAL_AMFLAGS             = -I m4
+ACLOCAL_AMFLAGS         = -I m4
 
-AM_CPPFLAGS = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
-AM_LDFLAGS  = -lpthread
+AM_CPPFLAGS             = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib \
+                          -Wall
+AM_LDFLAGS              = -lpthread
 
-varrundir   = $(localstatedir)/run
+CLEANFILES              = *~
 
-sbin_PROGRAMS = lircd lircmd
+EXTRA_PROGRAMS          = lircd.simsend lircd.simrec slinke
 
-lircd_SOURCES = lircd.c
-lircd_LDADD = ../lib/liblirc.la
+varrundir               = $(localstatedir)/run
 
-lircmd_SOURCES = lircmd.c
-lircmd_LDADD = ../lib/liblirc.la
+sbin_PROGRAMS           = lircd lircmd
 
-bin_PROGRAMS = irrecord
+lircd_SOURCES           = lircd.c
+lircd_LDADD             = ../lib/liblirc.la
 
-irrecord_SOURCES = irrecord.c
-irrecord_LDADD = ../lib/liblirc.la
+lircmd_SOURCES          = lircmd.c
+lircmd_LDADD            = ../lib/liblirc.la
+
+bin_PROGRAMS            = irrecord
+
+irrecord_SOURCES        = irrecord.c
+irrecord_LDADD          = ../lib/liblirc.la
 
 ## maintainer mode stuff
-EXTRA_PROGRAMS = lircd.simsend lircd.simrec slinke
-noinst_PROGRAMS = @maintmode_daemons_extra@
-lircd_simsend_SOURCES = lircd.c
-lircd_simsend_CFLAGS = -DSIM_SEND
-lircd_simsend_LDADD = ../lib/liblirc.la
-lircd_simrec_SOURCES = lircd.c
-lircd_simrec_CFLAGS = -DSIM_REC
-lircd_simrec_LDADD = ../lib/liblirc.la
+noinst_PROGRAMS         = @maintmode_daemons_extra@
+lircd_simsend_SOURCES   = lircd.c
+lircd_simsend_CFLAGS    = -DSIM_SEND
+lircd_simsend_LDADD     = ../lib/liblirc.la
+lircd_simrec_SOURCES    = lircd.c
+lircd_simrec_CFLAGS     = -DSIM_REC
+lircd_simrec_LDADD      = ../lib/liblirc.la
 
-slinke_SOURCES = slinke.c slinke.h
-slinke_LDADD = ../lib/liblirc.la
+slinke_SOURCES          = slinke.c slinke.h
+slinke_LDADD            = ../lib/liblirc.la
 
 
 if USE_FIFOS
@@ -63,6 +67,3 @@ rmdev:
 rmfifo:
 	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd
 	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm
-
-
-CLEANFILES = *~

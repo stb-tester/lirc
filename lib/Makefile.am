@@ -1,5 +1,8 @@
 ACLOCAL_AMFLAGS             = -I m4
 
+DISTCLEANFILES              = input_map.inc lirc/input_map.inc
+EXTRA_DIST                  = input_map.inc input_map.sh
+
 AM_LDFLAGS                  = -ldl
 
 BUILT_SOURCES               = lirc/input_map.inc
@@ -60,9 +63,9 @@ dist_lircinclude_HEADERS    = config_file.h \
                               ir_remote.h \
                               ir_remote_types.h \
                               lirc_client.h \
-			      lirc_config1.h \
-			      lirc_config2.h \
-			      lirc_dyndriver.h \
+                              lirc_config1.h \
+                              lirc_config2.h \
+                              lirc_dyndriver.h \
                               lirc_log.h \
                               lirc_options.h \
                               release.h \
@@ -83,6 +86,4 @@ input_map.inc: lirc/input_map.inc
 lirc/input_map.inc:
 	$(srcdir)/input_map.sh >./input_map.inc
 
-DISTCLEANFILES              = input_map.inc lirc/input_map.inc
-EXTRA_DIST                  = input_map.inc input_map.sh
 

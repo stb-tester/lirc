@@ -22,6 +22,6 @@ install-data-hook:
 	fi
 
 uninstall-local:
-	for u in $(UNITFILES); do\
+	for u in $(UNITFILES); do \
 	    rm -f $(live_systemddir)/$$u 2>/dev/null|| :; \
 	done

@@ -102,11 +102,11 @@ atwf83_la_LDFLAGS           = $(AM_LDFLAGS) -lpthread
 
 plugin_LTLIBRARIES          += livedrive_midi.la
 livedrive_midi_la_SOURCES   = livedrive_midi.c livedrive_common.h \
-                                livedrive_common.c
+                              livedrive_common.c
 
 plugin_LTLIBRARIES          += livedrive_seq.la
 livedrive_seq_la_SOURCES    = livedrive_seq.c livedrive_common.h \
-                                livedrive_common.c
+                              livedrive_common.c
 
 plugin_LTLIBRARIES          += uirt2.la
 uirt2_la_SOURCES            = uirt2.c uirt2_common.c uirt2_common.h
