@@ -7,7 +7,6 @@ AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2
 EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
-
 CLEANFILES              = *~ remotes/*~ contrib/*~
 
 BUILT_SOURCES           = paths.h

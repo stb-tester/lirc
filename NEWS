@@ -1,7 +1,13 @@
 0.9.2-devel
+  * New, unstable configuration script lirc-setup. The script guides user
+    when selecting both capture device and remote config. It sports auto-
+    detection of most devices, searching and downloading from the remotes
+    database and a considerable amount of bugs.
   * The former --with-syslog=, --enable-debug and --disable-daemonize are gone.
     All builds have DEBUG and DAEMONIZE enabled. Logging defaults to using
-    syslog, but using the --logfile option switches to file loggging.
+    syslog, but using the --logfile runtime option switches to file loggging.
+  * The --enable-sandboxed/SANDBOXED configuration is gone. Build now always
+    try to create needed fifos or devices, ignoring errors e. g., permissions.
   * The --with-driver= configuration is gone, the build always builds all
     drivers.
   * Drivers are loaded dynamically. Many programs including lircd now
@@ -19,7 +25,7 @@
     documentation in this area is also improved (see the driver-api guide).
   * Old, non-functional kernel modules are removed.
 
-0.9.1
+0.9.1 06/14/14
   * Added systemd support: unit files, socket activation.
   * Default config files are installed in /etc, use --install-etc to disable.
   * Building kernel modules is not supported.
@@ -50,7 +56,7 @@
   * fix timing-specific repeat-after-release issue (Christoph Bartelmus)
   * renamed lirc_ite8709 to lirc_it85 and updated (Yan-Min Lin, ITE)
 
-a0.8.7: 09/06/10
+0.8.7: 09/06/10
   * improved usb-uirt support for FreeBSD (John Wehle)
   * spurious locking complaint fixes for FreeBSD (John Wehle)
   * added support for new Command IR III hardware (Matthew Bodkin)
