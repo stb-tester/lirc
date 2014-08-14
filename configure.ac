@@ -354,12 +354,6 @@ fi
 
 dnl don't create nor destroy devices when installing and uninstalling
 
-AC_ARG_ENABLE(sandboxed,
-[  --enable-sandboxed      don't touch anything out of the install directory],
-[ enable_sandboxed="${enableval}" ],
-[ enable_sandboxed="no"])
-AM_CONDITIONAL(SANDBOXED, test x$enable_sandboxed = xyes)
-
 AC_ARG_ENABLE(install_etc,
 [  --install-etc           Install /etc/lirc configuration files(default=yes)],
 [ install_etc="${enableval}" ],

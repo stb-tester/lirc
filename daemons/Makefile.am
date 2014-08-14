@@ -34,8 +34,6 @@ slinke_SOURCES = slinke.c slinke.h
 slinke_LDADD = ../lib/liblirc.la
 
 
-if SANDBOXED
-else
 if USE_FIFOS
 install-exec-local: mkfifo
 uninstall-local: rmfifo
@@ -43,22 +41,21 @@ else
 install-exec-local: mkdev
 uninstall-local: rmdev
 endif
-endif
 
 
 mkdev:
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
+	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
 	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
 	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd p)
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm ||\
+	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm ||\
 	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
 	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm p)
 
 mkfifo:
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
+	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
 	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
 	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd)
-	test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || \
+	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || \
 	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
 	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm)
 

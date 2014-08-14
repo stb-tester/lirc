@@ -45,7 +45,7 @@ ChangeLog: .phony
 
 ## !!! BIG WARNING: this needs to be tweaked a bit more !!! ##
 
-DISTCHECK_FLAGS = --enable-sandboxed --sysconfdir=/tmp/etc
+## DISTCHECK_FLAGS = --enable-sandboxed --sysconfdir=/tmp/etc
 DISTCHECK_CONFIGURE_FLAGS = ${DISTCHECK_FLAGS}
 
 m4dir                       = m4
