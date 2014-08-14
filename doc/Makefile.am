@@ -42,9 +42,9 @@ table.html:
 lirc.hwdb:
 	$(sourcedir)/data2hwdb > lirc.hwdb
 
-$(manpage_html): $(man_sources)
+$(manpage_html): $(nodist_man_MANS)
 	test -d man-html || mkdir man-html
-	for f in  $(man_sources); do \
+	for f in  $(nodist_man_MANS); do \
 	    dest=man-html/$$(basename $$f); \
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
