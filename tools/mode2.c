@@ -41,6 +41,13 @@ int main(int argc, char **argv)
 	char buffer[sizeof(ir_code)];
 	lirc_t data;
 	__u32 mode;
+	/*
+	 * Was hard coded to 50000 but this is too long, the shortest gap in the
+	 * supplied .conf files is 10826, the longest space defined for any one,
+	 * zero or header is 7590
+	 */
+	int gap = 10000;
+	int t_div = 500;
 	char *device = LIRC_DRIVER_DEVICE;
 	struct stat s;
 	int dmode = 0;
@@ -61,9 +68,11 @@ int main(int argc, char **argv)
 			{"driver", required_argument, NULL, 'H'},
 			{"mode", no_argument, NULL, 'm'},
 			{"raw", no_argument, NULL, 'r'},
+			{"gap", required_argument, NULL, 'g'},
+			{"scope", required_argument, NULL, 's'},
 			{0, 0, 0, 0}
 		};
-		c = getopt_long(argc, argv, "hvd:H:mr", long_options, NULL);
+		c = getopt_long(argc, argv, "hvd:H:mrg:s:", long_options, NULL);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -72,9 +81,11 @@ int main(int argc, char **argv)
 			printf("\t -h --help\t\tdisplay usage summary\n");
 			printf("\t -v --version\t\tdisplay version\n");
 			printf("\t -d --device=device\tread from given device\n");
-			printf("\t -H --driver=driver\t\tuse given driver\n");
-			printf("\t -m --mode\t\tenable alternative display mode\n");
+			printf("\t -H --driver=driver\tuse given driver\n");
+			printf("\t -m --mode\t\tenable column display mode\n");
 			printf("\t -r --raw\t\taccess device directly\n");
+			printf("\t -g --gap=time\t\ttreat spaces longer than time as the gap\n");
+			printf("\t -s --scope=time\tenable 'scope like display with time us per char.\n");
 			return (EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
@@ -90,11 +101,18 @@ int main(int argc, char **argv)
 			device = optarg;
 			have_device = 1;
 			break;
+		case 's':
+			dmode = 2;
+			t_div = atoi(optarg);
+			break;
 		case 'm':
 			dmode = 1;
 			break;
 		case 'r':
 			use_raw_access = 1;
+			break;
+		case 'g':
+			gap = atoi(optarg);
 			break;
 		default:
 			printf("Usage: %s [options]\n", progname);
@@ -203,9 +221,11 @@ int main(int argc, char **argv)
 			continue;
 		}
 
-		if (!dmode) {
+		switch (dmode) {
+		case 0:
 			printf("%s %u\n", (data & PULSE_BIT) ? "pulse" : "space", (__u32) (data & PULSE_MASK));
-		} else {
+			break;
+		case 1: {
 			static int bitno = 1;
 
 			/* print output like irrecord raw config file data */
@@ -221,16 +241,24 @@ int main(int argc, char **argv)
 					/* not in expected order */
 					printf("-space");
 				}
-				if (((data & PULSE_MASK) > 50000) || (bitno >= 6)) {
+				if (((data & PULSE_MASK) > gap) || (bitno >= 6)) {
 					/* real long space or more
 					   than 6 codes, start new line */
 					printf("\n");
-					if ((data & PULSE_MASK) > 50000)
+					if ((data & PULSE_MASK) > gap)
 						printf("\n");
 					bitno = 0;
 				}
 			}
+			break;
 		}
+		case 2:
+			if ((data & PULSE_MASK) > gap)
+				printf("_\n\n_");
+			else
+				printf("%.*s", ((data & PULSE_MASK) + t_div / 2) / t_div, (data & PULSE_BIT) ? "------------" : "____________");
+			break;
+}
 		fflush(stdout);
 	};
 	return (EXIT_SUCCESS);
