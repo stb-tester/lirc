@@ -3,6 +3,8 @@ ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
 
+dist_noinst_SCRIPTS     = data2table data2hwdb
+
 nodist_man_MANS         =
 generated_html          =
 
@@ -21,11 +23,11 @@ dist_doc_DATA           = lirc.css irxevent.keys
 
 htmldir                 = $(docdir)/html
 nodist_html_DATA        = $(generated_html) $(manpage_html)
-dist_html_DATA          = $(html_includes) html-source/lirc.css
+dist_html_DATA          = $(html_includes) html-source/lirc.css table.html
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)
+dist_pkgdata_DATA       = lirc.hwdb
 
-.NOTPARALLEL:
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
@@ -34,6 +36,12 @@ clean-local:
 	rm -rf man
 	rm -rf man-html
 
+table.html:
+	$(sourcedir)/data2table > table.html
+
+lirc.hwdb:
+	$(sourcedir)/data2hwdb > lirc.hwdb
+
 $(manpage_html): $(man_sources)
 	test -d man-html || mkdir man-html
 	for f in  $(man_sources); do \
@@ -41,11 +49,11 @@ $(manpage_html): $(man_sources)
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
 	    man2html -M ../html/index.html $$f |  \
-	        sed  -e '1,/<BODY>/d' \
-                    -e '/<\/BODY>/,$$d' \
-                    -e '/HREF="#index"/d' \
-                    -e '/NAME="index"/,/^Time:/d' \
-                    -e '/SEE ALSO/,/^<HR>/d' >>$$dest;\
+	        sed -e '1,/<BODY>/d' \
+	            -e '/<\/BODY>/,$$d' \
+	            -e '/HREF="#index"/d' \
+	            -e '/NAME="index"/,/^Time:/d' \
+	            -e '/SEE ALSO/,/^<HR>/d' >>$$dest;\
 	    cat  $(srcdir)/html-source/foot.html >> $$dest; \
 	done
 
