@@ -48,9 +48,10 @@ xmode2_LDADD =  @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ $(LIRC_LIBS)
 lircrcd_SOURCES = lircrcd.c
 lircrcd_LDADD = $(LIRC_LIBS)
 
-
 if HAVE_PYTHON
-bin_SCRIPTS = pronto2lirc
+bin_SCRIPTS = pronto2lirc lirc-setup
+dist_noinst_SCRIPTS = make_rel_symlink.py
+dist_pkgdata_DATA = lirc-setup.ui
 
 pronto2lirc: $(srcdir)/pronto2lirc.py
 	echo "#! ${PYTHON}" >$@
@@ -61,3 +62,13 @@ endif
 EXTRA_DIST = pronto2lirc.py
 
 CLEANFILES = *~ pronto2lirc
+
+
+# Ugly fix until we deploy the script as a regular python thing.
+install-data-hook:
+	$(srcdir)/make_rel_symlink.py \
+		$(DESTDIR)/$(pkgdatadir)/lirc-setup.ui \
+		$(DESTDIR)/$(bindir)/lirc-setup.ui
+	$(srcdir)/make_rel_symlink.py \
+		$(DESTDIR)/$(pkgdatadir)/configs \
+		$(DESTDIR)/$(bindir)/configs

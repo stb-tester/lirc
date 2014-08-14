@@ -56,6 +56,9 @@ dist_m4_DATA                = m4/ac-path-kernel-source.m4
 install-data-hook:
 	sed -i '/^plugindir/s|/usr|$(prefix)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
+	for f in contrib remotes lirc.org include configs; do \
+		cp -pr $$f $(DESTDIR)$(pkgdatadir); \
+	done
 
 dist-hook:
 	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)

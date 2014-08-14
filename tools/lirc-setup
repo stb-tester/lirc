@@ -1,0 +1,1285 @@
+#!/usr/bin/env python3
+
+''' Simple lirc setup tool. '''
+
+import ast
+import configparser
+import glob
+import os
+import os.path
+import pickle
+import subprocess
+import sys
+import textwrap
+import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
+import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
+import yaml
+
+from gi.repository import Gtk         # pylint: disable=no-name-in-module
+from gi.repository.Pango import FontDescription  # pylint: disable=F0401,E0611
+
+REMOTES_LIST = './remotes.list'
+REMOTES_DIR = "./remotes.pickle"
+_REMOTES_BASE_URI = 'http://lirc.sourceforge.net/remotes'
+REMOTES_LIST_URL = os.path.join(_REMOTES_BASE_URI, 'remotes.list')
+REMOTES_DIR_URL = os.path.join(_REMOTES_BASE_URI, 'remotes.pickle')
+_OPTIONS_PATH = "/etc/lirc/lirc_options.conf"
+_RESULTS_DIR = 'lirc-setup.conf.d'
+_MODINIT_PATH = "lirc-modinit.conf"
+
+_USAGE = "Usage: lirc-setup [results directory]"
+
+NO_REMOTE_INFO = """
+If you select this option, you need to provide a lircd.conf file
+later, either by finding it elsewhere or by recording your own using
+the irrecord tool. Normally you want to install this file as
+/etc/lirc/lircd.conf."""
+
+DEVINPUT_INFO = """
+The devinput driver uses the linux kernel decoding rather than lirc's.
+It does not support as many devices as lirc, but for supported devices
+this is an easy setup. It has some limitations, notably it does not
+support sending IR signals (ir blasting)."""
+
+DEFAULT_INFO = """
+The default driver uses the kernel IR drivers, but does it's own
+decoding. It can be used with most devices supported by the kernel
+and also some other devices, notably many serial and parallell ones.
+It needs to be configured which is normally more work than the devinput
+driver, but supports more devices and full functionality."""
+
+PRECONFIG_INFO = """
+For some devices which cannot be used with the default or the devinput
+driver lirc has specific support, often a lirc driver and/or kernel
+configuration of the standard driver(s). If you can find your remote here
+it will configure this support. """
+
+MAIN_HELP = """
+NOTE: This tool is in early alpha stage! Here are numerous bugs and
+shortcomings. Please report issues on the mailing list or in the
+issue tracker at https://sourceforge.net/projects/lirc/!
+
+The tool allows you to configure lirc. This is done in three steps.
+
+In the first you should select a configuration file which corresponds to
+your remote. You can search for remotes from existing ones, browse brands
+or select to not use any pre-configured remote. In the last case you
+probably wants to record your own configuration file using irrecord(1)
+later.  This is the top pane of the window
+
+In the second step you should select a driver which can handle your
+capture device e. g., a usb dongle or a home-made serial device.  This
+is the bottom pane of the window.
+
+Actually, it doesn't really matter if you select remote or capture device
+first. You can do it in any order.
+
+If you select a remote which only can be used with a specific capture
+device the capture device will be updated automagically. Likewise, if you
+select a capture device which requires a specific remote the remote will be
+updated.
+
+In the last step you should install the configuration. This will write a set
+of configuration files to the results directory, normally lirc-setup.conf.d.
+You should then install these files inte their proper locations, see the
+README file in the results directory."""
+
+README = """
+This is some configuration files created by lirc-setup. To install them,
+try the following commands:
+
+sudo cp lircd_options.conf /etc/lirc/lircd_options.conf
+sudo cp lirc-modinit.conf /etc/modprobe.d
+sudo cp lircd.conf /etc/lirc/lircd.conf
+sudo cp lircmd.conf /etc/lirc/lircmd.conf
+
+Of course, if you already have a working configuration don't forget to
+make backup copies as required! Note that all files is not always present.
+"""
+
+
+
+def _hasitem(dict_, key_):
+    ''' Test if dict contains a non-null value for key. '''
+    return key_ in dict_ and dict_[key_]
+
+
+def here(path):
+    ' Return path added to current dir for __file__. '
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+
+
+def find_rc(lirc):
+    ''' Return the /sys/class/rc/rc* device corresponding to lirc device. '''
+    lirc = os.path.basename(lirc)
+    for rc in glob.glob('/sys/class/rc/rc*'):
+        if os.path.exists(os.path.join(rc, lirc)):
+            return rc
+    return None
+
+
+def find_config(configs, key, value):
+    ''' Return item (a dict) in configs where config[key] == value. '''
+
+    found = [c for c in configs.values() if c[key] == value]
+    if len(found) > 1:
+        print("find_config: not properly found %s, %s): " % (key, value)
+              + ', '.join([c['id'] for c in found]))
+        return None
+    elif not found:
+        print("find_config: Nothing  found for %s, %s): " % (key, value))
+        return None
+    return found[0]
+
+
+def list_ttys():
+    ''' List all currently used ttys on this host. '''
+
+    def driver_path(s):
+        ''' Path to driver directory for given /class/tty/x device,. '''
+        return os.path.join(s, 'device', 'driver')
+
+    # (Not tested)
+    # def is_inactive_5250(s):
+    #     try:
+    #         driver = os.path.basename(os.readlink(driver_path(s)))
+    #     except (IOError, OSError):
+    #         return False
+    #     return driver != 'serial5250'
+
+    syslist = glob.glob("/sys/class/tty/*")
+    syslist = [s for s in syslist if os.path.exists(driver_path(s))]
+    # syslist = [s for s in syslist if not is_inactive_5250(s)]
+    devices = ["/dev/" + os.path.basename(s) for s in syslist]
+    return devices
+
+
+def get_bundled_remote(device):
+    ''' Return the bundled remote file for a device config dict,
+    possibly None.
+    '''
+    if not 'supports' in device:
+        return None
+    if device['supports'] == 'bundled' and 'lircd_conf' in device:
+        return device['lircd_conf']
+    return None
+
+def _parse_options():
+    options = {}
+    if len(sys.argv) == 1:
+        options['results_dir'] = _RESULTS_DIR
+    elif len(sys.argv) == 2:
+        options['results_dir'] =  sys.argv[1]
+    else:
+        sys.stderr.write(_USAGE)
+        sys.exit(1)
+    return options
+
+def _write_results(config, result_dir, builder):
+    ''' Write the set of new configuration files into results directory, '''
+
+    def write_modinit(options, log):
+        ''' Possibly write the modprobe.d config file. '''
+        if not _hasitem(config, 'modsetup'):
+            return log
+        modinit = '# Generated by lirc-setup\n'
+        modinit += config['modsetup'] + '\n'
+        path = os.path.join(result_dir, _MODINIT_PATH)
+        with open(path, 'w') as f:
+            f.write(modinit)
+        log += 'Info: modprobe.d configuration: %s\n' % config['modsetup']
+        return log
+
+    def write_blacklist(options, log):
+        ''' Possibly update blacklist in the /etc/modprobe.d file. '''
+        if not _hasitem(config, 'blacklist'):
+            return log
+        blacklist = '# Generated by lirc-setup\n'
+        blacklist += config['blacklist'] + '\n'
+        path = os.path.join(result_dir, _MODINIT_PATH)
+        with open(path, 'a') as f:
+            f.write(blacklist)
+        log += \
+             'Info: modprobe.d blacklist config: %s \n' % config['blacklist']
+        return log
+
+    def write_options(options, log):
+        ''' Update options in new lirc_options.conf. '''
+        inited = False
+        if not options.has_section('lircd'):
+            options.add_section('lircd')
+        if not _hasitem(config, 'lircd_conf'):
+            log += 'Warning: No lircd.conf found, requierd by lircd.\n'
+        for opt in ['device', 'lircd_conf', 'lircmd_conf']:
+            if not _hasitem(config, opt):
+                continue
+            if not inited:
+                log += 'Info: new values in lircd_options.conf\n<tt>'
+                inited = True
+            options.set('lircd', opt, config[opt])
+            log += "%-16s: %s\n" % (opt, config[opt])
+        if _hasitem(config, 'modprobe'):
+            if not options.has_section('modprobe'):
+                options.add_section('modprobe')
+            options.set('modprobe', 'modules', config['modprobe'])
+            log += "%-16s: %s\n" % ('modules', config['modprobe'])
+        log += '</tt>'
+        path = os.path.join(result_dir, 'lirc_options.conf')
+        with open(path, 'w') as f:
+            f.write("# Generated by lirc-setup\n")
+            options.write(f)
+        return log
+
+    def get_configfiles(options, log):
+        ''' Download lircd.conf and perhaps lircmd.conf, '''
+
+        def error(ex, uri):
+            ''' Handle download error. '''
+            text = "Cannot download %s : %s" % (uri, str(ex))
+            show_error(builder, "Download error", text )
+
+        if not 'lircd_conf' in config or not config['lircd_conf' ]:
+            text = "No lircd.conf defined, skipping"
+            show_warning(builder, "Download error", text )
+            return log
+        for item in ['lircd_conf', 'lircmd_conf']:
+            if not item in config:
+                continue
+            uri = os.path.join(_REMOTES_BASE_URI, config[item])
+            path = os.path.join(result_dir, item.replace('_', '.'))
+            try:
+                urllib.request.urlretrieve(uri, path)
+                log += 'Info: Downloaded %s to %s\n' % (str(uri), str(path))
+            except urllib.error.HTTPError as ex:
+                error(ex, uri)
+        return log
+
+    options = configparser.RawConfigParser()
+    options.read(_OPTIONS_PATH)
+    log = 'Writing installation files in %s\n' % result_dir
+    log = write_options(options, log)
+    log = write_modinit(options, log)
+    log = write_blacklist(options, log)
+    log = get_configfiles(options, log)
+    path = os.path.join(result_dir, 'README')
+    with open(path, 'w') as f:
+        f.write(README)
+    show_info(builder, 'Installation files written', log)
+
+
+def _check_resultsdir(dirpath, builder):
+    ''' Check that dirpath is ok, return posssiby empty error message.'''
+    if not os.path.exists(dirpath):
+        try:
+            os.makedirs(dirpath)
+            return ''
+        except os.error as err:
+            return "Cannot create directory %s:" % dirpath +  str(err)
+    elif not os.listdir(dirpath):
+        if os.access(dirpath, os.W_OK):
+            return ''
+        else:
+            return "Directory %s is not writeable" % dirpath
+    else:
+        return "Directory %s is in the way. Please remove it or use" \
+            " another directory." % dirpath
+
+
+def _check_modules(config):
+    ''' Check modules options, return results as a string. '''
+    if not 'modules' in config or not config['modules']:
+        return ''
+    with open('/proc/modules') as f:
+        all_modules = f.readlines()
+    all_modules = [m.split()[0] for m in all_modules]
+
+
+    modules = ast.literal_eval(config['modules'])
+    if not isinstance(modules, list):
+        modules=[]
+
+    s = ''
+    for m in modules:
+        cmd = ['sh -c "find /lib/modules/$(uname -r) -name %s.ko"' % m]
+        try:
+            found = subprocess.check_output(cmd, shell=True).decode('utf-8')
+        except (OSError, CalledProcessError):
+            found = []
+        else:
+            found = found.strip()
+
+        if m in found:
+            s += 'modules: %s: OK, module exists\n' % m
+            if m in all_modules:
+                s += 'modules: %s: OK, module is loaded\n' % m
+            else:
+                s += 'modules: %s: Info, module is not loaded.\n' % m
+                if not 'modprobe' in config:
+                    config['modprobe'] = list()
+                config['modprobe'].extend([m])
+        else:
+            s += 'modules: %s: Error, module does not exist\n' % m
+    return s
+
+
+def on_window_delete_event_cb(window, event):
+    ''' Generic window close event. '''
+    window.hide()
+    return True
+
+def _message_dialog(builder, header, kind,  body, exit):
+    ''' Return a standard error/warning/info dialog. '''
+    d = Gtk.MessageDialog(builder.get_object('main_window'),
+                          0,
+                          kind,
+                          Gtk.ButtonsType.OK,
+                          header)
+    if body:
+        d.format_secondary_markup(body)
+    d.run()
+    d.destroy()
+    if exit:
+        sys.exit()
+
+
+def show_warning(builder, header, body=None, exit=False):
+    ''' Display standard warning dialog. '''
+    _message_dialog(builder, header, Gtk.MessageType.WARNING, body, exit)
+
+
+def show_error(builder, header, body=None, exit=False):
+    ''' Display standard error dialog. '''
+    _message_dialog(builder, header, Gtk.MessageType.ERROR, body, exit)
+
+
+def show_info(builder, header, body=None, exit=False):
+    ''' Display standard error dialog. '''
+    _message_dialog(builder, header, Gtk.MessageType.INFO, body, exit)
+
+
+def show_text(builder, text, title="lirc: show file", on_ok_cb=None):
+    ''' Read-only text display in a textview. '''
+
+    def cb_on_view_ok_btn_clicked(button, data=None):
+        ''' OK button on view_some_text window. '''
+        button.get_toplevel().hide()
+        if on_ok_cb:
+            on_ok_cb()
+        else:
+            return True
+
+    textview = builder.get_object("view_text_view")
+    textview.modify_font(FontDescription("Monospace"))
+    buf = textview.get_buffer()
+    buf.set_text(text)
+    w = builder.get_object('view_text_window')
+    w.set_title(title)
+    w.connect('delete-event', on_window_delete_event_cb)
+    b = builder.get_object('view_text_ok_btn')
+    b.connect('clicked', cb_on_view_ok_btn_clicked)
+    w.set_size_request(600, 600)
+    w.show_all()
+
+
+def download_file(builder, url, path):
+    ''' Download location url to a file. '''
+    try:
+        urllib.request.urlretrieve(url, path)
+    except urllib.error.HTTPError as ex:
+        text = "Cannot download %s : %s" % (url, str(ex))
+        show_warning(builder, 'Download error', text)
+
+
+class DeviceSelector(object):
+    ''' Base class for selecting lircd  --device option setup. '''
+
+    help_label = 'dmesg info'
+    device_label = 'default driver on %device'
+    intro_label = 'Select device for the TBD driver.'
+
+    def __init__(self, gui, driver_id, add_help=False):
+        w = gui.builder.get_object('select_dev_window')
+        w.connect('delete-event', on_window_delete_event_cb)
+        b = gui.builder.get_object('select_dev_ok_btn')
+        b.connect('clicked', self.on_ok_btn_clicked_cb)
+        self.gui = gui
+        self.driver_id = driver_id
+        self.add_help = add_help
+        self.label_by_device = self.list_devices()
+        self.group = None
+
+    def list_devices(self):
+        ''' List all available devices. '''
+        assert self is True, 'Invalid call to abstract list_devices()'
+
+    def on_option_btn_toggled_cb(self, button, device):
+        ''' User selected a device. '''
+        self.gui.config['device'] = '/dev/' + device
+
+    def on_help_clicked_cb(self, button, device):
+        ''' Display dmesg output for given device. '''
+        lines = subprocess.check_output('dmesg').decode('utf-8').split('\n')
+        rc = find_rc(device)
+        if rc:
+            rc = os.path.basename(rc)
+        else:
+            rc = 'fjdsk@$'
+        dev = os.path.basename(device)
+        matched = [l for l in lines if dev in l or rc in l]
+        if matched:
+            show_text(self.gui.builder, '\n'.join(matched))
+        else:
+            show_text(self.gui.builder, 'No dmesg info found for ' + dev)
+
+    def on_ok_btn_clicked_cb(self, button, data=None):
+        ''' User clicked OK, go ahead and select active device. '''
+        for b in self.group.get_group():
+            if b.get_active():
+                self.gui.load_configs()
+                device_dict = dict(find_config(self.gui.configs,
+                                               'id',
+                                               self.driver_id))
+                device_dict['label'] += ' on ' + b.lirc_name
+                device_dict['device'] = b.lirc_name
+                self.gui.set_capture_device(device_dict, 2)
+                break
+        else:
+            print("No active button?!")
+        btn = self.gui.builder.get_object('install_btn')
+        btn.set_sensitive(self.gui._is_installable())
+        button.get_toplevel().hide()
+        return True
+
+    def build_options(self):
+        ''' Build the radiolist with dev/pattern? devices. '''
+
+        parent = self.gui.builder.get_object('select_dev_list_align')
+        childs = parent.get_children()
+        if childs:
+            parent.remove(childs[0])
+        grid = Gtk.Grid()
+        grid.set_column_spacing(10)
+        parent.add(grid)
+        radio_buttons = {}
+        help_buttons = {}
+        group = None
+        for device, label in self.label_by_device.items():
+            if len(radio_buttons) == 0:
+                radio_buttons[device] = Gtk.RadioButton(label)
+                group = radio_buttons[device]
+            else:
+                radio_buttons[device] = \
+                    Gtk.RadioButton.new_with_label_from_widget(group,
+                                                               label)
+            radio_buttons[device].connect('toggled',
+                                          self.on_option_btn_toggled_cb,
+                                          device)
+            size = len(radio_buttons)
+            grid.attach(radio_buttons[device], 0, size, 1, 1)
+            radio_buttons[device].lirc_name = device
+            if self.add_help:
+                help_buttons[device] = Gtk.Button(self.help_label)
+                help_buttons[device].connect('clicked',
+                                             self.on_help_clicked_cb,
+                                             device)
+                grid.attach(help_buttons[device], 1, size, 1, 1)
+
+        self.group = group
+        l = self.gui.builder.get_object('select_dev_label')
+        l.set_text(self.intro_label)
+        self.gui.builder.get_object('select_dev_window').show_all()
+
+
+class EventDeviceSelector(DeviceSelector):
+    ''' Let user select an event device. '''
+
+    intro_label = 'Select /dev/input device for the devinput driver.'
+    device_label = 'Devinput driver on %device'
+
+    def __init__(self, gui):
+        DeviceSelector.__init__(self, gui, 'devinput', False)
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels from /input/by-id. '''
+        result = {}
+        oldcwd = os.getcwd()
+        try:
+            os.chdir("/dev/input/by-id/")
+            for l in glob.glob("/dev/input/by-id/*"):
+                try:
+                    device = os.path.realpath(os.readlink(l))
+                except OSError:
+                    device = l
+                result[device] = os.path.basename(l)
+        except FileNotFoundError:    # pylint: disable=undefined-variable
+            pass
+        finally:
+            os.chdir(oldcwd)
+        return result
+
+
+class LircDeviceSelector(DeviceSelector):
+    ''' Let user select a /dev/lirc? device. '''
+
+    intro_label = 'Select /dev/lirc device for the default driver.'
+    device_label = 'Default driver on %device'
+
+    def __init__(self, gui):
+        DeviceSelector.__init__(self, gui, 'default', True)
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for /dev/lirc devices. '''
+        result = {}
+        for dev in glob.glob('/dev/lirc?'):
+            rc = find_rc(dev)
+            result[dev] = "%s (%s)" % (dev, rc)
+        return result
+
+
+class PreconfigDeviceSelector(DeviceSelector):
+    ''' Let user select a device for a userspace driver. '''
+
+    def __init__(self, gui, device, on_ok_cb=None):
+        self.device = device
+        self.on_ok_cb = on_ok_cb
+        DeviceSelector.__init__(self, gui, device['id'], False)
+        self.gui = gui
+        device_path = device['device'] if 'device' in device else ''
+        self.intro_label = 'Select %s device for the %s driver.' \
+            % (device_path, device['id'])
+        if 'device' in device and device['device']:
+            self.device_label = '%s driver on %s' \
+                % (device['id'], device['device'])
+        else:
+            self.device_label = '%s driver (no device)' % device['id']
+
+    #def select_driver(self, dev_glob):
+    #    ''' Select the driver to use for a specific glob pattern. '''
+    #    if dev_glob.startswith('/dev/'):
+    #        dev_glob = dev_glob.replace('/dev/', "")
+    #    elif dev_glob.startswith('tty'):
+    #        ttys = self.find_ttys()
+    #        self.show_select_device(ttys)
+    #    elif dev_glob == 'port':
+    #        self.show_specify_device('Select udp port')
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for matching devices. '''
+        result = {}
+        for dev in list_ttys():
+            rc = find_rc(dev)
+            if rc:
+                result[dev] = "%s (%s)" % (dev, rc)
+            else:
+                result[dev] = dev
+        return result
+
+    def on_ok_btn_clicked_cb(self, button, data=None):
+        DeviceSelector.on_ok_btn_clicked_cb(self, button, data)
+        if self.on_ok_cb:
+            self.on_ok_cb()
+
+
+class KernelSetup(object):
+    '''  Kernel module options and sanity checks. '''
+    CHECK_START = 1
+    CHECK_DEVICE = 2
+    CHECK_REQUIRED = 3
+    CHECK_INIT = 4
+    CHECK_DONE = 5
+
+    def __init__(self, gui):
+        self.gui = gui
+        self.state = self.CHECK_DEVICE
+
+    def check_required(self):
+        ''' Check that required modules are present. '''
+        self.state = self.CHECK_INIT
+        text = _check_modules(self.gui.config)
+        if text:
+            show_text(self.gui.builder,
+                      text,
+                      "lirc: module check",
+                      self.check)
+        else:
+            self.check()
+
+    def check_modinit(self):
+        ''' Let user define kernel module parameters. '''
+        modinit = self.gui.config['modinit'].split()
+        self.state = self.CHECK_DONE
+        if modinit[0].endswith('select_module_tty'):
+            self.gui.show_select_com_window(modinit[2])
+        elif modinit[0].endswith('select_lpt_port'):
+            self.gui.show_select_lpt_window(modinit[2])
+
+    def check_device(self, config):
+        ''' Check device, possibly let user select the one to use. '''
+        self.state = self.CHECK_REQUIRED
+        if not 'device' in config or config['device'] in [None, 'None']:
+            config['device'] = 'None'
+            self.gui.set_capture_device(config)
+            self.check()
+
+        device_dict = {'id': config['driver'],
+                       'device': config['device'],
+                       'label': config['driver']}
+        device_selector = \
+            PreconfigDeviceSelector(self.gui, device_dict, self.check)
+        if not device_selector.label_by_device:
+            show_warning(self.gui.builder,
+                         "No device found",
+                         'The %s driver can not be used since a suitable'
+                         ' device matching  %s cannot be found.' %
+                         (device_dict['id'], device_dict['device']))
+        elif len(device_selector.label_by_device) == 1:
+            device_dict['label'] += \
+                ' on ' + sorted(device_selector.label_by_device.keys())[0]
+            self.gui.set_capture_device(device_dict, 2)
+        else:
+            device_selector.build_options()
+
+    def check(self):
+        ''' Main FSM entry running actual check(s). '''
+        if self.state == self.CHECK_DEVICE:
+            self.check_device(self.gui.config)
+        elif self.state == self.CHECK_REQUIRED:
+            if 'modules' in self.gui.config and self.gui.config['modules']:
+                self.check_required()
+            else:
+                self.state = self.CHECK_INIT
+                self.check()
+        elif self.state == self.CHECK_INIT:
+            if 'modinit' in self.gui.config and self.gui.config['modinit']:
+                self.check_modinit()
+            else:
+                self.state = self.CHECK_DONE
+
+
+class Gui(object):
+    ''' Init window and handle signals. '''
+
+    def __init__(self, builder):
+        self.builder = builder
+        self.configs = {}
+        self.config = {}
+        self.selected = None
+        self.kernel_setup = KernelSetup(self)
+        self.cli_options = _parse_options()
+        self._main_window_connect()
+        errmsg = _check_resultsdir(self.cli_options['results_dir'], builder)
+        if errmsg:
+            show_warning(builder, "Invalid results directory", errmsg, True)
+            Gtk.main_quit()
+
+
+    def _is_installable(self):
+        ''' Do we have a configuration which can be installed? '''
+        for item in ['lircd_conf', 'driver']:
+            if not item in self.config or not self.config[item]:
+               break
+        else:
+            return not 'any' in self.config['lircd_conf']
+        return False
+
+    def _set_remote(self, remote, depth=0):
+        ''' Update the remote  and possibly bundled capture device. '''
+        self.builder.get_object('selected_remote_lbl').set_text(remote)
+        self.builder.get_object('view_config_btn').set_sensitive(True)
+        self.config['lircd_conf'] = remote
+        btn = self.builder.get_object('install_btn')
+        btn.set_sensitive(self._is_installable())
+        if depth > 1:
+            return
+        device = self._get_bundled_driver(remote)
+        if device:
+            device_selector = PreconfigDeviceSelector(self, device)
+            if not device_selector.label_by_device:
+                show_warning(self.builder,
+                             "No device found",
+                             'The %s driver can not be used since a '
+                             ' suitable device matching  %s cannot be'
+                             ' found.' % (device['id'], device['device']))
+            elif len(device_selector.label_by_device) == 1:
+                device['label'] += \
+                    ' on ' + sorted(device_selector.label_by_device.keys())[0]
+                self.set_capture_device(device, depth + 1)
+            else:
+                device_selector.build_options()
+
+    def _clear_remote(self):
+        ''' Clear the visible, selected remote. '''
+        b = self.builder.get_object('selected_remote_lbl')
+        b.set_text('Selected remote (None)')
+        self.builder.get_object('view_config_btn').set_sensitive(False)
+
+    def _get_bundled_driver(self, remote):
+        ''' Return the bundled capture device file for remote,
+        possibly None.
+        '''
+        self.load_configs()
+        my_config = [c for c in self.configs.values()
+                     if 'lircd_conf' in c and c['lircd_conf'] == remote]
+        if not my_config:
+            return None
+        if my_config[0]['supports'] == 'bundled':
+            return my_config[0]
+        return None
+
+    def _main_window_connect(self):
+        ''' Connect signals for main window. '''
+
+        def on_view_config_btn_cb(btn):
+            ''' User pressed the view config file button. '''
+            label = self.builder.get_object('selected_remote_lbl')
+            self.show_remote(label.get_text())
+            return True
+
+        def on_devinput_btn_clicked_cb(btn):
+            ''' User pressed 'configure devinput' button. '''
+            self.show_devinput()
+
+        def on_default_btn_clicked_cb(btn):
+            ''' User pressed 'configure default driver' button. '''
+            self.show_default()
+
+        def on_preconfig_device_btn_cb(button):
+            ''' User selects preconfigured device option. '''
+            self.show_preconfig_dialog()
+
+        def on_search_btn_clicked_cb(button):
+            ''' User clicked search for remotes button. '''
+            self.show_search_results_select()
+
+        def on_view_driver_btn_clickec_cb(button):
+            ''' User clicked View Driver  button. '''
+            self.show_driver()
+
+        def on_no_remote_btn_cb(button):
+            ''' User clicked 'Use no remote config' button. '''
+            self._set_remote('None', 2)
+            b = self.builder.get_object('view_config_btn')
+            b.set_sensitive(False)
+            btn = self.builder.get_object('install_btn')
+            btn.set_sensitive(self._is_installable())
+            return True
+
+        def on_install_btn_clicked_cb(button):
+            ''' User clicked install configuration button. '''
+            self.do_install_config()
+
+        def on_browse_btn_clicked_cb(button):
+            ''' User clicked browse remotes button. '''
+            self.show_config_browse_cb()
+
+        def on_restart_btn_clicked_cb(button):
+            ''' User clicked 'Start Over' button. '''
+            self.do_restart()
+
+        def on_info_btn_clicked(txt):
+            ''' Handle ? help button  button . '''
+            show_text(self.builder, txt, "lirc: help")
+
+        main_connect = [
+            ('view_config_btn', 'clicked', on_view_config_btn_cb),
+            ('search_btn', 'clicked', on_search_btn_clicked_cb),
+            ('main_browse_btn', 'clicked', on_browse_btn_clicked_cb),
+            ('no_remote_btn', 'clicked', on_no_remote_btn_cb),
+            ('devinput_btn', 'clicked', on_devinput_btn_clicked_cb),
+            ('default_btn', 'clicked', on_default_btn_clicked_cb),
+            ('view_driver_btn', 'clicked', on_view_driver_btn_clickec_cb),
+            ('preconfig_device_btn', 'clicked', on_preconfig_device_btn_cb),
+            ('install_btn', 'clicked', on_install_btn_clicked_cb),
+            ('restart_btn', 'clicked', on_restart_btn_clicked_cb),
+            ('main_window', 'delete-event', self.on_delete_event_cb),
+            ('exit_btn', 'clicked', self.on_delete_event_cb),
+            ('no_remote_help_btn', 'clicked',
+                lambda b: on_info_btn_clicked(NO_REMOTE_INFO)),
+            ('devinput_help_btn', 'clicked',
+                lambda b: on_info_btn_clicked(DEVINPUT_INFO)),
+            ('default_help_btn', 'clicked',
+                lambda b: on_info_btn_clicked(DEFAULT_INFO)),
+            ('main_help_btn', 'clicked',
+                lambda b: on_info_btn_clicked(MAIN_HELP)),
+            ('preconfig_help_btn', 'clicked',
+                lambda b: on_info_btn_clicked(PRECONFIG_INFO))
+
+        ]
+        for btn_name, signal, handler in main_connect:
+            self.builder.get_object(btn_name).connect(signal, handler)
+
+    def set_capture_device(self, device, depth=0):
+        ''' Given a device dict update selected capture device and
+        possibly bundled remote.
+        '''
+        my_config = device
+        lbl = self.builder.get_object('selected_driver_lbl')
+        lbl.set_text(my_config['label'])
+        self.builder.get_object('view_driver_btn').set_sensitive(True)
+        for key in ['modinit', 'lircmd_conf', 'driver', 'device',
+                    'lircd_conf', 'label', 'modprobe', 'conflicts',
+                    'modules', 'supports']:
+            if key in my_config:
+                self.config[key] = str(my_config[key])
+        if depth > 1:
+            return
+        remote = get_bundled_remote(device)
+        if remote and not 'any' in remote:
+            self._set_remote(remote, depth + 1)
+        btn = self.builder.get_object('install_btn')
+        btn.set_sensitive(self._is_installable())
+
+    def clear_capture_device(self):
+        ''' Reset the visible capture device info. '''
+        lbl = self.builder.get_object('selected_driver_lbl')
+        lbl.set_text('Selected capture device (None)')
+        for key in ['modinit', 'lircmd_conf', 'driver', 'device',
+                    'modprobe', 'blacklist', 'modules']:
+            if key in self.config:
+                del(self.config[key])
+        self.builder.get_object('view_driver_btn').set_sensitive(False)
+
+    def load_configs(self):
+        ''' Load config files into self.configs. '''
+        if hasattr(self, 'configs') and self.configs:
+            return
+        self.configs = {}
+        if os.path.exists(here('configs')):
+            configs = here('configs')
+        elif os.path.exists(here('../configs')):
+            configs = here('../configs')
+        else:
+            show_warning(self.builder, "Cannot find the configuration files")
+        for path in glob.glob(configs + '/*.conf'):
+            with open(path) as f:
+                cf = yaml.load(f.read())
+            self.configs[cf['config']['id']] = cf['config']
+
+    def show_driver(self):
+        ''' Display data for current driver. '''
+
+        items = [
+            ('Driver', 'driver'),
+            ('lircd.conf file', 'lircd_conf'),
+            ('lircmd.conf file', 'lircmd_conf'),
+            ('lircd --device option', 'device'),
+            ('Kernel modules required and loaded', 'modprobe'),
+            ('Kernel module setup', 'modsetup'),
+            ('Blacklisted kernel modules', 'conflicts')
+        ]
+        s = ''
+        for label, key in items:
+            s += "%-36s: " % label
+            s += str(self.config[key]) if key in self.config else 'Not set'
+            s += "\n"
+        show_text(self.builder, s, 'lirc: Show driver.')
+
+    def show_remote(self, remote):
+        ''' Display remote config file in text window. '''
+        # pylint: disable=no-member
+        uri = _REMOTES_BASE_URI + '/' + remote
+        try:
+            text = urllib.request.urlopen(uri).read().decode('utf-8',
+                                                             errors='ignore')
+        except urllib.error.URLError as ex:
+            text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
+        show_text(self.builder, text, 'lirc: download error')
+
+    def show_default(self):
+        ''' Show the modal default driver window '''
+
+        device_selector = LircDeviceSelector(self)
+        if not device_selector.label_by_device:
+            show_warning(self.builder,
+                         "No lirc device found",
+                         "Default  driver cannot be used since "
+                         " no suitable device can be found as"
+                         " /dev/lirc?")
+        else:
+            device_selector.build_options()
+
+    def show_select_lpt_window(self, module):
+        ''' Show window for selecting lpt1, lpt2... '''
+
+        ports = {'lpt1': ['7', '0x378'],
+                 'lpt2': ['7', '0x278'],
+                 'lpt3': ['5', '0x3bc'],
+                 'custom': ['0', '0']}
+
+        def on_select_back_cb(button, data=None):
+            ''' User clicked the Back button. '''
+            button.get_toplevel().hide()
+
+        def on_select_next_cb(button, data=None):
+            ''' User clicked the Next button. '''
+            group = self.builder.get_object('lpt1_lpt_btn').get_group()
+            for b in group:
+                if not b.get_active():
+                    continue
+                btn_id = b.lirc_id
+                if btn_id == 'custom':
+                    entry = self.builder.get_object('lpt_iobase_entry')
+                    iobase = entry.get_text()
+                    entry = self.builder.get_object('lpt_irq_entry')
+                    irq = entry.get_text()
+                else:
+                    iobase = ports[btn_id][0]
+                    irq = ports[btn_id][1]
+                self.config['modsetup'] = \
+                    '%s: iobase=%s irq=%s' % (module, iobase, irq)
+            button.get_toplevel().hide()
+
+        for btn in ports.keys():
+            b = self.builder.get_object(btn + '_lpt_btn')
+            b.lirc_id = btn
+        b = self.builder.get_object('lpt_next_btn')
+        b.connect('clicked', on_select_next_cb)
+        b = self.builder.get_object('lpt_back_btn')
+        b.connect('clicked', on_select_back_cb)
+        w = self.builder.get_object('select_lpt_window')
+        w.show_all()
+
+    def show_select_com_window(self, module):
+        ''' Show window for selecting com1, com2... '''
+
+        ports = {'com1': ['4', '0x3f8'],
+                 'com2': ['3', '0x2f8'],
+                 'com3': ['4', '0x3e8'],
+                 'com4': ['3', '0x2e8'],
+                 'custom': ['0', '0']}
+
+        def on_com_select_next_cb(button, data=None):
+            ''' User clicked the Next button. '''
+            group = self.builder.get_object('com1_btn').get_group()
+            for b in group:
+                if not b.get_active():
+                    continue
+                btn_id = b.lirc_id
+                if btn_id == 'custom':
+                    entry = self.builder.get_object('custom_iobase_entry')
+                    iobase = entry.get_text()
+                    entry = self.builder.get_object('custom_irq_entry')
+                    irq = entry.get_text()
+                else:
+                    iobase = ports[btn_id][1]
+                    irq = ports[btn_id][0]
+                self.config['modsetup'] = \
+                    '%s: iobase=%s irq=%s' % (module, iobase, irq)
+            button.get_toplevel().hide()
+
+        def on_com_select_back_cb(button, data=None):
+            ''' User clicked the Back button. '''
+            button.get_toplevel().hide()
+
+        for btn in ports.keys():
+            b = self.builder.get_object(btn + '_btn')
+            b.lirc_id = btn
+        b = self.builder.get_object('select_com_next_btn')
+        b.connect('clicked', on_com_select_next_cb)
+        b = self.builder.get_object('select_com_back_btn')
+        b.connect('clicked', on_com_select_back_cb)
+        w = self.builder.get_object('select_com_window')
+        w.show_all()
+
+    def show_devinput(self):
+        ''' Show the modal devinput window '''
+
+        device_selector = EventDeviceSelector(self)
+        if not device_selector.label_by_device:
+            show_warning(self.builder,
+                         "No event device found",
+                         "Devinput driver cannot be used since "
+                         " no suitable device can be found under"
+                         " /dev/input/by_id")
+        else:
+            device_selector.build_options()
+
+    def show_preconfig_dialog(self):
+        ''' Show the preconfigured devices main dialog. '''
+
+        menu_label_by_id = {
+            'usb': ('preconfig_menu_1', 'USB Devices'),
+            'other_serial': ('preconfig_menu_2', 'Other serial devices'),
+            'tv_card': ('preconfig_menu_3', 'TV card devices'),
+            'pda': ('preconfig_menu_4', 'PDA:s'),
+            'other': ('preconfig_menu_5', 'Other (MIDI, Bluetooth,  etc.)'),
+            'soundcard': ('preconfig_menu_6',
+                          'Home-brew (soundcard input)'),
+            'home_brew': ('preconfig_menu_7',
+                          'Home-brew serial and parallel devices'),
+            'irda': ('preconfig_menu_7', 'IRDA/CIR hardware')
+        }
+
+        def get_selected_cb(button, data=None):
+            ''' Return currently selected menu option. '''
+            for menu_label in menu_label_by_id.values():
+                b = self.builder.get_object(menu_label[0])
+                if b.get_active():
+                    self.selected = b.lirc_id
+                    return True
+            return False
+
+        w = self.builder.get_object('preconfig_window')
+        w.connect('delete-event', on_window_delete_event_cb)
+        b = self.builder.get_object('preconfig_back_btn')
+        b.connect('clicked', lambda b: w.hide())
+        b = self.builder.get_object('preconfig_next_btn')
+        b.connect('clicked',
+                  lambda b: self.show_preconfig_select(self.selected))
+        for id_, menu_label in menu_label_by_id.items():
+            b = self.builder.get_object(menu_label[0])
+            b.connect('toggled', get_selected_cb)
+            b.lirc_id = id_
+        get_selected_cb(None)
+        w.show_all()
+
+    def show_preconfig_select(self, menu=None):
+        ''' User has selected configuration submenu, present options. '''
+
+        def build_treeview(menu):
+            ''' Construct the configurations points liststore treeview. '''
+
+            treeview = self.builder.get_object('preconfig_items_view')
+            treeview.set_vscroll_policy(Gtk.ScrollablePolicy.NATURAL)
+            if len(treeview.get_columns()) == 0:
+                liststore = Gtk.ListStore(str)
+                treeview.set_model(liststore)
+                renderer = Gtk.CellRendererText()
+                column = Gtk.TreeViewColumn('Configuration', renderer, text=0)
+                column.clickable = True
+                treeview.append_column(column)
+                treeview.get_selection().connect('changed',
+                                                 on_treeview_change_cb)
+            liststore = treeview.get_model()
+            liststore.clear()
+            labels = [self.configs[l]['label'] for l in self.configs.keys()
+                      if self.configs[l]['menu'] == menu]
+            for l in sorted(labels):
+                liststore.append([l])
+
+        def on_treeview_change_cb(selection, data=None):
+            ''' User selected a row i. e., a config. '''
+            (model, iter_) = selection.get_selected()
+            if not iter_:
+                return
+            label = self.builder.get_object('preconfig_select_lbl')
+            label.set_text(model[iter_][0])
+
+        def on_preconfig_next_clicked_cb(button, data=None):
+            ''' User pressed 'Next' button. '''
+            label = self.builder.get_object('preconfig_select_lbl')
+            device = find_config(self.configs, 'label', label.get_text())
+            self.set_capture_device(device)
+            button.get_toplevel().hide()
+            self.builder.get_object('preconfig_window').hide()
+            self.kernel_setup.check()
+            return True
+
+        self.load_configs()
+        build_treeview(menu)
+
+        w = self.builder.get_object('preconfig_select_window')
+        w.connect('delete-event', on_window_delete_event_cb)
+        b = self.builder.get_object('preconfig_select_back_btn')
+        b.connect('clicked', lambda b: w.hide())
+        b = self.builder.get_object('preconfig_select_next_btn')
+        b.connect('clicked', on_preconfig_next_clicked_cb)
+        w.show_all()
+
+    def show_search_results_select(self):
+        ''' User  has entered a search pattern, let her choose match.'''
+
+        def build_treeview():
+            ''' Construct the search results liststore treeview. '''
+
+            treeview = self.builder.get_object('search_results_view')
+            treeview.set_vscroll_policy(Gtk.ScrollablePolicy.NATURAL)
+            if len(treeview.get_columns()) > 0:
+                return treeview
+            liststore = Gtk.ListStore(str, str, str)
+            treeview.set_model(liststore)
+            renderers = {}
+            for i, colname in enumerate(['vendor', 'lircd.conf', 'supports']):
+                renderers[colname] = Gtk.CellRendererText()
+                column = \
+                    Gtk.TreeViewColumn(colname, renderers[colname], text=i)
+                column.clickable = True
+                # column.pack_start(renderers[colname], True)
+                treeview.append_column(column)
+            treeview.get_selection().connect('changed',
+                                             on_select_change_cb)
+            return treeview
+
+        def on_select_change_cb(selection, data=None):
+            ''' User changed the selected lircd.conf option. '''
+            (model, iter_) = selection.get_selected()
+            remote = model[iter_][0] + '/' + model[iter_][1]
+            self.builder.get_object('selected_config_lbl').set_text(remote)
+            self.builder.get_object('search_next_btn').set_sensitive(True)
+
+        def on_search_next_btn_cb(button, data=None):
+            ''' User pressed 'Next' button.'''
+            label = self.builder.get_object('selected_config_lbl')
+            self._set_remote(label.get_text())
+            button.get_toplevel().hide()
+            return True
+
+        def get_remotes(entry):
+            ''' Return list of remotes matching pattern in entry. '''
+
+            if not os.path.exists(REMOTES_LIST):
+                download_file(self.builder, REMOTES_LIST_URL, REMOTES_LIST)
+            with open(REMOTES_LIST) as f:
+                list_ = f.read()
+            lines = list_.split('\n')
+            entry = self.builder.get_object('search_config_entry')
+            found = []
+            pattern = entry.get_text()
+            for l in lines:
+                if pattern in l:
+                    found.append(l)
+            return found
+
+        found = get_remotes(self.builder.get_object('search_config_entry'))
+        if not found:
+            show_warning(self.builder, "No matching config found")
+            return
+
+        treeview = build_treeview()
+        liststore = treeview.get_model()
+        liststore.clear()
+        for l in found:
+            words = l.split(';')
+            try:
+                s = '\n'.join(textwrap.wrap(words[4], 25))
+            except IndexError:
+                continue
+            liststore.append([words[0], words[1], s])
+
+        b = self.builder.get_object('search_back_btn')
+        b.connect('clicked', lambda b, d=None: b.get_toplevel().hide())
+        b = self.builder.get_object('search_next_btn')
+        b.connect('clicked', on_search_next_btn_cb)
+        w = self.builder.get_object('search_select_window')
+        w.show_all()
+
+    def show_config_browse_cb(self, button=None, data=None):
+        ''' User clicked browse configs button. '''
+
+        def build_treeview():
+            ''' Construct the remotes browse liststore treeview. '''
+
+            treeview = self.builder.get_object('config_browse_view')
+            treeview.set_vscroll_policy(Gtk.ScrollablePolicy.NATURAL)
+            if len(treeview.get_columns()) > 0:
+                return treeview
+            treestore = Gtk.TreeStore(str)
+            treeview.set_model(treestore)
+            renderer = Gtk.CellRendererText()
+            column = Gtk.TreeViewColumn('path', renderer, text=0)
+            column.clickable = True
+            treeview.append_column(column)
+            return treeview
+
+        def fill_treeview(treeview):
+            ''' Fill the treestore with browse options. '''
+            treestore = treeview.get_model()
+            if hasattr(treestore, 'lirc_is_inited'):
+                return
+            treestore.clear()
+            if not os.path.exists(REMOTES_DIR):
+                download_file(self.builder, REMOTES_DIR_URL, REMOTES_DIR)
+            with open(REMOTES_DIR, 'rb') as f:
+                remotes = pickle.load(f)
+            for key in remotes['remotes'].keys():
+                if key is True:
+                    remotes['remotes']['yes'] = remotes['remotes'][True]
+                    del(remotes['remotes'][True])
+            for d in sorted(remotes['remotes'].keys()):
+                iter_ = treestore.insert_with_values(None, -1, [0], [d])
+                childs = remotes['remotes'][d]
+                if childs:
+                    for child in childs.keys():
+                        treestore.insert_with_values(iter_, -1, [0], [child])
+            treestore.lirc_is_inited = True
+
+        def on_select_change_cb(selection, data=None):
+            ''' User changed the selected lircd.conf browse  option. '''
+            (model, iter_) = selection.get_selected()
+            label = self.builder.get_object('config_browse_select_lbl')
+            item = model[iter_][0]
+            if not '/' in item:
+                return True
+            label.set_text(item)
+            b = self.builder.get_object('config_browse_select_lbl')
+            b.set_sensitive(True)
+            b = self.builder.get_object('config_browse_view_btn')
+            b.set_sensitive(True)
+            b = self.builder.get_object('config_browse_next_btn')
+            b.set_sensitive('/' in item)
+            return True
+
+        def on_config_browse_next_btn_cb(button, data=None):
+            ''' User presses 'Next' button. '''
+            label = self.builder.get_object('config_browse_select_lbl')
+            self._set_remote(label.get_text())
+            button.get_toplevel().hide()
+            return True
+
+        def on_config_browse_view_btn_cb(button, data=None):
+            ''' User presses 'View' button. '''
+            lbl = self.builder.get_object('config_browse_select_lbl')
+            self.show_remote(lbl.get_text())
+
+        w = self.builder.get_object('config_browse_window')
+        w.connect('delete-event', on_window_delete_event_cb)
+        b = self.builder.get_object('config_browse_back_btn')
+        b.connect('clicked', lambda b, d=None: b.get_toplevel().hide())
+        b = self.builder.get_object('config_browse_next_btn')
+        b.connect('clicked', on_config_browse_next_btn_cb)
+        b = self.builder.get_object('config_browse_view_btn')
+        b.connect('clicked', on_config_browse_view_btn_cb)
+        treeview = build_treeview()
+        fill_treeview(treeview)
+        treeview.get_selection().connect('changed', on_select_change_cb)
+        w.show_all()
+
+    def do_install_config(self):
+        ''' Write configuration files. '''
+        _write_results(self.config,
+                       self.cli_options['results_dir'],
+                       self.builder)
+
+    def do_restart(self):
+        ''' Reset state to pristine. '''
+        Gui.__init__(self, self.builder)
+        self.clear_capture_device()
+        self._clear_remote()
+        self.builder.get_object('install_btn').set_sensitive(False)
+
+    @staticmethod
+    def on_delete_event_cb(window, event=None):
+        ''' Main window close event. '''
+        Gtk.main_quit()
+
+    @staticmethod
+    def on_quit_button_clicked_cb(widget, data=None):
+        ''' User clicked 'Quit' button. '''
+        Gtk.main_quit()
+
+
+def main():
+    ''' Indeed: main program. '''
+    builder = Gtk.Builder()
+    builder.add_from_file(here("lirc-setup.ui"))
+    builder.connect_signals(Gui(builder))
+    builder.get_object('main_window').show_all()
+
+    Gtk.main()
+
+
+if __name__ == '__main__':
+    main()
+
+
+# vim: set expandtab ts=4 sw=4:
