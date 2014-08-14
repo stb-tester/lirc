@@ -7,14 +7,14 @@
     <P>
       First, lirc is packaged for all major linux distributions. If you
       just want to use lirc, you should be able to install it like any
-      other package. This way, you want have to look at the
+      other package. This way, you don't have to look at the
       dependencies, build and installation description found here.
     </p>
     <p>
       Several scripts need the python3 PyYaml package at
       http://pyyaml.org/wiki/PyYAML. Overall, python3 is used for
       many support scripts. The configuration script needs python3-gi and
-      thus also thge Gtk libs.
+      thus also thge Gtk libs. the build also needs man2html.
     </p>
 
     <P>
@@ -32,10 +32,8 @@
       <B>Irman (=UIR) :</B> To use your Irman with LIRC you need the
       latest <A HREF="http://www.lirc.org/software/snapshots/">
       <em>libirman</em></A> library. At the time this has been written
-      the current libirman version was 0.4.3. Former versions won't
-      work. Please also read <A HREF="#updating">Updating from
-      lirc-0.5.4</A>.
-    </P>
+      the current libirman version was 0.4.3.
+   </P>
 
     <A NAME="kernel"></A>
 
@@ -151,8 +149,7 @@
     <P>
       <B>Note:</B> You won't find a configure script in the source repo
       version of LIRC. You will have to generate it first by executing
-      <em>./autogen.sh</em>. You need at least libtool-1.3.3,
-      automake-1.4 and autoconf-2.13 to do this properly.
+      <em>./autogen.sh</em>.
     </P>
 
     <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -202,13 +199,6 @@
       contains examples for other init systems and distributions.
       you will have to edit  this for your system.
     </P>
-
-    <P>
-      <B>Warning:</B> Never compile daemons with &quot;Disable
-      daemonize&quot; turned on and place them in some init script
-      unless you have a rescue disc nearby...
-    </P>
-
     <P>
       Now you should adjust the file permissions of
       <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
@@ -405,273 +395,13 @@
     <H1 ALIGN="CENTER">Module specific information</H1>
     <HR WIDTH="70%">
 
-    <!-- Updating from lirc-0.5.4 ++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="updating054"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.5.4</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      This section only describes changes that break compatibility
-      with older versions. Please read the <EM>NEWS</EM> file to learn
-      about all new features of this release.
-    </P>
-    <P>
-      The config files of <em>lircd</em> and <em>lircmd</em> are now
-      located in <em>/usr/local/etc/</em> instead of <em>/etc/</em>
-      per default. Most people prefer to make <em>/usr/local/etc/</em>
-      a link to <em>/etc/</em>.
-    </P>
-    <P>
-      The modules no longer are uniformly installed as <em>lirc.o</em>
-      but are called lirc_<em>driver</em>.o depending on the driver
-      you are using. Therefore you might have to edit your
-      <em>/etc/conf.modules</em> and change the line
-    </P>
-    <PRE>
-    alias char-major-61 lirc</PRE>
-    <P>
-      to whatever you need.
-    </P>
-    <P>
-      LIRC now supports the Irman directly. <em>lirmand</em> is no
-      longer necessary. Before installing this version you should call
-      <NOBR><EM>rm /dev/lirc</EM></NOBR> to remove the FIFO that was
-      used in lirc-0.5.4. <em>/dev/lirc</em> now should be a link to
-      the device the Irman is connected to (e.g. <em>/dev/ttyS1</em>).
-    </P>
-
-    <A NAME="updating062"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.6.2</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The lirc_gpio_p has been renamed to lirc_gpio. It now also
-      contains support for TV cards that are able to generate
-      interrupts if infra-red commands are received. The lirc_gpio_i
-      driver that implemented this has been removed. The lirc_fly98
-      also has been removed as it is now supported by the lirc_gpio
-      driver.
-    </P>
-
-    <P>
-      The <em>lirc_haup</em> module has been renamed to <em>lirc_i2c</em>.
-    </P>
-
-    <P>
-      The transmit code in <em>lirc_serial</em> has been modified
-      slightly. If you have problems transmitting decrease the
-      frequency value in the lircd config file by approximately 2000.
-    </P>
-
-    <P>
-      There have been major changes to the SIR driver. If you used
-      this driver before you may have to generate new config files for
-      your remotes. Transmitting is now more likely to work.
-    </P>
-
-    <P>
-      The config file for the old AVerMedia TVCapture and TVPhone
-      cards (pre 98) has changed. Please use the new config file that
-      you can find in <em>remotes/avermedia/lircd.conf.avermedia</em>.
-    </P>
-
-    <A NAME="updating063"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.6.3</H1>
-    <HR WIDTH="70%">
-
-    <P>lircd.conf and lircmd.conf are in /etc again.</P>
-
-    <P>
-      Two independend bugs were fixed in the IRdeo and home-brew
-      transmitter code that affected correct pulse/space timings in
-      some situations. This might break config files that did work
-      with previous versions.
-    </P>
-
-    <A NAME="updating064"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.6.4</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      AVerMedia TV cards with ID 0x00011461 and 0x00041461 should
-      finally work with the provided config files. That means they
-      will no longer work with the config files you have created
-      yourself.
-    </P>
-    <P>
-      The I/O base address for some modules now is set with the
-      <em>io</em> parameter. (formerly: lirc_sir = iobase, lirc_serial
-      and lirc_parallel = port).
-    </P>
-
-    <A NAME="updating065"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.6.5</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The config file for the Pixelview PlayTV pro and compatible TV
-      cards has changed. Please use the config file in
-      <em>remotes/pixelview/lircd.conf.playtv_pro</em>.
-    </P>
-    <P>
-      The config file for the Winfast TV2000 and compatible TV cards
-      has changed. Please use the config file in
-      <em>remotes/winfast/lircd.conf.tv2000</em>.
-    </P>
-
-    <A NAME="updating066"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.6.6</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The config files for all FlyVideo TV cards have changed. Please
-      use the config file in
-      <em>remotes/life-view/lircd.conf.flyvideo</em>.
-    </P>
-    <P>
-      The config file for the Winfast TV2000 TV card has
-      changed. Please use the config file in
-      <em>remotes/leadtek/lircd.conf.RM-0010</em>.
-    </P>
-    <P>
-      The lirc_sir now should generate better signals for some
-      remotes. Due to the change some old config files generated with
-      previous versions of the driver might stop working. In this case
-      you should just create a new config file using the new
-      driver. If you want to get the old behaviour of the driver
-      (deprecated) you can insert the module using the
-      <em>threshold=2</em> parameter. The default of
-      <em>threshold</em> is now set to 3. You might even want to try
-      higher values.
-    </P>
-    <P>
-      When you are using LIRC with the <B>Linux input layer</B>
-      driver, make sure that your config file contains the following
-      line in its header:
-    </P>
-    <pre>
-        bits 32
-    </pre>
-    <P>
-      Otherwise lircd will not recoginise any events.
-    </P>
-
-
-    <A NAME="updating07x"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.7.x</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      There is a new program that you probably want to use: <A
-      HREF="lircrcd.html">lircrcd</a> reads the .lircrc config file
-      and synchronises the mode that the LIRC clients using this
-      config file (irexec, irxevent, etc.) are in. Using lircrcd has
-      to be explicitly enabled in the config file by adding the
-      following line at the beginning of the file:
-<pre>
-#! lircrcd
-</pre>
-    </P>
-
-
-    <A NAME="updating081"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.8.1</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The config file for the Pinnacle Systems PCTV (pro) receiver has
-      changed. Please use the config file in
-      <em>remotes/pinnacle_systems/lircd.conf.pctv</em>.
-    </P>
-    <P>
-      The config file for the Creative Infra Receiver/CIMR100 has
-      changed. Please use the config file in
-      <em>remotes/creative/lircd.conf.creative</em>.
-    </P>
-    <A NAME="updating084"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.8.4</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      Newly added iMon LCD displays with device ids 15c2:0038 and 15c2:0045
-      use a larger buffer to enable all remote and panel buttons. Consequently,
-      config files for earlier iMon receivers are not compatible with these
-      new devices, and vice versa. Be sure to select the appropriate 64-bit
-      config for a newer iMon LCD. (Early cvs support for the 0038 used only
-      a 32-bit buffer).
-      <em>For the 0038: remotes/imon/lircd.conf.imon-ultrabay</em>.
-      <em>For the 0045: remotes/imon/lircd.conf.imon-antec-veris</em>.
-    </P>
-    <P>
-      The behaviour of the <em>quit</em> flag in the <A
-        HREF="configure.html#lircrc_format">.lircrc</A> config file
-      has changed slightly concerning button sequences. Previously the
-      quit flag had no effect on button sequences which had partly
-      been entered. Now the quit flag will make execution of further
-      configurations stop even though just part of the button sequence
-      has been entered.
-    </P>
-    <P>
-      There was an interface change in the <em>lirc_dev</em> kernel
-      module. If you get an error message like
-<PRE>
-lirc_serial: Unknown symbol lirc_unregister_driver
-lirc_serial: Unknown symbol lirc_register_driver
-</PRE>
-    when trying to load any of the lirc kernel modules, then you have
-    probably an old version of <em>lirc_dev</em> loaded. Make sure
-    that the <em>lirc_dev</em> version that comes with this release is
-    loaded.
-    </P>
-
-    <A NAME="updating085"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.8.5</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The lircd socket was moved from <em>/dev/lircd</em> to
-      <em>/var/run/lirc/lircd</em> to conform to the Filesystem Hierarchy
-      Standard. The default pid file location was moved from
-      <em>/var/run/lircd.pid</em> to <em>/var/run/lirc/lircd.pid</em>.
-    </P>
-    <P>
-      The default location of lircd, lircmd and lircrcd config files
-      was moved to <em>/etc/lirc/lircd.conf</em>,
-      <em>/etc/lirc/lircmd.conf</em> and <em>/etc/lirc/lircrc</em>. If
-      the config files are not found in that location, they are still
-      searched at the old location in <em>/etc/</em>.
-    </P>
-    <P>
-      The functionality of the <em>lirc_mceusb2</em> driver has been
-      merged into the <em>lirc_mceusb</em> driver. The
-      <em>lirc_mceusb2</em> driver is now obsolete and has been
-      removed. You should use <em>lirc_mceusb</em> from now on.
-    </P>
     <A NAME="updating090"></A><HR>
-    <H1 ALIGN="CENTER">Updating from lirc-0.9.0</H1>
-    <HR WIDTH="70%">
+    <H1 ALIGN="CENTER">Updating from older versions</H1>
+    <HR WIDTH="70%">A
     <p>
-    Building kernel modules is not supported from 0.9.1.  Most tests are
-    done using 'with-driver=userspace'. Using other options is deprecated
-    and will not be supported in upcoming releases.</p>
-    <p>
-    From 0.9.1 it's not necessary to setup the kernel rc driver using
-    something like 'echo "lirc" > /sys/class/rc/rco/protocol"; this is
-    done automagically by lircd. Doing it twice does no harm. </p>
-    <p>
-    values, normally /etc/lirc/lirc_options.conf. The idea is that
-    setting up the lirc services should not be distribution dependent. </p>
-    <p>
-    From 0.9.1 lirc has a rather complete systemd support. By default,
-    services are installed in /usr/lib/systemd/system. Note that the
-    service to run lircd is lircd.socket, not lircd.service. </p>
-    <p>
-    From 0.9.1 the documentation is built by a plain make (earlier, this
-    required a specific target). As a result, the built docs are not part
-    of the distribution. Note that ./ configure affects how the docs
-    are generated. </p>
-    <p>
-    By default, stub configuration files are installed. This can be disabled
-    using the new --with-install-etc configure option. </p>
+     Each new release contains a NEWS file which describes the changes since last
+     version. Normally, upgrading from a the previous version should not be too
+     painful. However, if you have to update a really old version it's probably
+     better to make a fresh install.
+    </p>
 
