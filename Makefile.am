@@ -29,7 +29,7 @@ headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
 
 install-data-hook:
-	sed -i '/^plugindir/s|/usr|$(prefix)|' \
+	sed -i '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 	for f in contrib remotes lirc.org include configs; do \
 	    cp -pr $(srcdir)/$$f $(DESTDIR)$(pkgdatadir); \
