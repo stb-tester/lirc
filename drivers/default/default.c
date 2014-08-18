@@ -27,7 +27,18 @@
 
 #include "lirc_driver.h"
 
-#include "default.h"
+
+#include "lirc/ir_remote.h"
+
+#define LIRC_DRIVER_DEVICE "/dev/lirc0"
+
+int default_init(void);
+int default_config(struct ir_remote *remotes);
+int default_deinit(void);
+int default_send(struct ir_remote *remote, struct ir_ncode *code);
+char *default_rec(struct ir_remote *remotes);
+int default_ioctl(unsigned int cmd, void *arg);
+lirc_t default_readdata(lirc_t timeout);
 
 extern struct ir_remote *repeat_remote;
 
@@ -65,7 +76,8 @@ static const struct hardware hw_default = {
 };
 
 
-struct hardware* hardwares[] = { &hw_default,  (struct hardware*)NULL };
+const struct hardware* hardwares[] = { &hw_default,
+                                       (struct hardware*)NULL };
 
 
 /**********************************************************************
@@ -234,7 +246,8 @@ int default_init()
 		}
 
 	} else if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
-		if (default_ioctl(LIRC_GET_LENGTH, &hw.code_length) == -1) {
+		if (default_ioctl(LIRC_GET_LENGTH,
+                                  (void*) &hw.code_length) == -1) {
 			logprintf(LOG_ERR, "could not get code length");
 			logperror(LOG_ERR, "default_init()");
 			default_deinit();
