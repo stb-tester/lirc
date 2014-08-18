@@ -37,10 +37,10 @@ clean-local:
 	rm -rf man-html
 
 table.html:
-	$(sourcedir)/data2table > table.html
+	$${$(sourcedir):-.}/data2table > table.html
 
 lirc.hwdb:
-	$(sourcedir)/data2hwdb > lirc.hwdb
+	$${$(sourcedir):-.}/data2hwdb > lirc.hwdb
 
 $(manpage_html): $(nodist_man_MANS)
 	test -d man-html || mkdir man-html
