@@ -25,8 +25,8 @@ endif
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
-m4dir                   = m4
-dist_m4_DATA            = m4/ac-path-kernel-source.m4
+headerdir               = $(includedir)/lirc
+nobase_header_HEADERS   = include/media/lirc.h
 
 install-data-hook:
 	sed -i '/^plugindir/s|/usr|$(prefix)|' \
