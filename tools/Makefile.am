@@ -57,9 +57,11 @@ endif
 
 # Ugly fix until we deploy the script as a regular python thing.
 install-data-hook:
+	rm -f  $(DESTDIR)/$(bindir)/lirc-setup.ui
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgdatadir)/lirc-setup.ui \
 	    $(DESTDIR)/$(bindir)/lirc-setup.ui
+	rm -f $(DESTDIR)/$(bindir)/configs
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgdatadir)/configs \
 	    $(DESTDIR)/$(bindir)/configs
