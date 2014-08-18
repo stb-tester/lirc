@@ -36,17 +36,6 @@ representation).
 With the \-\-output option you can select the Unix domain socket, which
 lircrcd will create. The default is to append a "d" character to the
 config filename given.
-.SH "DRIVER LOADING"
-Drivers are loaded dynamically. The directory used for this is determined by (falling
-priority):
-.IP \- 2
-The --plugindir option if available.
-.IP \- 2
-The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
-.IP \- 2
-The environment variable LIRC_PLUGINDIR.
-.IP \- 2
-A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .SH "SEE ALSO"
 The documentation for
 .B lirc

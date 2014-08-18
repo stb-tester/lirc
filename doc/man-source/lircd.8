@@ -11,8 +11,6 @@ an uniform interface for client applications. Clients can connect to
 lircd through a Unix domain socket which is located in
 \/var/run/lirc/lircd.  Using this socket they will get the infrared
 codes received by lircd and they can send commands to lircd.
-
-The config file is described under FILES below.
 .PP
 
 .SH OPTIONS
@@ -67,7 +65,7 @@ The default port is 8765. No security checks are currently implemented.
 The listening lircd instance will send all IR events to the connecting
 lircd instances.
 .TP 4
-.B -L, --logfile
+.B -L, --logfile <logfile path>
 Select the lircd daemon log file. logfile is either the string 'syslog'
 indicating that syslog(1) should be used or a log file path. The default
 is to use syslog.
@@ -89,8 +87,8 @@ Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
 .TP
 .B -U --plugindir
 The --plugindir option sets the directory from which lircd loads it's
-userspace drivers. These are *.so files, by default found in
-/usr/lib/lirc/plugins.
+userspace drivers. These are *.so files, by default found as described
+under DRIVER LOADING.
 .TP 4
 .B -r, --release [suffix]
 Enables automatic generation of release events for each button press.
@@ -110,36 +108,30 @@ key events to the Linux kernel. The key code depends on the name that
 was given a button in the lircd config file, e.g. if the button is
 named KEY_1, the '1' key code will be generated. You will find a
 complete list of possible button names in /usr/include/linux/input.h.
+
 .SH FILES
+.TP 4
+.B /etc/lirc/lircd.conf
+Main config file, see lircd.conf(5).
 
-The config file for lircd is located in /etc/lirc/lircd.conf. lircd
-has its own log file in /var/log/lircd (beginning with LIRC version
-0.6.1 you can configure lircd to use syslogd for log messages; then it
-depends on your system configuration where log messages will show up).
-You can make lircd reread its config file and reopen its log file by
-sending the HUP signal to the program. That way you can rotate old log
-files.
-
-The options file is by default /etc/lirc/lirc_options.conf; lircd handles
-the values under the [lircd] section in this file. The location can
-be changed using the -O/--options-file command-line option or using the
-environment variable LIRC_OPTIONS_PATH. The values here are used as
-defaults for any option not present on command line.
+.TP 4
+.B /etc/lirc/lirc_options.conf
+The options file. lircd handles the values under the [lircd] section
+in this file. The location can be changed using the -O/--options-file
+command-line option or using the environment variable LIRC_OPTIONS_PATH.
+The values here are used as defaults for any option not present on
+command line.
 .SH DAEMONS
 lircd and lircmd are daemons. You should start them in some init script
 depending on your system. Besides the preferred systemd setup which is
 installed by default there are also example scripts for other distros
 and init systems in the contrib directory. lircmd has to be started after
 lircd as it connects to the socket lircd provides.
-
-If you start lircd or lircmd from your shell prompt you will usually get
-back immediately to the prompt. This is not an error, daemons always run
- in background.
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The directory used for this is determined by (falling
 priority):
 .IP \- 2
-The --plugindir option if available.
+The --plugindir option.
 .IP \- 2
 The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
