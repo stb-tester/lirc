@@ -39,7 +39,24 @@
 
 #include "lirc_driver.h"
 
-#include "creative_infracd.h"
+
+
+#define MAX_SCSI_REPLY_LEN     96
+#define SCSI_INQ_CMD_LEN       6
+#define SCSI_TUR_CMD_LEN       6
+#define SCSI_SEN_CMD_LEN       10
+
+int creative_infracd_init(void);
+int creative_infracd_deinit(void);
+int creative_infracd_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
+			    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+char *creative_infracd_rec(struct ir_remote *remotes);
+
+/* private stuff */
+#define MASK_COMMAND_PRESENT 0x00f00000
+
+int test_device_command(int fd);
+
 
 const struct hardware hw_creative_infracd = {
 	.name		=	"creative_infracd",

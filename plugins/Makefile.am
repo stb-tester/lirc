@@ -33,12 +33,12 @@ dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
 dfclibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += commandir.la
-commandir_la_SOURCES        = commandir.c commandir.h
+commandir_la_SOURCES        = commandir.c
 commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
 commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += srm7500libusb.la
-srm7500libusb_la_SOURCES    = srm7500libusb.c srm7500libusb.h
+srm7500libusb_la_SOURCES    = srm7500libusb.c
 srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
 srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 endif

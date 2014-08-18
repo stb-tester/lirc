@@ -9,7 +9,7 @@ plugin_LTLIBRARIES              += creative.la
 creative_la_SOURCES              = creative.c
 
 plugin_LTLIBRARIES              += creative_infracd.la
-creative_infracd_la_SOURCES      = creative_infracd.c creative_infracd.h
+creative_infracd_la_SOURCES      = creative_infracd.c
 
 plugin_LTLIBRARIES              += default.la
 default_la_SOURCES               = default.c
