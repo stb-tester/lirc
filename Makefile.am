@@ -50,6 +50,7 @@ paths.h: Makefile
 	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>$@
 	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>$@
 	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>$@
+	@echo '#define LIBDIR           "$(libdir)"' >>$@
 
 ChangeLog: .phony
 	test -s ChangeLog || git log > ChangeLog || \

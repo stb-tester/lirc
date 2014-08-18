@@ -1,8 +1,12 @@
 
+/* Default device in some  places, notably drivers.
+ * Might be something else on Darwin(?), but all current
+ * Linux systems should be using udev (i. e., not DEVFS).
+ */
 #ifdef LIRC_HAVE_DEVFS
-#define LIRC_DRIVER_DEVICE      DEVDIR "/" DEV_LIRC "/0"
+#define LIRC_DRIVER_DEVICE      "/dev/lirc/0"
 #else
-#define LIRC_DRIVER_DEVICE      DEVDIR "/" DEV_LIRC
+#define LIRC_DRIVER_DEVICE      "/dev/lirc0"
 #endif /* LIRC_HAVE_DEVFS */
 
 #define LIRCD                   VARRUNDIR "/" PACKAGE "/" DEV_LIRCD
@@ -24,6 +28,9 @@
 #define PIDFILE                 VARRUNDIR "/" PACKAGE "/" PID_LIRCD
 
 #define LIRC_RELEASE_SUFFIX     "_UP"
+
+/* Default directory for plugins/drivers. */
+#define PLUGINDIR		LIBDIR  "/lirc/plugins"
 
 /* Default options file path. */
 #define LIRC_OPTIONS_PATH       "/etc/lirc/lirc_options.conf"

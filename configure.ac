@@ -135,12 +135,6 @@ AC_MSG_RESULT()
 # this list must only contain userspace drivers without external
 # (header/library) dependencies!
 
-AH_TEMPLATE([PLUGINDIR],
-        [The directory userspace drivers are loaded from])
-
-AH_TEMPLATE([DEVDIR],
-        [device files directory])
-
 AH_TEMPLATE([DYNCODES],
         [Define to use dynamic IR codes])
 
@@ -394,11 +388,8 @@ AC_SUBST(maintmode_daemons_extra)
 AC_SUBST(usb_libs)
 
 dnl tell the C code what we decided
-AC_DEFINE_UNQUOTED(DEVDIR, "$devdir")
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_DEFINE_UNQUOTED(PLUGINDIR, "$libdir/lirc/plugins",[
-         Where userspace drivers are loaded from])
 AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 AC_DEFINE(LIRC_OPTIONS_PATH,["/etc/lirc/lirc_options.conf"],[
