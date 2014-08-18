@@ -8,7 +8,7 @@ AM_LDFLAGS              = -lpthread
 
 CLEANFILES              = *~
 
-EXTRA_PROGRAMS          = lircd.simsend lircd.simrec slinke
+EXTRA_PROGRAMS          = lircd.simsend lircd.simrec
 
 varrundir               = $(localstatedir)/run
 
@@ -20,11 +20,6 @@ lircd_LDADD             = ../lib/liblirc.la
 lircmd_SOURCES          = lircmd.c
 lircmd_LDADD            = ../lib/liblirc.la
 
-bin_PROGRAMS            = irrecord
-
-irrecord_SOURCES        = irrecord.c
-irrecord_LDADD          = ../lib/liblirc.la
-
 ## maintainer mode stuff
 noinst_PROGRAMS         = @maintmode_daemons_extra@
 lircd_simsend_SOURCES   = lircd.c
@@ -33,9 +28,6 @@ lircd_simsend_LDADD     = ../lib/liblirc.la
 lircd_simrec_SOURCES    = lircd.c
 lircd_simrec_CFLAGS     = -DSIM_REC
 lircd_simrec_LDADD      = ../lib/liblirc.la
-
-slinke_SOURCES          = slinke.c slinke.h
-slinke_LDADD            = ../lib/liblirc.la
 
 
 if USE_FIFOS

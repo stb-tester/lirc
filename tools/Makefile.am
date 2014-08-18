@@ -17,7 +17,7 @@ EXTRA_PROGRAMS          += smode2
 endif
 
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
-                          @vga_progs@ @x_progs@
+                          irrecord @vga_progs@ @x_progs@
 
 ## Simple programs
 irw_SOURCES             = irw.c
@@ -27,6 +27,8 @@ irexec_SOURCES          = irexec.c
 irexec_LDADD            = @daemon@ $(LIRC_LIBS)
 ircat_SOURCES           = ircat.c
 ircat_LDADD             = $(LIRC_LIBS)
+irrecord_SOURCES        = irrecord.c
+irrecord_LDADD          = $(LIRC_LIBS)
 mode2_SOURCES           = mode2.c
 mode2_LDADD             = $(LIRC_LIBS)
 irsend_SOURCES          = irsend.c
