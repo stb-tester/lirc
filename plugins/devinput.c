@@ -91,6 +91,78 @@ enum {
 
 static int repeat_state = RPT_UNKNOWN;
 
+static int is_rc(const char* s)
+{
+	if (s == NULL)
+		return -1;
+	return (s[0] == 'r' && s[1] == 'c' && s[2] >='0' && s[2] <= '9');
+}
+
+
+/*
+ * Given a directory in /sys/class/rc, check if it contains
+ * a file called device. If so, write "lirc" to the protocols
+ * file in same directory.
+ *
+ * rc_dir: directory specification like rc0, rc1, etc.
+ * device: Device given to lirc,  like 'lirc0' (or /dev/lirc0).
+ * Returns: 0 if OK, else -1.
+ *
+ */
+static int visit_rc(const char* rc_dir, const char* device)
+{
+	char path[64];
+	int fd;
+
+	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
+	if (access(path, F_OK) != 0){
+		logprintf(LOG_NOTICE, "Cannot open rc directory: %s", path);
+		return -1;
+	}
+	snprintf(path, sizeof(path), "/sys/class/rc/%s/%s", rc_dir, device);
+	if (access(path, F_OK) != 0) {
+		logprintf(LOG_DEBUG, "No device found: %s", path);
+		return -1;
+	}
+	snprintf(path, sizeof(path), "/sys/class/rc/%s/protocols", rc_dir);
+	fd = open(path, O_WRONLY);
+	if ( fd < 0 ){
+		logprintf(LOG_DEBUG, "Cannot open protocol file: %s", path);
+		return -1;
+	}
+	write(fd, "lirc\n" , 5);
+	logprintf(LOG_NOTICE, "'lirc' written to protocols file %s", path);
+	close(fd);
+	return 0;
+}
+
+/*
+ * Try to set the 'lirc' protocol for the device  we are using. Returns
+ * 0 on success for at least one device, otherwise -1.
+ */
+static int set_rc_protocol(const char* device)
+{
+	struct dirent* ent;
+	DIR* dir;
+	int r = -1;
+
+	if (strrchr(device, '/') != NULL)
+		device = strrchr(device, '/') + 1;
+	if ((dir = opendir("/sys/class/rc")) == NULL){
+		logprintf(LOG_NOTICE, "Cannot open /sys/class/rc\n");
+		return -1;
+	}
+	while ((ent = readdir(dir)) != NULL) {
+		if (!is_rc(ent->d_name))
+			continue;
+		if (visit_rc(ent->d_name, device) == 0)
+			r = 0;
+	}
+	closedir(dir);
+	return r;
+}
+
+
 static int setup_uinputfd(const char *name, int source)
 {
 	int fd;
@@ -306,6 +378,10 @@ int devinput_init()
 	if ((hw.fd = open(hw.device, O_RDONLY)) < 0) {
 		logprintf(LOG_ERR, "unable to open '%s'", hw.device);
 		return 0;
+	}
+	if (set_rc_protocol(hw.device) != 0) {
+		logprintf(LOG_INFO, "Cannot configure the rc device for %s",
+			  hw.device);
 	}
 #ifdef EVIOCGRAB
 	exclusive = 1;
