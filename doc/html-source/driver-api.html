@@ -71,7 +71,7 @@
         In this way a certain encapsulation is achieved. The data structure will be described next.</p>
     <h2>The <code>struct driver</code></h2>
     <p>The <code>struct driver</code> is the data structure representing the driver for LIRC.
-        It is defined in <code>hardware.h</code> (in directory <code>lib</code>).
+        It is defined in <code>driver.h</code> (in directory <code>lib</code>).
 
 
     <pre>
@@ -104,8 +104,14 @@ struct driver {
         The data type <code>lirc_t</code> (what a meaningful name!) is an integer value used in many places for storing IR signal data etc.;
         it is defined by <code>#define int</code> in <code>lirc.h</code>.
     <dl>
-        <dt>name</dt>
-        <dd>Typically then name of the device as text string in Linux. This corresponds to the <code>--device</code> argument to lircd.</dd>
+    <dt>name</dt>
+    <dd>A free text string describing the driver, as listed by e. g,
+        irrecord --driver help.</dd>
+    <dt>device</dt>
+    <dd>Typically the name of the device as text string in Linux. This
+        corresponds to the <code>--device</code> argument to lircd
+        Not all drivers respect the device field; some have hardcoded
+        device name(s), some use autodetecting code. </dd>
 
     <dt>fd</dt>
     <dd>A file descriptor associated with the driver.</dd>
@@ -142,12 +148,44 @@ struct driver {
         Used as default value for the <code>aeps</code> parameter in remotes.</dd>
     </dl>
 
+    <h2> Driver lifecycle. </h2>
+    <p>
+    The driver is loaded from disk, used and unloaded according to the
+    following:
+    <ol>
+    <li>
+         The lirc code determines what driver to use (normally the --driver
+         runtime option) and invokes hw_types:hw_choose_driver() which
+         loads the driver into memory and exposes the driver interface
+         in the global hw variable (which is a struct driver). </li>
+    <li> The lirc code updates the hw.device variable, normally from the
+         runtime option --device.</li>
+    <li> The lirc code invokes the init_func in hw. This initiates the driver,
+         which might or might not use the hw.default defined by lirc. </li>
+    <li> From this point the driver accepts read and possibly write calls
+         using the read_func() and send_func() in hw. Also, after init_func
+         the capabilities in the hw variable are updated and can be checked.
+         The driver also exports the hw.fd variable, a standard *ux file
+         descriptor (a positive int) for the underlying file.
+         </li>
+    <li> At some later point, lirc calls the deinit() func. This puts the
+         driver in a stand-by state, from which it is a reasonably fast
+         operation to call init_func() again.FIXME!!</li>
+    <li> As a last operation, lirc might call the close() func. This
+         relinquishes all resources allocated by the driver. FIXME!!</li>
+    <li> In general, ioctl function are allowed in any state. However,
+         particular ioctl operations might fail depending on state.</li>
+    <li> functions are not guaranteed to be executed in the order described.
+         In general, the driver should not break if e. g., the init() or
+         deinit() function is called twice. FIXME!</li>
+    </ol>
+
     <h2>Driver structure</h2>
     <p>Typical structure of a driver file will be shown next.</p>
     <pre>
 /* Include system includes files as needed */
 
-#include "hardware.h" /* struct driver, extern driver drv */
+#include "driver.h" /* struct driver, extern driver drv */
 #include "lirc_log.h" /* logging */
 #include "receive.h"  /* only if receiving */
 #include "transmit.h" /* only if transmitting */
@@ -202,7 +240,7 @@ static lirc_t *readdata(lirc_t timeout) {
     /* compute and return the next duration in microseconds */
 }
 
-struct driver my_hardware = {
+struct driver my_driver = {
    /* see above. */
 }
 
@@ -271,7 +309,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
             an associated header file (<code>.h</code>-file) is neither necessary nor desired.
             (The only exception would be special constants for usage with the ioctl function.)</li>
         <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
-            <code>lirc_dyndriver.h</code> (which includes <code>hardware.h, lirc_log.h, receive.h</code>, and <code>transmit.h</code>)
+            <code>lirc_dyndriver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, and <code>transmit.h</code>)
             Inclusions of other LIRC files (including <code>config.h</code>) should be avoided if possible.</li>
         <li>The LIRC name of the driver is taken from the <code>name</code> field of the <code>hardware</code> struct.
             The file name is thus irrelevant. For files containing only one driver, it is recommended to keep
