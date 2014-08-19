@@ -124,34 +124,54 @@ visit_plugin(char* path, hw_guest_func func, void* arg)
 }
 
 
-static struct hardware* for_each_driver(hw_guest_func func, void* arg)
-// Apply func(hw, arg) for all drivers found in all plugins.
+static struct hardware*
+for_each_driver_in_dir(const char* dirpath, hw_guest_func func, void* arg)
+// Apply func(hw, arg) for all drivers found in all plugins in directory path
 {
 	DIR* dir;
 	struct dirent* ent;
 	struct hardware* result = (struct hardware*) NULL;
-	char* plugindir;
 	char path[128];
 
-	plugindir = ciniparser_getstring(lirc_options,
-					 "lircd:plugindir",
-					 getenv(PLUGINDIR_VAR));
-	if (plugindir == NULL)
-		plugindir = PLUGINDIR;
-	if ((dir = opendir(plugindir)) == NULL){
-		logprintf(LOG_ERR, "Cannot open plugindir %s", plugindir);
+	if ((dir = opendir(dirpath)) == NULL){
+		logprintf(LOG_INFO, "Cannot open plugindir %s", dirpath);
 		return  (struct hardware*) NULL;
 	}
 	while ((ent = readdir(dir)) != NULL) {
 		if (!ends_with_so(ent->d_name))
 			continue;
 		snprintf(path, sizeof(path),
-			 "%s/%s", plugindir, ent->d_name);
+			 "%s/%s", dirpath, ent->d_name);
 		result = visit_plugin(path, func, arg);
 		if (result != (struct hardware*) NULL)
 			break;
 	}
 	closedir(dir);
+	return result;
+}
+
+static struct hardware* for_each_driver(hw_guest_func func, void* arg)
+// Apply func(hw, arg) for all drivers found in all plugins.
+{
+	char* pluginpath;
+	char* tmp_path;
+	char* s;
+	struct hardware* result = (struct hardware*) NULL;
+
+	pluginpath = ciniparser_getstring(lirc_options,
+		  			  "lircd:plugindir",
+					  getenv(PLUGINDIR_VAR));
+	if (pluginpath == NULL)
+		pluginpath = PLUGINDIR;
+        if (strchr(pluginpath, ':') == (char*) NULL)
+		return for_each_driver_in_dir(pluginpath, func, arg);
+	tmp_path = alloca(strlen(pluginpath) + 1);
+	strncpy(tmp_path, pluginpath, strlen(pluginpath) + 1);
+	for (s = strtok(tmp_path, ":"); s != NULL; s = strtok(NULL, ":")) {
+		result = for_each_driver_in_dir(s, func, arg);
+		if (result != (struct hardware*) NULL)
+			break;
+	}
 	return result;
 }
 
