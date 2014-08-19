@@ -2275,7 +2275,7 @@ int main(int argc, char **argv)
 	}
 	opt = options_getstring("lircd:connect");
 	if (opt != NULL) {
-		if (!add_peer_connection(optarg))
+		if (!add_peer_connection(opt))
 			return(EXIT_FAILURE);
 	}
 	debug_opt = options_getint("lircd:debug");
