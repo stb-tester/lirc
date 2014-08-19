@@ -16,10 +16,12 @@ most vital part of this package, so you should invest some time to
 create a working config file. Although I put a good deal of effort in
 this program it is often not possible to automatically recognize all
 features of a remote control.
-
+.P
 If the program fails to recognize the protocol of the remote control you
 should use the \-\-force option to at least create a config file in raw mode.
-
+.P
+If  \fIfile\fR is not specified it defaults to "irrecord.conf"
+.P
 If \fIfile\fR already exists and contains a valid config irrecord will use the
 protocol description found there and will only try to record the
 buttons. This is very useful if you want to learn a remote where config
