@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-AM_CPPFLAGS             = -I @kerneldir@ -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la

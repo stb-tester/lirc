@@ -2,8 +2,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-AM_CPPFLAGS             = -I@kerneldir@ -I$(top_srcdir) -I$(top_srcdir)/lib \
-                          -Wall
+AM_CPPFLAGS             = -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
 AM_LDFLAGS              = -lpthread
 
 CLEANFILES              = *~

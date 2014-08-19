@@ -7,7 +7,7 @@ AM_LDFLAGS                  = -ldl
 
 BUILT_SOURCES               = lirc/input_map.inc
 
-AM_CPPFLAGS                 = -I@kerneldir@
+AM_CPPFLAGS                 = -I$(top_srcdir)
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 

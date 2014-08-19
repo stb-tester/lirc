@@ -26,7 +26,8 @@
     OTOH, help2man is no longer required.
   * There are examples in the sources how to build new drivers. The
     documentation in this area is also improved (see the driver-api guide).
-  * Old, non-functional kernel modules are removed.
+  * Old, non-functional kernel modules are removed. The build does not
+    require kernel sources any more.
 
 0.9.1 06/14/14
   * Added systemd support: unit files, socket activation.

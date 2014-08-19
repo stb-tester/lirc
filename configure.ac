@@ -114,14 +114,6 @@ esac
 # use fifo instead of devnode (required on mac os x)
 AM_CONDITIONAL(USE_FIFOS, test "$use_fifos" = "yes")
 
-
-dnl look for Linux kernel source
-
-AC_PATH_KERNEL_SOURCE
-
-dnl here we see what drivers we could possibly even hope to run.
-dnl this could be _much_ more sophisticated!  especially the lirc ones.
-
 AC_MSG_CHECKING([for which drivers can be installed on this system])
 AC_MSG_RESULT()
 
