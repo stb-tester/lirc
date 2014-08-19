@@ -246,7 +246,10 @@ if test "$have_alsa" = "yes"; then
     AC_MSG_RESULT(no)
     AM_CONDITIONAL([BUILD_ALSA_SB_RC],[false])
   ])
+else
+  AM_CONDITIONAL([BUILD_ALSA_SB_RC],[false])
 fi
+
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[
   AC_DEFINE(HAVE_SCSI)
