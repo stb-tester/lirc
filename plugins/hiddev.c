@@ -847,6 +847,6 @@ const struct hardware* hardwares[] = { &hw_dvico,
 				       &hw_sonyir,
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 				       &hw_sb0540,
-			               &hw_samsung,
+				       &hw_samsung,
 #endif
 				       (const struct hardware*)NULL };

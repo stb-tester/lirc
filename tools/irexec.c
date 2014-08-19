@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 			while ((ret = lirc_code2char(config, code, &c)) == 0 && c != NULL) {
 				if (!daemonize) {
 					logprintf(LOG_DEBUG,
-                                                  "Execing command \"%s\"\n", c);
+						  "Execing command \"%s\"\n", c);
 				}
 				system(c);
 			}

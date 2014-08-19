@@ -49,8 +49,8 @@ ir_code code;
 
 //Forwards:
 int ea65_decode(struct ir_remote *remote,
-                ir_code * prep, ir_code * codep, ir_code * postp,
-                int *repeat_flagp,
+		ir_code * prep, ir_code * codep, ir_code * postp,
+		int *repeat_flagp,
 		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
 int ea65_init(void);
 int ea65_release(void);

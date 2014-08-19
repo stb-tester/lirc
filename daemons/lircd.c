@@ -428,8 +428,8 @@ void dosighup(int sig)
 		if (-1 == fstat(fileno(lf), &s)) {
 			dosigterm(SIGTERM);	/* shouldn't ever happen */
 		}
-  		lirc_log_close();
-                lirc_log_open("lircd", nodaemon, debug_opt);
+		lirc_log_close();
+		lirc_log_open("lircd", nodaemon, debug_opt);
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
 			/* can't print any error messagees */
@@ -1783,8 +1783,8 @@ void input_message(const char *message, const char *remote_name, const char *but
 	}
 	else {
 		logprintf(LOG_DEBUG,
-                          "Dropping non-standard symbol %s in uinput mode",
-                           button_name == NULL ? "Null" : button_name);
+			  "Dropping non-standard symbol %s in uinput mode",
+			   button_name == NULL ? "Null" : button_name);
 	}
 #endif
 }
@@ -2225,11 +2225,11 @@ int main(int argc, char **argv)
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, lircd_parse_options);
 #       ifndef USE_SYSLOG
-        opt = options_getstring("lircd:logfile");
-        if (opt != NULL)
-                lirc_set_logfile(opt);
+	opt = options_getstring("lircd:logfile");
+	if (opt != NULL)
+		lirc_set_logfile(opt);
 #       endif
-        lirc_log_open("lircd", 0, LOG_INFO);
+	lirc_log_open("lircd", 0, LOG_INFO);
 
 	nodaemon = options_getboolean("lircd:nodaemon");
 	opt = options_getstring("lircd:permission");

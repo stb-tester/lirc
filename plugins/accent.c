@@ -104,8 +104,8 @@ static ir_code code, last_code = 0;
 
 // Forwards
 int accent_decode(struct ir_remote *remote,
-                  ir_code* prep, ir_code* codep, ir_code* postp,
-                  int* repeat_flagp,
+		  ir_code* prep, ir_code* codep, ir_code* postp,
+		  int* repeat_flagp,
 		  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
 
 int accent_open_serial_port(char *device);
@@ -128,7 +128,7 @@ const struct hardware hw_accent = {
 	.decode_func 	=	accent_decode,
 	.ioctl_func	= 	NULL,
 	.readdata	= 	NULL,
-      	.resolution	= 	300,
+	.resolution	= 	300,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2"
 

@@ -139,7 +139,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 		logperror(LOG_ERR, NULL);
 		return (0);
 	}
- 	return (1);
+	return (1);
 }
 
 char *default_rec(struct ir_remote *remotes)

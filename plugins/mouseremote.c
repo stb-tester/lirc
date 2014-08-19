@@ -47,8 +47,8 @@ static int serial_input;
 
 //Forwards:
 int mouseremote_decode(struct ir_remote *remote,
-                       ir_code * prep, ir_code * codep, ir_code * postp,
-                       int *repeat_flagp,
+		       ir_code * prep, ir_code * codep, ir_code * postp,
+		       int *repeat_flagp,
 		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
 int mouseremote_init(void);
 int mouseremote_ps2_init(void);
@@ -93,8 +93,8 @@ const struct hardware hw_mouseremote_ps2 = {
 };
 
 const struct hardware* hardwares[] = { &hw_mouseremote,
-                                       &hw_mouseremote_ps2,
-                                       (const struct hardware*)NULL };
+				       &hw_mouseremote_ps2,
+				       (const struct hardware*)NULL };
 
 
 int mouseremote_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

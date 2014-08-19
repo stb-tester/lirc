@@ -80,10 +80,10 @@ int lirc_log_use_syslog()
 void lirc_set_logfile(char* s)
 {
 	if (strcmp(s, "syslog") == 0) {
-            use_syslog  = 1;
-        } else {
+	    use_syslog  = 1;
+	} else {
 	    logfile = s;
-            use_syslog = 0;
+	    use_syslog = 0;
 	}
 }
 
@@ -116,8 +116,8 @@ int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 int lirc_log_close()
 {
 	if (use_syslog){
-        	closelog();
-                return(0);
+		closelog();
+		return(0);
 	}
 	else if (lf)
 		return( fclose(lf));

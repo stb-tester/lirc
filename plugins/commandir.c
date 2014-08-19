@@ -377,8 +377,8 @@ const struct hardware hw_commandir = {
 	.name		=	"commandir",
 	.device		=	0,
 	.features	=	LIRC_CAN_SET_SEND_CARRIER | \
-			   	    LIRC_CAN_SEND_PULSE | \
-			   	    LIRC_CAN_SET_TRANSMITTER_MASK | \
+				    LIRC_CAN_SEND_PULSE | \
+				    LIRC_CAN_SET_TRANSMITTER_MASK | \
 				    LIRC_CAN_REC_MODE2,
 	.send_mode	=	LIRC_MODE_PULSE,
 	.rec_mode	=	LIRC_MODE_MODE2,

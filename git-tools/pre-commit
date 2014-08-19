@@ -3,15 +3,15 @@
 # lirc pre-commit hook: remove trailing space, use tabs for indent.
 
 C_SOURCES=( $( git diff --cached --name-status | \
-              grep -v ^D | awk '$1 $2 { print $2}' | grep -e '.c$|.h$' ))
+              grep -v ^D | awk '$1 $2 { print $2}' | grep -e '\.c$|\.h$' ))
 
 OTHERS=( $( git diff --cached --name-status | \
               grep -v ^D | awk '$1 $2 { print $2}' | \
-              grep -Ev  '.c$|.h$|.png$|.gif$|.jpg$|Makefile'))
+              grep -Ev  '\.c$|\.h$|\.png$|\.gif$|\.jpg$|Makefile'))
 
 MAN_SOURCES=( $( git diff --cached --name-status | \
               grep -v ^D | awk '$1 $2 { print $2}' | \
-              grep -E  '.1$|.5$|.8$'))
+              grep -E  '\.1$|\.5$|\.8$'))
 
 for f in ${C_SOURCES[@]} ; do
        test -L $f && continue

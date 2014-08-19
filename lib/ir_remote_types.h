@@ -66,27 +66,27 @@ struct ir_code_node {
  *  may be more, namely in the linked list in the field next.
  */
 struct ir_ncode {
-        /** Name of command */
+	/** Name of command */
 	char *name;
 
-        /** The first code of the command*/
+	/** The first code of the command*/
 	ir_code code;
 
-        /** (private) */
+	/** (private) */
 	int length;
 
-        /** (private) */
+	/** (private) */
 	lirc_t *signals;
 
-        /** Linked list of the subsequent ir_code's, after the first one.
-         *  NULL if there is only one ir_code (normal case). */
+	/** Linked list of the subsequent ir_code's, after the first one.
+	 *  NULL if there is only one ir_code (normal case). */
 	struct ir_code_node *next;
 
-        /** Should point at the ir_code currently being transmitted,
-         * or NULL if none. */
+	/** Should point at the ir_code currently being transmitted,
+	 * or NULL if none. */
 	struct ir_code_node *current;
 
-        /** (private) */
+	/** (private) */
 	struct ir_code_node *transmit_state;
 };
 
@@ -154,7 +154,7 @@ struct ir_remote {
 				  * this is an _absolute_ tolerance
 				  * to solve this problem
 				  * usually you can say 0 here. */
-        int aeps;
+	int aeps;
 #       ifdef DYNCODES
 	char *dyncodes_name;	/**< name for unknown buttons */
 	int dyncode;		/**< last received code */
@@ -188,15 +188,15 @@ struct ir_remote {
 	int suppress_repeat;	/**< suppress unwanted repeats */
 	/** code is repeated at least x times
 	* code sent once -> min_repeat=0 */
-        int min_repeat;
+	int min_repeat;
 	/**
-         * meaningful only if remote sends
+	 * meaningful only if remote sends
 	*				   a repeat code: in this case
 	*				   this value indicates how often
 	*				   the real code is repeated
 	*				   before the repeat code is being
 	*				   sent */
-        unsigned int min_code_repeat;
+	unsigned int min_code_repeat;
 	unsigned int freq;	/**< modulation frequency */
 	unsigned int duty_cycle;	/**< 0<duty cycle<=100 */
 	ir_code toggle_mask;	/**< Sharp (?) error detection scheme */
@@ -210,7 +210,7 @@ struct ir_remote {
 
 	/** mask defines which bits can be
 	   ignored when matching a code */
-        ir_code ignore_mask;
+	ir_code ignore_mask;
 	/* end of user editable values */
 
 	ir_code toggle_bit_mask_state;
