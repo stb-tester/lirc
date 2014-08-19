@@ -2064,6 +2064,7 @@ static const struct option lircd_options[] = {
 	{"debug", optional_argument, NULL, 'D'},
 	{"release", optional_argument, NULL, 'r'},
 	{"allow-simulate", no_argument, NULL, 'a'},
+	{"dynamic-codes", no_argument, NULL, 'Y'},
 #        if defined(__linux__)
 	{"uinput", no_argument, NULL, 'u'},
 #        endif
@@ -2091,6 +2092,7 @@ static void lircd_help(void)
 	printf("\t -D[debug_level] --debug[=debug_level]\n");
 	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
 	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
+	printf("\t -Y --dynamic-codes\t\tEnable dynamic code generation\n");
 #       if defined(__linux__)
 	printf("\t -u --uinput\t\t\tgenerate Linux input events\n");
 #       endif
@@ -2113,6 +2115,7 @@ static void lircd_add_defaults(void)
 		"lircd:debug", 		"False",
 		"lircd:release", 	NULL,
 		"lircd:allow-simulate", "False",
+		"lircd:dynamic-codes", 	"False",
 		"lircd:plugindir", 	PLUGINDIR,
 		"lircd:uinput", 	"False",
 		"lircd:repeat-max", 	 DEFAULT_REPEAT_MAX,
@@ -2126,7 +2129,7 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** argv)
 {
 	int c;
-	const char* optstring =  "O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::"
+	const char* optstring =  "O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 		"u"
 #       endif
@@ -2198,6 +2201,9 @@ static void lircd_parse_options(int argc, char** argv)
 			break;
 		case 'R':
 			options_set_opt("lircd:repeat-max", optarg);
+			break;
+		case 'Y':
+			options_set_opt("lircd:dynamic-codes", "True");
 			break;
 		default:
 			printf("Usage: %s [options] [config-file]\n", progname);

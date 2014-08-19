@@ -108,6 +108,13 @@ key events to the Linux kernel. The key code depends on the name that
 was given a button in the lircd config file, e.g. if the button is
 named KEY_1, the '1' key code will be generated. You will find a
 complete list of possible button names in /usr/include/linux/input.h.
+.TP
+.B -Y, --dynamic-codes  [EXPERIMENTAL]
+Allows one to use codes which have been decoded for one remote but
+are not defined in lircd.conf.  New codes are dynamically
+created  with a default name. This feature is experimental and subject
+to all sorts of changes. It has not ben tested thoroughly.
+
 
 .SH FILES
 .TP 4

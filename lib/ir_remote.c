@@ -35,6 +35,7 @@
 #include "lirc/hardware.h"
 #include "lirc/release.h"
 #include "lirc/lirc_log.h"
+#include "lirc/lirc_options.h"
 
 /**
  * TODO
@@ -387,6 +388,7 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 	found_code = 0;
 	have_code = 0;
 	codes = remote->codes;
+	static int dyncodes = -1;
 	if (codes != NULL) {
 		while (codes->name != NULL) {
 			ir_code next_all;
@@ -456,8 +458,10 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 			codes++;
 		}
 	}
-#       ifdef DYNCODES
-	if (!found_code) {
+	if (dyncodes == -1){
+		dyncodes = options_getboolean("lircd:dynamic-codes");
+	}
+	if (!found_code && dyncodes) {
 		if (remote->dyncodes[remote->dyncode].code != code) {
 			remote->dyncode++;
 			remote->dyncode %= 2;
@@ -466,7 +470,6 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		found = &(remote->dyncodes[remote->dyncode]);
 		found_code = 1;
 	}
-#       endif
 	if (found_code && found != NULL && has_toggle_mask(remote)) {
 		if (!(remote->toggle_mask_state % 2)) {
 			remote->toggle_code = found;

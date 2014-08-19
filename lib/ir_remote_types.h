@@ -155,11 +155,9 @@ struct ir_remote {
 				  * to solve this problem
 				  * usually you can say 0 here. */
 	int aeps;
-#       ifdef DYNCODES
 	char *dyncodes_name;	/**< name for unknown buttons */
 	int dyncode;		/**< last received code */
 	struct ir_ncode dyncodes[2];	/**< helper structs for unknown buttons */
-#       endif
 
 	/* pulse and space lengths of: */
 

@@ -135,9 +135,6 @@ AC_MSG_RESULT()
 # this list must only contain userspace drivers without external
 # (header/library) dependencies!
 
-AH_TEMPLATE([DYNCODES],
-        [Define to use dynamic IR codes])
-
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
         [Define if the ALSA library with SB RC support is installed])
 
@@ -337,11 +334,6 @@ AC_ARG_WITH(devdir,
 [  --with-devdir=DIR       Install device files in DIR (/dev)],
 devdir=${withval},
 devdir=${devdir_default})
-
-AC_ARG_ENABLE(dyncodes,
-[  --enable-dyncodes       use dynamic codes],
-test x${enableval} = xyes && AC_DEFINE(DYNCODES))
-
 
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)

@@ -257,6 +257,7 @@ static struct option long_options[] = {
 	{"disable-namespace", no_argument, NULL, 'n'},
 	{"list-namespace", no_argument, NULL, 'l'},
 	{"plugindir", required_argument, NULL, 'U'},
+	{"dynamic-codes", no_argument, NULL, 'Y'},
 	{"pre", no_argument, NULL, 'p'},
 	{"post", no_argument, NULL, 'P'},
 	{"test", no_argument, NULL, 't'},
@@ -277,6 +278,7 @@ static void help(void)
 	printf("\t -U --plugindir=dir\tdir where drivers are loaded from\n");
 	printf("\t -f --force\t\tforce raw mode\n");
 	printf("\t -n --disable-namespace\tdisables namespace checks\n");
+	printf("\t -Y --dynamic-codes\tEnable dynamic codes\n");
 	printf("\t -D --debug=level\tSet debug level (1..10)\n");
 	printf("\t -h --help\t\tdisplay this message\n");
 	printf("\t -v --version\t\tdisplay version\n");
@@ -291,6 +293,7 @@ static void add_defaults(void)
 		"irrecord:analyse",             "False",
 		"irrecord:force",               "False",
 		"irrecord:disable-namespace",   "False",
+		"irrecord:dynamic-codes",   	"False",
 		"irrecord:list_namespace",      "False",
 		"lircd:debug",                   "5",
 		(const char*)NULL,      (const char*)NULL
@@ -302,7 +305,7 @@ static void parse_options(int argc, char** argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fnlO:pPtiTU:";
+	const char* const optstring = "had:D:H:fnlO:pPtiTU:Y";
 
 	add_defaults();
 	optind = 1;
@@ -354,6 +357,9 @@ static void parse_options(int argc, char** argv)
 			break;
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
+			break;
+		case 'Y':
+			options_set_opt("lircd:dynamic-codes", "True");
 			break;
 		case 'v':
 			printf("irrecord %s\n",  VERSION);
