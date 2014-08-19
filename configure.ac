@@ -99,21 +99,14 @@ dnl Determine default configuration based on OS
 case "${host_os}" in
   darwin*)
     dnl Mac OS X configuration
-
-    dnl PortAudio for mac os x
     portaudio_lib_other="-framework CoreAudio -framework AudioToolbox"
-
-    dnl default devdir, on mac os x/darwin, /dev/ can not be used without kernel programming, so use a fifo somewhere else
-    devdir_default="/usr/lirc/dev/"
+    dnl i. e., use mkfifo
     use_fifos="yes"
     ;;
   *)
     dnl Unix OSS configuration
-
-    dnl PortAudio for UNIX OSS
     portaudio_lib_other="-lm -lpthread ${forkpty}"
-    dnl default devdir
-    devdir_default="/dev"
+    dnl i. e., use mknod
     use_fifos="no"
     ;;
 esac
@@ -185,9 +178,6 @@ AH_TEMPLATE([HAVE_SYSTEMD],
 
 AH_TEMPLATE([HAVE_VSYSLOG],
         [define if you have vsyslog( prio, fmt, va_arg )])
-
-AH_TEMPLATE([HW_DEFAULT],
-        [The name of the hw_* structure to use by default])
 
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
         [Define if devfs support is present in current kernel])
@@ -330,15 +320,9 @@ AC_ARG_ENABLE(install_etc,
 [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
-AC_ARG_WITH(devdir,
-[  --with-devdir=DIR       Install device files in DIR (/dev)],
-devdir=${withval},
-devdir=${devdir_default})
-
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
-AC_SUBST(devdir)
 AC_SUBST(sysconfdir)
 AC_SUBST(usb_libs)
 AC_SUBST(vga_progs)

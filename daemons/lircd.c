@@ -2230,11 +2230,9 @@ int main(int argc, char **argv)
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, lircd_parse_options);
-#       ifndef USE_SYSLOG
 	opt = options_getstring("lircd:logfile");
 	if (opt != NULL)
 		lirc_set_logfile(opt);
-#       endif
 	lirc_log_open("lircd", 0, LOG_INFO);
 
 	nodaemon = options_getboolean("lircd:nodaemon");
