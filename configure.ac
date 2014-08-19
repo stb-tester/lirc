@@ -195,9 +195,6 @@ AH_TEMPLATE([HW_DEFAULT],
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
         [Define if devfs support is present in current kernel])
 
-AH_TEMPLATE([MAINTAINER_MODE],
-        [define in maintainer mode])
-
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
   ],[
@@ -328,32 +325,13 @@ LIBS="$LIBS $SYSTEMD_LIBS"
 AC_CHECK_FILE([/usr/lib/systemd/system], [has_systemd_system=true],[true])
 AM_CONDITIONAL([SYSTEMD_INSTALL],[test x"$has_systemd_system" = xtrue])
 
-lirc_driver="userspace"
-
 AC_MSG_NOTICE([Building all userspace drivers.])
-
-dnl slightly more advanced options
-
-dnl maintainer mode options
-
-maintmode_daemons_extra=
-AC_ARG_ENABLE(maintainer-mode,
-[  --enable-maintainer-mode    enable maintainer specific things],
-[
-if test x${enableval} = xyes; then
-AC_DEFINE(MAINTAINER_MODE)
-maintmode_daemons_extra="lircd.simrec lircd.simsend slinke"
-fi
-])
-
-dnl don't create nor destroy devices when installing and uninstalling
 
 AC_ARG_ENABLE(install_etc,
 [  --install-etc           Install /etc/lirc configuration files(default=yes)],
 [ install_etc="${enableval}" ],
 [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
-
 
 AC_ARG_WITH(devdir,
 [  --with-devdir=DIR       Install device files in DIR (/dev)],
@@ -365,27 +343,14 @@ AC_ARG_ENABLE(dyncodes,
 test x${enableval} = xyes && AC_DEFINE(DYNCODES))
 
 
-receive=""
-if ! echo ${hw_module}|grep " receive.o" >/dev/null; then
-        receive="receive.o"
-fi
-
-
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
 AC_SUBST(devdir)
 AC_SUBST(sysconfdir)
-AC_SUBST(driver)
-AC_SUBST(lirc_driver)
+AC_SUBST(usb_libs)
 AC_SUBST(vga_progs)
 AC_SUBST(x_progs)
-AC_SUBST(hw_module)
-AC_SUBST(receive)
-AC_SUBST(lircd_conf)
-AC_SUBST(lircmd_conf)
-AC_SUBST(maintmode_daemons_extra)
-AC_SUBST(usb_libs)
 
 dnl tell the C code what we decided
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")

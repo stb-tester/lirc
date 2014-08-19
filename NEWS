@@ -10,6 +10,9 @@
     try to create needed fifos or devices, ignoring errors e. g., permissions.
   * The --with-driver= configuration is gone, the build always builds all
     drivers.
+  * The --enable-maintainer-mode configuration is gone, the lircd.simrec
+    and lircd.simrec binaries (test tools) are always built alhough not
+    installed.
   * Drivers are loaded dynamically. Many programs including lircd now
     needs to know where the drivers are located to be able to use
     them. There are new options, environment variables and hard-coded

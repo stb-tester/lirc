@@ -8,8 +8,6 @@ AM_LDFLAGS              = -lpthread
 
 CLEANFILES              = *~
 
-EXTRA_PROGRAMS          = lircd.simsend lircd.simrec
-
 varrundir               = $(localstatedir)/run
 
 sbin_PROGRAMS           = lircd lircmd
@@ -20,8 +18,7 @@ lircd_LDADD             = ../lib/liblirc.la
 lircmd_SOURCES          = lircmd.c
 lircmd_LDADD            = ../lib/liblirc.la
 
-## maintainer mode stuff
-noinst_PROGRAMS         = @maintmode_daemons_extra@
+noinst_PROGRAMS         = lircd.simsend lircd.simrec
 lircd_simsend_SOURCES   = lircd.c
 lircd_simsend_CFLAGS    = -DSIM_SEND
 lircd_simsend_LDADD     = ../lib/liblirc.la
