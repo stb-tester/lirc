@@ -42,7 +42,7 @@ be changed using the -O/--options-file command-line option or using the
 environment variable LIRC_OPTIONS_PATH. The values here are used as
 defaults for any option not present on command line.
 .SH DAEMONS
-lircd and lircmd are daemons. You should start them in some init script
+lircmd is a  daemon. You should start it in some init script
 depending on your system. Besides the preferred systemd setup which is
 installed by default there are also example scripts for other distros
 and init systems in the contrib directory. lircmd has to be started after
@@ -50,7 +50,7 @@ lircd as it connects to the socket lircd provides.
 
 If you start lircd or lircmd from your shell prompt you will usually get
 back immediately to the prompt. This is not an error, daemons always run
- in background.
+in background.
 .SH "SEE ALSO"
 The documentation for
 .B lirc

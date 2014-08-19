@@ -88,7 +88,7 @@ Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
 .B -U --plugindir
 The --plugindir option sets the directory from which lircd loads it's
 userspace drivers. These are *.so files, by default found as described
-under DRIVER LOADING.
+under DRIVER LOAD PATH.
 .TP 4
 .B -r, --release [suffix]
 Enables automatic generation of release events for each button press.
@@ -122,14 +122,16 @@ command-line option or using the environment variable LIRC_OPTIONS_PATH.
 The values here are used as defaults for any option not present on
 command line.
 .SH DAEMONS
-lircd and lircmd are daemons. You should start them in some init script
+lircd  is a daemon. You should start it in some init script
 depending on your system. Besides the preferred systemd setup which is
 installed by default there are also example scripts for other distros
-and init systems in the contrib directory. lircmd has to be started after
-lircd as it connects to the socket lircd provides.
-.SH "DRIVER LOADING"
-Drivers are loaded dynamically. The directory used for this is determined by (falling
-priority):
+and init systems in the contrib directory.
+.SH "DRIVER LOAD PATH"
+Drivers are loaded dynamically. This is done from a traditional *ux
+':'-separated path where each component in the path is searched (leading
+part first, trailing last).
+.P
+The path used for this is determined by (falling priority):
 .IP \- 2
 The --plugindir option.
 .IP \- 2

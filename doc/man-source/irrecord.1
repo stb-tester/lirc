@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: Aug 2014" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: aug 2014" "irrecord @version@" "User Commands"
 .SH NAME
 irrecord - application for recording IR-codes for usage with LIRC
 .SH SYNOPSIS
@@ -62,15 +62,36 @@ read from given device
 \fB\-D\fR \fB\-\-debug\fR=\fIlevel\fR
 Set debug level, a value between 1 and 10. 10 gives most output. Values
 0..7 corresponds to the syslog levels LOG_CRIT..LOG_DEBUG.
-.SH "DRIVER LOADING"
-Drivers are loaded dynamically. The directory used for this is determined by (falling
+.SH "DRIVER LOAD PATH"
+Drivers are loaded dynamically. This is done from a traditional *ux
+\':\'\-separated path where each component in the path is searched (leading
+part first, trailing last).
+.P
+The path used for this is determined by (falling
 priority):
+.IP \- 2
+The --plugindir option.
 .IP \- 2
 The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
 The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+
+
+.SH FILES
+.TP 4
+.B /etc/lirc/lirc_options.conf
+The options file. irrecord mostly handles the values under the [irrecord]
+section, but some values such as debug and plugindir are inherited from
+the [lircd] section.
+.IP \- 4
+The location of this file can be changed using the -O/--options-file
+command-line option or using the environment variable LIRC_OPTIONS_PATH.
+The values here are used as defaults for any option not present on
+command line.
+.
+
 .SH "SEE ALSO"
 The documentation for
 .B lirc
