@@ -30,9 +30,9 @@ struct driver hw;
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
-typedef struct driver* (*hw_guest_func)(struct driver*, void*);
+typedef struct driver* (*drv_guest_func)(struct driver*, void*);
 
-const struct driver hw_default = {
+const struct driver drv_default = {
 	.name 		= "null",
 	.device		= "/dev/null",
 	.features	= 0,
@@ -65,7 +65,7 @@ static int ends_with_so(const char *str)
 
 
 /**
- * hw_guest_func which prints name of *hw on file.
+ * drv_guest_func which prints name of *hw on file.
  * @param hw
  * @param file
  * @return NULL
@@ -77,22 +77,22 @@ static struct driver* print_hw_name(struct driver* hw, void* file)
 }
 
 
-static struct driver* match_hw_name(struct driver* hw, void* name)
-// hw_guest_func. Returns hw if hw->name == name, else NULL.
+static struct driver* match_hw_name(struct driver* drv, void* name)
+// drv_guest_func. Returns hw if hw->name == name, else NULL.
 {
-	if (hw == (struct driver*) NULL || name == NULL )
+	if (drv  == (struct driver*) NULL || name == NULL )
 		return (struct driver*)NULL;
-	if (strcasecmp(hw->name, (char*)name) == 0)
-		return hw;
+	if (strcasecmp(drv->name, (char*)name) == 0)
+		return drv;
 	return (struct driver*)NULL;
 }
 
 
 static struct driver*
-visit_plugin(char* path, hw_guest_func func, void* arg)
+visit_plugin(char* path, drv_guest_func func, void* arg)
 // Apply func(hw, arg) for all drivers found in plugin on path.
 {
-	struct driver** hardwares;
+	struct driver** drivers;
 	struct driver* result = (struct driver*) NULL;
 
 	(void)dlerror();
@@ -103,19 +103,19 @@ visit_plugin(char* path, hw_guest_func func, void* arg)
 		logprintf(LOG_ERR, dlerror());
 		return result;
 	}
-	hardwares = (struct driver**)dlsym(last_plugin, "hardwares");
-	if (hardwares == (struct driver**)NULL ){
+	drivers = (struct driver**)dlsym(last_plugin, "hardwares");
+	if (drivers == (struct driver**)NULL ){
 		logprintf(LOG_WARNING,
 			 "No hardwares entrypoint found in %s", path);
 	}
 	else {
-		for ( ; *hardwares; hardwares++) {
-			if( (*hardwares)->name == NULL){
+		for ( ; *drivers; drivers++) {
+			if( (*drivers)->name == NULL){
 				logprintf(LOG_WARNING,
 					  "No driver name in %s", path);
 				continue;
 			}
-			result = (*func)(*hardwares, arg);
+			result = (*func)(*drivers, arg);
 			if (result != (struct driver*) NULL)
 				break;
 		}
@@ -126,7 +126,7 @@ visit_plugin(char* path, hw_guest_func func, void* arg)
 
 
 static struct driver*
-for_each_driver_in_dir(const char* dirpath, hw_guest_func func, void* arg)
+for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 // Apply func(hw, arg) for all drivers found in all plugins in directory path
 {
 	DIR* dir;
@@ -152,7 +152,7 @@ for_each_driver_in_dir(const char* dirpath, hw_guest_func func, void* arg)
 }
 
 
-static struct driver* for_each_driver(hw_guest_func func, void* arg)
+static struct driver* for_each_driver(drv_guest_func func, void* arg)
 // Apply func(hw, arg) for all drivers found in all plugins.
 {
 	char* pluginpath;
@@ -200,7 +200,7 @@ int hw_choose_driver(const char* name)
 	struct driver* found;
 
 	if (name == NULL) {
-		memcpy(&hw, &hw_default, sizeof(struct driver));
+		memcpy(&hw, &drv_default, sizeof(struct driver));
 		return 0;
 	}
 	if (strcasecmp(name, "dev/input") == 0) {
