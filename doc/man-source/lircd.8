@@ -57,6 +57,12 @@ of such connections is currently limited to 100.
 The connecting lircd instance will receive IR events from the lircd
 instance it connects to.
 .TP 4
+.B -D, --debug [level]
+Determine the amount of logging information. \[level\] is an integer
+ranging from 0 (very little logging) to 10. The levels 0-7  corresponds
+to the standard syslog levels LOG_EMERG..LOG_DEBUG, levels 8-10 adds
+even more output presented as LOG_DEBUG statements.
+.TP 4
 .B -l, --listen [[address:]port]]
 Let lircd listen for network
 connections on the given address/port. The default address is 0.0.0.0,
@@ -135,7 +141,7 @@ installed by default there are also example scripts for other distros
 and init systems in the contrib directory.
 .SH "DRIVER LOAD PATH"
 Drivers are loaded dynamically. This is done from a traditional *ux
-':'-separated path where each component in the path is searched (leading
+\':\'-separated path where each component in the path is searched (leading
 part first, trailing last).
 .P
 The path used for this is determined by (falling priority):

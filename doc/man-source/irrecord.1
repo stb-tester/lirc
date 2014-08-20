@@ -60,8 +60,11 @@ Use given driver. -H help lists available drivers.
 read from given device
 .TP
 \fB\-D\fR \fB\-\-debug\fR=\fIlevel\fR
-Set debug level, a value between 1 and 10. 10 gives most output. Values
-0..7 corresponds to the syslog levels LOG_CRIT..LOG_DEBUG.
+Determine the amount of logging information. \[level\] is an integer
+ranging from 0 (very little logging) to 10. The levels 0-7  corresponds
+to the standard syslog levels LOG_EMERG..LOG_DEBUG, levels 8-10 adds
+even more output presented as LOG_DEBUG statements.
+
 .SH "DRIVER LOAD PATH"
 Drivers are loaded dynamically. This is done from a traditional *ux
 \':\'\-separated path where each component in the path is searched (leading

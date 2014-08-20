@@ -7,6 +7,7 @@ irxevent
 lircrcd
 mode2
 xmode2
+irrecord
 
 liblirc_client.la
 lirc_client.lo

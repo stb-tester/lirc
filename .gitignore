@@ -19,6 +19,11 @@ core*
 */.libs
 *~
 
+# lirc-setup cruft
+remotes.pickle*
+remotes.yaml*
+lirc-setup.conf.d
+
 drivers/*/.deps
 drivers/*/.tmp_versions
 drivers/*/.tmp_versions/*
