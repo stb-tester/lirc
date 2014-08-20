@@ -178,8 +178,8 @@ int audio_alsa_init()
 	/* Phew, we won the race ... */
 
 	/* Open the pipe and hand it to LIRC ... */
-	hw.fd = open(tmp_name, O_RDWR);
-	if (hw.fd < 0) {
+	drv.fd = open(tmp_name, O_RDWR);
+	if (drv.fd < 0) {
 		logprintf(LOG_ERR, "could not open pipe %s", tmp_name);
 		logperror(LOG_ERR, "audio_alsa_init ()");
 error:		unlink(tmp_name);
@@ -195,7 +195,7 @@ error:		unlink(tmp_name);
 	unlink(tmp_name);
 
 	/* Examine the device name, if it contains a sample rate */
-	strncpy(tmp_name, hw.device, sizeof(tmp_name) - 1);
+	strncpy(tmp_name, drv.device, sizeof(tmp_name) - 1);
 	pcm_rate = strchr(tmp_name, '@');
 	if (pcm_rate) {
 		int rate;
@@ -238,7 +238,7 @@ error:		unlink(tmp_name);
 	/* Open the audio card in non-blocking mode */
 	err = snd_pcm_open(&alsa_hw.handle, tmp_name, SND_PCM_STREAM_CAPTURE, SND_PCM_NONBLOCK);
 	if (err < 0) {
-		logprintf(LOG_ERR, "could not open audio device %s: %s", hw.device, snd_strerror(err));
+		logprintf(LOG_ERR, "could not open audio device %s: %s", drv.device, snd_strerror(err));
 		logperror(LOG_ERR, "audio_alsa_init ()");
 		goto error;
 	}
@@ -275,9 +275,9 @@ int audio_alsa_deinit(void)
 		close(alsa_hw.fd);
 		alsa_hw.fd = -1;
 	}
-	if (hw.fd != -1) {
-		close(hw.fd);
-		hw.fd = -1;
+	if (drv.fd != -1) {
+		close(drv.fd);
+		drv.fd = -1;
 	}
 	return 1;
 }
@@ -500,7 +500,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-	ret = read(hw.fd, &data, sizeof(data));
+	ret = read(drv.fd, &data, sizeof(data));
 
 	if (ret != sizeof(data)) {
 		LOGPRINTF(1, "error reading from lirc device");

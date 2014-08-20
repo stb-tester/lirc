@@ -140,7 +140,7 @@ void displayonline(void)
 	dflags = strreconly;
 	if (deviceflags & 1)
 		dflags = strsendrec;
-	if (hw.rec_mode == LIRC_MODE_LIRCCODE)
+	if (drv.rec_mode == LIRC_MODE_LIRCCODE)
 		dmode = mode_sixbytes;
 	else
 		dmode = mode_timing;
@@ -152,14 +152,14 @@ int tira_setup_sixbytes(void)
 	int i;
 
 	logprintf(LOG_INFO, "Switching to 6bytes mode");
-	if (write(hw.fd, "IR", 2) != 2) {
+	if (write(drv.fd, "IR", 2) != 2) {
 		logprintf(LOG_ERR, "failed switching device into six byte mode");
 		return 0;
 	}
 	/* wait for the chars to be written */
 	usleep(2 * (100 * 1000));
 
-	i = read(hw.fd, response, 2);
+	i = read(drv.fd, response, 2);
 	if (i != 2) {
 		logprintf(LOG_ERR, "failed reading response to six byte mode command");
 		return 0;
@@ -196,8 +196,8 @@ int child_process(int pipe_w, int oldprotocol)
 	trailtime.tv_usec = 0;
 
 	while (1) {
-		FD_SET(hw.fd, &read_set);
-		tmp = select(hw.fd + 1, &read_set, NULL, NULL, &tv);
+		FD_SET(drv.fd, &read_set);
+		tmp = select(drv.fd + 1, &read_set, NULL, NULL, &tv);
 
 		if (tmp == 0)
 			continue;
@@ -206,9 +206,9 @@ int child_process(int pipe_w, int oldprotocol)
 			return 0;
 		}
 
-		if (!FD_ISSET(hw.fd, &read_set))
+		if (!FD_ISSET(drv.fd, &read_set))
 			continue;
-		readsize = read(hw.fd, &tirabuffer[tirabuflen], sizeof(tirabuffer) - tirabuflen);
+		readsize = read(drv.fd, &tirabuffer[tirabuflen], sizeof(tirabuffer) - tirabuflen);
 		if (readsize <= 0) {
 			logprintf(LOG_ERR, "Error reading from Tira");
 			logperror(LOG_ERR, NULL);
@@ -291,19 +291,19 @@ int tira_setup_timing(int oldprotocol)
 	int i;
 
 	if (oldprotocol)
-		if (!tty_setbaud(hw.fd, 57600))
+		if (!tty_setbaud(drv.fd, 57600))
 			return 0;
 
 	logprintf(LOG_INFO, "Switching to timing mode");
 	if (!oldprotocol) {
-		if (write(hw.fd, "IC\0\0", 4) != 4) {
+		if (write(drv.fd, "IC\0\0", 4) != 4) {
 			logprintf(LOG_ERR, "failed switching device into timing mode");
 			return 0;
 		}
 		/* wait for the chars to be written */
 		usleep(2 * (100 * 1000));
 
-		i = read(hw.fd, response, 3);
+		i = read(drv.fd, response, 3);
 		if (i != 3) {
 			logprintf(LOG_ERR, "failed reading response to timing mode command");
 			return 0;
@@ -337,8 +337,8 @@ int tira_setup_timing(int oldprotocol)
 		_exit(0);
 	} else {
 		/* parent reads from pipe */
-		close(hw.fd);
-		hw.fd = pipe_fd[0];
+		close(drv.fd);
+		drv.fd = pipe_fd[0];
 	}
 	close(pipe_fd[1]);
 	displayonline();
@@ -357,14 +357,14 @@ int tira_setup(void)
 {
 	int ptr;
 	/* Clear the port of any random data */
-	while (read(hw.fd, &ptr, 1) >= 0) ;
+	while (read(drv.fd, &ptr, 1) >= 0) ;
 
 	/* Start off with the IP command. This was initially used to
 	   switch to timing mode on the Tira-1. The Tira-2 also
 	   supports this mode, however it does not switch the Tira-2
 	   into timing mode.
 	 */
-	if (write(hw.fd, "IP", 2) != 2) {
+	if (write(drv.fd, "IP", 2) != 2) {
 		logprintf(LOG_ERR, failwrite);
 		return 0;
 	}
@@ -372,21 +372,21 @@ int tira_setup(void)
 	   that don't seem to work... *shrug*
 	 */
 	usleep(2 * (100 * 1000));
-	read(hw.fd, response, 3);
+	read(drv.fd, response, 3);
 
 	if (strncmp(response, "OIP", 3) == 0) {
-		read(hw.fd, &ptr, 1);	/* read the calibration value */
-		read(hw.fd, &ptr, 1);	/* read the version word */
+		read(drv.fd, &ptr, 1);	/* read the calibration value */
+		read(drv.fd, &ptr, 1);	/* read the version word */
 		/* Bits 4:7 in the version word set to one indicates a
 		   Tira-2 */
 		deviceflags = ptr & 0x0f;
 		if (ptr & 0xF0) {
 			logprintf(LOG_INFO, "Tira-2 detected");
 			/* Lets get the firmware version */
-			write(hw.fd, "IV", 2);
+			write(drv.fd, "IV", 2);
 			usleep(2 * (100 * 1000));
 			memset(response, 0, sizeof(response));
-			read(hw.fd, response, sizeof(response) - 1);
+			read(drv.fd, response, sizeof(response) - 1);
 			logprintf(LOG_INFO, "firmware version %s", response);
 		} else {
 			logprintf(LOG_INFO, "Ira/Tira-1 detected");
@@ -399,9 +399,9 @@ int tira_setup(void)
 		   At this point we have a Device of some sort. Lets
 		   kick it into "Six bytes or Timing" mode.
 		 */
-		if (hw.rec_mode == LIRC_MODE_LIRCCODE)
+		if (drv.rec_mode == LIRC_MODE_LIRCCODE)
 			return (tira_setup_sixbytes());
-		if (hw.rec_mode == LIRC_MODE_MODE2)
+		if (drv.rec_mode == LIRC_MODE_MODE2)
 			return (tira_setup_timing(0));
 
 		return 0;	//unknown recmode
@@ -415,12 +415,12 @@ int ira_setup_sixbytes(unsigned char info)
 	int i;
 	if (info != 0)
 		logprintf(LOG_INFO, "Switching to 6bytes mode");
-	if (write(hw.fd, "I", 1) != 1) {
+	if (write(drv.fd, "I", 1) != 1) {
 		logprintf(LOG_ERR, failwrite);
 		return 0;
 	}
 	usleep(200000);
-	if (write(hw.fd, "R", 1) != 1) {
+	if (write(drv.fd, "R", 1) != 1) {
 		logprintf(LOG_ERR, failwrite);
 		return 0;
 	}
@@ -429,7 +429,7 @@ int ira_setup_sixbytes(unsigned char info)
 	   that don't seem to work... *shrug*
 	 */
 	usleep(100000);
-	i = read(hw.fd, response, 2);
+	i = read(drv.fd, response, 2);
 	if (i != 2)
 		return 0;
 	if (strncmp(response, "OK", 2) != 0)
@@ -444,17 +444,17 @@ int ira_setup(void)
 	int i;
 	int ptr;
 	/* Clear the port of any random data */
-	while (read(hw.fd, &ptr, 1) >= 0) ;
+	while (read(drv.fd, &ptr, 1) >= 0) ;
 
 	if (ira_setup_sixbytes(0) == 0)
 		return 0;
 
-	if (write(hw.fd, "I", 1) != 1) {
+	if (write(drv.fd, "I", 1) != 1) {
 		logprintf(LOG_ERR, failwrite);
 		return 0;
 	}
 	usleep(200000);
-	if (write(hw.fd, "P", 1) != 1) {
+	if (write(drv.fd, "P", 1) != 1) {
 		logprintf(LOG_ERR, failwrite);
 		return 0;
 	}
@@ -462,12 +462,12 @@ int ira_setup(void)
 	/* Wait till the chars are written, should use tcdrain but
 	   that don't seem to work... *shrug*
 	 */
-	if (!tty_setbaud(hw.fd, 57600))
+	if (!tty_setbaud(drv.fd, 57600))
 		return 0;
 	usleep(50000);
-	i = read(hw.fd, response, 5);
+	i = read(drv.fd, response, 5);
 
-	if (!tty_setbaud(hw.fd, 9600))
+	if (!tty_setbaud(drv.fd, 9600))
 		return 0;
 
 	if (i < 5)
@@ -476,27 +476,27 @@ int ira_setup(void)
 		deviceflags = response[4] & 0x0f;
 		if (response[4] & 0xF0) {
 			/* Lets get the firmware version */
-			if (write(hw.fd, "I", 1) != 1) {
+			if (write(drv.fd, "I", 1) != 1) {
 				logprintf(LOG_ERR, failwrite);
 				return 0;
 			}
 			usleep(200000);
-			if (write(hw.fd, "V", 1) != 1) {
+			if (write(drv.fd, "V", 1) != 1) {
 				logprintf(LOG_ERR, failwrite);
 				return 0;
 			}
 
 			usleep(200000);
 			memset(response, 0, sizeof(response));
-			i = read(hw.fd, response, sizeof(response) - 1);
+			i = read(drv.fd, response, sizeof(response) - 1);
 			logprintf(LOG_INFO, "Ira %s detected", response);
 		} else {
 			logprintf(LOG_INFO, "Ira-1 detected");
 		}
 
-		if (hw.rec_mode == LIRC_MODE_LIRCCODE)
+		if (drv.rec_mode == LIRC_MODE_LIRCCODE)
 			return (ira_setup_sixbytes(1));	//switch back to 6bytes mode
-		if (hw.rec_mode == LIRC_MODE_MODE2)
+		if (drv.rec_mode == LIRC_MODE_MODE2)
 			return (tira_setup_timing(1));
 		return 0;	//unknown recmode
 	}
@@ -507,7 +507,7 @@ int ira_setup(void)
 int check_tira(void)
 {
 	logprintf(LOG_ERR, "Searching for Tira");
-	if (!tty_reset(hw.fd) || !tty_setbaud(hw.fd, 9600) || !tty_setrtscts(hw.fd, 1))
+	if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, 9600) || !tty_setrtscts(drv.fd, 1))
 		return 0;
 
 	usleep(50000);
@@ -518,7 +518,7 @@ int check_tira(void)
 int check_ira(void)
 {
 	logprintf(LOG_ERR, "Searching for Ira");
-	if (!tty_reset(hw.fd) || !tty_setbaud(hw.fd, 9600) || !tty_setrtscts(hw.fd, 0) || !tty_setdtr(hw.fd, 1))
+	if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, 9600) || !tty_setrtscts(drv.fd, 0) || !tty_setdtr(drv.fd, 1))
 		return 0;
 
 	usleep(50000);
@@ -533,16 +533,16 @@ int tira_init(void)
 
 	LOGPRINTF(1, "Tira init");
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
 		return 0;
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		tty_delete_lock();
-		logprintf(LOG_ERR, "Could not open the '%s' device", hw.device);
+		logprintf(LOG_ERR, "Could not open the '%s' device", drv.device);
 		return 0;
 	}
-	LOGPRINTF(1, "device '%s' opened", hw.device);
+	LOGPRINTF(1, "device '%s' opened", drv.device);
 
 	/* We want 9600 8N1 with CTS/RTS handshaking, lets set that
 	 * up. The specs state a baud rate of 100000, looking at the
@@ -593,9 +593,9 @@ int tira_deinit(void)
 		child_pid = -1;
 	}
 
-	if (hw.fd != -1) {
-		close(hw.fd);	/* pipe_fd[0] or actual device */
-		hw.fd = -1;
+	if (drv.fd != -1) {
+		close(drv.fd);	/* pipe_fd[0] or actual device */
+		drv.fd = -1;
 	}
 	sleep(1);
 	tty_delete_lock();
@@ -622,11 +622,11 @@ char *tira_rec(struct ir_remote *remotes)
 			if (!waitfordata(20000)) {
 				LOGPRINTF(0, "timeout reading byte %d", i);
 				/* likely to be !=6 bytes, so flush. */
-				tcflush(hw.fd, TCIFLUSH);
+				tcflush(drv.fd, TCIFLUSH);
 				return NULL;
 			}
 		}
-		if (read(hw.fd, &b[i], 1) != 1) {
+		if (read(drv.fd, &b[i], 1) != 1) {
 			logprintf(LOG_ERR, "reading of byte %d failed.", i);
 			logperror(LOG_ERR, NULL);
 			return NULL;
@@ -658,7 +658,7 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 		return (0);
 	}
 
-	if (hw.rec_mode != LIRC_MODE_LIRCCODE) {
+	if (drv.rec_mode != LIRC_MODE_LIRCCODE) {
 		logprintf(LOG_ERR, "can't send ir signals in timing mode!");
 		return (0);
 	}
@@ -758,22 +758,22 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	if (device_type == 'i') {
 		i = length;
-		if (write(hw.fd, wrtbuf, 1) != 1)
+		if (write(drv.fd, wrtbuf, 1) != 1)
 			i = 0;
 		if (i != 0) {
 			usleep(200000);
-			if (write(hw.fd, &wrtbuf[1], length - 1) != length - 1) {
+			if (write(drv.fd, &wrtbuf[1], length - 1) != length - 1) {
 				i = 0;
 			}
 		}
 	} else
-		i = write(hw.fd, wrtbuf, length);
+		i = write(drv.fd, wrtbuf, length);
 
 	if (i != length)
 		logprintf(LOG_ERR, failwrite);
 	else {
 		usleep(200000);
-		i = read(hw.fd, wrtbuf, 3);
+		i = read(drv.fd, wrtbuf, 3);
 		if (strncmp((char *)wrtbuf, "OIX", 3) == 0)
 			retval = 1;
 		else
@@ -794,9 +794,9 @@ lirc_t tira_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-	ret = read(hw.fd, &data, sizeof(data));
+	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logprintf(LOG_ERR, "error reading from %s", hw.device);
+		logprintf(LOG_ERR, "error reading from %s", drv.device);
 		logperror(LOG_ERR, NULL);
 		tira_deinit();
 		return 0;

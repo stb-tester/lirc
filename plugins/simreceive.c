@@ -104,10 +104,10 @@ int default_readdata(lirc_t timeout)
 
 int default_init()
 {
-	hw.fd = STDIN_FILENO;
-	hw.features = LIRC_CAN_REC_MODE2;
-	hw.send_mode = 0;
-	hw.rec_mode = LIRC_MODE_MODE2;
+	drv.fd = STDIN_FILENO;
+	drv.features = LIRC_CAN_REC_MODE2;
+	drv.send_mode = 0;
+	drv.rec_mode = LIRC_MODE_MODE2;
 	return (1);
 }
 
@@ -128,13 +128,13 @@ static int write_send_buffer(int lirc)
 int default_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	/* things are easy, because we only support one mode */
-	if (hw.send_mode != LIRC_MODE_PULSE)
+	if (drv.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
 	if (!init_send(remote, code))
 		return (0);
 
-	if (write_send_buffer(hw.fd) == -1) {
+	if (write_send_buffer(drv.fd) == -1) {
 		logprintf(LOG_ERR, "write failed");
 		logperror(LOG_ERR, NULL);
 		return (0);
@@ -153,5 +153,5 @@ char *default_rec(struct ir_remote *remotes)
 
 int default_ioctl(unsigned int cmd, void *arg)
 {
-	return ioctl(hw.fd, cmd, arg);
+	return ioctl(drv.fd, cmd, arg);
 }

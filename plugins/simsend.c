@@ -102,10 +102,10 @@ int default_readdata(lirc_t timeout)
 			dosigterm(SIGTERM);
 	}
 #else
-	ret = read(hw.fd, &data, sizeof(data));
+	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
 		logprintf(LOG_ERR, "error reading from %s (ret %d, expected %d)",
-			  hw.device, ret, sizeof(data));
+			  drv.device, ret, sizeof(data));
 		logperror(LOG_ERR, NULL);
 		default_deinit();
 
@@ -116,7 +116,7 @@ int default_readdata(lirc_t timeout)
 		static int data_warning = 1;
 
 		if (data_warning) {
-			logprintf(LOG_WARNING, "read invalid data from device %s", hw.device);
+			logprintf(LOG_WARNING, "read invalid data from device %s", drv.device);
 			data_warning = 0;
 		}
 		data = 1;
@@ -131,10 +131,10 @@ int default_readdata(lirc_t timeout)
 
 int default_init()
 {
-	hw.fd = STDOUT_FILENO;
-	hw.features = LIRC_CAN_SEND_PULSE;
-	hw.send_mode = LIRC_MODE_PULSE;
-	hw.rec_mode = 0;
+	drv.fd = STDOUT_FILENO;
+	drv.features = LIRC_CAN_SEND_PULSE;
+	drv.send_mode = LIRC_MODE_PULSE;
+	drv.rec_mode = 0;
 	return (1);
 }
 
@@ -163,13 +163,13 @@ static int write_send_buffer(int lirc)
 int default_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	/* things are easy, because we only support one mode */
-	if (hw.send_mode != LIRC_MODE_PULSE)
+	if (drv.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
 	if (!init_send(remote, code))
 		return (0);
 
-	if (write_send_buffer(hw.fd) == -1) {
+	if (write_send_buffer(drv.fd) == -1) {
 		logprintf(LOG_ERR, "write failed");
 		logperror(LOG_ERR, NULL);
 		return (0);
@@ -190,5 +190,5 @@ char *default_rec(struct ir_remote *remotes)
 
 int default_ioctl(unsigned int cmd, void *arg)
 {
-	return ioctl(hw.fd, cmd, arg);
+	return ioctl(drv.fd, cmd, arg);
 }

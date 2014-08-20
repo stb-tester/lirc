@@ -193,20 +193,20 @@ static int uirt2_raw_init(void)
 {
 	int version;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "uirt2_raw: could not create lock files");
 		return (0);
 	}
 
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "uirt2_raw: could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+		logprintf(LOG_ERR, "uirt2_raw: could not open %s", drv.device);
 		tty_delete_lock();
 		return (0);
 	}
 
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LOG_ERR, "uirt2_raw: could not reset tty");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
@@ -214,30 +214,30 @@ static int uirt2_raw_init(void)
 	/* Wait for UIRT device to power up */
 	usleep(100 * 1000);
 
-	if (!tty_setbaud(hw.fd, 115200)) {
+	if (!tty_setbaud(drv.fd, 115200)) {
 		logprintf(LOG_ERR, "uirt2_raw: could not set baud rate");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
-	if (!tty_setcsize(hw.fd, 8)) {
+	if (!tty_setcsize(drv.fd, 8)) {
 		logprintf(LOG_ERR, "uirt2_raw: could not set csize");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
-	if (!tty_setrtscts(hw.fd, 1)) {
+	if (!tty_setrtscts(drv.fd, 1)) {
 		logprintf(LOG_ERR, "uirt2_raw: could not enable hardware flow");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
-	if ((dev = uirt2_init(hw.fd)) == NULL) {
-		logprintf(LOG_ERR, "uirt2_raw: No UIRT2 device found at %s", hw.device);
-		close(hw.fd);
+	if ((dev = uirt2_init(drv.fd)) == NULL) {
+		logprintf(LOG_ERR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
+		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
@@ -253,7 +253,7 @@ static int uirt2_raw_init(void)
 		return (0);
 	}
 	if (version >= 0x0905) {
-		if (!tty_setdtr(hw.fd, 0)) {
+		if (!tty_setdtr(drv.fd, 0)) {
 			logprintf(LOG_ERR, "uirt2_raw: could not set DTR");
 			uirt2_raw_deinit();
 			return (0);
@@ -275,12 +275,12 @@ static int uirt2_raw_deinit(void)
 	int version;
 
 	if (uirt2_getversion(dev, &version) >= 0 && version >= 0x0905) {
-		tty_setdtr(hw.fd, 1);
+		tty_setdtr(drv.fd, 1);
 	}
 	uirt2_uninit(dev);
 	dev = NULL;
-	close(hw.fd);
-	hw.fd = -1;
+	close(drv.fd);
+	drv.fd = -1;
 	tty_delete_lock();
 	return 1;
 }

@@ -186,15 +186,15 @@ static int srm7500_init()
 
 	logprintf(LOG_INFO, "initializing driver");
 
-	if (hw.device == NULL) {
+	if (drv.device == NULL) {
 		logprintf(LOG_ERR,
 			  "no device options supplied, please read the documentation in "
 			  "philips/lircd.conf.srm7500libusb!");
 		return 0;
 	}
 
-	op_start = hw.device;
-	string_end = strchr(hw.device, 0);
+	op_start = drv.device;
+	string_end = strchr(drv.device, 0);
 	while (op_start < string_end) {
 		int result;
 		op_end = strchrnul(op_start, ',');
@@ -287,7 +287,7 @@ static int srm7500_init()
 	init_rec_buffer();
 
 	/* A separate process will be forked to read data from the USB
-	 * receiver and write it to a pipe. hw.fd is set to the readable
+	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
 		logperror(LOG_ERR, "could not open pipe");
@@ -334,7 +334,7 @@ fail:
 	}
 
 	close(pipe_fd[1]);
-	hw.fd = pipe_fd[0];
+	drv.fd = pipe_fd[0];
 
 	return 1;
 
@@ -611,10 +611,10 @@ static int srm7500_deinit()
 
 	logprintf(LOG_INFO, "disabling driver");
 
-	if (hw.fd >= 0) {
-		if (close(hw.fd) < 0)
+	if (drv.fd >= 0) {
+		if (close(drv.fd) < 0)
 			result = 0;
-		hw.fd = -1;
+		drv.fd = -1;
 	}
 
 	if (child > 1) {
@@ -631,7 +631,7 @@ static char *srm7500_rec(struct ir_remote *remotes)
 	u_int8_t rccode[3];
 	int rd;
 
-	rd = read(hw.fd, &rccode, 3);
+	rd = read(drv.fd, &rccode, 3);
 	if (rd != 3) {
 		logprintf(LOG_ERR, "error reading from usb worker process");
 		if (rd <= 0 && errno != EINTR)

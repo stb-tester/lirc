@@ -95,43 +95,43 @@ int dsp_init()
 {
 	int speed = SAMPLE, fmt = AFMT_S16_LE;
 
-	logprintf(LOG_INFO, "Initializing %s...", hw.device);
+	logprintf(LOG_INFO, "Initializing %s...", drv.device);
 	init_rec_buffer();
-	if ((hw.fd = open(hw.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "dsp_init()");
 		return (0);
 	}
 
-	if (ioctl(hw.fd, SNDCTL_DSP_SPEED, &speed) < 0) {
-		logprintf(LOG_ERR, "could not ioctl(SPEED) on %s", hw.device);
+	if (ioctl(drv.fd, SNDCTL_DSP_SPEED, &speed) < 0) {
+		logprintf(LOG_ERR, "could not ioctl(SPEED) on %s", drv.device);
 		logperror(LOG_ERR, "dsp_init()");
 		return (0);
 	}
 	if (speed != SAMPLE) {
-		logprintf(LOG_ERR, "wrong speed handshaked on %s", hw.device);
+		logprintf(LOG_ERR, "wrong speed handshaked on %s", drv.device);
 		logperror(LOG_ERR, "dsp_init()");
 		return (0);
 	}
-	if (ioctl(hw.fd, SNDCTL_DSP_SETFMT, &fmt) < 0) {
-		logprintf(LOG_ERR, "could not ioctl(SETFMT) on %s", hw.device);
+	if (ioctl(drv.fd, SNDCTL_DSP_SETFMT, &fmt) < 0) {
+		logprintf(LOG_ERR, "could not ioctl(SETFMT) on %s", drv.device);
 		logperror(LOG_ERR, "dsp_init()");
 		return (0);
 	}
 	if (fmt != AFMT_S16_LE) {
-		logprintf(LOG_ERR, "wrong format handshaked on %s", hw.device);
+		logprintf(LOG_ERR, "wrong format handshaked on %s", drv.device);
 		logperror(LOG_ERR, "dsp_init()");
 		return (0);
 	}
-	myfd = hw.fd;
+	myfd = drv.fd;
 	/* select on soundcard does not work */
-	hw.fd = open("/dev/zero", O_RDONLY);
+	drv.fd = open("/dev/zero", O_RDONLY);
 	return (1);
 }
 
 int dsp_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	close(myfd);
 	return (1);
 }

@@ -59,7 +59,7 @@ void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandli
 		"#     (TV, VCR, Audio, DVD, Satellite, Cable, PVR, HTPC, ...) : \n"
 		"# Device(s) controlled by this remote: \n"
 		"# Kernel version (uname -r): \n\n",
-		VERSION, hw.name, asctime(tmp), buff, rem->name);
+		VERSION, drv.name, asctime(tmp), buff, rem->name);
 }
 
 void fprint_flags(FILE * f, int flags)

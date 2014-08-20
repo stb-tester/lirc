@@ -120,7 +120,7 @@ static int irlink_open(const char *portName)
 		return -1;
 	}
 	if ((port = open(portName, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		tty_delete_lock();
 		return -1;
 	}
@@ -214,7 +214,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 		if (!waitfordata(timeout - time_delta)) {
 			break;
 		}
-		if (irlink_read(hw.fd, &rd_value, sizeof(rd_value)) == sizeof(rd_value)) {
+		if (irlink_read(drv.fd, &rd_value, sizeof(rd_value)) == sizeof(rd_value)) {
 			if (IS_IRLINK_LONG_PULSE(rd_value) || IS_IRLINK_LONG_PAUSE(rd_value)) {
 				struct timeval diff_time = { 0 };
 				is_long_pulse = IS_IRLINK_LONG_PULSE(rd_value);
@@ -264,7 +264,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 				break;
 			}
 		} else {
-			logprintf(LOG_ERR, "error reading from %s", hw.device);
+			logprintf(LOG_ERR, "error reading from %s", drv.device);
 			logperror(LOG_ERR, NULL);
 			irlink_deinit();
 		}
@@ -274,14 +274,14 @@ lirc_t irlink_readdata(lirc_t timeout)
 
 int irlink_init(void)
 {
-	hw.fd = irlink_open(hw.device);
-	if (hw.fd < 0) {
-		logprintf(LOG_ERR, "Could not open the '%s' device", hw.device);
+	drv.fd = irlink_open(drv.device);
+	if (drv.fd < 0) {
+		logprintf(LOG_ERR, "Could not open the '%s' device", drv.device);
 	} else {
-		if (irlink_detect(hw.fd) == 0) {
+		if (irlink_detect(drv.fd) == 0) {
 			return 1;
 		} else {
-			logprintf(LOG_ERR, "Failed to detect IRLink on '%s' device", hw.device);
+			logprintf(LOG_ERR, "Failed to detect IRLink on '%s' device", drv.device);
 			irlink_deinit();
 		}
 	}
@@ -290,9 +290,9 @@ int irlink_init(void)
 
 int irlink_deinit(void)
 {
-	if (hw.fd != -1) {
-		irlink_close(hw.fd);
+	if (drv.fd != -1) {
+		irlink_close(drv.fd);
 	}
-	hw.fd = -1;
+	drv.fd = -1;
 	return 1;
 }

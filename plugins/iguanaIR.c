@@ -54,7 +54,7 @@ static void recv_loop(int fd, int notify)
 	/* notify parent by closing notify */
 	close(notify);
 
-	conn = iguanaConnect(hw.device);
+	conn = iguanaConnect(drv.device);
 	if (conn != -1) {
 		iguanaPacket request, response;
 		lirc_t prevCode = -1;
@@ -148,7 +148,7 @@ static int iguana_init()
 			close(recv_pipe[0]);
 			close(recv_pipe[1]);
 		} else {
-			hw.fd = recv_pipe[0];
+			drv.fd = recv_pipe[0];
 
 			child = fork();
 			if (child == -1) {
@@ -165,7 +165,7 @@ static int iguana_init()
 				/* make sure child has set its signal handler to avoid race with iguana_deinit() */
 				read(notify[0], &dummy, 1);
 				close(notify[0]);
-				sendConn = iguanaConnect(hw.device);
+				sendConn = iguanaConnect(drv.device);
 				if (sendConn == -1)
 					logprintf(LOG_ERR, "couldn't open connection to iguanaIR daemon: %s",
 						  strerror(errno));
@@ -203,9 +203,9 @@ static int iguana_deinit()
 		child = 0;
 	}
 
-	/* close hw.fd since otherwise we leak open files */
-	close(hw.fd);
-	hw.fd = -1;
+	/* close drv.fd since otherwise we leak open files */
+	close(drv.fd);
+	drv.fd = -1;
 
 	return child == 0;
 }
@@ -319,12 +319,12 @@ static lirc_t readdata(lirc_t timeout)
 	fd_set fds;
 
 	FD_ZERO(&fds);
-	FD_SET(hw.fd, &fds);
+	FD_SET(drv.fd, &fds);
 
 	/* attempt a read with a timeout using select */
-	if (select(hw.fd + 1, &fds, NULL, &fds, &tv) > 0)
+	if (select(drv.fd + 1, &fds, NULL, &fds, &tv) > 0)
 		/* if we failed to get data return 0 */
-		if (read(hw.fd, &code, sizeof(lirc_t)) <= 0)
+		if (read(drv.fd, &code, sizeof(lirc_t)) <= 0)
 			iguana_deinit();
 
 	return code;

@@ -114,9 +114,9 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 	(void)outTime;
 
 	if (status & paOutputUnderflow)
-		logprintf(LOG_WARNING, "Output underflow %s", hw.device);
+		logprintf(LOG_WARNING, "Output underflow %s", drv.device);
 	if (status & paInputOverflow)
-		logprintf(LOG_WARNING, "Input overflow %s", hw.device);
+		logprintf(LOG_WARNING, "Input overflow %s", drv.device);
 
 	for (i = 0; i < framesPerBuffer; i++, myPtr++) {
 		/* check if we have to ignore this sample */
@@ -267,7 +267,7 @@ lirc_t audio_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-	ret = read(hw.fd, &data, sizeof(data));
+	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
 		LOGPRINTF(1, "error reading from lirc");
 		LOGPERROR(1, NULL);
@@ -333,9 +333,9 @@ static void audio_parsedevicestr(char *api, char *device, int *rate, double *lat
 	int ret;
 
 	/* empty device string means default */
-	if (strlen(hw.device)) {
+	if (strlen(drv.device)) {
 		/* device string is api:device[@rate] or @rate */
-		ret = sscanf(hw.device, "%1023[^:]:%1023[^@]@%i:%lf", api, device, rate, latency);
+		ret = sscanf(drv.device, "%1023[^:]:%1023[^@]@%i:%lf", api, device, rate, latency);
 
 		if (ret == 2 || *rate <= 0)
 			*rate = DEFAULT_SAMPLERATE;
@@ -347,7 +347,7 @@ static void audio_parsedevicestr(char *api, char *device, int *rate, double *lat
 			return;
 
 		/* check for @rate:latency */
-		ret = sscanf(hw.device, "@%i:%lf", rate, latency);
+		ret = sscanf(drv.device, "@%i:%lf", rate, latency);
 		if (ret >= 1) {
 			api[0] = 0;
 			device[0] = 0;
@@ -362,7 +362,7 @@ static void audio_parsedevicestr(char *api, char *device, int *rate, double *lat
 
 		logprintf(LOG_ERR,
 			  "malformed device string %s, syntax is api:device[@rate[:latency]] or @rate[:latency]",
-			  hw.device);
+			  drv.device);
 	}
 
 	api[0] = 0;
@@ -462,7 +462,7 @@ int audio_init()
 	LOGPRINTF(1, "hw_audio_init()");
 
 	//
-	logprintf(LOG_INFO, "Initializing %s...", hw.device);
+	logprintf(LOG_INFO, "Initializing %s...", drv.device);
 	init_rec_buffer();
 	rewind_rec_buffer();
 
@@ -544,7 +544,7 @@ int audio_init()
 
 	LOGPRINTF(LOG_INFO, "PTY name: %s", ptyName);
 
-	hw.fd = ptyfd;
+	drv.fd = ptyfd;
 
 	/* make a pipe for sending signals to the callback */
 	/* make a pipe for signaling from the callback that everything
@@ -587,7 +587,7 @@ int audio_deinit(void)
 
 	LOGPRINTF(1, "hw_audio_deinit()");
 
-	logprintf(LOG_INFO, "Deinitializing %s...", hw.device);
+	logprintf(LOG_INFO, "Deinitializing %s...", drv.device);
 
 	/* make absolutely sure the full output buffer has played out
 	   even though portaudio should wait for it, it doesn't always

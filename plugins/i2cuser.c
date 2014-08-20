@@ -164,7 +164,7 @@ static int open_i2c_device(void)
 
 	snprintf(device_name, sizeof device_name, "/dev/i2c-%d", found);
 	logprintf(LOG_INFO, "Using i2c device %s", device_name);
-	hw.device = device_name;
+	drv.device = device_name;
 	return open(device_name, O_RDWR);
 }
 
@@ -176,7 +176,7 @@ static int i2cuser_init(void)
 		logprintf(LOG_ERR, "Couldn't open pipe: %s", strerror(errno));
 		return 0;
 	}
-	hw.fd = pipe_fd[0];
+	drv.fd = pipe_fd[0];
 
 	i2c_fd = open_i2c_device();
 	if (i2c_fd == -1) {
@@ -222,8 +222,8 @@ static int i2cuser_deinit(void)
 	}
 	if (i2c_fd != -1)
 		close(i2c_fd);
-	if (hw.fd != -1)
-		close(hw.fd);
+	if (drv.fd != -1)
+		close(drv.fd);
 	return 1;
 }
 

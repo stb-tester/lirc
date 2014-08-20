@@ -117,7 +117,7 @@ int bte_sendcmd(char *str, int next_state)
 	sprintf(prev_cmd, "AT%s\r", str);
 
 	LOGPRINTF(1, "bte_sendcmd: \"%s\"", str);
-	if (write(hw.fd, prev_cmd, strlen(prev_cmd)) <= 0) {
+	if (write(drv.fd, prev_cmd, strlen(prev_cmd)) <= 0) {
 		io_failed = 1;
 		pending = 0;
 		logprintf(LOG_ERR, "bte_sendcmd: write failed  - %d: %s", errno, strerror(errno));
@@ -133,34 +133,34 @@ int bte_connect(void)
 
 	LOGPRINTF(3, "bte_connect called");
 
-	if (hw.fd >= 0)
-		close(hw.fd);
+	if (drv.fd >= 0)
+		close(drv.fd);
 
 	do			//try block
 	{
 		errno = 0;
-		if ((hw.fd = open(hw.device, O_RDWR | O_NOCTTY)) == -1) {
-			LOGPRINTF(1, "could not open %s", hw.device);
+		if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) == -1) {
+			LOGPRINTF(1, "could not open %s", drv.device);
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
-		if (tcgetattr(hw.fd, &tattr) == -1) {
+		if (tcgetattr(drv.fd, &tattr) == -1) {
 			LOGPRINTF(1, "bte_connect: tcgetattr() failed");
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
-		LOGPRINTF(1, "opened %s", hw.device);
+		LOGPRINTF(1, "opened %s", drv.device);
 		LOGPERROR(1, "bte_connect");
 		cfmakeraw(&tattr);
 		tattr.c_cc[VMIN] = 1;
 		tattr.c_cc[VTIME] = 0;
-		if (tcsetattr(hw.fd, TCSAFLUSH, &tattr) == -1) {
+		if (tcsetattr(drv.fd, TCSAFLUSH, &tattr) == -1) {
 			LOGPRINTF(1, "bte_connect: tcsetattr() failed");
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
-		if (!tty_setbaud(hw.fd, 115200)) {
-			LOGPRINTF(1, "bte_connect: could not set baud rate %s", hw.device);
+		if (!tty_setbaud(drv.fd, 115200)) {
+			LOGPRINTF(1, "bte_connect: could not set baud rate %s", drv.device);
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
@@ -177,9 +177,9 @@ int bte_connect(void)
 
 	//try block failed
 	io_failed = 1;
-	if (hw.fd >= 0)
-		close(hw.fd);
-	if ((hw.fd = open("/dev/zero", O_RDONLY)) == -1) {
+	if (drv.fd >= 0)
+		close(drv.fd);
+	if ((drv.fd = open("/dev/zero", O_RDONLY)) == -1) {
 		logprintf(LOG_ERR, "could not open /dev/zero/");
 		logperror(LOG_ERR, "bte_init()");
 	}
@@ -189,9 +189,9 @@ int bte_connect(void)
 
 int bte_init(void)
 {
-	LOGPRINTF(3, "bte_init called, device %s", hw.device);
+	LOGPRINTF(3, "bte_init called, device %s", drv.device);
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "bte_init: could not create lock file");
 		return 0;
 	}
@@ -205,7 +205,7 @@ int bte_deinit(void)
 {
 	// stop events forwarding
 	bte_sendcmd("+CMER=0,0,0,0,0", 0);
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 	LOGPRINTF(1, "bte_deinit: OK");
 	return (1);
@@ -223,7 +223,7 @@ char *bte_readline()
 	if (io_failed && !bte_connect())	// try to reestablish connection
 		return (NULL);
 
-	if ((ok = read(hw.fd, &c, 1)) <= 0) {
+	if ((ok = read(drv.fd, &c, 1)) <= 0) {
 		io_failed = 1;
 		logprintf(LOG_ERR, "bte_readline: read failed - %d: %s", errno, strerror(errno));
 		return (NULL);
@@ -291,7 +291,7 @@ char *bte_automaton()
 		case BTE_JUMP_ASIDE:
 			// release device temporarily; chance for a
 			// user to switch off mobile's bluetooth (t630)
-			close(hw.fd);
+			close(drv.fd);
 			LOGPRINTF(3, "bte_automaton: device closed; sleeping");
 			sleep(30);
 			break;

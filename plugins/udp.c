@@ -38,17 +38,17 @@ int udp_init()
 	int port;
 	struct sockaddr_in addr;
 
-	logprintf(LOG_INFO, "Initializing UDP: %s", hw.device);
+	logprintf(LOG_INFO, "Initializing UDP: %s", drv.device);
 
 	init_rec_buffer();
 
-	port = atoi(hw.device);
+	port = atoi(drv.device);
 	if (port == 0) {
-		logprintf(LOG_ERR, "invalid port: %s", hw.device);
+		logprintf(LOG_ERR, "invalid port: %s", drv.device);
 		return 0;
 	}
 
-	/* hw.fd needs to point somewhere when we have extra data */
+	/* drv.fd needs to point somewhere when we have extra data */
 	if ((zerofd = open("/dev/zero", O_RDONLY)) < 0) {
 		logprintf(LOG_ERR, "can't open /dev/zero: %s", strerror(errno));
 		return 0;
@@ -73,7 +73,7 @@ int udp_init()
 
 	logprintf(LOG_INFO, "Listening on port %d/udp", port);
 
-	hw.fd = sockfd;
+	drv.fd = sockfd;
 
 	return (1);
 }
@@ -82,7 +82,7 @@ int udp_deinit(void)
 {
 	close(sockfd);
 	close(zerofd);
-	hw.fd = -1;
+	drv.fd = -1;
 	return (1);
 }
 
@@ -103,7 +103,7 @@ lirc_t udp_readdata(lirc_t timeout)
 	u_int32_t tmp;
 
 	/* Assume buffer is empty; LIRC should select on the socket */
-	hw.fd = sockfd;
+	drv.fd = sockfd;
 
 	/* If buffer is empty, get data into it */
 	if ((bufptr + 2) > buflen) {
@@ -138,7 +138,7 @@ lirc_t udp_readdata(lirc_t timeout)
 
 	/* If our buffer still has data, give LIRC /dev/zero to select on */
 	if ((bufptr + 2) <= buflen)
-		hw.fd = zerofd;
+		drv.fd = zerofd;
 
 	return (data);
 }

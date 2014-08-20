@@ -80,7 +80,7 @@ const struct driver* hardwares[] = { &hw_creative_infracd, (const struct hardwar
 
 
 /*
- opened /dev/sg<x>. I'm not using hw.fd for reasons of lirc design
+ opened /dev/sg<x>. I'm not using drv.fd for reasons of lirc design
 */
 static int int_fd = 0;
 
@@ -213,14 +213,14 @@ int init_device()
 	int fd;
 
 	/* user overriding autoprobing */
-	if (hw.device) {
-		fd = open(hw.device, O_RDWR);
+	if (drv.device) {
+		fd = open(drv.device, O_RDWR);
 		if (fd < 0) {
-			LOGPRINTF(1, "Init: open of %s failed", hw.device);
+			LOGPRINTF(1, "Init: open of %s failed", drv.device);
 			return 0;
 		}
 		/* open ok, test device */
-		if (is_my_device(fd, hw.device)) {
+		if (is_my_device(fd, drv.device)) {
 			return fd;
 		}
 		return 0;
@@ -234,7 +234,7 @@ int init_device()
 		}
 		/* open ok, test device */
 		if (is_my_device(fd, dev_name)) {
-			hw.device = dev_name;
+			drv.device = dev_name;
 			return fd;
 		}
 	}
@@ -255,13 +255,13 @@ int creative_infracd_init(void)
 		   command. So, make lircd think that device always
 		   has data, and make polling loops myself
 		 */
-		hw.fd = open("/dev/null", O_RDONLY);
-		if (hw.fd == -1) {
+		drv.fd = open("/dev/null", O_RDONLY);
+		if (drv.fd == -1) {
 			close(fd);
 			return 0;
 		}
 		int_fd = fd;
-		LOGPRINTF(1, "Probing: %s is my device", hw.device);
+		LOGPRINTF(1, "Probing: %s is my device", drv.device);
 		return 1;
 	}
 
@@ -286,7 +286,7 @@ int creative_infracd_init(void)
 
 int creative_infracd_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	close(int_fd);
 	return 1;
 }

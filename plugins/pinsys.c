@@ -178,19 +178,19 @@ int pinsys_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_
 
 int pinsys_init(void)
 {
-	signal_length = (hw.code_length + (hw.code_length / BITS_COUNT) * 2) * 1000000 / 1200;
+	signal_length = (drv.code_length + (drv.code_length / BITS_COUNT) * 2) * 1000000 / 1200;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
 		return (0);
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		int detected;
 		/* last character gets overwritten */
 		char auto_lirc_device[] = "/dev/ttyS_";
 
 		tty_delete_lock();
-		logprintf(LOG_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", hw.device);
+		logprintf(LOG_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
 		logperror(LOG_WARNING, "pinsys_init()");
 		/* it can also mean you compiled serial support as a
 		   module and it isn't inserted, but that's unlikely
@@ -205,28 +205,28 @@ int pinsys_init(void)
 		} else {	/* detected */
 
 			auto_lirc_device[9] = '0' + detected;
-			hw.device = auto_lirc_device;
-			if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+			drv.device = auto_lirc_device;
+			if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 				/* unlikely, but hey. */
-				logprintf(LOG_ERR, "couldn't open autodetected device \"%s\"", hw.device);
+				logprintf(LOG_ERR, "couldn't open autodetected device \"%s\"", drv.device);
 				logperror(LOG_ERR, "pinsys_init()");
 				tty_delete_lock();
 				return (0);
 			}
 		}
 	}
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
 		pinsys_deinit();
 		return (0);
 	}
-	if (!tty_setbaud(hw.fd, 1200)) {
+	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LOG_ERR, "could not set baud rate");
 		pinsys_deinit();
 		return (0);
 	}
 	/* set RTS, clear DTR */
-	if (!tty_set(hw.fd, 1, 0) || !tty_clear(hw.fd, 0, 1)) {
+	if (!tty_set(drv.fd, 1, 0) || !tty_clear(drv.fd, 0, 1)) {
 		logprintf(LOG_ERR, "could not set modem lines (DTR/RTS)");
 		pinsys_deinit();
 		return (0);
@@ -237,7 +237,7 @@ int pinsys_init(void)
 	   byte. Problem is, flushing doesn't fix it. It's not fatal,
 	   it's an indication that it gets fixed.  still... */
 
-	if (tcflush(hw.fd, TCIFLUSH) < 0) {
+	if (tcflush(drv.fd, TCIFLUSH) < 0) {
 		logprintf(LOG_ERR, "could not flush input buffer");
 		pinsys_deinit();
 		return (0);
@@ -247,7 +247,7 @@ int pinsys_init(void)
 
 int pinsys_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 	return (1);
 }
@@ -285,12 +285,12 @@ char *pinsys_rec(struct ir_remote *remotes)
 			if (!waitfordata(20000)) {
 				LOGPRINTF(0, "timeout reading byte %d", i);
 				/* likely to be !=3 bytes, so flush. */
-				tcflush(hw.fd, TCIFLUSH);
+				tcflush(drv.fd, TCIFLUSH);
 				return (NULL);
 			}
 		}
 
-		if (read(hw.fd, &b[i], 1) != 1) {
+		if (read(drv.fd, &b[i], 1) != 1) {
 			logprintf(LOG_ERR, "reading of byte %d failed", i);
 			logperror(LOG_ERR, NULL);
 			return (NULL);

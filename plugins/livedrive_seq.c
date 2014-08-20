@@ -37,12 +37,12 @@ char *livedrive_rec_seq(struct ir_remote *remotes)
 	/* poll for system exclusive status byte so we don't try to
 	   record other midi events */
 	do {
-		read(hw.fd, &seq, sizeof(seq));
+		read(drv.fd, &seq, sizeof(seq));
 	}
 	while (seq.data != SYSEX);
 
 	for (i = 0; i < sizeof(midi); i++) {
-		read(hw.fd, &seq, sizeof(seq));
+		read(drv.fd, &seq, sizeof(seq));
 		if (midi.dev == NONREMOTE && i == 4)	/* skip 2 missing filler bytes for audigy2 non-infrared messages */
 			i += 2;
 		*(bytep + i) = seq.data;

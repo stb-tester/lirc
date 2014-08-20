@@ -247,14 +247,14 @@ int main(int argc, char **argv)
 		}
 	} else {
 		if (have_device)
-			hw.device = device;
-		if (!hw.init_func()) {
+			drv.device = device;
+		if (!drv.init_func()) {
 			return EXIT_FAILURE;
 		}
-		fd = hw.fd;	/* please compiler */
-		mode = hw.rec_mode;
+		fd = drv.fd;	/* please compiler */
+		mode = drv.rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
-			if (strcmp(hw.name, "default") == 0) {
+			if (strcmp(drv.name, "default") == 0) {
 				printf("Please use the --raw option to access "
 				       "the device directly instead through\n" "the abstraction layer.\n");
 			} else {

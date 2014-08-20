@@ -180,14 +180,14 @@ int accent_init(void)
 
 	// Calculate the time length of a remote signal (in microseconds):
 	// (bits + total_stop_bits) * 1000000 / bitrate
-	signal_length = (hw.code_length + (hw.code_length / 8)) * 1000000 / ACCENT_BAUD_RATE;
+	signal_length = (drv.code_length + (drv.code_length / 8)) * 1000000 / ACCENT_BAUD_RATE;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "Could not create the lock file");
 		LOGPRINTF(LOG_EMERG, "Could not create the lock file");
 		return (0);
 	}
-	if ((hw.fd = accent_open_serial_port(hw.device)) < 0) {
+	if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
 		logprintf(LOG_ERR, "Could not open the serial port");
 		LOGPRINTF(LOG_EMERG, "Could not open the serial port");
 		accent_deinit();
@@ -202,7 +202,7 @@ int accent_init(void)
 int accent_deinit(void)
 {
 	LOGPRINTF(1, "Entering accent_deinit()");
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 	return (1);
 }
@@ -244,7 +244,7 @@ char *accent_rec(struct ir_remote *remotes)
 			}
 		}
 		// Some data available to read.
-		if (read(hw.fd, &b[i], 1) == -1) {
+		if (read(drv.fd, &b[i], 1) == -1) {
 			logprintf(LOG_ERR, "read() failed at byte %d", i);
 			logperror(LOG_ERR, "read() failed");
 			return (NULL);
@@ -266,7 +266,7 @@ char *accent_rec(struct ir_remote *remotes)
 			// lower than 2 seconds.
 			logprintf(LOG_INFO, "Received repeated key");
 			code = last_code;
-			tcflush(hw.fd, TCIFLUSH);
+			tcflush(drv.fd, TCIFLUSH);
 			m = decode_all(remotes);
 			return (m);
 		} else {
@@ -315,7 +315,7 @@ char *accent_rec(struct ir_remote *remotes)
 		LOGPRINTF(LOG_INFO, "sizeof(code) = %d", sizeof(code));
 		logprintf(LOG_INFO, "Received code -> 0x%016llx", code);
 		last_code = code;
-		tcflush(hw.fd, TCIFLUSH);
+		tcflush(drv.fd, TCIFLUSH);
 		m = decode_all(remotes);
 		return (m);
 	}
@@ -331,8 +331,8 @@ char *accent_rec(struct ir_remote *remotes)
 		if (j == ACCENT_MAX_READ_BYTES) {
 			// All the received bytes are zeroes, without gaps.
 			logprintf(LOG_WARNING, "Receiver jam! Reopening the serial port");
-			close(hw.fd);
-			if ((hw.fd = accent_open_serial_port(hw.device)) < 0) {
+			close(drv.fd);
+			if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
 				logprintf(LOG_ERR, "Could not reopen the serial port");
 				raise(SIGTERM);
 			}

@@ -99,10 +99,10 @@ int default_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-	ret = read(hw.fd, &data, sizeof(data));
+	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
 		logprintf(LOG_ERR, "error reading from %s (ret %d, expected %d)",
-			  hw.device, ret, sizeof(data));
+			  drv.device, ret, sizeof(data));
 		logperror(LOG_ERR, NULL);
 		default_deinit();
 
@@ -113,7 +113,7 @@ int default_readdata(lirc_t timeout)
 		static int data_warning = 1;
 
 		if (data_warning) {
-			logprintf(LOG_WARNING, "read invalid data from device %s", hw.device);
+			logprintf(LOG_WARNING, "read invalid data from device %s", drv.device);
 			data_warning = 0;
 		}
 		data = 1;
@@ -134,8 +134,8 @@ int default_init()
 	init_rec_buffer();
 	init_send_buffer();
 
-	if (stat(hw.device, &s) == -1) {
-		logprintf(LOG_ERR, "could not get file information for %s", hw.device);
+	if (stat(drv.device, &s) == -1) {
+		logprintf(LOG_ERR, "could not get file information for %s", drv.device);
 		logperror(LOG_ERR, "default_init()");
 		return (0);
 	}
@@ -144,78 +144,78 @@ int default_init()
 	if (S_ISSOCK(s.st_mode)) {
 		struct sockaddr_un addr;
 		addr.sun_family = AF_UNIX;
-		strncpy(addr.sun_path, hw.device, sizeof(addr.sun_path) - 1);
+		strncpy(addr.sun_path, drv.device, sizeof(addr.sun_path) - 1);
 
-		hw.fd = socket(AF_UNIX, SOCK_STREAM, 0);
-		if (hw.fd == -1) {
+		drv.fd = socket(AF_UNIX, SOCK_STREAM, 0);
+		if (drv.fd == -1) {
 			logprintf(LOG_ERR, "could not create socket");
 			logperror(LOG_ERR, "default_init()");
 			return (0);
 		}
 
-		if (connect(hw.fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-			logprintf(LOG_ERR, "could not connect to unix socket %s", hw.device);
+		if (connect(drv.fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+			logprintf(LOG_ERR, "could not connect to unix socket %s", drv.device);
 			logperror(LOG_ERR, "default_init()");
 			default_deinit();
-			close(hw.fd);
+			close(drv.fd);
 			return (0);
 		}
 
 		LOGPRINTF(1, "using unix socket lirc device");
-		hw.features = LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE;
-		hw.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
-		hw.send_mode = LIRC_MODE_PULSE;
+		drv.features = LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE;
+		drv.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
+		drv.send_mode = LIRC_MODE_PULSE;
 		return (1);
 	}
 
-	if ((hw.fd = open(hw.device, O_RDWR)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "default_init()");
 		return (0);
 	}
 	if (S_ISFIFO(s.st_mode)) {
 		LOGPRINTF(1, "using defaults for the Irman");
-		hw.features = LIRC_CAN_REC_MODE2;
-		hw.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
+		drv.features = LIRC_CAN_REC_MODE2;
+		drv.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
 		return (1);
 	} else if (!S_ISCHR(s.st_mode)) {
 		default_deinit();
-		logprintf(LOG_ERR, "%s is not a character device!!!", hw.device);
+		logprintf(LOG_ERR, "%s is not a character device!!!", drv.device);
 		logperror(LOG_ERR, "something went wrong during installation");
 		return (0);
-	} else if (default_ioctl(LIRC_GET_FEATURES, &hw.features) == -1) {
+	} else if (default_ioctl(LIRC_GET_FEATURES, &drv.features) == -1) {
 		logprintf(LOG_ERR, "could not get hardware features");
 		logprintf(LOG_ERR, "this device driver does not support the LIRC ioctl interface");
 		if (major(s.st_rdev) == 13) {
 			logprintf(LOG_ERR, "did you mean to use the devinput driver instead of the %s driver?",
-				  hw.name);
+				  drv.name);
 		} else {
-			logprintf(LOG_ERR, "major number of %s is %lu", hw.device, (__u32) major(s.st_rdev));
+			logprintf(LOG_ERR, "major number of %s is %lu", drv.device, (__u32) major(s.st_rdev));
 			logprintf(LOG_ERR, "make sure %s is a LIRC device and use a current version of the driver",
-				  hw.device);
+				  drv.device);
 		}
 		default_deinit();
 		return (0);
 	}
 	else {
-		if (!(LIRC_CAN_SEND(hw.features) || LIRC_CAN_REC(hw.features))) {
+		if (!(LIRC_CAN_SEND(drv.features) || LIRC_CAN_REC(drv.features))) {
 			LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
 		}
-		if (LIRC_CAN_SEND(hw.features) && LIRC_CAN_REC(hw.features)) {
+		if (LIRC_CAN_SEND(drv.features) && LIRC_CAN_REC(drv.features)) {
 			LOGPRINTF(1, "driver supports both sending and receiving");
-		} else if (LIRC_CAN_SEND(hw.features)) {
+		} else if (LIRC_CAN_SEND(drv.features)) {
 			LOGPRINTF(1, "driver supports sending");
-		} else if (LIRC_CAN_REC(hw.features)) {
+		} else if (LIRC_CAN_REC(drv.features)) {
 			LOGPRINTF(1, "driver supports receiving");
 		}
 	}
 
 	/* set send/receive method */
-	hw.send_mode = 0;
-	if (LIRC_CAN_SEND(hw.features)) {
+	drv.send_mode = 0;
+	if (LIRC_CAN_SEND(drv.features)) {
 		for (i = 0; supported_send_modes[i] != 0; i++) {
-			if (LIRC_CAN_SEND(hw.features) == supported_send_modes[i]) {
-				hw.send_mode = LIRC_SEND2MODE(supported_send_modes[i]);
+			if (LIRC_CAN_SEND(drv.features) == supported_send_modes[i]) {
+				drv.send_mode = LIRC_SEND2MODE(supported_send_modes[i]);
 				break;
 			}
 		}
@@ -223,11 +223,11 @@ int default_init()
 			logprintf(LOG_NOTICE, "the send method of the driver is not yet supported by lircd");
 		}
 	}
-	hw.rec_mode = 0;
-	if (LIRC_CAN_REC(hw.features)) {
+	drv.rec_mode = 0;
+	if (LIRC_CAN_REC(drv.features)) {
 		for (i = 0; supported_rec_modes[i] != 0; i++) {
-			if (LIRC_CAN_REC(hw.features) == supported_rec_modes[i]) {
-				hw.rec_mode = LIRC_REC2MODE(supported_rec_modes[i]);
+			if (LIRC_CAN_REC(drv.features) == supported_rec_modes[i]) {
+				drv.rec_mode = LIRC_REC2MODE(supported_rec_modes[i]);
 				break;
 			}
 		}
@@ -235,28 +235,28 @@ int default_init()
 			logprintf(LOG_NOTICE, "the receive method of the driver is not yet supported by lircd");
 		}
 	}
-	if (hw.rec_mode == LIRC_MODE_MODE2) {
+	if (drv.rec_mode == LIRC_MODE_MODE2) {
 		/* get resolution */
-		hw.resolution = 0;
-		if ((hw.features & LIRC_CAN_GET_REC_RESOLUTION)
-		    && (default_ioctl(LIRC_GET_REC_RESOLUTION, &hw.resolution) != -1)) {
-			LOGPRINTF(1, "resolution of receiver: %d", hw.resolution);
+		drv.resolution = 0;
+		if ((drv.features & LIRC_CAN_GET_REC_RESOLUTION)
+		    && (default_ioctl(LIRC_GET_REC_RESOLUTION, &drv.resolution) != -1)) {
+			LOGPRINTF(1, "resolution of receiver: %d", drv.resolution);
 		}
 
-	} else if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
-		if (default_ioctl(LIRC_GET_LENGTH, (void*) &hw.code_length) == -1) {
+	} else if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
+		if (default_ioctl(LIRC_GET_LENGTH, (void*) &drv.code_length) == -1) {
 			logprintf(LOG_ERR, "could not get code length");
 			logperror(LOG_ERR, "default_init()");
 			default_deinit();
 			return (0);
 		}
-		if (hw.code_length > sizeof(ir_code) * CHAR_BIT) {
-			logprintf(LOG_ERR, "lircd can not handle %lu bit codes", hw.code_length);
+		if (drv.code_length > sizeof(ir_code) * CHAR_BIT) {
+			logprintf(LOG_ERR, "lircd can not handle %lu bit codes", drv.code_length);
 			default_deinit();
 			return (0);
 		}
 	}
-	if (!(hw.send_mode || hw.rec_mode)) {
+	if (!(drv.send_mode || drv.rec_mode)) {
 		default_deinit();
 		return (0);
 	}
@@ -265,9 +265,9 @@ int default_init()
 
 int default_deinit(void)
 {
-	if (hw.fd != -1) {
-		close(hw.fd);
-		hw.fd = -1;
+	if (drv.fd != -1) {
+		close(drv.fd);
+		drv.fd = -1;
 	}
 	return (1);
 }
@@ -284,10 +284,10 @@ static int write_send_buffer(int lirc)
 int default_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	/* things are easy, because we only support one mode */
-	if (hw.send_mode != LIRC_MODE_PULSE)
+	if (drv.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
-	if (hw.features & LIRC_CAN_SET_SEND_CARRIER) {
+	if (drv.features & LIRC_CAN_SET_SEND_CARRIER) {
 		unsigned int freq;
 
 		freq = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
@@ -297,7 +297,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 			return (0);
 		}
 	}
-	if (hw.features & LIRC_CAN_SET_SEND_DUTY_CYCLE) {
+	if (drv.features & LIRC_CAN_SET_SEND_DUTY_CYCLE) {
 		unsigned int duty_cycle;
 
 		duty_cycle = remote->duty_cycle == 0 ? 50 : remote->duty_cycle;
@@ -309,7 +309,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 	}
 	if (!init_send(remote, code))
 		return (0);
-	if (write_send_buffer(hw.fd) == -1) {
+	if (write_send_buffer(drv.fd) == -1) {
 		logprintf(LOG_ERR, "write failed");
 		logperror(LOG_ERR, NULL);
 		return (0);
@@ -328,5 +328,5 @@ char *default_rec(struct ir_remote *remotes)
 
 int default_ioctl(unsigned int cmd, void *arg)
 {
-	return ioctl(hw.fd, cmd, arg);
+	return ioctl(drv.fd, cmd, arg);
 }

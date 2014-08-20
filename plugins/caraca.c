@@ -93,14 +93,14 @@ int caraca_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_
 
 int caraca_init(void)
 {
-	signal_length = hw.code_length * 1000000 / 1200;
-	if ((hw.fd = caraca_open(PACKAGE)) < 0) {
+	signal_length = drv.code_length * 1000000 / 1200;
+	if ((drv.fd = caraca_open(PACKAGE)) < 0) {
 		logprintf(LOG_ERR, "could not open lirc");
 		logperror(LOG_ERR, "caraca_init()");
 		return (0);
 	}
 	/*accept IR-Messages (16 : RC5 key code) for all nodes on the bus */
-	if (set_filter(hw.fd, 0x400, 0x7c0, 0) <= 0) {
+	if (set_filter(drv.fd, 0x400, 0x7c0, 0) <= 0) {
 		logprintf(LOG_ERR, "could not set filter for IR-Messages");
 		caraca_deinit();
 		return (0);
@@ -110,7 +110,7 @@ int caraca_init(void)
 
 int caraca_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	return (1);
 }
 
@@ -122,7 +122,7 @@ char *caraca_rec(struct ir_remote *remotes)
 
 	last = end;
 	gettimeofday(&start, NULL);
-	i = read(hw.fd, msg, NUMBYTES);
+	i = read(drv.fd, msg, NUMBYTES);
 	gettimeofday(&end, NULL);
 
 	LOGPRINTF(1, "caraca_rec: %s", msg);

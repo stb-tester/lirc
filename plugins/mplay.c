@@ -156,22 +156,22 @@ int mplay_init(void)
 	int result = 1;
 	LOGPRINTF(1, "Entering mplay_init()");
 	/* Creation of a lock file for the port */
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "Could not create the lock file");
 		LOGPRINTF(1, "Could not create the lock file");
 		result = 0;
 	}
 	/* Try to open serial port */
-	else if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	else if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LOG_ERR, "Could not open the serial port");
 		LOGPRINTF(1, "Could not open the serial port");
 		mplay_deinit();
 		result = 0;
 	}
 	/* Serial port configuration */
-	else if (!tty_reset(hw.fd) || !tty_setbaud(hw.fd, MPLAY_BAUD_RATE)) {
-		logprintf(LOG_ERR, "could not configure the serial port for '%s'", hw.device);
-		LOGPRINTF(1, "could not configure the serial port for '%s'", hw.device);
+	else if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, MPLAY_BAUD_RATE)) {
+		logprintf(LOG_ERR, "could not configure the serial port for '%s'", drv.device);
+		LOGPRINTF(1, "could not configure the serial port for '%s'", drv.device);
 		mplay_deinit();
 	}
 	return result;
@@ -186,7 +186,7 @@ int mplay2_init(void)
 
 	LOGPRINTF(1, "Entering mplay_init()");
 	/* Creation of a lock file for the port */
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "Could not create the lock file");
 		LOGPRINTF(1, "Could not create the lock file");
 		return 0;
@@ -194,7 +194,7 @@ int mplay2_init(void)
 
 	LOGPRINTF(0, "open serial port");
 	/* Try to open serial port (Monueal Moncaso 312 device doesn't like O_NONBLOCK */
-	if ((hw.fd = open(hw.device, O_RDWR | O_NOCTTY)) < 0) {
+	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
 		logprintf(LOG_ERR, "Could not open the serial port");
 		LOGPRINTF(1, "Could not open the serial port");
 		tty_delete_lock();
@@ -202,7 +202,7 @@ int mplay2_init(void)
 	}
 
 	/* Get serial device parameters */
-	if (tcgetattr(hw.fd, &portset) < 0) {
+	if (tcgetattr(drv.fd, &portset) < 0) {
 		logprintf(LOG_ERR, "Could not get serial port attributes");
 		LOGPRINTF(1, "Could not get serial port attributes");
 		mplay_deinit();
@@ -224,21 +224,21 @@ int mplay2_init(void)
 	portset.c_cc[VMIN] = 1;
 	portset.c_cc[VTIME] = 3;
 
-	if (tcsetattr(hw.fd, TCSANOW, &portset) < 0) {
+	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
 		logprintf(LOG_ERR, "Error setting TCSANOW mode of serial device");
 		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
 		mplay_deinit();
 		return 0;
 	}
 
-	len = write(hw.fd, &buf, 1);
+	len = write(drv.fd, &buf, 1);
 	if (len < 0) {
 		LOGPRINTF(LOG_ERR, "couldn't write to device");
 		mplay_deinit();
 		return 0;
 	}
 
-	len = read(hw.fd, &psResponse, 11);
+	len = read(drv.fd, &psResponse, 11);
 	if (len < 0) {
 		LOGPRINTF(1, "No data recieved during reading");
 		mplay_deinit();
@@ -246,7 +246,7 @@ int mplay2_init(void)
 	} else
 		LOGPRINTF(1, "read chars: %s", psResponse);
 
-	if (tcgetattr(hw.fd, &portset) < 0) {
+	if (tcgetattr(drv.fd, &portset) < 0) {
 		logprintf(LOG_ERR, "Could not get serial port attributes");
 		LOGPRINTF(1, "Could not get serial port attributes");
 		mplay_deinit();
@@ -267,7 +267,7 @@ int mplay2_init(void)
 	portset.c_cc[VMIN] = 1;
 	portset.c_cc[VTIME] = 3;
 
-	if (tcsetattr(hw.fd, TCSANOW, &portset) < 0) {
+	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
 		logprintf(LOG_ERR, "Error setting TCSANOW mode of serial device");
 		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
 		mplay_deinit();
@@ -283,9 +283,9 @@ int mplay2_init(void)
 int mplay_deinit(void)
 {
 	LOGPRINTF(1, "Entering mplay_deinit()");
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
-	hw.fd = -1;
+	drv.fd = -1;
 	return (1);
 }
 
@@ -302,7 +302,7 @@ char *mplay_rec(struct ir_remote *remotes)
 	signed int len;
 	struct timeval current_time;
 	LOGPRINTF(1, "Entering mplay_rec()");
-	len = read(hw.fd, &rc_code, 1);
+	len = read(drv.fd, &rc_code, 1);
 	gettimeofday(&current_time, NULL);
 	if (len != 1) {
 		/* Something go wrong during the read, we close the device

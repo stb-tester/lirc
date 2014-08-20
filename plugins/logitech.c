@@ -82,24 +82,24 @@ int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, i
 
 int logitech_init(void)
 {
-	signal_length = hw.code_length * 1000000 / 1200;
+	signal_length = drv.code_length * 1000000 / 1200;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
 		return (0);
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "logitech_init()");
 		tty_delete_lock();
 		return (0);
 	}
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
 		logitech_deinit();
 		return (0);
 	}
-	if (!tty_setbaud(hw.fd, 1200)) {
+	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LOG_ERR, "could not set baud rate");
 		logitech_deinit();
 		return (0);
@@ -109,7 +109,7 @@ int logitech_init(void)
 
 int logitech_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 	return (1);
 }
@@ -135,7 +135,7 @@ char *logitech_rec(struct ir_remote *remotes)
 				return (NULL);
 			}
 		}
-		if (read(hw.fd, &b[i], 1) != 1) {
+		if (read(drv.fd, &b[i], 1) != 1) {
 			logprintf(LOG_ERR, "reading of byte %d failed", i);
 			logperror(LOG_ERR, NULL);
 			return (NULL);

@@ -278,7 +278,7 @@ static int signal_to_int(lirc_t signal)
 static void tx_bytes(unsigned char *b, int n)
 {
 	LOGPRINTF(3, "sending %s", to_byte_string(b, n));
-	write(hw.fd, b, n);
+	write(drv.fd, b, n);
 }				/* tx_bytes */
 
 static void enable_port(unsigned char port)
@@ -342,27 +342,27 @@ int slinke_init(void)
 	int i;
 
 	logprintf(LOG_INFO, "slinke_init");
-	signal_length = hw.code_length * 1000000 / 1200;
+	signal_length = drv.code_length * 1000000 / 1200;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
 		return (0);
 	}
 	/* if */
-	if ((hw.fd = open(hw.device, O_RDWR | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "slinke_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	/* if */
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
 		slinke_deinit();
 		return (0);
 	}
 	/* if */
-	if (!tty_setbaud(hw.fd, 19200)) {
+	if (!tty_setbaud(drv.fd, 19200)) {
 		logprintf(LOG_ERR, "could not set baud rate");
 		slinke_deinit();
 		return (0);
@@ -398,7 +398,7 @@ int slinke_deinit(void)
 {
 	int i;
 
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 
 	if (signal_queue_buf != NULL) {
@@ -783,7 +783,7 @@ char *slinke_rec(struct ir_remote *remotes)
 			return (NULL);
 		}
 		/* if */
-		if (read(hw.fd, &rch, 1) != 1) {
+		if (read(drv.fd, &rch, 1) != 1) {
 			LOGPRINTF(0, "reading of byte %d failed", byteNo);
 			return (NULL);
 		}		/* if */

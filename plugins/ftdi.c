@@ -160,7 +160,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 			goto retry;
 		}
 
-		logprintf(LOG_DEBUG, "opened FTDI device '%s' OK", hw.device);
+		logprintf(LOG_DEBUG, "opened FTDI device '%s' OK", drv.device);
 
 		do {
 			unsigned char buf[RXBUFSZ > TXBUFSZ ? RXBUFSZ : TXBUFSZ];
@@ -217,12 +217,12 @@ static int hwftdi_init()
 
 	char *p;
 
-	logprintf(LOG_INFO, "Initializing FTDI: %s", hw.device);
+	logprintf(LOG_INFO, "Initializing FTDI: %s", drv.device);
 
 	/* Parse the device string, which has the form key=value,
 	 * key=value, ...  This isn't very nice, but it's not a lot
 	 * more complicated than what some of the other drivers do. */
-	p = device_config = strdup(hw.device);
+	p = device_config = strdup(drv.device);
 	while (p) {
 		char *comma, *value;
 
@@ -287,12 +287,12 @@ next:
 		goto fail_tx2main;
 	}
 
-	hw.fd = pipe_rx2main[0];
+	drv.fd = pipe_rx2main[0];
 
-	flags = fcntl(hw.fd, F_GETFL);
+	flags = fcntl(drv.fd, F_GETFL);
 
 	/* make the read end of the pipe non-blocking: */
-	if (fcntl(hw.fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	if (fcntl(drv.fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		logprintf(LOG_ERR, "unable to make pipe read end non-blocking");
 		goto fail;
 	}
@@ -330,7 +330,7 @@ next:
 	return (1);
 
 fail:
-	hw.fd = -1;
+	drv.fd = -1;
 
 	close(pipe_tx2main[0]);
 	close(pipe_tx2main[1]);
@@ -369,8 +369,8 @@ static int hwftdi_deinit(void)
 		child_pid = -1;
 	}
 
-	close(hw.fd);
-	hw.fd = -1;
+	close(drv.fd);
+	drv.fd = -1;
 
 	close(pipe_main2tx[1]);
 	pipe_main2tx[1] = -1;
@@ -399,7 +399,7 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 		return 0;
 	}
 
-	n = read(hw.fd, &res, sizeof res);
+	n = read(drv.fd, &res, sizeof res);
 	if (n != sizeof res) {
 		res = 0;
 	}

@@ -71,7 +71,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 				elapsed = time_elapsed(&rec_buffer.last_signal_time, &current);
 			}
 			if (elapsed < maxusec) {
-				data = hw.readdata(maxusec - elapsed);
+				data = drv.readdata(maxusec - elapsed);
 			}
 			if (!data) {
 				LOGPRINTF(3, "timeout: %u", maxusec);
@@ -105,7 +105,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 }
 
 /**
- * When this function returns, with a non-zero return value, data on the file descriptor hw.fd is available.
+ * When this function returns, with a non-zero return value, data on the file descriptor drv.fd is available.
  * If argument is positive, may wait for that time, otherwise return immediately.
  * @param maxusec timeout in micro seconds
  * @return
@@ -118,17 +118,17 @@ int waitfordata(__u32 maxusec)
 
 	while (1) {
 		FD_ZERO(&fds);
-		FD_SET(hw.fd, &fds);
+		FD_SET(drv.fd, &fds);
 		do {
 			do {
 				if (maxusec > 0) {
 					tv.tv_sec = maxusec / 1000000;
 					tv.tv_usec = maxusec % 1000000;
-					ret = select(hw.fd + 1, &fds, NULL, NULL, &tv);
+					ret = select(drv.fd + 1, &fds, NULL, NULL, &tv);
 					if (ret == 0)
 						return (0);
 				} else {
-					ret = select(hw.fd + 1, &fds, NULL, NULL, NULL);
+					ret = select(drv.fd + 1, &fds, NULL, NULL, NULL);
 				}
 			}
 			while (ret == -1 && errno == EINTR);
@@ -140,7 +140,7 @@ int waitfordata(__u32 maxusec)
 		}
 		while (ret == -1);
 
-		if (FD_ISSET(hw.fd, &fds)) {
+		if (FD_ISSET(drv.fd, &fds)) {
 			/* we will read later */
 			return (1);
 		}
@@ -172,15 +172,15 @@ int clear_rec_buffer(void)
 	int move, i;
 
 	timerclear(&rec_buffer.last_signal_time);
-	if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
+	if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 		unsigned char buffer[sizeof(ir_code)];
 		size_t count;
 
-		count = hw.code_length / CHAR_BIT;
-		if (hw.code_length % CHAR_BIT)
+		count = drv.code_length / CHAR_BIT;
+		if (drv.code_length % CHAR_BIT)
 			count++;
 
-		if (read(hw.fd, buffer, count) != count) {
+		if (read(drv.fd, buffer, count) != count) {
 			logprintf(LOG_ERR, "reading in mode LIRC_MODE_LIRCCODE failed");
 			return (0);
 		}
@@ -197,7 +197,7 @@ int clear_rec_buffer(void)
 			rec_buffer.wptr -= rec_buffer.rptr;
 		} else {
 			rec_buffer.wptr = 0;
-			data = hw.readdata(0);
+			data = drv.readdata(0);
 
 			LOGPRINTF(3, "c%lu", (__u32) data & (PULSE_MASK));
 
@@ -990,7 +990,7 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 	code = pre = post = 0;
 	header = 0;
 
-	if (hw.rec_mode == LIRC_MODE_MODE2 || hw.rec_mode == LIRC_MODE_PULSE || hw.rec_mode == LIRC_MODE_RAW) {
+	if (drv.rec_mode == LIRC_MODE_MODE2 || drv.rec_mode == LIRC_MODE_PULSE || drv.rec_mode == LIRC_MODE_RAW) {
 		rewind_rec_buffer();
 		rec_buffer.is_biphase = is_biphase(remote) ? 1 : 0;
 
@@ -1057,7 +1057,7 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 		struct ir_ncode *codes, *found;
 		int i;
 
-		if (hw.rec_mode == LIRC_MODE_LIRCCODE)
+		if (drv.rec_mode == LIRC_MODE_LIRCCODE)
 			return (0);
 
 		codes = remote->codes;
@@ -1089,12 +1089,12 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 			return (0);
 		code = found->code;
 	} else {
-		if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
+		if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 			lirc_t sum;
 			ir_code decoded = rec_buffer.decoded;
 
 			LOGPRINTF(1, "decoded: %llx", decoded);
-			if (hw.rec_mode == LIRC_MODE_LIRCCODE && hw.code_length != bit_count(remote)) {
+			if (drv.rec_mode == LIRC_MODE_LIRCCODE && drv.code_length != bit_count(remote)) {
 				return (0);
 			}
 
@@ -1176,7 +1176,7 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 		*repeat_flagp = 1;
 	else
 		*repeat_flagp = 0;
-	if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
+	if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 		/* Most TV cards don't pass each signal to the
 		   driver. This heuristic should fix repeat in such
 		   cases. */

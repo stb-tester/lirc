@@ -93,12 +93,12 @@ static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * cod
 
 static int atwf83_init()
 {
-	logprintf(LOG_INFO, "initializing '%s'", hw.device);
-	if ((fd_hidraw = open(hw.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", hw.device);
+	logprintf(LOG_INFO, "initializing '%s'", drv.device);
+	if ((fd_hidraw = open(drv.device, O_RDONLY)) < 0) {
+		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
 		return 0;
 	}
-	hw.fd = fd_hidraw;
+	drv.fd = fd_hidraw;
 
 	/* Create pipe so that events sent by the repeat thread will
 	   trigger main thread */
@@ -107,7 +107,7 @@ static int atwf83_init()
 		close(fd_hidraw);
 		return 0;
 	}
-	hw.fd = fd_pipe[0];
+	drv.fd = fd_pipe[0];
 	/* Create thread to simulate repetitions */
 	if (pthread_create(&repeat_thread, NULL, atwf83_repeat, NULL)) {
 		logprintf(LOG_ERR, "Could not create \"repeat thread\"");
@@ -121,7 +121,7 @@ static int atwf83_deinit()
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
 		// Close device if it is open
-		logprintf(LOG_INFO, "closing '%s'", hw.device);
+		logprintf(LOG_INFO, "closing '%s'", drv.device);
 		close(fd_hidraw);
 		fd_hidraw = -1;
 	}
@@ -135,7 +135,7 @@ static int atwf83_deinit()
 		close(fd_pipe[0]);
 		fd_pipe[0] = -1;
 	}
-	hw.fd = -1;
+	drv.fd = -1;
 	return 1;
 }
 
@@ -171,7 +171,7 @@ static void *atwf83_repeat()
 
 			if (rd == -1) {
 				// Error
-				logprintf(LOG_ERR, "(%s) Could not read %s", __FUNCTION__, hw.device);
+				logprintf(LOG_ERR, "(%s) Could not read %s", __FUNCTION__, drv.device);
 				goto exit_loop;
 			}
 			if ((rd == 8 && ev[0] != 0) || (rd == 6 && ev[0] > 2)) {
@@ -226,7 +226,7 @@ static char *atwf83_rec(struct ir_remote *remotes)
 	int rd;
 	last = end;
 	gettimeofday(&start, NULL);
-	rd = read(hw.fd, &ev, sizeof(ev));
+	rd = read(drv.fd, &ev, sizeof(ev));
 
 	if (rd == -1) {
 		// Error

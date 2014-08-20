@@ -458,14 +458,14 @@ static int commandir_init()
 	init_send_buffer();	// LIRC's send
 
 	/* A separate process will be forked to read data from the USB
-	 * receiver and write it to a pipe. hw.fd is set to the readable
+	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
 		logprintf(LOG_ERR, "couldn't open pipe 1");
 		return 0;
 	}
 
-	hw.fd = pipe_fd[0];	// the READ end of the Pipe
+	drv.fd = pipe_fd[0];	// the READ end of the Pipe
 
 	if (pipe(pipe_tochild) != 0) {
 		logprintf(LOG_ERR, "couldn't open pipe 1");
@@ -527,10 +527,10 @@ static int commandir_deinit(void)
 			}
 		}
 
-		if (hw.fd >= 0) {
-			if (close(hw.fd) < 0)
+		if (drv.fd >= 0) {
+			if (close(drv.fd) < 0)
 				logprintf(LOG_ERR, "Error closing pipe");
-			hw.fd = -1;
+			drv.fd = -1;
 		}
 
 		logprintf(LOG_ERR, "commandir_deinit()");
@@ -635,13 +635,13 @@ static lirc_t commandir_readdata(lirc_t timeout)
 	/* Keep trying if we are mode2, but return immediately if we are the others */
 	if (strncmp(progname, "mode2", 5) == 0) {
 		while (code == 0) {
-			if (read(hw.fd, &code, sizeof(lirc_t)) <= 0) {
+			if (read(drv.fd, &code, sizeof(lirc_t)) <= 0) {
 				commandir_deinit();
 				return -1;
 			}
 		}
 	} else {
-		if (read(hw.fd, &code, sizeof(lirc_t)) <= 0) {
+		if (read(drv.fd, &code, sizeof(lirc_t)) <= 0) {
 			commandir_deinit();
 			return -1;
 		}

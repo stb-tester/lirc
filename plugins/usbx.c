@@ -109,19 +109,19 @@ int usbx_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_co
 
 int usbx_init(void)
 {
-	if (!tty_create_lock(hw.device)) {
-		logprintf(LOG_ERR, "could not create lock files for '%s'", hw.device);
+	if (!tty_create_lock(drv.device)) {
+		logprintf(LOG_ERR, "could not create lock files for '%s'", drv.device);
 		return 0;
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		tty_delete_lock();
-		logprintf(LOG_ERR, "Could not open the '%s' device", hw.device);
+		logprintf(LOG_ERR, "Could not open the '%s' device", drv.device);
 		return 0;
 	}
-	LOGPRINTF(1, "device '%s' opened", hw.device);
+	LOGPRINTF(1, "device '%s' opened", drv.device);
 
-	if (!tty_reset(hw.fd) || !tty_setbaud(hw.fd, 300000) || !tty_setrtscts(hw.fd, 1)) {
-		logprintf(LOG_ERR, "could not configure the serial port for '%s'", hw.device);
+	if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, 300000) || !tty_setrtscts(drv.fd, 1)) {
+		logprintf(LOG_ERR, "could not configure the serial port for '%s'", drv.device);
 		usbx_deinit();
 		return 0;
 	}
@@ -131,8 +131,8 @@ int usbx_init(void)
 
 int usbx_deinit(void)
 {
-	close(hw.fd);
-	hw.fd = -1;
+	close(drv.fd);
+	drv.fd = -1;
 	tty_delete_lock();
 	return 1;
 }
@@ -150,7 +150,7 @@ char *usbx_rec(struct ir_remote *remotes)
 				break;
 			}
 		}
-		if (read(hw.fd, &b[i], 1) != 1) {
+		if (read(drv.fd, &b[i], 1) != 1) {
 			LOGPRINTF(LOG_ERR, "reading of byte %d failed.", i);
 			usbx_deinit();
 			return NULL;

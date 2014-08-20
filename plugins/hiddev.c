@@ -207,10 +207,10 @@ const static int mousegrid[9][9] = { {0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 
 
 int hiddev_init()
 {
-	logprintf(LOG_INFO, "initializing '%s'", hw.device);
+	logprintf(LOG_INFO, "initializing '%s'", drv.device);
 
-	if ((hw.fd = open(hw.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", hw.device);
+	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 
@@ -219,10 +219,10 @@ int hiddev_init()
 
 int hiddev_deinit(void)
 {
-	if (hw.fd != -1) {
-		logprintf(LOG_INFO, "closing '%s'", hw.device);
-		close(hw.fd);
-		hw.fd = -1;
+	if (drv.fd != -1) {
+		logprintf(LOG_INFO, "closing '%s'", drv.device);
+		close(drv.fd);
+		drv.fd = -1;
 	}
 	return 1;
 }
@@ -272,9 +272,9 @@ char *hiddev_rec(struct ir_remote *remotes)
 
 	last = end;
 	gettimeofday(&start, NULL);
-	rd = read(hw.fd, &event, sizeof event);
+	rd = read(drv.fd, &event, sizeof event);
 	if (rd != sizeof event) {
-		logprintf(LOG_ERR, "error reading '%s'", hw.device);
+		logprintf(LOG_ERR, "error reading '%s'", drv.device);
 		logperror(LOG_ERR, NULL);
 		hiddev_deinit();
 		return 0;
@@ -307,9 +307,9 @@ char *hiddev_rec(struct ir_remote *remotes)
 			logprintf(LOG_ERR, "timeout reading next event");
 			return (NULL);
 		}
-		rd = read(hw.fd, &event, sizeof event);
+		rd = read(drv.fd, &event, sizeof event);
 		if (rd != sizeof event) {
-			logprintf(LOG_ERR, "error reading '%s'", hw.device);
+			logprintf(LOG_ERR, "error reading '%s'", drv.device);
 			return 0;
 		}
 		pre_code = event.hid;
@@ -371,9 +371,9 @@ char *hiddev_rec(struct ir_remote *remotes)
 				logprintf(LOG_ERR, "timeout reading byte %d", i);
 				return (NULL);
 			}
-			rd = read(hw.fd, &asus_events[i], sizeof event);
+			rd = read(drv.fd, &asus_events[i], sizeof event);
 			if (rd != sizeof event) {
-				logprintf(LOG_ERR, "error reading '%s'", hw.device);
+				logprintf(LOG_ERR, "error reading '%s'", drv.device);
 				return 0;
 			}
 		}
@@ -455,7 +455,7 @@ int sb0540_init()
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
-		if (ioctl(hw.fd, HIDIOCSFLAG, &flags)) {
+		if (ioctl(drv.fd, HIDIOCSFLAG, &flags)) {
 			return 0;
 		}
 	}
@@ -485,9 +485,9 @@ char *sb0540_rec(struct ir_remote *remotes)
 	last = end;
 	gettimeofday(&start, NULL);
 
-	rd = read(hw.fd, &uref, sizeof(uref));
+	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LOG_ERR, "error reading '%s'", hw.device);
+		logprintf(LOG_ERR, "error reading '%s'", drv.device);
 		logperror(LOG_ERR, NULL);
 		hiddev_deinit();
 		return 0;
@@ -511,9 +511,9 @@ char *sb0540_rec(struct ir_remote *remotes)
 		uref.usage_index = 3;	/* which usage entry of field */
 
 		/* fetch the usage code for given indexes */
-		ioctl(hw.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+		ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
 		/* fetch the value from report */
-		ioctl(hw.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+		ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
 		/* now we have the key */
 
 		code = reverse(uref.value, 8);
@@ -555,9 +555,9 @@ char *macmini_rec(struct ir_remote *remotes)
 			logprintf(LOG_ERR, "timeout reading byte %d", i);
 			return (NULL);
 		}
-		rd = read(hw.fd, &ev[i], sizeof(ev[i]));
+		rd = read(drv.fd, &ev[i], sizeof(ev[i]));
 		if (rd != sizeof(ev[i])) {
-			logprintf(LOG_ERR, "error reading '%s'", hw.device);
+			logprintf(LOG_ERR, "error reading '%s'", drv.device);
 			hiddev_deinit();
 			return 0;
 		}
@@ -603,7 +603,7 @@ int samsung_init()
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
-		if (ioctl(hw.fd, HIDIOCSFLAG, &flags)) {
+		if (ioctl(drv.fd, HIDIOCSFLAG, &flags)) {
 			return 0;
 		}
 	}
@@ -631,9 +631,9 @@ char *samsung_rec(struct ir_remote *remotes)
 
 	last = end;
 	gettimeofday(&start, NULL);
-	rd = read(hw.fd, &uref, sizeof(uref));
+	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LOG_ERR, "error reading '%s'", hw.device);
+		logprintf(LOG_ERR, "error reading '%s'", drv.device);
 		logperror(LOG_ERR, NULL);
 		hiddev_deinit();
 		return 0;
@@ -664,9 +664,9 @@ char *samsung_rec(struct ir_remote *remotes)
 				uref.usage_index = 0;
 
 				/* fetch the usage code for given indexes */
-				ioctl(hw.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+				ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
 				/* fetch the value from report */
-				ioctl(hw.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+				ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
 				/* now we have the key */
 
 				main_code = (uref.usage_code & 0xffff0000)
@@ -689,9 +689,9 @@ char *samsung_rec(struct ir_remote *remotes)
 				uref.usage_index = 1;	/* or 7 */
 
 				/* fetch the usage code for given indexes */
-				ioctl(hw.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+				ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
 				/* fetch the value from report */
-				ioctl(hw.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+				ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
 				/* now we have the key */
 
 				main_code = (uref.usage_code & 0xffff0000)
@@ -733,9 +733,9 @@ char *samsung_rec(struct ir_remote *remotes)
 					uref.usage_index = i;
 
 					/* fetch the usage code for given indexes */
-					ioctl(hw.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+					ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
 					/* fetch the value from report */
-					ioctl(hw.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+					ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
 					/* now we have the key byte */
 					tmpval = uref.value & 0xff;	/* 8 bit */
 
@@ -815,7 +815,7 @@ char *sonyir_rec(struct ir_remote *remotes)
 	//   0x02 - 1B
 	//   0x03 - 8B
 	//
-	rd = read(hw.fd, msg, 16);
+	rd = read(drv.fd, msg, 16);
 
 	// Require 6-character report, usage 0x1
 	if ((rd != 6) || (msg[0] != 0x1)) {

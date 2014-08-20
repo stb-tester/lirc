@@ -41,8 +41,8 @@ ir_code pre, code;
 
 int livedrive_init(void)
 {
-	if ((hw.fd = open(hw.device, O_RDONLY, 0)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDONLY, 0)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		return (0);
 	}
 
@@ -51,7 +51,7 @@ int livedrive_init(void)
 
 int livedrive_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	return (1);
 }
 

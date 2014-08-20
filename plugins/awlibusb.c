@@ -134,13 +134,13 @@ static int awlibusb_init()
 	init_rec_buffer();
 
 	/* A separate process will be forked to read data from the USB
-	 * receiver and write it to a pipe. hw.fd is set to the readable
+	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
 		logperror(LOG_ERR, "couldn't open pipe");
 		return 0;
 	}
-	hw.fd = pipe_fd[0];
+	drv.fd = pipe_fd[0];
 
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
@@ -198,10 +198,10 @@ static int awlibusb_deinit()
 		dev_handle = NULL;
 	}
 
-	if (hw.fd >= 0) {
-		if (close(hw.fd) < 0)
+	if (drv.fd >= 0) {
+		if (close(drv.fd) < 0)
 			err = 1;
-		hw.fd = -1;
+		drv.fd = -1;
 	}
 
 	if (child > 1) {

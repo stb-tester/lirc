@@ -147,7 +147,7 @@ struct driver {
     <pre>
 /* Include system includes files as needed */
 
-#include "hardware.h" /* struct driver, extern hardware hw */
+#include "hardware.h" /* struct driver, extern driver drv */
 #include "lirc_log.h" /* logging */
 #include "receive.h"  /* only if receiving */
 #include "transmit.h" /* only if transmitting */
@@ -194,7 +194,7 @@ static char *decode_func(struct ir_remote * remote, ir_code * prep, ir_code * co
 
 static int generic_ioctl(unsigned int cmd, void *arg) {
     /* Do something device specific, e.g.
-       return ioctl(hw.fd, cmd, arg); */
+       return ioctl(drv.fd, cmd, arg); */
     return cmd == 42 ? 1 : 0;
 }
 

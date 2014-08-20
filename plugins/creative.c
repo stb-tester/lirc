@@ -88,22 +88,22 @@ int creative_init(void)
 {
 	signal_length = 108000;
 
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LOG_ERR, "could not create lock files");
 		return (0);
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "creative_init()");
 		tty_delete_lock();
 		return (0);
 	}
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LOG_ERR, "could not reset tty");
 		creative_deinit();
 		return (0);
 	}
-	if (!tty_setbaud(hw.fd, 2400)) {
+	if (!tty_setbaud(drv.fd, 2400)) {
 		logprintf(LOG_ERR, "could not set baud rate");
 		creative_deinit();
 		return (0);
@@ -113,7 +113,7 @@ int creative_init(void)
 
 int creative_deinit(void)
 {
-	close(hw.fd);
+	close(drv.fd);
 	tty_delete_lock();
 	return (1);
 }
@@ -137,7 +137,7 @@ char *creative_rec(struct ir_remote *remotes)
 				return (NULL);
 			}
 		}
-		if (read(hw.fd, &b[i], 1) != 1) {
+		if (read(drv.fd, &b[i], 1) != 1) {
 			logprintf(LOG_ERR, "reading of byte %d failed", i);
 			logperror(LOG_ERR, NULL);
 			return (NULL);

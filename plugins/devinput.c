@@ -347,7 +347,7 @@ static int locate_dev(const char *pattern, enum locate_type type)
 			//ret = !do_match (ioname, pattern);
 			ret = fnmatch(pattern, ioname, 0);
 			if (ret == 0) {
-				hw.device = devname;
+				drv.device = devname;
 				closedir(dir);
 				return 0;
 			}
@@ -361,33 +361,33 @@ static int locate_dev(const char *pattern, enum locate_type type)
 
 int devinput_init()
 {
-	logprintf(LOG_INFO, "initializing '%s'", hw.device);
+	logprintf(LOG_INFO, "initializing '%s'", drv.device);
 
-	if (!strncmp(hw.device, "name=", 5)) {
-		if (locate_dev(hw.device + 5, locate_by_name)) {
-			logprintf(LOG_ERR, "unable to find '%s'", hw.device);
+	if (!strncmp(drv.device, "name=", 5)) {
+		if (locate_dev(drv.device + 5, locate_by_name)) {
+			logprintf(LOG_ERR, "unable to find '%s'", drv.device);
 			return 0;
 		}
-	} else if (!strncmp(hw.device, "phys=", 5)) {
-		if (locate_dev(hw.device + 5, locate_by_phys)) {
-			logprintf(LOG_ERR, "unable to find '%s'", hw.device);
+	} else if (!strncmp(drv.device, "phys=", 5)) {
+		if (locate_dev(drv.device + 5, locate_by_phys)) {
+			logprintf(LOG_ERR, "unable to find '%s'", drv.device);
 			return 0;
 		}
 	}
 
-	if ((hw.fd = open(hw.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", hw.device);
+	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
 		return 0;
 	}
-	if (set_rc_protocol(hw.device) != 0) {
+	if (set_rc_protocol(drv.device) != 0) {
 		logprintf(LOG_INFO, "Cannot configure the rc device for %s",
-			  hw.device);
+			  drv.device);
 	}
 #ifdef EVIOCGRAB
 	exclusive = 1;
-	if (ioctl(hw.fd, EVIOCGRAB, 1) == -1) {
+	if (ioctl(drv.fd, EVIOCGRAB, 1) == -1) {
 		exclusive = 0;
-		logprintf(LOG_WARNING, "can't get exclusive access to events coming from `%s' interface", hw.device);
+		logprintf(LOG_WARNING, "can't get exclusive access to events coming from `%s' interface", drv.device);
 	}
 #endif
 	return 1;
@@ -399,7 +399,7 @@ int devinput_init_fwd()
 		return 0;
 
 	if (exclusive) {
-		uinputfd = setup_uinputfd("(lircd bypass)", hw.fd);
+		uinputfd = setup_uinputfd("(lircd bypass)", drv.fd);
 	}
 
 	return 1;
@@ -407,14 +407,14 @@ int devinput_init_fwd()
 
 int devinput_deinit(void)
 {
-	logprintf(LOG_INFO, "closing '%s'", hw.device);
+	logprintf(LOG_INFO, "closing '%s'", drv.device);
 	if (uinputfd != -1) {
 		ioctl(uinputfd, UI_DEV_DESTROY);
 		close(uinputfd);
 		uinputfd = -1;
 	}
-	close(hw.fd);
-	hw.fd = -1;
+	close(drv.fd);
+	drv.fd = -1;
 	return 1;
 }
 
@@ -464,9 +464,9 @@ char *devinput_rec(struct ir_remote *remotes)
 	last = end;
 	gettimeofday(&start, NULL);
 
-	rd = read(hw.fd, &event, sizeof event);
+	rd = read(drv.fd, &event, sizeof event);
 	if (rd != sizeof event) {
-		logprintf(LOG_ERR, "error reading '%s'", hw.device);
+		logprintf(LOG_ERR, "error reading '%s'", drv.device);
 		if (rd <= 0 && errno != EINTR) {
 			devinput_deinit();
 		}

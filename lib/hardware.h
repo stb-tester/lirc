@@ -101,7 +101,7 @@ struct driver {
 
 };
 
-extern struct driver hw;
+extern struct driver drv;
 
 #ifdef	__cplusplus
 }

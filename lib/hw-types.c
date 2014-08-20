@@ -21,11 +21,11 @@
 #include "lirc_log.h"
 
 /**
- * The global hardware that drivers etc are accessing.
+ * The global driver data that drivers etc are accessing.
  * Defined in hw-types.c.
  * Set by hw_choose_driver().
  */
-struct driver hw;
+struct driver drv;
 
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
@@ -200,7 +200,7 @@ int hw_choose_driver(const char* name)
 	struct driver* found;
 
 	if (name == NULL) {
-		memcpy(&hw, &drv_default, sizeof(struct driver));
+		memcpy(&drv, &drv_default, sizeof(struct driver));
 		return 0;
 	}
 	if (strcasecmp(name, "dev/input") == 0) {
@@ -209,8 +209,8 @@ int hw_choose_driver(const char* name)
 	}
 	found = for_each_driver(match_hw_name, (void*)name);
 	if (found != (struct driver*)NULL){
-		memcpy(&hw, found, sizeof(struct driver));
-		hw.fd = -1;
+		memcpy(&drv, found, sizeof(struct driver));
+		drv.fd = -1;
 		return 0;
 	}
 	return -1;

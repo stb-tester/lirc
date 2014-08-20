@@ -90,7 +90,7 @@ static int init(void)
 	struct pollfd pollfd;
 	int err;
 
-	device = hw.device;
+	device = drv.device;
 	if (!device || !*device) {
 		device = search_device();
 		if (!device) {
@@ -126,14 +126,14 @@ static int init(void)
 		logprintf(LOG_ERR, "invalid number of file descriptors (%d): %s", err, snd_strerror(err));
 		return 0;
 	}
-	hw.fd = pollfd.fd;
+	drv.fd = pollfd.fd;
 	return 1;
 }
 
 static int deinit(void)
 {
 	snd_hwdep_close(hwdep);
-	hw.fd = -1;
+	drv.fd = -1;
 	return 1;
 }
 

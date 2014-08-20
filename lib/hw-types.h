@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 /* Hardware types */
-extern struct driver hw;
+extern struct driver drv;
 int hw_choose_driver(const char* name);
 void hw_print_drivers(FILE*);
 

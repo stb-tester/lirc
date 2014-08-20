@@ -404,8 +404,8 @@ void dosigterm(int sig)
 	}
 	fclose(pidf);
 	(void)unlink(pidfile);
-	if (use_hw() && hw.deinit_func)
-		hw.deinit_func();
+	if (use_hw() && drv.deinit_func)
+		drv.deinit_func();
 	lirc_log_close();
 	signal(sig, SIG_DFL);
 	raise(sig == SIGUSR1 ? SIGTERM: sig);
@@ -512,15 +512,15 @@ static int setup_frequency()
 {
 	__u32 freq;
 
-	if (!(hw.features & LIRC_CAN_SET_REC_CARRIER)) {
+	if (!(drv.features & LIRC_CAN_SET_REC_CARRIER)) {
 		return (1);
 	}
 	if (setup_min_freq == 0 || setup_max_freq == 0) {
 		setup_min_freq = DEFAULT_FREQ;
 		setup_max_freq = DEFAULT_FREQ;
 	}
-	if (hw.features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
-		if (hw.ioctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
+	if (drv.features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
+		if (drv.ioctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
 			logprintf(LOG_ERR, "could not set receive carrier");
 			logperror(LOG_ERR, __FUNCTION__);
 			return (0);
@@ -529,7 +529,7 @@ static int setup_frequency()
 	} else {
 		freq = (setup_min_freq + setup_max_freq) / 2;
 	}
-	if (hw.ioctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
+	if (drv.ioctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
 		logprintf(LOG_ERR, "could not set receive carrier");
 		logperror(LOG_ERR, __FUNCTION__);
 		return (0);
@@ -541,15 +541,15 @@ static int setup_timeout()
 {
 	lirc_t val, min_timeout, max_timeout;
 
-	if (!(hw.features & LIRC_CAN_SET_REC_TIMEOUT)) {
+	if (!(drv.features & LIRC_CAN_SET_REC_TIMEOUT)) {
 		return 1;
 	}
 
 	if (setup_max_space == 0) {
 		return 1;
 	}
-	if (hw.ioctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
-	    || hw.ioctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1) {
+	if (drv.ioctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
+	    || drv.ioctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1) {
 		return 0;
 	}
 	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
@@ -567,13 +567,13 @@ static int setup_timeout()
 		}
 	}
 
-	if (hw.ioctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
+	if (drv.ioctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
 		logprintf(LOG_ERR, "could not set timeout");
 		logperror(LOG_ERR, __FUNCTION__);
 		return 0;
 	} else {
 		__u32 enable = 1;
-		hw.ioctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
+		drv.ioctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
 	}
 	return 1;
 }
@@ -584,14 +584,14 @@ static int setup_filter()
 	lirc_t min_pulse_supported, max_pulse_supported;
 	lirc_t min_space_supported, max_space_supported;
 
-	if (!(hw.features & LIRC_CAN_SET_REC_FILTER)) {
+	if (!(drv.features & LIRC_CAN_SET_REC_FILTER)) {
 		return 1;
 	}
-	if (hw.ioctl_func(LIRC_GET_MIN_FILTER_PULSE,
+	if (drv.ioctl_func(LIRC_GET_MIN_FILTER_PULSE,
 			  &min_pulse_supported) == -1 ||
-	    hw.ioctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
-	    || hw.ioctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
-	    || hw.ioctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
+	    drv.ioctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
+	    || drv.ioctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
+	    || drv.ioctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
 		logprintf(LOG_ERR, "could not get filter range");
 		logperror(LOG_ERR, __FUNCTION__);
 	}
@@ -608,10 +608,10 @@ static int setup_filter()
 		setup_min_space = 0;	/* disable filtering */
 	}
 
-	ret1 = hw.ioctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
-	ret2 = hw.ioctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
+	ret1 = drv.ioctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
+	ret2 = drv.ioctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
 	if (ret1 == -1 || ret2 == -1) {
-		if (hw.
+		if (drv.
 		    ioctl_func(LIRC_SET_REC_FILTER,
 			       setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
 			logprintf(LOG_ERR, "could not set filter");
@@ -626,12 +626,12 @@ static int setup_hardware()
 {
 	int ret = 1;
 
-	if (hw.fd != -1 && hw.ioctl_func) {
-		if ((hw.features & LIRC_CAN_SET_REC_CARRIER) || (hw.features & LIRC_CAN_SET_REC_TIMEOUT)
-		    || (hw.features & LIRC_CAN_SET_REC_FILTER)) {
-			(void)hw.ioctl_func(LIRC_SETUP_START, NULL);
+	if (drv.fd != -1 && drv.ioctl_func) {
+		if ((drv.features & LIRC_CAN_SET_REC_CARRIER) || (drv.features & LIRC_CAN_SET_REC_TIMEOUT)
+		    || (drv.features & LIRC_CAN_SET_REC_FILTER)) {
+			(void)drv.ioctl_func(LIRC_SETUP_START, NULL);
 			ret = setup_frequency() && setup_timeout() && setup_filter();
-			(void)hw.ioctl_func(LIRC_SETUP_END, NULL);
+			(void)drv.ioctl_func(LIRC_SETUP_END, NULL);
 		}
 	}
 	return ret;
@@ -707,8 +707,8 @@ void remove_client(int fd)
 			logprintf(LOG_INFO, "removed client");
 
 			clin--;
-			if (!use_hw() && hw.deinit_func) {
-				hw.deinit_func();
+			if (!use_hw() && drv.deinit_func) {
+				drv.deinit_func();
 			}
 			for (; i < clin; i++) {
 				clis[i] = clis[i + 1];
@@ -757,8 +757,8 @@ void add_client(int sock)
 	}
 	clis[clin] = fd;
 	if (!use_hw()) {
-		if (hw.init_func) {
-			if (!hw.init_func()) {
+		if (drv.init_func) {
+			if (!drv.init_func()) {
 				logprintf(LOG_WARNING, "Failed to initialize hardware");
 				/* Don't exit here, otherwise lirc
 				 * bails out, and lircd exits, making
@@ -1088,8 +1088,8 @@ void dosigalrm(int sig)
 			free(repeat_message);
 			repeat_message = NULL;
 		}
-		if (!use_hw() && hw.deinit_func) {
-			hw.deinit_func();
+		if (!use_hw() && drv.deinit_func) {
+			drv.deinit_func();
 		}
 		return;
 	}
@@ -1114,8 +1114,8 @@ void dosigalrm(int sig)
 		repeat_message = NULL;
 		repeat_fd = -1;
 	}
-	if (!use_hw() && hw.deinit_func) {
-		hw.deinit_func();
+	if (!use_hw() && drv.deinit_func) {
+		drv.deinit_func();
 	}
 }
 
@@ -1348,9 +1348,9 @@ int set_transmitters(int fd, char *message, char *arguments)
 
 	if (arguments == NULL)
 		goto string_error;
-	if (hw.send_mode == 0)
+	if (drv.send_mode == 0)
 		return (send_error(fd, message, "hardware does not support sending\n"));
-	if (hw.ioctl_func == NULL || !(hw.features & LIRC_CAN_SET_TRANSMITTER_MASK)) {
+	if (drv.ioctl_func == NULL || !(drv.features & LIRC_CAN_SET_TRANSMITTER_MASK)) {
 		return (send_error(fd, message, "hardware does not support multiple transmitters\n"));
 	}
 
@@ -1371,7 +1371,7 @@ int set_transmitters(int fd, char *message, char *arguments)
 		channels |= next_tx_hex;
 	} while ((next_arg = strtok(NULL, WHITE_SPACE)) != NULL);
 
-	retval = hw.ioctl_func(LIRC_SET_TRANSMITTER_MASK, &channels);
+	retval = drv.ioctl_func(LIRC_SET_TRANSMITTER_MASK, &channels);
 	if (retval < 0) {
 		return (send_error(fd, message, "error - could not set transmitters\n"));
 	}
@@ -1456,7 +1456,7 @@ int send_core(int fd, char *message, char *arguments, int once)
 	int reps;
 	int err;
 
-	if (hw.send_mode == 0)
+	if (drv.send_mode == 0)
 		return (send_error(fd, message, "hardware does not support sending\n"));
 
 	if (parse_rc(fd, message, arguments, &remote, &code, once ? &reps : NULL, 2, &err) == 0)
@@ -1833,9 +1833,9 @@ static int mywaitfordata(long maxusec)
 				FD_SET(sockinet, &fds);
 				maxfd = max(maxfd, sockinet);
 			}
-			if (use_hw() && hw.rec_mode != 0 && hw.fd != -1) {
-				FD_SET(hw.fd, &fds);
-				maxfd = max(maxfd, hw.fd);
+			if (use_hw() && drv.rec_mode != 0 && drv.fd != -1) {
+				FD_SET(drv.fd, &fds);
+				maxfd = max(maxfd, drv.fd);
 			}
 
 			for (i = 0; i < clin; i++) {
@@ -1877,7 +1877,7 @@ static int mywaitfordata(long maxusec)
 				tv.tv_sec = maxusec / 1000000;
 				tv.tv_usec = maxusec % 1000000;
 			}
-			if (hw.fd == -1 && use_hw()) {
+			if (drv.fd == -1 && use_hw()) {
 				/* try to reconnect */
 				timerclear(&timeout);
 				timeout.tv_sec = 1;
@@ -1946,9 +1946,9 @@ static int mywaitfordata(long maxusec)
 		}
 		while (ret == -1 && errno == EINTR);
 
-		if (hw.fd == -1 && use_hw() && hw.init_func) {
+		if (drv.fd == -1 && use_hw() && drv.init_func) {
 			log_enable(0);
-			hw.init_func();
+			drv.init_func();
 			setup_hardware();
 			log_enable(1);
 		}
@@ -1982,7 +1982,7 @@ static int mywaitfordata(long maxusec)
 			LOGPRINTF(1, "registering inet client");
 			add_client(sockinet);
 		}
-		if (use_hw() && hw.rec_mode != 0 && hw.fd != -1 && FD_ISSET(hw.fd, &fds)) {
+		if (use_hw() && drv.rec_mode != 0 && drv.fd != -1 && FD_ISSET(drv.fd, &fds)) {
 			register_input();
 			/* we will read later */
 			return (1);
@@ -1994,20 +1994,20 @@ void loop()
 {
 	char *message;
 
-	logprintf(LOG_NOTICE, "lircd(%s) ready, using %s", hw.name, lircdfile);
+	logprintf(LOG_NOTICE, "lircd(%s) ready, using %s", drv.name, lircdfile);
 	while (1) {
 		(void)mywaitfordata(0);
-		if (!hw.rec_func)
+		if (!drv.rec_func)
 			continue;
-		message = hw.rec_func(remotes);
+		message = drv.rec_func(remotes);
 
 		if (message != NULL) {
 			const char *remote_name;
 			const char *button_name;
 			int reps;
 
-			if (hw.ioctl_func && (hw.features & LIRC_CAN_NOTIFY_DECODE)) {
-				hw.ioctl_func(LIRC_NOTIFY_DECODE, NULL);
+			if (drv.ioctl_func && (drv.features & LIRC_CAN_NOTIFY_DECODE)) {
+				drv.ioctl_func(LIRC_NOTIFY_DECODE, NULL);
 			}
 
 			get_release_data(&remote_name, &button_name, &reps);
@@ -2286,13 +2286,13 @@ int main(int argc, char **argv)
 	repeat_max = options_getint("lircd:repeat-max");
 	configfile = options_getstring("lircd:configfile");
 	if (device != NULL) {
-		hw.device = device;
+		drv.device = device;
 	}
-	if (strcmp(hw.name, "null") == 0 && peern == 0) {
+	if (strcmp(drv.name, "null") == 0 && peern == 0) {
 		fprintf(stderr, "%s: there's no hardware I can use and no peers are specified\n", progname);
 		return (EXIT_FAILURE);
 	}
-	if (hw.device != NULL && strcmp(hw.device, lircdfile) == 0) {
+	if (drv.device != NULL && strcmp(drv.device, lircdfile) == 0) {
 		fprintf(stderr, "%s: refusing to connect to myself\n", progname);
 		fprintf(stderr, "%s: device and output must not be the same file: %s\n", progname, lircdfile);
 		return (EXIT_FAILURE);
@@ -2335,8 +2335,8 @@ int main(int argc, char **argv)
 		struct ir_remote *r;
 		struct ir_ncode *c;
 
-		if (hw.init_func) {
-			if (!hw.init_func())
+		if (drv.init_func) {
+			if (!drv.init_func())
 				dosigterm(SIGTERM);
 		}
 
@@ -2360,8 +2360,8 @@ int main(int argc, char **argv)
 			r = r->next;
 		}
 		fflush(stdout);
-		if (hw.deinit_func)
-			hw.deinit_func();
+		if (drv.deinit_func)
+			drv.deinit_func();
 	}
 	fprintf(stderr, "Ready.\n");
 	dosigterm(SIGTERM);

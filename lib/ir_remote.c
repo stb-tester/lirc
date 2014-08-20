@@ -614,7 +614,7 @@ char *decode_all(struct ir_remote *remotes)
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
 
-		if (hw.decode_func(remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap, &max_remaining_gap)
+		if (drv.decode_func(remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap, &max_remaining_gap)
 		    && (ncode = get_code(remote, pre, code, post, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
@@ -694,7 +694,7 @@ int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code)
 	}
 #endif
 
-	ret = hw.send_func(remote, code);
+	ret = drv.send_func(remote, code);
 
 	if (ret) {
 		gettimeofday(&remote->last_send, NULL);
