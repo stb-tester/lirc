@@ -28,7 +28,7 @@
 
 const char *usage = "Usage: %s --help | --version | [options] file\n";
 char *prog_name;
-struct hardware hw = {
+struct driver hw = {
 	"/dev/null",		/* default device */
 	-1,			/* fd */
 	0,			/* features */

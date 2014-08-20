@@ -77,7 +77,7 @@ int get_data_length(struct ir_remote *remote, int interactive);
 int get_gap_length(struct ir_remote *remote);
 void fprint_copyright(FILE * fout);
 
-extern struct hardware hw;
+extern struct driver hw;
 extern struct ir_remote *last_remote;
 
 const char *USAGE = "Usage: irrecord [options] [config file]\n" \
@@ -208,7 +208,7 @@ lirc_t emulation_readdata(lirc_t timeout)
 	return data;
 }
 
-struct hardware hw_emulation = {
+struct driver hw_emulation = {
 	"/dev/null",            /* default device */
 	-1,                     /* fd */
 	LIRC_CAN_REC_MODE2,     /* features */
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		if (analyse) {
-			memcpy(&hw, &hw_emulation, sizeof(struct hardware));
+			memcpy(&hw, &hw_emulation, sizeof(struct driver));
 			// hw = hw_emulation;
 			for_each_remote(remotes, analyse_remote);
 			return EXIT_SUCCESS;

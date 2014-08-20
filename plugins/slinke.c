@@ -100,7 +100,7 @@ char *slinke_rec(struct ir_remote *remotes);
 lirc_t slinke_readdata(lirc_t timetout);
 
 
-const struct hardware hw_slinke = {
+const struct driver hw_slinke = {
 	.name		=	"slinke",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_MODE2,
@@ -118,7 +118,7 @@ const struct hardware hw_slinke = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_slinke, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_slinke, (const struct hardware*)NULL };
 
 
 /*****************************************************************************/

@@ -51,7 +51,7 @@ int pcmak_deinit(void);
 char *pcmak_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_pcmak = {
+const struct driver hw_pcmak = {
 	.name		=	"pcmak",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -69,7 +69,7 @@ const struct hardware hw_pcmak = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_pcmak, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_pcmak, (const struct hardware*)NULL };
 
 
 int pcmak_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

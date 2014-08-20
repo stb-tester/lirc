@@ -45,7 +45,7 @@ char *caraca_rec(struct ir_remote *remotes);
 
 
 
-const struct hardware hw_caraca = {
+const struct driver hw_caraca = {
 	.name		=	"caraca"
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -63,7 +63,7 @@ const struct hardware hw_caraca = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_caraca, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_caraca, (const struct hardware*)NULL };
 
 
 int caraca_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

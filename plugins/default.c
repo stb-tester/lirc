@@ -56,7 +56,7 @@ lirc_t default_readdata(lirc_t timeout);
 
 
 
-static const const struct hardware hw_default = {
+static const const struct driver hw_default = {
 	.name		=	"default",
 	.device		=	LIRC_DRIVER_DEVICE,
 	.features	=	0,
@@ -75,7 +75,7 @@ static const const struct hardware hw_default = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_default,  (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_default,  (const struct hardware*)NULL };
 
 
 /**********************************************************************

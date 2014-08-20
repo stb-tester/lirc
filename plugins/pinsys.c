@@ -72,7 +72,7 @@ int pinsys_deinit(void);
 char *pinsys_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_pinsys = {
+const struct driver hw_pinsys = {
 	.name		=	"pinsys",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -91,7 +91,7 @@ const struct hardware hw_pinsys = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_pinsys, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_pinsys, (const struct hardware*)NULL };
 
 
 /**** start of autodetect code ***************************/

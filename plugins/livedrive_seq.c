@@ -65,7 +65,7 @@ char *livedrive_rec_seq(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-struct hardware hw_livedrive_seq = {
+struct driver hw_livedrive_seq = {
 	.name		=	"livedrive_seq",
 	.device		=	"/dev/sequencer",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -83,5 +83,5 @@ struct hardware hw_livedrive_seq = {
 	.driver_version = 	"0.9.2"
 };
 
-struct hardware* hardwares[] = { &hw_livedrive_seq, (struct hardware*)NULL };
+struct driver* hardwares[] = { &hw_livedrive_seq, (struct hardware*)NULL };
 

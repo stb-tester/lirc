@@ -45,7 +45,7 @@ static char *dfc_rec(struct ir_remote *remotes);
 static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 
-const struct hardware hw_dfclibusb = {
+const struct driver hw_dfclibusb = {
 	.name		=	"dfclibusb",
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -63,7 +63,7 @@ const struct hardware hw_dfclibusb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_dfclibusb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_dfclibusb, (const struct hardware*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

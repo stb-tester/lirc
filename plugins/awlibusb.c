@@ -67,7 +67,7 @@ static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
 
 #ifdef AW_MODE_LIRCCODE
-const struct hardware hw_awlibusb = {
+const struct driver hw_awlibusb = {
 	.name		=	"awlibusb",
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -85,7 +85,7 @@ const struct hardware hw_awlibusb = {
 	.driver_version = 	"0.9.2"
 };
 #else
-const struct hardware hw_awlibusb = {
+const struct driver hw_awlibusb = {
 	.name		=	"awlibusb",
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_CODE,
@@ -102,7 +102,7 @@ const struct hardware hw_awlibusb = {
 };
 #endif
 
-const struct hardware* hardwares[] = { &hw_awlibusb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_awlibusb, (const struct hardware*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

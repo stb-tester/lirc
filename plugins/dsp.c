@@ -143,7 +143,7 @@ char *dsp_rec(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-const struct hardware hw_dsp = {
+const struct driver hw_dsp = {
 	.name		=	"dsp",
 	.device		=	"/dev/dsp",
 	.features	=	LIRC_CAN_REC_MODE2,
@@ -162,4 +162,4 @@ const struct hardware hw_dsp = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_dsp, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_dsp, (const struct hardware*)NULL };

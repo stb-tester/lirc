@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-extern const struct hardware* hardwares[];
+extern const struct driver* hardwares[];
 
 #ifdef	__cplusplus
 }

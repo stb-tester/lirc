@@ -125,7 +125,7 @@ static int philipsrf_input(philipsrf_incoming_t * buffer_in);
 static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
 
-const struct hardware hw_srm7500libusb = {
+const struct driver hw_srm7500libusb = {
 	.name		=	"srm7500libusb",
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -143,7 +143,7 @@ const struct hardware hw_srm7500libusb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_srm7500libusb, NULL };
+const struct driver* hardwares[] = { &hw_srm7500libusb, NULL };
 
 typedef struct {
 	u_int16_t vendor;

@@ -63,7 +63,7 @@ static int probe_code = 0;
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Zotac USB iR Receiver */
-const struct hardware hw_zotac = {
+const struct driver hw_zotac = {
 	.name		=	"zotac",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -82,7 +82,7 @@ const struct hardware hw_zotac = {
 };
 #endif
 
-const struct hardware* hardwares[] = {&hw_zotac, (const struct hardware*) NULL };
+const struct driver* hardwares[] = {&hw_zotac, (const struct hardware*) NULL };
 
 static int zotac_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)

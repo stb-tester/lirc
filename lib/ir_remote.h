@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-extern struct hardware hw;
+extern struct driver hw;
 
 static inline ir_code get_ir_code(const struct ir_ncode *ncode,
                                   const struct ir_code_node *node)

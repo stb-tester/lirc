@@ -65,7 +65,7 @@ char *livedrive_rec_midi(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-struct hardware hw_livedrive_midi = {
+struct driver hw_livedrive_midi = {
 	.name		=	"livedrive_midi",
 	.device		=	"/dev/midi",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -83,4 +83,4 @@ struct hardware hw_livedrive_midi = {
 	.driver_version = 	"0.9.2"
 };
 
-struct hardware* hardwares[] = { &hw_livedrive_midi, (struct hardware*)NULL };
+struct driver* hardwares[] = { &hw_livedrive_midi, (struct hardware*)NULL };

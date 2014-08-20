@@ -53,7 +53,7 @@ static struct timeval start, end, last;
 static int repeat_state = RPT_NO;
 
 /* Aureal USB iR Receiver */
-const struct hardware hw_atwf83 = {
+const struct driver hw_atwf83 = {
 	.name		=	"atwf83",
 	.device		=	"/dev/hidraw0",
 	.fd		=	-1,
@@ -72,7 +72,7 @@ const struct hardware hw_atwf83 = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_atwf83, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_atwf83, (const struct hardware*)NULL };
 
 
 static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

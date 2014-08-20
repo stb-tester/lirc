@@ -330,7 +330,7 @@ static lirc_t readdata(lirc_t timeout)
 	return code;
 }
 
-const struct hardware hw_iguanaIR = {
+const struct driver hw_iguanaIR = {
 	.name		=	"iguanaIR",
 	.device		=	"0",
 	.features	=	LIRC_CAN_REC_MODE2 | \
@@ -351,5 +351,5 @@ const struct hardware hw_iguanaIR = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_iguanaIR, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_iguanaIR, (const struct hardware*)NULL };
 

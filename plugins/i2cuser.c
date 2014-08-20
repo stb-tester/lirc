@@ -73,7 +73,7 @@ static int i2cuser_deinit(void);
 static void i2cuser_read_loop(int fd);
 static char *i2cuser_rec(struct ir_remote *remotes);
 
-const struct hardware hw_i2cuser = {
+const struct driver hw_i2cuser = {
 	.name		=	"i2cuser",
 	.device		=	NULL,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -92,7 +92,7 @@ const struct hardware hw_i2cuser = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_i2cuser, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_i2cuser, (const struct hardware*)NULL };
 
 
 /* FD of the i2c device. Since it's not selectable, we give the lircd core a

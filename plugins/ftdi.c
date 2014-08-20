@@ -501,7 +501,7 @@ static int hwftdi_ioctl(unsigned int cmd, void *arg)
 	return res;
 }
 
-const struct hardware hw_ftdi = {
+const struct driver hw_ftdi = {
 	.name		=	"ftdi",
 	.device		=	"",
 	.features	=	LIRC_CAN_REC_MODE2 | \
@@ -521,4 +521,4 @@ const struct hardware hw_ftdi = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_ftdi, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_ftdi, (const struct hardware*)NULL };

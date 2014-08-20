@@ -57,7 +57,7 @@ char *irlink_rec(struct ir_remote *remotes);
 lirc_t irlink_readdata(lirc_t timeout);
 
 
-const struct hardware hw_irlink = {
+const struct driver hw_irlink = {
 	.name		=	"irlink",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_MODE2,
@@ -75,7 +75,7 @@ const struct hardware hw_irlink = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_irlink, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_irlink, (const struct hardware*)NULL };
 
 typedef enum {
 	BLOCK,

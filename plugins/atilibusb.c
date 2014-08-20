@@ -44,7 +44,7 @@ static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
 
-const struct hardware hw_atilibusb = {
+const struct driver hw_atilibusb = {
 	.name		=	"atilibusb",
 	.device		=	NULL,
 	.fd		=	-1,
@@ -63,7 +63,7 @@ const struct hardware hw_atilibusb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_atilibusb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_atilibusb, (const struct hardware*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

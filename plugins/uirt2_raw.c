@@ -70,7 +70,7 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev, struct ir_remote *remote, lir
 #define LIRC_IRTTY "/dev/ttyS0"
 #endif
 
-const struct hardware hw_uirt2_raw = {
+const struct driver hw_uirt2_raw = {
 	.name		=	"uirt2_raw",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
@@ -88,7 +88,7 @@ const struct hardware hw_uirt2_raw = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware hw_usb_uirt_raw = {
+const struct driver hw_usb_uirt_raw = {
 	.name		=	"usb_uirt_raw",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
@@ -107,7 +107,7 @@ const struct hardware hw_usb_uirt_raw = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, NULL };
+const struct driver* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, NULL };
 
 /*
  * queue

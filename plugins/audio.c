@@ -631,7 +631,7 @@ char *audio_rec(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
-const struct hardware hw_audio = {
+const struct driver hw_audio = {
 	.name		=	"audio",
 	.device		=	"",
 	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
@@ -649,4 +649,4 @@ const struct hardware hw_audio = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_audio, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_audio, (const struct hardware*)NULL };

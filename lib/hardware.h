@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-struct hardware {
+struct driver {
 	// Old-style implicit API version 1:
 
 	/** The name of the device as text string. */
@@ -101,7 +101,7 @@ struct hardware {
 
 };
 
-extern struct hardware hw;
+extern struct driver hw;
 
 #ifdef	__cplusplus
 }

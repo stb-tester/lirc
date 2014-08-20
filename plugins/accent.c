@@ -114,7 +114,7 @@ int accent_deinit(void);
 char *accent_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_accent = {
+const struct driver hw_accent = {
 	.name		=	"accent",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -134,7 +134,7 @@ const struct hardware hw_accent = {
 
 };
 
-const struct hardware* hardwares[] = { &hw_accent, (const struct hardware*) NULL};
+const struct driver* hardwares[] = { &hw_accent, (const struct hardware*) NULL};
 
 
 //-------------------------------------------------------------------------

@@ -57,7 +57,7 @@ struct ir_remote *repeat_remote = NULL;
  */
 struct ir_ncode *repeat_code;
 
-extern struct hardware hw;
+extern struct driver hw;
 
 static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
 {

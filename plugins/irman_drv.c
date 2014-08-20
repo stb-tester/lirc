@@ -50,7 +50,7 @@ int irman_deinit(void);
 char *irman_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_irman = {
+const struct driver hw_irman = {
 	.name		=	"irman",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -68,7 +68,7 @@ const struct hardware hw_irman = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_irman, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_irman, (const struct hardware*)NULL };
 
 
 int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

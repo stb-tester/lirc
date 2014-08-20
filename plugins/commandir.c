@@ -373,7 +373,7 @@ struct usb_rx_demod_pulse {
 };
 
 #endif
-const struct hardware hw_commandir = {
+const struct driver hw_commandir = {
 	.name		=	"commandir",
 	.device		=	0,
 	.features	=	LIRC_CAN_SET_SEND_CARRIER | \
@@ -394,7 +394,7 @@ const struct hardware hw_commandir = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_commandir, NULL };
+const struct driver* hardwares[] = { &hw_commandir, NULL };
 
 lirc_t lirc_zero_buffer[2] = { 0, 0 };
 

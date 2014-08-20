@@ -56,7 +56,7 @@ int mouseremote_deinit(void);
 char *mouseremote_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_mouseremote = {
+const struct driver hw_mouseremote = {
 	.name		=	"mouseremote",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -74,7 +74,7 @@ const struct hardware hw_mouseremote = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware hw_mouseremote_ps2 = {
+const struct driver hw_mouseremote_ps2 = {
 	.name		=	"mouseremote_ps2",
 	.device		=	"/dev/psaux",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -92,9 +92,9 @@ const struct hardware hw_mouseremote_ps2 = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_mouseremote,
+const struct driver* hardwares[] = { &hw_mouseremote,
 				       &hw_mouseremote_ps2,
-				       (const struct hardware*)NULL };
+				       (const struct driver*)NULL };
 
 
 int mouseremote_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

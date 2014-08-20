@@ -143,7 +143,7 @@ lirc_t udp_readdata(lirc_t timeout)
 	return (data);
 }
 
-const struct hardware hw_udp = {
+const struct driver hw_udp = {
 	.name		=	"udp",
 	.device		=	"8765",
 	.features	=	LIRC_CAN_REC_MODE2,
@@ -161,4 +161,4 @@ const struct hardware hw_udp = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_udp, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_udp, (const struct hardware*)NULL };

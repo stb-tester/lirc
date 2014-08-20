@@ -166,7 +166,7 @@ static int repeat_fd = -1;
 static char *repeat_message = NULL;
 static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 
-extern struct hardware hw;
+extern struct driver hw;
 
 static const char *configfile = NULL;
 extern char *logfile ;

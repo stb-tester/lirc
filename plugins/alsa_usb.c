@@ -29,7 +29,7 @@ static snd_hwdep_t *hwdep;
 static struct timeval last_time;
 static int repeat_flag;
 
-const struct hardware hw_alsa_usb = {
+const struct driver hw_alsa_usb = {
 	.name		=	"alsa_usb",
 	.device		=	"",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -47,7 +47,7 @@ const struct hardware hw_alsa_usb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_alsa_usb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_alsa_usb, (const struct hardware*)NULL };
 
 
 static const char *search_device(void)

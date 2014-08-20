@@ -51,7 +51,7 @@ int silitek_deinit(void);
 char *silitek_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_silitek = {
+const struct driver hw_silitek = {
 	.name		=	"silitek",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -69,7 +69,7 @@ const struct hardware hw_silitek = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_silitek, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_silitek, (const struct hardware*)NULL };
 
 
 int silitek_read(int fd, unsigned char *data, long timeout)

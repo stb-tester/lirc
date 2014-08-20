@@ -47,7 +47,7 @@ int logitech_init(void);
 int logitech_deinit(void);
 char *logitech_rec(struct ir_remote *remotes);
 
-struct hardware hw_logitech = {
+struct driver hw_logitech = {
 	.name		=	"logitech",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -65,7 +65,7 @@ struct hardware hw_logitech = {
 	.driver_version = 	"0.9.2"
 };
 
-struct hardware* hardwares[] = { &hw_logitech, (struct hardware*)NULL };
+struct driver* hardwares[] = { &hw_logitech, (struct hardware*)NULL };
 
 
 int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

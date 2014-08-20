@@ -58,7 +58,7 @@ char *creative_infracd_rec(struct ir_remote *remotes);
 int test_device_command(int fd);
 
 
-const struct hardware hw_creative_infracd = {
+const struct driver hw_creative_infracd = {
 	.name		=	"creative_infracd",
 	.device		=	0,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -76,7 +76,7 @@ const struct hardware hw_creative_infracd = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_creative_infracd, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_creative_infracd, (const struct hardware*)NULL };
 
 
 /*

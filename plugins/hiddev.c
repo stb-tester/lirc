@@ -42,7 +42,7 @@ static int samsung_init();
 static char *samsung_rec(struct ir_remote *remotes);
 static char *sonyir_rec(struct ir_remote *remotes);
 
-const struct hardware hw_dvico = {
+const struct driver hw_dvico = {
 	.name		=	"dvico",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -77,7 +77,7 @@ enum {
 static int repeat_state = RPT_UNKNOWN;
 
 /* Remotec Mediamaster specific */
-const struct hardware hw_bw6130 = {
+const struct driver hw_bw6130 = {
 	.name		=	"bw6130",
 	.device		=	"/dev/usb/hid/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -93,7 +93,7 @@ const struct hardware hw_bw6130 = {
 	.readdata	=	NULL
 };
 
-const struct hardware hw_asusdh = {
+const struct driver hw_asusdh = {
 	.name		=	"asusdh",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -113,7 +113,7 @@ const struct hardware hw_asusdh = {
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Creative USB IR Receiver (SB0540) */
-const struct hardware hw_sb0540 = {
+const struct driver hw_sb0540 = {
 	.name		=	"sb0540",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -133,7 +133,7 @@ const struct hardware hw_sb0540 = {
 #endif
 
 /* Apple Mac mini USB IR Receiver */
-const struct hardware hw_macmini = {
+const struct driver hw_macmini = {
 	.name		=	"macmini",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -153,7 +153,7 @@ const struct hardware hw_macmini = {
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Samsung USB IR Receiver */
-const struct hardware hw_samsung = {
+const struct driver hw_samsung = {
 	.name		=	"samsung",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -173,7 +173,7 @@ const struct hardware hw_samsung = {
 #endif
 
 /* Sony IR Receiver */
-const struct hardware hw_sonyir = {
+const struct driver hw_sonyir = {
 	.name		=	"sonyir",
 	.device		=	"/dev/usb/hiddev0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -839,7 +839,7 @@ char *sonyir_rec(struct ir_remote *remotes)
 	return decode_all(remotes);
 }
 
-const struct hardware* hardwares[] = { &hw_dvico,
+const struct driver* hardwares[] = { &hw_dvico,
 				       &hw_bw6130,
 				       &hw_asusdh,
 				       &hw_macmini,
@@ -848,4 +848,4 @@ const struct hardware* hardwares[] = { &hw_dvico,
 				       &hw_sb0540,
 				       &hw_samsung,
 #endif
-				       (const struct hardware*)NULL };
+				       (const struct driver*)NULL };

@@ -56,7 +56,7 @@ enum locate_type {
 	locate_by_phys,
 };
 
-const struct hardware hw_devinput = {
+const struct driver hw_devinput = {
 	.name		=	"devinput",
 	.device		=	"/dev/input/event0",
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -75,7 +75,7 @@ const struct hardware hw_devinput = {
 };
 
 
-const struct hardware* hardwares[] = { &hw_devinput, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_devinput, (const struct hardware*)NULL };
 
 static ir_code code;
 static ir_code code_compat;

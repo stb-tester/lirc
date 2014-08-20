@@ -27,7 +27,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
 
-extern struct hardware hw;
+extern struct driver hw;
 extern struct ir_remote *last_remote;
 
 /**

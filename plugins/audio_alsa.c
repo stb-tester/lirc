@@ -520,7 +520,7 @@ char *audio_alsa_rec(struct ir_remote *remotes)
 
 #define audio_alsa_decode receive_decode
 
-const struct hardware hw_audio_alsa = {
+const struct driver hw_audio_alsa = {
 	.name		=	"audio_alsa",
 	.device		=	"hw",
 	.fd		=	-1,
@@ -539,4 +539,4 @@ const struct hardware hw_audio_alsa = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_audio_alsa, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_audio_alsa, (const struct hardware*)NULL };

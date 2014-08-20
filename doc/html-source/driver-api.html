@@ -69,13 +69,13 @@
         visible from outside of the file. The only thing visible from outside is a particular data structure,
         containing some data elements, and some pointers to functions, that in these way effectively are made public API.
         In this way a certain encapsulation is achieved. The data structure will be described next.</p>
-    <h2>The <code>struct hardware</code></h2>
-    <p>The <code>struct hardware</code> is the data structure representing the driver for LIRC.
+    <h2>The <code>struct driver</code></h2>
+    <p>The <code>struct driver</code> is the data structure representing the driver for LIRC.
         It is defined in <code>hardware.h</code> (in directory <code>lib</code>).
 
 
     <pre>
-struct hardware {
+struct driver {
         char *device;
         int fd;
         __u32 features;
@@ -147,7 +147,7 @@ struct hardware {
     <pre>
 /* Include system includes files as needed */
 
-#include "hardware.h" /* struct hardware, extern hardware hw */
+#include "hardware.h" /* struct driver, extern hardware hw */
 #include "lirc_log.h" /* logging */
 #include "receive.h"  /* only if receiving */
 #include "transmit.h" /* only if transmitting */
@@ -202,12 +202,12 @@ static lirc_t *readdata(lirc_t timeout) {
     /* compute and return the next duration in microseconds */
 }
 
-struct hardware my_hardware = {
+struct driver my_hardware = {
    /* see above. */
 }
 
 
-struct hardware* hardwares[] = { &my_hardware, NULL };
+struct driver* hardwares[] = { &my_hardware, NULL };
     </pre>
   </p>
   <h3>Syntax and semantics of the functions</h3>
@@ -249,7 +249,7 @@ struct hardware* hardwares[] = { &my_hardware, NULL };
 <code>char *decode_func(struct ir_remote * remote, ir_code * prep, ir_code * codep, ir_code * postp,
     int *repeat_flag, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)</code>
   <p>For non-LIRC_MODE_LIRCCODE, just call <code>receive_decode</code>,
- or write <code>receive_decode</code> directly in the <code>struct hardware</code>.
+ or write <code>receive_decode</code> directly in the <code>struct driver</code>.
   <h4><code>ioctl_func</code></h4>
   <code>myioctl(unsigned int cmd, void *arg)</code></h4>
       <p>Depending on the particular driver and hardware, additional functionality can be implemented here,

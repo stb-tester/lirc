@@ -79,7 +79,7 @@ static unsigned char pulse_space;	//1=pulse
 static ir_code code;
 
 #define CODE_LENGTH 64
-const struct hardware hw_tira = {
+const struct driver hw_tira = {
 	.name		=	"tira",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_PULSE,
@@ -97,7 +97,7 @@ const struct hardware hw_tira = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware hw_tira_raw = {
+const struct driver hw_tira_raw = {
 	.name		=	"tira_raw",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_MODE2,
@@ -115,7 +115,7 @@ const struct hardware hw_tira_raw = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
+const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
 
 
 int tira_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

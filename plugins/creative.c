@@ -51,7 +51,7 @@ int creative_deinit(void);
 char *creative_rec(struct ir_remote *remotes);
 
 
-const struct hardware hw_creative = {
+const struct driver hw_creative = {
 	.name		=	"creative",
 	.device		=	LIRC_IRTTY,
 	.features	=	LIRC_CAN_REC_LIRCCODE,
@@ -69,7 +69,7 @@ const struct hardware hw_creative = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct hardware* hardwares[] = { &hw_creative, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_creative, (const struct hardware*)NULL };
 
 
 int creative_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
