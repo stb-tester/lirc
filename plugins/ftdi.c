@@ -71,6 +71,7 @@ extern struct ir_remote *repeat_remote;
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
+#if 0
 static lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap)
 {
 	__u32 secs,diff;
@@ -81,6 +82,7 @@ static lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap
 
 	return((lirc_t) (diff<gap ? gap-diff:0));
 }
+#endif
 
 static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 {

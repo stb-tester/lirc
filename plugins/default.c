@@ -244,7 +244,7 @@ int default_init()
 		}
 
 	} else if (hw.rec_mode == LIRC_MODE_LIRCCODE) {
-		if (default_ioctl(LIRC_GET_LENGTH, &hw.code_length) == -1) {
+		if (default_ioctl(LIRC_GET_LENGTH, (void*) &hw.code_length) == -1) {
 			logprintf(LOG_ERR, "could not get code length");
 			logperror(LOG_ERR, "default_init()");
 			default_deinit();

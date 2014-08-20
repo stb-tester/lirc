@@ -377,11 +377,11 @@ var_reset:			/* Reset variables */
 		for (i = 0; i < count; i++) {
 			/* cs == current sample */
 			unsigned char cs, as, sl, sz, xz;
-
+		        short stmp;
 			if (bytes_per_sample == 2) {
-				cs = ((*(short *)
-				       &buff[i * bytes_per_sample * alsa_hw.num_channels +
-					     bytes_per_sample * alsa_hw.channel]) >> 8);
+				stmp = buff[i * bytes_per_sample * alsa_hw.num_channels +
+					     bytes_per_sample * alsa_hw.channel];
+				cs = stmp >> 8;
 				cs ^= 0x80;
 			} else {
 				cs = buff[i];

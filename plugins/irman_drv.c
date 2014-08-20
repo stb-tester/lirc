@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <irman.h>
 
-#include "lirc_driver.h"*
+#include "lirc_driver.h"
 #include "lirc/serial.h"
 
 extern struct ir_remote *repeat_remote, *last_remote;

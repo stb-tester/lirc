@@ -804,9 +804,8 @@ char *samsung_rec(struct ir_remote *remotes)
  */
 char *sonyir_rec(struct ir_remote *remotes)
 {
-	struct hiddev_event ev[4];
+	struct hiddev_event ev;
 	int rd;
-	int i;
 	unsigned char msg[16];
 
 	LOGPRINTF(1, "sonyir_rec");
@@ -830,11 +829,11 @@ char *sonyir_rec(struct ir_remote *remotes)
 	}
 
 	// Construct event
-	ev[i].value = (msg[3] << 16) | (msg[4] << 8) | ((msg[2]&0x7f) << 0);
+	ev.value = (msg[3] << 16) | (msg[4] << 8) | ((msg[2]&0x7f) << 0);
 
 	pre_code_length = 0;
 	pre_code = 0;
-	main_code = ev[0].value;
+	main_code = ev.value;
 	repeat_state = RPT_NO;
 
 	return decode_all(remotes);
