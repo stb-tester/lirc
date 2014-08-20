@@ -21,7 +21,12 @@
 
 dictionary* lirc_options = NULL;
 
+/* Environment variable which if set enables some debug output. */
+static const char* const LIRC_DEBUG_OPTIONS = "LIRC_DEBUG_OPTIONS";
+
 static int depth = 0;
+
+static int options_debug =  -1;
 
 
 void options_set_opt(char* key, char* value)
@@ -85,7 +90,9 @@ void options_load(int argc, char** const argv,
 		lirc_options = dictionary_new(0);
 	}
 	parse_options(argc, argv);
-	if (debug && lirc_options != NULL ) {
+	if (options_debug == -1)
+		options_debug = getenv(LIRC_DEBUG_OPTIONS) != NULL;
+	if (options_debug && lirc_options != NULL ) {
 		fprintf(stderr, "Dumping parsed option values:\n" );
 		ciniparser_dump(lirc_options, stderr);
 	}

@@ -134,6 +134,15 @@ in this file. The location can be changed using the -O/--options-file
 command-line option or using the environment variable LIRC_OPTIONS_PATH.
 The values here are used as defaults for any option not present on
 command line.
+
+.SH ENVIRONMENT
+.TP 4
+.B LIRC_OPTIONS_PATH
+Plugin load path, se DRIVER LOADING
+.TP 4
+.B LIRC_DEBUG_OPTIONS
+If set, enables debugging in early stages when the --debug parameter is
+yet not parsed.
 .SH DAEMONS
 lircd  is a daemon. You should start it in some init script
 depending on your system. Besides the preferred systemd setup which is
