@@ -30,27 +30,26 @@ struct hardware hw;
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
-/**
- * Just local usage  within this file.
- */
 typedef struct hardware* (*hw_guest_func)(struct hardware*, void*);
 
-struct hardware hw_default = {
-	"/dev/null",            /* default device */
-	-1,                     /* fd */
-	0,                      /* features */
-	0,                      /* send_mode */
-	0,                      /* rec_mode */
-	0,                      /* code_length */
-	NULL,                   /* init_func */
-	NULL,                   /* deinit_func */
-	NULL,                   /* send_func */
-	NULL,                   /* rec_func */
-	NULL,                   /* decode_func */
-	NULL,                   /* ioctl_func */
-	NULL,                   /* readdata */
-	"null",                 /* name */
+const struct hardware hw_default = {
+	.name 		= "null",
+	.device		= "/dev/null",
+	.features	= 0,
+	.send_mode	= 0,
+	.rec_mode	= 0,
+	.code_length	= 0,
+	.init_func	= NULL,
+	.deinit_func	= NULL,
+	.send_func	= NULL,
+	.rec_func	= NULL,
+	.decode_func	= NULL,
+	.ioctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2"
 };
+
 
 /**
  * Return true if and only if str ends with ".so".
@@ -63,6 +62,7 @@ static int ends_with_so(const char *str)
 
     return (NULL == dot) ? 0 : strcmp(dot + 1, PLUGIN_FILE_EXTENSION) == 0;
 }
+
 
 /**
  * hw_guest_func which prints name of *hw on file.
@@ -86,6 +86,7 @@ static struct hardware* match_hw_name(struct hardware* hw, void* name)
 		return hw;
 	return (struct hardware*)NULL;
 }
+
 
 static struct hardware*
 visit_plugin(char* path, hw_guest_func func, void* arg)
@@ -150,6 +151,7 @@ for_each_driver_in_dir(const char* dirpath, hw_guest_func func, void* arg)
 	return result;
 }
 
+
 static struct hardware* for_each_driver(hw_guest_func func, void* arg)
 // Apply func(hw, arg) for all drivers found in all plugins.
 {
@@ -175,6 +177,7 @@ static struct hardware* for_each_driver(hw_guest_func func, void* arg)
 	return result;
 }
 
+
 /**
  * @brief Prints all drivers known to the system to the file given as argument.
  * @param file File to print to.
@@ -184,6 +187,7 @@ static struct hardware* for_each_driver(hw_guest_func func, void* arg)
 {
 	for_each_driver(print_hw_name, (void*)file);
 }
+
 
 /**
  * Search for driver, update global hw with driver data if found.
