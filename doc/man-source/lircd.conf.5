@@ -211,6 +211,21 @@ The codes are in raw format.
 Send the header when the signal is repeated even though the remote has a
 special repeat code.
 .PP
+.SH DISCLAIMER
+LIRC was designed to collect IR data and save it in a private, compact,
+yet human readable format with the purpose of being able to re-transmit
+(or re-recognize) these signals. It was not designed with the goal of
+providing a well documented and tested configuration file format that
+could be used e.g., to generate arbitrary IR signals or to convert them
+to other formats. The configuration file should thus not be considered a
+public interface to LIRC.
+.PP
+This manpage should be understood with this in mind. It was authored by
+reading the code of LIRC, and does not constitute an authoritative
+specification of the behavior of LIRC and its configuration file.  Also,
+some less commonly used flags and parameters are not documented.
+
+.PP
 .SH SEE\ ALSO
 .TP 4
 lircd(8)
