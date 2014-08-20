@@ -14,8 +14,8 @@ lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \
+                              drv_admin.c \
                               dump_config.c \
-                              hw-types.c \
                               input_map.c \
                               ir_remote.c \
                               lirc_log.c \
@@ -56,9 +56,9 @@ lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
                               ciniparser.h \
                               dictionary.h \
+                              drv_admin.h \
                               dump_config.h \
                               hardware.h \
-                              hw-types.h \
                               input_map.h \
                               ir_remote.h \
                               ir_remote_types.h \

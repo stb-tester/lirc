@@ -1,8 +1,8 @@
 /**
- *  @file hw-types.h
+ *  @file drv_admin.h
  *  @author Alec Leamas
  *  @date August 2014
- *  @copyright GPL2 or later
+ *  @license GPL2 or later
  *  @brief Routines for dynamic drivers.
  */
 

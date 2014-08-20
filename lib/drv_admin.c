@@ -1,10 +1,10 @@
 /**
- *  @file hw-types.c
+ *  @file drv_admin.c
  *  @author Alec Leamas
  *  @date August 2014
- *  @copyright GPL2 or later
+ *  @license GPL2 or later
  *
- * Routines for dynamic drivers. This file was previously used for other purposes, and should possibly be renamed.
+ * Routines for dynamic drivers.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -16,13 +16,13 @@
 #include <dlfcn.h>
 
 #include "lirc/hardware.h"
-#include "lirc/hw-types.h"
+#include "lirc/drv_admin.h"
 #include "lirc/lirc_options.h"
 #include "lirc_log.h"
 
 /**
  * The global driver data that drivers etc are accessing.
- * Defined in hw-types.c.
+ * Defined in drv_admin.c.
  * Set by hw_choose_driver().
  */
 struct driver drv;

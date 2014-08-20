@@ -15,7 +15,7 @@
 #include "lirc/input_map.h"
 #include "lirc/hardware.h"
 #include "lirc/ir_remote_types.h"
-#include "lirc/hw-types.h"
+#include "lirc/drv_admin.h"
 #include "lirc/ir_remote.h"
 #include "lirc/receive.h"
 #include "lirc/release.h"
