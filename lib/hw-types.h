@@ -14,8 +14,8 @@ extern "C" {
 
 /* Hardware types */
 extern struct hardware hw;
-int hw_choose_driver(char *);
-void hw_print_drivers(FILE *);
+int hw_choose_driver(const char* name);
+void hw_print_drivers(FILE*);
 
 #define PLUGIN_FILE_EXTENSION "so"
 

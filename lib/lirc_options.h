@@ -14,9 +14,9 @@ extern dictionary* lirc_options;
 void options_set_opt(char* key, char* value);
 
 /* Get a [string|int|boolean] option with 0 as default value. */
-char* options_getstring(char* key);
-int options_getint(char* key);
-int options_getboolean(char* key);
+char* options_getstring(const char* const key);
+int options_getint(const char* const key);
+int options_getboolean(const char* const key);
 
 
 /*
@@ -39,6 +39,6 @@ void options_add_defaults(const char* const defaults[]);
  *        path to the configuration file.
  *
  */
-void options_load(int argc, char **argv,
+void options_load(int argc, char** const argv,
 		  const char* options_file,
-		  void (*options_load)(int, char**));
+		  void (*options_load)(int, char** const));

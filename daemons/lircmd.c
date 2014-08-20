@@ -765,7 +765,7 @@ static void lircmd_add_defaults(void)
 }
 
 
-static void lircmd_parse_options(int argc, char** argv)
+static void lircmd_parse_options(int argc,  char** const argv)
 {
 	int c;
 

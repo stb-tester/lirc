@@ -78,7 +78,7 @@ static FILE *lirc_open(const char *file, const char *current_file, char **full_n
 static struct filestack_t *stack_push(struct filestack_t *parent);
 static struct filestack_t *stack_pop(struct filestack_t *entry);
 static void stack_free(struct filestack_t *entry);
-static int lirc_readconfig_only_internal(char *file,
+static int lirc_readconfig_only_internal(const char *file,
 					 struct lirc_config **config,
 					 int (check) (char *s), char **full_name, char **sha_bang);
 static char *lirc_startupmode(struct lirc_config_entry *first);
@@ -117,7 +117,7 @@ static void lirc_perror(const char *s)
 	perror(s);
 }
 
-int lirc_init(char *prog, int verbose)
+int lirc_init(const char *prog, int verbose)
 {
 	struct sockaddr_un addr;
 
@@ -652,7 +652,7 @@ static void stack_free(struct filestack_t *entry)
 	}
 }
 
-int lirc_readconfig(char *file, struct lirc_config **config, int (check) (char *s))
+int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(char *s))
 {
 	struct sockaddr_un addr;
 	int sockfd = -1;
@@ -748,12 +748,12 @@ lirc_readconfig_compat:
 	return 0;
 }
 
-int lirc_readconfig_only(char *file, struct lirc_config **config, int (check) (char *s))
+int lirc_readconfig_only(const char *file, struct lirc_config **config, int (check) (char *s))
 {
 	return lirc_readconfig_only_internal(file, config, check, NULL, NULL);
 }
 
-static int lirc_readconfig_only_internal(char *file,
+static int lirc_readconfig_only_internal(const char *file,
 					 struct lirc_config **config,
 					 int (check) (char *s), char **full_name, char **sha_bang)
 {

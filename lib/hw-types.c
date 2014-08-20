@@ -191,7 +191,7 @@ static struct hardware* for_each_driver(hw_guest_func func, void* arg)
  * @param name
  * @return Returns 0 if found and hw updated, else -1.
  */
-int hw_choose_driver(char* name)
+int hw_choose_driver(const char* name)
 {
 	struct hardware* found;
 

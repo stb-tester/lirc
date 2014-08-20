@@ -32,27 +32,27 @@ void options_set_opt(char* key, char* value)
 }
 
 
-char* options_getstring(char* key)
+char* options_getstring(const char* const key)
 {
 	return ciniparser_getstring(lirc_options, key, 0);
 }
 
 
-int options_getint(char* key)
+int options_getint(const char* const key)
 {
 	return ciniparser_getint(lirc_options, key, 0);
 }
 
 
-int  options_getboolean(char* key)
+int  options_getboolean(const char* const key)
 {
 	return ciniparser_getboolean(lirc_options, key, 0);
 }
 
 
-void options_load(int argc, char** argv,
+void options_load(int argc, char** const argv,
 		  const char* path,
-		  void(*parse_options)(int, char**))
+		  void(*parse_options)(int, char** const))
 {
 	char buff[128];
 

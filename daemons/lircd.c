@@ -2126,7 +2126,7 @@ static void lircd_add_defaults(void)
 }
 
 
-static void lircd_parse_options(int argc, char** argv)
+static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
 	const char* optstring =  "O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"

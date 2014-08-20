@@ -34,6 +34,21 @@
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
 
+
+struct ptr_array {
+	void **ptr;
+	size_t nr_items;
+	size_t chunk_size;
+};
+
+struct void_array {
+	void *ptr;
+	size_t item_size;
+	size_t nr_items;
+	size_t chunk_size;
+};
+
+
 #define LINE_LEN 1024
 #define MAX_INCLUDES 10
 

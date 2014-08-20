@@ -301,7 +301,7 @@ static void add_defaults(void)
 	options_add_defaults(defaults);
 }
 
-static void parse_options(int argc, char** argv)
+static void parse_options(int argc, char** const argv)
 {
 	int c;
 

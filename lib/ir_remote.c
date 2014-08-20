@@ -82,9 +82,9 @@ static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
  * @param min_freq
  * @param max_freq
  */
-void get_frequency_range(struct ir_remote *remotes, unsigned int *min_freq, unsigned int *max_freq)
+void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq, unsigned int *max_freq)
 {
-	struct ir_remote *scan;
+	const struct ir_remote *scan;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	scan = remotes;
@@ -117,10 +117,10 @@ void get_frequency_range(struct ir_remote *remotes, unsigned int *min_freq, unsi
  * @param max_pulse_lengthp
  * @param max_space_lengthp
  */
-void get_filter_parameters(struct ir_remote *remotes, lirc_t * max_gap_lengthp, lirc_t * min_pulse_lengthp,
+void get_filter_parameters(const struct ir_remote *remotes, lirc_t * max_gap_lengthp, lirc_t * min_pulse_lengthp,
 			   lirc_t * min_space_lengthp, lirc_t * max_pulse_lengthp, lirc_t * max_space_lengthp)
 {
-	struct ir_remote *scan = remotes;
+	const struct ir_remote *scan = remotes;
 	lirc_t max_gap_length = 0;
 	lirc_t min_pulse_length = 0, min_space_length = 0;
 	lirc_t max_pulse_length = 0, max_space_length = 0;
@@ -162,7 +162,8 @@ void get_filter_parameters(struct ir_remote *remotes, lirc_t * max_gap_lengthp, 
  * @param remote
  * @return
  */
-struct ir_remote *is_in_remotes(struct ir_remote *remotes, struct ir_remote *remote)
+const struct ir_remote *is_in_remotes(const struct ir_remote *remotes,
+                     		      const struct ir_remote *remote)
 {
 	while (remotes != NULL) {
 		if (remotes == remote) {
@@ -179,15 +180,16 @@ struct ir_remote *is_in_remotes(struct ir_remote *remotes, struct ir_remote *rem
  * @param name
  * @return
  */
-struct ir_remote *get_ir_remote(struct ir_remote *remotes, char *name)
+struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
+                                const char *name)
 {
-	struct ir_remote *all;
+	const struct ir_remote *all;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	all = remotes;
 	while (all) {
 		if (strcasecmp(all->name, name) == 0) {
-			return (all);
+			return (struct ir_remote*) all;
 		}
 		all = all->next;
 	}
@@ -208,7 +210,7 @@ struct ir_remote *get_ir_remote(struct ir_remote *remotes, char *name)
  * @param post
  * @return
  */
-int map_code(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int pre_bits, ir_code pre,
+int map_code(const struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int pre_bits, ir_code pre,
 	     int bits, ir_code code, int post_bits, ir_code post)
 {
 	ir_code all;
@@ -246,7 +248,8 @@ int map_code(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code 
  * @param min_remaining_gapp
  * @param max_remaining_gapp
  */
-void map_gap(struct ir_remote *remote, struct timeval *start, struct timeval *last, lirc_t signal_length,
+void map_gap(const struct ir_remote *remote,
+             const struct timeval *start, const struct timeval *last, lirc_t signal_length,
 	     int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
 	// Time gap (us) between a keypress on the remote control and
@@ -311,14 +314,14 @@ void map_gap(struct ir_remote *remote, struct timeval *start, struct timeval *la
  * @param name
  * @return
  */
-struct ir_ncode *get_code_by_name(struct ir_remote *remote, char *name)
+struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *name)
 {
-	struct ir_ncode *all;
+	const struct ir_ncode *all;
 
 	all = remote->codes;
 	while (all->name != NULL) {
 		if (strcasecmp(all->name, name) == 0) {
-			return (all);
+			return (struct ir_ncode*) all;
 		}
 		all++;
 	}
