@@ -76,7 +76,7 @@ struct driver {
 	*
 	* @deprecated
 	*/
-	int (*const ioctl_func) (unsigned int cmd, void *arg);
+	int (*const drvctl_func) (unsigned int cmd, void *arg);
 
 	/**
 	 * TODO

@@ -79,7 +79,7 @@ const struct driver hw_awlibusb = {
 	.send_func	=	NULL,
 	.rec_func	=	awlibusb_rec,
 	.decode_func	=	receive_decode,
-	.ioctl_func	=	NULL,
+	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2"
@@ -97,7 +97,7 @@ const struct driver hw_awlibusb = {
 	.send_func	=	NULL,
 	.rec_func	=	awlibusb_rec,
 	.decode_func	=	receive_decode,
-	.ioctl_func	=	NULL,
+	.drvctl_func	=	NULL,
 	.readdata	=	NULL
 };
 #endif

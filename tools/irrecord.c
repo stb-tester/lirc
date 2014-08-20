@@ -220,7 +220,7 @@ struct driver hw_emulation = {
 	NULL,                   /* send_func */
 	NULL,                   /* rec_func */
 	NULL,                   /* decode_func */
-	NULL,                   /* ioctl_func */
+	NULL,                   /* drvctl_func */
 	emulation_readdata,
 	"emulation"
 };

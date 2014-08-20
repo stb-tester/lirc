@@ -86,7 +86,7 @@ const struct driver hw_bte = {
 #endif
 	.rec_func	=	bte_rec,
 	.decode_func	=	bte_decode,
-	.ioctl_func	=	NULL,
+	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2"

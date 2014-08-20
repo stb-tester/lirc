@@ -520,7 +520,7 @@ static int setup_frequency()
 		setup_max_freq = DEFAULT_FREQ;
 	}
 	if (drv.features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
-		if (drv.ioctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
+		if (drv.drvctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
 			logprintf(LOG_ERR, "could not set receive carrier");
 			logperror(LOG_ERR, __FUNCTION__);
 			return (0);
@@ -529,7 +529,7 @@ static int setup_frequency()
 	} else {
 		freq = (setup_min_freq + setup_max_freq) / 2;
 	}
-	if (drv.ioctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
+	if (drv.drvctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
 		logprintf(LOG_ERR, "could not set receive carrier");
 		logperror(LOG_ERR, __FUNCTION__);
 		return (0);
@@ -548,8 +548,8 @@ static int setup_timeout()
 	if (setup_max_space == 0) {
 		return 1;
 	}
-	if (drv.ioctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
-	    || drv.ioctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1) {
+	if (drv.drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
+	    || drv.drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1) {
 		return 0;
 	}
 	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
@@ -567,13 +567,13 @@ static int setup_timeout()
 		}
 	}
 
-	if (drv.ioctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
+	if (drv.drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
 		logprintf(LOG_ERR, "could not set timeout");
 		logperror(LOG_ERR, __FUNCTION__);
 		return 0;
 	} else {
 		__u32 enable = 1;
-		drv.ioctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
+		drv.drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
 	}
 	return 1;
 }
@@ -587,11 +587,11 @@ static int setup_filter()
 	if (!(drv.features & LIRC_CAN_SET_REC_FILTER)) {
 		return 1;
 	}
-	if (drv.ioctl_func(LIRC_GET_MIN_FILTER_PULSE,
+	if (drv.drvctl_func(LIRC_GET_MIN_FILTER_PULSE,
 			  &min_pulse_supported) == -1 ||
-	    drv.ioctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
-	    || drv.ioctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
-	    || drv.ioctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
+	    drv.drvctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
+	    || drv.drvctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
+	    || drv.drvctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
 		logprintf(LOG_ERR, "could not get filter range");
 		logperror(LOG_ERR, __FUNCTION__);
 	}
@@ -608,11 +608,11 @@ static int setup_filter()
 		setup_min_space = 0;	/* disable filtering */
 	}
 
-	ret1 = drv.ioctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
-	ret2 = drv.ioctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
+	ret1 = drv.drvctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
+	ret2 = drv.drvctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
 	if (ret1 == -1 || ret2 == -1) {
 		if (drv.
-		    ioctl_func(LIRC_SET_REC_FILTER,
+		    drvctl_func(LIRC_SET_REC_FILTER,
 			       setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
 			logprintf(LOG_ERR, "could not set filter");
 			logperror(LOG_ERR, __FUNCTION__);
@@ -626,12 +626,12 @@ static int setup_hardware()
 {
 	int ret = 1;
 
-	if (drv.fd != -1 && drv.ioctl_func) {
+	if (drv.fd != -1 && drv.drvctl_func) {
 		if ((drv.features & LIRC_CAN_SET_REC_CARRIER) || (drv.features & LIRC_CAN_SET_REC_TIMEOUT)
 		    || (drv.features & LIRC_CAN_SET_REC_FILTER)) {
-			(void)drv.ioctl_func(LIRC_SETUP_START, NULL);
+			(void)drv.drvctl_func(LIRC_SETUP_START, NULL);
 			ret = setup_frequency() && setup_timeout() && setup_filter();
-			(void)drv.ioctl_func(LIRC_SETUP_END, NULL);
+			(void)drv.drvctl_func(LIRC_SETUP_END, NULL);
 		}
 	}
 	return ret;
@@ -1350,7 +1350,7 @@ int set_transmitters(int fd, char *message, char *arguments)
 		goto string_error;
 	if (drv.send_mode == 0)
 		return (send_error(fd, message, "hardware does not support sending\n"));
-	if (drv.ioctl_func == NULL || !(drv.features & LIRC_CAN_SET_TRANSMITTER_MASK)) {
+	if (drv.drvctl_func == NULL || !(drv.features & LIRC_CAN_SET_TRANSMITTER_MASK)) {
 		return (send_error(fd, message, "hardware does not support multiple transmitters\n"));
 	}
 
@@ -1371,7 +1371,7 @@ int set_transmitters(int fd, char *message, char *arguments)
 		channels |= next_tx_hex;
 	} while ((next_arg = strtok(NULL, WHITE_SPACE)) != NULL);
 
-	retval = drv.ioctl_func(LIRC_SET_TRANSMITTER_MASK, &channels);
+	retval = drv.drvctl_func(LIRC_SET_TRANSMITTER_MASK, &channels);
 	if (retval < 0) {
 		return (send_error(fd, message, "error - could not set transmitters\n"));
 	}
@@ -2006,8 +2006,8 @@ void loop()
 			const char *button_name;
 			int reps;
 
-			if (drv.ioctl_func && (drv.features & LIRC_CAN_NOTIFY_DECODE)) {
-				drv.ioctl_func(LIRC_NOTIFY_DECODE, NULL);
+			if (drv.drvctl_func && (drv.features & LIRC_CAN_NOTIFY_DECODE)) {
+				drv.drvctl_func(LIRC_NOTIFY_DECODE, NULL);
 			}
 
 			get_release_data(&remote_name, &button_name, &reps);
