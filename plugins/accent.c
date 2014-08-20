@@ -134,7 +134,7 @@ const struct driver hw_accent = {
 
 };
 
-const struct driver* hardwares[] = { &hw_accent, (const struct hardware*) NULL};
+const struct driver* hardwares[] = { &hw_accent, (const struct driver*) NULL};
 
 
 //-------------------------------------------------------------------------

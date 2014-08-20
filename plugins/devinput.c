@@ -75,7 +75,7 @@ const struct driver hw_devinput = {
 };
 
 
-const struct driver* hardwares[] = { &hw_devinput, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_devinput, (const struct driver*)NULL };
 
 static ir_code code;
 static ir_code code_compat;

@@ -63,7 +63,7 @@ const struct driver hw_atilibusb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_atilibusb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_atilibusb, (const struct driver*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

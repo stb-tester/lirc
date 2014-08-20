@@ -58,7 +58,7 @@ static const const struct driver hw_simreceive = {
 };
 
 
-const struct driver* hardwares[] = { &hw_simreceive, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_simreceive, (const struct driver*)NULL };
 
 
 /**********************************************************************

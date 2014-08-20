@@ -69,7 +69,7 @@ const struct driver hw_silitek = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_silitek, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_silitek, (const struct driver*)NULL };
 
 
 int silitek_read(int fd, unsigned char *data, long timeout)

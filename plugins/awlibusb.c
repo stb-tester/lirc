@@ -102,7 +102,7 @@ const struct driver hw_awlibusb = {
 };
 #endif
 
-const struct driver* hardwares[] = { &hw_awlibusb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_awlibusb, (const struct driver*)NULL };
 
 typedef struct {
 	u_int16_t vendor;

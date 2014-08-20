@@ -75,7 +75,7 @@ const struct driver hw_irlink = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_irlink, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_irlink, (const struct driver*)NULL };
 
 typedef enum {
 	BLOCK,

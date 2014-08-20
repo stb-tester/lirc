@@ -92,7 +92,7 @@ const struct driver hw_i2cuser = {
 };
 
 
-const struct driver* hardwares[] = { &hw_i2cuser, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_i2cuser, (const struct driver*)NULL };
 
 
 /* FD of the i2c device. Since it's not selectable, we give the lircd core a

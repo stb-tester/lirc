@@ -351,5 +351,5 @@ const struct driver hw_iguanaIR = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_iguanaIR, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_iguanaIR, (const struct driver*)NULL };
 

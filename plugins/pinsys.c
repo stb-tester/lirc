@@ -91,7 +91,7 @@ const struct driver hw_pinsys = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_pinsys, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_pinsys, (const struct driver*)NULL };
 
 
 /**** start of autodetect code ***************************/

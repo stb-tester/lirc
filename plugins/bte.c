@@ -92,7 +92,7 @@ const struct driver hw_bte = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_bte, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_bte, (const struct driver*)NULL };
 
 enum bte_state {
 	BTE_NONE = 0, BTE_INIT, BTE_SET_ECHO, BTE_CHARSET, BTE_SET_ACCESSORY,

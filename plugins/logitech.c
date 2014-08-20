@@ -65,7 +65,7 @@ struct driver hw_logitech = {
 	.driver_version = 	"0.9.2"
 };
 
-struct driver* hardwares[] = { &hw_logitech, (struct hardware*)NULL };
+struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
 
 
 int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

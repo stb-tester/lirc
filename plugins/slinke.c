@@ -118,7 +118,7 @@ const struct driver hw_slinke = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_slinke, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };
 
 
 /*****************************************************************************/

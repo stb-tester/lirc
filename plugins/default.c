@@ -75,7 +75,7 @@ static const const struct driver hw_default = {
 };
 
 
-const struct driver* hardwares[] = { &hw_default,  (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_default,  (const struct driver*)NULL };
 
 
 /**********************************************************************

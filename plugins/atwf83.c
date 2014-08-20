@@ -72,7 +72,7 @@ const struct driver hw_atwf83 = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_atwf83, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };
 
 
 static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

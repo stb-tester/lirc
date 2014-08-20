@@ -83,5 +83,5 @@ struct driver hw_livedrive_seq = {
 	.driver_version = 	"0.9.2"
 };
 
-struct driver* hardwares[] = { &hw_livedrive_seq, (struct hardware*)NULL };
+struct driver* hardwares[] = { &hw_livedrive_seq, (struct driver*)NULL };
 

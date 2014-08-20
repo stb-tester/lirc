@@ -161,4 +161,4 @@ const struct driver hw_udp = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_udp, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_udp, (const struct driver*)NULL };

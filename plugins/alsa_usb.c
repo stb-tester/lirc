@@ -47,7 +47,7 @@ const struct driver hw_alsa_usb = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_alsa_usb, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_alsa_usb, (const struct driver*)NULL };
 
 
 static const char *search_device(void)

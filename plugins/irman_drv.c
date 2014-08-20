@@ -68,7 +68,7 @@ const struct driver hw_irman = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_irman, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_irman, (const struct driver*)NULL };
 
 
 int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

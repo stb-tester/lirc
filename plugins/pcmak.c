@@ -69,7 +69,7 @@ const struct driver hw_pcmak = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_pcmak, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_pcmak, (const struct driver*)NULL };
 
 
 int pcmak_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

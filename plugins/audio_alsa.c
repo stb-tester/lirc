@@ -539,4 +539,4 @@ const struct driver hw_audio_alsa = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_audio_alsa, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };

@@ -76,7 +76,7 @@ const struct driver hw_creative_infracd = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_creative_infracd, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_creative_infracd, (const struct driver*)NULL };
 
 
 /*

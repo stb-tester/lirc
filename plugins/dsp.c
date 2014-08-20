@@ -162,4 +162,4 @@ const struct driver hw_dsp = {
 };
 
 
-const struct driver* hardwares[] = { &hw_dsp, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_dsp, (const struct driver*)NULL };

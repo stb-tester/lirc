@@ -57,7 +57,7 @@ static const const struct driver hw_simsend = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_simsend, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_simsend, (const struct driver*)NULL };
 
 
 /**********************************************************************

@@ -86,7 +86,7 @@ const struct driver hw_usbx = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_usbx, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_usbx, (const struct driver*)NULL };
 
 
 int usbx_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,

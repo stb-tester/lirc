@@ -76,7 +76,7 @@ const struct driver hw_uirt2 = {
 	.driver_version = 	"0.9.2"
 };
 
-const struct driver* hardwares[] = { &hw_uirt2, (const struct hardware*)NULL };
+const struct driver* hardwares[] = { &hw_uirt2, (const struct driver*)NULL };
 
 
 static int uirt2_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
