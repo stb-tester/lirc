@@ -20,6 +20,8 @@
 #include "lirc/lirc_options.h"
 #include "lirc_log.h"
 
+#include "driver.h"
+
 /**
  * The global driver data that drivers etc are accessing.
  * Defined in drv_admin.c.
@@ -152,8 +154,7 @@ for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 }
 
 
-static struct driver* for_each_driver(drv_guest_func func, void* arg)
-// Apply func(hw, arg) for all drivers found in all plugins.
+struct driver* for_each_driver(drv_guest_func func, void* arg)
 {
 	char* pluginpath;
 	char* tmp_path;
