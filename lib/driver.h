@@ -1,16 +1,16 @@
 
 /****************************************************************************
- ** hardware.h **************************************************************
+ ** driver.h **************************************************************
  ****************************************************************************
  *
- * hardware.h - internal hardware interface
+ * driver.h - internal hardware interface
  *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */
 
 /**
- * @file hardware.h
+ * @file driver.h
  */
 
 #ifndef _HARDWARE_H

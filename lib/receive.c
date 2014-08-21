@@ -23,7 +23,7 @@
 #include <errno.h>
 
 #include "include/media/lirc.h"
-#include "lirc/hardware.h"
+#include "lirc/driver.h"
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
 

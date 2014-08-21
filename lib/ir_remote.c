@@ -32,7 +32,7 @@
 
 #include "include/media/lirc.h"
 #include "lirc/ir_remote.h"
-#include "lirc/hardware.h"
+#include "lirc/driver.h"
 #include "lirc/release.h"
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"

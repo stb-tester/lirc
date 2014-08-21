@@ -25,7 +25,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "hardware.h"
+#include "driver.h"
 
 #include "ir_remote_types.h"
 

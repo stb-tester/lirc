@@ -15,7 +15,7 @@
 #include <dirent.h>
 #include <dlfcn.h>
 
-#include "lirc/hardware.h"
+#include "lirc/driver.h"
 #include "lirc/drv_admin.h"
 #include "lirc/lirc_options.h"
 #include "lirc_log.h"

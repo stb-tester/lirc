@@ -13,7 +13,7 @@
 #include "lirc/config_file.h"
 #include "lirc/dump_config.h"
 #include "lirc/input_map.h"
-#include "lirc/hardware.h"
+#include "lirc/driver.h"
 #include "lirc/ir_remote_types.h"
 #include "lirc/drv_admin.h"
 #include "lirc/ir_remote.h"

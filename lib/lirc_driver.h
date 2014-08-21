@@ -12,7 +12,7 @@
 
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
-#include "lirc/hardware.h"
+#include "lirc/driver.h"
 #include "lirc/ir_remote.h"
 #include "lirc/receive.h"
 #include "lirc/transmit.h"

@@ -29,7 +29,7 @@ liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 liblirc_client_la_LDFLAGS   = -version-info 2:1:2
 liblirc_client_la_LIBADD    = liblirc.la
 
-liblirc_driver_la_SOURCES   = hardware.h \
+liblirc_driver_la_SOURCES   = driver.h \
                               ir_remote.c \
                               ir_remote.h \
                               receive.c \
@@ -58,7 +58,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               dictionary.h \
                               drv_admin.h \
                               dump_config.h \
-                              hardware.h \
+                              driver.h \
                               input_map.h \
                               ir_remote.h \
                               ir_remote_types.h \
