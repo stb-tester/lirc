@@ -184,7 +184,7 @@ void rewind_rec_buffer(void)
 	rec_buffer.sum = 0;
 }
 
-void reset_rec_buffer_wptr(void)
+void rec_buffer_reset_wptr(void)
 {
 	rec_buffer.wptr = 0;
 }
