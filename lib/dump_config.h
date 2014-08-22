@@ -45,7 +45,7 @@ void fprint_remote_signal(FILE* f,
 void fprint_remote_signals(FILE* f, const struct ir_remote* rem);
 
 void fprint_remote(FILE* f,
-		   const struct ir_remote* rem,
-		   const char* commandline);
+                   const struct ir_remote* rem,
+                   const char* commandline);
 
 #endif

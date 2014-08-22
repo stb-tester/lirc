@@ -24,10 +24,12 @@
 # endif
 #endif
 
+#include <stdio.h>
 #include "include/media/lirc.h"
-#include "lirc/dump_config.h"
 #include "lirc/config_file.h"
+#include "lirc/dump_config.h"
 #include "lirc/config_flags.h"
+#include "lirc/ir_remote_types.h"
 
 void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandline)
 {

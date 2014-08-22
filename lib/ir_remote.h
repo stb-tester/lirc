@@ -433,7 +433,6 @@ char* decode_all(struct ir_remote* remotes);
 
 int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code);
 
-
 #ifdef __cplusplus
 }
 #endif
