@@ -33,6 +33,7 @@
 #include "lirc/transmit.h"
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
+#include "lirc/config_flags.h"
 
 
 struct ptr_array {
@@ -1119,7 +1120,7 @@ void calculate_signal_lengths(struct ir_remote *remote)
 			}
 			for (repeat = 0; repeat < 2; repeat++) {
 				if (init_sim(remote, &code, repeat)) {
-					lirc_t sum = send_buffer.sum;
+					lirc_t sum = send_buffer_sum();
 
 					if (sum) {
 						if (first_sum || sum < min_signal_length) {
@@ -1130,15 +1131,15 @@ void calculate_signal_lengths(struct ir_remote *remote)
 						}
 						first_sum = 0;
 					}
-					for (i = 0; i < send_buffer.wptr; i++) {
+					for (i = 0; i < send_buffer_length(); i++) {
 						if (i & 1) {	/* space */
-							if (send_buffer.data[i] > max_space) {
-								max_space = send_buffer.data[i];
+							if (send_buffer_data()[i] > max_space) {
+								max_space = send_buffer_data()[i];
 							}
 						} else {	/* pulse */
 
-							if (send_buffer.data[i] > max_pulse) {
-								max_pulse = send_buffer.data[i];
+							if (send_buffer_data()[i] > max_pulse) {
+								max_pulse = send_buffer_data()[i];
 							}
 						}
 					}

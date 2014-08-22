@@ -54,6 +54,7 @@ dist_include_HEADERS        = lirc_client.h \
 
 lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
+			      config_flags.h \
                               ciniparser.h \
                               dictionary.h \
                               drv_admin.h \

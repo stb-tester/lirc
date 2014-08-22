@@ -71,7 +71,6 @@ typedef struct {
 static PaStream *stream;
 
 extern struct ir_remote *repeat_remote;
-extern struct rbuf rec_buffer;
 
 static char ptyName[256];
 static int master;
@@ -280,7 +279,7 @@ lirc_t audio_readdata(lirc_t timeout)
 int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	int length;
-	lirc_t *signals;
+	const lirc_t *signals;
 	int flags;
 	char completed;
 	lirc_t freq;
@@ -289,8 +288,8 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 	if (!init_send(remote, code))
 		return 0;
 
-	length = send_buffer.wptr;
-	signals = send_buffer.data;
+	length = send_buffer_length();
+	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
 		LOGPRINTF(1, "nothing to send");

@@ -66,11 +66,11 @@ int lirc_log_close();
 void log_enable(int enabled);
 
 /*
- * Set logfile. Either a regular path or the string 'suslog'; the latter
+ * Set logfile. Either a regular path or the string 'syslog'; the latter
  * does indeed use syslog(1) instead.
  * */
 void lirc_set_logfile(char* s);
-void hexdump(char *prefix, unsigned char* buf, int len);
+void hexdump(char* prefix, unsigned char*  buf, int len);
 
 #ifdef __cplusplus
 }

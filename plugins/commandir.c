@@ -541,14 +541,14 @@ static int commandir_deinit(void)
 static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	int length;
-	lirc_t *signals;
+	const lirc_t *signals;
 
 	if (!init_send(remote, code)) {
 		return 0;
 	}
 
-	length = send_buffer.wptr;
-	signals = send_buffer.data;
+	length = send_buffer_length();
+	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
 		return 0;

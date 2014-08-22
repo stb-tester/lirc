@@ -383,21 +383,56 @@ static inline ir_code gen_ir_code(const struct ir_remote *remote,
 	return all;
 }
 
-const struct ir_remote *is_in_remotes(const struct ir_remote *remotes, const struct ir_remote *remote);
-struct ir_remote *get_ir_remote(const struct ir_remote *remotes, const char *name);
-void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq, unsigned int *max_freq);
-void get_filter_parameters(const struct ir_remote *remotes, lirc_t * max_gap_lengthp, lirc_t * min_pulse_lengthp,
-			   lirc_t * min_space_lengthp, lirc_t * max_pulse_lengthp, lirc_t * max_space_lengthp);
-int map_code(const struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int pre_bits, ir_code pre,
-	     int bits, ir_code code, int post_bits, ir_code post);
-void map_gap(const struct ir_remote *remote, const struct timeval *start,
-             const struct timeval *last, lirc_t signal_length,
-	     int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
-struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *name);
-int write_message(char *buffer, size_t size, const char *remote_name, const char *button_name,
-		  const char *button_suffix, ir_code code, int reps);
-char *decode_all(struct ir_remote *remotes);
-int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code);
+const struct ir_remote* is_in_remotes(const struct ir_remote* remotes,
+				      const struct ir_remote* remote);
+
+struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
+				const char* name);
+
+void get_frequency_range(const struct ir_remote* remotes,
+			 unsigned int* min_freq,
+			 unsigned int* max_freq);
+
+void get_filter_parameters(const struct ir_remote* remotes,
+			   lirc_t*  max_gap_lengthp,
+			   lirc_t*  min_pulse_lengthp,
+			   lirc_t*  min_space_lengthp,
+			   lirc_t*  max_pulse_lengthp,
+			   lirc_t*  max_space_lengthp);
+
+int map_code(const struct ir_remote* remote,
+	     ir_code*  prep,
+	     ir_code*  codep,
+	     ir_code*  postp,
+	     int pre_bits,
+	     ir_code pre,
+	     int bits,
+	     ir_code code,
+	     int post_bits,
+	     ir_code post);
+
+void map_gap(const struct ir_remote* remote,
+	     const struct timeval* start,
+             const struct timeval* last,
+	     lirc_t signal_length,
+	     int* repeat_flagp,
+	     lirc_t*  min_remaining_gapp,
+	     lirc_t*  max_remaining_gapp);
+
+struct ir_ncode* get_code_by_name(const struct ir_remote* remote,
+				  const char* name);
+
+int write_message(char* buffer,
+		  size_t size,
+		  const char* remote_name,
+		  const char* button_name,
+		  const char* button_suffix,
+		  ir_code code, int reps);
+
+char* decode_all(struct ir_remote* remotes);
+
+int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code);
+
 
 #ifdef __cplusplus
 }

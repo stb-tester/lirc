@@ -675,12 +675,12 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 		return (0);
 
 	int length, i, s;
-	lirc_t *signals;
+	const lirc_t *signals;
 	char idx;
 	int tmp;
 
-	length = send_buffer.wptr;
-	signals = send_buffer.data;
+	length = send_buffer_length();
+	signals = send_buffer_data();
 
 	sendtable = malloc(length);
 	if (sendtable == NULL)

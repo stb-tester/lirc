@@ -798,13 +798,12 @@ char *slinke_rec(struct ir_remote *remotes)
 }				/* slinke_rec */
 
 /*****************************************************************************/
-extern struct rbuf rec_buffer;
 
 int slinke_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
 		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
 {
 	rewind_rec_buffer();
-	rec_buffer.wptr = 0;
+	rec_buffer_reset_wptr();
 	signal_queue_rd_idx = 0;
 	return receive_decode(remote, prep, codep, postp, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
 }				/* slinke_decode */

@@ -63,8 +63,14 @@ static int uirt2_raw_decode(struct ir_remote *remote, ir_code * prep, ir_code * 
 static lirc_t uirt2_raw_readdata(lirc_t timeout);
 
 /* forwards */
-static int uirt2_send_mode2_raw(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
-static int uirt2_send_mode2_struct1(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length);
+static int uirt2_send_mode2_raw(uirt2_t * dev,
+				struct ir_remote *remote,
+				const lirc_t * buf,
+				int length);
+static int uirt2_send_mode2_struct1(uirt2_t * dev,
+                                    struct ir_remote *remote,
+                                    const lirc_t * buf,
+                                    int length);
 
 #ifndef LIRC_IRTTY
 #define LIRC_IRTTY "/dev/ttyS0"
@@ -315,20 +321,21 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	int i, length;
 	unsigned long delay;
-	lirc_t *signals;
+	const lirc_t *signals;
 	int res = 0;
 
 	if (!init_send(remote, code)) {
 		return 0;
 	}
 
-	length = send_buffer.wptr;
-	signals = send_buffer.data;
+	length = send_buffer_length();
+	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
 		LOGPRINTF(1, "nothing to send");
 		return 0;
 	}
+
 
 	LOGPRINTF(1, "Trying REMSTRUC1 transmission");
 	res = uirt2_send_mode2_struct1(dev, remote, signals, length);
@@ -361,7 +368,10 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 	return res;
 }
 
-static int uirt2_send_mode2_raw(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length)
+static int uirt2_send_mode2_raw(uirt2_t * dev,
+				struct ir_remote *remote,
+				const lirc_t * buf,
+				int length)
 {
 	byte_t tmp[64];
 	int i, dest;
@@ -448,7 +458,10 @@ static int calc_data_bit(struct ir_remote *remote, int table[], int table_len, i
 	return -1;
 }
 
-static int uirt2_send_mode2_struct1(uirt2_t * dev, struct ir_remote *remote, lirc_t * buf, int length)
+static int uirt2_send_mode2_struct1(uirt2_t * dev,
+               			    struct ir_remote *remote,
+               			    const lirc_t * buf,
+               			    int length)
 {
 	const int TABLE_LEN = 2;
 	remstruct1_data_t rem;

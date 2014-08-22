@@ -18,16 +18,34 @@
 
 #include "ir_remote.h"
 
-void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandline);
-void fprint_flags(FILE * f, int flags);
-void fprint_remotes(FILE * f, const struct ir_remote *all, const char* commandline);
-void fprint_remote_gap(FILE * f, const struct ir_remote *rem);
-void fprint_remote_head(FILE * f, const struct ir_remote *rem);
-void fprint_remote_foot(FILE * f, const struct ir_remote *rem);
-void fprint_remote_signal_head(FILE * f, const struct ir_remote *rem);
-void fprint_remote_signal_foot(FILE * f, const struct ir_remote *rem);
-void fprint_remote_signal(FILE * f, const struct ir_remote *rem, const struct ir_ncode *codes);
-void fprint_remote_signals(FILE * f, const struct ir_remote *rem);
-void fprint_remote(FILE * f, const struct ir_remote *rem, const char* commandline);
+void fprint_comment(FILE* f,
+		    const struct ir_remote* rem,
+		    const char* commandline);
+
+void fprint_flags(FILE* f, int flags);
+
+void fprint_remotes(FILE* f,
+		    const struct ir_remote* all,
+		    const char* commandline);
+
+void fprint_remote_gap(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote_head(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote_foot(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote_signal_head(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote_signal_foot(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote_signal(FILE* f,
+			  const struct ir_remote* rem,
+			  const struct ir_ncode* codes);
+
+void fprint_remote_signals(FILE* f, const struct ir_remote* rem);
+
+void fprint_remote(FILE* f,
+		   const struct ir_remote* rem,
+		   const char* commandline);
 
 #endif

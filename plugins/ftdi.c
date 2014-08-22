@@ -413,7 +413,7 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	__u32 div_carrier;
 	int val_carrier;
-	lirc_t *pulseptr;
+	const lirc_t *pulseptr;
 	lirc_t pulse;
 	int n_pulses;
 	int pulsewidth;
@@ -429,8 +429,8 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	}
 
 	/* init vars: */
-	n_pulses = send_buffer.wptr;
-	pulseptr = send_buffer.data;
+	n_pulses = send_buffer_length();
+	pulseptr = send_buffer_data();
 	bufidx = 0;
 	div_carrier = 0;
 	val_carrier = 0;

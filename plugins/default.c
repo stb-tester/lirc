@@ -274,11 +274,11 @@ int default_deinit(void)
 
 static int write_send_buffer(int lirc)
 {
-	if (send_buffer.wptr == 0) {
+	if (send_buffer_length() == 0) {
 		LOGPRINTF(1, "nothing to send");
 		return (0);
 	}
-	return (write(lirc, send_buffer.data, send_buffer.wptr * sizeof(lirc_t)));
+	return (write(lirc, send_buffer_data(), send_buffer_length() * sizeof(lirc_t)));
 }
 
 int default_send(struct ir_remote *remote, struct ir_ncode *code)

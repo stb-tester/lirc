@@ -30,34 +30,30 @@ extern "C" {
 
 #define MIN_RECEIVE_TIMEOUT 100000
 
-/**
- * Structure for the receiving buffer.
- */
-struct rbuf {
-	lirc_t data[RBUF_SIZE];
-	ir_code decoded;
-	int rptr;
-	int wptr;
-	int too_long;
-	int is_biphase;
-	lirc_t pendingp;
-	lirc_t pendings;
-	lirc_t sum;
-	struct timeval last_signal_time;
-};
-
 static inline lirc_t receive_timeout(lirc_t usec)
 {
 	return 2 * usec < MIN_RECEIVE_TIMEOUT ? MIN_RECEIVE_TIMEOUT : 2 * usec;
 }
 
-
 int waitfordata(__u32 maxusec);
+
 void init_rec_buffer();
+
 int clear_rec_buffer(void);
-int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flag,
-		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+
+int receive_decode(struct ir_remote* remote,
+		   ir_code* prep,
+		   ir_code* codep,
+		   ir_code* postp,
+		   int*repeat_flag,
+		   lirc_t* min_remaining_gapp,
+		   lirc_t* max_remaining_gapp);
+
 void rewind_rec_buffer(void);
+
+/** @deprecated (only used in slinke driver).  */
+void rec_buffer_reset_wptr(void);
+
 
 #ifdef	__cplusplus
 }

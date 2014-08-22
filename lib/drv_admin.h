@@ -15,8 +15,8 @@ extern "C" {
 /*
  * Argument to for_each_driver. Called with a driver and
  * an argument given to for_each_driver. Returns NULL if
- * iteration should continue, else a defined pointer to a
- * driver struct
+ * iteration should continue, else a pointer to static memory,
+ * valid until next call to for_each_driver().
  */
 typedef struct driver* (*drv_guest_func)(struct driver*, void*);
 
@@ -31,7 +31,7 @@ void hw_print_drivers(FILE*);
 
 /*
  * Apply func to all existing drivers. Returns pointer to a driver
- * if such  a pointer is returned by func(), else NULL.
+ * if such a pointer is returned by func(), else NULL.
  *
  */
 struct driver* for_each_driver(drv_guest_func func, void* arg);

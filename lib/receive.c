@@ -31,9 +31,26 @@ extern struct driver hw;
 extern struct ir_remote *last_remote;
 
 /**
+ * Structure for the receiving buffer.
+ */
+struct rbuf {
+	lirc_t data[RBUF_SIZE];
+	ir_code decoded;
+	int rptr;
+	int wptr;
+	int too_long;
+	int is_biphase;
+	lirc_t pendingp;
+	lirc_t pendings;
+	lirc_t sum;
+	struct timeval last_signal_time;
+};
+
+
+/**
  * Global receiver buffer.
  */
-struct rbuf rec_buffer;
+static struct rbuf rec_buffer;
 
 static  lirc_t lirc_t_max(lirc_t a, lirc_t b)
 {
@@ -165,6 +182,11 @@ void rewind_rec_buffer(void)
 	set_pending_pulse(0);
 	set_pending_space(0);
 	rec_buffer.sum = 0;
+}
+
+void reset_rec_buffer_wptr(void)
+{
+	rec_buffer.wptr = 0;
 }
 
 int clear_rec_buffer(void)

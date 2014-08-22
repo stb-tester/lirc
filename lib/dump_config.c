@@ -27,6 +27,7 @@
 #include "include/media/lirc.h"
 #include "lirc/dump_config.h"
 #include "lirc/config_file.h"
+#include "lirc/config_flags.h"
 
 void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandline)
 {

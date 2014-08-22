@@ -24,9 +24,20 @@
 extern struct ir_remote *repeat_remote;
 
 /**
- * Global sending buffer. Defined by transmit.c.
+ * Struct for the global sending buffer.
  */
-struct sbuf send_buffer;
+static struct sbuf {
+	lirc_t *data;
+
+	lirc_t _data[WBUF_SIZE]; /**< Actual sending data. */
+	int wptr;
+	int too_long;
+	int is_biphase;
+	lirc_t pendingp;
+	lirc_t pendings;
+	lirc_t sum;
+} send_buffer;
+
 
 static void send_signals(lirc_t * signals, int n);
 static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int sim, int repeat_preset);
@@ -359,6 +370,23 @@ int init_sim(struct ir_remote *remote, struct ir_ncode *code, int repeat_preset)
 	return init_send_or_sim(remote, code, 1, repeat_preset);
 }
 /** @endcond */
+
+
+int send_buffer_length()
+{
+	return send_buffer.wptr;
+}
+
+
+const lirc_t* send_buffer_data()
+{
+	return send_buffer.data;
+}
+
+lirc_t send_buffer_sum()
+{
+	return send_buffer.sum;
+}
 
 static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int sim, int repeat_preset)
 {

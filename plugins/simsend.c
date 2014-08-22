@@ -147,17 +147,17 @@ static int write_send_buffer(int lirc)
 {
 	int i;
 
-	if (send_buffer.wptr == 0) {
+	if (send_buffer_length() == 0) {
 		LOGPRINTF(1, "nothing to send");
 		return (0);
 	}
 	for (i = 0;;) {
-		printf("pulse %u\n", (__u32) send_buffer.data[i++]);
-		if (i >= send_buffer.wptr)
+		printf("pulse %u\n", (__u32) send_buffer_data()[i++]);
+		if (i >= send_buffer_length())
 			break;
-		printf("space %u\n", (__u32) send_buffer.data[i++]);
+		printf("space %u\n", (__u32) send_buffer_data()[i++]);
 	}
-	return (send_buffer.wptr * sizeof(lirc_t));
+	return (send_buffer_length() * sizeof(lirc_t));
 }
 
 int default_send(struct ir_remote *remote, struct ir_ncode *code)

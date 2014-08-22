@@ -143,19 +143,19 @@ struct ir_ncode {
  * One remote as represented in the configuration file.
  */
 struct ir_remote {
-	char *name;		/**< name of remote control */
-	struct ir_ncode *codes;
+	char* name;		/**< name of remote control */
+	struct ir_ncode* codes;
 	int bits;		/**< bits (length of code) */
 	int flags;		/**< flags */
 	int eps;		/**< eps (_relative_ tolerance) */
-       /** detecing _very short_ pulses is
+       				/** detecting _very short_ pulses is
 				  * difficult with relative tolerance
 				  * for some remotes,
 				  * this is an _absolute_ tolerance
 				  * to solve this problem
 				  * usually you can say 0 here. */
 	int aeps;
-	char *dyncodes_name;	/**< name for unknown buttons */
+	char* dyncodes_name;	/**< name for unknown buttons */
 	int dyncode;		/**< last received code */
 	struct ir_ncode dyncodes[2];	/**< helper structs for unknown buttons */
 
@@ -214,8 +214,8 @@ struct ir_remote {
 	ir_code toggle_bit_mask_state;
 	int toggle_mask_state;
 	int repeat_countdown;
-	struct ir_ncode *last_code;	/**< code received or sent last */
-	struct ir_ncode *toggle_code;	/**< toggle code received or sent last */
+	struct ir_ncode* last_code;	/**< code received or sent last */
+	struct ir_ncode* toggle_code;	/**< toggle code received or sent last */
 	int reps;
 	struct timeval last_send;	/**< time last_code was received or sent */
 	lirc_t min_remaining_gap;	/**< remember gap for CONST_LENGTH remotes */
@@ -228,7 +228,7 @@ struct ir_remote {
 	lirc_t min_pulse_length, max_pulse_length;
 	lirc_t min_space_length, max_space_length;
 	int release_detected;	/**< set by release generator */
-	struct ir_remote *next;
+	struct ir_remote* next;
 };
 
 #ifdef	__cplusplus

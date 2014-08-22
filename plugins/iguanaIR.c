@@ -257,11 +257,11 @@ static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	if (init_send(remote, code)) {
 		int length, x;
-		lirc_t *signals;
+		const lirc_t *signals;
 		uint32_t *igsignals;
 
-		length = send_buffer.wptr;
-		signals = send_buffer.data;
+		length = send_buffer_length();
+		signals = send_buffer_data();
 
 		igsignals = (uint32_t *) malloc(sizeof(uint32_t) * length);
 		if (igsignals != NULL) {
