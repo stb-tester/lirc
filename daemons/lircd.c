@@ -408,7 +408,9 @@ void dosigterm(int sig)
 		drv.deinit_func();
 	lirc_log_close();
 	signal(sig, SIG_DFL);
-	raise(sig == SIGUSR1 ? SIGTERM: sig);
+	if (sig == SIGUSR1)
+		exit(0);
+	raise(sig);
 }
 
 void sighup(int sig)
@@ -2364,7 +2366,7 @@ int main(int argc, char **argv)
 			drv.deinit_func();
 	}
 	fprintf(stderr, "Ready.\n");
-	dosigterm(SIGTERM);
+	dosigterm(SIGUSR1);
 #endif
 	loop();
 

@@ -34,7 +34,7 @@ always usable).
 .B -H, --driver
 The driver to use.  Using
 .I --driver help
-lists all available drivers, see DRIVER LOAD PATH beelow.
+lists all available drivers, see DRIVER LOADING below.
 .TP
 .B -h, --help
 Displays short thelp message.
@@ -94,7 +94,7 @@ Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
 .B -U --plugindir
 The --plugindir option sets the directory from which lircd loads it's
 userspace drivers. These are *.so files, by default found as described
-under DRIVER LOAD PATH.
+under DRIVER LOADING.
 .TP 4
 .B -r, --release [suffix]
 Enables automatic generation of release events for each button press.
@@ -143,12 +143,22 @@ Plugin load path, se DRIVER LOADING
 .B LIRC_DEBUG_OPTIONS
 If set, enables debugging in early stages when the --debug parameter is
 yet not parsed.
+
+.SH SIGNALS
+.TP 4
+.B HUP
+On receiving SIGHUP lircd re-reads the lircd.conf configuration file
+(but not lirc_options.conf) and adjusts itself if the file has changed.
+.TP 4
+.B USR1
+On receiving SIGUSR1 lircd makes a clean exit.
+
 .SH DAEMONS
 lircd  is a daemon. You should start it in some init script
 depending on your system. Besides the preferred systemd setup which is
 installed by default there are also example scripts for other distros
 and init systems in the contrib directory.
-.SH "DRIVER LOAD PATH"
+.SH "DRIVER LOADING"
 Drivers are loaded dynamically. This is done from a traditional *ux
 \':\'-separated path where each component in the path is searched (leading
 part first, trailing last).
