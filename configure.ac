@@ -360,7 +360,48 @@ AC_CONFIG_FILES([
   doc/Makefile
   systemd/Makefile
 ])
+
 AC_OUTPUT
+AC_DEFUN([AC_REPORT_CONDITIONAL], [
+AS_ECHO_N([$1:])
+AS_IF(test -z $$1_TRUE,AS_ECHO([yes]),AS_ECHO([no]))])
+
+AC_MSG_RESULT([
+Summary of selected options:
+----------------------------------------
+prefix:                         $prefix
+sysconfdir:                     $sysconfdir
+x_progs:                        $x_progs
+vga_progs:			$vga_progs
+host:                           $host
+host_os:                        $host_os
+forkpty:                        $forkpty
+usb_libs                        $usb_libs
+
+Conditionals:
+])
+
+AC_REPORT_CONDITIONAL([BUILD_ALSA_SB_RC])
+AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
+AC_REPORT_CONDITIONAL([BUILD_LIBALSA])
+AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
+AC_REPORT_CONDITIONAL([BUILD_ALSA_SB_RC])
+AC_REPORT_CONDITIONAL([BUILD_CARACA])
+AC_REPORT_CONDITIONAL([BUILD_DSP])
+AC_REPORT_CONDITIONAL([BUILD_FTDI])
+AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
+AC_REPORT_CONDITIONAL([BUILD_I2CUSER])
+AC_REPORT_CONDITIONAL([BUILD_IGUANAIR])
+AC_REPORT_CONDITIONAL([BUILD_LIBIRMAN])
+AC_REPORT_CONDITIONAL([BUILD_LIBIRMAN_SW])
+AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
+AC_REPORT_CONDITIONAL([BUILD_USB])
+AC_REPORT_CONDITIONAL([INSTALL_ETC])
+AC_REPORT_CONDITIONAL([USE_FIFOS])
+AC_REPORT_CONDITIONAL([BUILD_SMODE2])
+AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
+AC_REPORT_CONDITIONAL([HAVE_PYTHON])
+AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 
 echo
 echo "Now enter 'make' and 'make install' to compile and install the package."
