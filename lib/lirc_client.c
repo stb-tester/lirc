@@ -120,6 +120,8 @@ static void lirc_perror(const char *s)
 int lirc_init(const char *prog, int verbose)
 {
 	struct sockaddr_un addr;
+	char* socket_path;
+
 
 	/* connect to lircd */
 
@@ -133,7 +135,8 @@ int lirc_init(const char *prog, int verbose)
 	}
 
 	addr.sun_family = AF_UNIX;
-	strcpy(addr.sun_path, LIRCD);
+	socket_path = getenv("LIRC_SOCKET_PATH");
+	strcpy(addr.sun_path, socket_path != NULL ? socket_path : LIRCD);
 	lirc_lircd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (lirc_lircd == -1) {
 		lirc_printf("%s: could not open socket\n", lirc_prog);

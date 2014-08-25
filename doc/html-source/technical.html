@@ -398,6 +398,11 @@ int lirc_init(char *prog,int verbose);</PRE>
       the socket that is connected to lircd or -1 if an error
       occurred.
     </P>
+    <p>
+	By default the client connects to the hard-coded default path,
+        usually /var/run/lircd. The environment variable LIRC_SOCKET_PATH
+        can be used to connect to another socket.
+    </p>
     <P>
       The example continues by reading a config file. This is done by
       the <em>lirc_readconfig()</em> function:
