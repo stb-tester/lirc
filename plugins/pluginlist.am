@@ -26,6 +26,9 @@ hiddev_la_SOURCES                = hiddev.c
 plugin_LTLIBRARIES              += irlink.la
 irlink_la_SOURCES                = irlink.c
 
+plugin_LTLIBRARIES              += irtoy.la
+irtoy_la_SOURCES                 = irtoy.c
+
 plugin_LTLIBRARIES              += logitech.la
 logitech_la_SOURCES              = logitech.c
 

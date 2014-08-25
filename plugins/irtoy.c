@@ -95,7 +95,7 @@ static int decode(struct ir_remote* remote, ir_code* prep,
 static lirc_t readdata(lirc_t timeout);
 
 
-const struct hardware hw_usbirtoy = {
+const struct driver hw_usbirtoy = {
 	.name           =       "irtoy",
 	.device         =       "/dev/ttyACM0",
 	.features       =       LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
@@ -107,15 +107,15 @@ const struct hardware hw_usbirtoy = {
 	.send_func      =       send,
 	.rec_func       =       receive,
 	.decode_func    =       decode,
-	.ioctl_func     =       NULL,
+	.drvctl_func    =       NULL,
 	.readdata       =       readdata,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2"
 };
 
 
-const struct hardware* hardwares[] =
-	 { &hw_usbirtoy, (const struct hardware*) NULL };
+const struct driver* hardwares[] =
+	 { &hw_usbirtoy, (const struct driver*) NULL };
 
 
 static int decode(struct ir_remote* remote, ir_code* prep,
@@ -584,8 +584,8 @@ static int send(struct ir_remote *remote, struct ir_ncode *code)
 		return 0;
 	}
 
-	length = send_buffer.wptr;
-	signals = send_buffer.data;
+	length = send_buffer_length();
+	signals = send_buffer_data();
 
 	for (i = 0; i < length; i++) {
 		val = (lirc_t)(((double) signals[i]) / IRTOY_UNIT);
