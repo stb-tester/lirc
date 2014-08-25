@@ -98,8 +98,8 @@ static void alsa_sig_io(snd_async_handler_t * h);
 static int alsa_error(const char *errstr, int errcode)
 {
 	if (errcode < 0) {
-		logprintf(LOG_ERR, "ALSA function snd_pcm_%s returned error: %s", errstr, snd_strerror(errcode));
-		logperror(LOG_ERR, errstr);
+		logprintf(LIRC_ERROR, "ALSA function snd_pcm_%s returned error: %s", errstr, snd_strerror(errcode));
+		logperror(LIRC_ERROR, errstr);
 		return -1;
 	}
 	return 0;
@@ -171,8 +171,8 @@ int audio_alsa_init()
 	/* Start the race! */
 	unlink(tmp_name);
 	if (mknod(tmp_name, S_IFIFO | S_IRUSR | S_IWUSR, 0)) {
-		logprintf(LOG_ERR, "could not create FIFO %s", tmp_name);
-		logperror(LOG_ERR, "audio_alsa_init ()");
+		logprintf(LIRC_ERROR, "could not create FIFO %s", tmp_name);
+		logperror(LIRC_ERROR, "audio_alsa_init ()");
 		return 0;
 	}
 	/* Phew, we won the race ... */
@@ -180,8 +180,8 @@ int audio_alsa_init()
 	/* Open the pipe and hand it to LIRC ... */
 	drv.fd = open(tmp_name, O_RDWR);
 	if (drv.fd < 0) {
-		logprintf(LOG_ERR, "could not open pipe %s", tmp_name);
-		logperror(LOG_ERR, "audio_alsa_init ()");
+		logprintf(LIRC_ERROR, "could not open pipe %s", tmp_name);
+		logperror(LIRC_ERROR, "audio_alsa_init ()");
 error:		unlink(tmp_name);
 		audio_alsa_deinit();
 		return 0;
@@ -220,7 +220,7 @@ error:		unlink(tmp_name);
 			} else if (stereo_channel[1] == 'r') {
 				alsa_hw.channel = 1;
 			} else {
-				logperror(LOG_WARNING,
+				logperror(LIRC_WARNING,
 					  "dont understand which channel to use - defaulting to left\n");
 			}
 		}
@@ -238,8 +238,8 @@ error:		unlink(tmp_name);
 	/* Open the audio card in non-blocking mode */
 	err = snd_pcm_open(&alsa_hw.handle, tmp_name, SND_PCM_STREAM_CAPTURE, SND_PCM_NONBLOCK);
 	if (err < 0) {
-		logprintf(LOG_ERR, "could not open audio device %s: %s", drv.device, snd_strerror(err));
-		logperror(LOG_ERR, "audio_alsa_init ()");
+		logprintf(LIRC_ERROR, "could not open audio device %s: %s", drv.device, snd_strerror(err));
+		logperror(LIRC_ERROR, "audio_alsa_init ()");
 		goto error;
 	}
 
@@ -252,7 +252,7 @@ error:		unlink(tmp_name);
 	if (alsa_set_hwparams(alsa_hw.handle))
 		goto error;
 
-	LOGPRINTF(LOG_INFO, "hw_audio_alsa: Using device '%s', sampling rate %dHz\n", tmp_name, alsa_hw.rate);
+	LOGPRINTF(1, "hw_audio_alsa: Using device '%s', sampling rate %dHz\n", tmp_name, alsa_hw.rate);
 
 	/* Start sampling data */
 	if (alsa_error("start", snd_pcm_start(alsa_hw.handle)))

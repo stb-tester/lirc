@@ -205,15 +205,15 @@ inline int read_timeout(int fd, char *buf, int len, int timeout)
 	}
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		logprintf(LOG_ERR, "select() failed");
-		logperror(LOG_ERR, "");
+		logprintf(LIRC_ERROR, "select() failed");
+		logperror(LIRC_ERROR, "");
 		return (-1);
 	} else if (ret == 0)
 		return (0);	/* timeout */
 	n = read(fd, buf, len);
 	if (n == -1) {
-		logprintf(LOG_ERR, "read() failed");
-		logperror(LOG_ERR, "");
+		logprintf(LIRC_ERROR, "read() failed");
+		logperror(LIRC_ERROR, "");
 		return (-1);
 	}
 	return (n);
@@ -293,13 +293,13 @@ void add_client(int sock)
 	clilen = sizeof(client_addr);
 	fd = accept(sock, (struct sockaddr *)&client_addr, &clilen);
 	if (fd == -1) {
-		logprintf(LOG_ERR, "accept() failed for new client");
-		logperror(LOG_ERR, "");
+		logprintf(LIRC_ERROR, "accept() failed for new client");
+		logperror(LIRC_ERROR, "");
 		return;
 	};
 
 	if (fd >= FD_SETSIZE || clin >= MAX_CLIENTS) {
-		logprintf(LOG_ERR, "connection rejected");
+		logprintf(LIRC_ERROR, "connection rejected");
 		shutdown(fd, 2);
 		close(fd);
 		return;
@@ -530,8 +530,8 @@ static int send_error(int fd, char *message, char *format_str, ...)
 		s1[0] = 0;
 	if (s2 != NULL)
 		s2[0] = 0;
-	logprintf(LOG_ERR, "error processing command: %s", message);
-	logprintf(LOG_ERR, "%s", buffer);
+	logprintf(LIRC_ERROR, "error processing command: %s", message);
+	logprintf(LIRC_ERROR, "%s", buffer);
 	if (s1 != NULL)
 		s1[0] = '\n';
 	if (s2 != NULL)
@@ -568,7 +568,7 @@ static int get_command(int fd)
 		buffer[length] = 0;
 		end = strchr(buffer, '\n');
 		if (end == NULL) {
-			logprintf(LOG_ERR, "bad send packet: \"%s\"", buffer);
+			logprintf(LIRC_ERROR, "bad send packet: \"%s\"", buffer);
 			/* remove clients that behave badly */
 			return (0);
 		}
@@ -630,7 +630,7 @@ static void loop(int sockfd, int lircdfd)
 		do {
 			/* handle signals */
 			if (term) {
-				logprintf(LOG_NOTICE, "caught signal");
+				logprintf(LIRC_NOTICE, "caught signal");
 				return;
 			}
 			FD_ZERO(&fds);
@@ -646,8 +646,8 @@ static void loop(int sockfd, int lircdfd)
 			ret = select(maxfd + 1, &fds, NULL, NULL, NULL);
 
 			if (ret == -1 && errno != EINTR) {
-				logprintf(LOG_ERR, "select() failed");
-				logperror(LOG_ERR, "");
+				logprintf(LIRC_ERROR, "select() failed");
+				logperror(LIRC_ERROR, "");
 				raise(SIGTERM);
 				continue;
 			}
@@ -661,7 +661,7 @@ static void loop(int sockfd, int lircdfd)
 					remove_client(i);
 					i--;
 					if (clin == 0) {
-						logprintf(LOG_INFO, "last client disconnected, shutting down");
+						logprintf(LIRC_INFO, "last client disconnected, shutting down");
 						return;
 					}
 				}
@@ -676,7 +676,7 @@ static void loop(int sockfd, int lircdfd)
 				while (clin > 0) {
 					remove_client(0);
 				}
-				logprintf(LOG_ERR, "connection lost");
+				logprintf(LIRC_ERROR, "connection lost");
 				return;
 			}
 		}
@@ -894,7 +894,7 @@ int main(int argc, char **argv)
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGHUP, &act, NULL);
 
-	logprintf(LOG_NOTICE, "%s started", progname);
+	logprintf(LIRC_NOTICE, "%s started", progname);
 	loop(socket, lircdfd);
 
 	closelog();

@@ -132,7 +132,7 @@ int autodetect(void)
 		}
 		port = open("/dev/ttyS0", O_RDONLY | O_NOCTTY);
 		if (port < 0) {
-			logprintf(LOG_WARNING, "couldn't open %s", device);
+			logprintf(LIRC_WARNING, "couldn't open %s", device);
 			tty_delete_lock();
 			continue;
 		} else {
@@ -181,7 +181,7 @@ int pinsys_init(void)
 	signal_length = (drv.code_length + (drv.code_length / BITS_COUNT) * 2) * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
@@ -190,8 +190,8 @@ int pinsys_init(void)
 		char auto_lirc_device[] = "/dev/ttyS_";
 
 		tty_delete_lock();
-		logprintf(LOG_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
-		logperror(LOG_WARNING, "pinsys_init()");
+		logprintf(LIRC_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
+		logperror(LIRC_WARNING, "pinsys_init()");
 		/* it can also mean you compiled serial support as a
 		   module and it isn't inserted, but that's unlikely
 		   unless you're me. */
@@ -199,7 +199,7 @@ int pinsys_init(void)
 		detected = autodetect();
 
 		if (detected == -1) {
-			logprintf(LOG_ERR, "no device found on /dev/ttyS[0-3]");
+			logprintf(LIRC_ERROR, "no device found on /dev/ttyS[0-3]");
 			tty_delete_lock();
 			return (0);
 		} else {	/* detected */
@@ -208,26 +208,26 @@ int pinsys_init(void)
 			drv.device = auto_lirc_device;
 			if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 				/* unlikely, but hey. */
-				logprintf(LOG_ERR, "couldn't open autodetected device \"%s\"", drv.device);
-				logperror(LOG_ERR, "pinsys_init()");
+				logprintf(LIRC_ERROR, "couldn't open autodetected device \"%s\"", drv.device);
+				logperror(LIRC_ERROR, "pinsys_init()");
 				tty_delete_lock();
 				return (0);
 			}
 		}
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		pinsys_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		pinsys_deinit();
 		return (0);
 	}
 	/* set RTS, clear DTR */
 	if (!tty_set(drv.fd, 1, 0) || !tty_clear(drv.fd, 0, 1)) {
-		logprintf(LOG_ERR, "could not set modem lines (DTR/RTS)");
+		logprintf(LIRC_ERROR, "could not set modem lines (DTR/RTS)");
 		pinsys_deinit();
 		return (0);
 	}
@@ -238,7 +238,7 @@ int pinsys_init(void)
 	   it's an indication that it gets fixed.  still... */
 
 	if (tcflush(drv.fd, TCIFLUSH) < 0) {
-		logprintf(LOG_ERR, "could not flush input buffer");
+		logprintf(LIRC_ERROR, "could not flush input buffer");
 		pinsys_deinit();
 		return (0);
 	}
@@ -291,8 +291,8 @@ char *pinsys_rec(struct ir_remote *remotes)
 		}
 
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);

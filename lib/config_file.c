@@ -28,11 +28,11 @@
 #include <ctype.h>
 
 #include "include/media/lirc.h"
+#include "lirc/lirc_log.h"
+#include "lirc/lirc_options.h"
 #include "lirc/ir_remote.h"
 #include "lirc/config_file.h"
 #include "lirc/transmit.h"
-#include "lirc/lirc_log.h"
-#include "lirc/lirc_options.h"
 #include "lirc/config_flags.h"
 
 
@@ -67,7 +67,7 @@ void **init_void_array(struct void_array *ar, size_t chunk_size, size_t item_siz
 	ar->item_size = item_size;
 	ar->nr_items = 0;
 	if (!(ar->ptr = calloc(chunk_size, ar->item_size))) {
-		logprintf(LOG_ERR, "out of memory");
+		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return (NULL);
 	}
@@ -106,7 +106,7 @@ int add_void_array(struct void_array *ar, void *dataptr)
 		/* I hope this works with the right alignment,
 		   if not we're screwed */
 		if (!(ptr = realloc(ar->ptr, ar->item_size * ((ar->nr_items) + (ar->chunk_size + 1))))) {
-			logprintf(LOG_ERR, "out of memory");
+			logprintf(LIRC_ERROR, "out of memory");
 			parse_error = 1;
 			return (0);
 		}
@@ -127,7 +127,7 @@ void *s_malloc(size_t size)
 {
 	void *ptr;
 	if ((ptr = malloc(size)) == NULL) {
-		logprintf(LOG_ERR, "out of memory");
+		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return (NULL);
 	}
@@ -139,7 +139,7 @@ void *s_malloc(size_t size)
 {
 	char *ptr;
 	if (!(ptr = strdup(string))) {
-		logprintf(LOG_ERR, "out of memory");
+		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return (NULL);
 	}
@@ -154,8 +154,8 @@ void *s_malloc(size_t size)
 	errno = 0;
 	code = strtoull(val, &endptr, 0);
 	if ((code == (__u64) - 1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\": must be a valid (__u64) number", val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\": must be a valid (__u64) number", val);
 		parse_error = 1;
 		return (0);
 	}
@@ -169,8 +169,8 @@ __u32 s_strtou32(char *val)
 
 	n = strtoul(val, &endptr, 0);
 	if (!*val || *endptr) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\": must be a valid (__u32) number", val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\": must be a valid (__u32) number", val);
 		parse_error = 1;
 		return (0);
 	}
@@ -186,8 +186,8 @@ int s_strtoi(char *val)
 	n = strtol(val, &endptr, 0);
 	h = (int)n;
 	if (!*val || *endptr || n != ((long)h)) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\": must be a valid (int) number", val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\": must be a valid (int) number", val);
 		parse_error = 1;
 		return (0);
 	}
@@ -203,8 +203,8 @@ unsigned int s_strtoui(char *val)
 	n = strtoul(val, &endptr, 0);
 	h = (unsigned int)n;
 	if (!*val || *endptr || n != ((__u32) h)) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\": must be a valid (unsigned int) number", val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\": must be a valid (unsigned int) number", val);
 		parse_error = 1;
 		return (0);
 	}
@@ -220,14 +220,14 @@ lirc_t s_strtolirc_t(char *val)
 	n = strtoul(val, &endptr, 0);
 	h = (lirc_t) n;
 	if (!*val || *endptr || n != ((__u32) h)) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\": must be a valid (lirc_t) number", val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\": must be a valid (lirc_t) number", val);
 		parse_error = 1;
 		return (0);
 	}
 	if (h < 0) {
-		logprintf(LOG_WARNING, "error in configfile line %d:", line);
-		logprintf(LOG_WARNING, "\"%s\" is out of range", val);
+		logprintf(LIRC_WARNING, "error in configfile line %d:", line);
+		logprintf(LIRC_WARNING, "\"%s\" is out of range", val);
 	}
 	return (h);
 }
@@ -235,8 +235,8 @@ lirc_t s_strtolirc_t(char *val)
 int checkMode(int is_mode, int c_mode, char *error)
 {
 	if (is_mode != c_mode) {
-		logprintf(LOG_ERR, "fatal error in configfile line %d:", line);
-		logprintf(LOG_ERR, "\"%s\" isn't valid at this position", error);
+		logprintf(LIRC_ERROR, "fatal error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "\"%s\" isn't valid at this position", error);
 		parse_error = 1;
 		return (0);
 	}
@@ -309,8 +309,8 @@ int parseFlags(char *val)
 		while (flaglptr->name != NULL) {
 			if (strcasecmp(flaglptr->name, flag) == 0) {
 				if (flaglptr->flag & IR_PROTOCOL_MASK && flags & IR_PROTOCOL_MASK) {
-					logprintf(LOG_ERR, "error in configfile line %d:", line);
-					logprintf(LOG_ERR, "multiple protocols given in flags: \"%s\"", flag);
+					logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+					logprintf(LIRC_ERROR, "multiple protocols given in flags: \"%s\"", flag);
 					parse_error = 1;
 					return (0);
 				}
@@ -321,8 +321,8 @@ int parseFlags(char *val)
 			flaglptr++;
 		}
 		if (flaglptr->name == NULL) {
-			logprintf(LOG_ERR, "error in configfile line %d:", line);
-			logprintf(LOG_ERR, "unknown flag: \"%s\"", flag);
+			logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+			logprintf(LIRC_ERROR, "unknown flag: \"%s\"", flag);
 			parse_error = 1;
 			return (0);
 		}
@@ -432,8 +432,8 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 		return (1);
 	} else if (strcasecmp("serial_mode", key) == 0) {
 		if (val[0] < '5' || val[0] > '9') {
-			logprintf(LOG_ERR, "error in configfile line %d:", line);
-			logprintf(LOG_ERR, "bad bit count");
+			logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+			logprintf(LIRC_ERROR, "bad bit count");
 			parse_error = 1;
 			return 0;
 		}
@@ -449,8 +449,8 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 			rem->parity = IR_PARITY_ODD;
 			break;
 		default:
-			logprintf(LOG_ERR, "error in configfile line %d:", line);
-			logprintf(LOG_ERR, "unsupported parity mode");
+			logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+			logprintf(LIRC_ERROR, "unsupported parity mode");
 			parse_error = 1;
 			return 0;
 		}
@@ -500,11 +500,11 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 		}
 	}
 	if (val2) {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "unknown definiton: \"%s %s %s\"", key, val, val2);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "unknown definiton: \"%s %s %s\"", key, val, val2);
 	} else {
-		logprintf(LOG_ERR, "error in configfile line %d:", line);
-		logprintf(LOG_ERR, "unknown definiton or too few arguments: \"%s %s\"", key, val);
+		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+		logprintf(LIRC_ERROR, "unknown definiton or too few arguments: \"%s %s\"", key, val);
 	}
 	parse_error = 1;
 	return (0);
@@ -516,35 +516,35 @@ static int sanityChecks(struct ir_remote *rem)
 	struct ir_code_node *node;
 
 	if (!rem->name) {
-		logprintf(LOG_ERR, "you must specify a remote name");
+		logprintf(LIRC_ERROR, "you must specify a remote name");
 		return 0;
 	}
 	if (rem->gap == 0) {
-		logprintf(LOG_WARNING, "you should specify a valid gap value");
+		logprintf(LIRC_WARNING, "you should specify a valid gap value");
 	}
 	if (has_repeat_gap(rem) && is_const(rem)) {
-		logprintf(LOG_WARNING, "repeat_gap will be ignored if CONST_LENGTH flag is set");
+		logprintf(LIRC_WARNING, "repeat_gap will be ignored if CONST_LENGTH flag is set");
 	}
 
 	if (is_raw(rem))
 		return 1;
 
 	if ((rem->pre_data & gen_mask(rem->pre_data_bits)) != rem->pre_data) {
-		logprintf(LOG_WARNING, "invalid pre_data found for %s", rem->name);
+		logprintf(LIRC_WARNING, "invalid pre_data found for %s", rem->name);
 		rem->pre_data &= gen_mask(rem->pre_data_bits);
 	}
 	if ((rem->post_data & gen_mask(rem->post_data_bits)) != rem->post_data) {
-		logprintf(LOG_WARNING, "invalid post_data found for %s", rem->name);
+		logprintf(LIRC_WARNING, "invalid post_data found for %s", rem->name);
 		rem->post_data &= gen_mask(rem->post_data_bits);
 	}
 	for (codes = rem->codes; codes->name != NULL; codes++) {
 		if ((codes->code & gen_mask(rem->bits)) != codes->code) {
-			logprintf(LOG_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
+			logprintf(LIRC_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
 			codes->code &= gen_mask(rem->bits);
 		}
 		for (node = codes->next; node != NULL; node = node->next) {
 			if ((node->code & gen_mask(rem->bits)) != node->code) {
-				logprintf(LOG_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
+				logprintf(LIRC_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
 				node->code &= gen_mask(rem->bits);
 			}
 		}
@@ -638,7 +638,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 		line++;
 		len = strlen(buf);
 		if (len == LINE_LEN && buf[len - 1] != '\n') {
-			logprintf(LOG_ERR, "line %d too long in config file", line);
+			logprintf(LIRC_ERROR, "line %d too long in config file", line);
 			parse_error = 1;
 			break;
 		}
@@ -672,34 +672,34 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 				char result[FILENAME_MAX + 1];
 
 				if (depth > MAX_INCLUDES) {
-					logprintf(LOG_ERR, "error opening child file defined at %s:%d", name, line);
-					logprintf(LOG_ERR, "too many files included");
+					logprintf(LIRC_ERROR, "error opening child file defined at %s:%d", name, line);
+					logprintf(LIRC_ERROR, "too many files included");
 					parse_error = -1;
 					break;
 				}
 
 				childName = lirc_parse_include(val);
 				if (!childName) {
-					logprintf(LOG_ERR, "error parsing child file value defined at line %d:", line);
-					logprintf(LOG_ERR, "invalid quoting");
+					logprintf(LIRC_ERROR, "error parsing child file value defined at line %d:", line);
+					logprintf(LIRC_ERROR, "invalid quoting");
 					parse_error = -1;
 					break;
 				}
 
 				fullPath = lirc_parse_relative(result, sizeof(result), childName, name);
 				if (!fullPath) {
-					logprintf(LOG_ERR, "error composing relative file path defined at line %d:",
+					logprintf(LIRC_ERROR, "error composing relative file path defined at line %d:",
 						  line);
-					logprintf(LOG_ERR, "resulting path too long");
+					logprintf(LIRC_ERROR, "resulting path too long");
 					parse_error = -1;
 					break;
 				}
 
 				childFile = fopen(fullPath, "r");
 				if (childFile == NULL) {
-					logprintf(LOG_ERR, "error opening child file '%s' defined at line %d:",
+					logprintf(LIRC_ERROR, "error opening child file '%s' defined at line %d:",
 						  fullPath, line);
-					logprintf(LOG_ERR, "ignoring this child file for now.");
+					logprintf(LIRC_ERROR, "ignoring this child file for now.");
 				} else {
 					int save_line = line;
 
@@ -732,8 +732,8 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 					if (!checkMode(mode, ID_remote, "begin codes"))
 						break;
 					if (rem->codes) {
-						logprintf(LOG_ERR, "error in configfile line %d:", line);
-						logprintf(LOG_ERR, "codes are already defined");
+						logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+						logprintf(LIRC_ERROR, "codes are already defined");
 						parse_error = 1;
 						break;
 					}
@@ -746,8 +746,8 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 					if (!checkMode(mode, ID_remote, "begin raw_codes"))
 						break;
 					if (rem->codes) {
-						logprintf(LOG_ERR, "error in configfile line %d:", line);
-						logprintf(LOG_ERR, "codes are already defined");
+						logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+						logprintf(LIRC_ERROR, "codes are already defined");
 						parse_error = 1;
 						break;
 					}
@@ -782,12 +782,12 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 					code->current = NULL;
 					add_void_array(&codes_list, code);
 				} else {
-					logprintf(LOG_ERR, "error in configfile line %d:", line);
-					logprintf(LOG_ERR, "unknown section \"%s\"", val);
+					logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+					logprintf(LIRC_ERROR, "unknown section \"%s\"", val);
 					parse_error = 1;
 				}
 				if (!parse_error && val2 != NULL) {
-					logprintf(LOG_WARNING, "garbage after '%s' token in line %d ignored", val,
+					logprintf(LIRC_WARNING, "garbage after '%s' token in line %d ignored", val,
 						  line);
 				}
 			} else if (strcasecmp("end", key) == 0) {
@@ -808,8 +808,8 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 						raw_code.signals = get_void_array(&signals);
 						raw_code.length = signals.nr_items;
 						if (raw_code.length % 2 == 0) {
-							logprintf(LOG_ERR, "error in configfile line %d:", line);
-							logprintf(LOG_ERR, "bad signal length");
+							logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+							logprintf(LIRC_ERROR, "bad signal length");
 							parse_error = 1;
 						}
 						if (!add_void_array(&raw_codes, &raw_code))
@@ -853,12 +853,12 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 					code->current = NULL;
 					add_void_array(&codes_list, code);
 				} else {
-					logprintf(LOG_ERR, "error in configfile line %d:", line);
-					logprintf(LOG_ERR, "unknown section %s", val);
+					logprintf(LIRC_ERROR, "error in configfile line %d:", line);
+					logprintf(LIRC_ERROR, "unknown section %s", val);
 					parse_error = 1;
 				}
 				if (!parse_error && val2 != NULL) {
-					logprintf(LOG_WARNING, "garbage after '%s'" " token in line %d ignored", val,
+					logprintf(LIRC_WARNING, "garbage after '%s'" " token in line %d ignored", val,
 						  line);
 				}
 			} else {
@@ -868,7 +868,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 					if (!parse_error
 					    && ((argc == 1 && val2 != NULL)
 						|| (argc == 2 && val2 != NULL && strtok(NULL, whitespace) != NULL))) {
-						logprintf(LOG_WARNING, "garbage after '%s'" " token in line %d ignored",
+						logprintf(LIRC_WARNING, "garbage after '%s'" " token in line %d ignored",
 							  key, line);
 					}
 					break;
@@ -891,9 +891,9 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 							raw_code.signals = get_void_array(&signals);
 							raw_code.length = signals.nr_items;
 							if (raw_code.length % 2 == 0) {
-								logprintf(LOG_ERR, "error in configfile line %d:",
+								logprintf(LIRC_ERROR, "error in configfile line %d:",
 									  line);
-								logprintf(LOG_ERR, "bad signal length");
+								logprintf(LIRC_ERROR, "bad signal length");
 								parse_error = 1;
 							}
 							if (!add_void_array(&raw_codes, &raw_code))
@@ -906,13 +906,13 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 						init_void_array(&signals, 50, sizeof(lirc_t));
 						mode = ID_raw_name;
 						if (!parse_error && val2 != NULL) {
-							logprintf(LOG_WARNING,
+							logprintf(LIRC_WARNING,
 								  "garbage after '%s'" " token in line %d ignored", key,
 								  line);
 						}
 					} else {
 						if (mode == ID_raw_codes) {
-							logprintf(LOG_ERR, "no name for signal defined at line %d",
+							logprintf(LIRC_ERROR, "no name for signal defined at line %d",
 								  line);
 							parse_error = 1;
 							break;
@@ -939,7 +939,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 				break;
 			}
 		} else {
-			logprintf(LOG_ERR, "error in configfile line %d", line);
+			logprintf(LIRC_ERROR, "error in configfile line %d", line);
 			parse_error = 1;
 			break;
 		}
@@ -963,7 +963,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 			break;
 		}
 		if (!parse_error) {
-			logprintf(LOG_ERR, "unexpected end of file");
+			logprintf(LIRC_ERROR, "unexpected end of file");
 			parse_error = 1;
 		}
 	}
@@ -971,7 +971,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 		static int print_error = 1;
 
 		if (print_error) {
-			logprintf(LOG_ERR, "reading of file '%s' failed", name);
+			logprintf(LIRC_ERROR, "reading of file '%s' failed", name);
 			print_error = 0;
 		}
 		free_config(top_rem);
@@ -1013,7 +1013,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 			int all_bits = bit_count(rem);
 
 			if (has_toggle_bit_mask(rem)) {
-				logprintf(LOG_WARNING, "%s uses both toggle_bit and toggle_bit_mask", rem->name);
+				logprintf(LIRC_WARNING, "%s uses both toggle_bit and toggle_bit_mask", rem->name);
 			} else {
 				rem->toggle_bit_mask = ((ir_code) 1) << (all_bits - rem->toggle_bit);
 			}
@@ -1046,7 +1046,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 		}
 		if (rem->min_code_repeat > 0) {
 			if (!has_repeat(rem) || rem->min_code_repeat > rem->min_repeat) {
-				logprintf(LOG_WARNING, "invalid min_code_repeat value");
+				logprintf(LIRC_WARNING, "invalid min_code_repeat value");
 				rem->min_code_repeat = 0;
 			}
 		}
@@ -1126,13 +1126,13 @@ void calculate_signal_lengths(struct ir_remote *remote)
 		if (remote->min_total_signal_length > max_signal_length) {
 			remote->min_gap_length = remote->min_total_signal_length - max_signal_length;
 		} else {
-			logprintf(LOG_WARNING, "min_gap_length is 0 for '%s' remote", remote->name);
+			logprintf(LIRC_WARNING, "min_gap_length is 0 for '%s' remote", remote->name);
 			remote->min_gap_length = 0;
 		}
 		if (remote->max_total_signal_length > min_signal_length) {
 			remote->max_gap_length = remote->max_total_signal_length - min_signal_length;
 		} else {
-			logprintf(LOG_WARNING, "max_gap_length is 0 for '%s' remote", remote->name);
+			logprintf(LIRC_WARNING, "max_gap_length is 0 for '%s' remote", remote->name);
 			remote->max_gap_length = 0;
 		}
 	} else {

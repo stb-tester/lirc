@@ -42,7 +42,7 @@
 char hostname[HOSTNAME_LEN + 1];
 FILE *lf = NULL;
 
-int debug = 0;
+loglevel_t loglevel = LIRC_NOLOG;
 
 static int use_syslog = 1;
 
@@ -58,11 +58,11 @@ static int nodaemon = 0;
 static const char* prio2text(int prio)
 {
 	switch (prio) {
-		case LOG_DEBUG:		return "Debug";
-		case LOG_NOTICE:	return "Notice";
-		case LOG_INFO:		return "Info";
-		case LOG_WARNING:	return "Warning";
-		case LOG_ERR:		return "Error";
+		case LIRC_DEBUG:	return "Debug";
+		case LIRC_NOTICE:	return "Notice";
+		case LIRC_INFO:		return "Info";
+		case LIRC_WARNING:	return "Warning";
+		case LIRC_ERROR:	return "Error";
 		case LIRC_TRACE:        return "Trace";
 		case LIRC_PEEP:         return "Trace1";
 		case LIRC_STALK:        return "Trace2";
@@ -88,11 +88,11 @@ void lirc_log_set_file(const char* s)
 }
 
 
-int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
+int lirc_log_open(const char* _progname, int _nodaemon, int _loglevel)
 {
 	strncpy(progname, _progname, sizeof(progname));
 	nodaemon = _nodaemon;
-	debug = _debug;
+	loglevel = _loglevel;
 
 	if (use_syslog) {
 		if (nodaemon) {
@@ -136,7 +136,7 @@ int lirc_log_reopen(void)
 		/* Don't need to do anything; this is syslogd's task */
 		return(0);
 
-	logprintf(LOG_INFO, "closing logfile");
+	logprintf(LIRC_INFO, "closing logfile");
 	if (-1 == fstat(fileno(lf), &s)) {
 		perror("Invalid logfile!");
 		return -1;
@@ -148,10 +148,10 @@ int lirc_log_reopen(void)
 		perror("Can't open logfile");
 		return -1;
 	}
-	logprintf(LOG_INFO, "reopened logfile");
+	logprintf(LIRC_INFO, "reopened logfile");
 	if (-1 == fchmod(fileno(lf), s.st_mode)) {
-		logprintf(LOG_WARNING, "could not set file permissions");
-		logperror(LOG_WARNING, NULL);
+		logprintf(LIRC_WARNING, "could not set file permissions");
+		logperror(LIRC_WARNING, NULL);
 	}
 	return 0;
 }
@@ -168,7 +168,7 @@ int lirc_log_setlevel(const char* s)
 		level = DEFAULT_LOGLEVEL;
 		return 0;
 	};
-	debug = (int) level;
+	loglevel = (int) level;
 	return 1;
 }
 
@@ -184,7 +184,7 @@ void log_enable(int enabled)
  * @param format_str Format string in the usual C sense.
  * @param ... Additional vararg parameters.
  */
-void logprintf(int prio, const char *format_str, ...)
+void logprintf(loglevel_t prio, const char *format_str, ...)
 {
 	int save_errno = errno;
 	va_list ap;
@@ -192,7 +192,7 @@ void logprintf(int prio, const char *format_str, ...)
 	if (!log_enabled)
 		return;
 
-	if (nodaemon && prio <= debug) {
+	if (nodaemon && prio <= loglevel) {
 		fprintf(stderr, "%s: %s", progname, prio2text(prio));
 		va_start(ap, format_str);
 		vfprintf(stderr, format_str, ap);
@@ -204,7 +204,7 @@ void logprintf(int prio, const char *format_str, ...)
 		va_start(ap, format_str);
 		vsyslog(prio, format_str, ap);
 		va_end(ap);
-	} else if (lf && prio <= debug) {
+	} else if (lf && prio <= loglevel) {
 		time_t current;
 		char *currents;
 
@@ -228,7 +228,7 @@ void logprintf(int prio, const char *format_str, ...)
  * @param prio Priority of log request.
  * @param s Text string, typically the name of the function invoking the log request.
  */
-void logperror(int prio, const char *s)
+void logperror(loglevel_t prio, const char *s)
 {
 	if (!log_enabled)
 		return;

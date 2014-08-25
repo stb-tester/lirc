@@ -120,7 +120,7 @@ int bte_sendcmd(char *str, int next_state)
 	if (write(drv.fd, prev_cmd, strlen(prev_cmd)) <= 0) {
 		io_failed = 1;
 		pending = 0;
-		logprintf(LOG_ERR, "bte_sendcmd: write failed  - %d: %s", errno, strerror(errno));
+		logprintf(LIRC_ERROR, "bte_sendcmd: write failed  - %d: %s", errno, strerror(errno));
 		return 0;
 	}
 	LOGPRINTF(1, "bte_sendcmd: done");
@@ -164,7 +164,7 @@ int bte_connect(void)
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
-		logprintf(LOG_ERR, "bte_connect: connection established");
+		logprintf(LIRC_ERROR, "bte_connect: connection established");
 		io_failed = 0;
 
 		if (bte_sendcmd("E?", BTE_INIT))	// Ask for echo state just to syncronise
@@ -180,8 +180,8 @@ int bte_connect(void)
 	if (drv.fd >= 0)
 		close(drv.fd);
 	if ((drv.fd = open("/dev/zero", O_RDONLY)) == -1) {
-		logprintf(LOG_ERR, "could not open /dev/zero/");
-		logperror(LOG_ERR, "bte_init()");
+		logprintf(LIRC_ERROR, "could not open /dev/zero/");
+		logperror(LIRC_ERROR, "bte_init()");
 	}
 	sleep(1);
 	return 0;
@@ -192,7 +192,7 @@ int bte_init(void)
 	LOGPRINTF(3, "bte_init called, device %s", drv.device);
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "bte_init: could not create lock file");
+		logprintf(LIRC_ERROR, "bte_init: could not create lock file");
 		return 0;
 	}
 	if (!bte_connect()) {
@@ -225,7 +225,7 @@ char *bte_readline()
 
 	if ((ok = read(drv.fd, &c, 1)) <= 0) {
 		io_failed = 1;
-		logprintf(LOG_ERR, "bte_readline: read failed - %d: %s", errno, strerror(errno));
+		logprintf(LIRC_ERROR, "bte_readline: read failed - %d: %s", errno, strerror(errno));
 		return (NULL);
 	}
 	if (ok == 0 || c == '\r')
@@ -268,7 +268,7 @@ char *bte_automaton()
 	if (strcmp(msg, "ERROR") == 0)	// "ERROR" received
 	{
 		pending = 0;
-		logprintf(LOG_ERR, "bte_automaton: 'ERROR' received! Previous command: %s", prev_cmd);
+		logprintf(LIRC_ERROR, "bte_automaton: 'ERROR' received! Previous command: %s", prev_cmd);
 		return (NULL);
 	} else if (strcmp(msg, "OK") == 0)	// Check for next cmd to send
 	{

@@ -95,13 +95,13 @@ int caraca_init(void)
 {
 	signal_length = drv.code_length * 1000000 / 1200;
 	if ((drv.fd = caraca_open(PACKAGE)) < 0) {
-		logprintf(LOG_ERR, "could not open lirc");
-		logperror(LOG_ERR, "caraca_init()");
+		logprintf(LIRC_ERROR, "could not open lirc");
+		logperror(LIRC_ERROR, "caraca_init()");
 		return (0);
 	}
 	/*accept IR-Messages (16 : RC5 key code) for all nodes on the bus */
 	if (set_filter(drv.fd, 0x400, 0x7c0, 0) <= 0) {
-		logprintf(LOG_ERR, "could not set filter for IR-Messages");
+		logprintf(LIRC_ERROR, "could not set filter for IR-Messages");
 		caraca_deinit();
 		return (0);
 	}

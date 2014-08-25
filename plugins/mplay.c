@@ -157,20 +157,20 @@ int mplay_init(void)
 	LOGPRINTF(1, "Entering mplay_init()");
 	/* Creation of a lock file for the port */
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "Could not create the lock file");
+		logprintf(LIRC_ERROR, "Could not create the lock file");
 		LOGPRINTF(1, "Could not create the lock file");
 		result = 0;
 	}
 	/* Try to open serial port */
 	else if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "Could not open the serial port");
+		logprintf(LIRC_ERROR, "Could not open the serial port");
 		LOGPRINTF(1, "Could not open the serial port");
 		mplay_deinit();
 		result = 0;
 	}
 	/* Serial port configuration */
 	else if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, MPLAY_BAUD_RATE)) {
-		logprintf(LOG_ERR, "could not configure the serial port for '%s'", drv.device);
+		logprintf(LIRC_ERROR, "could not configure the serial port for '%s'", drv.device);
 		LOGPRINTF(1, "could not configure the serial port for '%s'", drv.device);
 		mplay_deinit();
 	}
@@ -187,15 +187,15 @@ int mplay2_init(void)
 	LOGPRINTF(1, "Entering mplay_init()");
 	/* Creation of a lock file for the port */
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "Could not create the lock file");
+		logprintf(LIRC_ERROR, "Could not create the lock file");
 		LOGPRINTF(1, "Could not create the lock file");
 		return 0;
 	}
 
-	LOGPRINTF(0, "open serial port");
+	LOGPRINTF(1, "open serial port");
 	/* Try to open serial port (Monueal Moncaso 312 device doesn't like O_NONBLOCK */
 	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "Could not open the serial port");
+		logprintf(LIRC_ERROR, "Could not open the serial port");
 		LOGPRINTF(1, "Could not open the serial port");
 		tty_delete_lock();
 		return 0;
@@ -203,7 +203,7 @@ int mplay2_init(void)
 
 	/* Get serial device parameters */
 	if (tcgetattr(drv.fd, &portset) < 0) {
-		logprintf(LOG_ERR, "Could not get serial port attributes");
+		logprintf(LIRC_ERROR, "Could not get serial port attributes");
 		LOGPRINTF(1, "Could not get serial port attributes");
 		mplay_deinit();
 		return 0;
@@ -225,7 +225,7 @@ int mplay2_init(void)
 	portset.c_cc[VTIME] = 3;
 
 	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
-		logprintf(LOG_ERR, "Error setting TCSANOW mode of serial device");
+		logprintf(LIRC_ERROR, "Error setting TCSANOW mode of serial device");
 		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
 		mplay_deinit();
 		return 0;
@@ -233,7 +233,7 @@ int mplay2_init(void)
 
 	len = write(drv.fd, &buf, 1);
 	if (len < 0) {
-		LOGPRINTF(LOG_ERR, "couldn't write to device");
+		LOGPRINTF(1, "couldn't write to device");
 		mplay_deinit();
 		return 0;
 	}
@@ -247,7 +247,7 @@ int mplay2_init(void)
 		LOGPRINTF(1, "read chars: %s", psResponse);
 
 	if (tcgetattr(drv.fd, &portset) < 0) {
-		logprintf(LOG_ERR, "Could not get serial port attributes");
+		logprintf(LIRC_ERROR, "Could not get serial port attributes");
 		LOGPRINTF(1, "Could not get serial port attributes");
 		mplay_deinit();
 		return 0;
@@ -268,7 +268,7 @@ int mplay2_init(void)
 	portset.c_cc[VTIME] = 3;
 
 	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
-		logprintf(LOG_ERR, "Error setting TCSANOW mode of serial device");
+		logprintf(LIRC_ERROR, "Error setting TCSANOW mode of serial device");
 		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
 		mplay_deinit();
 		return 0;

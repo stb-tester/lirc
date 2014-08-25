@@ -90,7 +90,7 @@ int default_readdata(lirc_t timeout)
 
 		ret = fscanf(stdin, "%*s\n");
 		if (ret == EOF){
-			//logprintf(LOG_NOTICE, "simreceive: EOF");
+			//logprintf(LIRC_NOTICE, "simreceive: EOF");
 			//dosigterm(SIGTERM);
 			kill(getpid(), SIGUSR1);
 		}
@@ -135,8 +135,8 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 		return (0);
 
 	if (write_send_buffer(drv.fd) == -1) {
-		logprintf(LOG_ERR, "write failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "write failed");
+		logperror(LIRC_ERROR, NULL);
 		return (0);
 	}
 	return (1);

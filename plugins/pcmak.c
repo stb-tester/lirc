@@ -89,22 +89,22 @@ int pcmak_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "pcmak_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "pcmak_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		pcmak_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		pcmak_deinit();
 		return (0);
 	}
@@ -136,8 +136,8 @@ char *pcmak_rec(struct ir_remote *remotes)
 		}
 
 		if (read(drv.fd, &b, 1) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b);

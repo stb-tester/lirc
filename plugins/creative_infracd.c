@@ -99,7 +99,7 @@ int is_my_device(int fd, const char *name)
 
 	/* Just to be safe, check we have a sg device wigh version > 3 */
 	if ((ioctl(fd, SG_GET_VERSION_NUM, &k) < 0) || (k < 30000)) {
-		LOGPRINTF(LOG_ERR, "%s isn't sg device version > 3", name);
+		LOGPRINTF(1, "%s isn't sg device version > 3", name);
 		return 0;
 	} else {
 		usleep(10);
@@ -119,19 +119,19 @@ int is_my_device(int fd, const char *name)
 	io_hdr.timeout = 2000;
 
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
-		logprintf(LOG_ERR, "INQUIRY SG_IO ioctl error");
+		logprintf(LIRC_ERROR, "INQUIRY SG_IO ioctl error");
 		return 0;
 	} else {
 		usleep(10);
 	}
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-		logprintf(LOG_ERR, "INQUIRY: SCSI status=0x%x host_status=0x%x driver_status=0x%x", io_hdr.status,
+		logprintf(LIRC_ERROR, "INQUIRY: SCSI status=0x%x host_status=0x%x driver_status=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
 		return 0;
 	}
 	/* check INQUIRY returned string */
 	if (strncmp(Buff + 8, "CREATIVE", 8) > 0) {
-		logprintf(LOG_ERR, "%s is %s (vendor isn't Creative)", name, Buff + 8);
+		logprintf(LIRC_ERROR, "%s is %s (vendor isn't Creative)", name, Buff + 8);
 	}
 
 	/* now run sense_mode_10 for page 0 to see if this is really it */
@@ -165,12 +165,12 @@ int test_device_command(int fd)
 	memset(Buff, 0, MAX_SCSI_REPLY_LEN);
 
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
-		LOGPRINTF(LOG_ERR, "MODE_SENSE_10 SG_IO ioctl error");
+		LOGPRINTF(1, "MODE_SENSE_10 SG_IO ioctl error");
 		return -1;
 	}
 
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-		LOGPRINTF(LOG_ERR, "MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
+		LOGPRINTF(1, "MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
 		return -1;
 	}
@@ -268,15 +268,15 @@ int creative_infracd_init(void)
 	/* probing failed - simple sanity check why */
 	fd = open("/proc/scsi/scsi", O_RDONLY);
 	if (fd < 0) {
-		LOGPRINTF(LOG_ERR, "Probing: unable to open /proc/scsi/scsi");
+		LOGPRINTF(1, "Probing: unable to open /proc/scsi/scsi");
 	} else {
 		close(fd);
 		fd = open("/proc/scsi/ide-scsi/0", O_RDONLY);
 		if (fd < 0) {
-			LOGPRINTF(LOG_ERR, "Probing: scsi support present but ide-scsi is not loaded");
+			LOGPRINTF(1, "Probing: scsi support present but ide-scsi is not loaded");
 		} else {
 			close(fd);
-			LOGPRINTF(LOG_ERR,
+			LOGPRINTF(1,
 				  "Probing: scsi in kernel, ide-scsi is loaded. Bad configuration or "
 				  "device not present");
 		}

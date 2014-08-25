@@ -118,7 +118,9 @@ lirc_t aeps = 100;
 
 #define SAMPLES 80
 
-int debug = LOG_WARNING;  // Actual loglevel as per -D option, see lirc_log.h.
+// Actual loglevel as per -D option, see lirc_log.h.
+loglevel_t loglevel = LIRC_WARNING;
+
 int daemonized = 0;
 
 struct ir_remote *emulation_data;
@@ -230,7 +232,7 @@ static int i_printf(int interactive, char *format_str, ...)
 	va_list ap;
 	int ret = 0;
 
-	if (interactive && lirc_log_is_enabled_for(LOG_DEBUG))
+	if (interactive && lirc_log_is_enabled_for(LIRC_DEBUG))
 	{
 		va_start(ap, format_str);
 		ret = vfprintf(stdout, format_str, ap);
@@ -410,10 +412,9 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	device = options_getstring("irrecord:device");
-	debug = options_getint("lircd:debug");
-	if (debug < 1 || debug >  12){
-		fprintf(stderr, "Bad debug value %s\n",
-			optarg);
+	loglevel = options_getint("lircd:debug");
+	if (loglevel < LIRC_MIN_LOGLEVEL || loglevel > LIRC_MAX_LOGLEVEL){
+		fprintf(stderr, "Bad debug value %s\n", optarg);
 		exit(EXIT_FAILURE);
 	}
 	force = options_getboolean("irrecord:force");
@@ -427,7 +428,7 @@ int main(int argc, char **argv)
 	test = options_getboolean("irrecord:test");
 	invert = options_getboolean("irrecord:invert");
 	trail = options_getboolean("irrecord:trail");
-	lirc_log_open("irrecord", 0, debug);
+	lirc_log_open("irrecord", 0, loglevel);
 	if (device != NULL) {
 		drv.device = device;
 	}
@@ -601,7 +602,7 @@ int main(int argc, char **argv)
 			remote.aeps = aeps;
 			break;
 		}
-		if lirc_log_is_enabled_for(LOG_DEBUG) {
+		if lirc_log_is_enabled_for(LIRC_DEBUG) {
 			 printf("%d %u %u %u %u %u %d %d %d %u\n",
 				remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
 				(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
@@ -954,8 +955,8 @@ static int mywaitfordata(__u32 maxusec)
 			}
 			while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logprintf(LOG_ERR, "select() failed\n");
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "select() failed\n");
+				logperror(LIRC_ERROR, NULL);
 				continue;
 			}
 		}
@@ -984,8 +985,8 @@ int availabledata(void)
 		}
 		while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
-			logprintf(LOG_ERR, "select() failed\n");
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "select() failed\n");
+			logperror(LIRC_ERROR, NULL);
 			continue;
 		}
 	}
@@ -1103,7 +1104,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	}
 	if (seq > 0)
 		remote->min_repeat = repeats / seq;
-	logprintf(LOG_DEBUG, "min_repeat=%d\n", remote->min_repeat);
+	logprintf(LIRC_DEBUG, "min_repeat=%d\n", remote->min_repeat);
 	return (found);
 }
 
@@ -1892,7 +1893,7 @@ void merge_lengths(struct lengths *first)
 		}
 		l = l->next;
 	}
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		l = first;
 		while (l != NULL) {
 			printf("%d x %u [%u,%u]\n",
@@ -1911,12 +1912,12 @@ void get_scheme(struct ir_remote *remote, int interactive)
 			length = i;
 		}
 		sum += lengths[i];
-		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 			if (lengths[i] > 0)
 				printf("%u: %u\n", i, lengths[i]);
 		}
 	}
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		printf("get_scheme(): sum: %u length: %u signals: %u\n"
 		       "first_lengths: %u second_lengths: %u\n",
 			sum, length + 1, lengths[length], first_lengths, second_lengths);
@@ -1984,7 +1985,7 @@ struct lengths *get_max_length(struct lengths *first, unsigned int *sump)
 	max_length = first;
 	sum = first->count;
 
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		if (first->count > 0)
 			printf("%u x %u\n", first->count, (__u32) calc_signal(first));
 	}
@@ -1994,7 +1995,7 @@ struct lengths *get_max_length(struct lengths *first, unsigned int *sump)
 			max_length = scan;
 		}
 		sum += scan->count;
-		if (lirc_log_is_enabled_for(LOG_DEBUG) && scan->count > 0) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG) && scan->count > 0) {
 			printf("%u x %u\n", scan->count, (__u32) calc_signal(scan));
 		}
 		scan = scan->next;
@@ -2014,8 +2015,8 @@ int get_trail_length(struct ir_remote *remote, int interactive)
 
 	max_length = get_max_length(first_trail, &sum);
 	max_count = max_length->count;
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
-		logprintf(LOG_DEBUG, "get_trail_length(): sum: %u, max_count %u\n",
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
+		logprintf(LIRC_DEBUG, "get_trail_length(): sum: %u, max_count %u\n",
 			  sum, max_count);
 	}
 	if (max_count >= sum * TH_TRAIL / 100) {
@@ -2041,7 +2042,7 @@ int get_lead_length(struct ir_remote *remote, int interactive)
 	first_lead = has_header(remote) ? first_3lead : first_1lead;
 	max_length = get_max_length(first_lead, &sum);
 	max_count = max_length->count;
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		printf("get_lead_length(): sum: %u, max_count %u\n", sum, max_count);
 	}
 	if (max_count >= sum * TH_LEAD / 100) {
@@ -2083,14 +2084,14 @@ int get_header_length(struct ir_remote *remote, int interactive)
 		i_printf(interactive, "No header data.\n");
 		return (1);
 	}
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
 	}
 
 	if (max_count >= sum * TH_HEADER / 100) {
 		max_slength = get_max_length(first_headers, &sum);
 		max_count = max_slength->count;
-		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 			printf("get_header_length(): sum: %u, max_count %u\n", sum, max_count);
 		}
 		if (max_count >= sum * TH_HEADER / 100) {
@@ -2128,14 +2129,14 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 
 	max_plength = get_max_length(first_repeatp, &sum);
 	max_count = max_plength->count;
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
 	}
 
 	if (max_count >= sum * TH_REPEAT / 100) {
 		max_slength = get_max_length(first_repeats, &sum);
 		max_count = max_slength->count;
-		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 			printf("get_repeat_length(): sum: %u, max_count %u\n", sum, max_count);
 		}
 		if (max_count >= sum * TH_REPEAT / 100) {
@@ -2200,7 +2201,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;
-	if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+	if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 		printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
 	}
 
@@ -2212,7 +2213,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			if (max2_plength->count < max_count * TH_IS_BIT / 100)
 				max2_plength = NULL;
 		}
-		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 			printf("Pulse canditates: ");
 			printf("%u x %u", max_plength->count, (__u32) calc_signal(max_plength));
 			if (max2_plength)
@@ -2223,7 +2224,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
-		if (lirc_log_is_enabled_for(LOG_DEBUG)) {
+		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 			printf("get_data_length(): sum: %u, max_count %u\n", sum, max_count);
 		}
 		if (max_count >= sum * TH_IS_BIT / 100) {

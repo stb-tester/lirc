@@ -105,28 +105,28 @@ int ea65_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_co
 
 int ea65_init(void)
 {
-	logprintf(LOG_INFO, "EA65: device %s", drv.device);
+	logprintf(LIRC_INFO, "EA65: device %s", drv.device);
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "EA65: could not create lock files");
+		logprintf(LIRC_ERROR, "EA65: could not create lock files");
 		return 0;
 	}
 
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LOG_ERR, "EA65: could not open %s", drv.device);
+		logprintf(LIRC_ERROR, "EA65: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "EA65: could not reset tty");
+		logprintf(LIRC_ERROR, "EA65: could not reset tty");
 		ea65_release();
 		return 0;
 	}
 
 	if (!tty_setbaud(drv.fd, 9600)) {
-		logprintf(LOG_ERR, "EA65: could not set baud rate");
+		logprintf(LIRC_ERROR, "EA65: could not set baud rate");
 		ea65_release();
 		return 0;
 	}
@@ -151,13 +151,13 @@ char *ea65_receive(struct ir_remote *remote)
 	gettimeofday(&start, NULL);
 
 	if (!waitfordata(TIMEOUT)) {
-		logprintf(LOG_ERR, "EA65: timeout reading code data");
+		logprintf(LIRC_ERROR, "EA65: timeout reading code data");
 		return NULL;
 	}
 
 	r = read(drv.fd, data, sizeof(data));
 	if (r < 4) {
-		logprintf(LOG_ERR, "EA65: read failed. %s(%d)", strerror(r), r);
+		logprintf(LIRC_ERROR, "EA65: read failed. %s(%d)", strerror(r), r);
 		return NULL;
 	}
 
@@ -177,7 +177,7 @@ char *ea65_receive(struct ir_remote *remote)
 		code = (0xff << 16) | (data[2] << 8) | data[3];
 		break;
 	}
-	logprintf(LOG_INFO, "EA65: receive code: %llx", (__u64) code);
+	logprintf(LIRC_INFO, "EA65: receive code: %llx", (__u64) code);
 
 	gettimeofday(&end, NULL);
 

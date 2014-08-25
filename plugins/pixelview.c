@@ -91,22 +91,22 @@ int pixelview_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "pixelview_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "pixelview_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		pixelview_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		pixelview_deinit();
 		return (0);
 	}
@@ -130,13 +130,13 @@ char *pixelview_rec(struct ir_remote *remotes)
 	for (i = 0; i < 3; i++) {
 		if (i > 0) {
 			if (!waitfordata(50000)) {
-				logprintf(LOG_ERR, "timeout reading byte %d", i);
+				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
 				return (NULL);
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);

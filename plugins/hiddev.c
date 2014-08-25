@@ -207,10 +207,10 @@ const static int mousegrid[9][9] = { {0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 
 
 int hiddev_init()
 {
-	logprintf(LOG_INFO, "initializing '%s'", drv.device);
+	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
 
 	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
+		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 
@@ -220,7 +220,7 @@ int hiddev_init()
 int hiddev_deinit(void)
 {
 	if (drv.fd != -1) {
-		logprintf(LOG_INFO, "closing '%s'", drv.device);
+		logprintf(LIRC_INFO, "closing '%s'", drv.device);
 		close(drv.fd);
 		drv.fd = -1;
 	}
@@ -274,8 +274,8 @@ char *hiddev_rec(struct ir_remote *remotes)
 	gettimeofday(&start, NULL);
 	rd = read(drv.fd, &event, sizeof event);
 	if (rd != sizeof event) {
-		logprintf(LOG_ERR, "error reading '%s'", drv.device);
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		logperror(LIRC_ERROR, NULL);
 		hiddev_deinit();
 		return 0;
 	}
@@ -304,12 +304,12 @@ char *hiddev_rec(struct ir_remote *remotes)
 
 		LOGPRINTF(1, "This is another type Dvico - sends two codes");
 		if (!waitfordata(TIMEOUT)) {
-			logprintf(LOG_ERR, "timeout reading next event");
+			logprintf(LIRC_ERROR, "timeout reading next event");
 			return (NULL);
 		}
 		rd = read(drv.fd, &event, sizeof event);
 		if (rd != sizeof event) {
-			logprintf(LOG_ERR, "error reading '%s'", drv.device);
+			logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 			return 0;
 		}
 		pre_code = event.hid;
@@ -368,12 +368,12 @@ char *hiddev_rec(struct ir_remote *remotes)
 		asus_events[0] = event;
 		for (i = 1; i < 8; i++) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LOG_ERR, "timeout reading byte %d", i);
+				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
 				return (NULL);
 			}
 			rd = read(drv.fd, &asus_events[i], sizeof event);
 			if (rd != sizeof event) {
-				logprintf(LOG_ERR, "error reading '%s'", drv.device);
+				logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 				return 0;
 			}
 		}
@@ -398,7 +398,7 @@ char *hiddev_rec(struct ir_remote *remotes)
 		x_movement &= 0x0000000F;
 
 		if (x_movement > 8 || y_movement > 8) {
-			logprintf(LOG_ERR, "unexpected coordinates: %u,%u", x_movement, y_movement);
+			logprintf(LIRC_ERROR, "unexpected coordinates: %u,%u", x_movement, y_movement);
 			return NULL;
 		}
 
@@ -487,8 +487,8 @@ char *sb0540_rec(struct ir_remote *remotes)
 
 	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LOG_ERR, "error reading '%s'", drv.device);
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		logperror(LIRC_ERROR, NULL);
 		hiddev_deinit();
 		return 0;
 	}
@@ -552,12 +552,12 @@ char *macmini_rec(struct ir_remote *remotes)
 	gettimeofday(&start, NULL);
 	for (i = 0; i < 4; i++) {
 		if (i > 0 && !waitfordata(TIMEOUT)) {
-			logprintf(LOG_ERR, "timeout reading byte %d", i);
+			logprintf(LIRC_ERROR, "timeout reading byte %d", i);
 			return (NULL);
 		}
 		rd = read(drv.fd, &ev[i], sizeof(ev[i]));
 		if (rd != sizeof(ev[i])) {
-			logprintf(LOG_ERR, "error reading '%s'", drv.device);
+			logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 			hiddev_deinit();
 			return 0;
 		}
@@ -633,8 +633,8 @@ char *samsung_rec(struct ir_remote *remotes)
 	gettimeofday(&start, NULL);
 	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LOG_ERR, "error reading '%s'", drv.device);
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		logperror(LIRC_ERROR, NULL);
 		hiddev_deinit();
 		return 0;
 	}
@@ -777,7 +777,7 @@ char *samsung_rec(struct ir_remote *remotes)
 			 * Should not happen because remaining reports
 			 * from report descriptor seem to be unused by remote.
 			 */
-			logprintf(LOG_ERR, "Unexpected report id %d", uref.report_id);
+			logprintf(LIRC_ERROR, "Unexpected report id %d", uref.report_id);
 			break;
 		}
 	}

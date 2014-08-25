@@ -183,13 +183,11 @@ int accent_init(void)
 	signal_length = (drv.code_length + (drv.code_length / 8)) * 1000000 / ACCENT_BAUD_RATE;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "Could not create the lock file");
-		LOGPRINTF(LOG_EMERG, "Could not create the lock file");
+		logprintf(LIRC_ERROR, "Could not create the lock file");
 		return (0);
 	}
 	if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
-		logprintf(LOG_ERR, "Could not open the serial port");
-		LOGPRINTF(LOG_EMERG, "Could not open the serial port");
+		logprintf(LIRC_ERROR, "Could not open the serial port");
 		accent_deinit();
 		return (0);
 	}
@@ -239,17 +237,17 @@ char *accent_rec(struct ir_remote *remotes)
 			if (waitfordata(45000) == 0) {
 				// waitfordata() timed out: the
 				// sequence is complete.
-				LOGPRINTF(LOG_INFO, "waitfordata() timeout waiting for byte %d", i);
+				LOGPRINTF(1, "waitfordata() timeout waiting for byte %d", i);
 				break;
 			}
 		}
 		// Some data available to read.
 		if (read(drv.fd, &b[i], 1) == -1) {
-			logprintf(LOG_ERR, "read() failed at byte %d", i);
-			logperror(LOG_ERR, "read() failed");
+			logprintf(LIRC_ERROR, "read() failed at byte %d", i);
+			logperror(LIRC_ERROR, "read() failed");
 			return (NULL);
 		} else {
-			LOGPRINTF(LOG_INFO, "read() byte %d: %02x", i, b[i]);
+			LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
 		}
 	}			// End for
 
@@ -257,27 +255,27 @@ char *accent_rec(struct ir_remote *remotes)
 	gettimeofday(&end, NULL);
 
 	// The bytes sequence is complete, check its validity.
-	LOGPRINTF(LOG_INFO, "Received a sequence of %d bytes", i);
+	LOGPRINTF(1, "Received a sequence of %d bytes", i);
 
 	// Just one byte with zero value: repeated keypress?
 	if (i == 1 && b[0] == 0) {
 		if (last_code && (start.tv_sec - last.tv_sec < 2)) {
 			// A previous code exists and the time gap is
 			// lower than 2 seconds.
-			logprintf(LOG_INFO, "Received repeated key");
+			logprintf(LIRC_INFO, "Received repeated key");
 			code = last_code;
 			tcflush(drv.fd, TCIFLUSH);
 			m = decode_all(remotes);
 			return (m);
 		} else {
-			LOGPRINTF(LOG_INFO, "Previos code not set, invalid repeat key");
+			LOGPRINTF(1, "Previos code not set, invalid repeat key");
 			last_code = 0;
 			return (NULL);
 		}
 	}
 	// Sequence too short?
 	if (i < ACCENT_MEANING_BYTES) {
-		logprintf(LOG_NOTICE, "Invalid sequence: too short");
+		logprintf(LIRC_NOTICE, "Invalid sequence: too short");
 		last_code = 0;
 		return (NULL);
 	}
@@ -312,8 +310,8 @@ char *accent_rec(struct ir_remote *remotes)
 			code <<= 8;
 			code |= b[6];
 		}
-		LOGPRINTF(LOG_INFO, "sizeof(code) = %d", sizeof(code));
-		logprintf(LOG_INFO, "Received code -> 0x%016llx", code);
+		LOGPRINTF(1, "sizeof(code) = %d", sizeof(code));
+		logprintf(1, "Received code -> 0x%016llx", code);
 		last_code = code;
 		tcflush(drv.fd, TCIFLUSH);
 		m = decode_all(remotes);
@@ -330,10 +328,10 @@ char *accent_rec(struct ir_remote *remotes)
 		}
 		if (j == ACCENT_MAX_READ_BYTES) {
 			// All the received bytes are zeroes, without gaps.
-			logprintf(LOG_WARNING, "Receiver jam! Reopening the serial port");
+			logprintf(LIRC_WARNING, "Receiver jam! Reopening the serial port");
 			close(drv.fd);
 			if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
-				logprintf(LOG_ERR, "Could not reopen the serial port");
+				logprintf(LIRC_ERROR, "Could not reopen the serial port");
 				raise(SIGTERM);
 			}
 			last_code = 0;
@@ -341,9 +339,9 @@ char *accent_rec(struct ir_remote *remotes)
 		}
 	}
 	// Should never reach this point.
-	logprintf(LOG_NOTICE, "Received an invalid sequence");
+	logprintf(LIRC_NOTICE, "Received an invalid sequence");
 	for (j = 0; j < i; j++) {
-		LOGPRINTF(LOG_NOTICE, " b[%d] = %02x", j, b[j]);
+		LOGPRINTF(1, " b[%d] = %02x", j, b[j]);
 	}
 	last_code = 0;
 	return (NULL);
@@ -358,18 +356,18 @@ int accent_open_serial_port(const char *device)
 	int fd;
 	struct termios options;
 
-	logprintf(LOG_DEBUG, "Entering accent_open_serial_port(), device = %s", device);
+	logprintf(LIRC_DEBUG, "Entering accent_open_serial_port(), device = %s", device);
 
 	// Open the serial device.
 	if ((fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC)) < 0) {
-		logprintf(LOG_ERR, "Could not open the serial port");
-		logperror(LOG_ERR, "open() failed");
+		logprintf(LIRC_ERROR, "Could not open the serial port");
+		logperror(LIRC_ERROR, "open() failed");
 		return (-1);
 	}
 	// Get the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
-		logprintf(LOG_ERR, "Could not get serial port attributes");
-		logperror(LOG_ERR, "tcgetattr() failed");
+		logprintf(LIRC_ERROR, "Could not get serial port attributes");
+		logperror(LIRC_ERROR, "tcgetattr() failed");
 		return (-1);
 	}
 	// Set the line in raw mode (no control chars, etc.)
@@ -377,14 +375,14 @@ int accent_open_serial_port(const char *device)
 	// Apply the changes after all the output has been transmitted.
 	// Discard input before the change is made.
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
-		logprintf(LOG_ERR, "Could not set serial port with cfmakeraw()");
-		logperror(LOG_ERR, "tcsetattr() failed");
+		logprintf(LIRC_ERROR, "Could not set serial port with cfmakeraw()");
+		logperror(LIRC_ERROR, "tcsetattr() failed");
 		return (-1);
 	}
 	// Gets the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
-		logprintf(LOG_ERR, "Could not get serial port attributes");
-		logperror(LOG_ERR, "tcgetattr() failed");
+		logprintf(LIRC_ERROR, "Could not get serial port attributes");
+		logperror(LIRC_ERROR, "tcgetattr() failed");
 		return (-1);
 	}
 	// Set input and output baud rate to 1200.
@@ -401,14 +399,14 @@ int accent_open_serial_port(const char *device)
 	// Disable parity checking for input.
 	options.c_cflag &= ~PARENB;
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
-		logprintf(LOG_ERR, "Could not set serial port line discipline");
-		logperror(LOG_ERR, "tcsetattr() failed");
+		logprintf(LIRC_ERROR, "Could not set serial port line discipline");
+		logperror(LIRC_ERROR, "tcsetattr() failed");
 		return (-1);
 	}
 	// Discards data received but not read.
 	if (tcflush(fd, TCIFLUSH) < 0) {
-		logprintf(LOG_ERR, "Could not flush input buffer");
-		logperror(LOG_ERR, "tcflush() failed");
+		logprintf(LIRC_ERROR, "Could not flush input buffer");
+		logperror(LIRC_ERROR, "tcflush() failed");
 		return (-1);
 	}
 

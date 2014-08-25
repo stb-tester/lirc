@@ -41,7 +41,7 @@ void *slinke_malloc(size_t size)
 {
 	void *ptr = malloc(size);
 	if (ptr == NULL) {
-		logprintf(LOG_ERR, "slinke_malloc: out of memory");
+		logprintf(LIRC_ERROR, "slinke_malloc: out of memory");
 		return NULL;
 	} else {
 		memset(ptr, 0, size);
@@ -54,7 +54,7 @@ void *slinke_realloc(void *optr, size_t size)
 	void *nptr;
 	nptr = realloc(optr, size);
 	if (nptr == NULL) {
-		logprintf(LOG_ERR, "realloc: out of memory");
+		logprintf(LIRC_ERROR, "realloc: out of memory");
 		return NULL;
 	} else {
 		return nptr;
@@ -341,29 +341,29 @@ int slinke_init(void)
 {
 	int i;
 
-	logprintf(LOG_INFO, "slinke_init");
+	logprintf(LIRC_INFO, "slinke_init");
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	/* if */
 	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "slinke_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "slinke_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	/* if */
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		slinke_deinit();
 		return (0);
 	}
 	/* if */
 	if (!tty_setbaud(drv.fd, 19200)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		slinke_deinit();
 		return (0);
 	}
@@ -380,7 +380,7 @@ int slinke_init(void)
 		queue[i].bufsize = QUEUE_BUF_INIT_SIZE;
 		queue[i].buf = (unsigned char *)slinke_malloc(QUEUE_BUF_INIT_SIZE);
 		if (queue[i].buf == NULL) {
-			logprintf(LOG_ERR, "could not create port queue buffer");
+			logprintf(LIRC_ERROR, "could not create port queue buffer");
 			slinke_deinit();
 			return (0);
 		}		/* if */
@@ -459,7 +459,7 @@ static void reset_signal_queue()
 		signal_queue_bufsize = 32;
 		signal_queue_buf = (lirc_t *) slinke_malloc(signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
-			logprintf(LOG_ERR, "could not create signal queue buffer");
+			logprintf(LIRC_ERROR, "could not create signal queue buffer");
 			return;
 		}		/* if */
 	}			/* if */
@@ -485,7 +485,7 @@ static void app_signal(int is_pulse, int period_len)
 		signal_queue_bufsize *= 2;
 		signal_queue_buf = (lirc_t *) slinke_realloc(signal_queue_buf, signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
-			logprintf(LOG_ERR, "could not enlarge signal queue buffer");
+			logprintf(LIRC_ERROR, "could not enlarge signal queue buffer");
 			return;
 		}		/* if */
 	}			/* if */
@@ -564,14 +564,14 @@ static char *process_rx_bytes(struct port_queue_rec *q, struct ir_remote *remote
 	case MSG_ID_SAMPLING_PERIOD_EQUALS:{
 			if (len == 2) {
 				slinke_settings.sample_period = (buf[0] << 8) | (buf[1]);
-				logprintf(LOG_INFO, "sample period %d * 1/5 usec", slinke_settings.sample_period);
+				logprintf(LIRC_INFO, "sample period %d * 1/5 usec", slinke_settings.sample_period);
 			}	/* if */
 		}
 		break;
 	case MSG_ID_TIMEOUT_PERIOD_EQUALS:{
 			if (len == 2) {
 				slinke_settings.timeout_samples = (buf[0] << 8) | (buf[1]);
-				logprintf(LOG_INFO, "timeout %d samples", slinke_settings.timeout_samples);
+				logprintf(LIRC_INFO, "timeout %d samples", slinke_settings.timeout_samples);
 			}	/* if */
 		}
 		break;
@@ -584,9 +584,9 @@ static char *process_rx_bytes(struct port_queue_rec *q, struct ir_remote *remote
 					free(slinke_settings.version);
 				slinke_settings.version = strdup(s);
 				if (slinke_settings.version == NULL) {
-					logprintf(LOG_ERR, "could not allocate version string");
+					logprintf(LIRC_ERROR, "could not allocate version string");
 				} else {
-					logprintf(LOG_INFO, "Slink-e version %s", slinke_settings.version);
+					logprintf(LIRC_INFO, "Slink-e version %s", slinke_settings.version);
 				}	/* if */
 			}	/* if */
 		}
@@ -613,7 +613,7 @@ static void enqueue_byte(struct port_queue_rec *q, unsigned char b)
 		q->bufsize *= 2;
 		q->buf = (unsigned char *)slinke_realloc(q->buf, q->bufsize);
 		if (q->buf == NULL) {
-			logprintf(LOG_ERR, "could not enlarge port queue buffer");
+			logprintf(LIRC_ERROR, "could not enlarge port queue buffer");
 			return;
 		}		/* if */
 	}			/* if */

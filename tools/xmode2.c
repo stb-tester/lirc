@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 
 	char *device = LIRC_DRIVER_DEVICE;
 	char *geometry = NULL;
-	lirc_log_open("xmode2", 0, LOG_DEBUG);
+	lirc_log_open("xmode2", 0, LIRC_DEBUG);
 	hw_choose_driver(NULL);
 	while (1) {
 		int c;

@@ -113,9 +113,9 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 	(void)outTime;
 
 	if (status & paOutputUnderflow)
-		logprintf(LOG_WARNING, "Output underflow %s", drv.device);
+		logprintf(LIRC_WARNING, "Output underflow %s", drv.device);
 	if (status & paInputOverflow)
-		logprintf(LOG_WARNING, "Input overflow %s", drv.device);
+		logprintf(LIRC_WARNING, "Input overflow %s", drv.device);
 
 	for (i = 0; i < framesPerBuffer; i++, myPtr++) {
 		/* check if we have to ignore this sample */
@@ -311,13 +311,13 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 	write(sendPipe[1], &freq, sizeof(freq));
 	if (freq != prevfreq) {
 		prevfreq = freq;
-		logprintf(LOG_INFO, "Using carrier frequency %i", freq);
+		logprintf(LIRC_INFO, "Using carrier frequency %i", freq);
 	}
 
 	/* write signals to sendpipe */
 	if (write(sendPipe[1], signals, length * sizeof(lirc_t)) == -1) {
-		logprintf(LOG_ERR, "write failed");
-		logperror(LOG_ERR, "write()");
+		logprintf(LIRC_ERROR, "write failed");
+		logperror(LIRC_ERROR, "write()");
 		return 0;
 	}
 
@@ -359,7 +359,7 @@ static void audio_parsedevicestr(char *api, char *device, int *rate, double *lat
 			return;
 		}
 
-		logprintf(LOG_ERR,
+		logprintf(LIRC_ERROR,
 			  "malformed device string %s, syntax is api:device[@rate[:latency]] or @rate[:latency]",
 			  drv.device);
 	}
@@ -399,7 +399,7 @@ static void audio_choosedevice(PaStreamParameters * streamparameters, int input,
 			/*allow devices to be printed to the log twice */
 			/*once for input, once for output */
 			if ((!inDevicesPrinted && input) || (!outDevicesPrinted && !input)) {
-				logprintf(LOG_INFO, "Found %s device %i %s:%s", direction, i, hostapiinfo->name,
+				logprintf(LIRC_INFO, "Found %s device %i %s:%s", direction, i, hostapiinfo->name,
 					  deviceinfo->name);
 			}
 		}
@@ -414,7 +414,7 @@ static void audio_choosedevice(PaStreamParameters * streamparameters, int input,
 		devicetype = "default";
 
 		if (strlen(api) && strlen(device))
-			logprintf(LOG_ERR, "Device %s %s:%s not found", direction, api, device);
+			logprintf(LIRC_ERROR, "Device %s %s:%s not found", direction, api, device);
 
 		if (input)
 			chosendevice = Pa_GetDefaultInputDevice();
@@ -437,7 +437,7 @@ static void audio_choosedevice(PaStreamParameters * streamparameters, int input,
 
 	deviceinfo = Pa_GetDeviceInfo(chosendevice);
 	hostapiinfo = Pa_GetHostApiInfo(deviceinfo->hostApi);
-	logprintf(LOG_INFO, "Using %s %s device %i: %s:%s with %s latency %f", devicetype, direction, chosendevice,
+	logprintf(LIRC_INFO, "Using %s %s device %i: %s:%s with %s latency %f", devicetype, direction, chosendevice,
 		  hostapiinfo->name, deviceinfo->name, latencytype, streamparameters->suggestedLatency);
 }
 
@@ -461,7 +461,7 @@ int audio_init()
 	LOGPRINTF(1, "hw_audio_init()");
 
 	//
-	logprintf(LOG_INFO, "Initializing %s...", drv.device);
+	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
 	init_rec_buffer();
 	rewind_rec_buffer();
 
@@ -484,12 +484,12 @@ int audio_init()
 		goto error;
 
 	audio_parsedevicestr(api, device, &data.samplerate, &latency);
-	logprintf(LOG_INFO, "Using samplerate %i", data.samplerate);
+	logprintf(LIRC_INFO, "Using samplerate %i", data.samplerate);
 
 	/* choose input device */
 	audio_choosedevice(&inputParameters, 1, api, device, latency);
 	if (inputParameters.device == paNoDevice) {
-		logprintf(LOG_ERR, "No input device found");
+		logprintf(LIRC_ERROR, "No input device found");
 		goto error;
 	}
 	inputParameters.channelCount = NUM_CHANNELS;	/* stereo input */
@@ -499,7 +499,7 @@ int audio_init()
 	/* choose output device */
 	audio_choosedevice(&outputParameters, 0, api, device, latency);
 	if (outputParameters.device == paNoDevice) {
-		logprintf(LOG_ERR, "No output device found");
+		logprintf(LIRC_ERROR, "No output device found");
 		goto error;
 	}
 	outputParameters.channelCount = NUM_CHANNELS;	/* stereo output */
@@ -517,23 +517,23 @@ int audio_init()
 
 	/* open pty */
 	if (openpty(&master, &ptyfd, ptyName, 0, 0) == -1) {
-		logprintf(LOG_ERR, "openpty failed");
-		logperror(LOG_ERR, "openpty()");
+		logprintf(LIRC_ERROR, "openpty failed");
+		logperror(LIRC_ERROR, "openpty()");
 		goto error;
 	}
 
 	/* regular device file */
 	if (tcgetattr(master, &t) < 0) {
-		logprintf(LOG_ERR, "tcgetattr failed");
-		logperror(LOG_ERR, "tcgetattr()");
+		logprintf(LIRC_ERROR, "tcgetattr failed");
+		logperror(LIRC_ERROR, "tcgetattr()");
 	}
 
 	cfmakeraw(&t);
 
 	/* apply file descriptor options */
 	if (tcsetattr(master, TCSANOW, &t) < 0) {
-		logprintf(LOG_ERR, "tcsetattr failed");
-		logperror(LOG_ERR, "tcsetattr()");
+		logprintf(LIRC_ERROR, "tcsetattr failed");
+		logperror(LIRC_ERROR, "tcsetattr()");
 	}
 
 	flags = fcntl(ptyfd, F_GETFL, 0);
@@ -541,7 +541,7 @@ int audio_init()
 		fcntl(ptyfd, F_SETFL, flags | O_NONBLOCK);
 	}
 
-	LOGPRINTF(LOG_INFO, "PTY name: %s", ptyName);
+	LOGPRINTF(1, "PTY name: %s", ptyName);
 
 	drv.fd = ptyfd;
 
@@ -549,8 +549,8 @@ int audio_init()
 	/* make a pipe for signaling from the callback that everything
 	   was sent */
 	if (pipe(sendPipe) == -1 || pipe(completedPipe) == -1) {
-		logprintf(LOG_ERR, "pipe failed");
-		logperror(LOG_ERR, "pipe()");
+		logprintf(LIRC_ERROR, "pipe failed");
+		logperror(LIRC_ERROR, "pipe()");
 	}
 
 	/* make the readable end non-blocking */
@@ -558,8 +558,8 @@ int audio_init()
 	if (flags != -1) {
 		fcntl(sendPipe[0], F_SETFL, flags | O_NONBLOCK);
 	} else {
-		logprintf(LOG_ERR, "fcntl failed");
-		logperror(LOG_ERR, "fcntl()");
+		logprintf(LIRC_ERROR, "fcntl failed");
+		logperror(LIRC_ERROR, "fcntl()");
 	}
 
 	err = Pa_StartStream(stream);
@@ -573,9 +573,9 @@ int audio_init()
 
 error:
 	Pa_Terminate();
-	logprintf(LOG_ERR, "an error occured while using the portaudio stream");
-	logprintf(LOG_ERR, "error number: %d", err);
-	logprintf(LOG_ERR, "error message: %s", Pa_GetErrorText(err));
+	logprintf(LIRC_ERROR, "an error occured while using the portaudio stream");
+	logprintf(LIRC_ERROR, "error number: %d", err);
+	logprintf(LIRC_ERROR, "error message: %s", Pa_GetErrorText(err));
 
 	return (0);
 }
@@ -586,7 +586,7 @@ int audio_deinit(void)
 
 	LOGPRINTF(1, "hw_audio_deinit()");
 
-	logprintf(LOG_INFO, "Deinitializing %s...", drv.device);
+	logprintf(LIRC_INFO, "Deinitializing %s...", drv.device);
 
 	/* make absolutely sure the full output buffer has played out
 	   even though portaudio should wait for it, it doesn't always
@@ -617,9 +617,9 @@ int audio_deinit(void)
 
 error:
 	Pa_Terminate();
-	logprintf(LOG_ERR, "an error occured while using the portaudio stream");
-	logprintf(LOG_ERR, "error number: %d", err);
-	logprintf(LOG_ERR, "eError message: %s", Pa_GetErrorText(err));
+	logprintf(LIRC_ERROR, "an error occured while using the portaudio stream");
+	logprintf(LIRC_ERROR, "error number: %d", err);
+	logprintf(LIRC_ERROR, "eError message: %s", Pa_GetErrorText(err));
 	return 0;
 }
 

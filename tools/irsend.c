@@ -101,7 +101,7 @@ const char *read_string(int fd)
 
 	end[0] = 0;
 	ptr = strlen(buffer) + 1;
-	logprintf(LOG_DEBUG, "buffer: -%s-\n", buffer);
+	logprintf(LIRC_DEBUG, "buffer: -%s-\n", buffer);
 	return (buffer);
 }
 

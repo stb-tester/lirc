@@ -43,16 +43,16 @@ class LogTest : public CppUnit::TestFixture
             lirc_log_open("IrRemoteTest", 0, 10);
 
             lirc_log_setlevel("9");
-            LOGPRINTF(2, "Testing LOG_PEEP: %s", "PEEP arg");
-            LOGPRINTF(3, "Testing LOG_STALK (disabled): %s", "STALK arg");
+            LOGPRINTF(2, "Testing LIRC_PEEP: %s", "PEEP arg");
+            LOGPRINTF(3, "Testing LIRC_STALK (disabled): %s", "STALK arg");
 
             lirc_log_setlevel("8");
-            LOGPRINTF(2, "Testing LOG_TRACE: %s", "TRACE arg");
-            logprintf(LOG_INFO, "Testing enabled TRACE");
+            LOGPRINTF(2, "Testing LIRC_TRACE: %s", "TRACE arg");
+            logprintf(LIRC_INFO, "Testing enabled TRACE");
 
             lirc_log_setlevel("4");
-            logprintf(LOG_INFO, "Testing disabled WARNING");
-            logprintf(LOG_WARNING, "Testing enabled WARNING");
+            logprintf(LIRC_INFO, "Testing disabled WARNING");
+            logprintf(LIRC_WARNING, "Testing enabled WARNING");
             lirc_log_close();
 
             ifstream logfile("logtest.log");
@@ -64,7 +64,7 @@ class LogTest : public CppUnit::TestFixture
 
         void testLevels()
         {
-            CPPUNIT_ASSERT(log.find("LOG_PEEP") != string::npos);
+            CPPUNIT_ASSERT(log.find("LIRC_PEEP") != string::npos);
             CPPUNIT_ASSERT(log.find("enabled TRACE") != string::npos);
             CPPUNIT_ASSERT(log.find("STALK") == string::npos);
             CPPUNIT_ASSERT(log.find("disabled WARNING") == string::npos);

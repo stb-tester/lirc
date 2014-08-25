@@ -651,7 +651,7 @@ char *decode_all(struct ir_remote *remotes)
 					  reps);
 			decoding = NULL;
 			if (len >= PACKET_SIZE + 1) {
-				logprintf(LOG_ERR, "message buffer overflow");
+				logprintf(LIRC_ERROR, "message buffer overflow");
 				return (NULL);
 			} else {
 				return (message);

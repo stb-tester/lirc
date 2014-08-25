@@ -94,32 +94,32 @@ static int uirt2_decode(struct ir_remote *remote, ir_code * prep, ir_code * code
 static int uirt2_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "uirt2: could not create lock files");
+		logprintf(LIRC_ERROR, "uirt2: could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "uirt2: could not open %s", drv.device);
-		logperror(LOG_ERR, "uirt2: ");
+		logprintf(LIRC_ERROR, "uirt2: could not open %s", drv.device);
+		logperror(LIRC_ERROR, "uirt2: ");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "uirt2: could not reset tty");
+		logprintf(LIRC_ERROR, "uirt2: could not reset tty");
 		uirt2_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 115200)) {
-		logprintf(LOG_ERR, "uirt2: could not set baud rate");
+		logprintf(LIRC_ERROR, "uirt2: could not set baud rate");
 		uirt2_deinit();
 		return (0);
 	}
 	if (!tty_setcsize(drv.fd, 8)) {
-		logprintf(LOG_ERR, "uirt2: could not set csize");
+		logprintf(LIRC_ERROR, "uirt2: could not set csize");
 		uirt2_deinit();
 		return (0);
 	}
 	if (!tty_setrtscts(drv.fd, 1)) {
-		logprintf(LOG_ERR, "uirt2: could not enable hardware flow");
+		logprintf(LIRC_ERROR, "uirt2: could not enable hardware flow");
 		uirt2_deinit();
 		return (0);
 	}
@@ -143,13 +143,13 @@ static char *uirt2_rec(struct ir_remote *remotes)
 	for (i = 0; i < NUMBYTES; i++) {
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LOG_ERR, "uirt2: timeout reading byte %d", i);
+				logprintf(LIRC_ERROR, "uirt2: timeout reading byte %d", i);
 				return (NULL);
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LOG_ERR, "uirt2: reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "uirt2: reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);

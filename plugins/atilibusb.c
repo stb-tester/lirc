@@ -113,30 +113,30 @@ static int ati_init()
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logperror(LOG_ERR, "couldn't open pipe");
+		logperror(LIRC_ERROR, "couldn't open pipe");
 		return 0;
 	}
 	drv.fd = pipe_fd[0];
 
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
-		logprintf(LOG_ERR, "couldn't find a compatible USB device");
+		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
 		return 0;
 	}
 
 	if (!find_device_endpoints(usb_dev)) {
-		logprintf(LOG_ERR, "couldn't find device endpoints");
+		logprintf(LIRC_ERROR, "couldn't find device endpoints");
 		return 0;
 	}
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		logperror(LOG_ERR, "couldn't open USB receiver");
+		logperror(LIRC_ERROR, "couldn't open USB receiver");
 		goto fail;
 	}
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
-		logperror(LOG_ERR, "couldn't claim USB interface");
+		logperror(LIRC_ERROR, "couldn't claim USB interface");
 		goto fail;
 	}
 
@@ -144,13 +144,13 @@ static int ati_init()
 	if ((usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, init1, sizeof(init1), 100) != sizeof(init1))
 	    || (usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, init2, sizeof(init2), 100) !=
 		sizeof(init2))) {
-		logprintf(LOG_ERR, "couldn't initialize USB receiver: %s", errno ? strerror(errno) : "short write");
+		logprintf(LIRC_ERROR, "couldn't initialize USB receiver: %s", errno ? strerror(errno) : "short write");
 		goto fail;
 	}
 
 	child = fork();
 	if (child == -1) {
-		logperror(LOG_ERR, "couldn't fork child process");
+		logperror(LIRC_ERROR, "couldn't fork child process");
 		goto fail;
 	} else if (child == 0) {
 		usb_read_loop(pipe_fd[1]);
@@ -305,7 +305,7 @@ static void usb_read_loop(int fd)
 			if (errno == EAGAIN || errno == ETIMEDOUT)
 				continue;
 
-			logperror(LOG_ERR, "can't read from USB device");
+			logperror(LIRC_ERROR, "can't read from USB device");
 			err = 1;
 			goto done;
 		}
@@ -329,7 +329,7 @@ static void usb_read_loop(int fd)
 		for (pos = 0; pos < bytes_r; pos += bytes_w) {
 			bytes_w = write(fd, buf + pos, bytes_r - pos);
 			if (bytes_w < 0) {
-				logperror(LOG_ERR, "can't write to pipe");
+				logperror(LIRC_ERROR, "can't write to pipe");
 				err = 1;
 				goto done;
 			}

@@ -60,7 +60,7 @@ lirc_t dsp_readdata(lirc_t timeout)
 
 	while (1) {
 		if (read(myfd, buf, BUFSIZE * 2) != BUFSIZE * 2) {
-			logperror(LOG_ERR, "could not read in simple...");
+			logperror(LIRC_ERROR, "could not read in simple...");
 		}
 
 		for (i = 0; i < BUFSIZE - 1; i++) {
@@ -95,32 +95,32 @@ int dsp_init()
 {
 	int speed = SAMPLE, fmt = AFMT_S16_LE;
 
-	logprintf(LOG_INFO, "Initializing %s...", drv.device);
+	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
 	init_rec_buffer();
 	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "dsp_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "dsp_init()");
 		return (0);
 	}
 
 	if (ioctl(drv.fd, SNDCTL_DSP_SPEED, &speed) < 0) {
-		logprintf(LOG_ERR, "could not ioctl(SPEED) on %s", drv.device);
-		logperror(LOG_ERR, "dsp_init()");
+		logprintf(LIRC_ERROR, "could not ioctl(SPEED) on %s", drv.device);
+		logperror(LIRC_ERROR, "dsp_init()");
 		return (0);
 	}
 	if (speed != SAMPLE) {
-		logprintf(LOG_ERR, "wrong speed handshaked on %s", drv.device);
-		logperror(LOG_ERR, "dsp_init()");
+		logprintf(LIRC_ERROR, "wrong speed handshaked on %s", drv.device);
+		logperror(LIRC_ERROR, "dsp_init()");
 		return (0);
 	}
 	if (ioctl(drv.fd, SNDCTL_DSP_SETFMT, &fmt) < 0) {
-		logprintf(LOG_ERR, "could not ioctl(SETFMT) on %s", drv.device);
-		logperror(LOG_ERR, "dsp_init()");
+		logprintf(LIRC_ERROR, "could not ioctl(SETFMT) on %s", drv.device);
+		logperror(LIRC_ERROR, "dsp_init()");
 		return (0);
 	}
 	if (fmt != AFMT_S16_LE) {
-		logprintf(LOG_ERR, "wrong format handshaked on %s", drv.device);
-		logperror(LOG_ERR, "dsp_init()");
+		logprintf(LIRC_ERROR, "wrong format handshaked on %s", drv.device);
+		logperror(LIRC_ERROR, "dsp_init()");
 		return (0);
 	}
 	myfd = drv.fd;

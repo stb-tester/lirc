@@ -313,20 +313,20 @@ int tty_create_lock(const char *name)
 		s = name;
 
 	if (strlen(filename) + strlen(s) > FILENAME_MAX) {
-		logprintf(LOG_ERR, "invalid filename \"%s%s\"", filename, s);
+		logprintf(LIRC_ERROR, "invalid filename \"%s%s\"", filename, s);
 		return (0);
 	}
 	strcat(filename, s);
 
 tty_create_lock_retry:
 	if ((len = snprintf(id, 10 + 1 + 1, "%10d\n", getpid())) == -1) {
-		logprintf(LOG_ERR, "invalid pid \"%d\"", getpid());
+		logprintf(LIRC_ERROR, "invalid pid \"%d\"", getpid());
 		return (0);
 	}
 	lock = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
 	if (lock == -1) {
-		logprintf(LOG_ERR, "could not create lock file \"%s\"", filename);
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "could not create lock file \"%s\"", filename);
+		logperror(LIRC_ERROR, NULL);
 		lock = open(filename, O_RDONLY);
 		if (lock != -1) {
 			pid_t otherpid;
@@ -335,43 +335,43 @@ tty_create_lock_retry:
 			if (read(lock, id, 10 + 1) == 10 + 1 && read(lock, id, 1) == 0
 			    && sscanf(id, "%d\n", &otherpid) > 0) {
 				if (kill(otherpid, 0) == -1 && errno == ESRCH) {
-					logprintf(LOG_WARNING, "detected stale lockfile %s", filename);
+					logprintf(LIRC_WARNING, "detected stale lockfile %s", filename);
 					close(lock);
 					if (unlink(filename) != -1) {
-						logprintf(LOG_WARNING, "stale lockfile removed");
+						logprintf(LIRC_WARNING, "stale lockfile removed");
 						goto tty_create_lock_retry;
 					} else {
-						logprintf(LOG_ERR, "could not remove stale lockfile");
-						logperror(LOG_ERR, NULL);
+						logprintf(LIRC_ERROR, "could not remove stale lockfile");
+						logperror(LIRC_ERROR, NULL);
 					}
 					return (0);
 				} else {
-					logprintf(LOG_ERR, "%s is locked by PID %d", name, otherpid);
+					logprintf(LIRC_ERROR, "%s is locked by PID %d", name, otherpid);
 				}
 			} else {
-				logprintf(LOG_ERR, "invalid lockfile %s encountered", filename);
+				logprintf(LIRC_ERROR, "invalid lockfile %s encountered", filename);
 			}
 			close(lock);
 		}
 		return (0);
 	}
 	if (write(lock, id, len) != len) {
-		logprintf(LOG_ERR, "could not write pid to lock file");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "could not write pid to lock file");
+		logperror(LIRC_ERROR, NULL);
 		close(lock);
 		if (unlink(filename) == -1) {
-			logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+			logperror(LIRC_ERROR, NULL);
 			/* FALLTHROUGH */
 		}
 		return (0);
 	}
 	if (close(lock) == -1) {
-		logprintf(LOG_ERR, "could not close lock file");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "could not close lock file");
+		logperror(LIRC_ERROR, NULL);
 		if (unlink(filename) == -1) {
-			logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+			logperror(LIRC_ERROR, NULL);
 			/* FALLTHROUGH */
 		}
 		return (0);
@@ -379,11 +379,11 @@ tty_create_lock_retry:
 
 	if ((len = readlink(name, symlink, FILENAME_MAX)) == -1) {
 		if (errno != EINVAL) {	/* symlink */
-			logprintf(LOG_ERR, "readlink() failed for \"%s\"", name);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "readlink() failed for \"%s\"", name);
+			logperror(LIRC_ERROR, NULL);
 			if (unlink(filename) == -1) {
-				logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+				logperror(LIRC_ERROR, NULL);
 				/* FALLTHROUGH */
 			}
 			return (0);
@@ -395,11 +395,11 @@ tty_create_lock_retry:
 			char dirname[FILENAME_MAX + 1];
 
 			if (getcwd(cwd, FILENAME_MAX) == NULL) {
-				logprintf(LOG_ERR, "getcwd() failed");
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "getcwd() failed");
+				logperror(LIRC_ERROR, NULL);
 				if (unlink(filename) == -1) {
-					logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-					logperror(LOG_ERR, NULL);
+					logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+					logperror(LIRC_ERROR, NULL);
 					/* FALLTHROUGH */
 				}
 				return (0);
@@ -408,11 +408,11 @@ tty_create_lock_retry:
 			strcpy(dirname, name);
 			dirname[strlen(name) - strlen(last)] = 0;
 			if (chdir(dirname) == -1) {
-				logprintf(LOG_ERR, "chdir() to \"%s\" failed", dirname);
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "chdir() to \"%s\" failed", dirname);
+				logperror(LIRC_ERROR, NULL);
 				if (unlink(filename) == -1) {
-					logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-					logperror(LOG_ERR, NULL);
+					logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+					logperror(LIRC_ERROR, NULL);
 					/* FALLTHROUGH */
 				}
 				return (0);
@@ -420,19 +420,19 @@ tty_create_lock_retry:
 		}
 		if (tty_create_lock(symlink) == -1) {
 			if (unlink(filename) == -1) {
-				logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+				logperror(LIRC_ERROR, NULL);
 				/* FALLTHROUGH */
 			}
 			return (0);
 		}
 		if (last) {
 			if (chdir(cwd) == -1) {
-				logprintf(LOG_ERR, "chdir() to \"%s\" failed", cwd);
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "chdir() to \"%s\" failed", cwd);
+				logperror(LIRC_ERROR, NULL);
 				if (unlink(filename) == -1) {
-					logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-					logperror(LOG_ERR, NULL);
+					logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+					logperror(LIRC_ERROR, NULL);
 					/* FALLTHROUGH */
 				}
 				return (0);
@@ -480,14 +480,14 @@ int tty_delete_lock(void)
 			id[len] = 0;
 			pid = strtol(id, &endptr, 10);
 			if (!*id || (*endptr && *endptr != '\n')) {
-				logprintf(LOG_WARNING, "invalid lockfile (%s) detected", filename);
+				logprintf(LIRC_WARNING, "invalid lockfile (%s) detected", filename);
 				retval = 0;
 				continue;
 			}
 			if (pid == getpid()) {
 				if (unlink(filename) == -1) {
-					logprintf(LOG_ERR, "could not delete file \"%s\"", filename);
-					logperror(LOG_ERR, NULL);
+					logprintf(LIRC_ERROR, "could not delete file \"%s\"", filename);
+					logperror(LIRC_ERROR, NULL);
 					retval = 0;
 					continue;
 				}
@@ -495,7 +495,7 @@ int tty_delete_lock(void)
 		}
 		closedir(dp);
 	} else {
-		logprintf(LOG_ERR, "could not open directory \"/var/lock/\"");
+		logprintf(LIRC_ERROR, "could not open directory \"/var/lock/\"");
 		return (0);
 	}
 	return (retval);
@@ -560,7 +560,7 @@ int tty_read(int fd, char *byte)
 	tv.tv_usec = 0;
 	ret = select(fd + 1, &fds, NULL, NULL, &tv);
 	if (ret == 0) {
-		logprintf(LOG_ERR, "tty_read(): timeout");
+		logprintf(LIRC_ERROR, "tty_read(): timeout");
 		return (-1);	/* received nothing, bad */
 	} else if (ret != 1) {
 		LOGPRINTF(1, "tty_read(): select() failed");
@@ -587,7 +587,7 @@ int tty_write_echo(int fd, char byte)
 		  ((unsigned int)(unsigned char)byte) & 0x0f, (((unsigned int)(unsigned char)reply) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)reply) & 0x0f);
 	if (byte != reply) {
-		logprintf(LOG_ERR, "Command mismatch.");
+		logprintf(LIRC_ERROR, "Command mismatch.");
 	}
 	return (1);
 }

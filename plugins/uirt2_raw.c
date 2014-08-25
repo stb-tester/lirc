@@ -45,8 +45,6 @@
 
 #define NUMBYTES 6
 
-//static int debug = 2;
-
 static uirt2_t *dev;
 static lirc_t rec_buf[200];
 static int rec_rptr;
@@ -129,7 +127,7 @@ static int queue_put(lirc_t data)
 		rec_wptr = next;
 		return 0;
 	} else {
-		logprintf(LOG_ERR, "uirt2_raw: queue full");
+		logprintf(LIRC_ERROR, "uirt2_raw: queue full");
 		return -1;
 	}
 }
@@ -143,7 +141,7 @@ static int queue_get(lirc_t * pdata)
 
 		return 0;
 	} else {
-		logprintf(LOG_ERR, "uirt2_raw: queue empty");
+		logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
 		return -1;
 	}
 }
@@ -200,18 +198,18 @@ static int uirt2_raw_init(void)
 	int version;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "uirt2_raw: could not create lock files");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not create lock files");
 		return (0);
 	}
 
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "uirt2_raw: could not open %s", drv.device);
+		logprintf(LIRC_ERROR, "uirt2_raw: could not open %s", drv.device);
 		tty_delete_lock();
 		return (0);
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "uirt2_raw: could not reset tty");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not reset tty");
 		close(drv.fd);
 		tty_delete_lock();
 		return (0);
@@ -221,35 +219,35 @@ static int uirt2_raw_init(void)
 	usleep(100 * 1000);
 
 	if (!tty_setbaud(drv.fd, 115200)) {
-		logprintf(LOG_ERR, "uirt2_raw: could not set baud rate");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not set baud rate");
 		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
 	if (!tty_setcsize(drv.fd, 8)) {
-		logprintf(LOG_ERR, "uirt2_raw: could not set csize");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not set csize");
 		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
 	if (!tty_setrtscts(drv.fd, 1)) {
-		logprintf(LOG_ERR, "uirt2_raw: could not enable hardware flow");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not enable hardware flow");
 		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
 	if ((dev = uirt2_init(drv.fd)) == NULL) {
-		logprintf(LOG_ERR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
+		logprintf(LIRC_ERROR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
 		close(drv.fd);
 		tty_delete_lock();
 		return (0);
 	}
 
 	if (uirt2_setmoderaw(dev) < 0) {
-		logprintf(LOG_ERR, "uirt2_raw: could not set raw mode");
+		logprintf(LIRC_ERROR, "uirt2_raw: could not set raw mode");
 		uirt2_raw_deinit();
 		return (0);
 	}
@@ -260,7 +258,7 @@ static int uirt2_raw_init(void)
 	}
 	if (version >= 0x0905) {
 		if (!tty_setdtr(drv.fd, 0)) {
-			logprintf(LOG_ERR, "uirt2_raw: could not set DTR");
+			logprintf(LIRC_ERROR, "uirt2_raw: could not set DTR");
 			uirt2_raw_deinit();
 			return (0);
 		}
@@ -345,7 +343,7 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 	}
 
 	if (!res) {
-		logprintf(LOG_ERR, "uirt2_send: remote not supported");
+		logprintf(LIRC_ERROR, "uirt2_send: remote not supported");
 	} else {
 		LOGPRINTF(1, "uirt2_send: succeeded");
 	}
@@ -397,7 +395,7 @@ static int uirt2_send_mode2_raw(uirt2_t * dev,
 				val = 0;
 			}
 			if (dest - 2 > 48) {
-				logprintf(LOG_ERR, "uirt2_raw: too long RAW transmission %d > 48", dest - 2);
+				logprintf(LIRC_ERROR, "uirt2_raw: too long RAW transmission %d > 48", dest - 2);
 				return 0;
 			}
 		}
@@ -484,7 +482,7 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev,
 	if (res < 0) {
 		return res;
 	}
-	logprintf(LOG_INFO, "uirt2_raw: UIRT version %04x", version);
+	logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x", version);
 	freq = remote->freq;
 	if (freq == 0)
 		freq = DEFAULT_FREQ;
@@ -541,7 +539,7 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev,
 		}
 
 		if (i - 2 > UIRT2_MAX_BITS) {
-			logprintf(LOG_ERR, "uirt2_raw: UIRT tried to send %d bits, max is %d", length - 2,
+			logprintf(LIRC_ERROR, "uirt2_raw: UIRT tried to send %d bits, max is %d", length - 2,
 				  UIRT2_MAX_BITS);
 
 			return 0;

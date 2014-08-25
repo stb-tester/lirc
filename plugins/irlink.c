@@ -116,11 +116,11 @@ static int irlink_open(const char *portName)
 {
 	int port = -1;
 	if (!tty_create_lock((char *)portName)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return -1;
 	}
 	if ((port = open(portName, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		tty_delete_lock();
 		return -1;
 	}
@@ -208,7 +208,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 			break;
 		}
 		if (timeout < time_delta) {
-			logprintf(LOG_ERR, "timeout < time_delta");
+			logprintf(LIRC_ERROR, "timeout < time_delta");
 			break;
 		}
 		if (!waitfordata(timeout - time_delta)) {
@@ -264,8 +264,8 @@ lirc_t irlink_readdata(lirc_t timeout)
 				break;
 			}
 		} else {
-			logprintf(LOG_ERR, "error reading from %s", drv.device);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "error reading from %s", drv.device);
+			logperror(LIRC_ERROR, NULL);
 			irlink_deinit();
 		}
 	}
@@ -276,12 +276,12 @@ int irlink_init(void)
 {
 	drv.fd = irlink_open(drv.device);
 	if (drv.fd < 0) {
-		logprintf(LOG_ERR, "Could not open the '%s' device", drv.device);
+		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 	} else {
 		if (irlink_detect(drv.fd) == 0) {
 			return 1;
 		} else {
-			logprintf(LOG_ERR, "Failed to detect IRLink on '%s' device", drv.device);
+			logprintf(LIRC_ERROR, "Failed to detect IRLink on '%s' device", drv.device);
 			irlink_deinit();
 		}
 	}

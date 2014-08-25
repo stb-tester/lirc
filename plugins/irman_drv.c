@@ -86,12 +86,12 @@ int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_c
 int irman_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = ir_init((char*)drv.device)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "irman_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "irman_init()");
 		tty_delete_lock();
 		return (0);
 	}

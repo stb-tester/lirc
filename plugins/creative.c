@@ -89,22 +89,22 @@ int creative_init(void)
 	signal_length = 108000;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "creative_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "creative_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		creative_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 2400)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		creative_deinit();
 		return (0);
 	}
@@ -133,22 +133,22 @@ char *creative_rec(struct ir_remote *remotes)
 	for (i = 0; i < NUMBYTES; i++) {
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LOG_ERR, "timeout reading byte %d", i);
+				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
 				return (NULL);
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */ ) {
-			logprintf(LOG_ERR, "bad envelope");
+			logprintf(LIRC_ERROR, "bad envelope");
 			return (NULL);
 		}
 		if (i == 5) {
 			if (b[2] != ((~b[3]) & 0xff)) {
-				logprintf(LOG_ERR, "bad checksum");
+				logprintf(LIRC_ERROR, "bad checksum");
 				return (NULL);
 			}
 		}

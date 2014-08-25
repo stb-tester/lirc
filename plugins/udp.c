@@ -38,24 +38,24 @@ int udp_init()
 	int port;
 	struct sockaddr_in addr;
 
-	logprintf(LOG_INFO, "Initializing UDP: %s", drv.device);
+	logprintf(LIRC_INFO, "Initializing UDP: %s", drv.device);
 
 	init_rec_buffer();
 
 	port = atoi(drv.device);
 	if (port == 0) {
-		logprintf(LOG_ERR, "invalid port: %s", drv.device);
+		logprintf(LIRC_ERROR, "invalid port: %s", drv.device);
 		return 0;
 	}
 
 	/* drv.fd needs to point somewhere when we have extra data */
 	if ((zerofd = open("/dev/zero", O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "can't open /dev/zero: %s", strerror(errno));
+		logprintf(LIRC_ERROR, "can't open /dev/zero: %s", strerror(errno));
 		return 0;
 	}
 
 	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		logprintf(LOG_ERR, "error creating socket: %s", strerror(errno));
+		logprintf(LIRC_ERROR, "error creating socket: %s", strerror(errno));
 		close(zerofd);
 		return 0;
 	}
@@ -65,13 +65,13 @@ int udp_init()
 	addr.sin_port = htons(port);
 
 	if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		logprintf(LOG_ERR, "can't bind socket to port %d: %s", port, strerror(errno));
+		logprintf(LIRC_ERROR, "can't bind socket to port %d: %s", port, strerror(errno));
 		close(sockfd);
 		close(zerofd);
 		return 0;
 	}
 
-	logprintf(LOG_INFO, "Listening on port %d/udp", port);
+	logprintf(LIRC_INFO, "Listening on port %d/udp", port);
 
 	drv.fd = sockfd;
 
@@ -110,7 +110,7 @@ lirc_t udp_readdata(lirc_t timeout)
 		if (!waitfordata(timeout))
 			return 0;
 		if ((buflen = recv(sockfd, &buffer, sizeof(buffer), 0)) < 0) {
-			logprintf(LOG_INFO, "Error reading from UDP socket");
+			logprintf(LIRC_INFO, "Error reading from UDP socket");
 			return 0;
 		}
 		if (buflen & 1)

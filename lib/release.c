@@ -100,7 +100,7 @@ const char *check_release_event(const char **remote_name, const char **button_na
 		release_code2 = 0;
 
 		if (len >= PACKET_SIZE + 1) {
-			logprintf(LOG_ERR, "message buffer overflow");
+			logprintf(LIRC_ERROR, "message buffer overflow");
 			return (NULL);
 		}
 
@@ -127,7 +127,7 @@ const char *trigger_release_event(const char **remote_name, const char **button_
 		release_code = 0;
 
 		if (len >= PACKET_SIZE + 1) {
-			logprintf(LOG_ERR, "message buffer overflow");
+			logprintf(LIRC_ERROR, "message buffer overflow");
 			return (NULL);
 		}
 		LOGPRINTF(3, "trigger");
@@ -144,7 +144,7 @@ const char *release_map_remotes(struct ir_remote *old, struct ir_remote *new, co
 
 	if (release_remote2 != NULL) {
 		/* should not happen */
-		logprintf(LOG_ERR, "release_remote2 still in use");
+		logprintf(LIRC_ERROR, "release_remote2 still in use");
 		release_remote2 = NULL;
 	}
 	if (release_remote && is_in_remotes(old, release_remote)) {

@@ -202,7 +202,7 @@ static  void send_data(struct ir_remote *remote, ir_code data, int bits, int don
 	if (is_rcmm(remote)) {
 		mask = 1 << (all_bits - 1 - done);
 		if (bits % 2 || done % 2) {
-			logprintf(LOG_ERR, "invalid bit number.");
+			logprintf(LIRC_ERROR, "invalid bit number.");
 			return;
 		}
 		for (i = 0; i < bits; i += 2, mask >>= 2) {
@@ -230,7 +230,7 @@ static  void send_data(struct ir_remote *remote, ir_code data, int bits, int don
 		return;
 	} else if (is_xmp(remote)) {
 		if (bits % 4 || done % 4) {
-			logprintf(LOG_ERR, "invalid bit number.");
+			logprintf(LIRC_ERROR, "invalid bit number.");
 			return;
 		}
 		for (i = 0; i < bits; i += 4) {
@@ -394,7 +394,7 @@ static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int
 
 	if (is_grundig(remote) || is_goldstar(remote) || is_serial(remote) || is_bo(remote)) {
 		if (!sim) {
-			logprintf(LOG_ERR, "sorry, can't send this protocol yet");
+			logprintf(LIRC_ERROR, "sorry, can't send this protocol yet");
 		}
 		return (0);
 	}
@@ -436,7 +436,7 @@ init_send_loop:
 		} else {
 			if (code->signals == NULL) {
 				if (!sim) {
-					logprintf(LOG_ERR, "no signals for raw send");
+					logprintf(LIRC_ERROR, "no signals for raw send");
 				}
 				return 0;
 			}
@@ -454,7 +454,7 @@ init_send_loop:
 	sync_send_buffer();
 	if (bad_send_buffer()) {
 		if (!sim)
-			logprintf(LOG_ERR, "buffer too small");
+			logprintf(LIRC_ERROR, "buffer too small");
 		return (0);
 	}
 	if (sim)
@@ -468,7 +468,7 @@ init_send_loop:
 			remote->min_remaining_gap = min_gap(remote) - send_buffer.sum;
 			remote->max_remaining_gap = max_gap(remote) - send_buffer.sum;
 		} else {
-			logprintf(LOG_ERR, "too short gap: %u", remote->gap);
+			logprintf(LIRC_ERROR, "too short gap: %u", remote->gap);
 			remote->min_remaining_gap = min_gap(remote);
 			remote->max_remaining_gap = max_gap(remote);
 			return (0);
@@ -518,8 +518,8 @@ init_send_loop:
 final_check:
 	if (!check_send_buffer()) {
 		if (!sim) {
-			logprintf(LOG_ERR, "invalid send buffer");
-			logprintf(LOG_ERR, "this remote configuration cannot be used to transmit");
+			logprintf(LIRC_ERROR, "invalid send buffer");
+			logprintf(LIRC_ERROR, "this remote configuration cannot be used to transmit");
 		}
 		return 0;
 	}

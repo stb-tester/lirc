@@ -150,8 +150,8 @@ int waitfordata(__u32 maxusec)
 			}
 			while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logprintf(LOG_ERR, "select() failed\n");
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "select() failed\n");
+				logperror(LIRC_ERROR, NULL);
 				continue;
 			}
 		}
@@ -203,7 +203,7 @@ int clear_rec_buffer(void)
 			count++;
 
 		if (read(drv.fd, buffer, count) != count) {
-			logprintf(LOG_ERR, "reading in mode LIRC_MODE_LIRCCODE failed");
+			logprintf(LIRC_ERROR, "reading in mode LIRC_MODE_LIRCCODE failed");
 			return (0);
 		}
 		for (i = 0, rec_buffer.decoded = 0; i < count; i++) {
@@ -637,7 +637,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 		lirc_t deltap, deltas, sum;
 
 		if (bits % 2 || done % 2) {
-			logprintf(LOG_ERR, "invalid bit number.");
+			logprintf(LIRC_ERROR, "invalid bit number.");
 			return ((ir_code) - 1);
 		}
 		if (!sync_pending_space(remote))
@@ -647,7 +647,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			deltap = get_next_pulse(remote->pzero + remote->pone + remote->ptwo + remote->pthree);
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			if (deltap == 0 || deltas == 0) {
-				logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return ((ir_code) - 1);
 			}
 			sum = deltap + deltas;
@@ -675,7 +675,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 		int state, laststate;
 
 		if (bits % 2 || done % 2) {
-			logprintf(LOG_ERR, "invalid bit number.");
+			logprintf(LIRC_ERROR, "invalid bit number.");
 			return ((ir_code) - 1);
 		}
 		if (!sync_pending_pulse(remote))
@@ -684,7 +684,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			deltap = get_next_pulse(remote->pzero + remote->pone + remote->ptwo + remote->pthree);
 			if (deltas == 0 || deltap == 0) {
-				logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return ((ir_code) - 1);
 			}
 			sum = deltas + deltap;
@@ -728,7 +728,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			} else if (laststate == -1) {
 				/* 1st bit */
 			} else {
-				logprintf(LOG_ERR, "invalid state %d:%d", laststate, state);
+				logprintf(LIRC_ERROR, "invalid state %d:%d", laststate, state);
 				return ((ir_code) - 1);
 			}
 			laststate = state;
@@ -866,7 +866,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			deltap = get_next_pulse(remote->pzero + remote->pone + remote->ptwo + remote->pthree);
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			if (deltap == 0 || deltas == 0) {
-				logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return ((ir_code) - 1);
 			}
 			if (lastbit == 1) {
@@ -898,7 +898,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 					continue;
 				}
 			}
-			logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+			logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 			return ((ir_code) - 1);
 		}
 		return code;
@@ -907,7 +907,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 		ir_code n;
 
 		if (bits % 4 || done % 4) {
-			logprintf(LOG_ERR, "invalid bit number.");
+			logprintf(LIRC_ERROR, "invalid bit number.");
 			return ((ir_code) - 1);
 		}
 		if (!sync_pending_space(remote))
@@ -917,7 +917,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			deltap = get_next_pulse(remote->pzero);
 			deltas = get_next_space(remote->szero + 16 * remote->sone);
 			if (deltap == 0 || deltas == 0) {
-				logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return ((ir_code) - 1);
 			}
 			sum = deltap + deltas;
@@ -925,7 +925,7 @@ static ir_code get_data(struct ir_remote * remote, int bits, int done)
 			sum -= remote->pzero + remote->szero;
 			n = (sum + remote->sone / 2) / remote->sone;
 			if (n >= 16) {
-				logprintf(LOG_ERR, "failed on bit %d", done + i + 1);
+				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return ((ir_code) - 1);
 			}
 			LOGPRINTF(1, "%d: %lx", i, n);
@@ -1034,7 +1034,7 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 			}
 			if (get_repeat(remote)) {
 				if (remote->last_code == NULL) {
-					logprintf(LOG_NOTICE, "repeat code without last_code received");
+					logprintf(LIRC_NOTICE, "repeat code without last_code received");
 					return (0);
 				}
 

@@ -32,7 +32,7 @@ static int options_debug =  -1;
 void options_set_opt(const char* key, const char* value)
 {
 	if (dictionary_set(lirc_options, key, value) != 0)
-		logprintf(LOG_WARNING,
+		logprintf(LIRC_WARNING,
 			  "Cannot set option %s to %s\n", key, value);
 }
 
@@ -62,7 +62,7 @@ void options_load(int argc, char** const argv,
 	char buff[128];
 
 	if (depth > 1) {
-		logprintf(LOG_WARNING,
+		logprintf(LIRC_WARNING,
 			 "Error:Cowardly refusing to process"
 			     " options-file option within a file\n");
 		return;
@@ -80,13 +80,13 @@ void options_load(int argc, char** const argv,
 	if (access(path, R_OK) == 0) {
 		lirc_options = ciniparser_load(path);
 		if (lirc_options == NULL) {
-			logprintf(LOG_WARNING,
+			logprintf(LIRC_WARNING,
 				 "Cannot load options file %s\n", path);
 			lirc_options = dictionary_new(0);
 		}
 	}
 	else {
-		logprintf(LOG_WARNING, "Warning: cannot open %s\n", path);
+		logprintf(LIRC_WARNING, "Warning: cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}
 	parse_options(argc, argv);

@@ -86,22 +86,22 @@ int mp3anywhere_init(void)
 	signal_length = drv.code_length * 1000000 / 9600;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "mp3anywhere_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "mp3anywhere_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		mp3anywhere_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 9600)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		mp3anywhere_deinit();
 		return (0);
 	}
@@ -140,12 +140,12 @@ char *mp3anywhere_rec(struct ir_remote *remotes)
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d failed", i);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		if (b[1] != 0xd5 || b[2] != 0xaa || b[3] != 0xee || b[5] != 0xad) {
-			logprintf(LOG_ERR, "bad envelope");
+			logprintf(LIRC_ERROR, "bad envelope");
 			return (NULL);
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);

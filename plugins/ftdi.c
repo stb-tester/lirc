@@ -143,24 +143,24 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 		/* Open the USB device */
 		if (ftdi_usb_open_desc(&ftdic, usb_vendor, usb_product, usb_desc, usb_serial) < 0) {
-			logprintf(LOG_ERR, "unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
+			logprintf(LIRC_ERROR, "unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
 
 		/* Enable bit-bang mode, setting output & input pins
 		   direction */
 		if (ftdi_set_bitmode(&ftdic, 1 << output_pin,BITMODE_BITBANG) < 0) {
-			logprintf(LOG_ERR, "unable to enable bitbang mode (%s)", ftdi_get_error_string(&ftdic));
+			logprintf(LIRC_ERROR, "unable to enable bitbang mode (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
 
 		/* Set baud rate */
 		if (ftdi_set_baudrate(&ftdic, rx_baud_rate) < 0) {
-			logprintf(LOG_ERR, "unable to set required baud rate (%s)", ftdi_get_error_string(&ftdic));
+			logprintf(LIRC_ERROR, "unable to set required baud rate (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
 
-		logprintf(LOG_DEBUG, "opened FTDI device '%s' OK", drv.device);
+		logprintf(LIRC_DEBUG, "opened FTDI device '%s' OK", drv.device);
 
 		do {
 			unsigned char buf[RXBUFSZ > TXBUFSZ ? RXBUFSZ : TXBUFSZ];
@@ -170,22 +170,22 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 			if (ret > 0) {
 				/* select correct transmit baudrate */
 				if (ftdi_set_baudrate(&ftdic, tx_baud_rate) < 0) {
-					logprintf(LOG_ERR, "unable to set required baud rate for transmission (%s)",
+					logprintf(LIRC_ERROR, "unable to set required baud rate for transmission (%s)",
 						  ftdi_get_error_string(&ftdic));
 					goto retry;
 				}
 				if (ftdi_write_data(&ftdic, buf, ret) < 0) {
-					logprintf(LOG_ERR, "enable to write ftdi buffer (%s)",
+					logprintf(LIRC_ERROR, "enable to write ftdi buffer (%s)",
 						  ftdi_get_error_string(&ftdic));
 				}
 				if (ftdi_usb_purge_tx_buffer(&ftdic) < 0) {
-					logprintf(LOG_ERR, "unable to purge ftdi buffer (%s)",
+					logprintf(LIRC_ERROR, "unable to purge ftdi buffer (%s)",
 						  ftdi_get_error_string(&ftdic));
 				}
 
 				/* back to rx baudrate: */
 				if (ftdi_set_baudrate(&ftdic, rx_baud_rate) < 0) {
-					logprintf(LOG_ERR, "unable to set restore baudrate for reception (%s)",
+					logprintf(LIRC_ERROR, "unable to set restore baudrate for reception (%s)",
 						  ftdi_get_error_string(&ftdic));
 					goto retry;
 				}
@@ -217,7 +217,7 @@ static int hwftdi_init()
 
 	char *p;
 
-	logprintf(LOG_INFO, "Initializing FTDI: %s", drv.device);
+	logprintf(LIRC_INFO, "Initializing FTDI: %s", drv.device);
 
 	/* Parse the device string, which has the form key=value,
 	 * key=value, ...  This isn't very nice, but it's not a lot
@@ -238,7 +238,7 @@ static int hwftdi_init()
 
 		value = strchr(p, '=');
 		if (value == NULL) {
-			logprintf(LOG_ERR, "device configuration option must contain an '=': '%s'", p);
+			logprintf(LIRC_ERROR, "device configuration option must contain an '=': '%s'", p);
 			goto fail_start;
 		}
 		*value++ = '\0';
@@ -260,7 +260,7 @@ static int hwftdi_init()
 		} else if (strcmp(p, "txbaud") == 0) {
 			tx_baud_rate = strtol(value, NULL, 0);
 		} else {
-			logprintf(LOG_ERR, "unrecognised device configuration option: '%s'", p);
+			logprintf(LIRC_ERROR, "unrecognised device configuration option: '%s'", p);
 			goto fail_start;
 		}
 
@@ -275,15 +275,15 @@ next:
 
 	/* Allocate a pipe for lircd to read from */
 	if (pipe(pipe_rx2main) == -1) {
-		logprintf(LOG_ERR, "unable to create pipe_rx2main");
+		logprintf(LIRC_ERROR, "unable to create pipe_rx2main");
 		goto fail_start;
 	}
 	if (pipe(pipe_main2tx) == -1) {
-		logprintf(LOG_ERR, "unable to create pipe_main2tx");
+		logprintf(LIRC_ERROR, "unable to create pipe_main2tx");
 		goto fail_main2tx;
 	}
 	if (pipe(pipe_tx2main) == -1) {
-		logprintf(LOG_ERR, "unable to create pipe_tx2main");
+		logprintf(LIRC_ERROR, "unable to create pipe_tx2main");
 		goto fail_tx2main;
 	}
 
@@ -293,21 +293,21 @@ next:
 
 	/* make the read end of the pipe non-blocking: */
 	if (fcntl(drv.fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		logprintf(LOG_ERR, "unable to make pipe read end non-blocking");
+		logprintf(LIRC_ERROR, "unable to make pipe read end non-blocking");
 		goto fail;
 	}
 
 	/* Make the read end of the send pipe non-blocking */
 	flags = fcntl(pipe_main2tx[0], F_GETFL);
 	if (fcntl(pipe_main2tx[0], F_SETFL, flags | O_NONBLOCK) == -1) {
-		logprintf(LOG_ERR, "unable to make pipe read end non-blocking");
+		logprintf(LIRC_ERROR, "unable to make pipe read end non-blocking");
 		goto fail;
 	}
 
 	/* Spawn the child process */
 	child_pid = fork();
 	if (child_pid == -1) {
-		logprintf(LOG_ERR, "unable to fork child process");
+		logprintf(LIRC_ERROR, "unable to fork child process");
 		goto fail;
 	} else if (child_pid == 0) {
 		/* we're the child: */
@@ -421,7 +421,7 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	int sendpulse;
 	unsigned char buf[TXBUFSZ];
 
-	logprintf(LOG_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
+	logprintf(LIRC_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
 	if (!init_send(remote, code)) {
@@ -468,7 +468,7 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 			/* flush txbuffer? */
 			/* note: be sure to have room for last '0' */
 			if (bufidx >= (TXBUFSZ - 1)) {
-				logprintf(LOG_ERR, "buffer overflow while generating IR pattern");
+				logprintf(LIRC_ERROR, "buffer overflow while generating IR pattern");
 				return 0;
 			}
 		}
@@ -493,7 +493,7 @@ static int hwftdi_ioctl(unsigned int cmd, void *arg)
 
 	switch (cmd) {
 	default:
-		logprintf(LOG_ERR, "unsupported ioctl - %d", cmd);
+		logprintf(LIRC_ERROR, "unsupported ioctl - %d", cmd);
 		res = -1;
 		break;
 	}

@@ -184,10 +184,10 @@ static int srm7500_init()
 	int got_remoteShortAddress = 0;
 	const char *op_start, *op_end, *string_end;
 
-	logprintf(LOG_INFO, "initializing driver");
+	logprintf(LIRC_INFO, "initializing driver");
 
 	if (drv.device == NULL) {
-		logprintf(LOG_ERR,
+		logprintf(LIRC_ERROR,
 			  "no device options supplied, please read the documentation in "
 			  "philips/lircd.conf.srm7500libusb!");
 		return 0;
@@ -203,29 +203,29 @@ static int srm7500_init()
 			if (result == 2) {
 				got_macShortAddress = 1;
 			} else {
-				logprintf(LOG_ERR, "error parsing option macShortAddress");
+				logprintf(LIRC_ERROR, "error parsing option macShortAddress");
 			}
 		} else if (!strncmp(op_start, "macPANId=", 9)) {
 			result = sscanf(op_start + 9, "%hhx:%hhx", macPANId, macPANId + 1);
 			if (result == 2) {
 				got_macPANId = 1;
 			} else {
-				logprintf(LOG_ERR, "error parsing option macPANId");
+				logprintf(LIRC_ERROR, "error parsing option macPANId");
 			}
 		} else if (!strncmp(op_start, "LogicalChannel=", 15)) {
 			result = sscanf(op_start + 15, "%hhx", &LogicalChannel);
 			if (result == 1) {
 				if (LogicalChannel != 0x19)
-					logprintf(LOG_WARNING, "SRM7500 may not work on channels other than 0x19");
+					logprintf(LIRC_WARNING, "SRM7500 may not work on channels other than 0x19");
 			} else {
-				logprintf(LOG_ERR, "error parsing option LogicalChannel");
+				logprintf(LIRC_ERROR, "error parsing option LogicalChannel");
 			}
 		} else if (!strncmp(op_start, "remoteShortAddress=", 19)) {
 			result = sscanf(op_start + 19, "%hhx:%hhx", remoteShortAddress, remoteShortAddress + 1);
 			if (result == 2) {
 				got_remoteShortAddress = 1;
 			} else {
-				logprintf(LOG_ERR, "error parsing option remoteShortAddress");
+				logprintf(LIRC_ERROR, "error parsing option remoteShortAddress");
 			}
 		} else if (!strncmp(op_start, "remoteExtendedAddress=", 22)) {
 			result = sscanf(op_start + 22, "%hhx:%hhx:%hhx:%hhx:"
@@ -236,7 +236,7 @@ static int srm7500_init()
 			if (result == 8) {
 				remoteExtendedAddressGiven = 1;
 			} else {
-				logprintf(LOG_ERR, "error parsing option remoteExtendedAddress");
+				logprintf(LIRC_ERROR, "error parsing option remoteExtendedAddress");
 			}
 		} else if (!strncmp(op_start, "macBeaconPayload=", 17)) {
 			strncpy((char *)macBeaconPayload, op_start + 17, op_end - (op_start + 17));
@@ -247,36 +247,36 @@ static int srm7500_init()
 			if (result == 2) {
 				LOGPRINTF(1, "got usb %i:%i", requested_usb_bus_number, requested_usb_device_number);
 			} else {
-				logprintf(LOG_ERR, "error parsing option usb");
+				logprintf(LIRC_ERROR, "error parsing option usb");
 			}
 		} else {
 			char erroroptionstring[op_end - op_start + 1];
 
 			strncpy(erroroptionstring, op_start, op_end - op_start + 1);
 			erroroptionstring[op_end - op_start] = 0;
-			logprintf(LOG_WARNING, "enparsable option: %s", erroroptionstring);
+			logprintf(LIRC_WARNING, "enparsable option: %s", erroroptionstring);
 		}
 		op_start = op_end + 1;
 	}
 	if (!(got_remoteShortAddress && got_macPANId && got_macShortAddress)) {
-		logprintf(LOG_ERR, "driver needs at least remoteShortAddress, macPANId and macShortAddress");
+		logprintf(LIRC_ERROR, "driver needs at least remoteShortAddress, macPANId and macShortAddress");
 		return 0;
 	}
 	if (!macBeaconPayloadGiven) {
 		if (gethostname((char *)(macBeaconPayload + 7), 64 - 7) != 0) {
-			logprintf(LOG_ERR, "could not get hostname!");
+			logprintf(LIRC_ERROR, "could not get hostname!");
 			return 0;
 		}
 	}
 
-	logprintf(LOG_INFO, "802.15.4 network parameters");
-	logprintf(LOG_INFO, "    macShortAddress %02hhx:%02hhx", macShortAddress[0], macShortAddress[1]);
-	logprintf(LOG_INFO, "    macPANId %02hhx:%02hhx", macPANId[0], macPANId[1]);
-	logprintf(LOG_INFO, "    LogicalChannel %02hhx", LogicalChannel);
-	logprintf(LOG_INFO, "    remoteShortAddress %02hhx:%02hhx", remoteShortAddress[0], remoteShortAddress[1]);
-	logprintf(LOG_INFO, "    macBeaconPayload %s", macBeaconPayload);
+	logprintf(LIRC_INFO, "802.15.4 network parameters");
+	logprintf(LIRC_INFO, "    macShortAddress %02hhx:%02hhx", macShortAddress[0], macShortAddress[1]);
+	logprintf(LIRC_INFO, "    macPANId %02hhx:%02hhx", macPANId[0], macPANId[1]);
+	logprintf(LIRC_INFO, "    LogicalChannel %02hhx", LogicalChannel);
+	logprintf(LIRC_INFO, "    remoteShortAddress %02hhx:%02hhx", remoteShortAddress[0], remoteShortAddress[1]);
+	logprintf(LIRC_INFO, "    macBeaconPayload %s", macBeaconPayload);
 	if (remoteExtendedAddressGiven) {
-		logprintf(LOG_INFO, "    Connectivity restricted to "
+		logprintf(LIRC_INFO, "    Connectivity restricted to "
 			  "remoteExtendedAddress %02hhx:%02hhx:%02hhx:%02hhx:"
 			  "%02hhx:%02hhx:%02hhx:%02hhx",
 			  remoteExtendedAddress[0], remoteExtendedAddress[1], remoteExtendedAddress[2],
@@ -290,13 +290,13 @@ static int srm7500_init()
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logperror(LOG_ERR, "could not open pipe");
+		logperror(LIRC_ERROR, "could not open pipe");
 		return 0;
 	}
 
 	child = fork();
 	if (child == -1) {
-		logperror(LOG_ERR, "could not fork child process");
+		logperror(LIRC_ERROR, "could not fork child process");
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
 		return 0;
@@ -324,7 +324,7 @@ static int srm7500_init()
 				goto fail;
 			if (!srm7500_initialize_802154_stack())
 				goto fail;
-			logprintf(LOG_INFO, "USB receiver initialized");
+			logprintf(LIRC_INFO, "USB receiver initialized");
 			status = usb_read_loop(pipe_fd[1]);
 fail:
 			sleep(2);
@@ -354,34 +354,34 @@ static int srm7500_initialize_usbdongle()
 	int res;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 
-	logprintf(LOG_INFO, "initializing Philips USB receiver");
+	logprintf(LIRC_INFO, "initializing Philips USB receiver");
 
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
-		logprintf(LOG_ERR, "could not find a compatible USB device");
+		logprintf(LIRC_ERROR, "could not find a compatible USB device");
 		return 0;
 	}
 
 	if (!find_device_endpoints(usb_dev)) {
-		logprintf(LOG_ERR, "could not find device endpoints");
+		logprintf(LIRC_ERROR, "could not find device endpoints");
 		return 0;
 	}
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		logperror(LOG_ERR, "could not open USB receiver");
+		logperror(LIRC_ERROR, "could not open USB receiver");
 		return 0;
 	}
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
 	if ((res < 0) && (res != -ENODATA)) {
-		logperror(LOG_ERR, "could not detach kernel driver");
+		logperror(LIRC_ERROR, "could not detach kernel driver");
 		return 0;
 	}
 #endif
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
-		logperror(LOG_ERR, "could not claim USB interface");
+		logperror(LIRC_ERROR, "could not claim USB interface");
 		return 0;
 	}
 
@@ -414,7 +414,7 @@ static int srm7500_deinitialize_usbdongle()
 	int result = 1;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 
-	logprintf(LOG_INFO, "disabling USB receiver");
+	logprintf(LIRC_INFO, "disabling USB receiver");
 
 	if (!dev_handle) {
 		return result;
@@ -461,7 +461,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_RESET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not reset USB dongle!");
+		logprintf(LIRC_ERROR, "could not reset USB dongle!");
 		return 0;
 	}
 
@@ -473,7 +473,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macCoordShort_Address!");
+		logprintf(LIRC_ERROR, "could not set macCoordShort_Address!");
 		return 0;
 	}
 
@@ -485,7 +485,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macPANId!");
+		logprintf(LIRC_ERROR, "could not set macPANId!");
 		return 0;
 	}
 
@@ -497,7 +497,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macShortAddress!");
+		logprintf(LIRC_ERROR, "could not set macShortAddress!");
 		return 0;
 	}
 
@@ -508,7 +508,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macAssociation_Permit!");
+		logprintf(LIRC_ERROR, "could not set macAssociation_Permit!");
 		return 0;
 	}
 
@@ -519,7 +519,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macRxOnWhenIdle!");
+		logprintf(LIRC_ERROR, "could not set macRxOnWhenIdle!");
 		return 0;
 	}
 
@@ -536,7 +536,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macBeaconPayload_Length!");
+		logprintf(LIRC_ERROR, "could not set macBeaconPayload_Length!");
 		return 0;
 	}
 
@@ -549,7 +549,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not set macBeaconPayload!");
+		logprintf(LIRC_ERROR, "could not set macBeaconPayload!");
 		return 0;
 	}
 
@@ -569,7 +569,7 @@ static int srm7500_initialize_802154_stack()
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_START_confirm) && (packet_buffer_in.data[0] == 0))) {
-		logprintf(LOG_ERR, "could not start PAN!");
+		logprintf(LIRC_ERROR, "could not start PAN!");
 		return 0;
 	}
 	return 1;
@@ -609,7 +609,7 @@ static int srm7500_deinit()
 {
 	int result = 1;
 
-	logprintf(LOG_INFO, "disabling driver");
+	logprintf(LIRC_INFO, "disabling driver");
 
 	if (drv.fd >= 0) {
 		if (close(drv.fd) < 0)
@@ -633,7 +633,7 @@ static char *srm7500_rec(struct ir_remote *remotes)
 
 	rd = read(drv.fd, &rccode, 3);
 	if (rd != 3) {
-		logprintf(LOG_ERR, "error reading from usb worker process");
+		logprintf(LIRC_ERROR, "error reading from usb worker process");
 		if (rd <= 0 && errno != EINTR)
 			srm7500_deinit();
 		return 0;
@@ -687,21 +687,21 @@ static struct usb_device *find_usb_device(void)
 			if (atoi(usb_bus->dirname) == requested_usb_bus_number)
 				break;
 		if (!usb_bus) {
-			logprintf(LOG_ERR, "requested USB bus %d does not exist", requested_usb_bus_number);
+			logprintf(LIRC_ERROR, "requested USB bus %d does not exist", requested_usb_bus_number);
 			return NULL;
 		}
 		for (dev = usb_bus->devices; dev; dev = dev->next)
 			if (dev->devnum == requested_usb_device_number)
 				break;
 		if (!dev) {
-			logprintf(LOG_ERR, "requested USB device %d:%d does not exist", requested_usb_bus_number,
+			logprintf(LIRC_ERROR, "requested USB device %d:%d does not exist", requested_usb_bus_number,
 				  requested_usb_device_number);
 			return NULL;
 		}
 		if (is_device_ok(dev)) {
 			return dev;
 		} else {
-			logprintf(LOG_ERR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
+			logprintf(LIRC_ERROR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
 				  requested_usb_bus_number, requested_usb_device_number, dev->descriptor.idVendor,
 				  dev->descriptor.idProduct);
 		}
@@ -771,7 +771,7 @@ static int usb_read_loop(int fd)
 			continue;
 
 		if (inret < 0) {
-			logprintf(LOG_ERR, "read error %d from usb dongle, aborting\n", inret);
+			logprintf(LIRC_ERROR, "read error %d from usb dongle, aborting\n", inret);
 			return 0;
 		}
 
@@ -802,7 +802,7 @@ static int usb_read_loop(int fd)
 						is_ok = 0;
 
 			if (is_ok) {
-				logprintf(LOG_NOTICE,
+				logprintf(LIRC_NOTICE,
 					  "MLME_ASSOCIATE.response: device %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x associated",
 					  packet_buffer_in.data[0], packet_buffer_in.data[1], packet_buffer_in.data[2],
 					  packet_buffer_in.data[3], packet_buffer_in.data[4], packet_buffer_in.data[5],
@@ -810,7 +810,7 @@ static int usb_read_loop(int fd)
 				/* Status: Successful */
 				packet_buffer_out.data[10] = 0;
 			} else {
-				logprintf(LOG_NOTICE,
+				logprintf(LIRC_NOTICE,
 					  "MLME_ASSOCIATE.response: "
 					  "unknown device %02x:%02x:%02x:%02x:"
 					  "%02x:%02x:%02x:%02x rejected",
@@ -861,7 +861,7 @@ static int usb_read_loop(int fd)
 				/* AssociatedMember */
 				packet_buffer_out.data[10] = MLME_TRUE;
 			} else {
-				logprintf(LOG_NOTICE, "MLME_ORPHAN.response: "
+				logprintf(LIRC_NOTICE, "MLME_ORPHAN.response: "
 					  "unknown device %02x:%02x:%02x:%02x:"
 					  "%02x:%02x:%02x:%02x rejected",
 					  packet_buffer_in.data[0], packet_buffer_in.data[1], packet_buffer_in.data[2],
@@ -900,14 +900,14 @@ static int usb_read_loop(int fd)
 					    write(fd, packet_buffer_in.zig.data + pos,
 						  packet_buffer_in.zig.msduLength - pos);
 					if (bytes_w < 0) {
-						logperror(LOG_ERR, "could not write to pipe");
+						logperror(LIRC_ERROR, "could not write to pipe");
 						return 0;
 					}
 				}
 			}
 			break;
 		default:
-			logprintf(LOG_INFO, "unhandled incoming usb packet 0x%02x\n", packet_buffer_in.type);
+			logprintf(LIRC_INFO, "unhandled incoming usb packet 0x%02x\n", packet_buffer_in.type);
 		}
 	}
 

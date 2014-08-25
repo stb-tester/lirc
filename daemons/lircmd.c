@@ -67,7 +67,7 @@ typedef uint64_t __u64;
 
 static int uinputfd = -1;
 static int useuinput = 0;
-int debug = 0;
+loglevel_t loglevel = 0;
 
 int map_buttons(int b)
 {
@@ -873,7 +873,7 @@ int main(int argc, char **argv)
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
-	lirc_log_open("lircmd", nodaemon, LOG_DEBUG);
+	lirc_log_open("lircmd", nodaemon, LIRC_DEBUG);
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;

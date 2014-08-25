@@ -110,8 +110,8 @@ static int zotac_getcode() {
 
 	rd = read(fd_hidraw, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LOG_ERR, "error reading '%s'", drv.device);
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		logperror(LIRC_ERROR, NULL);
 		zotac_deinit();
 		error_state = 1;
 		return -1;
@@ -215,7 +215,7 @@ static int zotac_getcode() {
 			 * Should not happen because remaining reports
 			 * from report descriptor seem to be unused by remote.
 			 */
-			logprintf(LOG_ERR, "Unexpected report id %d", uref.report_id);
+			logprintf(LIRC_ERROR, "Unexpected report id %d", uref.report_id);
 			break;
 		}
 	}
@@ -260,9 +260,9 @@ static int zotac_getcode() {
 
 static int zotac_init()
 {
-	logprintf(LOG_INFO, "zotac initializing '%s'", drv.device);
+	logprintf(LIRC_INFO, "zotac initializing '%s'", drv.device);
 	if ((fd_hidraw = open(drv.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
+		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 	int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
@@ -274,14 +274,14 @@ static int zotac_init()
 	/* Create pipe so that events sent by the repeat thread will
 	   trigger main thread */
 	if (pipe(fd_pipe) != 0) {
-		logperror(LOG_ERR, "couldn't open pipe");
+		logperror(LIRC_ERROR, "couldn't open pipe");
 		close(fd_hidraw);
 		return 0;
 	}
 	drv.fd = fd_pipe[0];
 	/* Create thread to simulate repetitions */
 	if (pthread_create(&repeat_thread, NULL, zotac_repeat, NULL)) {
-		logprintf(LOG_ERR, "Could not create \"repeat thread\"");
+		logprintf(LIRC_ERROR, "Could not create \"repeat thread\"");
 		return 0;
 	}
 	return 1;
@@ -292,7 +292,7 @@ static int zotac_deinit()
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
 		// Close device if it is open
-		logprintf(LOG_INFO, "closing '%s'", drv.device);
+		logprintf(LIRC_INFO, "closing '%s'", drv.device);
 		close(fd_hidraw);
 		fd_hidraw = -1;
 	}
@@ -342,7 +342,7 @@ static void *zotac_repeat()
 
 			if (ret < 0) {
 				// Error
-				logprintf(LOG_ERR, "(%s) Could not read %s", __FUNCTION__, drv.device);
+				logprintf(LIRC_ERROR, "(%s) Could not read %s", __FUNCTION__, drv.device);
 				goto exit_loop;
 			}
 			if (ret == 1) {
@@ -364,7 +364,7 @@ static void *zotac_repeat()
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LOG_ERR,"(%s) too many repetitions", __FUNCTION__);
+				logprintf(LIRC_ERROR,"(%s) too many repetitions", __FUNCTION__);
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -374,7 +374,7 @@ static void *zotac_repeat()
 			break;
 		default:
 			// Error
-			logprintf(LOG_ERR, "(%s) select() failed", __FUNCTION__);
+			logprintf(LIRC_ERROR, "(%s) select() failed", __FUNCTION__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
@@ -403,7 +403,7 @@ static char *zotac_rec(struct ir_remote *remotes)
 
 	if (rd == -1) {
 		// Error
-		logprintf(LOG_ERR, "(%s) could not read pipe", __FUNCTION__);
+		logprintf(LIRC_ERROR, "(%s) could not read pipe", __FUNCTION__);
 		zotac_deinit();
 		return 0;
 	}

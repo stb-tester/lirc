@@ -102,18 +102,18 @@ visit_plugin(char* path, drv_guest_func func, void* arg)
 		dlclose(last_plugin);
 	last_plugin = dlopen(path, RTLD_NOW);
 	if (last_plugin == NULL) {
-		logprintf(LOG_ERR, dlerror());
+		logprintf(LIRC_ERROR, dlerror());
 		return result;
 	}
 	drivers = (struct driver**)dlsym(last_plugin, "hardwares");
 	if (drivers == (struct driver**)NULL ){
-		logprintf(LOG_WARNING,
+		logprintf(LIRC_WARNING,
 			 "No hardwares entrypoint found in %s", path);
 	}
 	else {
 		for ( ; *drivers; drivers++) {
 			if( (*drivers)->name == NULL){
-				logprintf(LOG_WARNING,
+				logprintf(LIRC_WARNING,
 					  "No driver name in %s", path);
 				continue;
 			}
@@ -137,7 +137,7 @@ for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 	char path[128];
 
 	if ((dir = opendir(dirpath)) == NULL){
-		logprintf(LOG_INFO, "Cannot open plugindir %s", dirpath);
+		logprintf(LIRC_INFO, "Cannot open plugindir %s", dirpath);
 		return  (struct driver*) NULL;
 	}
 	while ((ent = readdir(dir)) != NULL) {

@@ -101,9 +101,9 @@ int default_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logprintf(LOG_ERR, "error reading from %s (ret %d, expected %d)",
+		logprintf(LIRC_ERROR, "error reading from %s (ret %d, expected %d)",
 			  drv.device, ret, sizeof(data));
-		logperror(LOG_ERR, NULL);
+		logperror(LIRC_ERROR, NULL);
 		default_deinit();
 
 		return 0;
@@ -113,7 +113,7 @@ int default_readdata(lirc_t timeout)
 		static int data_warning = 1;
 
 		if (data_warning) {
-			logprintf(LOG_WARNING, "read invalid data from device %s", drv.device);
+			logprintf(LIRC_WARNING, "read invalid data from device %s", drv.device);
 			data_warning = 0;
 		}
 		data = 1;
@@ -135,8 +135,8 @@ int default_init()
 	init_send_buffer();
 
 	if (stat(drv.device, &s) == -1) {
-		logprintf(LOG_ERR, "could not get file information for %s", drv.device);
-		logperror(LOG_ERR, "default_init()");
+		logprintf(LIRC_ERROR, "could not get file information for %s", drv.device);
+		logperror(LIRC_ERROR, "default_init()");
 		return (0);
 	}
 
@@ -148,14 +148,14 @@ int default_init()
 
 		drv.fd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (drv.fd == -1) {
-			logprintf(LOG_ERR, "could not create socket");
-			logperror(LOG_ERR, "default_init()");
+			logprintf(LIRC_ERROR, "could not create socket");
+			logperror(LIRC_ERROR, "default_init()");
 			return (0);
 		}
 
 		if (connect(drv.fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-			logprintf(LOG_ERR, "could not connect to unix socket %s", drv.device);
-			logperror(LOG_ERR, "default_init()");
+			logprintf(LIRC_ERROR, "could not connect to unix socket %s", drv.device);
+			logperror(LIRC_ERROR, "default_init()");
 			default_deinit();
 			close(drv.fd);
 			return (0);
@@ -169,8 +169,8 @@ int default_init()
 	}
 
 	if ((drv.fd = open(drv.device, O_RDWR)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "default_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "default_init()");
 		return (0);
 	}
 	if (S_ISFIFO(s.st_mode)) {
@@ -180,18 +180,18 @@ int default_init()
 		return (1);
 	} else if (!S_ISCHR(s.st_mode)) {
 		default_deinit();
-		logprintf(LOG_ERR, "%s is not a character device!!!", drv.device);
-		logperror(LOG_ERR, "something went wrong during installation");
+		logprintf(LIRC_ERROR, "%s is not a character device!!!", drv.device);
+		logperror(LIRC_ERROR, "something went wrong during installation");
 		return (0);
 	} else if (default_ioctl(LIRC_GET_FEATURES, &drv.features) == -1) {
-		logprintf(LOG_ERR, "could not get hardware features");
-		logprintf(LOG_ERR, "this device driver does not support the LIRC ioctl interface");
+		logprintf(LIRC_ERROR, "could not get hardware features");
+		logprintf(LIRC_ERROR, "this device driver does not support the LIRC ioctl interface");
 		if (major(s.st_rdev) == 13) {
-			logprintf(LOG_ERR, "did you mean to use the devinput driver instead of the %s driver?",
+			logprintf(LIRC_ERROR, "did you mean to use the devinput driver instead of the %s driver?",
 				  drv.name);
 		} else {
-			logprintf(LOG_ERR, "major number of %s is %lu", drv.device, (__u32) major(s.st_rdev));
-			logprintf(LOG_ERR, "make sure %s is a LIRC device and use a current version of the driver",
+			logprintf(LIRC_ERROR, "major number of %s is %lu", drv.device, (__u32) major(s.st_rdev));
+			logprintf(LIRC_ERROR, "make sure %s is a LIRC device and use a current version of the driver",
 				  drv.device);
 		}
 		default_deinit();
@@ -220,7 +220,7 @@ int default_init()
 			}
 		}
 		if (supported_send_modes[i] == 0) {
-			logprintf(LOG_NOTICE, "the send method of the driver is not yet supported by lircd");
+			logprintf(LIRC_NOTICE, "the send method of the driver is not yet supported by lircd");
 		}
 	}
 	drv.rec_mode = 0;
@@ -232,7 +232,7 @@ int default_init()
 			}
 		}
 		if (supported_rec_modes[i] == 0) {
-			logprintf(LOG_NOTICE, "the receive method of the driver is not yet supported by lircd");
+			logprintf(LIRC_NOTICE, "the receive method of the driver is not yet supported by lircd");
 		}
 	}
 	if (drv.rec_mode == LIRC_MODE_MODE2) {
@@ -245,13 +245,13 @@ int default_init()
 
 	} else if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 		if (default_ioctl(LIRC_GET_LENGTH, (void*) &drv.code_length) == -1) {
-			logprintf(LOG_ERR, "could not get code length");
-			logperror(LOG_ERR, "default_init()");
+			logprintf(LIRC_ERROR, "could not get code length");
+			logperror(LIRC_ERROR, "default_init()");
 			default_deinit();
 			return (0);
 		}
 		if (drv.code_length > sizeof(ir_code) * CHAR_BIT) {
-			logprintf(LOG_ERR, "lircd can not handle %lu bit codes", drv.code_length);
+			logprintf(LIRC_ERROR, "lircd can not handle %lu bit codes", drv.code_length);
 			default_deinit();
 			return (0);
 		}
@@ -292,8 +292,8 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 
 		freq = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 		if (default_ioctl(LIRC_SET_SEND_CARRIER, &freq) == -1) {
-			logprintf(LOG_ERR, "could not set modulation frequency");
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "could not set modulation frequency");
+			logperror(LIRC_ERROR, NULL);
 			return (0);
 		}
 	}
@@ -302,16 +302,16 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 
 		duty_cycle = remote->duty_cycle == 0 ? 50 : remote->duty_cycle;
 		if (default_ioctl(LIRC_SET_SEND_DUTY_CYCLE, &duty_cycle) == -1) {
-			logprintf(LOG_ERR, "could not set duty cycle");
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "could not set duty cycle");
+			logperror(LIRC_ERROR, NULL);
 			return (0);
 		}
 	}
 	if (!init_send(remote, code))
 		return (0);
 	if (write_send_buffer(drv.fd) == -1) {
-		logprintf(LOG_ERR, "write failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "write failed");
+		logperror(LIRC_ERROR, NULL);
 		return (0);
 	}
 	return (1);

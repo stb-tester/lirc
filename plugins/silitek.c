@@ -105,25 +105,25 @@ int silitek_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 int silitek_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 
 	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "silitek_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "silitek_init()");
 		tty_delete_lock();
 		return (0);
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset %s", drv.device);
+		logprintf(LIRC_ERROR, "could not reset %s", drv.device);
 		silitek_deinit();
 		return (0);
 	}
 
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LOG_ERR, "could not set baud rate on %s", drv.device);
+		logprintf(LIRC_ERROR, "could not set baud rate on %s", drv.device);
 		silitek_deinit();
 		return (0);
 	}
@@ -149,8 +149,8 @@ char *silitek_rec(struct ir_remote *remotes)
 	do_repeat = 1;
 
 	if (!silitek_read(drv.fd, &b[0], TIMEOUT)) {
-		logprintf(LOG_ERR, "reading of byte 0 failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "reading of byte 0 failed");
+		logperror(LIRC_ERROR, NULL);
 		return (NULL);
 	}
 
@@ -167,14 +167,14 @@ char *silitek_rec(struct ir_remote *remotes)
 	last = current;
 
 	if (!silitek_read(drv.fd, &b[1], TIMEOUT)) {
-		logprintf(LOG_ERR, "reading of byte 1 failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "reading of byte 1 failed");
+		logperror(LIRC_ERROR, NULL);
 		return (NULL);
 	}
 
 	if (!silitek_read(drv.fd, &b[2], TIMEOUT)) {
-		logprintf(LOG_ERR, "reading of byte 2 failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "reading of byte 2 failed");
+		logperror(LIRC_ERROR, NULL);
 		return (NULL);
 	}
 

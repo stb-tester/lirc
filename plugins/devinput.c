@@ -116,22 +116,22 @@ static int visit_rc(const char* rc_dir, const char* device)
 
 	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
 	if (access(path, F_OK) != 0){
-		logprintf(LOG_NOTICE, "Cannot open rc directory: %s", path);
+		logprintf(LIRC_NOTICE, "Cannot open rc directory: %s", path);
 		return -1;
 	}
 	snprintf(path, sizeof(path), "/sys/class/rc/%s/%s", rc_dir, device);
 	if (access(path, F_OK) != 0) {
-		logprintf(LOG_DEBUG, "No device found: %s", path);
+		logprintf(LIRC_DEBUG, "No device found: %s", path);
 		return -1;
 	}
 	snprintf(path, sizeof(path), "/sys/class/rc/%s/protocols", rc_dir);
 	fd = open(path, O_WRONLY);
 	if ( fd < 0 ){
-		logprintf(LOG_DEBUG, "Cannot open protocol file: %s", path);
+		logprintf(LIRC_DEBUG, "Cannot open protocol file: %s", path);
 		return -1;
 	}
 	write(fd, "lirc\n" , 5);
-	logprintf(LOG_NOTICE, "'lirc' written to protocols file %s", path);
+	logprintf(LIRC_NOTICE, "'lirc' written to protocols file %s", path);
 	close(fd);
 	return 0;
 }
@@ -149,7 +149,7 @@ static int set_rc_protocol(const char* device)
 	if (strrchr(device, '/') != NULL)
 		device = strrchr(device, '/') + 1;
 	if ((dir = opendir("/sys/class/rc")) == NULL){
-		logprintf(LOG_NOTICE, "Cannot open /sys/class/rc\n");
+		logprintf(LIRC_NOTICE, "Cannot open /sys/class/rc\n");
 		return -1;
 	}
 	while ((ent = readdir(dir)) != NULL) {
@@ -184,8 +184,8 @@ static int setup_uinputfd(const char *name, int source)
 		if (fd == -1) {
 			fd = open("/dev/misc/uinput", O_RDWR);
 			if (fd == -1) {
-				logprintf(LOG_WARNING, "could not open %s\n", "uinput");
-				logperror(LOG_WARNING, NULL);
+				logprintf(LIRC_WARNING, "could not open %s\n", "uinput");
+				logperror(LIRC_WARNING, NULL);
 				return -1;
 			}
 		}
@@ -260,8 +260,8 @@ static int setup_uinputfd(const char *name, int source)
 	return fd;
 
 setup_error:
-	logprintf(LOG_ERR, "could not setup %s\n", "uinput");
-	logperror(LOG_ERR, NULL);
+	logprintf(LIRC_ERROR, "could not setup %s\n", "uinput");
+	logperror(LIRC_ERROR, NULL);
 	close(fd);
 	return -1;
 }
@@ -361,33 +361,33 @@ static int locate_dev(const char *pattern, enum locate_type type)
 
 int devinput_init()
 {
-	logprintf(LOG_INFO, "initializing '%s'", drv.device);
+	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
 
 	if (!strncmp(drv.device, "name=", 5)) {
 		if (locate_dev(drv.device + 5, locate_by_name)) {
-			logprintf(LOG_ERR, "unable to find '%s'", drv.device);
+			logprintf(LIRC_ERROR, "unable to find '%s'", drv.device);
 			return 0;
 		}
 	} else if (!strncmp(drv.device, "phys=", 5)) {
 		if (locate_dev(drv.device + 5, locate_by_phys)) {
-			logprintf(LOG_ERR, "unable to find '%s'", drv.device);
+			logprintf(LIRC_ERROR, "unable to find '%s'", drv.device);
 			return 0;
 		}
 	}
 
 	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
-		logprintf(LOG_ERR, "unable to open '%s'", drv.device);
+		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 	if (set_rc_protocol(drv.device) != 0) {
-		logprintf(LOG_INFO, "Cannot configure the rc device for %s",
+		logprintf(LIRC_INFO, "Cannot configure the rc device for %s",
 			  drv.device);
 	}
 #ifdef EVIOCGRAB
 	exclusive = 1;
 	if (ioctl(drv.fd, EVIOCGRAB, 1) == -1) {
 		exclusive = 0;
-		logprintf(LOG_WARNING, "can't get exclusive access to events coming from `%s' interface", drv.device);
+		logprintf(LIRC_WARNING, "can't get exclusive access to events coming from `%s' interface", drv.device);
 	}
 #endif
 	return 1;
@@ -407,7 +407,7 @@ int devinput_init_fwd()
 
 int devinput_deinit(void)
 {
-	logprintf(LOG_INFO, "closing '%s'", drv.device);
+	logprintf(LIRC_INFO, "closing '%s'", drv.device);
 	if (uinputfd != -1) {
 		ioctl(uinputfd, UI_DEV_DESTROY);
 		close(uinputfd);
@@ -431,8 +431,8 @@ int devinput_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, i
 		}
 		if (print_warning) {
 			print_warning = 0;
-			logperror(LOG_WARNING, "you are using an obsolete devinput config file");
-			logperror(LOG_WARNING,
+			logperror(LIRC_WARNING, "you are using an obsolete devinput config file");
+			logperror(LIRC_WARNING,
 				  "get the new version at http://lirc.sourceforge.net/remotes/devinput/lircd.conf.devinput");
 		}
 	}
@@ -466,7 +466,7 @@ char *devinput_rec(struct ir_remote *remotes)
 
 	rd = read(drv.fd, &event, sizeof event);
 	if (rd != sizeof event) {
-		logprintf(LOG_ERR, "error reading '%s'", drv.device);
+		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 		if (rd <= 0 && errno != EINTR) {
 			devinput_deinit();
 		}
@@ -511,8 +511,8 @@ char *devinput_rec(struct ir_remote *remotes)
 		    || event.type == EV_SYN) {
 			LOGPRINTF(1, "forwarding: %04x %04x", event.type, event.code);
 			if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-				logprintf(LOG_ERR, "writing to uinput failed");
-				logperror(LOG_ERR, NULL);
+				logprintf(LIRC_ERROR, "writing to uinput failed");
+				logperror(LIRC_ERROR, NULL);
 			}
 			return NULL;
 		}

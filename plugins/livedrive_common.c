@@ -42,7 +42,7 @@ ir_code pre, code;
 int livedrive_init(void)
 {
 	if ((drv.fd = open(drv.device, O_RDONLY, 0)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		return (0);
 	}
 

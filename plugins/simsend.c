@@ -104,9 +104,9 @@ int default_readdata(lirc_t timeout)
 #else
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logprintf(LOG_ERR, "error reading from %s (ret %d, expected %d)",
+		logprintf(LIRC_ERROR, "error reading from %s (ret %d, expected %d)",
 			  drv.device, ret, sizeof(data));
-		logperror(LOG_ERR, NULL);
+		logperror(LIRC_ERROR, NULL);
 		default_deinit();
 
 		return 0;
@@ -116,7 +116,7 @@ int default_readdata(lirc_t timeout)
 		static int data_warning = 1;
 
 		if (data_warning) {
-			logprintf(LOG_WARNING, "read invalid data from device %s", drv.device);
+			logprintf(LIRC_WARNING, "read invalid data from device %s", drv.device);
 			data_warning = 0;
 		}
 		data = 1;
@@ -170,8 +170,8 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 		return (0);
 
 	if (write_send_buffer(drv.fd) == -1) {
-		logprintf(LOG_ERR, "write failed");
-		logperror(LOG_ERR, NULL);
+		logprintf(LIRC_ERROR, "write failed");
+		logperror(LIRC_ERROR, NULL);
 		return (0);
 	} else {
 		printf("space %u\n", (__u32) remote->min_remaining_gap);

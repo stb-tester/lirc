@@ -56,7 +56,6 @@ struct tag_uirt2_t {
 };
 
 const int unit = UIRT2_UNIT;
-//static int debug = 3;
 
 static ssize_t readagain(int fd, void *buf, size_t count)
 {
@@ -184,21 +183,21 @@ static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
 	res = write(dev->fd, tmp, len + 2);
 
 	if (res < len + 2) {
-		logprintf(LOG_ERR, "uirt2_raw: couldn't write command");
+		logprintf(LIRC_ERROR, "uirt2_raw: couldn't write command");
 		return -1;
 	}
 
 	LOGPRINTF(1, "wrote %d", res);
 
 	if (!mywaitfordata(dev, (long)1000000)) {
-		logprintf(LOG_ERR, "uirt2_raw: did not receive results");
+		logprintf(LIRC_ERROR, "uirt2_raw: did not receive results");
 		return -1;
 	}
 
 	res = readagain(dev->fd, out + 1, out[0]);
 
 	if (res < out[0]) {
-		logprintf(LOG_ERR, "uirt2_raw: couldn't read command result");
+		logprintf(LIRC_ERROR, "uirt2_raw: couldn't read command result");
 		return -1;
 	}
 
@@ -210,7 +209,7 @@ static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
 		int check = checksum(out + 1, out[0]);
 
 		if (check != 0) {
-			logprintf(LOG_ERR, "uirt2_raw: checksum error");
+			logprintf(LIRC_ERROR, "uirt2_raw: checksum error");
 			return -1;
 		}
 	}
@@ -290,7 +289,7 @@ uirt2_t *uirt2_init(int fd)
 	uirt2_t *dev = (uirt2_t *) malloc(sizeof(uirt2_t));
 
 	if (dev == NULL) {
-		logprintf(LOG_ERR, "uirt2_raw: out of memory");
+		logprintf(LIRC_ERROR, "uirt2_raw: out of memory");
 		return NULL;
 	}
 
@@ -309,9 +308,9 @@ uirt2_t *uirt2_init(int fd)
 	}
 
 	if (dev->version < 0x0104) {
-		logprintf(LOG_WARNING, "uirt2_raw: Old UIRT hardware");
+		logprintf(LIRC_WARNING, "uirt2_raw: Old UIRT hardware");
 	} else {
-		logprintf(LOG_INFO, "uirt2_raw: UIRT version %04x ok", dev->version);
+		logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x ok", dev->version);
 	}
 
 	return dev;
@@ -349,14 +348,14 @@ int uirt2_setmode(uirt2_t * dev, int mode)
 		cmd = UIRT2_SETMODESTRUC;
 		break;
 	default:
-		logprintf(LOG_ERR, "uirt2_raw: bad mode");
+		logprintf(LIRC_ERROR, "uirt2_raw: bad mode");
 		return -1;
 	}
 
 	buf[0] = cmd;
 
 	if (command(dev, buf, 0) < 0) {
-		logprintf(LOG_ERR, "uirt2_raw: setmode failed");
+		logprintf(LIRC_ERROR, "uirt2_raw: setmode failed");
 		return -1;
 	}
 
@@ -521,7 +520,7 @@ int uirt2_read_uir(uirt2_t * dev, byte_t * buf, int length)
 	int res;
 
 	if (uirt2_getmode(dev) != UIRT2_MODE_UIR) {
-		logprintf(LOG_ERR, "uirt2_raw: Not in UIR mode");
+		logprintf(LIRC_ERROR, "uirt2_raw: Not in UIR mode");
 		return -1;
 	}
 
@@ -548,7 +547,7 @@ lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
 	static int pulse = 0;
 
 	if (uirt2_getmode(dev) != UIRT2_MODE_RAW) {
-		logprintf(LOG_ERR, "uirt2_raw: Not in RAW mode");
+		logprintf(LIRC_ERROR, "uirt2_raw: Not in RAW mode");
 		return -1;
 	}
 

@@ -115,27 +115,27 @@ int mouseremote_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "mouseremote_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "mouseremote_init()");
 		tty_delete_lock();
 		return (0);
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LOG_ERR, "could not reset tty");
+		logprintf(LIRC_ERROR, "could not reset tty");
 		mouseremote_deinit();
 		return (0);
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LOG_ERR, "could not set baud rate");
+		logprintf(LIRC_ERROR, "could not set baud rate");
 		mouseremote_deinit();
 		return (0);
 	}
 	if (!tty_setcsize(drv.fd, 7)) {
-		logprintf(LOG_ERR, "could not set character size");
+		logprintf(LIRC_ERROR, "could not set character size");
 		mouseremote_deinit();
 		return (0);
 	}
@@ -148,12 +148,12 @@ int mouseremote_ps2_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LOG_ERR, "could not create lock files");
+		logprintf(LIRC_ERROR, "could not create lock files");
 		return (0);
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LOG_ERR, "could not open %s", drv.device);
-		logperror(LOG_ERR, "mouseremote_ps2_init()");
+		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		logperror(LIRC_ERROR, "mouseremote_ps2_init()");
 		tty_delete_lock();
 		return (0);
 	}
@@ -188,8 +188,8 @@ char *mouseremote_rec(struct ir_remote *remotes)
 			return (NULL);
 		}
 		if ((val = read(drv.fd, &b[i], 1)) != 1) {
-			logprintf(LOG_ERR, "reading of byte %d (%d) failed", i, val);
-			logperror(LOG_ERR, NULL);
+			logprintf(LIRC_ERROR, "reading of byte %d (%d) failed", i, val);
+			logperror(LIRC_ERROR, NULL);
 			return (NULL);
 		}
 		if (i == 0 && ((serial_input && (b[i] & 0xC0) != 0x40) || (!serial_input && (b[i] & 0x0C) != 0x08))) {
