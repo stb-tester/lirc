@@ -573,7 +573,7 @@ static int irtoy_send_double_buffered(unsigned char * signals, int length)
 static int send(struct ir_remote *remote, struct ir_ncode *code)
 {
 	int length;
-	lirc_t *signals;
+	const lirc_t *signals;
 
 	int numToXmit;
 	int i;

@@ -108,7 +108,7 @@ int accent_decode(struct ir_remote *remote,
 		  int* repeat_flagp,
 		  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
 
-int accent_open_serial_port(char *device);
+int accent_open_serial_port(const char *device);
 int accent_init(void);
 int accent_deinit(void);
 char *accent_rec(struct ir_remote *remotes);
@@ -353,7 +353,7 @@ char *accent_rec(struct ir_remote *remotes)
 // Open the serial line and set the discipline (do the low level work).
 // Return the file descriptor or -1 on error.
 //-------------------------------------------------------------------------
-int accent_open_serial_port(char *device)
+int accent_open_serial_port(const char *device)
 {
 	int fd;
 	struct termios options;

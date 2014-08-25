@@ -182,7 +182,7 @@ static int srm7500_init()
 	int got_macShortAddress = 0;
 	int got_macPANId = 0;
 	int got_remoteShortAddress = 0;
-	char *op_start, *op_end, *string_end;
+	const char *op_start, *op_end, *string_end;
 
 	logprintf(LOG_INFO, "initializing driver");
 
