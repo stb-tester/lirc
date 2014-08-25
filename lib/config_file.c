@@ -696,7 +696,7 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 		val = strtok(NULL, whitespace);
 		if (val != NULL) {
 			val2 = strtok(NULL, whitespace);
-			LOGPRINTF(3, "\"%s\" \"%s\"", key, val);
+			LOGPRINTF(3, "Tokens: \"%s\" \"%s\" \"%s\"", key, val, (val2 == NULL ? "(null)" : val));
 			if (strcasecmp("include", key) == 0) {
 				FILE *childFile;
 				const char *childName;

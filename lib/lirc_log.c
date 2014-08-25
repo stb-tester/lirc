@@ -103,7 +103,8 @@ int lirc_log_open(const char* _progname, int _nodaemon, int _debug)
 	} else {
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
-			fprintf(stderr, "%s: could not open logfile\n", progname);
+			fprintf(stderr, "%s: could not open logfile \"%s\"\n",
+                                progname, logfile);
 			perror(progname);
 			return 1;
 		}
