@@ -52,7 +52,7 @@ endif
 if BUILD_IGUANAIR
 plugin_LTLIBRARIES          += iguanaIR.la
 iguanaIR_la_SOURCES         = iguanaIR.c
-iguanaIR_la_LDFLAGS         = $(AM_LDFLAGS) -liguanaIR
+iguanaIR_la_LDFLAGS         = $(AM_LDFLAGS) -liguanaIR -lrt
 endif
 
 if BUILD_LIBIRMAN
