@@ -156,7 +156,7 @@ for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 
 struct driver* for_each_driver(drv_guest_func func, void* arg)
 {
-	char* pluginpath;
+	const char* pluginpath;
 	char* tmp_path;
 	char* s;
 	struct driver* result = (struct driver*) NULL;

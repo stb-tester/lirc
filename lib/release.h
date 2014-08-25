@@ -12,6 +12,10 @@
 #ifndef RELEASE_H
 #define RELEASE_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #include "ir_remote_types.h"
 
 void register_input(void);
@@ -35,8 +39,13 @@ const char* trigger_release_event(const char** remote_name,
 			      	  const char** button_name);
 
 const char* release_map_remotes(struct ir_remote* old,
-				struct ir_remote* new,
+				struct ir_remote* new_remote,
 				const char** remote_name,
 				const char** button_name);
+
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif /* RELEASE_H */

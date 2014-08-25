@@ -24,6 +24,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +81,7 @@ typedef struct _dictionary_ {
  * The key is stored anyway in the struct so that collision can be avoided
  * by comparing the key itself in last resort.
  */
-unsigned dictionary_hash(char *key);
+unsigned dictionary_hash(const char *key);
 
 /**
  * @brief Create a new dictionary object.
@@ -110,7 +115,7 @@ void dictionary_del(dictionary *vd);
  * dictionary. The returned character pointer points to data internal to the
  * dictionary object, you should not try to free it or modify it.
  */
-char *dictionary_get(dictionary *d, char *key, char *def);
+const char *dictionary_get(dictionary *d, const char *key, const char *def);
 
 /**
  * @brief Set a value in a dictionary.
@@ -136,7 +141,7 @@ char *dictionary_get(dictionary *d, char *key, char *def);
  *
  * This function returns non-zero in case of failure.
  */
-int dictionary_set(dictionary *vd, char *key, char *val);
+int dictionary_set(dictionary *vd, const char *key, const char *val);
 
 /**
  * @brief Delete a key in a dictionary
@@ -147,7 +152,7 @@ int dictionary_set(dictionary *vd, char *key, char *val);
  * This function deletes a key in a dictionary. Nothing is done if the
  * key cannot be found.
  */
-void dictionary_unset(dictionary *d, char *key);
+void dictionary_unset(dictionary *d, const char *key);
 
 /**
  * @brief Dump a dictionary to an opened file pointer.
@@ -160,6 +165,10 @@ void dictionary_unset(dictionary *d, char *key);
  * output file pointers.
  */
 void dictionary_dump(dictionary *d, FILE *out);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif
 /** @}

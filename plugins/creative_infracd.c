@@ -89,7 +89,7 @@ static ir_code code;
 
 static char dev_name[32];
 
-int is_my_device(int fd, char *name)
+int is_my_device(int fd, const char *name)
 {
 	sg_io_hdr_t io_hdr;
 	int k;

@@ -393,10 +393,10 @@ int main(int argc, char **argv)
 	int retries;
 	int no_data = 0;
 	struct ir_remote *remotes = NULL;
-	char *device = NULL;
+	const char *device = NULL;
 	int using_template = 0;
 	int analyse = 0;
-	char* opt;
+	const char* opt;
 	char commandline[128];
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
 	get_commandline(argc, argv, commandline, sizeof(commandline));

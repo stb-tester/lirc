@@ -49,7 +49,7 @@ static int use_syslog = 1;
 static int log_enabled = 1;
 
 const char *syslogident = "lircd-" VERSION;
-char *logfile = LOGFILE;
+const char *logfile = LOGFILE;
 
 char progname[128] = {'?','\0'};
 static int nodaemon = 0;
@@ -77,7 +77,7 @@ int lirc_log_use_syslog()
 }
 
 
-void lirc_set_logfile(char* s)
+void lirc_set_logfile(const char* s)
 {
 	if (strcmp(s, "syslog") == 0) {
 	    use_syslog  = 1;

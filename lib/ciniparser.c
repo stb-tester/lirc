@@ -196,7 +196,7 @@ int ciniparser_getnsec(dictionary *d)
 	return nsec;
 }
 
-char *ciniparser_getsecname(dictionary *d, int n)
+const char *ciniparser_getsecname(dictionary *d, int n)
 {
 	int i;
 	int foundsec;
@@ -251,7 +251,7 @@ void ciniparser_dump_ini(dictionary *d, FILE *f)
 	int i, j;
 	char keym[ASCIILINESZ+1];
 	int nsec;
-	char *secname;
+	const char *secname;
 	int seclen;
 
 	if (d == NULL || f == NULL)
@@ -290,10 +290,10 @@ void ciniparser_dump_ini(dictionary *d, FILE *f)
 	return;
 }
 
-char *ciniparser_getstring(dictionary *d, const char *key, char *def)
+const char *ciniparser_getstring(dictionary *d, const char *key, char *def)
 {
 	char *lc_key;
-	char *sval;
+	const char *sval;
 
 	if (d == NULL || key == NULL)
 		return def;
@@ -306,7 +306,7 @@ char *ciniparser_getstring(dictionary *d, const char *key, char *def)
 
 int ciniparser_getint(dictionary *d, const char *key, int notfound)
 {
-	char *str;
+	const char *str;
 
 	str = ciniparser_getstring(d, key, INI_INVALID_KEY);
 
@@ -316,9 +316,9 @@ int ciniparser_getint(dictionary *d, const char *key, int notfound)
 	return (int) strtol(str, NULL, 10);
 }
 
-double ciniparser_getdouble(dictionary *d, char *key, double notfound)
+double ciniparser_getdouble(dictionary *d, const char *key, double notfound)
 {
-	char *str;
+	const char *str;
 
 	str = ciniparser_getstring(d, key, INI_INVALID_KEY);
 
@@ -330,7 +330,7 @@ double ciniparser_getdouble(dictionary *d, char *key, double notfound)
 
 int ciniparser_getboolean(dictionary *d, const char *key, int notfound)
 {
-	char *c;
+	const char *c;
 	int ret;
 
 	c = ciniparser_getstring(d, key, INI_INVALID_KEY);
@@ -352,7 +352,7 @@ int ciniparser_getboolean(dictionary *d, const char *key, int notfound)
 	return ret;
 }
 
-int ciniparser_find_entry(dictionary *ini, char *entry)
+int ciniparser_find_entry(dictionary *ini, const char *entry)
 {
 	int found = 0;
 
@@ -363,7 +363,7 @@ int ciniparser_find_entry(dictionary *ini, char *entry)
 	return found;
 }
 
-int ciniparser_set(dictionary *d, char *entry, char *val)
+int ciniparser_set(dictionary *d, const char *entry, const char *val)
 {
 	return dictionary_set(d, strlwc(entry), val);
 }

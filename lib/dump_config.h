@@ -12,6 +12,12 @@
 #ifndef  _DUMP_CONFIG_H
 #define  _DUMP_CONFIG_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -47,5 +53,9 @@ void fprint_remote_signals(FILE* f, const struct ir_remote* rem);
 void fprint_remote(FILE* f,
                    const struct ir_remote* rem,
                    const char* commandline);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif

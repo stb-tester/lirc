@@ -103,7 +103,7 @@ void config(void);
 void nolinger(int sock);
 void remove_client(int fd);
 void add_client(int);
-int add_peer_connection(char *server);
+int add_peer_connection(const char *server);
 void connect_to_peers();
 int get_peer_message(struct peer_connection *peer);
 void start_server(mode_t permission, int nodaemon, int debug);
@@ -775,7 +775,7 @@ void add_client(int sock)
 	clin++;
 }
 
-int add_peer_connection(char *server)
+int add_peer_connection(const char *server)
 {
 	char *sep;
 	struct servent *service;
@@ -2225,9 +2225,9 @@ int main(int argc, char **argv)
 {
 	struct sigaction act;
 	mode_t permission;
-	char *device = NULL;
+	const char *device = NULL;
 	char errmsg[128];
-	char* opt;
+	const char* opt;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);

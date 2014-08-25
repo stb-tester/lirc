@@ -17,12 +17,13 @@
 #include <stdint.h>
 #include <syslog.h>
 
-#ifndef __u32
-typedef uint32_t __u32;
+#ifdef	__cplusplus
+extern "C" {
 #endif
 
-#ifdef __cplusplus
-extern "C" {
+
+#ifndef __u32
+typedef uint32_t __u32;
 #endif
 
 #define LIRC_RET_SUCCESS  (0)
@@ -116,4 +117,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
 #endif

@@ -12,6 +12,10 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -30,5 +34,9 @@ typedef unsigned short linux_input_code;
 int get_input_code(const char* name, linux_input_code* code);
 void fprint_namespace(FILE* f);
 int is_in_namespace(const char* name);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif /* INPUT_MAP_H */

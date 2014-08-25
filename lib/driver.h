@@ -27,7 +27,7 @@ struct driver {
 // Old-style implicit API version 1:
 
 	/** The name of the device as text string. Set by lirc before init. */
-	char* device;
+	const char* device;
 
 	/** Set by the driver after init(). */
 	int fd;

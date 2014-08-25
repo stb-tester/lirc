@@ -294,12 +294,12 @@ int tty_setcsize(int fd, int csize)
  * @param name Name of the device
  * @return non-zero if successful
  */
-int tty_create_lock(char *name)
+int tty_create_lock(const char *name)
 {
 	char filename[FILENAME_MAX + 1];
 	char symlink[FILENAME_MAX + 1];
 	char cwd[FILENAME_MAX + 1];
-	char *last, *s;
+	const char *last, *s;
 	char id[10 + 1 + 1];
 	int lock;
 	int len;

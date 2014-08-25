@@ -89,7 +89,7 @@ int irman_init(void)
 		logprintf(LOG_ERR, "could not create lock files");
 		return (0);
 	}
-	if ((drv.fd = ir_init(drv.device)) < 0) {
+	if ((drv.fd = ir_init((char*)drv.device)) < 0) {
 		logprintf(LOG_ERR, "could not open %s", drv.device);
 		logperror(LOG_ERR, "irman_init()");
 		tty_delete_lock();

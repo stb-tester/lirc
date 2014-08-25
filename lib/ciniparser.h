@@ -24,6 +24,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+
 /** @addtogroup ciniparser
  * @{
  */
@@ -72,7 +77,7 @@ int ciniparser_getnsec(dictionary *d);
  * its name as a pointer to a string statically allocated inside the
  * dictionary. Do not free or modify the returned string!
  */
-char *ciniparser_getsecname(dictionary *d, int n);
+const char *ciniparser_getsecname(dictionary *d, int n);
 
 /**
  * @brief    Save a dictionary to a loadable ini file
@@ -111,7 +116,7 @@ void ciniparser_dump(dictionary *d, FILE *f);
  * The returned char pointer is pointing to a string allocated in
  * the dictionary, do not free or modify it.
  */
-char *ciniparser_getstring(dictionary *d, const char *key, char *def);
+const char *ciniparser_getstring(dictionary *d, const char *key, char *def);
 
 /**
  * @brief    Get the string associated to a key, convert to an int
@@ -151,7 +156,7 @@ int ciniparser_getint(dictionary *d, const char *key, int notfound);
  * ini file is given as "section:key". If the key cannot be found,
  * the notfound value is returned.
  */
-double ciniparser_getdouble(dictionary *d, char *key, double notfound);
+double ciniparser_getdouble(dictionary *d, const char *key, double notfound);
 
 /**
  * @brief    Get the string associated to a key, convert to a boolean
@@ -196,7 +201,7 @@ int ciniparser_getboolean(dictionary *d, const char *key, int notfound);
  * contain the provided value. If it cannot be found, -1 is returned.
  * It is Ok to set val to NULL.
  */
-int ciniparser_setstring(dictionary *ini, char *entry, char *val);
+int ciniparser_setstring(dictionary *ini, char const *entry, const char *val);
 
 /**
  * @brief    Delete an entry in a dictionary
@@ -218,7 +223,7 @@ void ciniparser_unset(dictionary *ini, char *entry);
  * are stored as keys with NULL associated values, this is the only way
  * of querying for the presence of sections in a dictionary.
  */
-int ciniparser_find_entry(dictionary *ini, char *entry) ;
+int ciniparser_find_entry(dictionary *ini, const char *entry) ;
 
 /**
  * @brief    Parse an ini file and return an allocated dictionary object
@@ -255,7 +260,12 @@ void ciniparser_freedict(dictionary *d);
  * Remember that string values are converted by ciniparser_getboolean(),
  * ciniparser_getdouble(), etc. It is also OK to set an entry to NULL.
  */
-int ciniparser_set(dictionary *d, char *entry, char *val);
+int ciniparser_set(dictionary *d, const char *entry, const char *val);
+
+#ifdef	__cplusplus
+}
+#endif
+
 
 #endif
 /** @}

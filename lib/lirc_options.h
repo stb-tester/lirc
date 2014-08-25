@@ -5,16 +5,24 @@
  * options.h - global options access.
  *
  */
+
+#ifndef LIRC_OPTIONS
+#define LIRC_OPTIONS
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #include "ciniparser.h"
 
 /* Global options instance with all option values. */
 extern dictionary* lirc_options;
 
 /* Set given option to value (always a string). */
-void options_set_opt(char* key, char* value);
+void options_set_opt(const char* key, const char* value);
 
 /* Get a [string|int|boolean] option with 0 as default value. */
-char* options_getstring(const char* const key);
+const char* options_getstring(const char* const key);
 int options_getint(const char* const key);
 int options_getboolean(const char* const key);
 
@@ -42,3 +50,9 @@ void options_add_defaults(const char* const defaults[]);
 void options_load(int argc, char** const argv,
 		  const char* options_file,
 		  void (*options_load)(int, char** const));
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

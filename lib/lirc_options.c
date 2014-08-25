@@ -29,7 +29,7 @@ static int depth = 0;
 static int options_debug =  -1;
 
 
-void options_set_opt(char* key, char* value)
+void options_set_opt(const char* key, const char* value)
 {
 	if (dictionary_set(lirc_options, key, value) != 0)
 		logprintf(LOG_WARNING,
@@ -37,7 +37,7 @@ void options_set_opt(char* key, char* value)
 }
 
 
-char* options_getstring(const char* const key)
+const char* options_getstring(const char* const key)
 {
 	return ciniparser_getstring(lirc_options, key, 0);
 }
