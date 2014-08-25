@@ -3,13 +3,12 @@
 [Unit]
 Description=LIRC command handler
 After=network.target
+Wants=lircd.service
+WantedBy=multi-user.target
 
 [Service]
 #User=<user>
 #Group=<group>
 Type=simple
-ExecStart=/usr/bin/irexec </home/who/.lircrc>
+ExecStart=/usr/bin/irexec </home/<who>/.lircrc>
 
-[Install]
-WantedBy=multi-user.target
-Wants=lircd.service
