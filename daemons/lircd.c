@@ -2234,7 +2234,7 @@ int main(int argc, char **argv)
 	options_load(argc, argv, NULL, lircd_parse_options);
 	opt = options_getstring("lircd:logfile");
 	if (opt != NULL)
-		lirc_set_logfile(opt);
+		lirc_log_set_file(opt);
 	lirc_log_open("lircd", 0, LOG_INFO);
 
 	nodaemon = options_getboolean("lircd:nodaemon");
@@ -2261,7 +2261,7 @@ int main(int argc, char **argv)
 	lircdfile = options_getstring("lircd:lircdfile");
 	opt = options_getstring("lircd:logfile");
 	if (opt != NULL)
-		lirc_set_logfile(opt);
+		lirc_log_set_file(opt);
 	if (options_getstring("lircd:listen") != NULL){
 		listen_tcpip = 1;
 		opt = options_getstring("lircd:listen_hostport");

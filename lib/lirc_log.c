@@ -77,7 +77,7 @@ int lirc_log_use_syslog()
 }
 
 
-void lirc_set_logfile(const char* s)
+void lirc_log_set_file(const char* s)
 {
 	if (strcmp(s, "syslog") == 0) {
 	    use_syslog  = 1;
