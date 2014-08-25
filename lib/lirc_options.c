@@ -112,3 +112,13 @@ void options_add_defaults(const char* const defaults[])
 			options_set_opt((char*)key, (char*)value);
 	}
 }
+
+void options_unload(void)
+{
+	depth = 0;
+        options_debug = -1;
+	if (lirc_options != NULL ){
+		dictionary_del(lirc_options);
+		lirc_options = NULL;
+	}
+}

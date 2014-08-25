@@ -51,6 +51,9 @@ void options_load(int argc, char** const argv,
 		  const char* options_file,
 		  void (*options_load)(int, char** const));
 
+
+/* Reset options to pristine state. */
+void options_unload(void);
 #ifdef __cplusplus
 }
 #endif
