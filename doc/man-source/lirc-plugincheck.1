@@ -1,0 +1,31 @@
+.TH LIRC-PLUGINPATH "1" "Last change: Aug 2014" "ircat @VERSION" "User Commands"
+.SH NAME
+lirc-plugincheck - print dynamic modules info
+.SH SYNOPSIS
+.B lirc-plugincheck
+\fI<plugin path>\fR
+.SH DESCRIPTION
+Given a plugin path, the tool writes a simple list with info for each
+plugin found. In particular, it writes info if a plugin can't be loaded
+e. g., due to unresolved references.
+.SH OPTIONS
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display usage summary
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version
+.SH EXAMPLES
+
+lirc-plugincheck ../lib/.libs:/usr/local/lib/lirc/plugins
+
+.SH STATUS
+
+This tool is in an early alpha stage. Both the output format and the
+command line syntax is subject to change.
+
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

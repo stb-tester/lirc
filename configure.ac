@@ -14,6 +14,7 @@ CFLAGS="${CFLAGS--O2 -g -Wall}"
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PATH_PROG(mknod, mknod, /bin/mknod)
@@ -372,7 +373,7 @@ Summary of selected options:
 prefix:                         $prefix
 sysconfdir:                     $sysconfdir
 x_progs:                        $x_progs
-vga_progs:			$vga_progs
+vga_progs:                      $vga_progs
 host:                           $host
 host_os:                        $host_os
 forkpty:                        $forkpty

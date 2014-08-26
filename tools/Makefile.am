@@ -2,7 +2,7 @@
 ACLOCAL_AMFLAGS         = -I m4
 
 AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall
-AM_LDFLAGS              =  -L../lib -llirc -llirc_client
+AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 
@@ -16,6 +16,10 @@ if BUILD_SMODE2
 EXTRA_PROGRAMS          += smode2
 endif
 
+##lirc-check-plugins$(EXEEXT):	lirc-check-plugins.cpp
+##	gcc  $(CFLAGS) $(AM_CPPFLAGS) $(AM_LDFLAGS) -L../lib/.libs  $< -o $@
+
+sbin_PROGRAMS		= lirc-plugincheck
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
                           irrecord @vga_progs@ @x_progs@
 
@@ -35,6 +39,8 @@ irsend_SOURCES          = irsend.c
 irsend_LDADD            = $(LIRC_LIBS)
 lircrcd_SOURCES         = lircrcd.c
 lircrcd_LDADD           = $(LIRC_LIBS)
+lirc_plugincheck_SOURCES = lirc-plugincheck.c++
+
 
 ## VGA programs
 smode2_SOURCES          = smode2.c
