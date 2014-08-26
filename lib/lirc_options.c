@@ -28,6 +28,18 @@ static int depth = 0;
 
 static int options_debug =  -1;
 
+loglevel_t options_set_loglevel(const char* optarg)
+{
+        char s[4];
+        loglevel_t level;
+        level = string2loglevel(optarg);
+        if (level == LIRC_BADLEVEL)
+		return level;
+        snprintf(s, sizeof(s), "%d", level);
+        options_set_opt("lircd:debug", s);
+        return  level;
+}
+
 
 void options_set_opt(const char* key, const char* value)
 {

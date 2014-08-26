@@ -32,6 +32,8 @@ class LogTest : public CppUnit::TestFixture
             CppUnit::TestSuite* testSuite =
                  new CppUnit::TestSuite( "LogTest" );
             ADD_TEST("testLevels", testLevels);
+            ADD_TEST("testString2Level", testString2Level);
+            ADD_TEST("testDefaultlevel", testDefaultlevel);
             return testSuite;
         };
 
@@ -40,17 +42,17 @@ class LogTest : public CppUnit::TestFixture
         {
             string path = string("logtest.log");
             lirc_log_set_file(path.c_str());
-            lirc_log_open("IrRemoteTest", 0, 10);
+            lirc_log_open("IrRemoteTest", 0, LIRC_STALK);
 
-            lirc_log_setlevel("9");
+            lirc_log_setlevel(LIRC_PEEP);
             LOGPRINTF(2, "Testing LIRC_PEEP: %s", "PEEP arg");
             LOGPRINTF(3, "Testing LIRC_STALK (disabled): %s", "STALK arg");
 
-            lirc_log_setlevel("8");
+            lirc_log_setlevel(LIRC_TRACE);
             LOGPRINTF(2, "Testing LIRC_TRACE: %s", "TRACE arg");
             logprintf(LIRC_INFO, "Testing enabled TRACE");
 
-            lirc_log_setlevel("4");
+            lirc_log_setlevel(LIRC_WARNING);
             logprintf(LIRC_INFO, "Testing disabled WARNING");
             logprintf(LIRC_WARNING, "Testing enabled WARNING");
             lirc_log_close();
@@ -71,7 +73,29 @@ class LogTest : public CppUnit::TestFixture
             CPPUNIT_ASSERT(log.find("enabled WARNING") != string::npos);
         };
 
+        void testString2Level()
+        {
+           CPPUNIT_ASSERT(string2loglevel("peep") == LIRC_PEEP);
+           CPPUNIT_ASSERT(string2loglevel("error") == LIRC_ERROR);
+           CPPUNIT_ASSERT(string2loglevel("InfO") == LIRC_INFO);
+           CPPUNIT_ASSERT(string2loglevel("Notice") == LIRC_NOTICE);
+           CPPUNIT_ASSERT(string2loglevel("Notter") == LIRC_BADLEVEL);
+           CPPUNIT_ASSERT(string2loglevel("5") == 5);
+           CPPUNIT_ASSERT(string2loglevel("0") == LIRC_BADLEVEL);
+           CPPUNIT_ASSERT(string2loglevel("11") == LIRC_BADLEVEL);
+        };
 
+        void testDefaultlevel()
+        {
+            setenv("LIRC_LOGLEVEL", "info", 1);
+            CPPUNIT_ASSERT(lirc_log_defaultlevel() == LIRC_INFO);
+            setenv("LIRC_LOGLEVEL", "7", 1);
+            CPPUNIT_ASSERT(lirc_log_defaultlevel() == LIRC_DEBUG);
+            unsetenv("LIRC_LOGLEVEL");
+            CPPUNIT_ASSERT(lirc_log_defaultlevel() == DEFAULT_LOGLEVEL);
+            setenv("LIRC_LOGLEVEL", "foo", 1);
+            CPPUNIT_ASSERT(lirc_log_defaultlevel() == DEFAULT_LOGLEVEL);
+        }
 };
 
 #endif

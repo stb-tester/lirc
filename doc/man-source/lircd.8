@@ -58,10 +58,14 @@ The connecting lircd instance will receive IR events from the lircd
 instance it connects to.
 .TP 4
 .B -D, --debug [level]
-Determine the amount of logging information. \[level\] is an integer
-ranging from 0 (very little logging) to 10. The levels 0-7  corresponds
-to the standard syslog levels LOG_EMERG..LOG_DEBUG, levels 8-10 adds
-even more output presented as LOG_DEBUG statements.
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
+also defines three additional levels 'trace', 'peep' and 'stalk' which
+gives even more messages ('stalk' bringing the most). However, in the
+log these messages are marked as 'debug'.
+.p
+The level can also be an integer in the range 0 (almost no messages) to
+10.
 .TP 4
 .B -l, --listen [[address:]port]]
 Let lircd listen for network

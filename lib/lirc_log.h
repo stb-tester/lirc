@@ -31,7 +31,8 @@ typedef enum {
 	LIRC_NOTICE	= LOG_NOTICE,
 	LIRC_WARNING 	= LOG_WARNING,
 	LIRC_ERROR 	= LOG_ERR,
-	LIRC_NOLOG	= 0
+	LIRC_NOLOG	= 0,
+	LIRC_BADLEVEL   = -1
 } loglevel_t;
 
 #define LIRC_MAX_LOGLEVEL LIRC_STALK
@@ -60,16 +61,20 @@ extern char progname[128];
 #define LOGPERROR(level,s) \
 	if (level + 7 <= loglevel ) logperror(logmax(level + 7), s)
 
-/*
- * Set the level using a string argument. If the level is NULL or
- * the string cant be parsed, use enviroemt variable LIRC_LOGLEVEL,
- * defaulting to DEFAULT_LOGLEVEL. Returns 0 if ok, 1 on errors.
- */
-int lirc_log_setlevel(const char* level);
 
-/*
- * Check if a given, standard loglevel should be printed.
+/**
+ * Convert a string, either a number or 'info', 'peep', error etc.
+ * to a loglevel.
  */
+loglevel_t string2loglevel(const char* level);
+
+/** Set the level Returns 1 if ok, 0 on errors. */
+int lirc_log_setlevel(loglevel_t level);
+
+/** Get the default level, from environment or hardcoded. */
+loglevel_t lirc_log_defaultlevel(void);
+
+/** Check if a given, standard loglevel should be printed.  */
 #define lirc_log_is_enabled_for(level) (level <= loglevel)
 
 /* Check if log is set up to use syslog or not. */
@@ -78,9 +83,8 @@ int lirc_log_use_syslog();
 void logprintf(loglevel_t prio, const char *format_str, ...);
 void logperror(loglevel_t prio, const char *s);
 int lirc_log_reopen(void);
-int lirc_log_open(const char* progname, int _nodaemon, int _loglevel);
+int lirc_log_open(const char* progname, int _nodaemon, loglevel_t level);
 int lirc_log_close();
-void log_enable(int enabled);
 
 /*
  * Set logfile. Either a regular path or the string 'syslog'; the latter

@@ -45,7 +45,7 @@ class OptionsTest : public CppUnit::TestFixture
         void setUp()
         {
             lirc_log_set_file(string("options.log").c_str());
-            lirc_log_open("OptionsTest", 0, 10);
+            lirc_log_open("OptionsTest", 0, LIRC_STALK);
         };
 
         void tearDown()

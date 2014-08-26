@@ -35,6 +35,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <limits.h>
+#include <ctype.h>
 
 #include "lirc/lirc_log.h"
 
@@ -45,8 +46,6 @@ FILE *lf = NULL;
 loglevel_t loglevel = LIRC_NOLOG;
 
 static int use_syslog = 1;
-
-static int log_enabled = 1;
 
 const char *syslogident = "lircd-" VERSION;
 const char *logfile = LOGFILE;
@@ -88,11 +87,11 @@ void lirc_log_set_file(const char* s)
 }
 
 
-int lirc_log_open(const char* _progname, int _nodaemon, int _loglevel)
+int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 {
 	strncpy(progname, _progname, sizeof(progname));
 	nodaemon = _nodaemon;
-	loglevel = _loglevel;
+	loglevel = level;
 
 	if (use_syslog) {
 		if (nodaemon) {
@@ -157,26 +156,80 @@ int lirc_log_reopen(void)
 }
 
 
-int lirc_log_setlevel(const char* s)
+int lirc_log_setlevel(loglevel_t level)
+{
+	if (level >= LIRC_MIN_LOGLEVEL && level <= LIRC_MAX_LOGLEVEL){
+		loglevel = level;
+		return 1;
+	}
+	else
+		return 0;
+}
+
+
+static loglevel_t symbol2loglevel(const char* levelstring)
+{
+	static const struct {const char* label; int value;} options[] = {
+		{"STALK" 	, LIRC_STALK},
+		{"PEEP" 	, LIRC_PEEP},
+		{"TRACE" 	, LIRC_TRACE},
+		{"DEBUG" 	, LIRC_DEBUG},
+		{"INFO" 	, LIRC_INFO},
+		{"NOTICE"	, LIRC_NOTICE},
+		{"WARNING"	, LIRC_WARNING},
+		{"ERROR" 	, LIRC_ERROR},
+		{0,0}
+	};
+
+	char label[128];
+	int i;
+
+   	if (levelstring == NULL || ! *levelstring)
+		return LIRC_BADLEVEL;
+	for (i = 0; i < sizeof(label) && levelstring[i]; i += 1)
+		label[i] = toupper(levelstring[i]);
+	label[i] = '\0';
+	i = 0;
+	while (options[i].label && strcmp(options[i].label, label) != 0)
+              i += 1;
+	return options[i].label ? options[i].value : -1;
+}
+
+
+loglevel_t lirc_log_defaultlevel(void)
+// Try to parse LIRC_LOGLEVEL in environment, fall back to DEFAULT_LOGLEVEL.
+{
+	loglevel_t try;
+	const char* const level = getenv("LIRC_LOGLEVEL");
+
+	if (level != NULL) {
+		try = string2loglevel(level);
+		return try == LIRC_BADLEVEL ? DEFAULT_LOGLEVEL : try;
+	} else {
+		return DEFAULT_LOGLEVEL;
+	}
+}
+
+
+loglevel_t string2loglevel(const char* s)
 {
 	long level = LONG_MAX;
 
-	if (s == NULL)
-		s  = getenv("LIRC_LOGLEVEL");
-	level = strtol(s, NULL, 10);
-	if (level > INT_MAX || level < INT_MIN) {
-		level = DEFAULT_LOGLEVEL;
-		return 0;
-	};
-	loglevel = (int) level;
-	return 1;
+	if (s == NULL || *s == '\0')
+		return LIRC_BADLEVEL;
+	while (isspace(*s) && *s)
+		s++;
+	if (isdigit(*s)) {
+		level = strtol(s, NULL, 10);
+		if (level > LIRC_MAX_LOGLEVEL || level < LIRC_MIN_LOGLEVEL)
+			return LIRC_BADLEVEL;
+		else
+			return level;
+	} else {
+		return symbol2loglevel(s);
+	}
 }
 
-
-void log_enable(int enabled)
-{
-	log_enabled = enabled;
-}
 
 /**
  * Prints the log request to the log, if the priority fits.
@@ -188,9 +241,6 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 {
 	int save_errno = errno;
 	va_list ap;
-
-	if (!log_enabled)
-		return;
 
 	if (nodaemon && prio <= loglevel) {
 		fprintf(stderr, "%s: %s", progname, prio2text(prio));
@@ -230,9 +280,6 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
  */
 void logperror(loglevel_t prio, const char *s)
 {
-	if (!log_enabled)
-		return;
-
 	if (use_syslog){
 		if ((s) != NULL)
 			syslog(prio, "%s: %m\n", (char *)s);

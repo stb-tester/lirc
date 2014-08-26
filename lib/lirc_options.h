@@ -13,6 +13,7 @@
 extern "C" {
 #endif
 
+#include "lirc_log.h"
 #include "ciniparser.h"
 
 /* Global options instance with all option values. */
@@ -20,6 +21,9 @@ extern dictionary* lirc_options;
 
 /* Set given option to value (always a string). */
 void options_set_opt(const char* key, const char* value);
+
+/** Parse and store a loglevel, returning value (possibly LIRC_BADLEVEL). */
+loglevel_t options_set_loglevel(const char* optarg);
 
 /* Get a [string|int|boolean] option with 0 as default value. */
 const char* options_getstring(const char* const key);

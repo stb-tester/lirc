@@ -206,8 +206,6 @@ static const char *protocol_string[] = {
 	"SIGHUP\n"
 };
 
-extern int log_enabled;
-
 #define HOSTNAME_LEN 128
 static const char hostname[HOSTNAME_LEN + 1];
 
@@ -1809,6 +1807,7 @@ static int mywaitfordata(long maxusec)
 	fd_set fds;
 	int maxfd, i, ret, reconnect;
 	struct timeval tv, start, now, timeout, release_time;
+	loglevel_t oldlevel;
 
 	while (1) {
 		do {
@@ -1947,10 +1946,11 @@ static int mywaitfordata(long maxusec)
 		while (ret == -1 && errno == EINTR);
 
 		if (drv.fd == -1 && use_hw() && drv.init_func) {
-			log_enable(0);
+			oldlevel = loglevel;
+			lirc_log_setlevel(LIRC_ERROR);
 			drv.init_func();
 			setup_hardware();
-			log_enable(1);
+			lirc_log_setlevel(oldlevel);
 		}
 		for (i = 0; i < clin; i++) {
 			if (FD_ISSET(clis[i], &fds)) {
@@ -2102,6 +2102,9 @@ static void lircd_help(void)
 
 static void lircd_add_defaults(void)
 {
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+
 	const char* const defaults[] = {
 		"lircd:nodaemon", 	"False",
 		"lircd:permission", 	DEFAULT_PERMISSIONS,
@@ -2112,7 +2115,7 @@ static void lircd_add_defaults(void)
 		"lircd:lircdfile", 	LIRCD,
 		"lircd:pidfile", 	PIDFILE,
 		"lircd:logfile", 	LOGFILE,
-		"lircd:debug", 		"False",
+		"lircd:debug", 		level,
 		"lircd:release", 	NULL,
 		"lircd:allow-simulate", "False",
 		"lircd:dynamic-codes", 	"False",
@@ -2124,7 +2127,6 @@ static void lircd_add_defaults(void)
 	};
 	options_add_defaults(defaults);
 }
-
 
 static void lircd_parse_options(int argc, char** const argv)
 {
@@ -2180,8 +2182,13 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:connect", optarg);
 			break;
 		case 'D':
-			options_set_opt("lircd:debug", optarg ? optarg : "1");
-			loglevel_opt = 1;
+			loglevel_opt = options_set_loglevel(
+						optarg ? optarg : "debug");
+			if (loglevel_opt == LIRC_BADLEVEL){
+				fprintf(stderr,
+					"Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
 			break;
 		case 'a':
 			options_set_opt("lircd:allow-simulate", "True");

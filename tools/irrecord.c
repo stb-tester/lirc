@@ -288,6 +288,8 @@ static void help(void)
 
 static void add_defaults(void)
 {
+        char level[4];
+        snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const defaults[] = {
 		"lircd:plugindir",              PLUGINDIR,
 		"irrecord:driver",              "devinput",
@@ -297,7 +299,7 @@ static void add_defaults(void)
 		"irrecord:disable-namespace",   "False",
 		"irrecord:dynamic-codes",   	"False",
 		"irrecord:list_namespace",      "False",
-		"lircd:debug",                   "5",
+		"lircd:debug",                   level,
 		(const char*)NULL,      (const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -306,6 +308,7 @@ static void add_defaults(void)
 static void parse_options(int argc, char** const argv)
 {
 	int c;
+	char* level;
 
 	const char* const optstring = "had:D:H:fnlO:pPtiTU:Y";
 
@@ -319,7 +322,12 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("irrecord:analyse", "True");
 			break;
 		case 'D':
-			options_set_opt("lircd:debug", optarg ? optarg : "1");
+			level = optarg ? optarg : "debug";
+			if (options_set_loglevel(level) == LIRC_BADLEVEL){
+				fprintf(stderr,
+				        "Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
 			break;
 		case 'd':
 			options_set_opt("irrecord:analyse", "True");

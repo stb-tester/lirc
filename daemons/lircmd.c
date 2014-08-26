@@ -755,10 +755,14 @@ static void lircmd_help(void)
 
 static void lircmd_add_defaults(void)
 {
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+
 	const char* const defaults[] = {
 		"lircmd:nodaemon", 	"False",
 		"lircmd:uinput", 	"False",
 		"lircmd:configfile",    LIRCMDCFGFILE,
+		"lircmd:debug",		level,
 		(const char*)NULL, 	(const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -868,12 +872,18 @@ int main(int argc, char **argv)
 	sigset_t block;
 	int nodaemon = 0;
 	const char *filename;
+	loglevel_t loglevel;
+	const char* level;
 
 	options_load(argc, argv, NULL, lircmd_parse_options);
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
-	lirc_log_open("lircmd", nodaemon, LIRC_DEBUG);
+	level = options_getstring("lircmd:debug");
+	loglevel = string2loglevel(level);
+	lirc_log_open("lircmd",
+		       nodaemon,
+		       loglevel == LIRC_BADLEVEL? LIRC_DEBUG : loglevel);
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;
@@ -885,7 +895,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	};
 	if (connect(lircd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "%s: could not connect to socket\n", progname);
+		fprintf(stderr, "%s: could not connect to socket: %s\n",
+			progname, addr.sun_path);
 		perror(progname);
 		exit(EXIT_FAILURE);
 	};

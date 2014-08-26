@@ -71,7 +71,7 @@ class ClientTest : public CppUnit::TestFixture
         {
             string path = string("client.log");
             lirc_log_set_file(path.c_str());
-            lirc_log_open("ClientTest", 0, 10);
+            lirc_log_open("ClientTest", 0, LIRC_STALK);
 
             int status;
             status = system(RUN_LIRCD);
