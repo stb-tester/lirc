@@ -32,8 +32,6 @@ struct driver drv;
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
-typedef struct driver* (*drv_guest_func)(struct driver*, void*);
-
 const struct driver drv_default = {
 	.name 		= "null",
 	.device		= "/dev/null",
@@ -127,9 +125,11 @@ visit_plugin(char* path, drv_guest_func func, void* arg)
 }
 
 
-static struct driver*
-for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
-// Apply func(hw, arg) for all drivers found in all plugins in directory path
+static struct driver* for_each_plugin_in_dir(const char* dirpath,
+					     plugin_guest_func plugin_guest,
+					     drv_guest_func drv_guest,
+					     void* arg)
+// Apply plugin_guest(path, drv_guest, arg) to all so-files in dir.
 {
 	DIR* dir;
 	struct dirent* ent;
@@ -145,7 +145,7 @@ for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 			continue;
 		snprintf(path, sizeof(path),
 			 "%s/%s", dirpath, ent->d_name);
-		result = visit_plugin(path, func, arg);
+		result = plugin_guest(path, drv_guest, arg);
 		if (result != (struct driver*) NULL)
 			break;
 	}
@@ -154,7 +154,9 @@ for_each_driver_in_dir(const char* dirpath, drv_guest_func func, void* arg)
 }
 
 
-struct driver* for_each_driver(drv_guest_func func, void* arg)
+struct driver* for_each_path(plugin_guest_func plg_guest,
+			     drv_guest_func drv_guest,
+			     void* arg)
 {
 	const char* pluginpath;
 	char* tmp_path;
@@ -167,16 +169,34 @@ struct driver* for_each_driver(drv_guest_func func, void* arg)
 	if (pluginpath == NULL)
 		pluginpath = PLUGINDIR;
         if (strchr(pluginpath, ':') == (char*) NULL)
-		return for_each_driver_in_dir(pluginpath, func, arg);
+		return for_each_plugin_in_dir(pluginpath,
+					      plg_guest,
+					      drv_guest,
+					      arg);
 	tmp_path = alloca(strlen(pluginpath) + 1);
 	strncpy(tmp_path, pluginpath, strlen(pluginpath) + 1);
 	for (s = strtok(tmp_path, ":"); s != NULL; s = strtok(NULL, ":")) {
-		result = for_each_driver_in_dir(s, func, arg);
+		result = for_each_plugin_in_dir(s,
+						plg_guest,
+						drv_guest,
+						arg);
 		if (result != (struct driver*) NULL)
 			break;
 	}
 	return result;
 }
+
+struct driver* for_each_driver(drv_guest_func func, void* arg)
+{
+	return for_each_path(visit_plugin, func, arg);
+
+}
+
+void for_each_plugin(plugin_guest_func plugin_guest, void* arg)
+{
+	for_each_path(plugin_guest, NULL, arg );
+}
+
 
 
 /**

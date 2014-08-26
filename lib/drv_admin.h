@@ -12,13 +12,22 @@
 extern "C" {
 #endif
 
-/*
- * Argument to for_each_driver. Called with a driver and
- * an argument given to for_each_driver. Returns NULL if
- * iteration should continue, else a pointer to static memory,
- * valid until next call to for_each_driver().
+/**
+ *
+ * Argument to for_each_driver. Called with the loaded struct driver*
+ * data and the argument given to for_each_driver. Returns NULL if
+ * iteration should continue, else a struct hardware* pointer.
+ *
  */
 typedef struct driver* (*drv_guest_func)(struct driver*, void*);
+
+/**
+ * Argument to for_each_plugin. Called with a path to the so-file,
+ * a function to apply to each found driver (see drv_guest_func) and
+ * an untyped argument given to for_each_plugin
+ */
+typedef struct driver*
+(*plugin_guest_func)(const char*, drv_guest_func, void*);
 
 /* The currently active driver. */
 extern struct driver drv;
@@ -35,6 +44,12 @@ void hw_print_drivers(FILE*);
  *
  */
 struct driver* for_each_driver(drv_guest_func func, void* arg);
+
+/**
+ * Apply func to all plugins (i. e., .so-files) in current plugin path.
+ */
+void for_each_plugin(plugin_guest_func plugin_guest, void* arg);
+
 
 #define PLUGIN_FILE_EXTENSION "so"
 

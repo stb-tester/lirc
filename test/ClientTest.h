@@ -87,7 +87,7 @@ class ClientTest : public CppUnit::TestFixture
             buffer << pidfile.rdbuf();
             int pid;
             buffer >> pid;
-            if( kill(pid, SIGTERM) == 0)
+            if( kill(pid, SIGUSR1) == 0)
                 usleep(500);
             else
                 perror("Cannot kill lircd.");

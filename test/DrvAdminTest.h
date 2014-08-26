@@ -34,6 +34,11 @@ static driver* drv_guest_counter(struct driver*, void* arg)
     return 0;
 }
 
+struct driver* listPlugins(const char* path, drv_guest_func guest, void* arg)
+{
+    (*(int*)arg)++;
+    return 0;
+}
 
 class DrvAdminTest : public CppUnit::TestFixture
 {
@@ -46,6 +51,7 @@ class DrvAdminTest : public CppUnit::TestFixture
                  new CppUnit::TestSuite( "DrvAdminTest" );
             ADD_TEST("testLoad", testLoad);
             ADD_TEST("testCount", testCount);
+            ADD_TEST("testListPlugins", testListPlugins);
             return testSuite;
         };
 
@@ -76,6 +82,13 @@ class DrvAdminTest : public CppUnit::TestFixture
             setenv("LD_LIBRARY_PATH", "../lib/.libs", 1);
             for_each_driver(drv_guest_counter, (void*)&count);
             CPPUNIT_ASSERT( count == 52 );
+        }
+
+        void testListPlugins()
+        {
+            int count = 0;
+            for_each_plugin(listPlugins, (void*)&count);
+            CPPUNIT_ASSERT(count == 43 );
         }
 };
 
