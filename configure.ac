@@ -337,12 +337,11 @@ AC_DEFINE(LIRC_OPTIONS_PATH,["/etc/lirc/lirc_options.conf"],[
         Default path for lircd_options.conf])
 
 AH_TOP([
-#include     "lirc_config1.h"
 #include     "paths.h"
 ])
 
 AH_BOTTOM([
-#include     "lirc_config2.h"
+#include     "lirc_config.h"
 ])
 
 
