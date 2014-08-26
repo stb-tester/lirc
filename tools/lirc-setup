@@ -13,7 +13,14 @@ import sys
 import textwrap
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
-import yaml
+try:
+    import yaml
+except ImportError:
+    print("""Cannot import the yaml library. Please install the python3
+yaml package, on many distributions known as python3-PyYAML.  It is also
+available as pypi package at https://pypi.python.org/pypi/PyYAML.
+""")
+    sys.exit(1)
 
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 from gi.repository.Pango import FontDescription  # pylint: disable=F0401,E0611
