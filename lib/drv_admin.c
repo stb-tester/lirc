@@ -32,7 +32,7 @@ struct driver drv;
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
-const struct driver drv_default = {
+const struct driver drv_null = {
 	.name 		= "null",
 	.device		= "/dev/null",
 	.features	= 0,
@@ -221,7 +221,7 @@ int hw_choose_driver(const char* name)
 	struct driver* found;
 
 	if (name == NULL) {
-		memcpy(&drv, &drv_default, sizeof(struct driver));
+		memcpy(&drv, &drv_null, sizeof(struct driver));
 		return 0;
 	}
 	if (strcasecmp(name, "dev/input") == 0) {
