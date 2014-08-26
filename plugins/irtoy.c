@@ -1,5 +1,5 @@
 /****************************************************************************
- ** hw_usbirtoy.c **********************************************************
+ ** irtoy.c **********************************************************
  ****************************************************************************
  *
  * Routines for USB Infrared Toy receiver/transmitter in sampling mode
@@ -391,44 +391,44 @@ static irtoy_t *irtoy_hw_init(int fd)
 
 static int init(void)
 {
-	if (!tty_create_lock(hw.device)) {
+	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "irtoy: could not create lock files");
 		return(0);
 	}
-	if ((hw.fd = open(hw.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LIRC_ERROR, "irtoy: could not open %s", hw.device);
+	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+		logprintf(LIRC_ERROR, "irtoy: could not open %s", drv.device);
 		tty_delete_lock();
 		return(0);
 	}
-	if (!tty_reset(hw.fd)) {
+	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "irtoy: could not reset tty");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return(0);
 	}
-	if (!tty_setbaud(hw.fd, 115200)) {
+	if (!tty_setbaud(drv.fd, 115200)) {
 		logprintf(LIRC_ERROR, "irtoy: could not set baud rate");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return(0);
 	}
-	if (!tty_setcsize(hw.fd, 8)) {
+	if (!tty_setcsize(drv.fd, 8)) {
 		logprintf(LIRC_ERROR, "irtoy: could not set csize");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return(0);
 	}
-	if (!tty_setrtscts(hw.fd, 1)) {
+	if (!tty_setrtscts(drv.fd, 1)) {
 		logprintf(LIRC_ERROR, "irtoy: could not enable hardware flow");
-		close(hw.fd);
+		close(drv.fd);
 		tty_delete_lock();
 		return(0);
 	}
-	if ((dev = irtoy_hw_init(hw.fd)) == NULL) {
+	if ((dev = irtoy_hw_init(drv.fd)) == NULL) {
 		logprintf(LIRC_ERROR,
 			  "irtoy: No USB Irtoy device found at %s",
-			  hw.device);
-		close(hw.fd);
+			  drv.device);
+		close(drv.fd);
 		tty_delete_lock();
 		return(0);
 	}
@@ -469,8 +469,8 @@ static int deinit(void)
 	}
 	dev = NULL;
 
-	close(hw.fd);
-	hw.fd = -1;
+	close(drv.fd);
+	drv.fd = -1;
 	tty_delete_lock();
 	return 1;
 }
