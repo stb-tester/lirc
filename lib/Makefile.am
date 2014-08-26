@@ -32,21 +32,15 @@ liblirc_client_la_LIBADD    = liblirc.la
 liblirc_driver_la_SOURCES   = driver.h \
                               ir_remote.c \
                               ir_remote.h \
+                              ir_remote_types.h \
+                              lirc_log.c \
+                              lirc_log.h \
                               receive.c \
                               receive.h \
                               serial.h \
                               serial.c \
                               transmit.c \
-                              transmit.h \
-                              ir_remote_types.h \
-                              receive.h \
-                              receive.h \
-                              lirc_log.c \
-                              lirc_log.h \
-                              lirc_options.c \
-                              lirc_options.h \
-                              ciniparser.c \
-                              ciniparser.h
+                              transmit.h
 
 dist_include_HEADERS        = lirc_client.h \
                               lirc_driver.h \
@@ -54,7 +48,7 @@ dist_include_HEADERS        = lirc_client.h \
 
 lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
-			      config_flags.h \
+                              config_flags.h \
                               ciniparser.h \
                               dictionary.h \
                               drv_admin.h \
