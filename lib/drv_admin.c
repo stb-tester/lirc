@@ -89,7 +89,7 @@ static struct driver* match_hw_name(struct driver* drv, void* name)
 
 
 static struct driver*
-visit_plugin(char* path, drv_guest_func func, void* arg)
+visit_plugin(const char* path, drv_guest_func func, void* arg)
 // Apply func(hw, arg) for all drivers found in plugin on path.
 {
 	struct driver** drivers;
