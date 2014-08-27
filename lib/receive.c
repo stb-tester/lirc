@@ -1,6 +1,6 @@
 
 /****************************************************************************
- ** receive.c ***************************************************************
+ * receive.c ***************************************************************
  ****************************************************************************
  *
  * functions that decode IR codes
@@ -122,10 +122,12 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 }
 
 /**
- * When this function returns, with a non-zero return value, data on the file descriptor drv.fd is available.
- * If argument is positive, may wait for that time, otherwise return immediately.
- * @param maxusec timeout in micro seconds
- * @return
+ * Wait until data is available in drv.fd, timeout or a signal is raised.
+ * @param maxusec timeout in micro seconds, given to select(2). If <= 0, the
+ *       function will block indefinetaly, until data is available or a
+ *       sugnal is processed. If positive, a timeout value in microseconds.
+ * @return True (1) if there is data available in drv.fd, else 0 indicating
+ *       timeout.
  */
 int waitfordata(__u32 maxusec)
 {
@@ -1000,19 +1002,21 @@ static ir_code get_post(struct ir_remote * remote)
 	return (post);
 }
 
-int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	ir_code pre, code, post;
 	lirc_t sync;
 	int header;
 	struct timeval current;
 
 	sync = 0;		/* make compiler happy */
-	code = pre = post = 0;
+	memset(ctx, 0, sizeof(struct decode_ctx_t));
+	ctx->code = ctx->pre = ctx->post = 0;
 	header = 0;
 
-	if (drv.rec_mode == LIRC_MODE_MODE2 || drv.rec_mode == LIRC_MODE_PULSE || drv.rec_mode == LIRC_MODE_RAW) {
+	if (curr_driver->rec_mode == LIRC_MODE_MODE2 ||
+	    curr_driver->rec_mode == LIRC_MODE_PULSE ||
+	    curr_driver->rec_mode == LIRC_MODE_RAW)
+     	{
 		rewind_rec_buffer();
 		rec_buffer.is_biphase = is_biphase(remote) ? 1 : 0;
 
@@ -1038,17 +1042,17 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 					return (0);
 				}
 
-				*prep = remote->pre_data;
-				*codep = remote->last_code->code;
-				*postp = remote->post_data;
-				*repeat_flagp = 1;
+				ctx->pre = remote->pre_data;
+				ctx->code = remote->last_code->code;
+				ctx->post = remote->post_data;
+				ctx->repeat_flag = 1;
 
-				*min_remaining_gapp =
+				ctx->min_remaining_gap =
 				    is_const(remote) ? (min_gap(remote) >
 							rec_buffer.sum ? min_gap(remote) -
 							rec_buffer.sum : 0) : (has_repeat_gap(remote) ? remote->
 									       repeat_gap : min_gap(remote));
-				*max_remaining_gapp =
+				ctx->max_remaining_gap =
 				    is_const(remote) ? (max_gap(remote) >
 							rec_buffer.sum ? max_gap(remote) -
 							rec_buffer.sum : 0) : (has_repeat_gap(remote) ? remote->
@@ -1109,7 +1113,7 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 		}
 		if (found == NULL)
 			return (0);
-		code = found->code;
+		ctx->code = found->code;
 	} else {
 		if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 			lirc_t sum;
@@ -1120,10 +1124,10 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 				return (0);
 			}
 
-			post = decoded & gen_mask(remote->post_data_bits);
+			ctx->post = decoded & gen_mask(remote->post_data_bits);
 			decoded >>= remote->post_data_bits;
-			code = decoded & gen_mask(remote->bits);
-			pre = decoded >> remote->bits;
+			ctx->code = decoded & gen_mask(remote->bits);
+			ctx->pre = decoded >> remote->bits;
 
 			gettimeofday(&current, NULL);
 			sum = remote->phead + remote->shead +
@@ -1141,28 +1145,28 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 			}
 
 			if (has_pre(remote)) {
-				pre = get_pre(remote);
-				if (pre == (ir_code) - 1) {
+				ctx->pre = get_pre(remote);
+				if (ctx->pre == (ir_code) - 1) {
 					LOGPRINTF(1, "failed on pre");
 					return (0);
 				}
-				LOGPRINTF(1, "pre: %llx", pre);
+				LOGPRINTF(1, "pre: %llx", ctx->pre);
 			}
 
-			code = get_data(remote, remote->bits, remote->pre_data_bits);
-			if (code == (ir_code) - 1) {
+			ctx->code = get_data(remote, remote->bits, remote->pre_data_bits);
+			if (ctx->code == (ir_code) - 1) {
 				LOGPRINTF(1, "failed on code");
 				return (0);
 			}
-			LOGPRINTF(1, "code: %llx", code);
+			LOGPRINTF(1, "code: %llx", ctx->code);
 
 			if (has_post(remote)) {
-				post = get_post(remote);
-				if (post == (ir_code) - 1) {
+				ctx->post = get_post(remote);
+				if (ctx->post == (ir_code) - 1) {
 					LOGPRINTF(1, "failed on post");
 					return (0);
 				}
-				LOGPRINTF(1, "post: %llx", post);
+				LOGPRINTF(1, "post: %llx", ctx->post);
 			}
 			if (!get_trail(remote)) {
 				LOGPRINTF(1, "failed on trailing pulse");
@@ -1190,28 +1194,25 @@ int receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 			}
 		}		/* end of mode specific code */
 	}
-	*prep = pre;
-	*codep = code;
-	*postp = post;
 	if ((!has_repeat(remote) || remote->reps < remote->min_code_repeat)
 	    && expect_at_most(remote, sync, remote->max_remaining_gap))
-		*repeat_flagp = 1;
+		ctx->repeat_flag = 1;
 	else
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 	if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 		/* Most TV cards don't pass each signal to the
 		   driver. This heuristic should fix repeat in such
 		   cases. */
 		if (time_elapsed(&remote->last_send, &current) < 325000) {
-			*repeat_flagp = 1;
+			ctx->repeat_flag = 1;
 		}
 	}
 	if (is_const(remote)) {
-		*min_remaining_gapp = min_gap(remote) > rec_buffer.sum ? min_gap(remote) - rec_buffer.sum : 0;
-		*max_remaining_gapp = max_gap(remote) > rec_buffer.sum ? max_gap(remote) - rec_buffer.sum : 0;
+		ctx->min_remaining_gap = min_gap(remote) > rec_buffer.sum ? min_gap(remote) - rec_buffer.sum : 0;
+		ctx->max_remaining_gap = max_gap(remote) > rec_buffer.sum ? max_gap(remote) - rec_buffer.sum : 0;
 	} else {
-		*min_remaining_gapp = min_gap(remote);
-		*max_remaining_gapp = max_gap(remote);
+		ctx->min_remaining_gap = min_gap(remote);
+		ctx->max_remaining_gap = max_gap(remote);
 	}
 	return (1);
 }

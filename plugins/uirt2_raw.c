@@ -56,8 +56,7 @@ static int uirt2_raw_init(void);
 static int uirt2_raw_deinit(void);
 static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code);
 static char *uirt2_raw_rec(struct ir_remote *remotes);
-static int uirt2_raw_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int uirt2_raw_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static lirc_t uirt2_raw_readdata(lirc_t timeout);
 
 /* forwards */
@@ -161,14 +160,13 @@ static void queue_clear()
 	rec_wptr = 0;
 }
 
-static int uirt2_raw_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int uirt2_raw_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
 	LOGPRINTF(1, "uirt2_raw_decode: enter");
 
-	res = receive_decode(remote, prep, codep, postp, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	res = receive_decode(remote, ctx);
 
 	LOGPRINTF(1, "uirt2_raw_decode: %d", res);
 

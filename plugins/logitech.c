@@ -41,8 +41,7 @@ static lirc_t signal_length;
 static ir_code pre, code;
 
 //Forwards
-int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int logitech_init(void);
 int logitech_deinit(void);
 char *logitech_rec(struct ir_remote *remotes);
@@ -70,14 +69,13 @@ struct driver hw_logitech = {
 struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
 
 
-int logitech_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 8, pre, 8, code, 0, 0)) {
+	if (!map_code(remote, ctx, 8, pre, 8, code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, signal_length, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, signal_length);
 
 	return (1);
 }

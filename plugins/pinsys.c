@@ -65,8 +65,7 @@ static ir_code code;
 int is_it_is_it_huh(int port);
 int autodetect(void);
 
-int pinsys_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int pinsys_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int pinsys_init(void);
 int pinsys_deinit(void);
 char *pinsys_rec(struct ir_remote *remotes);
@@ -156,22 +155,21 @@ int autodetect(void)
 
 /************** end of autodetect code *************/
 
-int pinsys_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int pinsys_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	if (!map_code
-	    (remote, prep, codep, postp, 0, 0, BITS_COUNT, code & REPEAT_FLAG ? code ^ REPEAT_MASK : code, 0, 0)) {
+	    (remote, ctx, 0, 0, BITS_COUNT, code & REPEAT_FLAG ? code ^ REPEAT_MASK : code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, signal_length, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, signal_length);
 
 	if (start.tv_sec - last.tv_sec < 2) {
 		/* let's believe the remote */
 		if (code & REPEAT_FLAG) {
-			*repeat_flagp = 1;
+			ctx->repeat_flag = 1;
 
-			LOGPRINTF(1, "repeat_flag: %d\n", *repeat_flagp);
+			LOGPRINTF(1, "repeat_flag: %d\n", ctx->repeat_flag);
 		}
 	}
 

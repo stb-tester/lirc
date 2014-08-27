@@ -52,8 +52,7 @@ static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 static ir_code code;
 
-static int uirt2_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int uirt2_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static int uirt2_init(void);
 static int uirt2_deinit(void);
 static char *uirt2_rec(struct ir_remote *remotes);
@@ -81,14 +80,13 @@ const struct driver hw_uirt2 = {
 const struct driver* hardwares[] = { &hw_uirt2, (const struct driver*)NULL };
 
 
-static int uirt2_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int uirt2_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 0, 0, 8 * NUMBYTES, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, 8 * NUMBYTES, code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0 );
 
 	return (1);
 }

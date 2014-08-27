@@ -47,8 +47,7 @@
 static int devinput_init();
 static int devinput_init_fwd();
 static int devinput_deinit(void);
-static int devinput_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			   int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static char *devinput_rec(struct ir_remote *remotes);
 
 enum locate_type {
@@ -420,15 +419,14 @@ int devinput_deinit(void)
 	return 1;
 }
 
-int devinput_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		    lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "devinput_decode");
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, hw_devinput.code_length, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, hw_devinput.code_length, code, 0, 0)) {
 		static int print_warning = 1;
 
-		if (!map_code(remote, prep, codep, postp, 0, 0, 32, code_compat, 0, 0)) {
+		if (!map_code(remote, ctx, 0, 0, 32, code_compat, 0, 0)) {
 			return (0);
 		}
 		if (print_warning) {
@@ -439,14 +437,14 @@ int devinput_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, i
 		}
 	}
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
 	switch (repeat_state) {
 	case RPT_NO:
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 		break;
 	case RPT_YES:
-		*repeat_flagp = 1;
+		ctx->repeat_flag = 1;
 		break;
 	default:
 		break;

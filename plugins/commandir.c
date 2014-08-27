@@ -283,8 +283,7 @@ static char *commandir_rec(struct ir_remote *remotes);
 static int commandir_ioctl(unsigned int cmd, void *arg);
 static lirc_t commandir_readdata(lirc_t timeout);
 static int commandir_deinit(void);
-static int commandir_receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-				    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int commandir_receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 
 /*** USB Thread Functions ***/
 static void commandir_child_init();
@@ -432,12 +431,11 @@ static int last_mc_time = -1;
 static int commandir_rx_num = 0;
 
 /***   LIRC Interface Functions - Non-blocking parent thread ***/
-static int commandir_receive_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-				    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int commandir_receive_decode(struct ir_remote *remote, struct decode_ctx_t* decode_ctx)
 {
 
 	int i;
-	i = receive_decode(remote, prep, codep, postp, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	i = receive_decode(remote, decode_ctx);
 
 	if (i > 0) {
 		static char rx_char[3] = { 3, 0, RXDECODE_HEADER_LIRC };

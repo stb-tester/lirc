@@ -35,23 +35,39 @@ static inline lirc_t receive_timeout(lirc_t usec)
 	return 2 * usec < MIN_RECEIVE_TIMEOUT ? MIN_RECEIVE_TIMEOUT : 2 * usec;
 }
 
+/**
+ * Wait until data is available to read, or timeout.
+ *
+ * @param maxusec Mac number of microseconda to wait.
+ * @returns non-zero if the driver.df is ready to read,
+ *       or 0 indicating timeout
+ */
 int waitfordata(__u32 maxusec);
 
+/** Clear internal buffer to pristine state. */
 void init_rec_buffer();
 
+/**
+ * Flush the internal fifo and store a single code read
+ * from the driver in it.
+ */
 int clear_rec_buffer(void);
 
-int receive_decode(struct ir_remote* remote,
-		   ir_code* prep,
-		   ir_code* codep,
-		   ir_code* postp,
-		   int*repeat_flag,
-		   lirc_t* min_remaining_gapp,
-		   lirc_t* max_remaining_gapp);
+/**
+ * Decode data from remote
+ *
+ * @param ctx Undefined on enter. On exit, the fields in the
+ *     structure are defined.
+ */
+int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 
+/**
+ * Reset the modules's internal fifo's read state to initial values
+ * where the nothing is read. The write pointer is not affected.
+ */
 void rewind_rec_buffer(void);
 
-/** @deprecated (only used in slinke driver).  */
+/** Reset internal fifo's write pointer.  */
 void rec_buffer_reset_wptr(void);
 
 

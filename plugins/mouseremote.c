@@ -46,10 +46,7 @@ static ir_code pre, code;
 static int serial_input;
 
 //Forwards:
-int mouseremote_decode(struct ir_remote *remote,
-		       ir_code * prep, ir_code * codep, ir_code * postp,
-		       int *repeat_flagp,
-		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int mouseremote_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int mouseremote_init(void);
 int mouseremote_ps2_init(void);
 int mouseremote_deinit(void);
@@ -101,14 +98,13 @@ const struct driver* hardwares[] = { &hw_mouseremote,
 				       (const struct driver*)NULL };
 
 
-int mouseremote_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int mouseremote_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 8, 0x08, 16, code, 8, 0x7f)) {
+	if (!map_code(remote, ctx, 8, 0x08, 16, code, 8, 0x7f)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, signal_length, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, signal_length);
 
 	return (1);
 }

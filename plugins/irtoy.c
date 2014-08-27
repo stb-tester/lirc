@@ -83,10 +83,7 @@ static int init(void);
 static int deinit(void);
 static int send(struct ir_remote *remote, struct ir_ncode *code);
 static char* receive(struct ir_remote* remotes);
-static int decode(struct ir_remote* remote, ir_code* prep,
-                  ir_code* codep, ir_code * postp,
-		  int* repeat_flagp,
-                  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static lirc_t readdata(lirc_t timeout);
 
 
@@ -115,17 +112,13 @@ const struct driver* hardwares[] =
 	 { &hw_usbirtoy, (const struct driver*) NULL };
 
 
-static int decode(struct ir_remote* remote, ir_code* prep,
-                   ir_code* codep, ir_code* postp,
-		   int* repeat_flagp,
-                   lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp)
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
 	LOGPRINTF(1, "decode: enter");
 
-	res = receive_decode(remote, prep, codep, postp, repeat_flagp,
-                             min_remaining_gapp, max_remaining_gapp);
+	res = receive_decode(remote, ctx);
 
 	LOGPRINTF(1, "decode: %d", res);
 

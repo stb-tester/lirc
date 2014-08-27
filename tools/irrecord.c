@@ -396,9 +396,7 @@ int main(int argc, char **argv)
 	FILE *fout, *fin;
 	int flags;
 	int retval = EXIT_SUCCESS;
-	ir_code pre, code, post;
-	int repeat_flag;
-	lirc_t min_remaining_gap, max_remaining_gap;
+	struct decode_ctx_t decode_ctx;
 	int force;
 	int disable_namespace = 0;
 	int retries;
@@ -778,9 +776,7 @@ int main(int argc, char **argv)
 			sleep(1);
 			while (availabledata()) {
 				drv.rec_func(NULL);
-				if (drv.
-				    decode_func(&remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap,
-						&max_remaining_gap)) {
+				if (drv.decode_func(&remote, &decode_ctx)) {
 					flag = 1;
 					break;
 				}
@@ -789,12 +785,12 @@ int main(int argc, char **argv)
 				ir_code code2;
 
 				ncode.name = buffer;
-				ncode.code = code;
+				ncode.code = decode_ctx.code;
 				drv.rec_func(NULL);
-				if (drv.
-				    decode_func(&remote, &pre, &code2, &post, &repeat_flag, &min_remaining_gap,
-						&max_remaining_gap)) {
-					if (code != code2) {
+				if (drv.decode_func(&remote, &decode_ctx)) {
+					code2 = decode_ctx.code;
+					decode_ctx.code = ncode.code;
+					if (decode_ctx.code != code2) {
 						ncode.next = malloc(sizeof(*(ncode.next)));
 						if (ncode.next) {
 							memset(ncode.next, 0, sizeof(*(ncode.next)));
@@ -1008,9 +1004,7 @@ int availabledata(void)
 
 int get_toggle_bit_mask(struct ir_remote *remote)
 {
-	ir_code pre, code, post;
-	int repeat_flag;
-	lirc_t min_remaining_gap, max_remaining_gap;
+	struct decode_ctx_t decode_ctx;
 	int retval = EXIT_SUCCESS;
 	int retries, flag, success;
 	ir_code first, last;
@@ -1060,34 +1054,30 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 
 			for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
 				remote->rc6_mask = mask;
-				success =
-				    drv.decode_func(remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap,
-						   &max_remaining_gap);
+				success = drv.decode_func(remote, &decode_ctx);
 				if (success) {
-					remote->min_remaining_gap = min_remaining_gap;
-					remote->max_remaining_gap = max_remaining_gap;
+					remote->min_remaining_gap = decode_ctx.min_remaining_gap;
+					remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 					break;
 				}
 			}
 			if (success == 0)
 				remote->rc6_mask = 0;
 		} else {
-			success =
-			    drv.decode_func(remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap,
-					   &max_remaining_gap);
+			success = drv.decode_func(remote, &decode_ctx);
 			if (success) {
-				remote->min_remaining_gap = min_remaining_gap;
-				remote->max_remaining_gap = max_remaining_gap;
+				remote->min_remaining_gap = decode_ctx.min_remaining_gap;
+				remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 			}
 		}
 		if (success) {
 			if (flag == 0) {
 				flag = 1;
-				first = code;
-			} else if (!repeat_flag || code != last) {
+				first = decode_ctx.code;
+			} else if (!decode_ctx.repeat_flag || decode_ctx.code != last) {
 				seq++;
-				if (!found && first ^ code) {
-					set_toggle_bit_mask(remote, first ^ code);
+				if (!found && first ^ decode_ctx.code) {
+					set_toggle_bit_mask(remote, first ^ decode_ctx.code);
 					found = 1;
 				}
 				printf(".");
@@ -1096,7 +1086,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			} else {
 				repeats++;
 			}
-			last = code;
+			last = decode_ctx.code;
 		} else {
 			retries--;
 		}
@@ -1287,9 +1277,9 @@ void for_each_remote(struct ir_remote *remotes, remote_func func)
 void analyse_remote(struct ir_remote *raw_data)
 {
 	struct ir_ncode *codes;
-	ir_code pre, code, code2, post;
-	int repeat_flag;
-	lirc_t min_remaining_gap, max_remaining_gap;
+	struct decode_ctx_t decode_ctx;
+	int code;
+	int code2;
 	struct ir_ncode *new_codes;
 	size_t new_codes_count = 100;
 	int new_index = 0;
@@ -1332,7 +1322,7 @@ void analyse_remote(struct ir_remote *raw_data)
 
 		init_rec_buffer();
 
-		ret = receive_decode(&remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap, &max_remaining_gap);
+		ret = receive_decode(&remote, &decode_ctx);
 		if (!ret) {
 			fprintf(stderr, "%s: decoding of %s failed\n", progname, codes->name);
 		} else {
@@ -1351,10 +1341,11 @@ void analyse_remote(struct ir_remote *raw_data)
 			}
 
 			clear_rec_buffer();
-			ret =
-			    receive_decode(&remote, &pre, &code2, &post, &repeat_flag, &min_remaining_gap,
-					   &max_remaining_gap);
-			if (ret && code2 != code) {
+			code = decode_ctx.code;
+			ret = receive_decode(&remote, &decode_ctx);
+			code2 = decode_ctx.code;
+			decode_ctx.code = code;
+			if (ret && code2 != decode_ctx.code) {
 				new_codes[new_index].next = malloc(sizeof(*(new_codes[new_index].next)));
 				if (new_codes[new_index].next) {
 					memset(new_codes[new_index].next, 0, sizeof(*(new_codes[new_index].next)));
@@ -1362,7 +1353,7 @@ void analyse_remote(struct ir_remote *raw_data)
 				}
 			}
 			new_codes[new_index].name = codes->name;
-			new_codes[new_index].code = code;
+			new_codes[new_index].code = decode_ctx.code;
 			new_index++;
 		}
 		codes++;

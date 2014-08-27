@@ -103,11 +103,7 @@ static lirc_t signal_length;
 static ir_code code, last_code = 0;
 
 // Forwards
-int accent_decode(struct ir_remote *remote,
-		  ir_code* prep, ir_code* codep, ir_code* postp,
-		  int* repeat_flagp,
-		  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
-
+int accent_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int accent_open_serial_port(const char *device);
 int accent_init(void);
 int accent_deinit(void);
@@ -152,17 +148,16 @@ const struct driver* hardwares[] = { &hw_accent, (const struct driver*) NULL};
 //      repeat_flagp    True if the keypress is a repeated keypress
 //      remaining_gapp  Extimated time gap remaining before next code?
 //-------------------------------------------------------------------------
-int accent_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int accent_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "Entering accent_decode(), code = %016llx\n", code);
 
 	LOGPRINTF(1, "accent_decode() is calling map_code()");
-	if (!map_code(remote, prep, codep, postp, 0, 0, ACCENT_CODE_LENGTH, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, ACCENT_CODE_LENGTH, code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, signal_length, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, signal_length);
 
 	LOGPRINTF(1, "Exiting accent_decode()");
 

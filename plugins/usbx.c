@@ -59,10 +59,7 @@ static ir_code code;
 #define CODE_LENGTH 48
 
 //Forwards:
-int usbx_decode(struct ir_remote *remote,
-		ir_code * prep, ir_code * codep, ir_code * postp,
-		int *repeat_flagp,
-		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int usbx_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int usbx_init(void);
 int usbx_deinit(void);
 char *usbx_rec(struct ir_remote *remotes);
@@ -91,19 +88,18 @@ const struct driver hw_usbx = {
 const struct driver* hardwares[] = { &hw_usbx, (const struct driver*)NULL };
 
 
-int usbx_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int usbx_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	if (remote->flags & CONST_LENGTH
-	    || !map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, code & (~REPEAT_FLAG), 0, 0)) {
+	    || !map_code(remote, ctx, 0, 0, CODE_LENGTH, code & (~REPEAT_FLAG), 0, 0)) {
 		return 0;
 	}
 	/* the lsb in the code is the repeat flag */
-	*repeat_flagp = code & REPEAT_FLAG ? 1 : 0;
-	*min_remaining_gapp = min_gap(remote);
-	*max_remaining_gapp = max_gap(remote);
+	ctx->repeat_flag = code & REPEAT_FLAG ? 1 : 0;
+	ctx->min_remaining_gap = min_gap(remote);
+	ctx->max_remaining_gap = max_gap(remote);
 
-	LOGPRINTF(1, "repeat_flagp: %d", *repeat_flagp);
+	LOGPRINTF(1, "repeat_flagp: %d", ctx->repeat_flag);
 	LOGPRINTF(1, "remote->gap range:      %lu %lu\n", (__u32) min_gap(remote), (__u32) max_gap(remote));
 	LOGPRINTF(1, "rem: %lu %lu", (__u32) remote->min_remaining_gap, (__u32) remote->max_remaining_gap);
 	return 1;

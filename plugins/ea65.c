@@ -48,10 +48,7 @@ struct timeval start, end, last;
 ir_code code;
 
 //Forwards:
-int ea65_decode(struct ir_remote *remote,
-		ir_code * prep, ir_code * codep, ir_code * postp,
-		int *repeat_flagp,
-		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int ea65_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int ea65_init(void);
 int ea65_release(void);
 char *ea65_receive(struct ir_remote *remote);
@@ -80,27 +77,26 @@ const struct driver hw_ea65 = {
 const struct driver* hardwares[] = { &hw_ea65, (const struct driver*)NULL };
 
 
-int ea65_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int ea65_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	lirc_t d = 0;
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, code, 0, 0))
+	if (!map_code(remote, ctx, 0, 0, CODE_LENGTH, code, 0, 0))
 		return 0;
 
 	if (start.tv_sec - last.tv_sec >= 2) {
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 	} else {
 		d = (start.tv_sec - last.tv_sec) * 1000000 + start.tv_usec - last.tv_usec;
 		if (d < 960000) {
-			*repeat_flagp = 1;
+			ctx->repeat_flag = 1;
 		} else {
-			*repeat_flagp = 0;
+			ctx->repeat_flag = 0;
 		}
 	}
 
-	*min_remaining_gapp = 0;
-	*max_remaining_gapp = 0;
+	ctx->min_remaining_gap = 0;
+	ctx->max_remaining_gap = 0;
 
 	return 1;
 }

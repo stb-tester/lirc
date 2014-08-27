@@ -41,10 +41,7 @@ ir_code code;
 #define CODE_LENGTH 64
 
 //Forwards:
-int irman_decode(struct ir_remote *remote,
-		 ir_code * prep, ir_code * codep, ir_code * postp,
-		 int *repeat_flagp,
-		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int irman_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int irman_init(void);
 int irman_deinit(void);
 char *irman_rec(struct ir_remote *remotes);
@@ -73,14 +70,13 @@ const struct driver hw_irman = {
 const struct driver* hardwares[] = { &hw_irman, (const struct driver*)NULL };
 
 
-int irman_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int irman_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, CODE_LENGTH, code, 0, 0)) {
 		return 0;
 	}
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0);
 
 	return (1);
 }

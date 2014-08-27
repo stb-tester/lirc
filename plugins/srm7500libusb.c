@@ -113,8 +113,7 @@ typedef struct {
 static int srm7500_init();
 static int srm7500_deinit();
 static char *srm7500_rec(struct ir_remote *remotes);
-static int srm7500_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int srm7500_decode(struct ir_remote *remote, struct decode_ctx_t *ctx);
 static int usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
@@ -917,18 +916,17 @@ static int usb_read_loop(int fd)
 
 }
 
-int srm7500_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int srm7500_decode(struct ir_remote *remote, struct decode_ctx_t* decode_ctx)
 {
 	LOGPRINTF(1, "srm7500_decode");
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, hw_srm7500libusb.code_length, code, 0, 0)) {
+	if (!map_code(remote, decode_ctx, 0, 0, hw_srm7500libusb.code_length, code, 0, 0)) {
 		return 0;
 	}
 
-	*repeat_flagp = repeat_flag;
-	*min_remaining_gapp = 0;
-	*max_remaining_gapp = 0;
+	decode_ctx->repeat_flag = repeat_flag;
+	decode_ctx->min_remaining_gap = 0;
+	decode_ctx->max_remaining_gap = 0;
 
 	return 1;
 }

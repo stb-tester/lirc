@@ -141,6 +141,18 @@ struct ir_ncode {
 #define IR_PARITY_EVEN 1
 #define IR_PARITY_ODD  2
 
+
+struct decode_ctx_t {
+        ir_code code;
+        ir_code pre;
+        ir_code post;
+        int     repeat_flag;
+        lirc_t  max_remaining_gap;
+        lirc_t  min_remaining_gap;
+        ir_code toggle_bit_mask_state;
+};
+
+
 /**
  * One remote as represented in the configuration file.
  */

@@ -32,8 +32,7 @@
 
 static int hiddev_init();
 static int hiddev_deinit(void);
-static int hiddev_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int hiddev_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static char *hiddev_rec(struct ir_remote *remotes);
 static int sb0540_init();
 static char *sb0540_rec(struct ir_remote *remotes);
@@ -239,25 +238,24 @@ int hiddev_deinit(void)
 	return 1;
 }
 
-int hiddev_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int hiddev_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "hiddev_decode");
 
-	if (!map_code(remote, prep, codep, postp, pre_code_length, pre_code, main_code_length, main_code, 0, 0)) {
+	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0)) {
 		return (0);
 	}
 
-	LOGPRINTF(1, "lirc code: 0x%X", *codep);
+	LOGPRINTF(1, "lirc code: 0x%X", ctx->code);
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
 	switch (repeat_state) {
 	case RPT_NO:
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 		break;
 	case RPT_YES:
-		*repeat_flagp = 1;
+		ctx->repeat_flag = 1;
 		break;
 	default:
 		break;

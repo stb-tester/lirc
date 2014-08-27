@@ -31,8 +31,7 @@ enum {
 static int zotac_init();
 static int zotac_deinit();
 static char *zotac_rec(struct ir_remote *remotes);
-static int zotac_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int zotac_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static void *zotac_repeat();
 static int zotac_getcode();
 
@@ -86,18 +85,17 @@ const struct driver hw_zotac = {
 
 const struct driver* hardwares[] = {&hw_zotac, (const struct driver*) NULL };
 
-static int zotac_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int zotac_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "zotac_decode");
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, main_code_length, main_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0)) {
 		return 0;
 	}
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
-	*repeat_flagp = repeat_state;
+	ctx->repeat_flag = repeat_state;
 
 	return 1;
 }

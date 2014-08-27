@@ -64,10 +64,7 @@
 #define MAX_TIME_BETWEEN_TWO_REPETITION_CODE 500000
 
 //Forwards:
-extern int mplay_decode(struct ir_remote *remote,
-			ir_code * prep, ir_code * codep, ir_code * postp,
-			int *repeat_flagp,
-			lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+extern int mplay_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 
 extern int mplay_init(void);
 extern int mplay2_init(void);
@@ -365,16 +362,15 @@ char *mplay_rec(struct ir_remote *remotes)
  *  min_remaining_gapp  Min extimated time gap remaining before next code
  *  max_remaining_gapp  Max extimated time gap remaining before next code
  **************************************************************************/
-int mplay_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int mplay_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "Entering mplay_decode(), code = %u\n", (unsigned int)mplay_local_data.rc_code);
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, MPLAY_CODE_LENGTH, mplay_local_data.rc_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, MPLAY_CODE_LENGTH, mplay_local_data.rc_code, 0, 0)) {
 		return (0);
 	}
-	*repeat_flagp = mplay_local_data.repeat_flag;
-	*min_remaining_gapp = 0;
-	*max_remaining_gapp = 0;
+	ctx->repeat_flag = mplay_local_data.repeat_flag;
+	ctx->min_remaining_gap = 0;
+	ctx->max_remaining_gap = 0;
 	return 1;
 }

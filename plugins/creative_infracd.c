@@ -48,8 +48,7 @@
 
 int creative_infracd_init(void);
 int creative_infracd_deinit(void);
-int creative_infracd_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int creative_infracd_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 char *creative_infracd_rec(struct ir_remote *remotes);
 
 /* private stuff */
@@ -199,10 +198,9 @@ char *creative_infracd_rec(struct ir_remote *remotes)
 	return decode_all(remotes);
 }
 
-int creative_infracd_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp,
-			    int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int creative_infracd_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 16, 0x8435, 16, code, 0, 0)) {
+	if (!map_code(remote, ctx, 16, 0x8435, 16, code, 0, 0)) {
 		return 0;
 	}
 

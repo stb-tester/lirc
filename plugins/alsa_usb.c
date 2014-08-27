@@ -20,8 +20,7 @@
 
 static int init(void);
 static int deinit(void);
-static int decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static char *rec(struct ir_remote *remotes);
 
 static ir_code code, last_code;
@@ -160,14 +159,13 @@ static char *rec(struct ir_remote *remotes)
 	return decode_all(remotes);
 }
 
-static int decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 0, 0, 8, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, 8, code, 0, 0)) {
 		return (0);
 	}
-	*repeat_flagp = repeat_flag;
-	*min_remaining_gapp = 0;
-	*max_remaining_gapp = 0;
+	ctx->repeat_flag = repeat_flag;
+	ctx->min_remaining_gap = 0;
+	ctx->max_remaining_gap = 0;
 	return 1;
 }

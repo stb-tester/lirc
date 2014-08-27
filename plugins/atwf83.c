@@ -25,8 +25,7 @@ enum {
 static int atwf83_init();
 static int atwf83_deinit();
 static char *atwf83_rec(struct ir_remote *remotes);
-static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-			 lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+static int atwf83_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 static void *atwf83_repeat();
 
 /** Max number of repetitions */
@@ -77,18 +76,17 @@ const struct driver hw_atwf83 = {
 const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };
 
 
-static int atwf83_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		  lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+static int atwf83_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "atwf83_decode");
 
-	if (!map_code(remote, prep, codep, postp, 0, 0, main_code_length, main_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0)) {
 		return 0;
 	}
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
-	*repeat_flagp = repeat_state;
+	ctx->repeat_flag = repeat_state;
 
 	return 1;
 }

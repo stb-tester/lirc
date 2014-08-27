@@ -37,10 +37,7 @@ static lirc_t signal_length;
 static ir_code pre, code;
 
 //forwards:
-int pixelview_decode(struct ir_remote *remote,
-		     ir_code * prep, ir_code * codep, ir_code * postp,
-		     int *repeat_flagp,
-		     lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int pixelview_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int pixelview_init(void);
 int pixelview_deinit(void);
 char *pixelview_rec(struct ir_remote *remotes);
@@ -69,8 +66,7 @@ const struct driver hw_pixelview = {
 const struct driver* hardwares[] = { &hw_pixelview, (const struct driver*)NULL };
 
 
-int pixelview_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		     lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int pixelview_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 #if 0
 	if (remote->pone != 0 || remote->sone != 833)
@@ -79,11 +75,11 @@ int pixelview_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, 
 		return (0);
 #endif
 
-	if (!map_code(remote, prep, codep, postp, 10, pre, 20, code, 0, 0)) {
+	if (!map_code(remote, ctx, 10, pre, 20, code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &start, &last, signal_length, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &start, &last, signal_length);
 
 	return (1);
 }

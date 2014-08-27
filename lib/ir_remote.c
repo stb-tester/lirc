@@ -210,8 +210,15 @@ struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
  * @param post
  * @return
  */
-int map_code(const struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int pre_bits, ir_code pre,
-	     int bits, ir_code code, int post_bits, ir_code post)
+int map_code(const struct ir_remote* remote,
+	     struct decode_ctx_t* ctx,
+	     int pre_bits,
+	     ir_code pre,
+             int bits,
+	     ir_code code,
+             int post_bits,
+             ir_code post)
+
 {
 	ir_code all;
 
@@ -224,15 +231,15 @@ int map_code(const struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
 	all <<= post_bits;
 	all |= (post & gen_mask(post_bits));
 
-	*postp = (all & gen_mask(remote->post_data_bits));
+	ctx->post = (all & gen_mask(remote->post_data_bits));
 	all >>= remote->post_data_bits;
-	*codep = (all & gen_mask(remote->bits));
+	ctx->code = (all & gen_mask(remote->bits));
 	all >>= remote->bits;
-	*prep = (all & gen_mask(remote->pre_data_bits));
+	ctx->pre = (all & gen_mask(remote->pre_data_bits));
 
-	LOGPRINTF(1, "pre: %llx", (__u64) * prep);
-	LOGPRINTF(1, "code: %llx", (__u64) * codep);
-	LOGPRINTF(1, "post: %llx", (__u64) * postp);
+	LOGPRINTF(1, "pre: %llx", (__u64) (ctx->pre));
+	LOGPRINTF(1, "code: %llx", (__u64) (ctx->code));
+	LOGPRINTF(1, "post: %llx", (__u64) (ctx->post));
 	LOGPRINTF(1, "code:                   %016llx\n", code);
 
 	return (1);
@@ -249,8 +256,10 @@ int map_code(const struct ir_remote *remote, ir_code * prep, ir_code * codep, ir
  * @param max_remaining_gapp
  */
 void map_gap(const struct ir_remote *remote,
-             const struct timeval *start, const struct timeval *last, lirc_t signal_length,
-	     int *repeat_flagp, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+	     struct decode_ctx_t* ctx,
+             const struct timeval *start,
+	     const struct timeval *last,
+	     lirc_t signal_length)
 {
 	// Time gap (us) between a keypress on the remote control and
 	// the next one.
@@ -259,7 +268,7 @@ void map_gap(const struct ir_remote *remote,
 	// Check the time gap between the last keypress and this one.
 	if (start->tv_sec - last->tv_sec >= 2) {
 		// Gap of 2 or more seconds: this is not a repeated keypress.
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 		gap = 0;
 	} else {
 		// Calculate the time gap in microseconds.
@@ -268,10 +277,10 @@ void map_gap(const struct ir_remote *remote,
 			// The gap is shorter than a standard gap
 			// (with relative or aboslute tolerance): this
 			// is a repeated keypress.
-			*repeat_flagp = 1;
+			ctx->repeat_flag = 1;
 		} else {
 			// Standard gap: this is a new keypress.
-			*repeat_flagp = 0;
+			ctx->repeat_flag = 0;
 		}
 	}
 
@@ -280,31 +289,31 @@ void map_gap(const struct ir_remote *remote,
 		// The sum (signal_length + gap) is always constant
 		// so the gap is shorter when the code is longer.
 		if (min_gap(remote) > signal_length) {
-			*min_remaining_gapp = min_gap(remote) - signal_length;
-			*max_remaining_gapp = max_gap(remote) - signal_length;
+			ctx->min_remaining_gap = min_gap(remote) - signal_length;
+			ctx->max_remaining_gap = max_gap(remote) - signal_length;
 		} else {
-			*min_remaining_gapp = 0;
+			ctx->min_remaining_gap = 0;
 			if (max_gap(remote) > signal_length) {
-				*max_remaining_gapp = max_gap(remote) - signal_length;
+				ctx->max_remaining_gap = max_gap(remote) - signal_length;
 			} else {
-				*max_remaining_gapp = 0;
+				ctx->max_remaining_gap = 0;
 			}
 		}
 	} else {
 		// The gap after the signal is always constant.
 		// This is the case of Kanam Accent serial remote.
-		*min_remaining_gapp = min_gap(remote);
-		*max_remaining_gapp = max_gap(remote);
+		ctx->min_remaining_gap = min_gap(remote);
+		ctx->max_remaining_gap = max_gap(remote);
 	}
 
-	LOGPRINTF(1, "repeat_flagp:           %d", *repeat_flagp);
+	LOGPRINTF(1, "repeat_flagp:           %d", (ctx->repeat_flag));
 	LOGPRINTF(1, "is_const(remote):       %d", is_const(remote));
 	LOGPRINTF(1, "remote->gap range:      %lu %lu", (__u32) min_gap(remote), (__u32) max_gap(remote));
 	LOGPRINTF(1, "remote->remaining_gap:  %lu %lu", (__u32) remote->min_remaining_gap,
 		  (__u32) remote->max_remaining_gap);
 	LOGPRINTF(1, "signal length:          %lu", (__u32) signal_length);
 	LOGPRINTF(1, "gap:                    %lu", (__u32) gap);
-	LOGPRINTF(1, "extim. remaining_gap:   %lu %lu", (__u32) * min_remaining_gapp, (__u32) * max_remaining_gapp);
+	LOGPRINTF(1, "extim. remaining_gap:   %lu %lu", (__u32) (ctx->min_remaining_gap), (__u32)(ctx->max_remaining_gap));
 
 }
 
@@ -489,8 +498,7 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 	return (found);
 }
 
-static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, int repeat_flag,
-	       lirc_t min_remaining_gap, lirc_t max_remaining_gap)
+static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, struct decode_ctx_t* ctx)
 {
 	__u64 code;
 	struct timeval current;
@@ -502,20 +510,20 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 	LOGPRINTF(1, "%lx %lx %lx %d %d %d %d %d %d %d",
 		  remote, last_remote, last_decoded,
 		  remote == last_decoded,
-		  found == remote->last_code, found->next != NULL, found->current != NULL, repeat_flag,
+		  found == remote->last_code, found->next != NULL, found->current != NULL, ctx->repeat_flag,
 		  time_elapsed(&remote->last_send, &current) < 1000000, (!has_toggle_bit_mask(remote)
 									 || toggle_bit_mask_state ==
 									 remote->toggle_bit_mask_state));
 	if (remote->release_detected) {
 		remote->release_detected = 0;
-		if (repeat_flag) {
+		if (ctx->repeat_flag) {
 			LOGPRINTF(0, "repeat indicated although release was detected before");
 		}
-		repeat_flag = 0;
+		ctx->repeat_flag = 0;
 	}
 	if (remote == last_decoded &&
 	    (found == remote->last_code || (found->next != NULL && found->current != NULL)) &&
-	    repeat_flag && time_elapsed(&remote->last_send, &current) < 1000000 && (!has_toggle_bit_mask(remote)
+	    ctx->repeat_flag && time_elapsed(&remote->last_send, &current) < 1000000 && (!has_toggle_bit_mask(remote)
 										    || toggle_bit_mask_state ==
 										    remote->toggle_bit_mask_state)) {
 		if (has_toggle_mask(remote)) {
@@ -546,25 +554,25 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 	if (found->current == NULL)
 		remote->last_code = found;
 	remote->last_send = current;
-	remote->min_remaining_gap = min_remaining_gap;
-	remote->max_remaining_gap = max_remaining_gap;
+	remote->min_remaining_gap = ctx->min_remaining_gap;
+	remote->max_remaining_gap = ctx->max_remaining_gap;
 
-	code = 0;
+	ctx->code = 0;
 	if (has_pre(remote)) {
-		code |= remote->pre_data;
-		code = code << remote->bits;
+		ctx->code |= remote->pre_data;
+		ctx->code = code << remote->bits;
 	}
-	code |= found->code;
+	ctx->code |= found->code;
 	if (has_post(remote)) {
-		code = code << remote->post_data_bits;
-		code |= remote->post_data;
+		ctx->code = ctx->code << remote->post_data_bits;
+		ctx->code |= remote->post_data;
 	}
 	if (remote->flags & COMPAT_REVERSE) {
 		/* actually this is wrong: pre, code and post should
 		   be rotated separately but we have to stay
 		   compatible with older software
 		 */
-		code = reverse(code, bit_count(remote));
+		ctx->code = reverse(ctx->code, bit_count(remote));
 	}
 	return (code);
 }
@@ -601,27 +609,23 @@ char *decode_all(struct ir_remote *remotes)
 {
 	struct ir_remote *remote;
 	static char message[PACKET_SIZE + 1];
-	ir_code pre, code, post;
 	struct ir_ncode *ncode;
-	int repeat_flag;
 	ir_code toggle_bit_mask_state;
-	lirc_t min_remaining_gap, max_remaining_gap;
 	struct ir_remote *scan;
 	struct ir_ncode *scan_ncode;
+	struct decode_ctx_t ctx;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	decoding = remote = remotes;
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
 
-		if (drv.decode_func(remote, &pre, &code, &post, &repeat_flag, &min_remaining_gap, &max_remaining_gap)
-		    && (ncode = get_code(remote, pre, code, post, &toggle_bit_mask_state))) {
+		if (drv.decode_func(remote, &ctx)
+		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
 
-			code =
-			    set_code(remote, ncode, toggle_bit_mask_state, repeat_flag, min_remaining_gap,
-				     max_remaining_gap);
+			ctx.code = set_code(remote, ncode, toggle_bit_mask_state, &ctx);
 			if ((has_toggle_mask(remote) && remote->toggle_mask_state % 2) || ncode->current != NULL) {
 				decoding = NULL;
 				return (NULL);
@@ -644,10 +648,10 @@ char *decode_all(struct ir_remote *remotes)
 					reps -= remote->suppress_repeat;
 				}
 			}
-			register_button_press(remote, remote->last_code, code, reps);
+			register_button_press(remote, remote->last_code, ctx.code, reps);
 
 			len =
-			    write_message(message, PACKET_SIZE + 1, remote->name, remote->last_code->name, "", code,
+			    write_message(message, PACKET_SIZE + 1, remote->name, remote->last_code->name, "", ctx.code,
 					  reps);
 			decoding = NULL;
 			if (len >= PACKET_SIZE + 1) {

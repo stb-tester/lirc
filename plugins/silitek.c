@@ -42,10 +42,7 @@ struct timeval current, last;
 int do_repeat;
 
 //Forwards:
-int silitek_decode(struct ir_remote *remote,
-		   ir_code * prep, ir_code * codep, ir_code * postp,
-		   int *repeat_flagp,
-		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int silitek_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int silitek_init(void);
 int silitek_deinit(void);
 char *silitek_rec(struct ir_remote *remotes);
@@ -87,19 +84,18 @@ int silitek_read(int fd, unsigned char *data, long timeout)
 	return (1);
 }
 
-int silitek_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-		   lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int silitek_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, prep, codep, postp, 0, 0, 24, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, 24, code, 0, 0)) {
 		return (0);
 	}
 
-	map_gap(remote, &current, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, ctx, &current, &last, 0);
 
 	if (!do_repeat)
-		*repeat_flagp = 0;
+		ctx->repeat_flag = 0;
 
-	LOGPRINTF(1, "repeat_flagp:           %d", *repeat_flagp);
+	LOGPRINTF(1, "repeat_flagp:           %d", ctx->repeat_flag);
 
 	return (1);
 }

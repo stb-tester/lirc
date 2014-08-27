@@ -401,9 +401,7 @@ void get_filter_parameters(const struct ir_remote* remotes,
 			   lirc_t*  max_space_lengthp);
 
 int map_code(const struct ir_remote* remote,
-	     ir_code*  prep,
-	     ir_code*  codep,
-	     ir_code*  postp,
+	     struct decode_ctx_t* ctx,
 	     int pre_bits,
 	     ir_code pre,
 	     int bits,
@@ -412,12 +410,10 @@ int map_code(const struct ir_remote* remote,
 	     ir_code post);
 
 void map_gap(const struct ir_remote* remote,
+	     struct decode_ctx_t* ctx,
 	     const struct timeval* start,
              const struct timeval* last,
-	     lirc_t signal_length,
-	     int* repeat_flagp,
-	     lirc_t*  min_remaining_gapp,
-	     lirc_t*  max_remaining_gapp);
+	     lirc_t signal_length);
 
 struct ir_ncode* get_code_by_name(const struct ir_remote* remote,
 				  const char* name);
