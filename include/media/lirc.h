@@ -18,9 +18,7 @@ extern "C" {
  * data type for the signal durations.
  */
 #define lirc_t int
-#ifndef PACKET_SIZE
-#define PACKET_SIZE 256
-#endif
+
 /*
  * lirc.h - linux infrared remote control header file
  * last modified 2010/06/03 by Jarod Wilson
