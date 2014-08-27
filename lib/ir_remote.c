@@ -500,7 +500,6 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 
 static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, struct decode_ctx_t* ctx)
 {
-	__u64 code;
 	struct timeval current;
 	static struct ir_remote *last_decoded = NULL;
 
@@ -560,7 +559,7 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 	ctx->code = 0;
 	if (has_pre(remote)) {
 		ctx->code |= remote->pre_data;
-		ctx->code = code << remote->bits;
+		ctx->code = ctx->code << remote->bits;
 	}
 	ctx->code |= found->code;
 	if (has_post(remote)) {
@@ -574,7 +573,7 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 		 */
 		ctx->code = reverse(ctx->code, bit_count(remote));
 	}
-	return (code);
+	return (ctx->code);
 }
 
 /**
@@ -620,7 +619,7 @@ char *decode_all(struct ir_remote *remotes)
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
 
-		if (drv.decode_func(remote, &ctx)
+		if (curr_driver->decode_func(remote, &ctx)
 		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
@@ -698,7 +697,7 @@ int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code)
 	}
 #endif
 
-	ret = drv.send_func(remote, code);
+	ret = curr_driver->send_func(remote, code);
 
 	if (ret) {
 		gettimeofday(&remote->last_send, NULL);

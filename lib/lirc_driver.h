@@ -10,6 +10,8 @@
 #ifndef _LIRC_DRIVER_H
 #define _LIRC_DRIVER_H
 
+#define IN_DRIVER
+
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
 #include "lirc/driver.h"

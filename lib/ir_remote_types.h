@@ -149,7 +149,6 @@ struct decode_ctx_t {
         int     repeat_flag;
         lirc_t  max_remaining_gap;
         lirc_t  min_remaining_gap;
-        ir_code toggle_bit_mask_state;
 };
 
 

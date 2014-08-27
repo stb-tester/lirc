@@ -9,6 +9,15 @@
 
 #include 	"driver.h"
 
+/**
+ * The global driver data that drivers etc are accessing.
+ * Set by hw_choose_driver().
+ */
+struct driver drv;
+
+/** Read-only access to drv for client code. */
+const struct driver const* curr_driver = &drv;
+
 int default_open(const char* path)
 {
 	static char buff[128];

@@ -274,17 +274,16 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-			drv.device = device;
-		drv.open_func(device);
-		if (drv.init_func  && !drv.init_func()) {
+		curr_driver->open_func(device);
+		if (curr_driver->init_func  && !curr_driver->init_func()) {
 			fprintf(stderr, "Cannot initialize hardware");
 			exit(EXIT_FAILURE);
 		}
 
-		fd = drv.fd;	/* please compiler */
-		mode = drv.rec_mode;
+		fd = curr_driver->fd;	/* please compiler */
+		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
-			if (strcmp(drv.name, "default") == 0) {
+			if (strcmp(curr_driver->name, "default") == 0) {
 				printf("Please use the --raw option to access "
 				       "the device directly instead through\n" "the abstraction layer.\n");
 			} else {

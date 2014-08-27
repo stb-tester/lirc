@@ -437,8 +437,8 @@ int main(int argc, char **argv)
 	invert = options_getboolean("irrecord:invert");
 	trail = options_getboolean("irrecord:trail");
 	lirc_log_open("irrecord", 0, loglevel);
-	drv.open_func(device);
-	if (strcmp(drv.name, "null") == 0 && !analyse) {
+	curr_driver->open_func(device);
+	if (strcmp(curr_driver->name, "null") == 0 && !analyse) {
 		fprintf(stderr,
 		       "%s: irrecord does not make sense without hardware\n",
 			progname);
@@ -464,7 +464,7 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 		if (analyse) {
-			memcpy(&hw, &hw_emulation, sizeof(struct driver));
+			memcpy((void*)curr_driver, &hw_emulation, sizeof(struct driver));
 			// hw = hw_emulation;
 			for_each_remote(remotes, analyse_remote);
 			return EXIT_SUCCESS;
@@ -525,8 +525,8 @@ int main(int argc, char **argv)
 	       "Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n");
 	printf("\n");
 
-	if (drv.init_func) {
-		if (!drv.init_func()) {
+	if (curr_driver->init_func) {
+		if (!curr_driver->init_func()) {
 			fprintf(stderr,
 				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
 				progname);
@@ -535,30 +535,30 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	aeps = (drv.resolution > aeps ? drv.resolution : aeps);
+	aeps = (curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
 
-	if (drv.rec_mode != LIRC_MODE_MODE2 && drv.rec_mode != LIRC_MODE_LIRCCODE) {
+	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		fprintf(stderr, "%s: mode not supported\n", progname);
 		fclose(fout);
 		unlink(filename);
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 
-	flags = fcntl(drv.fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(drv.fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	flags = fcntl(curr_driver->fd, F_GETFL, 0);
+	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
 		fclose(fout);
 		unlink(filename);
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 
 	printf("This program will record the signals from your remote control\n"
 	       "and create a config file for lircd.\n\n" "\n");
-	if (drv.name && strcmp(drv.name, "devinput") == 0) {
+	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
 		printf("Usually it's not necessary to create a new config file for devinput\n"
 		       "devices. A generic config file can be found at:\n" "http://www.lirc.org/remotes/devinput/\n"
 		       "You should try this config file before creating your own config file.\n" "\n");
@@ -591,15 +591,15 @@ int main(int argc, char **argv)
 	getchar();
 
 	remote.name = filename;
-	switch (drv.rec_mode) {
+	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
 		if (!using_template && !get_lengths(&remote, force, 1)) {
 			if (remote.gap == 0) {
 				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 				fclose(fout);
 				unlink(filename);
-				if (drv.deinit_func)
-					drv.deinit_func();
+				if (curr_driver->deinit_func)
+					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
 			}
 			printf("Creating config file in raw mode.\n");
@@ -616,13 +616,13 @@ int main(int argc, char **argv)
 		}
 		break;
 	case LIRC_MODE_LIRCCODE:
-		remote.bits = drv.code_length;
+		remote.bits = curr_driver->code_length;
 		if (!using_template && !get_gap_length(&remote)) {
 			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 			fclose(fout);
 			unlink(filename);
-			if (drv.deinit_func)
-				drv.deinit_func();
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -631,14 +631,14 @@ int main(int argc, char **argv)
 	if (!using_template && is_rc6(&remote)) {
 		sleep(1);
 		while (availabledata()) {
-			drv.rec_func(NULL);
+			curr_driver->rec_func(NULL);
 		}
 		if (!get_toggle_bit_mask(&remote)) {
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(fout);
 			unlink(filename);
-			if (drv.deinit_func)
-				drv.deinit_func();
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -692,7 +692,7 @@ int main(int argc, char **argv)
 			flushhw();
 		} else {
 			while (availabledata()) {
-				drv.rec_func(NULL);
+				curr_driver->rec_func(NULL);
 			}
 		}
 		printf("\nNow hold down button \"%s\".\n", buffer);
@@ -711,7 +711,7 @@ int main(int argc, char **argv)
 					timeout = 10000000;
 				else
 					timeout = remote.gap * 5;
-				data = drv.readdata(timeout);
+				data = curr_driver->readdata(timeout);
 				if (!data) {
 					if (count == 0) {
 						no_data = 1;
@@ -775,8 +775,8 @@ int main(int argc, char **argv)
 			flag = 0;
 			sleep(1);
 			while (availabledata()) {
-				drv.rec_func(NULL);
-				if (drv.decode_func(&remote, &decode_ctx)) {
+				curr_driver->rec_func(NULL);
+				if (curr_driver->decode_func(&remote, &decode_ctx)) {
 					flag = 1;
 					break;
 				}
@@ -786,8 +786,8 @@ int main(int argc, char **argv)
 
 				ncode.name = buffer;
 				ncode.code = decode_ctx.code;
-				drv.rec_func(NULL);
-				if (drv.decode_func(&remote, &decode_ctx)) {
+				curr_driver->rec_func(NULL);
+				if (curr_driver->decode_func(&remote, &decode_ctx)) {
 					code2 = decode_ctx.code;
 					decode_ctx.code = ncode.code;
 					if (decode_ctx.code != code2) {
@@ -834,8 +834,8 @@ int main(int argc, char **argv)
 	fclose(fout);
 
 	if (retval == EXIT_FAILURE) {
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 
@@ -850,8 +850,8 @@ int main(int argc, char **argv)
 	fin = fopen(filename, "r");
 	if (fin == NULL) {
 		fprintf(stderr, "%s: could not reopen config file\n", progname);
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 	remotes = read_config(fin, filename);
@@ -859,26 +859,26 @@ int main(int argc, char **argv)
 	if (remotes == NULL) {
 		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 	if (remotes == (void *)-1) {
 		fprintf(stderr, "%s: reading of config file failed\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
-		if (drv.deinit_func)
-			drv.deinit_func();
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 
 	if (!has_toggle_bit_mask(remotes)) {
-		if (!using_template && strcmp(drv.name, "devinput") != 0)
+		if (!using_template && strcmp(curr_driver->name, "devinput") != 0)
 			get_toggle_bit_mask(remotes);
 	} else {
 		set_toggle_bit_mask(remotes, remotes->toggle_bit_mask);
 	}
-	if (drv.deinit_func)
-		drv.deinit_func();
+	if (curr_driver->deinit_func)
+		curr_driver->deinit_func();
 	get_pre_data(remotes);
 	get_post_data(remotes);
 
@@ -903,34 +903,34 @@ void flushhw(void)
 	size_t size = 1;
 	char buffer[sizeof(ir_code)];
 
-	switch (drv.rec_mode) {
+	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
 		while (availabledata())
-			drv.readdata(0);
+			curr_driver->readdata(0);
 		return;
 	case LIRC_MODE_LIRCCODE:
-		size = drv.code_length / CHAR_BIT;
-		if (drv.code_length % CHAR_BIT)
+		size = curr_driver->code_length / CHAR_BIT;
+		if (curr_driver->code_length % CHAR_BIT)
 			size++;
 		break;
 	}
-	while (read(drv.fd, buffer, size) == size) ;
+	while (read(curr_driver->fd, buffer, size) == size) ;
 }
 
 int resethw(void)
 {
 	int flags;
 
-	if (drv.deinit_func)
-		drv.deinit_func();
-	if (drv.init_func) {
-		if (!drv.init_func())
+	if (curr_driver->deinit_func)
+		curr_driver->deinit_func();
+	if (curr_driver->init_func) {
+		if (!curr_driver->init_func())
 			return (0);
 	}
-	flags = fcntl(drv.fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(drv.fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		if (drv.deinit_func)
-			drv.deinit_func();
+	flags = fcntl(curr_driver->fd, F_GETFL, 0);
+	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
 		return (0);
 	}
 	return (1);
@@ -944,17 +944,17 @@ static int mywaitfordata(__u32 maxusec)
 
 	while (1) {
 		FD_ZERO(&fds);
-		FD_SET(drv.fd, &fds);
+		FD_SET(curr_driver->fd, &fds);
 		do {
 			do {
 				if (maxusec > 0) {
 					tv.tv_sec = maxusec / 1000000;
 					tv.tv_usec = maxusec % 1000000;
-					ret = select(drv.fd + 1, &fds, NULL, NULL, &tv);
+					ret = select(curr_driver->fd + 1, &fds, NULL, NULL, &tv);
 					if (ret == 0)
 						return (0);
 				} else {
-					ret = select(drv.fd + 1, &fds, NULL, NULL, NULL);
+					ret = select(curr_driver->fd + 1, &fds, NULL, NULL, NULL);
 				}
 			}
 			while (ret == -1 && errno == EINTR);
@@ -966,7 +966,7 @@ static int mywaitfordata(__u32 maxusec)
 		}
 		while (ret == -1);
 
-		if (FD_ISSET(drv.fd, &fds)) {
+		if (FD_ISSET(curr_driver->fd, &fds)) {
 			/* we will read later */
 			return (1);
 		}
@@ -980,12 +980,12 @@ int availabledata(void)
 	struct timeval tv;
 
 	FD_ZERO(&fds);
-	FD_SET(drv.fd, &fds);
+	FD_SET(curr_driver->fd, &fds);
 	do {
 		do {
 			tv.tv_sec = 0;
 			tv.tv_usec = 0;
-			ret = select(drv.fd + 1, &fds, NULL, NULL, &tv);
+			ret = select(curr_driver->fd + 1, &fds, NULL, NULL, &tv);
 		}
 		while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
@@ -996,7 +996,7 @@ int availabledata(void)
 	}
 	while (ret == -1);
 
-	if (FD_ISSET(drv.fd, &fds)) {
+	if (FD_ISSET(curr_driver->fd, &fds)) {
 		return (1);
 	}
 	return (0);
@@ -1039,7 +1039,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	seq = repeats = 0;
 	found = 0;
 	while (availabledata()) {
-		drv.rec_func(NULL);
+		curr_driver->rec_func(NULL);
 	}
 	while (retval == EXIT_SUCCESS && retries > 0) {
 		if (!mywaitfordata(10000000)) {
@@ -1047,14 +1047,14 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			retval = EXIT_FAILURE;
 			break;
 		}
-		drv.rec_func(remote);
+		curr_driver->rec_func(remote);
 		if (is_rc6(remote) && remote->rc6_mask == 0) {
 			int i;
 			ir_code mask;
 
 			for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
 				remote->rc6_mask = mask;
-				success = drv.decode_func(remote, &decode_ctx);
+				success = curr_driver->decode_func(remote, &decode_ctx);
 				if (success) {
 					remote->min_remaining_gap = decode_ctx.min_remaining_gap;
 					remote->max_remaining_gap = decode_ctx.max_remaining_gap;
@@ -1064,7 +1064,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			if (success == 0)
 				remote->rc6_mask = 0;
 		} else {
-			success = drv.decode_func(remote, &decode_ctx);
+			success = curr_driver->decode_func(remote, &decode_ctx);
 			if (success) {
 				remote->min_remaining_gap = decode_ctx.min_remaining_gap;
 				remote->max_remaining_gap = decode_ctx.max_remaining_gap;
@@ -1548,7 +1548,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 	second_lengths = 0;
 	memset(lengths, 0, sizeof(lengths));
 	while (1) {
-		data = drv.readdata(10000000);
+		data = curr_driver->readdata(10000000);
 		if (!data) {
 			fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
 			retval = 0;
@@ -2355,7 +2355,7 @@ int get_gap_length(struct ir_remote *remote)
 	printf("Hold down an arbitrary button.\n");
 	while (1) {
 		while (availabledata()) {
-			drv.rec_func(NULL);
+			curr_driver->rec_func(NULL);
 		}
 		if (!mywaitfordata(10000000)) {
 			free_lengths(&gaps);
@@ -2363,7 +2363,7 @@ int get_gap_length(struct ir_remote *remote)
 		}
 		gettimeofday(&start, NULL);
 		while (availabledata()) {
-			drv.rec_func(NULL);
+			curr_driver->rec_func(NULL);
 		}
 		gettimeofday(&end, NULL);
 		if (flag) {

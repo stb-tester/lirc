@@ -73,8 +73,8 @@ class DrvAdminTest : public CppUnit::TestFixture
             options_load(
                 0, &nil, abspath("etc/lirc_options.conf"), dummy_load);
             hw_choose_driver("dvico");
-            CPPUNIT_ASSERT(string(drv.name) == "dvico");
-            CPPUNIT_ASSERT(string(drv.device) == "/dev/usb/hiddev0");
+            CPPUNIT_ASSERT(string(curr_driver->name) == "dvico");
+            CPPUNIT_ASSERT(string(curr_driver->device) == "/dev/usb/hiddev0");
         }
 
         void testCount()

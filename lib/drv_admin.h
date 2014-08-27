@@ -6,7 +6,7 @@
  *  @brief Routines for dynamic drivers.
  */
 
-//#include "lirc_log.h"
+#include "driver.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,9 +28,6 @@ typedef struct driver* (*drv_guest_func)(struct driver*, void*);
  */
 typedef struct driver*
 (*plugin_guest_func)(const char*, drv_guest_func, void*);
-
-/* The currently active driver. */
-extern struct driver drv;
 
 /* Search for driver with name and install it in the drv struct. */
 int hw_choose_driver(const char* name);

@@ -21,7 +21,7 @@
 #include <linux/hiddev.h>
 #include <sys/ioctl.h>
 
-#include "lirc_private.h"
+#include "lirc_driver.h"
 
 enum {
 	RPT_NO = 0,

@@ -294,7 +294,7 @@ static inline lirc_t max_gap(const struct ir_remote *remote)
 
 static inline int expect(const struct ir_remote *remote, lirc_t delta, lirc_t exdelta)
 {
-	int aeps = drv.resolution > remote->aeps ? drv.resolution : remote->aeps;
+	int aeps = curr_driver->resolution > remote->aeps ? curr_driver->resolution : remote->aeps;
 
 	if (abs(exdelta - delta) <= exdelta * remote->eps / 100 || abs(exdelta - delta) <= aeps)
 		return 1;
@@ -303,7 +303,7 @@ static inline int expect(const struct ir_remote *remote, lirc_t delta, lirc_t ex
 
 static inline int expect_at_least(const struct ir_remote *remote, lirc_t delta, lirc_t exdelta)
 {
-	int aeps = drv.resolution > remote->aeps ? drv.resolution : remote->aeps;
+	int aeps = curr_driver->resolution > remote->aeps ? curr_driver->resolution : remote->aeps;
 
 	if (delta + exdelta * remote->eps / 100 >= exdelta || delta + aeps >= exdelta) {
 		return 1;
@@ -313,7 +313,7 @@ static inline int expect_at_least(const struct ir_remote *remote, lirc_t delta, 
 
 static inline int expect_at_most(const struct ir_remote *remote, lirc_t delta, lirc_t exdelta)
 {
-	int aeps = drv.resolution > remote->aeps ? drv.resolution : remote->aeps;
+	int aeps = curr_driver->resolution > remote->aeps ? curr_driver->resolution : remote->aeps;
 
 	if (delta <= exdelta + exdelta * remote->eps / 100 || delta <= exdelta + aeps) {
 		return 1;
@@ -323,7 +323,7 @@ static inline int expect_at_most(const struct ir_remote *remote, lirc_t delta, l
 
 static inline lirc_t upper_limit(const struct ir_remote *remote, lirc_t val)
 {
-	int aeps = drv.resolution > remote->aeps ? drv.resolution : remote->aeps;
+	int aeps = curr_driver->resolution > remote->aeps ? curr_driver->resolution : remote->aeps;
 	lirc_t eps_val = val * (100 + remote->eps) / 100;
 	lirc_t aeps_val = val + aeps;
 	return eps_val > aeps_val ? eps_val : aeps_val;
@@ -331,7 +331,7 @@ static inline lirc_t upper_limit(const struct ir_remote *remote, lirc_t val)
 
 static inline lirc_t lower_limit(const struct ir_remote *remote, lirc_t val)
 {
-	int aeps = drv.resolution > remote->aeps ? drv.resolution : remote->aeps;
+	int aeps = curr_driver->resolution > remote->aeps ? curr_driver->resolution : remote->aeps;
 	lirc_t eps_val = val * (100 - remote->eps) / 100;
 	lirc_t aeps_val = val - aeps;
 

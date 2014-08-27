@@ -139,7 +139,11 @@ struct driver {
 
 };
 
+#ifdef IN_DRIVER
 extern struct driver drv;
+#endif
+
+extern const struct driver* curr_driver;
 
 #ifdef	__cplusplus
 }

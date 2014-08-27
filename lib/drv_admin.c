@@ -22,12 +22,8 @@
 
 #include "driver.h"
 
-/**
- * The global driver data that drivers etc are accessing.
- * Defined in drv_admin.c.
- * Set by hw_choose_driver().
- */
-struct driver drv;
+extern struct driver drv;  // Access to otherwise private drv.
+
 
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
@@ -231,8 +227,8 @@ int hw_choose_driver(const char* name)
 	found = for_each_driver(match_hw_name, (void*)name);
 	if (found != (struct driver*)NULL){
 		memcpy(&drv, found, sizeof(struct driver));
-		drv.fd = -1;
 		return 0;
 	}
 	return -1;
+
 }

@@ -189,14 +189,14 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		drv.open_func(device);
-		if (!drv.init_func || !drv.init_func()) {
+		curr_driver->open_func(device);
+		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			return EXIT_FAILURE;
 		}
-		fd = drv.fd;	/* please compiler */
-		mode = drv.rec_mode;
+		fd = curr_driver->fd;	/* please compiler */
+		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
-			if (strcmp(drv.name, "default") == 0) {
+			if (strcmp(curr_driver->name, "default") == 0) {
 				printf("Please use the --raw option to access "
 				       "the device directly instead through\n" "the abstraction layer.\n");
 			} else {
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 			}
 		} else {
-			code_length = drv.code_length;
+			code_length = curr_driver->code_length;
 		}
 		if (code_length > sizeof(ir_code) * CHAR_BIT) {
 			fprintf(stderr, "%s: cannot handle %u bit codes\n", progname, code_length);
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 			}
 		} else {
 			if (mode == LIRC_MODE_MODE2) {
-				data = drv.readdata(0);
+				data = curr_driver->readdata(0);
 				if (data == 0) {
 					fprintf(stderr, "readdata() failed\n");
 					break;

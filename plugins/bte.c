@@ -56,8 +56,7 @@ lirc_t gap, signal_length;
 ir_code pre, code;
 
 // Forwards:
-int bte_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-	       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
+int bte_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
 int bte_init(void);
 int bte_deinit(void);
 char *bte_rec(struct ir_remote *remotes);
@@ -377,14 +376,13 @@ char *bte_rec(struct ir_remote *remotes)
 		return NULL;
 }
 
-int bte_decode(struct ir_remote *remote, ir_code * prep, ir_code * codep, ir_code * postp, int *repeat_flagp,
-	       lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)
+int bte_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(3, "bte_decode called");
-	*prep = pre;
-	*codep = code;
-	*postp = 0;
+	ctx->pre = pre;
+	ctx->code = code;
+	ctx->post = 0;
 
-	LOGPRINTF(1, "bte_decode: %llx", (__u64) * codep);
+	LOGPRINTF(1, "bte_decode: %llx", (__u64) ctx->code);
 	return (1);
 }
