@@ -211,20 +211,23 @@ lirc_t emulation_readdata(lirc_t timeout)
 }
 
 struct driver hw_emulation = {
-	"/dev/null",            /* default device */
-	-1,                     /* fd */
-	LIRC_CAN_REC_MODE2,     /* features */
-	0,                      /* send_mode */
-	LIRC_MODE_MODE2,        /* rec_mode */
-	0,                      /* code_length */
-	NULL,                   /* init_func */
-	NULL,                   /* deinit_func */
-	NULL,                   /* send_func */
-	NULL,                   /* rec_func */
-	NULL,                   /* decode_func */
-	NULL,                   /* drvctl_func */
-	emulation_readdata,
-	"emulation"
+	.name		= "emulation",
+	.device 	= "/dev/null",
+	.features	= LIRC_CAN_REC_MODE2,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func      = NULL,
+	.deinit_func    = NULL,
+	.send_func      = NULL,
+	.rec_func	= NULL,
+	.decode_func    = NULL,
+	.drvctl_func	= NULL,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.readdata 	= emulation_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2"
 };
 
 static int i_printf(int interactive, char *format_str, ...)
