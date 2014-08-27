@@ -79,6 +79,10 @@
  *
  */
 
+#define DEBUG_HELP "Bad debug level: \"%s\"\n\n" \
+    "Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, PEEP, STALK or \n" \
+    "a sumber in the range 0..10.\n"
+
 #ifndef PACKET_SIZE
 #define PACKET_SIZE 256
 #endif
@@ -2088,8 +2092,8 @@ static void lircd_help(void)
 	printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
 	printf("\t -o --output=socket\t\toutput socket filename\n");
 	printf("\t -P --pidfile=file\t\tdaemon pid file\n");
-	printf("\t -L --logfile=file\t\tLog file path or 'syslog'\n");
-	printf("\t -D[debug_level] --debug[=debug_level]\n");
+	printf("\t -L --logfile=file\t\tLog file path (default: use syslog)'\n");
+	printf("\t -D[level] --debug[=level]\t'info', 'warning', 'notice', etc., or 0..10.\n");
 	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
 	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
 	printf("\t -Y --dynamic-codes\t\tEnable dynamic code generation\n");
@@ -2185,8 +2189,7 @@ static void lircd_parse_options(int argc, char** const argv)
 			loglevel_opt = options_set_loglevel(
 						optarg ? optarg : "debug");
 			if (loglevel_opt == LIRC_BADLEVEL){
-				fprintf(stderr,
-					"Bad debug level: %s\n", optarg);
+				fprintf(stderr, DEBUG_HELP, optarg);
 				exit(EXIT_FAILURE);
 			}
 			break;
