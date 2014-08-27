@@ -76,7 +76,6 @@ static void add_defaults(void)
 	const char* const defaults[] = {
 		"mode2:driver", 	"default",
 		"mode2:lircdfile", 	LIRCD,
-		"lircd:device", 	LIRC_DRIVER_DEVICE,
 		"lircd:logfile", 	"syslog",
 		"lircd:debug", 		level,
 		"lircd:plugindir", 	PLUGINDIR,
@@ -190,7 +189,7 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		drv.device = (device == NULL ? LIRC_DRIVER_DEVICE : device);
+		drv.open_func(device);
 		if (!drv.init_func || !drv.init_func()) {
 			return EXIT_FAILURE;
 		}

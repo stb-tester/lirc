@@ -82,6 +82,8 @@ const struct driver hw_pinsys = {
 	/* remember to change signal_length if you correct this one */
 	.init_func	=	pinsys_init,
 	.deinit_func	=	pinsys_deinit,
+	.open_func	=	default_open,
+	.close_func	=	default_close,
 	.send_func	=	NULL,
 	.rec_func	=	pinsys_rec,
 	.decode_func	=	pinsys_decode,

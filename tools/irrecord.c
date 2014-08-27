@@ -223,6 +223,8 @@ struct driver hw_emulation = {
 	.decode_func    = NULL,
 	.drvctl_func	= NULL,
 	.readdata 	= emulation_readdata,
+	.open_func	= default_open,
+	.close_func	= default_close,
 	.api_version	= 2,
 	.driver_version = "0.9.2"
 };
@@ -437,9 +439,7 @@ int main(int argc, char **argv)
 	invert = options_getboolean("irrecord:invert");
 	trail = options_getboolean("irrecord:trail");
 	lirc_log_open("irrecord", 0, loglevel);
-	if (device != NULL) {
-		drv.device = device;
-	}
+	drv.open_func(device);
 	if (strcmp(drv.name, "null") == 0 && !analyse) {
 		fprintf(stderr,
 		       "%s: irrecord does not make sense without hardware\n",

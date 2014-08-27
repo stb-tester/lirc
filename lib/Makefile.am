@@ -14,6 +14,7 @@ lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \
+			      driver.c \
                               drv_admin.c \
                               dump_config.c \
                               input_map.c \
@@ -30,6 +31,7 @@ liblirc_client_la_LDFLAGS   = -version-info 2:1:2
 liblirc_client_la_LIBADD    = liblirc.la
 
 liblirc_driver_la_SOURCES   = driver.h \
+			      driver.c \
                               ir_remote.c \
                               ir_remote.h \
                               ir_remote_types.h \

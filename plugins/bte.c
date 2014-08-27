@@ -79,6 +79,8 @@ const struct driver hw_bte = {
 	.code_length	=	16,
 	.init_func	=	bte_init,
 	.deinit_func	=	bte_deinit,
+	.open_func	=	default_open,
+	.close_func	=	default_close,
 #if BTE_CAN_SEND
 	.send_func	=	bte_send,
 #else

@@ -2303,9 +2303,7 @@ int main(int argc, char **argv)
 #       endif
 	repeat_max = options_getint("lircd:repeat-max");
 	configfile = options_getstring("lircd:configfile");
-	if (device != NULL) {
-		drv.device = device;
-	}
+	drv.open_func(device);
 	if (strcmp(drv.name, "null") == 0 && peern == 0) {
 		fprintf(stderr, "%s: there's no hardware I can use and no peers are specified\n", progname);
 		return (EXIT_FAILURE);

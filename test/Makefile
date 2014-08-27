@@ -13,7 +13,7 @@ TESTS     = ClientTest.h \
 
 LIRC_LIBS = ../lib/.libs/liblirc.so.0 ../lib/.libs/liblirc_client.so.0
 
-all: run-tests
+all: run-tests echoserver
 
 run-tests: run-tests.cpp $(TESTS) $(LIRC_LIBS) Makefile
 	gcc -o run-tests  $(CXXFLAGS) $(LDLIBS) run-tests.cpp

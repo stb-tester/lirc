@@ -84,10 +84,9 @@ static int div_ = 5;
 static int dmode = 0;
 static struct stat s;
 static int use_stdin = 0;
-static int have_device = 0;
 static int use_raw_access = 0;
 
-static char *device = LIRC_DRIVER_DEVICE;
+static char *device = NULL;
 static char *geometry = NULL;
 
 static struct option options[] = {
@@ -124,7 +123,6 @@ static void add_defaults(void)
 		"lircd:plugindir",            PLUGINDIR,
 		"lircd:debug",                level,
 		"xmode2:driver",              "devinput",
-		"xmode2:device",              "default",
 		"xmode2:analyse",             "False",
 		"xmode2:force",               "False",
 		"xmode2:disable-namespace",   "False",
@@ -156,7 +154,6 @@ static void parse_options(int argc, char** const argv)
 			exit (EXIT_SUCCESS);
 		case 'd':
 			device = optarg;
-			have_device = 1;
 			break;
 		case 'g':
 			geometry = optarg;
@@ -277,8 +274,8 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (have_device)
 			drv.device = device;
+		drv.open_func(device);
 		if (drv.init_func  && !drv.init_func()) {
 			fprintf(stderr, "Cannot initialize hardware");
 			exit(EXIT_FAILURE);

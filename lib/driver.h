@@ -23,6 +23,17 @@
 extern "C" {
 #endif
 
+/** drvctl definitions */
+#define DRV_ERR_NOT_IMPLEMENTED		1
+
+/** Stores path in drv.device. */
+int default_open(const char* path);
+
+/** For now, a placeholder. */
+int default_close(void);
+
+int default_drvctl(int cmd, void* arg);
+
 struct driver {
 // Old-style implicit API version 1:
 
@@ -50,6 +61,14 @@ struct driver {
 	/** Length in bits of the code. */
 	const __u32 code_length;
 
+        /**
+         *  Function called to do basic driver setup.
+         *  @param device String describing what device driver should
+         *      communicate with. Often (but not always) a /dev/... path.
+         *  @return 0 if everything is fine, else positive error code.
+         */
+	int (*const open_func) (const char* device);
+
 	/**
 	 * Function called for initializing the driver and the hardware.
 	 * Zero return value indicates failure, all other return values success.
@@ -57,7 +76,7 @@ struct driver {
 	int (*const init_func) (void);
 
 	/**
-        * Function called when terminating the driver. Zero return value
+        * Function called when transmitting/receiving stops. Zero return value
  	*  indicates failure, all other return values success.
  	*/
 	int (*const deinit_func) (void);

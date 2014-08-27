@@ -75,9 +75,17 @@ typedef uint32_t __u32;
 		struct lirc_config_entry* next;
 	};
 
+	/**
+	* Initial setup: connect to lircd socket.
+	* @param prog Name of client in logging contexts.
+	* @param verbose: Amount of debug info on stdout.
+	* @return positive file descriptor or -1 + error in global errno.
+	*/
 	int lirc_init(const char* prog, int verbose);
 
+	/** Relinquish resources, basically disconnect from socket. */
 	int lirc_deinit(void);
+
 
 	int lirc_readconfig(const char* file,
 			    struct lirc_config** config,
