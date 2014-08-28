@@ -45,9 +45,6 @@
 #define LIRCRC_ROOT_FILE        SYSCONFDIR "/" PACKAGE "/" CFG_LIRCRC
 #define LIRCRC_OLD_ROOT_FILE    SYSCONFDIR "/" CFG_LIRCRC
 
-#define LOGFILE                 LOCALSTATEDIR "/log/" LOG_LIRCD
-#define LIRMAND_LOGFILE         LOCALSTATEDIR "/log/" LOG_LIRMAND
-
 #define PIDFILE                 VARRUNDIR "/" PACKAGE "/" PID_LIRCD
 
 #define LIRC_RELEASE_SUFFIX     "_UP"

@@ -68,7 +68,7 @@ extern char progname[128];
  */
 loglevel_t string2loglevel(const char* level);
 
-/** Set the level Returns 1 if ok, 0 on errors. */
+/** Set the level. Returns 1 if ok, 0 on errors. */
 int lirc_log_setlevel(loglevel_t level);
 
 /** Get the default level, from environment or hardcoded. */
@@ -77,7 +77,7 @@ loglevel_t lirc_log_defaultlevel(void);
 /** Check if a given, standard loglevel should be printed.  */
 #define lirc_log_is_enabled_for(level) (level <= loglevel)
 
-/* Check if log is set up to use syslog or not. */
+/** Check if log is set up to use syslog or not. */
 int lirc_log_use_syslog();
 
 void logprintf(loglevel_t prio, const char *format_str, ...);
@@ -86,11 +86,13 @@ int lirc_log_reopen(void);
 int lirc_log_open(const char* progname, int _nodaemon, loglevel_t level);
 int lirc_log_close();
 
-/*
+/**
  * Set logfile. Either a regular path or the string 'syslog'; the latter
- * does indeed use syslog(1) instead.
- * */
+ * does indeed use syslog(1) instead. Must be called before lirc_log_open().
+ */
 void lirc_log_set_file(const char* s);
+
+/** Print prefix + a hex dump of len bytes starting at  *buf. */
 void hexdump(char* prefix, unsigned char*  buf, int len);
 
 #ifdef __cplusplus

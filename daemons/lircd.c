@@ -2114,7 +2114,7 @@ static void lircd_add_defaults(void)
 		"lircd:connect", 	NULL,
 		"lircd:lircdfile", 	LIRCD,
 		"lircd:pidfile", 	PIDFILE,
-		"lircd:logfile", 	LOGFILE,
+		"lircd:logfile", 	"syslog",
 		"lircd:debug", 		level,
 		"lircd:release", 	NULL,
 		"lircd:allow-simulate", "False",

@@ -48,7 +48,7 @@ loglevel_t loglevel = LIRC_NOLOG;
 static int use_syslog = 1;
 
 const char *syslogident = "lircd-" VERSION;
-const char *logfile = LOGFILE;
+const char *logfile = "syslog";
 
 char progname[128] = {'?','\0'};
 static int nodaemon = 0;
@@ -124,7 +124,6 @@ int lirc_log_close()
 	else
 		return(0);
 }
-
 
 
 int lirc_log_reopen(void)
