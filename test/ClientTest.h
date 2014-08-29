@@ -75,7 +75,7 @@ class ClientTest : public CppUnit::TestFixture
 
             int status;
             status = system(RUN_LIRCD);
-            setenv("LIRC_SOCKET_PATH", "var/lircd.socket", 0);
+            setenv("LIRC_SOCKET_PATH", "var/lircd.socket", 1);
             lirc_deinit();
             CPPUNIT_ASSERT(lirc_init("client_test", 1) != -1);
         };

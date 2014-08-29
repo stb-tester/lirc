@@ -1,4 +1,4 @@
-CPPFLAGS += -I.. -I../lib  -g -std=c++11
+CPPFLAGS += -I.. -I../lib  -g
 
 LDFLAGS  += $(shell pkg-config --libs cppunit)
 LDFLAGS  += -lstdc++
