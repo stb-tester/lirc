@@ -97,7 +97,11 @@ struct driver {
 	int (*const drvctl_func)(unsigned int cmd, void* arg);
 
 	/**
-	 * TODO
+	 * Get length of next pulse/space from hardware.
+	 * @param timeout Max time to wait (us).
+	 * @return Length of pulse in lower 24 bits (us). PULSE_BIT
+	 * is set to reflect if this is a pulse or space. 0
+	 * indicates errors.
 	 */
 	 lirc_t (*const readdata)(lirc_t timeout);
 
