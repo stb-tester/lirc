@@ -401,6 +401,8 @@ void dosigterm(int sig)
 	}
 	fclose(pidf);
 	(void)unlink(pidfile);
+	if (curr_driver->close_func)
+		curr_driver->close_func();
 	if (use_hw() && curr_driver->deinit_func)
 		curr_driver->deinit_func();
 	if (curr_driver->close_func)
