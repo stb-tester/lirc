@@ -331,7 +331,7 @@ static void parse_options(int argc, char** const argv)
 			}
 			break;
 		case 'd':
-			options_set_opt("irrecord:analyse", "True");
+			options_set_opt("irrecord:device", optarg);
 			break;
 		case 'f':
 			options_set_opt("irrecord:force", "True");
