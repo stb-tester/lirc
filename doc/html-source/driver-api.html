@@ -94,9 +94,8 @@ struct driver {
         int (*deinit_func) (void);
         int (*send_func) (struct ir_remote * remote, struct ir_ncode * code);
         char *(*rec_func) (struct ir_remote * remotes);
-        int (*decode_func) (struct ir_remote * remote, ir_code * prep, ir_code * codep, ir_code * postp,
-                            int *repeat_flag, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp);
-        int (*ioctl_func) (unsigned int cmd, void *arg);
+        int (*decode_func) (struct ir_remote * remote, struct decode_ctx_t* ctx);
+        int (*drvctl_func) (unsigned int cmd, void *arg);
          lirc_t(*readdata) (lirc_t timeout);
         char *name;
         unsigned int resolution;
@@ -105,6 +104,7 @@ struct driver {
         const int api_version;
         const char* driver_version;
         int (*const close_func)(void);
+	int (*const open_func)(const char* device);
 };
     </pre>
     <p>These fields will next be described. Note that a driver sometimes "misuses" a field;
@@ -167,7 +167,7 @@ struct driver {
 
     <h2>Driver lifecycle and <code>lircd</code></h2>
     <p>
-        The driver is loaded, used and unloaded by Lircd according to the
+        The driver is loaded, used and unloaded by the executing program according to the
     following:
     <ol>
     <li>
@@ -184,11 +184,11 @@ struct driver {
          descriptor (a positive int) for the underlying file.</li>
     <li>From this point, calls to <code>read_func()</code> and <code>send_func()</code> are possible.</li>
     <li>When the last client is terminated, executing program calls  <code>deinit_func()</code>. Note that
-        the Lircd may need the device again, if e.g. another send request
+        the Lircd program  may need the device again e.g., if  another sending request
         is received, so a hard closing of a device may not be optimal here.</li>
-    <li>As a last operation, Lircd should call the <code>close_func()</code>. This
+    <li>As a last operation, executing program should call the <code>close_func()</code>. This
          relinquishes all resources allocated by the driver.</li>
-    <li>Calls to <code>ioctl_func()</code> are possible at any time. They are the responsibility of the programmer.
+    <li>Calls to <code>drvctl_func()</code> are possible at any time. They are the responsibility of the programmer.
             In particular, ioctl operations may fail under some circumstances.</li>
     <li>The associated functions are not guaranteed to be executed in the order described.
         In general, the driver should not break if e.g., the <code>init_func()</code> is called on an already open device, or
@@ -240,12 +240,11 @@ static char *rec_func(struct ir_remote * remotes) {
     return decode_all(remotes);
 }
 
-static char *decode_func(struct ir_remote * remote, ir_code * prep, ir_code * codep, ir_code * postp,
-                            int *repeat_flag, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp) {
-    return receive_decode(/* same argument as above */);
+static char *decode_func(struct ir_remote * remote, struct decode_ctx_t * ctx) {
+    return receive_decode(remote, ctx);
 }
 
-static int generic_ioctl(unsigned int cmd, void *arg) {
+static int generic_drvctl(unsigned int cmd, void *arg) {
     /* Do something device specific, e.g.
        return ioctl(drv.fd, cmd, arg); */
     return cmd == 42 ? 1 : 0;
@@ -298,13 +297,14 @@ struct driver* hardwares[] = { &my_hardware, NULL };
         }
         return decode_all(remotes);
   </pre>
+  This is a non-blocking function which returns NULL if there is no data
+  available currently, but might very well succeed later.
 <h4><code>decode_func</code></h4>
-<code>char *mydecode_func(struct ir_remote * remote, ir_code * prep, ir_code * codep, ir_code * postp,
-    int *repeat_flag, lirc_t * min_remaining_gapp, lirc_t * max_remaining_gapp)</code>
+<code>char *mydecode_func(struct ir_remote * remote, struct decode_ctx_t* ctx)</code>
   <p>For non-LIRC_MODE_LIRCCODE, just call <code>receive_decode</code>,
  or write <code>receive_decode</code> directly in the <code>struct driver</code>.
-  <h4><code>ioctl_func</code></h4>
-  <code>myioctl_func(unsigned int cmd, void *arg)</code></h4>
+  <h4><code>drvctl_func</code></h4>
+  <code>mydrvctl_func(unsigned int cmd, void *arg)</code></h4>
       <p>Depending on the particular driver and hardware, additional functionality can be implemented here,
         with syntax and semantic to be determined by the driver.</p>
 
