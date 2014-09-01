@@ -406,6 +406,8 @@ void dosigterm(int sig)
 	(void)unlink(pidfile);
 	if (use_hw() && drv.deinit_func)
 		drv.deinit_func();
+	if (drv.close_func)
+		drv.close_func();
 	lirc_log_close();
 	signal(sig, SIG_DFL);
 	if (sig == SIGUSR1)
