@@ -793,7 +793,7 @@ static void lircmd_parse_options(int argc,  char** const argv)
 			exit(EXIT_SUCCESS);
 		case 'O':
 			options_load(argc, argv, optarg, lircmd_parse_options);
-			return;
+			break;
 		case 'n':
 			options_set_opt("lircd:nodaemon", "True");
 			break;
