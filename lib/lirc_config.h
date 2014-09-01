@@ -72,3 +72,7 @@
 
 /* Environment variable holding defaults for PLUGINDIR. */
 #define PLUGINDIR_VAR           "LIRC_PLUGINDIR"
+
+/** Bit manipulator in lirc_t, see lirc.h . Signals eof from remote. */
+#define LIRC_EOF                0x08000000
+

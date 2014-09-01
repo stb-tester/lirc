@@ -1,6 +1,6 @@
 CXXFLAGS += -I.. -I../lib  -g -std=c++11
 
-CFLAGS   += -I.. -I../lib  -g 
+CFLAGS   += -I.. -I../lib -g
 
 LDLIBS   += $(shell pkg-config --libs cppunit)
 LDLIBS   += -lstdc++

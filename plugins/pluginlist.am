@@ -14,6 +14,9 @@ default_la_SOURCES               = default.c
 plugin_LTLIBRARIES              += ea65.la
 ea65_la_SOURCES                  = ea65.c
 
+plugin_LTLIBRARIES              += file.la
+file_la_SOURCES                  = file.c
+
 plugin_LTLIBRARIES              += irlink.la
 irlink_la_SOURCES                = irlink.c
 

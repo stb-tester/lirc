@@ -24,7 +24,8 @@
     testSuite->addTest(new CppUnit::TestCaller<DrvAdminTest>( \
                        id,  &DrvAdminTest::func))
 
-static const int DRIVER_COUNT = 52;  // Total numbers of drivers.
+static const int DRIVER_COUNT = 54;  // Total numbers of drivers.
+static const int PLUGIN_COUNT = 44;  // Total numbers of drivers.
 
 using namespace std;
 
@@ -89,7 +90,7 @@ class DrvAdminTest : public CppUnit::TestFixture
         {
             int count = 0;
             for_each_plugin(listPlugins, (void*)&count);
-            CPPUNIT_ASSERT(count == 43 );
+            CPPUNIT_ASSERT(count == PLUGIN_COUNT );
         }
 };
 
