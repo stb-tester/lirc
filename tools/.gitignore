@@ -1,13 +1,12 @@
 ircat
 irexec
 irpty
+irrecord
 irsend
 irw
 irxevent
+lirc-plugincheck
 lircrcd
 mode2
 xmode2
-irrecord
 
-liblirc_client.la
-lirc_client.lo

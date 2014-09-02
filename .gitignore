@@ -1,4 +1,6 @@
 # Mostly auto-generated build cruft
+.deps
+.libs
 lirc.pc
 lirc-driver.pc
 core*
@@ -15,8 +17,6 @@ core*
 */*/Makefile.in
 */Makefile
 */*/Makefile
-*/.deps
-*/.libs
 *~
 
 # lirc-setup cruft
@@ -41,6 +41,7 @@ doc/man2html
 doc/man2html.o
 doc/html
 doc/lirc.hwdb
+doc/table.html
 
 INSTALL
 autom4te.cache
@@ -71,7 +72,3 @@ stamp-h1
 daemons/*.o
 daemons/*.a
 daemons/input_map.inc
-
-tools/*.o
-tools/.libs
-tools/.libs/*
