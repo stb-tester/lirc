@@ -242,7 +242,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 	va_list ap;
 
 	if (nodaemon && prio <= loglevel) {
-		fprintf(stderr, "%s: %s", progname, prio2text(prio));
+		fprintf(stderr, "%s: %s ", progname, prio2text(prio));
 		va_start(ap, format_str);
 		vfprintf(stderr, format_str, ap);
 		va_end(ap);
