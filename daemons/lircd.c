@@ -2072,6 +2072,7 @@ static const struct option lircd_options[] = {
 	{"release", optional_argument, NULL, 'r'},
 	{"allow-simulate", no_argument, NULL, 'a'},
 	{"dynamic-codes", no_argument, NULL, 'Y'},
+        {"driver-options", required_argument, NULL, 'A'},
 #        if defined(__linux__)
 	{"uinput", no_argument, NULL, 'u'},
 #        endif
@@ -2100,6 +2101,8 @@ static void lircd_help(void)
 	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
 	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
 	printf("\t -Y --dynamic-codes\t\tEnable dynamic code generation\n");
+	printf("\t -A --driver-options=key:value[;key:value...]\n");
+	printf("\t\t\t\t\tSet driver options\n");
 #       if defined(__linux__)
 	printf("\t -u --uinput\t\t\tgenerate Linux input events\n");
 #       endif
@@ -2128,8 +2131,9 @@ static void lircd_add_defaults(void)
 		"lircd:dynamic-codes", 	"False",
 		"lircd:plugindir", 	PLUGINDIR,
 		"lircd:uinput", 	"False",
-		"lircd:repeat-max", 	 DEFAULT_REPEAT_MAX,
+		"lircd:repeat-max", 	DEFAULT_REPEAT_MAX,
 		"lircd:configfile",  	LIRCDCFGFILE,
+		"lircd:driver-options", "",
 		(const char*)NULL, 	(const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -2138,7 +2142,7 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring =  "O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
+	const char* optstring =  "A:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 		"u"
 #       endif
@@ -2217,6 +2221,9 @@ static void lircd_parse_options(int argc, char** const argv)
 		case 'Y':
 			options_set_opt("lircd:dynamic-codes", "True");
 			break;
+		case 'A':
+			options_set_opt("lircd:driver-options", optarg);
+			break;
 		default:
 			printf("Usage: %s [options] [config-file]\n", progname);
 			exit(EXIT_FAILURE);
@@ -2260,6 +2267,9 @@ int main(int argc, char **argv)
 		return(EXIT_FAILURE);
 	}
 	permission = oatoi(opt);
+	opt = options_getstring("lircd:device");
+	if (opt != NULL)
+		device = opt;
 	opt = options_getstring("lircd:driver");
 	if (strcmp(opt, "help") == 0 || strcmp(opt, "?") == 0){
 		hw_print_drivers(stdout);
@@ -2269,10 +2279,12 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Driver `%s' not supported.\n", opt);
 		hw_print_drivers(stderr);
 		return(EXIT_FAILURE);
+	} else if (device != NULL) {
+		curr_driver->open_func(device);
 	}
-	opt = options_getstring("lircd:device");
+	opt = options_getstring("lircd:driver-options");
 	if (opt != NULL)
-		device = opt;
+		drv_handle_options(opt);
 	pidfile = options_getstring("lircd:pidfile");
 	lircdfile = options_getstring("lircd:output");
 	opt = options_getstring("lircd:logfile");

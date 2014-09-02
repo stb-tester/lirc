@@ -67,6 +67,13 @@ log these messages are marked as 'debug'.
 The level can also be an integer in the range 0 (almost no messages) to
 10.
 .TP 4
+.B -A, --driver-options key:value[|key:value...]
+Set one or more options for the driver. The argument is a list of
+key:value pairs delimited by '|'. The key can not contain spaces, but
+such are allowed in the value part. Certain characters including '#'
+and ';' are used as comment markers in the config file and are not
+allowed anywhere.
+.TP 4
 .B -l, --listen [[address:]port]]
 Let lircd listen for network
 connections on the given address/port. The default address is 0.0.0.0,

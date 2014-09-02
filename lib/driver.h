@@ -34,6 +34,40 @@ int default_close(void);
 
 int default_drvctl(int cmd, void* arg);
 
+/** Argument for DRV_SET_OPTION. */
+struct option_t {
+	char key[32];
+	char value[64];
+};
+
+/**
+ * Parse an option string "key:value;key:value..." and invoke
+ * drvctl DRV_SET_OPTION as appropriate.
+ */
+int drv_handle_options(const char* options);
+
+
+/** Drvctl cmd:  return current state as an int in *arg. */
+#define	DRVCTL_GET_STATE		1
+
+/** Drvctl cmd:  Send long space. Arg is pulselength (us, an int). */
+#define DRVCTL_SEND_SPACE		2
+
+/** Drvctl cmd: Set driver options. Arg is   *struct option. */
+#define DRVCTL_SET_OPTION		3
+
+/** Last well-known command. Remaining is used in driver-specific controls.*/
+#define  DRVCTL_MAX			128
+
+/** drvctl error. */
+#define  DRV_ERR_NOT_IMPLEMENTED	1
+
+/** drvctl error: */
+#define  DRV_ERR_BAD_STATE		2
+
+/** drvctl error: */
+#define  DRV_ERR_BAD_OPTION             3
+
 struct driver {
 // Old-style implicit API version 1:
 
