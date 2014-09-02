@@ -2158,7 +2158,6 @@ static void lircd_parse_options(int argc, char** const argv)
 			printf("lircd %s\n", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
-			options_load(argc, argv, optarg, lircd_parse_options);
 			break;
 		case 'n':
 			options_set_opt("lircd:nodaemon", "True");
@@ -2243,6 +2242,12 @@ int main(int argc, char **argv)
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, lircd_parse_options);
+	opt = options_getstring("lircd:debug");
+	if (options_set_loglevel(opt) == LIRC_BADLEVEL){
+		fprintf(stderr, "Bad configuration loglevel:%s\n", opt);
+		fprintf(stderr, DEBUG_HELP, optarg);
+		fprintf(stderr, "Falling back to 'info'\n");
+	}
 	opt = options_getstring("lircd:logfile");
 	if (opt != NULL)
 		lirc_log_set_file(opt);

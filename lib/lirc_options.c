@@ -66,12 +66,45 @@ int  options_getboolean(const char* const key)
 	return ciniparser_getboolean(lirc_options, key, 0);
 }
 
+static const struct option o_option[] = {
+	{"options-file", required_argument, NULL, 'O'},
+	{0,0,0,0}
+};
+
+
+static char* parse_O_arg(int argc, char** argv)
+{
+	int c;
+	char* path = NULL;
+
+	opterr = 0;
+	optind = 1;
+	// This should really be "O:", but getopt_long seemingly cannot
+	// handle a single option in the string. The w is tolerated here,
+	// but it does not matter.
+	while ((c = getopt_long(argc, argv, "wO:", o_option, NULL)) != -1) {
+		if ( c == 'O')
+			path = optarg;
+	}
+	opterr = 1;
+	optind = 1;
+
+	if (path && access(path, R_OK) != 0) {
+		fprintf(stderr, "Cannot open options file %s for read\n",
+                        path);
+		exit(EXIT_FAILURE);
+	}
+	return path;
+}
+
 
 void options_load(int argc, char** const argv,
-		  const char* path,
+		  const char* path_arg,
 		  void(*parse_options)(int, char** const))
 {
 	char buff[128];
+	char buff2[128];
+	const char* path = path_arg;
 
 	if (depth > 1) {
 		logprintf(LIRC_WARNING,
@@ -81,12 +114,15 @@ void options_load(int argc, char** const argv,
 	}
 	depth += 1;
 	if (path == NULL) {
+		path = parse_O_arg(argc, argv);
+	}
+	if (path == NULL) {
 		path = getenv( LIRC_OPTIONS_VAR );
 		path = (path == NULL ? LIRC_OPTIONS_PATH : path);
 	}
 	if (*path != '/') {
-		snprintf(buff, sizeof(buff),
-			 "%s/lirc/%s", SYSCONFDIR, path);
+		getcwd(buff2, sizeof(buff2));
+		snprintf(buff, sizeof(buff), "%s/%s", buff2, path);
 		path = buff;
 	}
 	if (access(path, R_OK) == 0) {
@@ -98,6 +134,7 @@ void options_load(int argc, char** const argv,
 		}
 	}
 	else {
+		fprintf(stderr, "Warning: cannot open %s\n", path);
 		logprintf(LIRC_WARNING, "Warning: cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}

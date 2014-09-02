@@ -351,7 +351,6 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("irrecord:disable-namespace", "True");
 			break;
 		case 'O':
-			options_load(argc, argv, optarg, parse_options);
 			return;
 		case 'P':
 			options_set_opt("irrecord:post", "True");
@@ -420,9 +419,10 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	device = options_getstring("irrecord:device");
-	loglevel = options_getint("lircd:debug");
+	opt = options_getint("lircd:debug");
+	loglevel = string2loglevel(opt);
 	if (loglevel < LIRC_MIN_LOGLEVEL || loglevel > LIRC_MAX_LOGLEVEL){
-		fprintf(stderr, "Bad debug value %s\n", optarg);
+		fprintf(stderr, "Bad debug value %s\n", opt);
 		exit(EXIT_FAILURE);
 	}
 	force = options_getboolean("irrecord:force");
