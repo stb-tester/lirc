@@ -2119,7 +2119,7 @@ static void lircd_add_defaults(void)
 		"lircd:device", 	NULL,
 		"lircd:listen", 	NULL ,
 		"lircd:connect", 	NULL,
-		"lircd:lircdfile", 	LIRCD,
+		"lircd:output", 	LIRCD,
 		"lircd:pidfile", 	PIDFILE,
 		"lircd:logfile", 	"syslog",
 		"lircd:debug", 		level,
@@ -2178,7 +2178,7 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:logfile", optarg);
 			break;
 		case 'o':
-			options_set_opt("lircd:lircdfile", optarg);
+			options_set_opt("lircd:output", optarg);
 			break;
 		case 'l':
 			options_set_opt("lircd:listen", "True");
@@ -2274,7 +2274,7 @@ int main(int argc, char **argv)
 	if (opt != NULL)
 		device = opt;
 	pidfile = options_getstring("lircd:pidfile");
-	lircdfile = options_getstring("lircd:lircdfile");
+	lircdfile = options_getstring("lircd:output");
 	opt = options_getstring("lircd:logfile");
 	if (opt != NULL)
 		lirc_log_set_file(opt);
