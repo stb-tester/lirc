@@ -77,7 +77,6 @@ int get_data_length(struct ir_remote *remote, int interactive);
 int get_gap_length(struct ir_remote *remote);
 void fprint_copyright(FILE * fout);
 
-extern struct driver hw;
 extern struct ir_remote *last_remote;
 
 const char *USAGE = "Usage: irrecord [options] [config file]\n" \
