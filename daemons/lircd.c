@@ -2116,7 +2116,7 @@ static void lircd_add_defaults(void)
 		"lircd:nodaemon", 	"False",
 		"lircd:permission", 	DEFAULT_PERMISSIONS,
 		"lircd:driver", 	"default",
-		"lircd:device", 	NULL,
+		"lircd:device", 	LIRC_DRIVER_DEVICE,
 		"lircd:listen", 	NULL ,
 		"lircd:connect", 	NULL,
 		"lircd:output", 	LIRCD,
@@ -2306,8 +2306,6 @@ int main(int argc, char **argv)
 	if (device != NULL) {
 		drv.device = device;
 	}
-        if (!drv.device)
-                drv.device = LIRC_DRIVER_DEVICE;    // FIXME: this belongs to driver code
 	if (strcmp(drv.name, "null") == 0 && peern == 0) {
 		fprintf(stderr, "%s: there's no hardware I can use and no peers are specified\n", progname);
 		return (EXIT_FAILURE);
