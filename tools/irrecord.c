@@ -293,7 +293,7 @@ static void add_defaults(void)
 	const char* const defaults[] = {
 		"lircd:plugindir",              PLUGINDIR,
 		"irrecord:driver",              "devinput",
-		"irrecord:device",               LIRC_DRIVER_DEVICE,
+		"irrecord:device",               NULL,
 		"irrecord:analyse",             "False",
 		"irrecord:force",               "False",
 		"irrecord:disable-namespace",   "False",
@@ -440,6 +440,8 @@ int main(int argc, char **argv)
 	if (device != NULL) {
 		drv.device = device;
 	}
+        if (!drv.device)
+                drv.device = LIRC_DRIVER_DEVICE;    // FIXME: this belongs to driver code
 	if (strcmp(drv.name, "null") == 0 && !analyse) {
 		fprintf(stderr,
 		       "%s: irrecord does not make sense without hardware\n",
