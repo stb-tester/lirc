@@ -5,7 +5,7 @@ irrecord
 irsend
 irw
 irxevent
-lirc-plugincheck
+lirc-lsplugins
 lircrcd
 mode2
 xmode2

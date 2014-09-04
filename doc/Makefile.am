@@ -90,6 +90,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irsend.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/irxevent.1 \
+                           $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
@@ -124,6 +125,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irrecord.1 \
                            man/irsend.1 \
                            man/irw.1 \
+                           man/lirc-lsplugins.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd.conf.5 \

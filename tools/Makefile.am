@@ -16,7 +16,7 @@ if BUILD_SMODE2
 EXTRA_PROGRAMS          += smode2
 endif
 
-sbin_PROGRAMS		= lirc-plugincheck
+sbin_PROGRAMS		= lirc-lsplugins
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
                           irrecord @vga_progs@ @x_progs@
 
@@ -36,7 +36,7 @@ irsend_SOURCES          = irsend.c
 irsend_LDADD            = $(LIRC_LIBS)
 lircrcd_SOURCES         = lircrcd.c
 lircrcd_LDADD           = $(LIRC_LIBS)
-lirc_plugincheck_SOURCES = lirc-plugincheck.c
+lirc_lsplugins_SOURCES  = lirc-lsplugins.c
 
 
 ## VGA programs
