@@ -43,7 +43,7 @@ issue tracker.
 ## Running from the source tree.
 
 You can run the lirc programs directly from their source directory after a
-successful 'make' without installing things. The gotcha is that you need
+successful 'make' without installing things. One gotcha is that you need
 to provide the plugin directory on the command line. E. g., to run lircd:
 
     $ make
@@ -52,6 +52,17 @@ to provide the plugin directory on the command line. E. g., to run lircd:
 
 Note that the gnu tools places the generated so-files in the hidden .libs
 directory.
+
+Another thing to fix is to have reasonable, writable defaults. In order
+to make this work you should create some temporary, writable dir and direct at
+least pidfile and output socket to it. A more complete example:
+
+
+    $ make
+    $ cd daemons
+    $ mkdir var || :
+    $ ./lircd --nodaemon --plugindir=../plugins/.libs \
+    >     --pidfile var/lircd.pd --output var/lircd.socket
 
 ## Generating a stacktrace.
 
