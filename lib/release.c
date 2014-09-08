@@ -70,9 +70,14 @@ void register_button_press(struct ir_remote *remote, struct ir_ncode *ncode, ir_
 
 void get_release_data(const char **remote_name, const char **button_name, int *reps)
 {
-	*remote_name = release_remote->name;
-	*button_name = release_ncode->name;
-	*reps = release_reps;
+	if (release_remote != NULL) {
+		*remote_name = release_remote->name;
+		*button_name = release_ncode->name;
+		*reps = release_reps;
+	} else {
+		*remote_name = *button_name = "(NULL)";
+		*reps = 0;
+	}
 }
 
 void set_release_suffix(const char *s)
