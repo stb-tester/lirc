@@ -30,7 +30,7 @@
         like directly connected LEDs or IR sensors. Modern hardware, due to embedded micro processors etc.,
         have less requirements on precise timing, and
         user space drivers are normally the preferred solution. One such driver consists of a C file, containing a number of function,
-        which are linked into the executing program (Lircd).
+        which are linked into the executing program (e. g., Lircd).
         Traditionally (at least for LIRC) linking takes place during
         the build process (statically linking). The API for these drivers we will call "Driver API version 1".</p>
 
@@ -38,7 +38,8 @@
         It turned out to be necessary to slighty augment the driver API version 1. The new version will
         be referred to as "Driver API version 2".</p>
 
-    <p>In this guide, the word <em>plugin</em> will be used as synonym for dynamically loaded driver.</p>
+    <p>In this guide, the word <em>plugin</em> refers to the so-file on disk. Each such file
+contains one or more driver(s) as visible in the user interface. </p>
 
     <h1>Two flavors of drivers</h1>
     <p>An IR signal consists of a sequence of on-times (pulses) and off-times (gaps). (We disregard modulation for the time being.)
@@ -55,15 +56,19 @@
   <p>As usable and flexible IR hardware for LIRC, these devices are second choice.
       The "learns" (configuration files) from such a device is of very limited value, and not portable to other IR devices,
       since timing information is missing. In the configuration file,
-      this can be determined by the lines <code>one 0 0</code> and <code>one 0 0</code>, which is clearly not usable
-      without the context, namely the hardware used for capturing.</p>
+      this can be determined by the lines <code>one 0 0</code> and <code>one 0 0</code>,
+      which is clearly not usable without the context, namely the hardware used for capturing.</p>
 
 <p>This guide is intended for programmers
       writing and maintain "real" drivers.</p>
 
-  <p>At the time of writing, there are 41 plugins (not counting the <code>default</code> driver),
-      12 are "general receivers", the other 29 are LIRCCODE drivers.  For some reason,
-      no driver that can send LIRCCODEs are available.
+  <p>At the time of writing, there are 44 plugins (not counting the <code>default</code> driver)
+     and 54 drivers. Of the drivers,  13 are "general receivers"; the others  are LIRCCODE drivers.
+     Since hardware related to LIRCCODE drivers (typically a TV-card) normally doesn't support
+     sending there is no LIRCCODE driver which can send data. </p>
+
+  <p> The tool lirc-lsplugins can be used to generate overviews of the drivers and their
+     capabilities. </p>
   </p>
     <!--hr width="70%">
     <br-->
@@ -97,9 +102,9 @@ struct driver {
         unsigned int resolution;
 
         /* The following fields are API version 2 extensions */
-	const int api_version;
+        const int api_version;
         const char* driver_version;
-	int (*const close_func)(void);
+        int (*const close_func)(void);
 };
     </pre>
     <p>These fields will next be described. Note that a driver sometimes "misuses" a field;
@@ -166,20 +171,21 @@ struct driver {
     following:
     <ol>
     <li>
-        The program Lircd code determines what driver to use (normally the <code>--driver</code>
+        The program Lircd  code determines what driver to use (normally the <code>--driver</code>
         runtime option) and invokes <code>hw_choose_driver()</code> (in <code>drv_admin.c</code>) which
          loads the driver and exposes the driver interface
          in the global variable <code>drv</code> (which is a <code>struct driver</code>).</li>
-    <li><code>Lircd</code> updates the filed <code>drv.device</code>, normally from the
-        runtime option <code>--device</code>.</li>
+    <li> <code>Lircd</code> invokes the <code>open_func()</code> which establishes the device to use,
+         usually based on the runtime option <code>--device</code>.</li>
     <li>When a client connects, either for sending or receiving, the function <code>init_func()</code> is invoked,
         initializing the driver. In some drivers,
         the capabilities of the drivers, i.e. the field <code>features</code>, are available only after initializing.
         The driver also exports the <code>fd</code> field, a file
          descriptor (a positive int) for the underlying file.</li>
     <li>From this point, calls to <code>read_func()</code> and <code>send_func()</code> are possible.</li>
-    <li>When the last client is terminated, Lircd calls  <code>deinit_func()</code>. Note that
-        Lircd may need the device again, if e.g. another sending request is received, so a hard closing of a device may not be optimal here.</li>
+    <li>When the last client is terminated, executing program calls  <code>deinit_func()</code>. Note that
+        the Lircd may need the device again, if e.g. another send request
+        is received, so a hard closing of a device may not be optimal here.</li>
     <li>As a last operation, Lircd should call the <code>close_func()</code>. This
          relinquishes all resources allocated by the driver.</li>
     <li>Calls to <code>ioctl_func()</code> are possible at any time. They are the responsibility of the programmer.
@@ -322,7 +328,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
     <ul>
         <li>Since no elements are exported, except for through the <code>hardwares</code> array,
             an associated header file (<code>.h</code>-file) is neither necessary nor desired.
-            (The only exception would be special constants for usage with the ioctl function.)</li>
+            (The only exception would be special constants for usage with the drvctl function.)</li>
         <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
             <code>lirc_dyndriver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, and <code>transmit.h</code>)
             Inclusions of other LIRC files (including <code>config.h</code>) should be avoided if possible.</li>
@@ -350,12 +356,17 @@ struct driver* hardwares[] = { &my_hardware, NULL };
 
     <h2>Compiling</h2>
     <h3>Compiling in-tree</h3>
-    <p>To compile in-tree, just copy the plugin source code to the plugins directory,
-        and add corresponding lines in <code>plugins/Makefile.am</code>. After running
-        <code>autogen.sh</code> and <code>configure</code>, <code>make</code> will build the new plugin.</p>
+    <p>To compile in-tree and assuming autogen.sh and ./configure has been run
+       just copy the plugin source code to the plugins directory and run
+    <pre>
+        $ cd plugins;
+        $ ./make-pluginlist.sh &gt; pluginlist.am
+        $ make
+    </pre>
     <h3>Compiling out-of-tree</h3>
     <p>Plugins can also easily be built out-of tree. Only some include files from LIRC are needed.
-        Just a trivial compilation is needed. A simple generic Makefile is provided in the Appendix.
+        Just a trivial compilation is needed. A simple generic Makefile is provided in the Appendix,
+        another example is available in the sources as drivers/default.
         The autotools are not needed, in particular not libtool.</p>
 
     <h2>Using C++</h2>
