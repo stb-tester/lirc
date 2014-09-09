@@ -1,4 +1,6 @@
 0.9.2-devel
+  * The smode2 program has been retired from the build, although it still
+    ins available in contrib/.
   * Support fo the Dangerous Prototypes irtoy device is added.
   * Drivers are loaded dynamically. Many programs including lircd now
     needs to know where the drivers are located to be able to use

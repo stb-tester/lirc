@@ -67,20 +67,6 @@ fi
 lockdir_default="/var/lock/lockdev"
 test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 
-vga_progs=
-AC_CHECK_HEADER(vga.h,
-  [AC_CHECK_HEADER(vgagl.h,
-    [AC_CHECK_LIB(vga, vga_init,
-      [AC_CHECK_LIB(vgagl, gl_setcontextvga,
-        [AC_DEFINE(HAVE_LIBVGA)]
-        vga_progs=smode2,,
-        -lvga
-      )]
-    )]
-  )]
-)
-AM_CONDITIONAL([BUILD_SMODE2],[ test x$vga_progs != x ])
-
 x_progs="irxevent xmode2"
 AC_PATH_XTRA
 if test "$no_x" = "yes"; then
@@ -336,7 +322,6 @@ AC_SUBST(daemon)
 AC_SUBST(forkpty)
 AC_SUBST(sysconfdir)
 AC_SUBST(usb_libs)
-AC_SUBST(vga_progs)
 AC_SUBST(x_progs)
 
 dnl tell the C code what we decided
@@ -381,7 +366,6 @@ Summary of selected options:
 prefix:                         $prefix
 sysconfdir:                     $sysconfdir
 x_progs:                        $x_progs
-vga_progs:                      $vga_progs
 host:                           $host
 host_os:                        $host_os
 forkpty:                        $forkpty
@@ -408,7 +392,6 @@ AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
 AC_REPORT_CONDITIONAL([BUILD_USB])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([USE_FIFOS])
-AC_REPORT_CONDITIONAL([BUILD_SMODE2])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_PYTHON])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])

@@ -13,11 +13,6 @@ nodist_man_MANS         += man/xmode2.1 man/irxevent.1
 generated_html          += man-html/xmode2.html man-html/irxevent.html
 endif
 
-if BUILD_SMODE2
-nodist_man_MANS         += man/smode2.1
-generated_html          += man-html/smode2.html
-endif
-
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
 
@@ -72,7 +67,7 @@ $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
 	cp -a $(man_sources) man
 	sed -i "s/@version@/$(VERSION)/" man/*
-	cd man; cp mode2.1 smode2.1; cp mode2.1 xmode2.1
+	cd man;  cp mode2.1 xmode2.1
 
 
 imagedir                = $(docdir)/images

@@ -12,13 +12,9 @@ if BUILD_XTOOLS
 EXTRA_PROGRAMS          += xmode2 irxevent
 endif
 
-if BUILD_SMODE2
-EXTRA_PROGRAMS          += smode2
-endif
-
 sbin_PROGRAMS		= lirc-lsplugins
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
-                          irrecord @vga_progs@ @x_progs@
+                          irrecord @x_progs@
 
 ## Simple programs
 irw_SOURCES             = irw.c
@@ -38,10 +34,6 @@ lircrcd_SOURCES         = lircrcd.c
 lircrcd_LDADD           = $(LIRC_LIBS)
 lirc_lsplugins_SOURCES  = lirc-lsplugins.c
 
-
-## VGA programs
-smode2_SOURCES          = smode2.c
-smode2_LDADD            = -lvga -lvgagl $(LIRC_LIBS)
 
 ## X programs
 irxevent_SOURCES        = irxevent.c
