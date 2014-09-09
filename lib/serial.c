@@ -19,6 +19,10 @@
 # include <config.h>
 #endif
 
+#ifndef LIRC_LOCKDIR
+#define LIRC_LOCKDIR "/var/lock/lockdev"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -304,7 +308,7 @@ int tty_create_lock(const char *name)
 	int lock;
 	int len;
 
-	strcpy(filename, "/var/lock/LCK..");
+	strcpy(filename, LIRC_LOCKDIR "/LCK..");
 
 	last = strrchr(name, '/');
 	if (last != NULL)
@@ -453,14 +457,14 @@ int tty_delete_lock(void)
 	long pid;
 	int retval = 1;
 
-	dp = opendir("/var/lock/");
+	dp = opendir(LIRC_LOCKDIR);
 	if (dp != NULL) {
 		while ((ep = readdir(dp))) {
 			if (strcmp(ep->d_name, ".") == 0 || strcmp(ep->d_name, "..") == 0) {
 				retval = 0;
 				continue;
 			}
-			strcpy(filename, "/var/lock/");
+			strcpy(filename, LIRC_LOCKDIR "/");
 			if (strlen(filename) + strlen(ep->d_name) > FILENAME_MAX) {
 				retval = 0;
 				continue;
@@ -495,7 +499,7 @@ int tty_delete_lock(void)
 		}
 		closedir(dp);
 	} else {
-		logprintf(LIRC_ERROR, "could not open directory \"/var/lock/\"");
+		logprintf(LIRC_ERROR, "could not open directory \"" LIRC_LOCKDIR "\"");
 		return (0);
 	}
 	return (retval);

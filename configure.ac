@@ -64,6 +64,9 @@ if test "$ac_cv_func_forkpty" != yes; then
     AC_DEFINE(HAVE_FORKPTY)])
 fi
 
+lockdir_default="/var/lock/lockdev"
+test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
+
 vga_progs=
 AC_CHECK_HEADER(vga.h,
   [AC_CHECK_HEADER(vgagl.h,
@@ -177,6 +180,9 @@ AH_TEMPLATE([HAVE_VSYSLOG],
 
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
         [Define if devfs support is present in current kernel])
+
+AH_TEMPLATE([LIRC_LOCKDIR],
+        [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
 
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
@@ -313,6 +319,12 @@ AM_CONDITIONAL([SYSTEMD_INSTALL],[test x"$has_systemd_system" = xtrue])
 
 AC_MSG_NOTICE([Building all userspace drivers.])
 
+AC_ARG_WITH(lockdir,
+  [  --with-lockdir=DIR      Old-school device lock files in DIR (/var/lock)],
+  lockdir=${withval},
+  lockdir=${lockdir_default})
+AC_DEFINE_UNQUOTED(LIRC_LOCKDIR, "$lockdir")
+
 AC_ARG_ENABLE(install_etc,
 [  --install-etc           Install /etc/lirc configuration files(default=yes)],
 [ install_etc="${enableval}" ],
@@ -374,6 +386,7 @@ host:                           $host
 host_os:                        $host_os
 forkpty:                        $forkpty
 usb_libs                        $usb_libs
+lockdir:                        $lockdir
 
 Conditionals:
 ])
