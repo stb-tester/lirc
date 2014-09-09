@@ -332,8 +332,6 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
-AC_DEFINE(LIRC_OPTIONS_PATH,["/etc/lirc/lirc_options.conf"],[
-        Default path for lircd_options.conf])
 
 AH_TOP([
 #include     "paths.h"

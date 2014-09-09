@@ -53,7 +53,7 @@
 #define PLUGINDIR		LIBDIR  "/lirc/plugins"
 
 /* Default options file path. */
-#define LIRC_OPTIONS_PATH       "/etc/lirc/lirc_options.conf"
+#define LIRC_OPTIONS_PATH       SYSCONFDIR "/lirc/lirc_options.conf"
 
 /* Environment variable overriding options file path. */
 #define LIRC_OPTIONS_VAR        "LIRC_OPTIONS_PATH"
