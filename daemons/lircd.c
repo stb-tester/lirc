@@ -920,8 +920,9 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	int ret;
 	int new = 1;
 	int fd;
+#ifdef HAVE_SYSTEMD
 	int n;
-
+#endif
 
 	lirc_log_open("lircd", nodaemon, loglevel);
 
