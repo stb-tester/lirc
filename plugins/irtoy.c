@@ -21,11 +21,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifdef HAVE_CONFIG_H
-	#include <config.h>
-#endif
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -79,9 +74,9 @@ struct tag_irtoy_t {
 
 typedef struct tag_irtoy_t irtoy_t;
 
-static irtoy_t *dev;
+static irtoy_t *dev = NULL;
 
-unsigned char rawSB[WBUF_SIZE * 2 + 2];
+static unsigned char rawSB[WBUF_SIZE * 2 + 2];
 
 /* exported functions  */
 static int init(void);
@@ -388,8 +383,7 @@ static irtoy_t *irtoy_hw_init(int fd)
 	return dev;
 }
 
-
-static int init(void)
+static int init_device(void)
 {
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "irtoy: could not create lock files");
@@ -432,7 +426,7 @@ static int init(void)
 		tty_delete_lock();
 		return(0);
 	}
-	LOGPRINTF(1, "Version hw %d, sw %d, protocol %d\n",
+	LOGPRINTF(1, "Version hw %d, sw %d, protocol %d",
 		  dev->hwVersion, dev->swVersion, dev->protoVersion);
 	if (dev->swVersion < IRTOY_MINFWVERSION) {
 		logprintf(LIRC_ERROR,
@@ -449,6 +443,31 @@ static int init(void)
 	return(1);
 }
 
+/* dev.device is const *, so I do not dare to write to it, make my own version */
+static char devname[20];
+
+static int init(void)
+{
+    int n = -1;
+    int i;
+
+    sscanf(drv.device, "/dev/ttyACM%d", &n);
+    if (n == -1) /* parsing failed, fallback to old behavior. */
+        return init_device();
+
+    drv.device = devname;
+    for (i = n; i < 9; i++) {
+        int status;
+        sprintf(devname, "/dev/ttyACM%d", i);
+        status = init_device();
+        if (status) {
+            logprintf(LIRC_INFO, "irtoy_found on %s", devname);
+            return status;
+        }
+    }
+    /* If i get here, original drv.device has been destroyed. But who cares? */
+    return 0;
+}
 
 static int deinit(void)
 {
@@ -495,7 +514,10 @@ static int irtoy_send_double_buffered(unsigned char * signals, int length)
 	unsigned char reply[16];
 	int irtoyXmit;
 
-
+        if (dev == NULL) {
+                logprintf(LIRC_ERROR, "irtoy_send: irtoy not initialized");
+		return 0;
+        }
 	res = write(dev->fd, IRTOY_COMMAND_TXSTART, sizeof(IRTOY_COMMAND_TXSTART));
 
 	if (res != sizeof(IRTOY_COMMAND_TXSTART)) {
@@ -510,7 +532,7 @@ static int irtoy_send_double_buffered(unsigned char * signals, int length)
 		return -1;
 	}
 
-	LOGPRINTF(1, "irtoy ready for %d bytes\n", irToyBufLen);
+	LOGPRINTF(1, "irtoy ready for %d bytes", irToyBufLen);
 
 	txPtr = signals;
 
@@ -534,7 +556,7 @@ static int irtoy_send_double_buffered(unsigned char * signals, int length)
 			return -1;
 		}
 
-		LOGPRINTF(1, "irtoy ready for %d bytes\n", irToyBufLen);
+		LOGPRINTF(1, "irtoy ready for %d bytes", irToyBufLen);
 
 
 	}
