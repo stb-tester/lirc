@@ -33,73 +33,88 @@
 #include <time.h>
 
 #include "lirc_private.h"
+static char *device = NULL;
+static int dmode = 0;
+static int t_div = 500;
+static int gap = 10000;
+static int use_raw_access = 0;
 
 
-int main(int argc, char **argv)
+static struct option options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"device", required_argument, NULL, 'd'},
+	{"driver", required_argument, NULL, 'H'},
+	{"mode", no_argument, NULL, 'm'},
+	{"raw", no_argument, NULL, 'r'},
+	{"gap", required_argument, NULL, 'g'},
+	{"scope", required_argument, NULL, 's'},
+	{"plugindir", required_argument, NULL, 'U'},
+	{0, 0, 0, 0}
+};
+
+static void help(void)
 {
-	int fd;
-	char buffer[sizeof(ir_code)];
-	lirc_t data;
-	__u32 mode;
-	/*
-	 * Was hard coded to 50000 but this is too long, the shortest gap in the
-	 * supplied .conf files is 10826, the longest space defined for any one,
-	 * zero or header is 7590
-	 */
-	int gap = 10000;
-	int t_div = 500;
-	char *device = LIRC_DRIVER_DEVICE;
-	struct stat s;
-	int dmode = 0;
-	__u32 code_length;
-	size_t count = sizeof(lirc_t);
-	int i;
-	int use_raw_access = 0;
-	int have_device = 0;
+	printf("Usage: %s [options]\n", progname);
+	printf("\t -d --device=device\tread from given device\n");
+	printf("\t -H --driver=driver\tuse given driver\n");
+	printf("\t -U --plugindir=path\tLoad plugins from path.\n");
+	printf("\t -m --mode\t\tenable column display mode\n");
+	printf("\t -r --raw\t\taccess device directly\n");
+	printf("\t -g --gap=time\t\ttreat spaces longer than time as the gap\n");
+	printf("\t -s --scope=time\tenable 'scope like display with time us per char.\n");
+	printf("\t -h --help\t\tdisplay usage summary\n");
+	printf("\t -v --version\t\tdisplay version\n");
+}
 
-	strncpy(progname, "mode2", sizeof(progname));
-	hw_choose_driver(NULL);
-	while (1) {
-		int c;
-		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"device", required_argument, NULL, 'd'},
-			{"driver", required_argument, NULL, 'H'},
-			{"mode", no_argument, NULL, 'm'},
-			{"raw", no_argument, NULL, 'r'},
-			{"gap", required_argument, NULL, 'g'},
-			{"scope", required_argument, NULL, 's'},
-			{0, 0, 0, 0}
-		};
-		c = getopt_long(argc, argv, "hvd:H:mrg:s:", long_options, NULL);
-		if (c == -1)
-			break;
+
+static void add_defaults(void)
+{
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+
+	const char* const defaults[] = {
+		"mode2:driver", 	"default",
+		"mode2:lircdfile", 	LIRCD,
+		"lircd:device", 	LIRC_DRIVER_DEVICE,
+		"lircd:logfile", 	"syslog",
+		"lircd:debug", 		level,
+		"lircd:plugindir", 	PLUGINDIR,
+		"lircd:configfile",  	LIRCDCFGFILE,
+		(const char*)NULL, 	(const char*)NULL
+	};
+	options_add_defaults(defaults);
+}
+
+
+static void parse_options(int argc, char** argv)
+{
+	int c;
+	static const char* const optstring= "hvd:H:mrg:s:U:";
+
+	add_defaults();
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
+	{
 		switch (c) {
 		case 'h':
-			printf("Usage: %s [options]\n", progname);
-			printf("\t -h --help\t\tdisplay usage summary\n");
-			printf("\t -v --version\t\tdisplay version\n");
-			printf("\t -d --device=device\tread from given device\n");
-			printf("\t -H --driver=driver\tuse given driver\n");
-			printf("\t -m --mode\t\tenable column display mode\n");
-			printf("\t -r --raw\t\taccess device directly\n");
-			printf("\t -g --gap=time\t\ttreat spaces longer than time as the gap\n");
-			printf("\t -s --scope=time\tenable 'scope like display with time us per char.\n");
-			return (EXIT_SUCCESS);
+			help();
+			exit(EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not supported.\n", optarg);
+				fprintf(stderr, "Driver `%s' not found.\n", optarg);
+				fprintf(stderr, "Available drivers:\n");
 				hw_print_drivers(stderr);
 				exit(EXIT_FAILURE);
 			}
 			break;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
+			exit(EXIT_SUCCESS);
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
 		case 'd':
 			device = optarg;
-			have_device = 1;
 			break;
 		case 's':
 			dmode = 2;
@@ -116,13 +131,35 @@ int main(int argc, char **argv)
 			break;
 		default:
 			printf("Usage: %s [options]\n", progname);
-			return (EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 	}
 	if (optind < argc) {
 		fprintf(stderr, "%s: too many arguments\n", progname);
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
+}
+
+
+int main(int argc, char **argv)
+{
+	int fd;
+	char buffer[sizeof(ir_code)];
+	lirc_t data;
+	__u32 mode;
+	/*
+	 * Was hard coded to 50000 but this is too long, the shortest gap in the
+	 * supplied .conf files is 10826, the longest space defined for any one,
+	 * zero or header is 7590
+	 */
+	struct stat s;
+	__u32 code_length;
+	size_t count = sizeof(lirc_t);
+	int i;
+
+	strncpy(progname, "mode2", sizeof(progname));
+	hw_choose_driver(NULL);
+	options_load(argc, argv, NULL, parse_options);
 	if (strcmp(device, LIRCD) == 0) {
 		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
 		return EXIT_FAILURE;
@@ -153,9 +190,8 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (have_device)
-			drv.device = device;
-		if (!drv.init_func || !drv.init_func()) {
+		curr_driver->open_func(device != NULL ? LIRC_DRIVER_DEVICE : device);
+		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			return EXIT_FAILURE;
 		}
 		fd = drv.fd;	/* please compiler */
