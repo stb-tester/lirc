@@ -1,4 +1,4 @@
-#
+#! lircrcd
 # this config file was automatically generated
 # using lirc-0.8.5-CVS(default) on Sat Jan  3 13:40:20 2009
 #
@@ -25,8 +25,7 @@ begin remote
   gap          110890
   toggle_bit_mask 0x8000
   rc6_mask    0x100000000
-
-      begin codes
+  begin codes
 # POWER
           KEY_POWER                0x1BF3
 # DVD MENU

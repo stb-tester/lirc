@@ -1,6 +1,12 @@
 #ifndef  TEST_UTIL
 #define  TEST_UTIL
 
+#include 	<netinet/in.h>
+#include	<sys/types.h>
+#include	<sys/socket.h>
+#include	<sys/un.h>
+
+
 #include	<unistd.h>
 #include	<string.h>
 

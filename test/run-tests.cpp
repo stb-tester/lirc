@@ -8,6 +8,8 @@
 #include        "OptionsTest.h"
 #include        "ClientTest.h"
 #include        "DrvAdminTest.h"
+#include        "DecodeTest.h"
+
 
 int main()
 {
@@ -15,8 +17,9 @@ int main()
         runner.addTest(IrRemoteTest::suite());
         runner.addTest(LogTest::suite());
         runner.addTest(OptionsTest::suite());
-        //runner.addTest(ClientTest::suite());
+        runner.addTest(ClientTest::suite());
         runner.addTest(DrvAdminTest::suite());
+        runner.addTest(DecodeTest::suite());
         runner.run();
         return 0;
 };

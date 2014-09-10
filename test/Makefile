@@ -7,6 +7,7 @@ LDLIBS   += -lstdc++
 LDLIBS   += -llirc -llirc_client -L ../lib/.libs -Wl,-rpath=../lib/.libs
 
 TESTS     = ClientTest.h \
+	    DecodeTest.h \
             DrvAdminTest.h \
             IrRemoteTest.h \
 	    LogTest.h \

@@ -2,6 +2,26 @@
 
 # See http://www.mythtv.org/wiki/LIRC and
 # http://www.mythtv.org/wiki/Keybindings
+#
+
+begin numeric
+
+    begin
+        prog   = mythtv
+        button = KEY_0
+        config = 0
+        flags  = quit
+    end
+
+    begin
+        prog   = mythtv
+        button = KEY_1
+        config = 1
+        flags  = quit
+    end
+
+end numeric
+
 
     begin
         prog   = mythtv
@@ -193,6 +213,7 @@
         button = KEY_BACK
         config = Esc
     end
+
 
 
 # Illegal button names:
