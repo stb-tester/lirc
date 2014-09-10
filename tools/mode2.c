@@ -190,8 +190,8 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		curr_driver->open_func(device != NULL ? LIRC_DRIVER_DEVICE : device);
-		if (!curr_driver->init_func || !curr_driver->init_func()) {
+		drv.device = (device == NULL ? LIRC_DRIVER_DEVICE : device);
+		if (!drv.init_func || !drv.init_func()) {
 			return EXIT_FAILURE;
 		}
 		fd = drv.fd;	/* please compiler */
