@@ -44,7 +44,7 @@ class IrRemoteTest : public CppUnit::TestFixture
             lirc_log_set_file(path.c_str());
             lirc_log_open("IrRemoteTest", 0, LIRC_STALK);
             f = fopen("etc/lircd.conf.Aspire_6530G", "r");
-            config =  read_config(f, NAME);
+            config = read_config(f, NAME);
         };
 
         void tearDown()

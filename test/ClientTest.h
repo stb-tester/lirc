@@ -18,13 +18,7 @@
     testSuite->addTest(new CppUnit::TestCaller<ClientTest>( \
                        id,  &ClientTest::func))
 
-#define     RUN_LIRCD   "../daemons/lircd \
-                        --plugindir=../plugins/.libs \
-                        --pidfile=var/lircd.pid \
-                        --logfile=client.log \
-                        --output=var/lircd.socket  \
-                        --allow-simulate \
-                        --driver devinput \
+#define     RUN_LIRCD   "../daemons/lircd -O client_test.conf \
                         etc/lircd.conf.Aspire_6530G"
 
 #define IRSEND         " ../tools/irsend -d var/lircd.socket  SIMULATE  \
@@ -82,15 +76,19 @@ class ClientTest : public CppUnit::TestFixture
 
         void tearDown()
         {
+            char s[128];
             ifstream pidfile("var/lircd.pid");
             stringstream buffer;
+
             buffer << pidfile.rdbuf();
             int pid;
             buffer >> pid;
             if( kill(pid, SIGUSR1) == 0)
                 usleep(500);
-            else
-                perror("Cannot kill lircd.");
+            else {
+                snprintf(s, sizeof(s), "Cannot kill lircd (%d).", pid);
+                perror(s);
+            }
             lirc_log_close();
         };
 
@@ -98,9 +96,6 @@ class ClientTest : public CppUnit::TestFixture
         {
             struct lirc_config* config;
 
-            setenv("LIRC_SOCKET_PATH", abspath("var/lircd.socket"), 1);
-            lirc_deinit();
-            CPPUNIT_ASSERT(lirc_init("client_test", 1) != -1);
             CPPUNIT_ASSERT(lirc_readconfig(abspath("etc/mythtv.lircrc"),
                                            &config, NULL) == 0);
         }

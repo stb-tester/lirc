@@ -1,3 +1,7 @@
 *.log
+*.received
 run-tests
 var/*
+echoserver
+testdata
+

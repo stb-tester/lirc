@@ -2,6 +2,7 @@
 #define  TEST_UTIL
 
 #include	<unistd.h>
+#include	<string.h>
 
 
 using namespace std;
@@ -15,7 +16,7 @@ const char* abspath(const char* relpath)
     getcwd(buff, sizeof(buff));
     string path(buff);
     path +=  string("/") + relpath;
-    return path.c_str();
+    return strdup(path.c_str());
 };
 
 void dummy_load(int argc, char** const argv) { return; };

@@ -15,7 +15,7 @@ int main()
         runner.addTest(IrRemoteTest::suite());
         runner.addTest(LogTest::suite());
         runner.addTest(OptionsTest::suite());
-        runner.addTest(ClientTest::suite());
+        //runner.addTest(ClientTest::suite());
         runner.addTest(DrvAdminTest::suite());
         runner.run();
         return 0;

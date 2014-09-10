@@ -59,6 +59,7 @@ class DrvAdminTest : public CppUnit::TestFixture
         {
             lirc_log_set_file(string("drv_admin.log").c_str());
             lirc_log_open("DrvAdminTest", 0, LIRC_STALK);
+            setenv("LIRC_PLUGINDIR", "../plugins/.libs", 1);
         };
 
         void tearDown()
