@@ -97,12 +97,18 @@ typedef uint32_t __u32;
 	char* lirc_nextir(void);
 /* obsolete */
 	char* lirc_ir2char(struct lirc_config* config, char* code);
+/**
+ * Get next available code from the lircd daemon.
+ *
+ * @param code Undefined on enter. On exit either NULL if no complete
+ *     code was available, else a pointer to a malloc()'d code string.
+ *     Caller should eventually free() this.
+ * @return -1 on errors, else 0 indicating either a complete code in
+ *     *code or that nothing was available.
+ */
+int lirc_nextcode(char** code);
 
-	int lirc_nextcode(char** code);
-
-	int lirc_code2char(struct lirc_config* config,
-			   char* code,
-			   char** string);
+int lirc_code2char(struct lirc_config* config, char* code, char** string);
 
 /* new interface for client daemon */
 	int lirc_readconfig_only(const char* file,
@@ -121,6 +127,42 @@ typedef uint32_t __u32;
 
 	const char* lirc_setmode(struct lirc_config* config,
 				 const char* mode);
+
+/* 0.9.2: New interface for sending data. */
+
+/**
+ * Send keysym using given remote. This call might block for some time
+ * since it involves communication with lircd.
+ *
+ * @param fd File descriptor for lircd socket. This must not be the
+ *     descriptor returned by lirc_init; open the socket on a new
+ *     fd instead.
+ * @param remote Name of remote, the 'name' attribute in the config file.
+ * @param keysym The code to send, as defined in the config file.
+ * @return -1 on errors, else 0.
+ * */
+int lirc_send_one(int fd, const char* remote, const char* keysym);
+
+/**
+ * Send a simulated lirc event.This call might block for some time
+ * since it involves communication with lircd.
+ *
+ * @param fd File descriptor for lircd socket. This must not be the
+ *     descriptor returned by lirc_init; open the socket on a new
+ *     fd instead.
+ * @param remote Name of remote, the 'name' attribute in the config file.
+ * @param keysym The code to send, as defined in the config file.
+ * @param scancode The code bound the keysym in teh config file.
+ * @param repeat Number indicating how many times this code has been
+ *     repeated, starts at 0, increased for each repetition.
+ * @return -1 on errors, else 0.
+ */
+int lirc_simulate(int fd,
+		  const char* remote,
+                  const char* keysym,
+                  int scancode,
+                  int repeat);
+
 
 #ifdef __cplusplus
 }

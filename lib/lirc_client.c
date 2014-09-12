@@ -11,6 +11,9 @@
  * System wide LIRCRC support by Michal Svec <rebel@atrey.karlin.mff.cuni.cz>
  */
 
+//FIXME: Here are two read_string. They need to  be merged, taking care of
+//the static state.
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -29,6 +32,17 @@
 #include <sys/wait.h>
 
 #include "lirc_client.h"
+
+/** Timeout in lirc_read_string. */
+static const struct timeval SEND_TIMEOUT = {.tv_sec = 1, .tv_usec = 0};
+
+
+// Until we have working client logging...
+#define logprintf(level,fmt,args...)  syslog(level, fmt, ## args)
+#define LIRC_WARNING  	LOG_WARNING
+#define LIRC_DEBUG    	LOG_DEBUG
+#define LIRC_NOTICE 	LOG_NOTICE
+#define LIRC_ERROR  	LOG_ERR
 
 /* internal defines */
 #define MAX_INCLUDES 10
@@ -96,6 +110,169 @@ static int lirc_lircd;
 static int lirc_verbose = 0;
 static char *lirc_prog = NULL;
 static char *lirc_buffer = NULL;
+static int read_string_ptr = 0;
+
+char *prog;
+
+static const char *read_string(int fd)
+{
+	static char buffer[PACKET_SIZE + 1] = "";
+	char *end;
+	ssize_t ret;
+
+	if (read_string_ptr > 0) {
+		memmove(buffer, buffer + read_string_ptr, strlen(buffer + read_string_ptr) + 1);
+		read_string_ptr = strlen(buffer);
+		end = strchr(buffer, '\n');
+	} else {
+		end = NULL;
+	}
+	setsockopt(fd,
+		   SOL_SOCKET,
+        	   SO_RCVTIMEO,
+		   (const void *)&SEND_TIMEOUT,
+		   sizeof(SEND_TIMEOUT));
+	while (end == NULL) {
+		if (PACKET_SIZE <= read_string_ptr) {
+			logprintf(LIRC_WARNING, "%s: bad packet\n", prog);
+			read_string_ptr = 0;
+			return (NULL);
+		}
+		ret = read(fd, buffer + read_string_ptr, PACKET_SIZE - read_string_ptr);
+		if (ret == EAGAIN || ret == EWOULDBLOCK || ret == EINTR) {
+			logprintf(LIRC_WARNING, "%s: timeout\n", prog);
+			return (NULL);
+		} else if (ret <= 0 ) {
+			read_string_ptr = 0;
+			return (NULL);
+		}
+		buffer[read_string_ptr + ret] = 0;
+		read_string_ptr = strlen(buffer);
+		end = strchr(buffer, '\n');
+	}
+	end[0] = 0;
+	read_string_ptr = strlen(buffer) + 1;
+	logprintf(LIRC_DEBUG, "buffer: -%s-\n", buffer);
+	return (buffer);
+}
+
+
+static int send_packet(int fd, const char *packet)
+{
+	int done, todo;
+	const char *string, *data;
+	char *endptr;
+	enum packet_state state;
+	int status, n;
+	__u32 data_n = 0;
+
+	todo = strlen(packet);
+	data = packet;
+	while (todo > 0) {
+		done = write(fd, (void *)data, todo);
+		if (done < 0) {
+			logprintf(LIRC_WARNING,
+				  "%s: could not send packet\n", prog);
+			perror(prog);
+			return (-1);
+		}
+		data += done;
+		todo -= done;
+	}
+
+	/* get response */
+	status = 0;
+	state = P_BEGIN;
+	n = 0;
+	while (1) {
+		string = read_string(fd);
+		logprintf(LIRC_DEBUG, "State: %d, input: \"%s\"\n", state, string);
+		if (string == NULL){
+			logprintf(LIRC_NOTICE, "send_packet: empty read()");
+			return (EAGAIN);
+		}
+		switch (state) {
+		case P_BEGIN:
+			if (strcasecmp(string, "BEGIN") != 0) {
+				continue;
+			}
+			state = P_MESSAGE;
+			break;
+		case P_MESSAGE:
+			if (strncasecmp(string, packet, strlen(string)) != 0
+			    	|| strlen(string) + 1 != strlen(packet))
+			{
+				state = P_BEGIN;
+				continue;
+			}
+			state = P_STATUS;
+			break;
+		case P_STATUS:
+			if (strcasecmp(string, "SUCCESS") == 0) {
+				status = 0;
+			} else if (strcasecmp(string, "END") == 0) {
+				status = 0;
+				logprintf(LIRC_NOTICE,
+					  "send_packet: status:END");
+				return (status);
+			} else if (strcasecmp(string, "ERROR") == 0) {
+				logprintf(LIRC_WARNING, "%s: command failed: %s",
+					prog, packet);
+				status = -1;
+			} else {
+				goto bad_packet;
+			}
+			state = P_DATA;
+			break;
+		case P_DATA:
+			if (strcasecmp(string, "END") == 0) {
+				logprintf(LIRC_NOTICE,
+					  "send_packet: data:END, status:%d",
+                                          status);
+				return (status);
+			} else if (strcasecmp(string, "DATA") == 0) {
+				state = P_N;
+				break;
+			}
+				logprintf(LIRC_DEBUG,
+					 "data: bad packet: %s\n",
+					 string);
+			goto bad_packet;
+		case P_N:
+			errno = 0;
+			data_n = (__u32) strtoul(string, &endptr, 0);
+			if (!*string || *endptr) {
+				goto bad_packet;
+			}
+			if (data_n == 0) {
+				state = P_END;
+			} else {
+				state = P_DATA_N;
+			}
+			break;
+		case P_DATA_N:
+			logprintf(LIRC_WARNING, "%s: %s\n", prog, string);
+			n++;
+			if (n == data_n)
+				state = P_END;
+			break;
+		case P_END:
+			if (strcasecmp(string, "END") == 0) {
+				logprintf(LIRC_NOTICE,
+					  "send_packet: status:END, status:%d",
+                                          status);
+				return (status);
+			}
+			goto bad_packet;
+			break;
+		}
+	}
+bad_packet:
+	logprintf(LIRC_WARNING, "%s: bad return packet\n", prog);
+	logprintf(LIRC_DEBUG, "State %d: bad packet: %s\n", status, string);
+	return (-1);
+}
+
 
 static void lirc_printf(char *format_str, ...)
 {
@@ -1717,3 +1894,52 @@ int lirc_identify(int sockfd)
 	(void)lirc_send_command(sockfd, command, NULL, NULL, &success);
 	return success;
 }
+
+
+int lirc_send_one(int fd, const char* remote, const char* keysym)
+{
+	char packet[PACKET_SIZE];
+	int r;
+
+	r = snprintf(packet, sizeof(packet),
+		     "SEND_ONCE %s %s\n", remote, keysym);
+	if (r >= PACKET_SIZE){
+		logprintf(LIRC_WARNING,
+			  "Attempt to send too large buffer: %s", packet);
+		return 0;
+	}
+	read_string_ptr = 0;
+        do {
+	    r = send_packet(fd, packet);
+	} while (r == EAGAIN);
+	return r;
+}
+
+
+int lirc_simulate(int fd,
+   		  const char* remote,
+                  const char* keysym,
+                  int scancode,
+                  int repeat)
+{
+
+	char packet[PACKET_SIZE];
+	int r;
+
+	read_string_ptr = 0;
+	r = snprintf(packet, PACKET_SIZE,
+		     "SIMULATE %016x %02x %s %s\n",
+		     scancode, repeat, keysym, remote);
+	if (r >= PACKET_SIZE) {
+		logprintf(LIRC_ERROR,
+			  "Unreasonably looong simulate packet: %s", packet);
+		return -1;
+	}
+        do {
+	    r = send_packet(fd, packet);
+	} while (r == EAGAIN);
+	return r;
+}
+
+
+
