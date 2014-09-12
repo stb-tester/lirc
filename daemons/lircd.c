@@ -1153,7 +1153,7 @@ int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, 
 		if (repeats != NULL) {
 			*reps = strtol(repeats, &end_ptr, 10);
 			if (*end_ptr || *reps < 0) {
-				return (send_error(fd, message, "bad send packet\n"));
+				 return (send_error(fd, message, "bad send packet (reps/eol)\n"));
 			}
 			if (*reps > repeat_max) {
 				return (send_error
@@ -1164,7 +1164,7 @@ int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, 
 		}
 	}
 	if (strtok(NULL, WHITE_SPACE) != NULL) {
-		return (send_error(fd, message, "bad send packet\n"));
+		return (send_error(fd, message, "bad send packet (trailing ws)\n"));
 	}
 arg_check:
 	if (n > 0 && *remote == NULL) {
@@ -1179,6 +1179,7 @@ arg_check:
 
 int send_success(int fd, char *message)
 {
+	logprintf(LIRC_DEBUG, "Sending success");
 	if (!
 	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
 	     && write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_END])))
@@ -1188,6 +1189,7 @@ int send_success(int fd, char *message)
 
 int send_error(int fd, char *message, char *format_str, ...)
 {
+	logprintf(LIRC_DEBUG, "Sending error");
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
@@ -1392,6 +1394,7 @@ int simulate(int fd, char *message, char *arguments)
 {
 	int i;
 	char *sim, *s, *space;
+logprintf(LIRC_DEBUG, "simulate: enter");
 
 	if (!allow_simulate) {
 		return send_error(fd, message, "SIMULATE command is disabled\n");
@@ -1460,6 +1463,8 @@ int send_core(int fd, char *message, char *arguments, int once)
 	int reps;
 	int err;
 
+	logprintf(LIRC_DEBUG, "Sending once, msg: %s, args: %s, once: %d",
+                  message, arguments, once);
 	if (curr_driver->send_mode == 0)
 		return (send_error(fd, message, "hardware does not support sending\n"));
 
