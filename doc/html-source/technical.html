@@ -399,7 +399,7 @@ int lirc_init(char *prog,int verbose);</PRE>
       occurred.
     </P>
     <p>
-	By default the client connects to the hard-coded default path,
+        By default the client connects to the hard-coded default path,
         usually /var/run/lircd. The environment variable LIRC_SOCKET_PATH
         can be used to connect to another socket.
     </p>
@@ -580,47 +580,6 @@ fi</PRE>
       </DD>
     </DL>
 
-    <A NAME="packagers"></A><HR>
-    <H1 ALIGN="CENTER">Note for packagers</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      If you want to make a binary package for lirc (.deb, .rpm, ...),
-      there are a couple of goodies you can take advantage of:
-      <dl>
-      <dt>--with-driver=all
-      <dd>
-        Builds support for as many devices as possible into a single
-        lircd binary.
-      </dd>
-      <dt>--with-driver=userspace
-      <dd>
-        The same as the all driver, but no kernel modules will be
-        built.
-      </dd>
-      <dt>--enable-sandboxed
-      <dd>
-        Prevents any changes out of the installation directory on "make
-        install":
-          <ul>
-          <li>will not create device nodes on /dev/</li>
-          <li>will not run depmod</li>
-          </ul>
-      </dd>
-      <dt>DESTDIR
-      <dd>
-        You should use <em>DESTDIR</em> and not <em>prefix</em> to install
-        into the sandbox, modules will be installed to <em>/lib/</em>
-        otherwise.
-      </dd>
-        <br>Finally, you should consider installing the doc/lirc.hwdb file.
-        This one is a parseable list of LIRC supported devices, which
-        is useful for LIRC configuration applications.<br>
-        You should also have a look at the below HAL integration description.<br>
-        For more information, refer to the next section.
-      </dl>
-    </P>
-
     <A NAME="hal"></A><HR>
     <H1 ALIGN="CENTER">Hardware Abstraction Layer (HAL) integration</H1>
     <HR WIDTH="70%">
@@ -667,7 +626,7 @@ fi</PRE>
 
     <UL>
       <LI>
-	<p> The general lirc bugtracker is at the
+        <p> The general lirc bugtracker is at the
             <a href=https://sourceforge.net/p/lirc/tickets> sourceforge
             website</a>. </p>
         <P>
