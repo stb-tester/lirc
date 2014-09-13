@@ -17,6 +17,8 @@
 #include <stdint.h>
 #include <syslog.h>
 
+#include "lirc/lirc_config.h"
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -30,6 +32,7 @@ typedef uint32_t __u32;
 #define LIRC_RET_ERROR   (-1)
 
 #define LIRC_ALL ((char* ) (-1))
+
 
 	enum lirc_flags { none = 0x00,
 		once = 0x01,
@@ -74,6 +77,17 @@ typedef uint32_t __u32;
 
 		struct lirc_config_entry* next;
 	};
+
+	/** The data needed to run a command on remote server. */
+	typedef struct {
+		char packet[PACKET_SIZE + 1];   /**< The packet to send. */
+		char buffer[PACKET_SIZE + 1];   /**< Reply IO buffer. */
+		char reply[PACKET_SIZE + 1];    /**< Command reply payload. */
+		int head;			/**< First free buffer index.*/
+		int reply_to_stdout;    /**< If true, write reply on stdout. */
+		char* next;	/**< Next newline-separated word in buffer.*/
+	} lirc_cmd_ctx;
+
 
 	/**
 	* Initial setup: connect to lircd socket.
@@ -131,6 +145,36 @@ int lirc_code2char(struct lirc_config* config, char* code, char** string);
 /* 0.9.2: New interface for sending data. */
 
 /**
+ * Initiate a lirc_cmd_ctx to run a command.
+ * @param ctx Undefined om input, ready to execute on exit.
+ * @param fmt,... printf-style formatting for command. Dont forget
+ *     trailing "\n"!
+ * @return 0 on OK, else a kernel error code.
+ * @note  Simple example: lirc_command_init(&ctx, "CODE %s\n", code);
+ */
+
+int lirc_command_init(lirc_cmd_ctx* ctx, const char* fmt, ...);
+
+
+/**
+ * Run a command in non-blocking mode.
+ *
+ * @param ctx Initiated data on enter, possibly reply payload in ctx->reply
+ *     on exit.
+ * @param fd Open file connected to a lircd output socket.
+ * @return  0 on OK, else a kernel error code (possibly EAGAIN).
+ *
+ */
+int lirc_command_run(lirc_cmd_ctx* ctx, int fd);
+
+/**
+ * Set commnd_ctx write_to_stdout flag. When set, the replyu payload is
+ * written to stdout instead of the default behavior to store it in
+ * lirc_cmd_ctx.reply.
+ */
+void lirc_command_reply_to_stdout(lirc_cmd_ctx* ctx);
+
+/**
  * Send keysym using given remote. This call might block for some time
  * since it involves communication with lircd.
  *
@@ -142,6 +186,7 @@ int lirc_code2char(struct lirc_config* config, char* code, char** string);
  * @return -1 on errors, else 0.
  * */
 int lirc_send_one(int fd, const char* remote, const char* keysym);
+
 
 /**
  * Send a simulated lirc event.This call might block for some time
@@ -162,6 +207,34 @@ int lirc_simulate(int fd,
                   const char* keysym,
                   int scancode,
                   int repeat);
+
+
+/**
+ * Return an opened and connected file descriptor to remote lircd socket.
+ *
+ * @param address Remote host to connect to.
+ * @param port TCP port. If <= 0 uses hardcoded default LIRC_INET_PORT.
+ * @param quiet If true, don't write error messages on stderr.
+ * @return positive file descriptor  on success, else a negated kernel
+ *     error code.
+ */
+int lirc_get_remote_socket(const char* address, int port, int quiet);
+
+
+/**
+ * Return an opened and connected file descriptor to local lircd socket.
+ *
+ * @param path Path to lircd socket. If NULL use LIRC_SOCKET_PATH in
+ *     environment, falling back to a hardcoded default.
+ * @param quiet If true, don't write error messages on stderr.
+ * @return positive file descriptor  on success, else a negated kernel
+ *     error code.
+ */
+int lirc_get_local_socket(const char* path, int quiet);
+
+
+/** @}
+ */
 
 
 #ifdef __cplusplus

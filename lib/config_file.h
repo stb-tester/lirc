@@ -19,7 +19,6 @@ extern "C" {
 #include "lirc/ir_remote.h"
 
 
-enum directive { ID_none, ID_remote, ID_codes, ID_raw_codes, ID_raw_name };
 
 struct ir_remote* read_config(FILE* f, const char* name);
 void free_config(struct ir_remote* remotes);

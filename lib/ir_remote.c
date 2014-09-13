@@ -630,7 +630,8 @@ char *decode_all(struct ir_remote *remotes)
 			int reps;
 			if (ncode == &NCODE_EOF) {
 				logprintf(LIRC_DEBUG, "decode all: returning EOF");
-				return PACKET_EOF;
+				strncpy(message, PACKET_EOF, sizeof(message));
+				return message;
 			}
 			ctx.code = set_code(remote, ncode, toggle_bit_mask_state, &ctx);
 			if ((has_toggle_mask(remote) && remote->toggle_mask_state % 2) || ncode->current != NULL) {

@@ -36,6 +36,8 @@
 #include "lirc/config_flags.h"
 
 
+enum directive { ID_none, ID_remote, ID_codes, ID_raw_codes, ID_raw_name };
+
 struct ptr_array {
 	void **ptr;
 	size_t nr_items;
