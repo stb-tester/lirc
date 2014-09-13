@@ -20,7 +20,11 @@ docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA       += $(generated_html) $(manpage_html)
+nodist_html_DATA        += $(generated_html)
+if HAVE_MAN2HTML
+nodist_html_DATA        += $(manpage_html)
+endif
+
 dist_html_DATA          = $(html_includes) html-source/lirc.css table.html
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)

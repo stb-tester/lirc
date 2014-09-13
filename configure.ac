@@ -20,9 +20,7 @@ AC_PATH_PROG(mknod, mknod, /bin/mknod)
 AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
-if test x$MAN2HTML = xno; then
-    AC_MSG_ERROR(Cannot find required program man2html)
-fi
+AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON([3.1],,[:])
