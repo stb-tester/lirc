@@ -11,7 +11,7 @@ CLEANFILES              = *~ remotes/*~ contrib/*~
 
 BUILT_SOURCES           = paths.h
 
-if SYSTEMD_INSTALL
+if WITH_SYSTEMDSYSTEMUNITDIR
     SYSTEMD_DIR         = systemd
 endif
 

@@ -300,8 +300,7 @@ PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],[AC_DEFINE(HAVE_SYSTEMD)],[true]
 CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
 LIBS="$LIBS $SYSTEMD_LIBS"
 
-AC_CHECK_FILE([/usr/lib/systemd/system], [has_systemd_system=true],[true])
-AM_CONDITIONAL([SYSTEMD_INSTALL],[test x"$has_systemd_system" = xtrue])
+SYSTEMD_SYSTEMUNITDIR
 
 AC_MSG_NOTICE([Building all userspace drivers.])
 

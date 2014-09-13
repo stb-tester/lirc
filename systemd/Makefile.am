@@ -7,21 +7,4 @@
 
 ACLOCAL_AMFLAGS             = -I m4
 
-UNITFILES                   = lircd.socket lircd.service lircmd.service
-live_systemddir             = $(DESTDIR)/usr/lib/systemd/system
-
-systemddir                  = $(prefix)/lib/systemd/system
-dist_systemd_DATA           = $(UNITFILES)
-
-install-data-hook:
-	if test -w $(DESTDIR)/usr -a "$(prefix)" != "/usr"; then \
-	    mkdir -p $(live_systemddir) || :; \
-	    for u in $(UNITFILES); do \
-	        mv $(DESTDIR)$(systemddir)/$$u $(live_systemddir); \
-	    done; \
-	fi
-
-uninstall-local:
-	for u in $(UNITFILES); do \
-	    rm -f $(live_systemddir)/$$u 2>/dev/null|| :; \
-	done
+dist_systemdsystemunit_DATA = lircd.socket lircd.service lircmd.service
