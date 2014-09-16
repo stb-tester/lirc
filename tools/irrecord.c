@@ -419,7 +419,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	device = options_getstring("irrecord:device");
-	opt = options_getint("lircd:debug");
+	opt = options_getstring("lircd:debug");
 	loglevel = string2loglevel(opt);
 	if (loglevel < LIRC_MIN_LOGLEVEL || loglevel > LIRC_MAX_LOGLEVEL){
 		fprintf(stderr, "Bad debug value %s\n", opt);
