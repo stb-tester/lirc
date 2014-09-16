@@ -40,7 +40,9 @@ typedef uint64_t __u64;
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#if defined(__linux__)
 #include <linux/types.h>
+#endif
 
 #include "include/media/lirc.h"
 

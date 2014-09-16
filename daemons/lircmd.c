@@ -776,7 +776,7 @@ static void lircmd_parse_options(int argc,  char** const argv)
 #       if defined(__linux__)
 	const char* const optstring =  "hvnuO";
 #       else
-	const char* const optstring = "hvnO"
+	const char* const optstring = "hvnO";
 #       endif
 
 	lircmd_add_defaults();

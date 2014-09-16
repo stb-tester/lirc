@@ -13,7 +13,9 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(__linux__)
 #include <linux/types.h>
+#endif
 
 #include "ciniparser.h"
 #include "lirc_options.h"
