@@ -31,11 +31,17 @@ clean-local:
 	rm -rf man
 	rm -rf man-html
 
+if DARWIN
+# OSX - python3 installed as python3.3. FAIL! Skip these targets for now.
+table.html:
+lirc.hwdb:
+else
 table.html:
 	src="$(sourcedir)"; $${src:-.}/data2table > table.html
 
 lirc.hwdb:
 	src="$(sourcedir)"; $${src:-.}/data2hwdb > lirc.hwdb
+endif
 
 $(manpage_html): $(nodist_man_MANS)
 	test -d man-html || mkdir man-html
@@ -44,7 +50,7 @@ $(manpage_html): $(nodist_man_MANS)
 	    dest=$${dest%.*}.html; \
 	    cat $(srcdir)/html-source/head.html > $$dest; \
 	    man2html -M ../html/index.html $$f |  \
-	        sed -e '1,/<BODY>/d' \
+	        $(SED) -e '1,/<BODY>/d' \
 	            -e '/<\/BODY>/,$$d' \
 	            -e '/HREF="#index"/d' \
 	            -e '/NAME="index"/,/^Time:/d' \

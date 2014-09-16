@@ -114,6 +114,21 @@ uirt2_la_SOURCES            = uirt2.c uirt2_common.c uirt2_common.h
 plugin_LTLIBRARIES          += uirt2_raw.la
 uirt2_raw_la_SOURCES        = uirt2_raw.c uirt2_common.c uirt2_common.h
 
+if !DARWIN
+plugin_LTLIBRARIES          += hiddev.la
+hiddev_la_SOURCES           = hiddev.c
+
+plugin_LTLIBRARIES          += creative_infracd.la
+creative_infracd_la_SOURCES = creative_infracd.c
+
+plugin_LTLIBRARIES          += devinput.la
+devinput_la_SOURCES         = devinput.c
+
+plugin_LTLIBRARIES          += zotac.la
+zotac_la_SOURCES            = zotac.c
+endif
+
+
 dist-hook:
 	$(srcdir)/make-pluginlist.sh > pluginlist.am
 

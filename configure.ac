@@ -67,6 +67,8 @@ fi
 lockdir_default="/var/lock/lockdev"
 test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 
+AM_CONDITIONAL([DARWIN], [case $host_os in darwin*) true;; *) false;; esac])
+
 x_progs="irxevent xmode2"
 AC_PATH_XTRA
 if test "$no_x" = "yes"; then
