@@ -31,17 +31,11 @@ clean-local:
 	rm -rf man
 	rm -rf man-html
 
-if DARWIN
-# OSX - python3 installed as python3.3. FAIL! Skip these targets for now.
 table.html:
-lirc.hwdb:
-else
-table.html:
-	src="$(sourcedir)"; $${src:-.}/data2table > table.html
+	src="$(sourcedir)"; $(PYTHON) $${src:-.}/data2table > table.html
 
 lirc.hwdb:
-	src="$(sourcedir)"; $${src:-.}/data2hwdb > lirc.hwdb
-endif
+	src="$(sourcedir)"; $(PYTHON) $${src:-.}/data2hwdb > lirc.hwdb
 
 $(manpage_html): $(nodist_man_MANS)
 	test -d man-html || mkdir man-html
@@ -66,13 +60,13 @@ $(generated_html): $(html_sources)
 	    cat $(srcdir)/html-source/head.html > $$f; \
 	    cat $$src >> $$f; \
 	    cat  $(srcdir)/html-source/foot.html >> $$f; \
-	    sed -i "s/@version@/$(VERSION)/" $$f; \
+	    $(SED) -i "s/@version@/$(VERSION)/" $$f; \
 	done
 
 $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
 	cp -a $(man_sources) man
-	sed -i "s/@version@/$(VERSION)/" man/*
+	$(SED) -i "s/@version@/$(VERSION)/" man/*
 	cd man;  cp mode2.1 xmode2.1
 
 

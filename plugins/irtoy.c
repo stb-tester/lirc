@@ -444,7 +444,7 @@ static int init_device(void)
 }
 
 /* dev.device is const *, so I do not dare to write to it, make my own version */
-static char devname[20];
+static char _devname[20];
 
 static int init(void)
 {
@@ -455,13 +455,13 @@ static int init(void)
     if (n == -1) /* parsing failed, fallback to old behavior. */
         return init_device();
 
-    drv.device = devname;
+    drv.device = _devname;
     for (i = n; i < 9; i++) {
         int status;
-        sprintf(devname, "/dev/ttyACM%d", i);
+        sprintf(_devname, "/dev/ttyACM%d", i);
         status = init_device();
         if (status) {
-            logprintf(LIRC_INFO, "irtoy_found on %s", devname);
+            logprintf(LIRC_INFO, "irtoy_found on %s", _devname);
             return status;
         }
     }
