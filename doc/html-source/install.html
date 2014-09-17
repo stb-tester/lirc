@@ -9,30 +9,35 @@
       just want to use lirc, you should be able to install it like any
       other package. This way, you don't have to look at the
       dependencies, build and installation description found here.
+      However, here is also some testing notes which applies if you
+      have built your own device.
     </p>
-    <p>
-      Several scripts need the python3 PyYaml package at
-      http://pyyaml.org/wiki/PyYAML. Overall, python3 is used for
-      many support scripts. The configuration script needs python3-gi and
-      thus also thge Gtk libs. the build also needs man2html.
-    </p>
+      Mandatory dependencies
+    <ul>
+      <li>Several scripts need the python3 PyYaml package at
+          http://pyyaml.org/wiki/PyYAML.</li>
+      <li> Overall, python3 is.required for the build </li>
+      <li>The build also needs man2html.</li>
+      <li>The configuration script needs python3-gi and thus also the Gtk
+          libs. It's not required for the build, though. </li>.
+    </ul>
 
     <P>
       If you want to compile and use all tools, you also need an
       installed version of the  X
       Windows header files (needed by <em>irxevent</em> and
-      <em>xmode2</em>). You can get svgalib from <A
-        HREF="ftp://sunsite.unc.edu/pub/Linux/libs/graphics/">
-        ftp://sunsite.unc.edu/pub/Linux/libs/graphics/</A>. The
-      configure script will notify you if some necessary files are
-      missing and the according tools won't be compiled.
+      <em>xmode2</em>) The configure script will notify you if
+      some necessary files are missing and the according tools won't
+      be compiled.
     </P>
 
     <P>
       <B>Irman (=UIR) :</B> To use your Irman with LIRC you need the
       latest <A HREF="http://www.lirc.org/software/snapshots/">
       <em>libirman</em></A> library. At the time this has been written
-      the current libirman version was 0.4.3.
+      the current libirman version was 0.4.3.  To build, the irman
+      library must exist as a dynamic .so module. At the time of writing
+      this is true for the Fedora package, but not for Debian.
    </P>
 
     <A NAME="kernel"></A>
@@ -58,7 +63,6 @@
       ports it auto-detects as soon as it is loaded and the LIRC
       modules won't be able to use any of them.
     </P>
-
     <P>
       There are two solutions for this problem. Either you load the
       LIRC module before the kernel serial port driver is loaded
@@ -82,11 +86,6 @@
       the module as they are selected internally depending on the
       information the bttv module gives us. This means that you should
       pay attention that your TV card is detected correctly by bttv.
-    </P>
-    <P>
-      <B>Technisat MediaFocus I:</B> You will have to install the <A
-        HREF="http://freenet-homepage.de/mediafocus/">driver</A> for this
-      card.
     </P>
 
     <!-- Supported Hardware ++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -130,15 +129,15 @@
 
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
-    <A NAME="compiling"></A><HR>
-    <H1 ALIGN="CENTER">Compiling</H1>
+    <A NAME="compile and install"></A><HR>
+    <H1 ALIGN="CENTER">Compile and Install</H1>
     <HR WIDTH="70%">
 
     <P>
       Since 0.9.1+ , lirc loads drivers dynamically. This means that
       that the build system is redesigned to always build all drivers.
       The former setup.sh script is dropped in favor of a standard
-      configure, make, make install sequence.
+      ./configure, make, make install sequence.
     </P>
     <P>
       When running the configure script, please pay attention at its
@@ -152,38 +151,17 @@
       <em>./autogen.sh</em>.
     </P>
 
-    <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <P>
+      Installing the compiled programs is really easy, just type
+      <em>make install</em>. All binaries  and  configuration
+      files should be copied to its proper destination
+    </P>
+     <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
-    <A NAME="installing"></A><HR>
+    <A NAME="configuration"></A><HR>
     <H1 ALIGN="CENTER">Installation</H1>
     <HR WIDTH="70%">
 
-    <P>
-      Installing the compiled programs is really easy, just type
-      <em>make install</em>. All binaries and modules should be
-      installed at the usual places. The necessary devices should be
-      generated in the <em>/dev/</em> directory and all configuration
-      files should be copied to its proper destination if you happen
-      to use some hardware where configuration files are already
-      available.
-    </P>
-
-    <P>
-      When you are using <em>devfs</em> or <em>sysfs</em> with your
-      kernel, the /dev/lirc device node will disappear again once you
-      reboot your machine. In that case the LIRC kernel module will
-      generate the required entry every time it is loaded. But the
-      device node won't be visible as /dev/lirc, but might be located
-      in a different location like e.g. /dev/lirc/0. Please be aware
-      of this fact when starting programs that access the device node
-      like mode2 or lircd. You will have to use the --device command
-      line option of these programs to point them to the correct
-      location. When using sysfs together with the udev daemon you
-      should copy the <em>lirc.rules</em> file located in the contrib
-      directory of the source package to
-      <em>/etc/udev/rules.d/</em>. This will make sure that the device
-      node will be created.
-    </P>
     <P>
       The core program of LIRC is <em>lircd</em>, the LIRC system
       daemon that does all of the decoding of infrared signals. LIRC
@@ -194,43 +172,45 @@
       background.
     </p>
     <p>
-      If you want to start them automatically at boot time a systemd
-      setup will be installed by default. The <em>contrib</em>directory
-      contains examples for other init systems and distributions.
-      you will have to edit  this for your system.
-    </P>
+      Formerly, lirc was configured during build where the setup.sh script
+      was used to select driver, configuration file. Also, there was was
+      little support for starting and running the services from boot. From
+      0.9.1+ the configuration is instead done after the build. The
+      configuration steps for the main lircd program involves:
+    <ul>
+        <li> Selecting the driver and device. </li>
+        <li> Selecting configuration file.</li>
+        <li> In some cases e. g., serial devices setting up kernel module
+             options in /etc/modprobe.d. </li>
+        <li> Configuring and using systemd to run the services. </li>
+    </ul>
+      This is described in the <a href="configuration-guide.html">
+      configuration guide</a>.
+
+   <P>
+      When you are using <em>devfs</em> or <em>sysfs</em> with your
+      kernel, the /dev/lirc device node will disappear again once you
+      reboot your machine. In that case the LIRC kernel module will
+      generate the required entry every time it is loaded. But the
+      device node won't be visible as /dev/lirc, but might be located
+      in a different location like e.g. /dev/lirc0. Please be aware
+      of this  when starting programs that access the device node
+      like mode2 or lircd. You will have to use the --device command
+      line option of these programs to point them to the correct
+      location.
+   </P>
     <P>
       Now you should adjust the file permissions of
       <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
       use to connect to lircd) so others than <em>root</em> can
-      connect to lircd.</P>
+      connect to lircd. Either edit lirc_options.conf or use the
+      --permissions command line option e. g., </P>
     <PRE>
-        chmod 666 /var/run/lirc/lircd</PRE>
+        lircd --permission 666  <other options>
+    </PRE>
     <P>
       should do. You can also create a special group for this purpose.
     </P>
-
-    <P>
-      If your hardware requires a kernel module you should make sure
-      that the kernel will find the correct module if a program tries
-      to access <em>/dev/lirc</em>. This can be done by inserting the
-      following line to your <em>/etc/conf.modules</em>
-      (<em>/etc/modules.conf</em> for current kernel versions):
-    </P>
-    <PRE>
-        alias char-major-61  lirc_driver</PRE>
-    <P>
-      Note that here <em>driver</em> is a placeholder for the actual
-      driver you are using (serial, parallel, etc.).
-    </P>
-
-    <P>
-      If your driver requires some special parameters to work you can
-      specify them at the same place. For example you can set the IRQ
-      and I/O base the serial port drivers shall use by adding the
-      following line to <em>/etc/conf.modules</em>:</P>
-    <PRE>
-        options lirc_serial irq=4 io=0x3e8</PRE>
     <P>
       Finally you might want to add <em>/usr/local/lib</em> to
       <em>/etc/ld.so.conf</em> so the <em>lirc_client</em> library is
@@ -389,18 +369,12 @@
       </LI>
     </UL>
 
-    <!-- Module specific information +++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="specific"></A><HR>
-    <H1 ALIGN="CENTER">Module specific information</H1>
-    <HR WIDTH="70%">
-
     <A NAME="updating090"></A><HR>
     <H1 ALIGN="CENTER">Updating from older versions</H1>
-    <HR WIDTH="70%">A
+    <HR WIDTH="70%">
     <p>
      Each new release contains a NEWS file which describes the changes since last
-     version. Normally, upgrading from a the previous version should not be too
+     version. Normally, upgrading from a previous version should not be too
      painful. However, if you have to update a really old version it's probably
      better to make a fresh install.
     </p>
