@@ -104,8 +104,9 @@ struct driver {
         /* The following fields are API version 2 extensions */
         const int api_version;
         const char* driver_version;
+        const char* info;
         int (*const close_func)(void);
-	int (*const open_func)(const char* device);
+        int (*const open_func)(const char* device);
 };
     </pre>
     <p>These fields will next be described. Note that a driver sometimes "misuses" a field;
@@ -162,6 +163,8 @@ struct driver {
     <dd>Use 2.</dd>
     <dt>driver_version</dt>
     <dd>Free form string used to identify the version of the driver, if desired.</dd>
+    <dt>info</dt>
+    <dd>Free form string, overall driver information.</dd>
     <dt>close_func</dt>
     <dd>Function pointer, see below.</dd>
     </dl>
