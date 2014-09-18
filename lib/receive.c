@@ -44,6 +44,7 @@ struct rbuf {
 	lirc_t pendings;
 	lirc_t sum;
 	struct timeval last_signal_time;
+	int at_eof;
 };
 
 
@@ -51,6 +52,20 @@ struct rbuf {
  * Global receiver buffer.
  */
 static struct rbuf rec_buffer;
+
+
+static lirc_t readdata(lirc_t timeout)
+{
+	lirc_t data;
+
+	data = curr_driver->readdata(timeout);
+	rec_buffer.at_eof =  data & LIRC_EOF ? 1 : 0;
+	if (rec_buffer.at_eof){
+		logprintf(LIRC_DEBUG, "receive: Got EOF");
+	}
+	return data;
+}
+
 
 static  lirc_t lirc_t_max(lirc_t a, lirc_t b)
 {
@@ -88,11 +103,15 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 				elapsed = time_elapsed(&rec_buffer.last_signal_time, &current);
 			}
 			if (elapsed < maxusec) {
-				data = curr_driver->readdata(maxusec - elapsed);
+				data = readdata(maxusec - elapsed);
 			}
 			if (!data) {
 				LOGPRINTF(3, "timeout: %u", maxusec);
 				return 0;
+			}
+			if (data & LIRC_EOF){
+				logprintf(LIRC_DEBUG, "Receive: returning EOF");
+				return data;
 			}
 			if (LIRC_IS_TIMEOUT(data)) {
 				LOGPRINTF(1, "timeout received: %lu", (__u32) LIRC_VALUE(data));
@@ -184,6 +203,7 @@ void rec_buffer_rewind(void)
 	set_pending_pulse(0);
 	set_pending_space(0);
 	rec_buffer.sum = 0;
+	rec_buffer.at_eof = 0;
 }
 
 void rec_buffer_reset_wptr(void)
@@ -221,7 +241,7 @@ int rec_buffer_clear(void)
 			rec_buffer.wptr -= rec_buffer.rptr;
 		} else {
 			rec_buffer.wptr = 0;
-			data = curr_driver->readdata(0);
+			data = readdata(0);
 
 			LOGPRINTF(3, "c%lu", (__u32) data & (PULSE_MASK));
 
@@ -1013,6 +1033,11 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	ctx->code = ctx->pre = ctx->post = 0;
 	header = 0;
 
+	if (rec_buffer.at_eof && rec_buffer.wptr - rec_buffer.rptr <= 1) {
+		logprintf(LIRC_DEBUG, "Decode: found EOF");
+		ctx->code = LIRC_EOF;
+		return 1;
+	}
 	if (curr_driver->rec_mode == LIRC_MODE_MODE2 ||
 	    curr_driver->rec_mode == LIRC_MODE_PULSE ||
 	    curr_driver->rec_mode == LIRC_MODE_RAW)

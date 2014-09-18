@@ -37,9 +37,16 @@
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
 
-/**
- * TODO
- */
+/** Const data sent for EOF condition.  */
+static struct ir_ncode NCODE_EOF =
+	{"__EOF", LIRC_EOF, 1, NULL, NULL, NULL, 0};
+
+/** Const packet sent for EOF condition. */
+static const char* const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
+
+/** Const dummy remote used for lirc internal decoding. */
+static struct ir_remote lirc_internal_remote = {"lirc"};
+
 struct ir_remote* decoding = NULL;
 
 struct ir_remote* last_remote = NULL;
@@ -47,6 +54,7 @@ struct ir_remote* last_remote = NULL;
 struct ir_remote* repeat_remote = NULL;
 
 struct ir_ncode *repeat_code;
+
 
 static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
 {
@@ -176,6 +184,9 @@ struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	all = remotes;
+	if (strcmp(name, "lirc") == 0) {
+		return &lirc_internal_remote;
+	}
 	while (all) {
 		if (strcasecmp(all->name, name) == 0) {
 			return (struct ir_remote*) all;
@@ -317,6 +328,9 @@ struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *na
 	const struct ir_ncode *all;
 
 	all = remote->codes;
+	if (strcmp(remote->name, "lirc") == 0) {
+		 return strcmp(name, "__EOF") == 0 ? &NCODE_EOF : 0;
+	}
 	while (all->name != NULL) {
 		if (strcasecmp(all->name, name) == 0) {
 			return (struct ir_ncode*) all;
@@ -332,6 +346,9 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
 	int found_code, have_code;
 	struct ir_ncode *codes, *found;
+
+	if (code & LIRC_EOF)
+		return &NCODE_EOF;
 
 	pre_mask = code_mask = post_mask = 0;
 
@@ -607,12 +624,14 @@ char *decode_all(struct ir_remote *remotes)
 	decoding = remote = remotes;
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
-
 		if (curr_driver->decode_func(remote, &ctx)
 		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
-
+			if (ncode == &NCODE_EOF) {
+				logprintf(LIRC_DEBUG, "decode all: returning EOF");
+				return PACKET_EOF;
+			}
 			ctx.code = set_code(remote, ncode, toggle_bit_mask_state, &ctx);
 			if ((has_toggle_mask(remote) && remote->toggle_mask_state % 2) || ncode->current != NULL) {
 				decoding = NULL;

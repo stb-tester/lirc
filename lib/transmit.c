@@ -397,6 +397,12 @@ static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int
 		return (0);
 	}
 	clear_send_buffer();
+	if (strcmp(remote->name, "lirc") == 0) {
+		send_buffer.data[send_buffer.wptr] = LIRC_EOF | 1;
+	        send_buffer.wptr += 1;
+		goto final_check;
+	}
+
 	if (is_biphase(remote)) {
 		send_buffer.is_biphase = 1;
 	}

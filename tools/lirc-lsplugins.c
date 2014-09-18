@@ -23,24 +23,6 @@
 #include "lirc_private.h"
 
 
-#define LEGEND \
-	"# Flags:\n" \
-	"# E:\tEmpty: Plugin loaded OK, but no drivers found (is this a plugin?).\n" \
-	"# F:\tFail: Plugin failed to load (unresolved references?).\n" \
-	"# a:\tAny; Driver can be used with any remote and/or capture device.\n" \
-	"# s:\tSend: The driver can send data. \n"
-#define LONG_LEGEND \
-	"# Feature flags: \n" \
-	"#    R: LIRC_CAN_SEND_RAW\t\tr: LIRC_CAN_REC_RAW\n" \
-	"#    P: LIRC_CAN_SEND_PULSE\t\tp: LIRC_CAN_REC_PULSE\n" \
-	"#    M: LIRC_CAN_SEND_MODE2\t\tm: LIRC_CAN_REC_MODE2\n" \
-	"#    L: LIRC_CAN_SEND_LIRCCODE \t\tl: LIRC_CAN_REC_LIRCCODE\n" \
-	"#    c: LIRC_CAN_SET_SEND_CARRIER \n" \
-	"#    d: LIRC_CAN_SET_SEND_DUTY_CYCLE \n" \
-	"#    t: LIRC_CAN_SET_TRANSMITTER_MASK\n" \
-	"#    C: LIRC_CAN_MEASURE_CARRIER \n" \
-	"#    D: LIRC_CAN_NOTIFY_DECODE\n"
-
 #define USAGE \
 	"\nSynopsis:\n" \
 	"    lirc-lsplugins [-l] [-q] [-U plugindir] [drivers]\n" \
@@ -57,6 +39,25 @@
 	"    -p, --default-path\tPrint default search path and exit.\n" \
 	"    -h, --help\t\tDisplay this message and exit.\n" \
 	"    -v, --version:\tDisplay version and exit.\n"
+
+#define LEGEND \
+	"# Flags:\n" \
+	"# E:\tEmpty: Plugin loaded OK, but no drivers found (is this a plugin?).\n" \
+	"# F:\tFail: Plugin failed to load (unresolved references?).\n" \
+	"# a:\tAny; Driver can be used with any remote and/or capture device.\n" \
+	"# s:\tSend: The driver can send data. \n"
+
+#define LONG_LEGEND \
+	"# Feature flags: \n" \
+	"#    R: LIRC_CAN_SEND_RAW\t\tr: LIRC_CAN_REC_RAW\n" \
+	"#    P: LIRC_CAN_SEND_PULSE\t\tp: LIRC_CAN_REC_PULSE\n" \
+	"#    M: LIRC_CAN_SEND_MODE2\t\tm: LIRC_CAN_REC_MODE2\n" \
+	"#    L: LIRC_CAN_SEND_LIRCCODE \t\tl: LIRC_CAN_REC_LIRCCODE\n" \
+	"#    c: LIRC_CAN_SET_SEND_CARRIER \n" \
+	"#    d: LIRC_CAN_SET_SEND_DUTY_CYCLE \n" \
+	"#    t: LIRC_CAN_SET_TRANSMITTER_MASK\n" \
+	"#    C: LIRC_CAN_MEASURE_CARRIER \n" \
+	"#    D: LIRC_CAN_NOTIFY_DECODE\n"
 
 
 const struct option options[] = {
@@ -77,7 +78,7 @@ const struct option options[] = {
 	LIRC_CAN_REC_RAW | LIRC_CAN_REC_PULSE | LIRC_CAN_REC_MODE2
 
 #define MAX_LINES  255     /**< max number of listed plugins. */
-#define LOAD_ERRORS_KEY   "jsdfklahi@@"
+
 
 typedef struct {
 	const char* path;
@@ -85,6 +86,8 @@ typedef struct {
 	const char* flags;
 	const char* errors;
 	const char* features;
+	const char* version;
+	const char* info;
 } line_t;
 
 static const line_t* lines[MAX_LINES];
@@ -123,6 +126,8 @@ static line_t* line_new(const char* path)
 	line->flags = line->name = "-";
 	line->path =  strdup(path);
 	line->errors = NULL;
+	line->info = NULL;
+	line->version = NULL;
 	line->features = opt_long ? "              " : "";
 	return line;
 }
@@ -146,10 +151,78 @@ static int line_cmp(const void* arg1, const void* arg2)
 static void line_print(const line_t* line)
 // Print line on stdout.
 {
-	printf("%-20s%s%-6s%s\n",
-               line->name, line->features, line->flags, line->path);
+	printf("%-20s%-6s%s\n",
+               line->name,  line->flags, line->path);
 	if (line->errors)
 		printf(line->errors);
+}
+
+static void print_folded_item(const char* arg)
+{
+	static const int START_POS = 16;
+	int pos = START_POS;
+	char* buff;
+	char* token;
+
+	if (arg == NULL) {
+		printf("None\n");
+		return;
+	}
+	buff = alloca(strlen(arg) + 1);
+	strcpy(buff, arg);
+	token = strtok(buff, " \t");
+	while (token != NULL) {
+		if (strlen(token) + pos > 80) {
+			printf("\n\t\t");
+			pos = 0;
+		}
+		if (pos != START_POS && pos != 0){
+			printf(" ");
+			pos += 1;
+		}
+		printf(token);
+		pos += strlen(token);
+		token = strtok(NULL, " \t");
+	}
+	printf("\n");
+}
+
+
+static void line_print_long(const line_t* line)
+// Print line on stdout, --long version.
+{
+	const char* loadstate;
+	const char* handles_timing;
+	const char* can_send;
+
+	switch (line->flags[0]) {
+		case '-': loadstate = "OK"; break;
+		case 'E': loadstate = "Error (unresolved dependencies?)";
+			  break;
+		case 'F': loadstate = "Failed (is this a driver?)"; break;
+		default:  loadstate = "?"; break;
+	}
+	switch (line->flags[1]) {
+		case '-': handles_timing = "No"; break;
+		case 'a': handles_timing = "Yes"; break;
+		default:  handles_timing = "?"; break;
+	}
+	switch (line->flags[2]) {
+		case '-': can_send = "No"; break;
+		case 's': can_send = "Yes"; break;
+		default:  can_send = "?"; break;
+	}
+
+	printf("Plugin path:\t%s\n", line->path);
+	printf("Driver name:\t%s\n", line->path ? line->name : "-");
+	printf("Load state:\t%s\n", loadstate);
+	printf("Timing info:\t%s\n", handles_timing);
+	printf("Can send:\t%s\n", can_send);
+	printf("Capabilities:\t%s\n", line->features);
+	printf("Version:\t%s\n", line->version ? line->version : "(None)");
+	printf("Driver info:\t");
+	print_folded_item(line->info);
+	printf("\n");
 }
 
 
@@ -182,7 +255,7 @@ static void format_drivers(struct driver** drivers,
 			  const char* which)
 // Format normal lines where driver is loaded OK.
 {
-        char buff[128];
+        char buf[1024];
 
         if (!drivers)
 		return;
@@ -193,15 +266,23 @@ static void format_drivers(struct driver** drivers,
 			continue;
 		}
                 if ((*drivers)->name) {
-                  	strncpy(buff, (*drivers)->name, sizeof(buff));
-			line->name = strdup(buff);
+                  	strncpy(buf, (*drivers)->name, sizeof(buf));
+			line->name = strdup(buf);
                 }
-		snprintf(buff, sizeof(buff), "-%c%c",
+                if ((*drivers)->driver_version) {
+                  	strncpy(buf, (*drivers)->driver_version, sizeof(buf));
+			line->version = strdup(buf);
+                }
+                if ((*drivers)->info) {
+                  	strncpy(buf, (*drivers)->info, sizeof(buf));
+			line->info = strdup(buf);
+                }
+		snprintf(buf, sizeof(buf), "-%c%c",
 		 	 get(CAN_ANY, 'a', *drivers),
 			 get(CAN_SEND, 's', *drivers));
-		line->flags = strdup(buff);
-		if (opt_long)
-			format_features(*drivers, line);
+		line->flags = strdup(buf);
+		format_features(*drivers, line);
+
 		lines_next(line);
 		drivers++;
 		if (*drivers)
@@ -264,19 +345,27 @@ void lsplugins(const char* pluginpath, const char* which)
 		printf("Plugins: %d\n", sum_plugins);
 		printf("Drivers: %d\n", sum_drivers);
 		printf("Errors: %d\n", sum_errors);
-	} else {
-		if (!opt_quiet)
-			print_header();
-		for (i = 0; i < line_ix; i++)
+		return;
+	}
+	if (!opt_quiet && !opt_long) {
+		print_header();
+	}
+	for (i = 0; i < line_ix; i++) {
+		if (opt_long) {
+			line_print_long(lines[i]);
+		} else {
 			line_print(lines[i]);
-		if (!opt_quiet) {
-			printf("#\n#\n");
-			printf(LEGEND);
-			printf("#\n");
-			if (opt_long)
-				printf(LONG_LEGEND);
 		}
 	}
+	if (!opt_quiet) {
+		printf("#\n#\n");
+		if (!opt_long) {
+			printf(LEGEND);
+			printf("#\n");
+		}
+		if (opt_long)
+			printf(LONG_LEGEND);
+		}
 }
 
 
