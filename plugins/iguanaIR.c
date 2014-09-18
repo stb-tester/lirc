@@ -350,7 +350,8 @@ const struct driver hw_iguanaIR = {
 	.drvctl_func	=	iguana_ioctl,
 	.readdata	=	readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_iguanaIR, (const struct driver*)NULL };

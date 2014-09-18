@@ -69,7 +69,8 @@ const struct driver hw_mouseremote = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver hw_mouseremote_ps2 = {
@@ -89,12 +90,13 @@ const struct driver hw_mouseremote_ps2 = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
-const struct driver* hardwares[] = { &hw_mouseremote,
-				       &hw_mouseremote_ps2,
-				       (const struct driver*)NULL };
+const struct driver* hardwares[] = {&hw_mouseremote,
+				    &hw_mouseremote_ps2,
+				    (const struct driver*)NULL};
 
 
 int mouseremote_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)

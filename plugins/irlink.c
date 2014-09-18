@@ -74,7 +74,8 @@ const struct driver hw_irlink = {
 	.drvctl_func	=	NULL,
 	.readdata	=	irlink_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_irlink, (const struct driver*)NULL };

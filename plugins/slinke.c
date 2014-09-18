@@ -111,7 +111,8 @@ const struct driver hw_slinke = {
 	.drvctl_func	=	NULL,
 	.readdata	=	slinke_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };

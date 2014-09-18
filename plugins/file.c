@@ -79,7 +79,9 @@ const struct driver  drv_test = {
 	.drvctl_func    =       drvctl_func,
 	.readdata       =       readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"test driver which logs received data to file, and"
+				" optionally sends data from an input file."
 };
 
 

@@ -391,7 +391,8 @@ const struct driver hw_commandir = {
 	.drvctl_func	=	commandir_ioctl,
 	.readdata	=	commandir_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=  	"No info available."
 };
 
 const struct driver* hardwares[] = { &hw_commandir, NULL };

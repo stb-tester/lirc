@@ -519,7 +519,8 @@ const struct driver hw_ftdi = {
 	.drvctl_func	=	hwftdi_ioctl,
 	.readdata	=	hwftdi_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_ftdi, (const struct driver*)NULL };

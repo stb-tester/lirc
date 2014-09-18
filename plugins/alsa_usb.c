@@ -45,7 +45,8 @@ const struct driver hw_alsa_usb = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=  	"No info available."
 };
 
 const struct driver* hardwares[] = { &hw_alsa_usb, (const struct driver*)NULL };

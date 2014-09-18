@@ -63,7 +63,8 @@ const struct driver hw_mp3anywhere = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_mp3anywhere, (const struct driver*)NULL };

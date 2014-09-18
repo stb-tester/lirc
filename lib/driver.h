@@ -170,6 +170,7 @@ struct driver {
 	const int api_version;           /**< API version (from version 2+).*/
 	const char* driver_version;      /**< Driver version (free text). */
 	int (*const close_func)(void);   /**< Hard closing. */
+	const char* info;		 /**< Free text driver info. */
 
 };
 

@@ -74,7 +74,8 @@ const struct driver hw_creative_infracd = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		= 	"No info available"
 };
 
 const struct driver* hardwares[] = { &hw_creative_infracd, (const struct driver*)NULL };

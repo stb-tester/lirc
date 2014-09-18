@@ -84,7 +84,8 @@ const struct driver hw_awlibusb = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=  	"No info available."
 };
 #else
 const struct driver hw_awlibusb = {
@@ -102,7 +103,8 @@ const struct driver hw_awlibusb = {
 	.rec_func	=	awlibusb_rec,
 	.decode_func	=	receive_decode,
 	.drvctl_func	=	NULL,
-	.readdata	=	NULL
+	.readdata	=	NULL,
+	.info		=  	"No info available."
 };
 #endif
 

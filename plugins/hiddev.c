@@ -56,7 +56,8 @@ const struct driver hw_dvico = {
 	.rec_func	=	hiddev_rec,
 	.decode_func	=	hiddev_decode,
 	.drvctl_func	=	NULL,
-	.readdata	=	NULL
+	.readdata	=	NULL,
+	.info		=	"No info available"
 };
 
 static int dvico_repeat_mask = 0x8000;
@@ -111,7 +112,8 @@ const struct driver hw_asusdh = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -155,7 +157,8 @@ const struct driver hw_macmini = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -199,7 +202,8 @@ const struct driver hw_sonyir = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 

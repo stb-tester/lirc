@@ -95,7 +95,8 @@ const struct driver hw_tira = {
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
 
 const struct driver hw_tira_raw = {
@@ -115,9 +116,9 @@ const struct driver hw_tira_raw = {
 	.drvctl_func	=	NULL,
 	.readdata	=	tira_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.driver_version = 	"0.9.2",
+	.info		=	"No info available"
 };
-
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
 
 
