@@ -98,6 +98,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/mode2.1
 
 html_sources            =  $(srcdir)/html-source/alsa-usb.html \
+			   $(srcdir)/html-source/api-general.html \
                            $(srcdir)/html-source/atwf83.html \
                            $(srcdir)/html-source/audio-alsa.html \
                            $(srcdir)/html-source/audio.html \
@@ -110,6 +111,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/imon.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
+                           $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/technical.html \
@@ -158,6 +160,7 @@ generated_html          += html/alsa-usb.html \
                            html/imon.html \
                            html/index.html \
                            html/install.html \
+                           html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \
                            html/technical.html \
