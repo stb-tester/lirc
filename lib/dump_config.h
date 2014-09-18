@@ -9,6 +9,14 @@
  *
  */
 
+/**
+ * @file dump_config.h
+ *
+ * @brief Dumps data structures into file.
+ * @author  Pablo d'Angelo
+ * @ingroup private_api
+ */
+
 #ifndef  _DUMP_CONFIG_H
 #define  _DUMP_CONFIG_H
 

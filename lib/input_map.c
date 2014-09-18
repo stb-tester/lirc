@@ -9,6 +9,12 @@
  *
  */
 
+/**
+ * @file input_map.c
+ * @brief Implements input_map.h
+ */
+
+
 #include <stdlib.h>
 #include <string.h>
 

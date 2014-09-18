@@ -43,6 +43,7 @@ extern "C" {
  * @date    Sep 2007
  * @version $Revision: 1.12 $
  * @brief   Implements a dictionary for string variables.
+ * @ingroup private_api
  *
  * This module implements a simple dictionary object, i.e. a list
  * of string/string associations. This object is useful to store e.g.

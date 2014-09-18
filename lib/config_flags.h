@@ -10,11 +10,13 @@
 #ifndef  _CONFIG_FLAGS_H
 #define  _CONFIG_FLAGS_H
 
+/** Description of flag to print. */
 struct flaglist {
-	char* name;
-	int flag;
+	char* name;                /**< Name of flag. */
+	int flag;                  /**< Flag bitmask.*/
 };
 
+/** All flags i config file: Their name and mask. */
 extern const struct flaglist all_flags[];
 
 #endif

@@ -16,7 +16,7 @@
  * @copyright
  * Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
  * Copyright (C) 1998 Christoph Bartelmus (lirc@bartelmus.de)
- * @brief Sends and decodes the signals from IR remotes.
+ * @brief Implements ir_remote.h
  */
 
 #ifdef HAVE_CONFIG_H

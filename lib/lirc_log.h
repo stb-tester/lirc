@@ -5,6 +5,14 @@
  *
  */
 
+/**
+ * @file lirc_log.h
+ * @brief Logging functionality.
+ * @ingroup private_api
+ * @ingroup driver_api
+ */
+
+
 #ifndef _LIRC_LOG_H
 #define _LIRC_LOG_H
 
@@ -16,12 +24,15 @@
 extern "C" {
 #endif
 
+/**
+ * @addtogroup driver_api
+ */
 
-/*
+
+/**
  * The defined loglevels. LIRC_TRACE..LIRC_STALK is mapped to LIRC_DEBUG in
  * outputted messages, but generates more messages than DEBUG.
  */
-
 typedef enum {
 	LIRC_STALK 	= 10,
 	LIRC_PEEP 	= 9,
@@ -35,29 +46,39 @@ typedef enum {
 	LIRC_BADLEVEL   = -1
 } loglevel_t;
 
+/** Max loglevel (for validation). */
 #define LIRC_MAX_LOGLEVEL LIRC_STALK
+
+/** Mix loglevel (for validation). */
 #define LIRC_MIN_LOGLEVEL LIRC_ERROR
 
+/** The actual loglevel. Should not be changed directly by external code.*/
 extern loglevel_t loglevel;
 
 /* Set by lirc_log_open, convenience copy for clients. */
 extern char progname[128];
 
+/** Default loglevel (last resort). */
 #define DEFAULT_LOGLEVEL LIRC_INFO
 
+/** Max level logged in actual logfile. */
 #ifdef __cplusplus
 #define logmax(l) (l > LIRC_DEBUG ? LIRC_DEBUG : static_cast<loglevel_t>(l) )
 #else
 #define logmax(l) (l > LIRC_DEBUG ? LIRC_DEBUG : l )
 #endif
 
-/*
- *  Debug tools. Accepts level 1..3 which are mapped to
+/**
+ *  Compatibility log message stuff.. Accepts level 1..3 which are mapped to
  *  LIRC_TRACE..LIRC_STALK.
  */
 #define LOGPRINTF(level,fmt,args...) \
 	if (level + 7 <= loglevel ) logprintf(logmax(level + 7), fmt, ## args)
 
+/**
+ *  Compatibility perror(3) wrapper Accepts level 1..3 which are mapped to
+ *  LIRC_TRACE..LIRC_STALK.
+ */
 #define LOGPERROR(level,s) \
 	if (level + 7 <= loglevel ) logperror(logmax(level + 7), s)
 
@@ -80,10 +101,30 @@ loglevel_t lirc_log_defaultlevel(void);
 /** Check if log is set up to use syslog or not. */
 int lirc_log_use_syslog();
 
+/** 
+ * Write a message to log.
+ *
+ * @param prio Level of message
+ * @param format_str,... printf-style string.
+ */
 void logprintf(loglevel_t prio, const char *format_str, ...);
+
+/** Log current kernel error with a given level. */
 void logperror(loglevel_t prio, const char *s);
 int lirc_log_reopen(void);
+
+/**
+ * Open the log for upcoming logging
+ *
+ * @param progname Name of application, made available in global progname
+ * @param nodaemon If true, program runs in foreground and logging is on also
+ *     on stdout.
+ * @param level The lowest level of messages to actually be logged.
+ * @return 0 if OK, else positive error code.
+ */
 int lirc_log_open(const char* progname, int _nodaemon, loglevel_t level);
+
+/** Close the log previosly opened with lirc_log_open(). */
 int lirc_log_close();
 
 /**
@@ -94,6 +135,8 @@ void lirc_log_set_file(const char* s);
 
 /** Print prefix + a hex dump of len bytes starting at  *buf. */
 void hexdump(char* prefix, unsigned char*  buf, int len);
+
+/** @} */
 
 #ifdef __cplusplus
 }

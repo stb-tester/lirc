@@ -13,6 +13,7 @@
  * @file receive.h
  * @author Christoph Bartelmus
  * @brief Functions that decode IR codes.
+ * @ingroup driver_api
  */
 
 #ifndef _RECEIVE_H
@@ -24,12 +25,16 @@
 extern "C" {
 #endif
 
-#define RBUF_SIZE 512
+/**
+ * @addtogroup driver_api
+ * @{
+ */
 
-#define REC_SYNC 8
 
+/** Min value returned by receive_timeout. */
 #define MIN_RECEIVE_TIMEOUT 100000
 
+/** Return actual timeout to use given MIN_RECEIVE_TIMEOUT limitation. */
 static inline lirc_t receive_timeout(lirc_t usec)
 {
 	return 2 * usec < MIN_RECEIVE_TIMEOUT ? MIN_RECEIVE_TIMEOUT : 2 * usec;
@@ -39,7 +44,7 @@ static inline lirc_t receive_timeout(lirc_t usec)
  * Wait until data is available to read, or timeout.
  *
  * @param maxusec Mac number of microseconda to wait.
- * @returns non-zero if the driver.df is ready to read,
+ * @returns non-zero if the driver.fd is ready to read,
  *       or 0 indicating timeout
  */
 int waitfordata(__u32 maxusec);
@@ -71,6 +76,7 @@ void rec_buffer_rewind(void);
 void rec_buffer_reset_wptr(void);
 
 
+/** @} */
 #ifdef	__cplusplus
 }
 #endif

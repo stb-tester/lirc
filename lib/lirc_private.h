@@ -3,6 +3,13 @@
  * last modified 2010/06/03 by Jarod Wilson
  */
 
+/**
+ * @defgroup  private_api  Internal API
+ * @file lirc_private.h
+ * @brief Main include file for lirc applications.
+ */
+
+
 #ifndef _LIRC_PRIVATE_H
 #define _LIRC_PRIVATE_H
 

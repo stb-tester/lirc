@@ -39,6 +39,7 @@ extern "C" {
  * @date    Sep 2007
  * @version 3.0
  * @brief   Parser for ini files.
+ * @ingroup private_api
  */
 
 #include <stdio.h>

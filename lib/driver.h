@@ -3,16 +3,21 @@
  ** driver.h **************************************************************
  ****************************************************************************
  *
- * driver.h - interface to the userspace drivers.
- *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
  */
 
 /**
  * @file driver.h
+ * @brief Interface to the userspace drivers.
+ * @ingroup driver_api
+ * @ingroup private_api
  */
 
+/** @addtogroup driver_api
+ *  @brief  User-space driver API.
+ *  @{
+ */
 #ifndef _HARDWARE_H
 #define _HARDWARE_H
 
@@ -32,6 +37,7 @@ int default_open(const char* path);
 /** For now, a placeholder. */
 int default_close(void);
 
+/** Return DRVCTL_ERR_NOTIMPLEMENTED. */
 int default_drvctl(int cmd, void* arg);
 
 /** Argument for DRV_SET_OPTION. */
@@ -53,7 +59,7 @@ int drv_handle_options(const char* options);
 /** Drvctl cmd:  Send long space. Arg is pulselength (us, an int). */
 #define DRVCTL_SEND_SPACE		2
 
-/** Drvctl cmd: Set driver options. Arg is   *struct option. */
+/** Drvctl cmd: Set driver options. Arg is   *struct option_t. */
 #define DRVCTL_SET_OPTION		3
 
 /** Last well-known command. Remaining is used in driver-specific controls.*/
@@ -68,6 +74,10 @@ int drv_handle_options(const char* options);
 /** drvctl error: */
 #define  DRV_ERR_BAD_OPTION             3
 
+/**
+ * The data the driver exports i. e., lirc accesses the driver as
+ * defined here.
+ */
 struct driver {
 // Old-style implicit API version 1:
 
@@ -174,10 +184,14 @@ struct driver {
 
 };
 
+/** @} */ 
+
 #ifdef IN_DRIVER
+/** Complete r/w access to drv for driver code including lirc_driver.h. */
 extern struct driver drv;
 #endif
 
+/** Raad-only access to drv for application.*/
 extern const struct driver* curr_driver;
 
 #ifdef	__cplusplus

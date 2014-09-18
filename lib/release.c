@@ -3,11 +3,17 @@
  ** release.c ***************************************************************
  ****************************************************************************
  *
- * release.c - automatic release event generation
- *
  * Copyright (C) 2007 Christoph Bartelmus (lirc@bartelmus.de)
  *
  */
+
+/**
+ * @file release.c
+ * @brief Implements release.h.
+ * @author Christoph Bartelmus
+ */
+
+
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

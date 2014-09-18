@@ -1,9 +1,12 @@
 /****************************************************************************
  ** options.h ***************************************************************
- ****************************************************************************
+ ****************************************************************************/
+
+/**
+ * @file lirc_options.h
+ * @brief Options management: options file, parse and retrieve.
  *
- * options.h - global options access.
- *
+ * @ingroup private_api
  */
 
 #ifndef LIRC_OPTIONS
@@ -41,6 +44,7 @@ void options_add_defaults(const char* const defaults[]);
 
 /*
  *   Parse global option file and command line. On exit, all values
+ *   @ingroup  private_api
  *   are set, possibly to defaults.
  *   Arguments:
  *      - argc, argv; As handled to main()
@@ -58,6 +62,7 @@ void options_load(int argc, char** const argv,
 
 /* Reset options to pristine state. */
 void options_unload(void);
+
 #ifdef __cplusplus
 }
 #endif

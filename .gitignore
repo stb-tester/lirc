@@ -13,11 +13,11 @@ core*
 *.tar.bz2
 *.rej
 *.orig
-*/Makefile.in
-*/*/Makefile.in
-*/Makefile
-*/*/Makefile
+Makefile.in
+Makefile
 *~
+*.swp
+doxydocs
 
 # lirc-setup cruft
 remotes.pickle*

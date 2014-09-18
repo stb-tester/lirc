@@ -3,6 +3,7 @@
  *  @author Alec Leamas
  *  @date August 2014
  *  @license GPL2 or later
+ *  @brief Implements driver.h
  *
  * Access and support for driver.h, the global driver.
  */

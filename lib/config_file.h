@@ -3,10 +3,21 @@
  ** config_file.h ***********************************************************
  ****************************************************************************
  *
- * config_file.h - parses the config file of lircd
- *
  * Copyright (C) 1998 Pablo d'Angelo (pablo@ag-trek.allgaeu.org)
  *
+ */
+
+/**
+ * @file config_file.h
+ * @brief  Parses the lircd.cont config file.
+ * @author Pablo d'Angelo
+ * @ingroup private_api
+ */
+
+/**
+ * @addtogroup private_api
+ * @brief Internal API for lirc applications.
+ * @{
  */
 
 #ifndef  _CONFIG_FILE_H
@@ -18,10 +29,19 @@ extern "C" {
 
 #include "lirc/ir_remote.h"
 
-
-
+/**
+ * Parse a lircd.conf config file.
+ *
+ * @param f Open FILE* connection to file.
+ * @param name Normally the path for the open file f.
+ * @return Pointer to dynamically allocated ir_remote or NULL on errors,
+ */
 struct ir_remote* read_config(FILE* f, const char* name);
+
+/** Free() an ir_remote instance obtained using read_config(). */
 void free_config(struct ir_remote* remotes);
+
+/** @} */
 
 #ifdef	__cplusplus
 }

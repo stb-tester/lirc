@@ -3,11 +3,17 @@
  ** config_file.c ***********************************************************
  ****************************************************************************
  *
- * config_file.c - parses the config file of lircd
  *
  * Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
  *
  */
+
+/**
+ * @file config_file.c
+ * @brief  Implements config_file.h
+ * @author Pablo d'Angelo
+ */
+
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

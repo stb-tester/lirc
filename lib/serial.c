@@ -12,7 +12,7 @@
 /**
  * @file serial.c
  * @author Christoph Bartelmus
- * @brief Common routines for hardware that uses the standard serial port driver.
+ * @brief Implements serial.h
  */
 
 #ifdef HAVE_CONFIG_H
@@ -546,7 +546,7 @@ int tty_write(int fd, char byte)
 
 	/* we don't wait because tcdrain() does this for us */
 	/* tcdrain(fd); */
-	/* but unfortunately this does not seem to be
+	/* FIXME! but unfortunately this does not seem to be
 	   implemented in 2.0.x kernels ... */
 	return (1);
 }

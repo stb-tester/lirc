@@ -2,11 +2,14 @@
 /****************************************************************************
  ** release.h ***************************************************************
  ****************************************************************************
- *
- * release.h - automatic release event generation
- *
  * Copyright (C) 2007 Christoph Bartelmus <lirc@bartelmus.de>
- *
+ */
+
+/**
+ * @file release.h
+ * @brief Automatic release event generation.
+ * @author Christoph Bartelmus
+ * @ingroup private_api
  */
 
 #ifndef RELEASE_H

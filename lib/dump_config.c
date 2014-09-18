@@ -9,6 +9,11 @@
  *
  */
 
+/**
+* @file dump_config.c
+* @brief Implements dump_config.h
+*/
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

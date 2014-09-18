@@ -13,6 +13,10 @@
  *  @file ir_remote.h
  *  @author Ralph Metzler, Christoph Bartelmus
  *  @brief describes and decodes the signals from IR remotes.
+ *  @ingroup private_api
+ *  @ingroup driver_api
+ *  @addtogroup driver_api
+ *  @{
  */
 
 #ifndef IR_REMOTE_H
@@ -439,13 +443,36 @@ int write_message(char* buffer,
 		  const char* button_name,
 		  const char* button_suffix,
 		  ir_code code, int reps);
-
+/** 
+ * Tries to decode current signal trying all known remotes. This is 
+ * non-blocking, failures could be retried later when more data is 
+ * available.
+ *
+ * @param remotes Parsed lircd.conf file as returned by read_config()
+ * @return NULL on errors or no data available. Else a dynamically 
+ *     allocated string like "000000000000fad3 00 KEY_POWER apple".
+ *     Caller owns string and eventually de-allocates it.
+ */
 char* decode_all(struct ir_remote* remotes);
 
+/**
+ * Transmits the actual code in the second  argument by calling the 
+ * current hardware driver.  The processing depends on global 
+ * repeat-remote. If this is not-NULL, the codes are sent using repeat 
+ * formatting if the remote supports it.
+ * @param remote Currently active remote, used as database for timing, 
+ *     and as keeper of an internal state.
+ * @param code IR code to be transmitted
+ * @param delay If true (normal case), generate a delay corresponding
+ *     to the time it takes to send the code. If not (test case), don't.
+ * @return Non-zero if success.
+ */
 int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay);
 
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */
 
 #endif

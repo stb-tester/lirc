@@ -11,6 +11,12 @@
  * System wide LIRCRC support by Michal Svec <rebel@atrey.karlin.mff.cuni.cz>
  */
 
+/**
+ * @file lirc_client.c
+ * @brief Implements lirc_client.h
+ * @author  Christoph Bartelmus, Trent Piepho,  Michal Svec
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -57,6 +63,8 @@ struct filestack_t {
 	struct filestack_t *parent;
 };
 
+
+/** protocol state. */
 enum packet_state {
 	P_BEGIN,
 	P_MESSAGE,

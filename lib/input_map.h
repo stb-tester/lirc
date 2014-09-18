@@ -9,6 +9,12 @@
  *
  */
 
+/**
+ * @file input_map.h
+ * @brief  Button namespace derived from Linux input layer.
+ * @ingroup private_api
+ */
+
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 

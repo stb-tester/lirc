@@ -1,10 +1,10 @@
 /**
  *  @file drv_admin.c
+ *  @brief Implements drv_admin.h
  *  @author Alec Leamas
  *  @date August 2014
- *  @license GPL2 or later
+ *  license: GPL2 or later
  *
- * Routines for dynamic drivers.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -22,12 +22,22 @@
 
 #include "driver.h"
 
-extern struct driver drv;  // Access to otherwise private drv.
+/** Max number if plugins handled. No point to malloc() this. */
+#define MAX_PLUGINS  256
+
+extern struct driver drv;  /**< Access to otherwise private drv.*/
+
+/** Array of plugin names, fixed max size. */
+typedef struct {
+	char* array[MAX_PLUGINS];
+	int size;
+	} char_array;
 
 
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
 
+/** Default driver, a placeholder. */
 const struct driver drv_null = {
 	.name 		= "null",
 	.device		= "/dev/null",
@@ -150,9 +160,9 @@ static struct driver* for_each_plugin_in_dir(const char* dirpath,
 }
 
 
-struct driver* for_each_path(plugin_guest_func plg_guest,
-			     drv_guest_func drv_guest,
-			     void* arg)
+static struct driver* for_each_path(plugin_guest_func plg_guest,
+   			    	    drv_guest_func drv_guest,
+			     	    void* arg)
 {
 	const char* pluginpath;
 	char* tmp_path;
@@ -181,6 +191,7 @@ struct driver* for_each_path(plugin_guest_func plg_guest,
 	}
 	return result;
 }
+
 
 struct driver* for_each_driver(drv_guest_func func, void* arg)
 {

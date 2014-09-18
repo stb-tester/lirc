@@ -6,6 +6,11 @@
  *
  */
 
+/**
+ * @file lirc_options.c
+ * @brief  Implements lirc_options.h.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

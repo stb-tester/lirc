@@ -12,7 +12,7 @@
 /**
  * @file receive.c
  * @author Christoph Bartelmus
- * @brief Functions that decode IR codes.
+ * @brief Implements receive.h
  */
 
 #ifdef HAVE_CONFIG_H
@@ -26,6 +26,10 @@
 #include "lirc/driver.h"
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
+
+#define RBUF_SIZE 512
+
+#define REC_SYNC 8
 
 extern struct driver hw;
 extern struct ir_remote *last_remote;

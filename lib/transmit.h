@@ -1,9 +1,12 @@
 
 /****************************************************************************
  ** transmit.h **************************************************************
- ****************************************************************************
- *
- * functions that prepare IR codes for transmitting.
+ ****************************************************************************/
+/**
+ * @file transmit.h
+ * @brief functions that prepare IR codes for transmitting
+ * @author Christoph Bartelmus
+ * @ingroup driver_api
  *
  * Operations in this module applies to the transmit buffer. The buffer
  * is initiated using send_buffer_init(), filled with data using send_buffer_put()
@@ -11,11 +14,15 @@
  *
  * A prepared buffer contains an even number of unsigned ints, each of
  * which representing a pulse width in microseconds. The first item represents
- * a space and the last thus a pulse.
+ * a pulse and the last thus a space.
  *
  * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
  *
+ * @addtogroup driver_api
+ * @{
  */
+
+
 
 #ifndef _TRANSMIT_H
 #define _TRANSMIT_H
@@ -53,6 +60,8 @@ const lirc_t* send_buffer_data();
 
 /** @return Total length of buffer in microseconds. */
 lirc_t send_buffer_sum();
+
+/** @} */
 
 #ifdef	__cplusplus
 }

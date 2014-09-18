@@ -12,6 +12,9 @@
 
 /**
  * @file ir_remote_types.h
+ * @ingroup private_api
+ * @ingroup private_api
+ * @brief Describes and decodes the signals from IR remotes.
  */
 
 #ifndef IR_REMOTE_TYPES_H
@@ -141,14 +144,14 @@ struct ir_ncode {
 #define IR_PARITY_EVEN 1
 #define IR_PARITY_ODD  2
 
-
+/** State describing code, pre, post + gap and repeat state. */
 struct decode_ctx_t {
-        ir_code code;
-        ir_code pre;
-        ir_code post;
-        int     repeat_flag;
-        lirc_t  max_remaining_gap;
-        lirc_t  min_remaining_gap;
+        ir_code code;     /**< Code part, matched to code defintion. */
+        ir_code pre;      /**< pre data, before code. */
+        ir_code post;     /**< post data, sent after code. */
+        int     repeat_flag; /**< True if code is a repeated one. */
+        lirc_t  max_remaining_gap; /**< Estimated max time of trailing gap.*/
+        lirc_t  min_remaining_gap; /**< Estimated min time of trailing gap.*/
 };
 
 

@@ -21,6 +21,12 @@
  *
  */
 
+/**
+ * @file lirc_log.c
+ * @brief Implements lirc_log.h
+ * @author Ralph Metzler, Christoph Bartelmus
+ */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

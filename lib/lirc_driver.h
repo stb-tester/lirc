@@ -1,10 +1,11 @@
-/*
- * lirc_driver.h - linux infrared remote control header file
+/**
+ * @file lirc_driver.h
+ * @brief Main include file for user space drivers.
+ * @defgroup  driver_api  User-space driver API
  *
  * Basic interface for user-space drivers, aimed to be included
  * in each driver. It provides basic functionality for sending,
  * receiving and logging.
- *
  */
 
 #ifndef _LIRC_DRIVER_H
@@ -22,3 +23,4 @@
 extern const struct driver* hardwares[];
 
 #endif
+
