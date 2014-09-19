@@ -82,7 +82,6 @@ struct slinke_settings_rec {
 };
 static struct slinke_settings_rec slinke_settings = { 0, 0, NULL };
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 static struct timeval start, end, last;
 static lirc_t signal_length;

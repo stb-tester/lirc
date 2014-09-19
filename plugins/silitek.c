@@ -34,7 +34,6 @@
 #define NUMBYTES 3
 #define TIMEOUT 20000
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 unsigned char b[NUMBYTES];
 ir_code code;

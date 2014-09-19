@@ -39,7 +39,7 @@
         be referred to as "Driver API version 2".</p>
 
     <p>In this guide, the word <em>plugin</em> refers to the so-file on disk. Each such file
-contains one or more driver(s) as visible in the user interface. </p>
+contains one or more driver(s) visible in the user interface. </p>
 
     <h1>Two flavors of drivers</h1>
     <p>An IR signal consists of a sequence of on-times (pulses) and off-times (gaps). (We disregard modulation for the time being.)
@@ -62,8 +62,9 @@ contains one or more driver(s) as visible in the user interface. </p>
 <p>This guide is intended for programmers
       writing and maintain "real" drivers.</p>
 
-  <p>At the time of writing, there are 44 plugins (not counting the <code>default</code> driver)
-     and 54 drivers. Of the drivers,  13 are "general receivers"; the others  are LIRCCODE drivers.
+  <p>At the time of writing, there are about  44 plugins and 54 drivers. Of the drivers, 13 are 
+     "general receivers"; the others  are LIRCCODE drivers. (The actual numbers vary depending
+     on configuration i. e. libraries installed on the build system.)
      Since hardware related to LIRCCODE drivers (typically a TV-card) normally doesn't support
      sending there is no LIRCCODE driver which can send data. </p>
 
@@ -200,12 +201,8 @@ struct driver {
     <pre>
 /* Include system includes files as needed */
 
-#include "driver.h" /* struct driver, extern driver drv */
-#include "lirc_log.h" /* logging */
-#include "receive.h"  /* only if receiving */
-#include "transmit.h" /* only if transmitting */
-
-#include "lirc_dyndriver.h"
+#include "lirc_driver.h" /* The overall include, mandatory, often sufficient.  */
+#include "serial.h"      /* For drivers using serial hardware. */
 
 /* Global (but "static") variable definition. */
 
@@ -338,10 +335,12 @@ struct driver* hardwares[] = { &my_hardware, NULL };
             an associated header file (<code>.h</code>-file) is neither necessary nor desired.
             (The only exception would be special constants for usage with the drvctl function.)</li>
         <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
-            <code>lirc_dyndriver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, and <code>transmit.h</code>)
-            Inclusions of other LIRC files (including <code>config.h</code>) should be avoided if possible.</li>
-        <li>The LIRC name of the driver is taken from the <code>name</code> field of the <code>hardware</code> struct.
-            The file name is thus irrelevant. For files containing only one driver, it is recommended to keep
+            <code>lirc_driver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, i
+            and <code>transmit.h</code>) and if required also lirc-serial.h.
+            Inclusions of other LIRC files (including <code>config.h</code>) should be avoided.</li>
+        <li>The LIRC name of the driver is taken from the <code>name</code> field of the 
+            <code>hardware</code> struct.  The file name is thus irrelevant. For files containing 
+            only one driver, it is recommended to keep
             the name of the file equal to the name of the driver (with added file extension).</li>
     </ul>
     <h2>Generating console output</h2>
@@ -378,10 +377,10 @@ struct driver* hardwares[] = { &my_hardware, NULL };
         The autotools are not needed, in particular not libtool.</p>
 
     <h2>Using C++</h2>
-    <p>Plugins can also be written in C++. The used include files are required to be "C++-safe", e.g. the functions to be called from
-        C++ have to be declared  <code>extern "C"</code>, to make sure that
-            the generated code follows C's calling conventions. This is hoped to
-            be the case when LIRC 0.9.2 is released. Since the plugin code is called only indirectly through the hardware struct,
+    <p>Plugins can also be written in C++. The used include files are required to be "C++-safe" 
+       i. e., the functions to be called from C++ have to be declared  <code>extern "C"</code>, 
+      to make sure that the generated code follows C's calling conventions. Since the plugin 
+      code is called only indirectly through the hardware struct,
             no <code>extern "C"</code> declarations are required in the plugin code. </p>
 
     <h3>Adding additional libraries</h3>

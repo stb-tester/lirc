@@ -66,7 +66,6 @@ static const char *usb_serial = NULL;
 
 static int laststate = -1;
 static __u32 rxctr = 0;
-extern struct ir_remote *repeat_remote;
 
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };

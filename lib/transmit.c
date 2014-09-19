@@ -21,8 +21,6 @@
 #include "lirc/lirc_log.h"
 #include "lirc/transmit.h"
 
-extern struct ir_remote *repeat_remote;
-
 /**
  * Struct for the global sending buffer.
  */

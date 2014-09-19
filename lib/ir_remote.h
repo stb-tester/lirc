@@ -33,7 +33,22 @@
 extern "C" {
 #endif
 
-extern struct driver hw;
+/**
+ * TODO
+ */
+extern struct ir_remote *last_remote;
+
+
+/**
+ * Global pointer to the remote that contains the code currently repeating. Defined in ir_remote.c.
+ */
+extern struct ir_remote* repeat_remote;
+
+/**
+ * Global pointer to the code currently repeating. Defined in ir_remote.c.
+ */
+extern struct ir_ncode* repeat_code;
+
 
 static inline ir_code get_ir_code(const struct ir_ncode *ncode,
                                   const struct ir_code_node *node)

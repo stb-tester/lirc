@@ -38,7 +38,6 @@
 
 #define TIMEOUT 50000
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 static struct timeval start, end, last;
 static lirc_t signal_length;

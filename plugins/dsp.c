@@ -38,7 +38,6 @@
 
 #include "lirc_driver.h"
 
-extern struct ir_remote *repeat_remote;
 
 /*
   decoding stuff

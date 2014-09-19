@@ -33,7 +33,6 @@
 #define NUMBYTES 16
 #define TIMEOUT 50000
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
@@ -66,7 +65,7 @@ struct driver hw_logitech = {
 	.driver_version = 	"0.9.2"
 };
 
-struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
+const struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
 
 
 int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)

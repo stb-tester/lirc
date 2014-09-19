@@ -29,7 +29,6 @@
 #define NUMBYTES 34
 #define TIMEOUT 20000
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 static unsigned char msg[NUMBYTES];
 static struct timeval start, end, last;

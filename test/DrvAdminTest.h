@@ -24,7 +24,7 @@
     testSuite->addTest(new CppUnit::TestCaller<DrvAdminTest>( \
                        id,  &DrvAdminTest::func))
 
-static const int DRIVER_COUNT = 53;  // Total numbers of drivers.
+static const int DRIVER_COUNT = 52;  // Total numbers of drivers.
 
 using namespace std;
 

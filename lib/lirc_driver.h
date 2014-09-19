@@ -19,4 +19,6 @@
 #include "lirc/receive.h"
 #include "lirc/transmit.h"
 
+extern const struct driver* hardwares[];
+
 #endif

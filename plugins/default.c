@@ -27,7 +27,6 @@
 
 #include "lirc_driver.h"
 
-extern struct ir_remote *repeat_remote;
 
 static __u32 supported_send_modes[] = {
 	/* LIRC_CAN_SEND_LIRCCODE, */

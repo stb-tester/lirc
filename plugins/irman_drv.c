@@ -31,7 +31,6 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 unsigned char *codestring;
 struct timeval start, end, last;

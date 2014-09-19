@@ -34,7 +34,6 @@
 #include "lirc/serial.h"
 
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 /* Technically, the code is three bytes long, however, only five bits
    in the last byte are needed to identify a button. If you don't

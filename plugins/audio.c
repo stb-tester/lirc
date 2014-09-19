@@ -70,7 +70,6 @@ typedef struct {
 
 static PaStream *stream;
 
-extern struct ir_remote *repeat_remote;
 
 static char ptyName[256];
 static int master;

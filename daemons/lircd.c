@@ -160,9 +160,6 @@ static struct ir_remote *remotes;
 static struct ir_remote *free_remotes = NULL;
 
 extern struct ir_remote *decoding;
-extern struct ir_remote *last_remote;
-extern struct ir_remote *repeat_remote;
-extern struct ir_ncode *repeat_code;
 
 static int repeat_fd = -1;
 static char *repeat_message = NULL;

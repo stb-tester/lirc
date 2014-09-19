@@ -40,24 +40,13 @@
 /**
  * TODO
  */
-struct ir_remote *decoding = NULL;
+struct ir_remote* decoding = NULL;
 
-/**
- * TODO
- */
-struct ir_remote *last_remote = NULL;
+struct ir_remote* last_remote = NULL;
 
-/**
- * Global pointer to the remote that contains the code currently repeating. Defined in ir_remote.c.
- */
-struct ir_remote *repeat_remote = NULL;
+struct ir_remote* repeat_remote = NULL;
 
-/**
- * Global pointer to the code currently repeating. Defined in ir_remote.c.
- */
 struct ir_ncode *repeat_code;
-
-extern struct driver hw;
 
 static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
 {

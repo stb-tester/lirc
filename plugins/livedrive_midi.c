@@ -85,4 +85,4 @@ struct driver hw_livedrive_midi = {
 	.driver_version = 	"0.9.2"
 };
 
-struct driver* hardwares[] = { &hw_livedrive_midi, (struct driver*)NULL };
+const struct driver* hardwares[] = { &hw_livedrive_midi, (struct driver*)NULL };

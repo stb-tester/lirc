@@ -40,8 +40,6 @@ char *default_rec(struct ir_remote *remotes);
 int default_ioctl(unsigned int cmd, void *arg);
 lirc_t default_readdata(lirc_t timeout);
 
-extern struct ir_remote *repeat_remote;
-
 static __u32 supported_send_modes[] = {
 	/* LIRC_CAN_SEND_LIRCCODE, */
 	/* LIRC_CAN_SEND_MODE2, this one would be very easy */

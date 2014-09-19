@@ -33,7 +33,6 @@
 
 #define TIMEOUT 50000
 
-extern struct ir_remote *repeat_remote, *last_remote;
 
 static unsigned char b;
 static struct timeval start, end, last;

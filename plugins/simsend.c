@@ -27,7 +27,6 @@
 
 #include "lirc_driver.h"
 
-extern struct ir_remote *repeat_remote;
 
 //Forwards:
 int default_init(void);

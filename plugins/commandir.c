@@ -13,7 +13,7 @@
 #include <sys/wait.h>
 
 #include "lirc_driver.h"
-#include "lirc/lirc_dyndriver.h"
+#include "lirc/lirc_driver.h"
 
 
 /****************************************************************************
@@ -31,7 +31,6 @@
 
 #include <usb.h>
 
-//extern struct ir_remote *repeat_remote;
 
 #define TRUE	0
 #define FALSE	1
