@@ -163,7 +163,7 @@ remote |        |       devinput v        |
     The overall lirc blues:
     <ul>
        <li> The remote generates an IR (or perhaps RF) signal.</li>
-       <li> The data IR data is captured by a capture device such
+       <li> The IR data is captured by a capture device such
             as a IR dongle or a built-in ir port.</li>
        <li> Data from the capture device is caught by the linux kernel
             drivers and made available on a kernel device such as
@@ -355,7 +355,7 @@ remote |        |       devinput v        |
     <p>
     Depending on your box, it might be that the event device found this
     way changes after a reboot. If this becomes o problem, look into
-    <a href="#appendix-2">appendix 6</a>
+    <a href="#appendix-6">appendix 6</a>
 
     <A NAME="key-symbols-using-lirc-drivers"></A><HR>
     <h3 align="center">Getting the key symbols using lirc drivers</h3>
@@ -406,11 +406,26 @@ remote |        |       devinput v        |
        If you used one of the drivers from the driver table it might
        need a specific lircd.conf. Such drivers are best installed using
        the lirc-setup tool, but can be manually installed after checking
-       the hardware.yaml config file.</li>
+       a config file found in the configs/ directory.</li>
+       <li>
+       You can use one of the already existing configuration files the
+       lirc website. </li>
+       <li>
+       You can create your own configuration using the irrecord program.</li>
+    </ul>
+    To install the lircd.conf first read the
+    <a href="configure.html#lircd.conf">lircd.conf </a> chapter. After that,
+    decide on one of the following ways.
+    </p>
+    <ul>
+      <li>
+        If you have been using a userspace driver from the driver list, make
+        sure that it has the required config file (not all drivers requires a
+        specific file, though)</li>
       <li>
         Otherwise, if your userspace driver can be used with any config file,
         you can pick one from the
-        <a href="http://sourceforge.net/p/lirc/git/ci/master/tree/remotes/">
+        <a href="http://lirc.sourceforge.net/remotes-table.html">
         website</a>  Before you use the file you should make sure it
         uses proper key symbols from the namespace <a href="#appendix-5">
        (below)</a>.</li>
