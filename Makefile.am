@@ -9,6 +9,9 @@ EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
 
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+    --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
+
 BUILT_SOURCES           = paths.h
 
 if WITH_SYSTEMDSYSTEMUNITDIR
