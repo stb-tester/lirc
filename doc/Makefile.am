@@ -7,21 +7,32 @@ dist_noinst_SCRIPTS     = data2table data2hwdb
 
 nodist_man_MANS         =
 generated_html          =
+manpage_html            =
+nodist_html_DATA        =
 
 if BUILD_XTOOLS
 nodist_man_MANS         += man/xmode2.1 man/irxevent.1
-generated_html          += man-html/xmode2.html man-html/irxevent.html
+manpage_html            += man-html/irxevent.html
+nodist_html_DATA        += man-html/xmode2.html
 endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html) $(manpage_html)
+nodist_html_DATA       += $(generated_html) $(manpage_html)
 dist_html_DATA          = $(html_includes) html-source/lirc.css table.html
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)
 dist_pkgdata_DATA       = lirc.hwdb
+
+imagedir                = $(docdir)/images
+dist_image_DATA         = images/atwf83.jpg \
+                          images/audio_transmitter.png \
+                          images/audio_wave.png \
+                          images/diode.gif \
+                          images/lirc.gif \
+                          images/marb18.jpg
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -32,36 +43,31 @@ clean-local:
 	rm -rf man-html
 
 table.html:
-	src="$(sourcedir)"; $(PYTHON) $${src:-.}/data2table > table.html
+	$(PYTHON) $(srcdir)/data2table > table.html
 
 lirc.hwdb:
-	src="$(sourcedir)"; $(PYTHON) $${src:-.}/data2hwdb > lirc.hwdb
-
-$(manpage_html): $(nodist_man_MANS)
-	test -d man-html || mkdir man-html
-	for f in  $(nodist_man_MANS); do \
-	    dest=man-html/$$(basename $$f); \
-	    dest=$${dest%.*}.html; \
-	    cat $(srcdir)/html-source/head.html > $$dest; \
-	    man2html -M ../html/index.html $$f |  \
-	        $(SED) -e '1,/<BODY>/d' \
-	            -e '/<\/BODY>/,$$d' \
-	            -e '/HREF="#index"/d' \
-	            -e '/NAME="index"/,/^Time:/d' \
-	            -e '/SEE ALSO/,/^<HR>/d' >>$$dest;\
-	    cat  $(srcdir)/html-source/foot.html >> $$dest; \
-	done
+	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
 $(generated_html): $(html_sources)
 	test -d html || mkdir html
-	for f in $(generated_html); do \
-	    src=html-source/$$(basename $$f); \
-	    test -f $$src || continue; \
-	    cat $(srcdir)/html-source/head.html > $$f; \
-	    cat $$src >> $$f; \
-	    cat  $(srcdir)/html-source/foot.html >> $$f; \
-	    $(SED) -i "s/@version@/$(VERSION)/" $$f; \
-	done
+	cat $(srcdir)/html-source/head.html > $@
+	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
+	cat $(srcdir)/html-source/foot.html >> $@
+	$(SED) -i "s/@version@/$(VERSION)/" $@
+
+$(manpage_html): $(nodist_man_MANS)
+	test -d man-html || mkdir man-html
+	cat $(srcdir)/html-source/head.html > $@
+	src=$$(echo $(srcdir)/$@ | \
+                   $(SED) -e 's/man-html/man-source/' -e 's/\.html/.1/'); \
+	man2html -M ../html/index.html $${src} | \
+	            $(SED) -e '1,/<BODY>/d' \
+	                -e '/<\/BODY>/,$$d' \
+	                -e '/HREF="#index"/d' \
+	                -e '/NAME="index"/,/^Time:/d' \
+	                -e '/SEE ALSO/,/^<HR>/d' >> $@
+
+	cat  $(srcdir)/html-source/foot.html >> $@
 
 $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
@@ -69,14 +75,9 @@ $(nodist_man_MANS): $(man_sources)
 	$(SED) -i "s/@version@/$(VERSION)/" man/*
 	cd man;  cp mode2.1 xmode2.1
 
+man-html/xmode2.html: $(manpage_html)
+	cp man-html/mode2.html $@
 
-imagedir                = $(docdir)/images
-dist_image_DATA         =  images/atwf83.jpg \
-                           images/audio_transmitter.png \
-                           images/audio_wave.png \
-                           images/diode.gif \
-                           images/lirc.gif \
-                           images/marb18.jpg
 
 man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irexec.1 \
@@ -128,7 +129,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lircrcd.1 \
                            man/mode2.1
 
-manpage_html            =  man-html/ircat.html \
+manpage_html            += man-html/ircat.html \
                            man-html/irexec.html \
                            man-html/irpty.html \
                            man-html/irrecord.html \
@@ -141,19 +142,19 @@ manpage_html            =  man-html/ircat.html \
                            man-html/lircrcd.html \
                            man-html/mode2.html
 
-generated_html          += $(srcdir)/html/alsa-usb.html \
-                           $(srcdir)/html/audio-alsa.html \
-                           $(srcdir)/html/audio.html \
-                           $(srcdir)/html/configuration-guide.html \
-                           $(srcdir)/html/configure.html \
-                           $(srcdir)/html/devinput.html \
-                           $(srcdir)/html/driver-api.html \
-                           $(srcdir)/html/help.html \
-                           $(srcdir)/html/imon-24g.html \
-                           $(srcdir)/html/imon.html \
-                           $(srcdir)/html/index.html \
-                           $(srcdir)/html/install.html \
-                           $(srcdir)/html/programs.html \
-                           $(srcdir)/html/pronto2lirc.html \
-                           $(srcdir)/html/technical.html \
-                           $(srcdir)/html/tira.html
+generated_html          += html/alsa-usb.html \
+                           html/audio-alsa.html \
+                           html/audio.html \
+                           html/configuration-guide.html \
+                           html/configure.html \
+                           html/devinput.html \
+                           html/driver-api.html \
+                           html/help.html \
+                           html/imon-24g.html \
+                           html/imon.html \
+                           html/index.html \
+                           html/install.html \
+                           html/programs.html \
+                           html/pronto2lirc.html \
+                           html/technical.html \
+                           html/tira.html
