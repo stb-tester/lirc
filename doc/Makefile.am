@@ -63,14 +63,13 @@ $(manpage_html): $(nodist_man_MANS)
 	test -d man-html || mkdir man-html
 	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
-                   $(SED) -e 's/man-html/man-source/' -e 's/\.html/.1/'); \
-	man2html -M ../html/index.html $${src} | \
+                   $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
+	man2html -M ../html/index.html $${src}* | \
 	            $(SED) -e '1,/<BODY>/d' \
 	                -e '/<\/BODY>/,$$d' \
 	                -e '/HREF="#index"/d' \
 	                -e '/NAME="index"/,/^Time:/d' \
 	                -e '/SEE ALSO/,/^<HR>/d' >> $@
-
 	cat  $(srcdir)/html-source/foot.html >> $@
 
 $(nodist_man_MANS): $(man_sources)
@@ -95,7 +94,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
-                           $(srcdir)/man-source/lircrcd.1 \
+                           $(srcdir)/man-source/lircrcd.8 \
                            $(srcdir)/man-source/mode2.1
 
 html_sources            =  $(srcdir)/html-source/alsa-usb.html \
@@ -130,7 +129,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lircd.8 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
-                           man/lircrcd.1 \
+                           man/lircrcd.8 \
                            man/mode2.1
 
 manpage_html            += man-html/ircat.html \
@@ -139,6 +138,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/irrecord.html \
                            man-html/irsend.html \
                            man-html/irw.html \
+                           man-html/lirc-lsplugins.html \
                            man-html/lirc-setup.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
