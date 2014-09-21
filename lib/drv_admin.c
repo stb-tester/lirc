@@ -22,6 +22,7 @@
 
 #include "driver.h"
 
+
 /** Max number if plugins handled. No point to malloc() this. */
 #define MAX_PLUGINS  256
 
@@ -32,7 +33,6 @@ typedef struct {
 	char* array[MAX_PLUGINS];
 	int size;
 	} char_array;
-
 
 /** Plugin currently in use, if non-NULL */
 static void* last_plugin = NULL;
@@ -70,15 +70,23 @@ static int ends_with_so(const char *str)
 }
 
 
-/**
- * drv_guest_func which prints name of *hw on file.
- * @param hw
- * @param file
- * @return NULL
- */
-static struct driver* print_hw_name(struct driver* hw, void* file)
+/** qsort compare function for array lines. */
+static int line_cmp(const void* arg1, const void* arg2)
 {
-	fprintf((FILE*)file, "\t%s\n", hw->name);
+	return strcmp(*(const char**)arg1, *(const char**)arg2);
+}
+
+
+/** hw_guest_func which adds name of driver to array in arg. */
+static struct driver* add_hw_name(struct driver* hw, void* arg)
+{
+	char_array* a = (char_array*) arg;
+	if (a->size >= MAX_PLUGINS) {
+		logprintf(LIRC_ERROR, "Too many plugins(%d)", MAX_PLUGINS);
+		return hw;
+	}
+	a->array[a->size] = strdup(hw->name);
+	a->size += 1;
 	return NULL;
 }
 
@@ -199,21 +207,32 @@ struct driver* for_each_driver(drv_guest_func func, void* arg)
 
 }
 
+
 void for_each_plugin(plugin_guest_func plugin_guest, void* arg)
 {
 	for_each_path(plugin_guest, NULL, arg );
 }
 
 
-
 /**
  * @brief Prints all drivers known to the system to the file given as argument.
  * @param file File to print to.
  */
- void hw_print_drivers(FILE* file)
-// Print list of all hardware names (i. e., drivers) on file.
+void hw_print_drivers(FILE* file)
 {
-	for_each_driver(print_hw_name, (void*)file);
+	char_array names;
+	int i;
+
+	names.size = 0;
+	if (for_each_driver(add_hw_name, (void*)&names) != NULL) {
+		fprintf(stderr, "Too many plugins (%d)\n", MAX_PLUGINS);
+		return;
+	}
+	qsort(names.array, names.size, sizeof(char*), line_cmp);
+	for (i = 0; i < names.size; i += 1) {
+		fprintf(file, "%s\n", names.array[i]);
+		free(names.array[i]);
+	}
 }
 
 

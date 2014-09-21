@@ -98,3 +98,5 @@
 /** Bit manipulator in lirc_t, see lirc.h . Signals eof from remote. */
 #define LIRC_EOF                0x08000000
 
+/** Max number of plugins. */
+#define MAX_PLUGINS		256

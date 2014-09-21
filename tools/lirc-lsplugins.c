@@ -77,8 +77,6 @@ const struct option options[] = {
 #define CAN_ANY  \
 	LIRC_CAN_REC_RAW | LIRC_CAN_REC_PULSE | LIRC_CAN_REC_MODE2
 
-#define MAX_LINES  255     /**< max number of listed plugins. */
-
 
 typedef struct {
 	const char* path;
@@ -90,7 +88,7 @@ typedef struct {
 	const char* info;
 } line_t;
 
-static const line_t* lines[MAX_LINES];
+static const line_t* lines[MAX_PLUGINS];
 static int line_ix = 0;
 
 static int opt_quiet = 0;         /**< --quiet option */
@@ -112,7 +110,7 @@ static char get(int feature, char code, const struct driver* drv) {
 static void  lines_next(line_t* line)
 {
 	lines[line_ix++] = line;
-	if (line_ix >= MAX_LINES -1){
+	if (line_ix >= MAX_PLUGINS -1){
 		fprintf(stderr, "Too many plugins, giving up. Sorry.");
 		exit(2);
 	}
