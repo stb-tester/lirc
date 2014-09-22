@@ -16,8 +16,6 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
-AC_PATH_PROG(mknod, mknod, /bin/mknod)
-AC_PATH_PROG(mkfifo, mkfifo, /usr/bin/mkfifo)
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
@@ -93,14 +91,10 @@ case "${host_os}" in
   darwin*)
     dnl Mac OS X configuration
     portaudio_lib_other="-framework CoreAudio -framework AudioToolbox"
-    dnl i. e., use mkfifo
-    use_fifos="yes"
     ;;
   *)
     dnl Unix OSS configuration
     portaudio_lib_other="-lm -lpthread ${forkpty}"
-    dnl i. e., use mknod
-    use_fifos="no"
     ;;
 esac
 

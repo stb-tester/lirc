@@ -26,32 +26,8 @@ lircd_simrec_CFLAGS     = -DSIM_REC
 lircd_simrec_LDADD      = ../lib/liblirc.la
 
 
-if USE_FIFOS
-install-exec-local: mkfifo
-uninstall-local: rmfifo
-else
-install-exec-local: mkdev
-uninstall-local: rmdev
-endif
-
-
-mkdev:
-	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
-	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
-	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd p)
-	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm ||\
-	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
-	        @mknod@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm p)
-
-mkfifo:
-	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd || \
-	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
-	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd)
-	-test -e $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm || \
-	    ($(mkinstalldirs) $(DESTDIR)$(varrundir)/lirc && \
-	        @mkfifo@ $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm)
-
-rmdev:
-rmfifo:
+install-exec-local:
+	test -d  $(DESTDIR)$(varrundir)/$(PACKAGE) \
+		 || mkdir -p $(DESTDIR)$(varrundir)/$(PACKAGE)
+uninstall-local:
 	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircd
-	-$(RM) $(DESTDIR)$(varrundir)/$(PACKAGE)/lircm
