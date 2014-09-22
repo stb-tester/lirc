@@ -1422,14 +1422,27 @@ static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *
 	return (NULL);
 }
 
+/**
+ * Checks if the event needs to be generated, based on the "repeat",
+ * "delay" and "delay_start" parameters.
+ * @param scan contains the config entry that describes the event
+ * that matches the key being currently pressed.
+ * @param rep is the current number of repeats that happened for that key.
+ * @return 1 if the event should be generated, 0 if not.
+ */
+static int rep_filter(struct lirc_config_entry *scan, int rep)
+{
+	return rep == 0 ||
+	    (scan->rep > 0 && rep > scan->rep_delay && ((rep - scan->rep_delay - 1) % scan->rep) == 0);
+}
+
 static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *button, int rep)
 {
 	struct lirc_code *codes;
 
 	/* no remote/button specified */
 	if (scan->code == NULL) {
-		return rep == 0 ||
-		    (scan->rep > 0 && rep > scan->rep_delay && ((rep - scan->rep_delay - 1) % scan->rep) == 0);
+		return rep_filter(scan, rep);
 	}
 
 	/* remote/button match? */
@@ -1446,9 +1459,7 @@ static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *butto
 			/* sequence completed? */
 			if (scan->next_code == NULL) {
 				scan->next_code = scan->code;
-				if (scan->code->next != NULL || rep == 0 ||
-				    (scan->rep > 0 && rep > scan->rep_delay &&
-				     ((rep - scan->rep_delay - 1) % scan->rep) == 0))
+				if (scan->code->next != NULL || rep_filter(scan, rep))
 					iscode = 2;
 			}
 			return iscode;
