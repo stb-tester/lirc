@@ -41,14 +41,9 @@
         You might want to send IR signals to other devices (IR blasting).
         </li>
       <li>
-        You might need LIRC's way of delivering application-specific events
-        for remote buttons - handling several applications with one remote
-        is easier with LIRC. </li>
-      <li>
-        You might need LIRC's way of delivering the events to several
-        applications instead of just one. E. g., you can use irexec(1)
-        to run arbitrary commands in parallel with an application such as
-        mythtv or xbmc.</li>
+        Handling several applications with one remote is easier with LIRC.
+        E. g., you can use irexec(1) to run arbitrary commands in parallel
+        with an application such as mythtv or xbmc.</li>
     </ul>
     <p>
     So, while the kernel built-in handling works out of the box in many
@@ -404,7 +399,7 @@ remote |        |       devinput v        |
     <p>
        The lircd.conf is the file which lircd uses to read data from the
        driver and then convert (or decode) it to key symbols.  It's the
-       single most important lirc configuration file. There are three
+       single most important lirc configuration file. There are some
        ways to install such a file:
     <ul>
        <li>
@@ -412,21 +407,6 @@ remote |        |       devinput v        |
        need a specific lircd.conf. Such drivers are best installed using
        the lirc-setup tool, but can be manually installed after checking
        the hardware.yaml config file.</li>
-       <li>
-       You can use one of the already existing configuration files the
-       lirc website. </li>
-       <li>
-       You can create your own configuration using the irrecord program.</li>
-    </ul>
-    To install the lircd.conf first read the
-    <a href="configure.html#lircd.conf">lircd.conf </a> chapter. After that,
-    decide on one of the following ways.
-    </p>
-    <ul>
-      <li>
-        If you have been using a userspace driver from the driver list, make
-        sure that it has the required config file (not all drivers requires a
-        specific file, though)</li>
       <li>
         Otherwise, if your userspace driver can be used with any config file,
         you can pick one from the
@@ -434,12 +414,28 @@ remote |        |       devinput v        |
         website</a>  Before you use the file you should make sure it
         uses proper key symbols from the namespace <a href="#appendix-5">
        (below)</a>.</li>
-      <li>
-        Install the lircd.conf and start lircd daemon using something like:
+        <li>
+       You can create your own configuration using the irrecord program.</li>
+       <li>
+       If you are using several remotes you can paste the different
+       lircd.conf files for each remote into a common on. Lirc will try
+       top match input to all remotes and use the first match found. </li>
+       <li>
+       If you already have a config file for the libirman
+       package you can convert it using the <em>irman2lirc</em> script
+       that you can find in the contrib directory. </li>
+       <li>
+       It's also possible to convert CCF files and Pronto codes to a
+       valid lircd.conf file using the <A HREF="pronto2lirc.html">
+       pronto2lirc</A> script.</li>
+    </ul>
+
+    After installing the lircd.conf file you should be able to start the
+    the lircd daemon using something like:
         <pre>
         $ lircd --driver default --device /dev/lirc0
         </pre>
-        Verify the results using irw(1). Check all buttons! </li>
+    Verify the results using irw(1). Check all buttons! </li>
     </ul>
     <A NAME="key-symbols-to-app-strings"></A>
     <A NAME="converting-key-symbols-to-application-strings"></A><HR>
