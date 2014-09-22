@@ -3,6 +3,7 @@ irexec
 irpty
 irrecord
 irsend
+irsimsend
 irw
 irxevent
 lirc-lsplugins

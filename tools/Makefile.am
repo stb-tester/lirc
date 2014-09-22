@@ -14,7 +14,7 @@ endif
 
 sbin_PROGRAMS		= lirc-lsplugins
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
-                          irrecord @x_progs@
+                          irsimsend irrecord @x_progs@
 
 ## Simple programs
 irw_SOURCES             = irw.c
@@ -26,6 +26,8 @@ ircat_SOURCES           = ircat.c
 ircat_LDADD             = $(LIRC_LIBS)
 irrecord_SOURCES        = irrecord.c
 irrecord_LDADD          = $(LIRC_LIBS)
+irsimsend_SOURCES       = irsimsend.c
+irsimsend_LDADD         = $(LIRC_LIBS)
 mode2_SOURCES           = mode2.c
 mode2_LDADD             = $(LIRC_LIBS)
 irsend_SOURCES          = irsend.c
