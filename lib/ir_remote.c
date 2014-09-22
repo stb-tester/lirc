@@ -686,25 +686,29 @@ char *decode_all(struct ir_remote *remotes)
  * @param code IR code to be transmitted
  * @return nonzero if success
  */
-int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code)
+int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code, int delay)
 {
 	int ret;
 
-#if !defined(SIM_SEND)
+	if (delay) {
 	/* insert pause when needed: */
-	if (remote->last_code != NULL) {
-		struct timeval current;
-		unsigned long usecs;
+		if (remote->last_code != NULL) {
+			struct timeval current;
+			unsigned long usecs;
 
-		gettimeofday(&current, NULL);
-		usecs = time_left(&current, &remote->last_send, remote->min_remaining_gap * 2);
-		if (usecs > 0) {
-			if (repeat_remote == NULL || remote != repeat_remote || remote->last_code != code) {
-				usleep(usecs);
+			gettimeofday(&current, NULL);
+			usecs = time_left(&current, 
+                                          &remote->last_send, 
+					  remote->min_remaining_gap * 2);
+			if (usecs > 0) {
+				if (repeat_remote == NULL || remote != repeat_remote 
+                                        || remote->last_code != code) 
+                                {
+					usleep(usecs);
+				}
 			}
 		}
 	}
-#endif
 
 	ret = curr_driver->send_func(remote, code);
 

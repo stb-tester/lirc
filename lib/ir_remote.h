@@ -442,7 +442,7 @@ int write_message(char* buffer,
 
 char* decode_all(struct ir_remote* remotes);
 
-int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code);
+int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay);
 
 #ifdef __cplusplus
 }

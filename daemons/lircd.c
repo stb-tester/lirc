@@ -1099,7 +1099,7 @@ void dosigalrm(int sig)
 	    || (repeat_code->transmit_state != NULL && repeat_code->transmit_state->next == NULL)) {
 		repeat_remote->repeat_countdown--;
 	}
-	if (send_ir_ncode(repeat_remote, repeat_code) && repeat_remote->repeat_countdown > 0) {
+	if (send_ir_ncode(repeat_remote, repeat_code, 1) && repeat_remote->repeat_countdown > 0) {
 		repeat_timer.it_value.tv_sec = 0;
 		repeat_timer.it_value.tv_usec = repeat_remote->min_remaining_gap;
 		repeat_timer.it_interval.tv_sec = 0;
@@ -1482,7 +1482,7 @@ int send_core(int fd, char *message, char *arguments, int once)
 		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
 	}
 	code->transmit_state = NULL;
-	if (!send_ir_ncode(remote, code)) {
+	if (!send_ir_ncode(remote, code, 1)) {
 		return (send_error(fd, message, "transmission failed\n"));
 	}
 	gettimeofday(&remote->last_send, NULL);
@@ -2373,13 +2373,13 @@ int main(int argc, char **argv)
 				repeat_remote = NULL;
 				repeat_code = NULL;
 				c->transmit_state = NULL;
-				send_ir_ncode(r, c);
+				send_ir_ncode(r, c, 0);
 				repeat_remote = r;
 				repeat_code = c;
-				send_ir_ncode(r, c);
-				send_ir_ncode(r, c);
-				send_ir_ncode(r, c);
-				send_ir_ncode(r, c);
+				send_ir_ncode(r, c, 0);
+				send_ir_ncode(r, c, 0);
+				send_ir_ncode(r, c, 0);
+				send_ir_ncode(r, c, 0);
 				c++;
 			}
 			r = r->next;
