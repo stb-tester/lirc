@@ -586,6 +586,7 @@ int lirc_mode(char *token, char *token2, char **mode,
 					new_entry->prog = NULL;
 					new_entry->code = NULL;
 					new_entry->rep_delay = 0;
+					new_entry->ign_first_events = 0;
 					new_entry->rep = 0;
 					new_entry->config = NULL;
 					new_entry->change_mode = NULL;
@@ -1133,6 +1134,17 @@ static int lirc_readconfig_only_internal(const char *file,
 							    " a  valid number for delay\n", lirc_prog, token2);
 					}
 					free(token2);
+				} else if (strcasecmp(token, "ignore_first_events") == 0) {
+					char *end;
+
+					errno = ERANGE + 1;
+					new_entry->ign_first_events = strtoul(token2, &end, 0);
+					if ((new_entry->ign_first_events == ULONG_MAX && errno == ERANGE)
+					    || end[0] != 0 || strlen(token2) == 0) {
+						lirc_printf("%s: \"%s\" not"
+							    " a  valid number for ignore_first_events\n", lirc_prog, token2);
+					}
+					free(token2);
 				} else if (strcasecmp(token, "repeat") == 0) {
 					char *end;
 
@@ -1424,7 +1436,7 @@ static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *
 
 /**
  * Checks if the event needs to be generated, based on the "repeat",
- * "delay" and "delay_start" parameters.
+ * "delay" and "ignore_first_events" parameters.
  * @param scan contains the config entry that describes the event
  * that matches the key being currently pressed.
  * @param rep is the current number of repeats that happened for that key.
@@ -1432,9 +1444,29 @@ static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *
  */
 static int rep_filter(struct lirc_config_entry *scan, int rep)
 {
-	return rep == 0 || (scan->rep == 0 && scan->rep_delay > 0 &&
-	    rep == scan->rep_delay + 1) ||
-	    (scan->rep > 0 && rep > scan->rep_delay && ((rep - scan->rep_delay - 1) % scan->rep) == 0);
+	int delay_start, rep_delay;
+	if (scan->ign_first_events) {
+		if (scan->rep_delay && rep == 0)	/* warn user only once */
+			lirc_printf("%s: ignoring \"delay\" because \"ignore_first_events\" is also set\n",
+			    lirc_prog);
+		rep_delay = scan->ign_first_events;
+		delay_start = 0;
+	} else {
+		rep_delay = scan->rep_delay;
+		delay_start = 1;
+	}
+	/* handle event before delay_start */
+	if (rep < delay_start)
+		return 1;
+	/* special case: 1 event after delay when repeat is not set */
+	if (scan->rep == 0 && rep_delay > 0 && rep == rep_delay + delay_start)
+		return 1;
+	/* handle repeat */
+	if (scan->rep > 0 && rep >= rep_delay + delay_start) {
+		rep -= rep_delay + delay_start;
+		return ((rep % scan->rep) == 0);
+	}
+	return 0;
 }
 
 static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *button, int rep)

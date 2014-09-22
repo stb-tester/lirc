@@ -169,6 +169,7 @@ typedef uint32_t __u32;
 		char* prog;
 		struct lirc_code* code;
 		unsigned int rep_delay;
+		unsigned int ign_first_events;
 		unsigned int rep;
 		struct lirc_list* config;
 		char* change_mode;
