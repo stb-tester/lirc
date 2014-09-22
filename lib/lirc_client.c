@@ -1432,7 +1432,8 @@ static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *
  */
 static int rep_filter(struct lirc_config_entry *scan, int rep)
 {
-	return rep == 0 ||
+	return rep == 0 || (scan->rep == 0 && scan->rep_delay > 0 &&
+	    rep == scan->rep_delay + 1) ||
 	    (scan->rep > 0 && rep > scan->rep_delay && ((rep - scan->rep_delay - 1) % scan->rep) == 0);
 }
 
