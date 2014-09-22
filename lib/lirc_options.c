@@ -115,6 +115,7 @@ void options_load(int argc, char** const argv,
 		return;
 	}
 	depth += 1;
+	setenv("POSIXLY_CORRECT", "1", 1);
 	if (path == NULL) {
 		path = parse_O_arg(argc, argv);
 	}
