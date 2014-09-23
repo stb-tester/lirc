@@ -4,6 +4,7 @@ irpty
 irrecord
 irsend
 irsimsend
+irsimreceive
 irw
 irxevent
 lirc-lsplugins

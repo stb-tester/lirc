@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall -g
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
@@ -14,7 +14,7 @@ endif
 
 sbin_PROGRAMS		= lirc-lsplugins
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
-                          irsimsend irrecord @x_progs@
+                          irsimsend irsimreceive irrecord @x_progs@
 
 ## Simple programs
 irw_SOURCES             = irw.c
@@ -28,6 +28,8 @@ irrecord_SOURCES        = irrecord.c
 irrecord_LDADD          = $(LIRC_LIBS)
 irsimsend_SOURCES       = irsimsend.c
 irsimsend_LDADD         = $(LIRC_LIBS)
+irsimreceive_SOURCES    = irsimreceive.c
+irsimreceive_LDADD      = $(LIRC_LIBS)
 mode2_SOURCES           = mode2.c
 mode2_LDADD             = $(LIRC_LIBS)
 irsend_SOURCES          = irsend.c
