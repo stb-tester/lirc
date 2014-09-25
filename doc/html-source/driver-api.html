@@ -305,8 +305,16 @@ struct driver* hardwares[] = { &my_hardware, NULL };
  or write <code>receive_decode</code> directly in the <code>struct driver</code>.
   <h4><code>drvctl_func</code></h4>
   <code>mydrvctl_func(unsigned int cmd, void *arg)</code></h4>
-      <p>Depending on the particular driver and hardware, additional functionality can be implemented here,
-        with syntax and semantic to be determined by the driver.</p>
+      <p>Depending on the particular driver and hardware, additional
+         functionality can be implemented here, with semantics as
+         determined by the driver. There are some cmd definitions in 
+         driver.h which could be used by any driver. Driver-specific 
+         cmd constants should be > DRVCTL_MAX.</p>
+      <p> drvctl() returns 0 if OK, else a positive error code some of 
+          which defined in driver.h </p>
+      <p> driver.h defines the DRVCTL_SET_OPTION cmd. This is a generic
+          way to set a named key to value which should cover many (most?)
+          needs for the drvctl() function. </p>
 
       <h4><code>readdata</code></h4>
       <code>lirc_t myreaddata(lirc_t timeout)</code>
