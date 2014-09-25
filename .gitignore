@@ -35,6 +35,7 @@ drivers/*/*.ko.unsigned
 drivers/*/*.mod.*
 
 contrib/hal/20-ircontrol-lirc.fdi
+doc/api-docs
 doc/man-html
 doc/man/*.[1-9]
 doc/man2html
@@ -42,6 +43,8 @@ doc/man2html.o
 doc/html
 doc/lirc.hwdb
 doc/table.html
+doxygen-warnings.txt
+doxygen.warnings
 
 INSTALL
 autom4te.cache

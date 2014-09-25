@@ -3,6 +3,12 @@ ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
 
+LIB_SRC			= $(srcdir)/../lib
+API_SRC			= $(LIB_SRC)/*.c \
+			  $(LIB_SRC)/*.h \
+			  $(LIB_SRC)/*.dox \
+			  $(LIB_SRC)/*.doxhead
+
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
 nodist_man_MANS         =
@@ -18,6 +24,9 @@ endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
+if HAVE_DOXYGEN
+dist_doc_DATA	    	+= api-docs.tar.gz
+endif
 
 htmldir                 = $(docdir)/html
 nodist_html_DATA        += $(generated_html)
@@ -81,6 +90,10 @@ $(nodist_man_MANS): $(man_sources)
 man-html/xmode2.html: $(manpage_html)
 	cp man-html/mode2.html $@
 
+api-docs.tar.gz: $(API_SRC)
+	cd ../lib;  $(MAKE) dox
+	doxygen >doxygen-warnings.txt 2>&1
+	tar czf $@ api-docs 
 
 man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irexec.1 \

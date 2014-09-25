@@ -19,6 +19,8 @@ AC_PROG_MAKE_SET
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
+AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
+AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON([3.1],,[:])
@@ -389,6 +391,7 @@ AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_PYTHON])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
+AC_REPORT_CONDITIONAL([HAVE_DOXYGEN])
 
 echo
 echo "Now enter 'make' and 'make install' to compile and install the package."
