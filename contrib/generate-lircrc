@@ -12,6 +12,7 @@ readonly   OUTPUT_DIR="$HOME/.config/lirc"
 
 declare -a  ALL_LIRCD_KEYS      # All buttons in /etc/lirc/lircd.conf
 declare -a  BAD_LIRCD_KEYS      # Buttons not listed by irrecord -l
+declare -a  DUPLICATE_KEYS      
 declare -a  GOOD_KEYS
 declare -ar GOOD_KEYS=( $( irrecord -l | egrep '^KEY_' |
                                egrep -v 'KEY_KP[0-9]' |
@@ -75,7 +76,7 @@ files  in ~/.config/lirc. The optional [files] is a list of files to
 build or dump, as listed by -l.
 .TP
 \fB\-s\fR
-Scan lircd file for key symbols not in namespace.
+Scan lircd file for key symbols which are duplicated or not in namespace.
 .TP
 \fB\-u\fR
 Update existing lircd file to use key symbols in namespace.
@@ -136,7 +137,7 @@ file. A minimal such might look like
 .SH EXAMPLES
 .PP
 
-Scan /etc/lirc/lircd.conf for symbols not in namespace:
+Scan /etc/lirc/lircd.conf for duplicated symbols and symbols not in namespace:
 .IP
 $(basename $0) -s
 .PP
@@ -163,7 +164,8 @@ $(basename $0) -o . stdin \< mythtv.lircdata
 .SH LIRCD.CONF CONVERSIONS
 The -s option simply reports all key symbols not in namespace. It also
 reports some symbols which although legal are inappropriate in this
-context, notably KEY_NUMERIC_0..KEY_NUMERIC_9.
+context, notably KEY_NUMERIC_0..KEY_NUMERIC_9. If present, duplicated
+keys are also reported.
 
 The -u option converts several known symbols to their corresponding
 KEY_* symbols. Symbols which have names like KEY_WINDOWS but not are in
@@ -652,8 +654,15 @@ function parse_lircd
     local key
     unset ALL_LIRCD_KEYS
     unset BAD_LIRCD_KEYS
+    unset DUPLICATE_KEYS
+    local all_keys
+
     for key in $( print_lircd_keys )
     do
+        if [[ ${all_keys[@]} == *$key* ]]; then
+            DUPLICATE_KEYS=( ${DUPLICATE_KEYS[@]} $key )
+        fi
+        all_keys=( ${all_keys[@]} $key )
         if [[ ${GOOD_KEYS[*]} == *$key* ]]
         then
             ALL_LIRCD_KEYS=( ${ALL_LIRCD_KEYS[@]} $key )
@@ -667,17 +676,19 @@ function parse_lircd
 
 function scan_keycodes
 {
+    local key
     parse_lircd
 
     local count=${#ALL_LIRCD_KEYS[@]}
     echo "Found $count button definitions in ${OPTIONS['c']}"
 
+    if (( ${#DUPLICATE_KEYS[@]} != 0 )); then
+        echo 'Duplicate keys:'
+        for key in ${DUPLICATE_KEYS[@]}; do echo "    $key"; done
+    fi 
     if (( ${#BAD_LIRCD_KEYS[@]} != 0 )); then
         echo 'Unusable keys:'
-        local key
-        for key in ${BAD_LIRCD_KEYS[@]}; do
-            echo "    $key"
-        done
+        for key in ${BAD_LIRCD_KEYS[@]}; do echo "    $key"; done
     else
         echo "All definitions in legal namespace"
     fi
