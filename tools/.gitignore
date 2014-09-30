@@ -5,6 +5,7 @@ irrecord
 irsend
 irsimsend
 irsimreceive
+irtestcase
 irw
 irxevent
 lirc-lsplugins
