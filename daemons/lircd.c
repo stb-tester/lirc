@@ -123,8 +123,10 @@ int send_remote(int fd, char *message, struct ir_remote *remote);
 int send_name(int fd, char *message, struct ir_ncode *code);
 int list(int fd, char *message, char *arguments);
 int set_transmitters(int fd, char *message, char *arguments);
+int set_inputlog(int fd, char *message, char *arguments);
 int simulate(int fd, char *message, char *arguments);
 int send_once(int fd, char *message, char *arguments);
+int drv_option(int fd, char *message, char *arguments);
 int send_start(int fd, char *message, char *arguments);
 int send_stop(int fd, char *message, char *arguments);
 int send_core(int fd, char *message, char *arguments, int once);
@@ -179,6 +181,8 @@ static const struct protocol_directive const directives[] = {
 	{"SEND_ONCE", send_once},
 	{"SEND_START", send_start},
 	{"SEND_STOP", send_stop},
+	{"SET_INPUTLOG", set_inputlog},
+	{"DRV_OPTION", drv_option},
 	{"VERSION", version},
 	{"SET_TRANSMITTERS", set_transmitters},
 	{"SIMULATE", simulate},
@@ -1588,6 +1592,57 @@ int version(int fd, char *message, char *arguments)
 	return (1);
 }
 
+
+int drv_option(int fd, char *message, char *arguments)
+{
+	struct option_t option;
+	int r;
+
+	r = sscanf(arguments, "%32s %64s", option.key, option.value);
+	if (r != 2) {
+		return send_error(fd, message,
+				  "Illegal argument (protocol error): %s",
+				  arguments);
+	}
+	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
+	if (r != 0) {
+		logprintf(LIRC_WARNING, "Cannot set driver option");
+		return send_error(fd, message, 
+				  "Cannot set driver option %d", errno);
+	}
+	return send_success(fd, message);
+}		
+
+
+int set_inputlog(int fd, char *message, char *arguments)
+{
+ 	char buff[128];
+	FILE* f;
+	int r;
+
+	r = sscanf(arguments, "%128s", buff);
+	if (r != 1) {
+		return send_error(fd, message, 
+				  "Illegal argument (protocol error): %s",
+				  arguments);
+	}
+	if (strcasecmp(buff, "null") == 0) {
+		rec_buffer_set_logfile(NULL);
+		return send_success(fd, message);
+	}
+	f = fopen(buff, "w");
+	if (f == NULL) {
+		logprintf(LIRC_WARNING, 
+			  "Cannot open input logfile: %s", buff);
+		return send_error(fd,  message,
+				  "Cannot open input logfile: %s (errno: %d)", 
+				  buff, errno);
+	}
+	rec_buffer_set_logfile(f);
+	return send_success(fd, message);
+}		
+
+
 int get_command(int fd)
 {
 	int length;
@@ -1805,7 +1860,7 @@ void broadcast_message(const char *message)
 	len = strlen(message);
 
 	for (i = 0; i < clin; i++) {
-		LOGPRINTF(1, "writing to client %d", i);
+		LOGPRINTF(1, "writing to client %d: %s", i, message);
 		if (write_socket(clis[i], message, len) < len) {
 			remove_client(clis[i]);
 			i--;
