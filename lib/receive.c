@@ -49,6 +49,7 @@ struct rbuf {
 	lirc_t sum;
 	struct timeval last_signal_time;
 	int at_eof;
+	FILE* input_log;
 };
 
 
@@ -88,6 +89,15 @@ static  void set_pending_space(lirc_t deltas)
 	rec_buffer.pendings = deltas;
 }
 
+
+static void log_input(lirc_t data)
+{
+	fprintf(rec_buffer.input_log, "%s %u\n", 
+ 		data & PULSE_BIT ? "pulse" : "space", data & PULSE_MASK);
+	fflush(rec_buffer.input_log);
+}
+
+
 static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 {
 	if (rec_buffer.rptr < rec_buffer.wptr) {
@@ -126,6 +136,9 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 			}
 
 			rec_buffer.data[rec_buffer.wptr] = data;
+			if (rec_buffer.input_log != NULL){
+				log_input(data);
+			}
 			if (rec_buffer.data[rec_buffer.wptr] == 0)
 				return (0);
 			rec_buffer.sum += rec_buffer.data[rec_buffer.rptr]
@@ -189,6 +202,15 @@ int waitfordata(__u32 maxusec)
 	}
 }
 
+
+void rec_buffer_set_logfile(FILE* f)
+{
+	if (rec_buffer.input_log != NULL) {
+		fclose(rec_buffer.input_log);
+	}
+	rec_buffer.input_log = f;
+}		
+		
 
 static lirc_t get_next_rec_buffer(lirc_t maxusec)
 {
@@ -1040,7 +1062,8 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	if (rec_buffer.at_eof && rec_buffer.wptr - rec_buffer.rptr <= 1) {
 		logprintf(LIRC_DEBUG, "Decode: found EOF");
 		ctx->code = LIRC_EOF;
-		return 1;
+		rec_buffer.at_eof = 0;
+	 	return 1;
 	}
 	if (curr_driver->rec_mode == LIRC_MODE_MODE2 ||
 	    curr_driver->rec_mode == LIRC_MODE_PULSE ||

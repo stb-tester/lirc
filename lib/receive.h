@@ -34,6 +34,12 @@ extern "C" {
 /** Min value returned by receive_timeout. */
 #define MIN_RECEIVE_TIMEOUT 100000
 
+/** 
+ * Set a file logging input from driver in same format as mode2(1).
+ * @param f Open file to write on or NULL to disable logging.
+ */
+void rec_buffer_set_logfile(FILE* f);
+
 /** Return actual timeout to use given MIN_RECEIVE_TIMEOUT limitation. */
 static inline lirc_t receive_timeout(lirc_t usec)
 {
