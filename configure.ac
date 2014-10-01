@@ -51,7 +51,7 @@ if test "$ac_cv_func_daemon" != yes; then
     AC_MSG_ERROR([*** daemon() function not available on this system, giving up])
   fi
 fi
-
+AX_PYTHON_MODULE([yaml],[Required python3 module "yaml" is missing])
 forkpty=""
 AC_CHECK_FUNCS(forkpty)
 if test "$ac_cv_func_forkpty" != yes; then
