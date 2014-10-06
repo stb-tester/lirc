@@ -17,7 +17,7 @@
 #include	"../lib/lirc_private.h"
 #include	"../lib/lirc_client.h"
 
-#define     SEND_DELAY    2000000
+static const int SEND_DELAY  = 2000000;
 
 #undef      ADD_TEST
 #define     ADD_TEST(id, func) \
@@ -45,7 +45,7 @@ class ClientTest : public CppUnit::TestFixture
         {
             CppUnit::TestSuite* testSuite =
                  new CppUnit::TestSuite( "ClientTest" );
-            ADD_TEST("testReceive", testReceive);
+            //ADD_TEST("testReceive", testReceive);
             ADD_TEST("testReadConfig", testReadConfig);
             ADD_TEST("testReadConfigOnly", testReadConfig);
             ADD_TEST("testCode2Char", testCode2Char);
@@ -140,7 +140,7 @@ class ClientTest : public CppUnit::TestFixture
             sendCode(fd, 0x1bf3, "KEY_POWER", SEND_DELAY);
 
             setenv("LIRC_SOCKET_PATH", "var/lircd.socket", 0);
-            while(code == NULL && status == 0) {
+            while (code == NULL && status == 0 ) {
                 status = lirc_nextcode(&code);
             }
             CPPUNIT_ASSERT(status == 0);
