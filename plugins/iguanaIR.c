@@ -255,7 +255,7 @@ static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
 	    && daemonTransaction(IG_DEV_SETCARRIER, &freq, sizeof(freq)))
 		currentCarrier = remote->freq;
 
-	if (init_send(remote, code)) {
+	if (send_buffer_put(remote, code)) {
 		int length, x;
 		const lirc_t *signals;
 		uint32_t *igsignals;

@@ -454,7 +454,7 @@ static int commandir_init()
 	}
 
 	rec_buffer_init();	// LIRC's rec
-	init_send_buffer();	// LIRC's send
+	send_buffer_init();	// LIRC's send
 
 	/* A separate process will be forked to read data from the USB
 	 * receiver and write it to a pipe. drv.fd is set to the readable
@@ -542,7 +542,7 @@ static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 	int length;
 	const lirc_t *signals;
 
-	if (!init_send(remote, code)) {
+	if (!send_buffer_put(remote, code)) {
 		return 0;
 	}
 

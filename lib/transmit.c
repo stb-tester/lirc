@@ -47,7 +47,7 @@ static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int
 /**
  * Initializes the global sending buffer. (Just fills it with zeros.)
  */
-void init_send_buffer(void)
+void send_buffer_init(void)
 {
 	memset(&send_buffer, 0, sizeof(send_buffer));
 }
@@ -355,7 +355,7 @@ static void send_signals(lirc_t * signals, int n)
  * @param code ir_ncode to send.
  * @return Success of operation.
  */
-int init_send(struct ir_remote *remote, struct ir_ncode *code)
+int send_buffer_put(struct ir_remote *remote, struct ir_ncode *code)
 {
 	return init_send_or_sim(remote, code, 0, 0);
 }

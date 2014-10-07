@@ -267,7 +267,7 @@ static int uirt2_raw_init(void)
 	}
 
 	rec_buffer_init();
-	init_send_buffer();
+	send_buffer_init();
 
 	rec_rptr = 0;
 	rec_wptr = 0;
@@ -324,7 +324,7 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 	const lirc_t *signals;
 	int res = 0;
 
-	if (!init_send(remote, code)) {
+	if (!send_buffer_put(remote, code)) {
 		return 0;
 	}
 

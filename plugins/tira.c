@@ -673,7 +673,7 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 	if (freq > 255)
 		freq = 255;
 
-	if (!init_send(remote, code))
+	if (!send_buffer_put(remote, code))
 		return (0);
 
 	int length, i, s;

@@ -210,7 +210,7 @@ struct driver {
 static int generic_init() {
     /* Open device/hardware */
 
-    init_send_buffer();
+    send_buffer_init();
     return 1;
 }
 
@@ -220,7 +220,7 @@ static int generic_deinit(void) {
 }
 
 static int generic_send(struct ir_remote *remote, struct ir_ncode *code) {
-    result = init_send(remote, code);
+    result = send_buffer_put(remote, code);
     if (!result)
         return 0;
 
@@ -267,7 +267,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
       It should return nonzero in the case of success.
         This function simple opens the device.
         In addition, the functions <code>rec_buffer_init(void)</code> and/or
-        <code>init_send_buffer(void)</code> needs to be called.</p>
+        <code>send_buffer_init(void)</code> needs to be called.</p>
 
   <h4><code>deinit_func</code></h4>
   <code>int mydeinit_func(void)</code>
@@ -277,7 +277,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
   <h4><code>send_func</code></h4>
   <code>int mysend_func(struct ir_remote *remote, struct ir_ncode *code)</code>
   <p>Function called for sending an IR code, residing in the second argument. For this, the function
-      <code>init_send(struct ir_remote *remote, struct ir_ncode *code)</code> is called, with the same arguments.
+      <code>send_buffer_put(struct ir_remote *remote, struct ir_ncode *code)</code> is called, with the same arguments.
       This makes the global variable <code>send_bug</code> containing the durations in micro seconds for the IR signal.
       The field <code>data</code> is a pointer to <code>wptr</code> number of numbers, having the data type <code>lirc_t</code>.
   Returns non-zero if operation successful.</p>

@@ -133,7 +133,7 @@ int default_init()
 
 	/* FIXME: other modules might need this, too */
 	rec_buffer_init();
-	init_send_buffer();
+	send_buffer_init();
 
 	if (stat(drv.device, &s) == -1) {
 		logprintf(LIRC_ERROR, "could not get file information for %s", drv.device);
@@ -308,7 +308,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 			return (0);
 		}
 	}
-	if (!init_send(remote, code))
+	if (!send_buffer_put(remote, code))
 		return (0);
 	if (write_send_buffer(drv.fd) == -1) {
 		logprintf(LIRC_ERROR, "write failed");

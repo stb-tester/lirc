@@ -132,7 +132,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 	if (drv.send_mode != LIRC_MODE_PULSE)
 		return (0);
 
-	if (!init_send(remote, code))
+	if (!send_buffer_put(remote, code))
 		return (0);
 
 	if (write_send_buffer(drv.fd) == -1) {

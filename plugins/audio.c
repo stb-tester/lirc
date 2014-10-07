@@ -284,7 +284,7 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 	lirc_t freq;
 	static lirc_t prevfreq = 0;
 
-	if (!init_send(remote, code))
+	if (!send_buffer_put(remote, code))
 		return 0;
 
 	length = send_buffer_length();

@@ -433,7 +433,7 @@ static int init_device(void)
 		return 0;
 	}
 	rec_buffer_init();
-	init_send_buffer();
+	send_buffer_init();
 
 	return(1);
 }
@@ -597,7 +597,7 @@ static int send(struct ir_remote *remote, struct ir_ncode *code)
 	lirc_t val;
 
 
-	if (!init_send(remote, code)) {
+	if (!send_buffer_put(remote, code)) {
 		return 0;
 	}
 

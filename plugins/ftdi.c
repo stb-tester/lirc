@@ -423,7 +423,7 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	logprintf(LIRC_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
-	if (!init_send(remote, code)) {
+	if (!send_buffer_put(remote, code)) {
 		return 0;
 	}
 

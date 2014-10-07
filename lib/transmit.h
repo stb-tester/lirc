@@ -6,7 +6,7 @@
  * functions that prepare IR codes for transmitting.
  *
  * Operations in this module applies to the transmit buffer. The buffer
- * is initiated using init_send_buffer(), filled with data using init_send()
+ * is initiated using send_buffer_init(), filled with data using send_buffer_put()
  * and accessed using  send_buffer_data() and send_buffer_length().
  *
  * A prepared buffer contains an even number of unsigned ints, each of
@@ -29,7 +29,7 @@ extern "C" {
 #define WBUF_SIZE 256
 
 /** Clear and re-initiate the buffer. */
-void init_send_buffer(void);
+void send_buffer_init(void);
 
 /**
  * Prepare the buffer.
@@ -37,7 +37,7 @@ void init_send_buffer(void);
  * @param code Data item to be represented in buff.
  * @return 0 on errors, else 1
  */
-int init_send(struct ir_remote* remote, struct ir_ncode* code);
+int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code);
 
 /** @cond */
 int init_sim(struct ir_remote* remote,
