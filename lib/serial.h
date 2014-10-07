@@ -12,7 +12,7 @@
 
 /**
  * @file serial.h
- * @brief common routines for hardware that uses the standard serial port driver
+ * @brief Common routines for hw that uses the standard serial port driver.
  * @author Christoph Bartelmus
  * @ingroup driver_api
  *

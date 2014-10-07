@@ -4,7 +4,7 @@
  ****************************************************************************/
 /**
  * @file transmit.h
- * @brief functions that prepare IR codes for transmitting
+ * @brief Functions that prepare IR codes for transmitting
  * @author Christoph Bartelmus
  * @ingroup driver_api
  *

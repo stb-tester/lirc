@@ -12,7 +12,7 @@
 /**
  *  @file ir_remote.h
  *  @author Ralph Metzler, Christoph Bartelmus
- *  @brief describes and decodes the signals from IR remotes.
+ *  @brief Describes and decodes the signals from IR remotes.
  *  @ingroup private_api
  *  @ingroup driver_api
  *  @addtogroup driver_api
@@ -402,6 +402,13 @@ static inline ir_code gen_ir_code(const struct ir_remote *remote,
 	return all;
 }
 
+/**
+ * Test if a given remote is in a list of remotes.
+ *
+ * @param remotes Head of linked list of remotes (using remote.next).
+ * @param remote Pointer to remote to check
+ * @return 1 if remote exists in remotes list, else 0
+ */
 const struct ir_remote* is_in_remotes(const struct ir_remote* remotes,
 				      const struct ir_remote* remote);
 

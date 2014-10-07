@@ -8,24 +8,24 @@
  * @ingroup driver_api
  */
 
-/* lircd socket file name - beneath $varrundir (default /var/run/lirc) */
+/** lircd socket file name - beneath $varrundir (default /var/run/lirc) */
 #define DEV_LIRCD       "lircd"
-/* lircmd socket file name - beneath $varrundir (default /var/run/lirc) */
+/** lircmd socket file name - beneath $varrundir (default /var/run/lirc) */
 #define DEV_LIRCM       "lircm"
 
-/* lircd,conf  file name - beneath SYSCONFDIR (default /etc) */
+/** lircd,conf  file name - beneath SYSCONFDIR (default /etc) */
 #define CFG_LIRCD       "lircd.conf"
 
-/* lircmd,conf  file name - beneath SYSCONFDIR (default /etc) */
+/** lircmd,conf  file name - beneath SYSCONFDIR (default /etc) */
 #define CFG_LIRCM       "lircmd.conf"
 
-/* config file names - beneath $HOME or SYSCONFDIR */
+/** config file names - beneath $HOME or SYSCONFDIR */
 #define CFG_LIRCRC      "lircrc"
 
-/* pid file */
+/** pid file */
 #define PID_LIRCD       "lircd.pid"
 
-/* default port number for UDP driver */
+/** default port number for UDP driver */
 #define        LIRC_INET_PORT  8765
 
 
@@ -71,28 +71,28 @@
 /** Suffix added to release events. */
 #define LIRC_RELEASE_SUFFIX     "_UP"
 
-/* Default directory for plugins/drivers. */
+/** Default directory for plugins/drivers. */
 #define PLUGINDIR		LIBDIR  "/lirc/plugins"
 
-/* Default options file path. */
+/** Default options file path. */
 #define LIRC_OPTIONS_PATH       SYSCONFDIR "/lirc/lirc_options.conf"
 
-/* Environment variable overriding options file path. */
+/** Environment variable overriding options file path. */
 #define LIRC_OPTIONS_VAR        "LIRC_OPTIONS_PATH"
 
-/* Default permissions for /var/run/lircd. */
+/** Default permissions for /var/run/lircd. */
 #define DEFAULT_PERMISSIONS     "666"
 
-/* Default timeout (ms) while waiting for socket. */
+/** Default timeout (ms) while waiting for socket. */
 #define SOCKET_TIMEOUT          "5000"
 
-/* Default for --repeat-max option. */
+/** Default for --repeat-max option. */
 #define DEFAULT_REPEAT_MAX      "600"
 
-/* IR transmission packet size. */
+/** IR transmission packet size. */
 #define PACKET_SIZE             (256)
 
-/* Environment variable holding defaults for PLUGINDIR. */
+/** Environment variable holding defaults for PLUGINDIR. */
 #define PLUGINDIR_VAR           "LIRC_PLUGINDIR"
 
 /** Bit manipulator in lirc_t, see lirc.h . Signals eof from remote. */
