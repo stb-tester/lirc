@@ -606,7 +606,7 @@ int tira_deinit(void)
 
 char *tira_rec_mode2(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }

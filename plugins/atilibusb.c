@@ -109,7 +109,7 @@ static int ati_init()
 
 	LOGPRINTF(1, "initializing USB receiver");
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	/* A separate process will be forked to read data from the USB
 	 * receiver and write it to a pipe. drv.fd is set to the readable
@@ -201,7 +201,7 @@ static int ati_deinit()
 
 static char *ati_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer()) {
+	if (!rec_buffer_clear()) {
 		ati_deinit();
 		return NULL;
 	}

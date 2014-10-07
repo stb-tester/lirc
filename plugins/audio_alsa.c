@@ -157,7 +157,7 @@ int audio_alsa_init()
 	char *pcm_rate;
 	char tmp_name[20];
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	/* Create a temporary filename for our FIFO,
 	 * Use mkstemp() instead of mktemp() although we need a FIFO not a
@@ -513,7 +513,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 
 char *audio_alsa_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);
 }

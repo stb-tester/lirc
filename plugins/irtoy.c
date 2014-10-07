@@ -432,7 +432,7 @@ static int init_device(void)
 		free(dev);
 		return 0;
 	}
-	init_rec_buffer();
+	rec_buffer_init();
 	init_send_buffer();
 
 	return(1);
@@ -493,7 +493,7 @@ static int deinit(void)
 static char *receive(struct ir_remote *remotes)
 {
 	LOGPRINTF(1, "irtoy_raw_rec");
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return(NULL);
 	return decode_all(remotes);
 }

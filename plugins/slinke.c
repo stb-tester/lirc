@@ -797,7 +797,7 @@ char *slinke_rec(struct ir_remote *remotes)
 
 int slinke_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	rewind_rec_buffer();
+	rec_buffer_rewind();
 	rec_buffer_reset_wptr();
 	signal_queue_rd_idx = 0;
 	return receive_decode(remote, ctx);

@@ -230,7 +230,7 @@ static int generic_send(struct ir_remote *remote, struct ir_ncode *code) {
 }
 
 static char *rec_func(struct ir_remote * remotes) {
-    if (!clear_rec_buffer) {
+    if (!rec_buffer_clear) {
         /* handle errors */
         return NULL;
     }
@@ -266,7 +266,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
   <code>int myinit_func(void)</code> <p>Function called for initializing the driver and the hardware.
       It should return nonzero in the case of success.
         This function simple opens the device.
-        In addition, the functions <code>init_rec_buffer(void)</code> and/or
+        In addition, the functions <code>rec_buffer_init(void)</code> and/or
         <code>init_send_buffer(void)</code> needs to be called.</p>
 
   <h4><code>deinit_func</code></h4>
@@ -288,7 +288,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
   <code>char *myrec_func(struct ir_remote * remotes)</code>
   <p>The canonical implementation for non-LIRCCODE drivers is </p>
   <pre>
-        if (!clear_rec_buffer) {
+        if (!rec_buffer_clear) {
             /* handle errors */
             return NULL;
         }

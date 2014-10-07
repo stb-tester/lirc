@@ -95,7 +95,7 @@ int dsp_init()
 	int speed = SAMPLE, fmt = AFMT_S16_LE;
 
 	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
-	init_rec_buffer();
+	rec_buffer_init();
 	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
@@ -137,7 +137,7 @@ int dsp_deinit(void)
 
 char *dsp_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }

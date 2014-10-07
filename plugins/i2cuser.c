@@ -295,7 +295,7 @@ fail:
 
 static char *i2cuser_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);
 }

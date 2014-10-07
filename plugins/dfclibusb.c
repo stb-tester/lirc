@@ -92,7 +92,7 @@ static int dfc_init()
 
 	LOGPRINTF(1, "initializing USB receiver");
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
@@ -165,7 +165,7 @@ static int dfc_deinit()
 
 static char *dfc_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer()) {
+	if (!rec_buffer_clear()) {
 		dfc_deinit();
 		return NULL;
 	}

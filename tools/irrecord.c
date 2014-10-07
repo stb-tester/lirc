@@ -1320,7 +1320,7 @@ void analyse_remote(struct ir_remote *raw_data)
 		current_index = 0;
 		next_code = codes;
 
-		init_rec_buffer();
+		rec_buffer_init();
 
 		ret = receive_decode(&remote, &decode_ctx);
 		if (!ret) {
@@ -1340,7 +1340,7 @@ void analyse_remote(struct ir_remote *raw_data)
 				new_codes = renew_codes;
 			}
 
-			clear_rec_buffer();
+			rec_buffer_clear();
 			code = decode_ctx.code;
 			ret = receive_decode(&remote, &decode_ctx);
 			code2 = decode_ctx.code;

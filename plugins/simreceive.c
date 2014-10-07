@@ -145,7 +145,7 @@ int default_send(struct ir_remote *remote, struct ir_ncode *code)
 
 char *default_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer()) {
+	if (!rec_buffer_clear()) {
 		default_deinit();
 		return NULL;
 	}

@@ -135,7 +135,7 @@ static int awlibusb_init()
 
 	LOGPRINTF(1, "initializing USB receiver");
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	/* A separate process will be forked to read data from the USB
 	 * receiver and write it to a pipe. drv.fd is set to the readable
@@ -219,7 +219,7 @@ static int awlibusb_deinit()
 
 static char *awlibusb_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);
 }

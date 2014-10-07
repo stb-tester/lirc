@@ -285,7 +285,7 @@ static int srm7500_init()
 			  remoteExtendedAddress[6], remoteExtendedAddress[7]);
 	}
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	/* A separate process will be forked to read data from the USB
 	 * receiver and write it to a pipe. drv.fd is set to the readable

@@ -136,7 +136,7 @@ static int iguana_init()
 {
 	int recv_pipe[2], retval = 0;
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	if (pipe(recv_pipe) != 0) {
 		logprintf(LIRC_ERROR, "couldn't open pipe: %s", strerror(errno));
@@ -213,7 +213,7 @@ static int iguana_deinit()
 static char *iguana_rec(struct ir_remote *remotes)
 {
 	char *retval = NULL;
-	if (clear_rec_buffer())
+	if (rec_buffer_clear())
 		retval = decode_all(remotes);
 	return retval;
 }

@@ -172,12 +172,12 @@ static lirc_t get_next_rec_buffer(lirc_t maxusec)
 	return get_next_rec_buffer_internal(receive_timeout(maxusec));
 }
 
-void init_rec_buffer(void)
+void rec_buffer_init(void)
 {
 	memset(&rec_buffer, 0, sizeof(rec_buffer));
 }
 
-void rewind_rec_buffer(void)
+void rec_buffer_rewind(void)
 {
 	rec_buffer.rptr = 0;
 	rec_buffer.too_long = 0;
@@ -191,7 +191,7 @@ void rec_buffer_reset_wptr(void)
 	rec_buffer.wptr = 0;
 }
 
-int clear_rec_buffer(void)
+int rec_buffer_clear(void)
 {
 	int move, i;
 
@@ -230,7 +230,7 @@ int clear_rec_buffer(void)
 		}
 	}
 
-	rewind_rec_buffer();
+	rec_buffer_rewind();
 	rec_buffer.is_biphase = 0;
 
 	return (1);
@@ -1017,8 +1017,8 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	    curr_driver->rec_mode == LIRC_MODE_PULSE ||
 	    curr_driver->rec_mode == LIRC_MODE_RAW)
      	{
-		rewind_rec_buffer();
-		rec_buffer.is_biphase = is_biphase(remote) ? 1 : 0;
+		rec_buffer_rewind();
+		rec_buffer.is_biphase = is_biphase(remote) ? 1 : 0;	
 
 		/* we should get a long space first */
 		if (!(sync = sync_rec_buffer(remote))) {
@@ -1060,7 +1060,7 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 				return (1);
 			} else {
 				LOGPRINTF(1, "no repeat");
-				rewind_rec_buffer();
+				rec_buffer_rewind();
 				sync_rec_buffer(remote);
 			}
 
@@ -1093,13 +1093,13 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 			for (i = 0; i < codes->length;) {
 				if (!expectpulse(remote, codes->signals[i++])) {
 					found = NULL;
-					rewind_rec_buffer();
+					rec_buffer_rewind();
 					sync_rec_buffer(remote);
 					break;
 				}
 				if (i < codes->length && !expectspace(remote, codes->signals[i++])) {
 					found = NULL;
-					rewind_rec_buffer();
+					rec_buffer_rewind();
 					sync_rec_buffer(remote);
 					break;
 				}

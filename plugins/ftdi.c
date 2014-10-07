@@ -270,7 +270,7 @@ next:
 		p = comma + 1;
 	}
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	/* Allocate a pipe for lircd to read from */
 	if (pipe(pipe_rx2main) == -1) {
@@ -384,7 +384,7 @@ static int hwftdi_deinit(void)
 
 static char *hwftdi_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }

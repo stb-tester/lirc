@@ -453,7 +453,7 @@ static int commandir_init()
 		return 1;
 	}
 
-	init_rec_buffer();	// LIRC's rec
+	rec_buffer_init();	// LIRC's rec
 	init_send_buffer();	// LIRC's send
 
 	/* A separate process will be forked to read data from the USB
@@ -591,7 +591,7 @@ static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 static char *commandir_rec(struct ir_remote *remotes)
 {
 	char *returnit;
-	if (clear_rec_buffer() == 0) {
+	if (rec_buffer_clear() == 0) {
 		return NULL;
 	}
 	returnit = decode_all(remotes);

@@ -266,7 +266,7 @@ static int uirt2_raw_init(void)
 		}
 	}
 
-	init_rec_buffer();
+	rec_buffer_init();
 	init_send_buffer();
 
 	rec_rptr = 0;
@@ -296,7 +296,7 @@ static char *uirt2_raw_rec(struct ir_remote *remotes)
 	LOGPRINTF(1, "uirt2_raw_rec");
 	LOGPRINTF(1, "uirt2_raw_rec: %p", remotes);
 
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 
 	if (remotes) {

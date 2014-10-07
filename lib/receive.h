@@ -45,13 +45,13 @@ static inline lirc_t receive_timeout(lirc_t usec)
 int waitfordata(__u32 maxusec);
 
 /** Clear internal buffer to pristine state. */
-void init_rec_buffer();
+void rec_buffer_init();
 
 /**
  * Flush the internal fifo and store a single code read
  * from the driver in it.
  */
-int clear_rec_buffer(void);
+int rec_buffer_clear(void);
 
 /**
  * Decode data from remote
@@ -65,7 +65,7 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
  * Reset the modules's internal fifo's read state to initial values
  * where the nothing is read. The write pointer is not affected.
  */
-void rewind_rec_buffer(void);
+void rec_buffer_rewind(void);
 
 /** Reset internal fifo's write pointer.  */
 void rec_buffer_reset_wptr(void);

@@ -40,7 +40,7 @@ int udp_init()
 
 	logprintf(LIRC_INFO, "Initializing UDP: %s", drv.device);
 
-	init_rec_buffer();
+	rec_buffer_init();
 
 	port = atoi(drv.device);
 	if (port == 0) {
@@ -88,7 +88,7 @@ int udp_deinit(void)
 
 char *udp_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }

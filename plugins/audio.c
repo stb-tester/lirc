@@ -461,8 +461,8 @@ int audio_init()
 
 	//
 	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
-	init_rec_buffer();
-	rewind_rec_buffer();
+	rec_buffer_init();
+	rec_buffer_rewind();
 
 	/* new */
 	data.lastFrames[0] = 128;
@@ -624,7 +624,7 @@ error:
 
 char *audio_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }

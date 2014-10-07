@@ -191,7 +191,7 @@ static int irlink_detect(const int port)
 
 char *irlink_rec(struct ir_remote *remotes)
 {
-	if (!clear_rec_buffer())
+	if (!rec_buffer_clear())
 		return (NULL);
 	return (decode_all(remotes));
 }
