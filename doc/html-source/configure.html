@@ -401,7 +401,7 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
         [button = ...] (optional, for key sequences)
         repeat  = ...
         delay   = ...
-        delay_start = ...
+        ignore_first_events = ...
         config  = ...
         [config = ...] (optional, for toggle button behaviour)
         mode    = ...
@@ -445,16 +445,14 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
         using a fast repeat rate. A value of zero, which also is the
         default, will disable the delay function. If &quot;repeat&quot;
         value is zero but &quot;delay&quot; is set, there will be a
-        single event generated after the delay period expires (the amount
-        of events before delay period is controlled by &quot;delay_start&quot;
-        parameter).
+        single event generated after the delay period expires (with
+        another one before delay period starts).
       </DD>
-      <DT>delay_start</DT>
-      <DD>specifies the amount of events generated before delay period
-      starts. The default value is 1. Using value 0 allows you to define
-      the reaction on long key presses, as the first event will be generated
-      only after the delay period expires provided the key is still being held
-      down.
+      <DT>ignore_first_events</DT>
+      <DD>ignores the specified amount of first events.
+        Same as &quot;delay&quot; but without an event before delay
+        period starts. This allows to define the reaction on the long
+        key presses. Should not be set together with &quot;delay&quot;.
       </DD>
       <DT>config</DT>
       <DD>is the string that will be passed to the according
