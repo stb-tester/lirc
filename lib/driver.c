@@ -36,7 +36,7 @@ int default_close()
 	return 0;
 }
 
-int default_drvtcl(int fd, void* arg)
+int default_drvctl(unsigned int fd, void* arg)
 {
 	return DRV_ERR_NOT_IMPLEMENTED;
 }

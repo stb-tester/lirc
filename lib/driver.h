@@ -38,7 +38,7 @@ int default_open(const char* path);
 int default_close(void);
 
 /** Return DRVCTL_ERR_NOTIMPLEMENTED. */
-int default_drvctl(int cmd, void* arg);
+int default_drvctl(unsigned int cmd, void* arg);
 
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
