@@ -144,7 +144,8 @@ static void parse_options(int argc, char** const argv)
 			exit (EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not supported.\n", optarg);
+				fprintf(stderr, "Driver `%s' not found", optarg);
+				fprintf(stderr, " (wrong or missing -U/--plugindir?)\n");
 				hw_print_drivers(stderr);
 				exit(EXIT_FAILURE);
 			}

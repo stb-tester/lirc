@@ -414,7 +414,8 @@ int main(int argc, char **argv)
 	options_load(argc, argv, NULL, parse_options);
 	opt = options_getstring("irrecord:driver");
 	if (hw_choose_driver(opt) != 0) {
-		fprintf(stderr, "Driver `%s' not supported.\n", optarg);
+		fprintf(stderr, "Driver `%s' not found", opt);
+		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}

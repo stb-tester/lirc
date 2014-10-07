@@ -2335,7 +2335,8 @@ int main(int argc, char **argv)
 		return(EXIT_SUCCESS);
 	}
 	else if (hw_choose_driver(opt) != 0) {
-		fprintf(stderr, "Driver `%s' not supported.\n", opt);
+		fprintf(stderr, "Driver `%s' not found", opt);
+		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		hw_print_drivers(stderr);
 		return(EXIT_FAILURE);
 	} else if (device != NULL) {
