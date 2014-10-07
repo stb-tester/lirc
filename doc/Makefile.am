@@ -101,6 +101,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irrecord.1 \
                            $(srcdir)/man-source/irsimsend.1 \
                            $(srcdir)/man-source/irsend.1 \
+                           $(srcdir)/man-source/irtestcase.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/irxevent.1 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
@@ -140,6 +141,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irrecord.1 \
                            man/irsimsend.1 \
                            man/irsend.1 \
+                           man/irtestcase.1 \
                            man/irw.1 \
                            man/lirc-lsplugins.1 \
                            man/lirc-setup.1 \
@@ -155,6 +157,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/irrecord.html \
                            man-html/irsimsend.html \
                            man-html/irsend.html \
+                           man-html/irtestcase.html \
                            man-html/irw.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-setup.html \
