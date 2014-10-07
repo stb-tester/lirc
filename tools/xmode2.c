@@ -86,7 +86,7 @@ static struct stat s;
 static int use_stdin = 0;
 static int use_raw_access = 0;
 
-static char *device = NULL;
+static char *device = "";
 static char *geometry = NULL;
 
 static struct option options[] = {
