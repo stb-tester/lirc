@@ -1,0 +1,494 @@
+#
+# defaults:
+#
+# remote = *
+# repeat = 0
+#
+#
+#
+
+begin
+	prog=devlirc
+	button=0
+	config=0
+end
+
+begin
+	prog=devlirc
+	button=1
+	config=1
+end
+
+begin
+	prog=devlirc
+	button=2
+	config=2
+end
+
+begin
+	prog=devlirc
+	button=3
+	config=3
+end
+
+begin
+	prog=devlirc
+	button=4
+	config=4
+end
+
+begin
+	prog=devlirc
+	button=5
+	config=5
+end
+
+begin
+	prog=devlirc
+	button=6
+	config=6
+end
+
+begin
+	prog=devlirc
+	button=7
+	config=7
+end
+
+begin
+	prog=devlirc
+	button=8
+	config=8
+end
+
+begin
+	prog=devlirc
+	button=9
+	config=9
+end
+
+begin
+	prog=devlirc
+	button=CH+
+	repeat=1
+	delay=3
+	config=UP
+end
+begin
+	prog=devlirc
+	button=R_UP
+	repeat=1
+	delay=3
+	config=UP
+end
+
+begin
+	prog=devlirc
+	button=CH-
+	repeat=1
+	delay=3
+	config=DOWN
+end
+begin
+	prog=devlirc
+	button=R_DOWN
+	repeat=1
+	delay=3
+	config=DOWN
+end
+
+begin
+	prog=devlirc
+	button=VOLUME+
+	repeat=1
+	delay=3
+	config=RIGHT
+end
+begin
+	prog=devlirc
+	button=R_RIGHT
+	repeat=1
+	delay=3
+	config=RIGHT
+end
+
+begin
+	prog=devlirc
+	button=VOLUME-
+	repeat=1
+	delay=3
+	config=LEFT
+end
+begin
+	prog=devlirc
+	button=R_LEFT
+	repeat=1
+	delay=3
+	config=LEFT
+end
+
+begin
+	prog=devlirc
+	button=OK
+	config=RETURN
+end
+
+begin
+	prog=devlirc
+	button=EXIT
+	config=ESCAPE
+end
+
+# REC, STOP buttons for X-SAT
+begin
+	prog=devlirc
+	button=REC
+	config=MULTIPLY
+end
+
+begin
+	prog=devlirc
+	button=STOP
+	config=DIVIDE
+end
+
+# REC, STOP buttons for NEC
+begin
+	prog=devlirc
+	button=P
+	config=MULTIPLY
+end
+
+begin
+	prog=devlirc
+	button=STORE
+	config=DIVIDE
+end
+
+# TEXT, COLOR buttons for X-SAT
+begin
+	prog=devlirc
+	button=TEXT
+	config=F2
+end
+
+begin
+	prog=devlirc
+	button=RED
+	config=F9
+end
+
+begin
+	prog=devlirc
+	button=GREEN
+	config=F10
+end
+
+begin
+	prog=devlirc
+	button=YELLOW
+	config=F11
+end
+
+begin
+	prog=devlirc
+	button=BLUE
+	config=F12
+end
+
+# TEXT, COLOR buttons for NEC
+begin
+	prog=devlirc
+	button=TXT
+	config=F2
+end
+
+begin
+	prog=devlirc
+	button=DEL
+	config=F9
+end
+
+begin
+	prog=devlirc
+	button=LOCK
+	config=F10
+end
+
+begin
+	prog=devlirc
+	button=MOVE
+	config=F11
+end
+
+begin
+	prog=devlirc
+	button=SKIP
+	config=F12
+end
+
+begin
+	prog=devlirc
+	button=MUTE
+	config=MUTE
+end
+
+begin
+	prog=devlirc
+	button=FAV
+	config=3W_FAVORITES
+end
+
+begin
+	prog=devlirc
+	button=POWER
+	config=SLEEP
+end
+
+begin
+	prog=devlirc
+	button=POWER
+	ignore_first_events=20
+	config=FACE_POWEROFF
+end
+
+begin
+	prog=devlirc
+	button=MENU
+	config=APPS
+end
+
+begin
+	prog=devlirc
+	button=EPG
+	config=3W_HOME
+end
+
+begin
+	prog=devlirc
+	button=TV
+	config=3W_HOME
+end
+
+begin
+	prog=devlirc
+	button=INFO
+	config=F3
+end
+
+begin
+	prog=devlirc
+	button=LEFT
+	config=REWIND
+end
+
+begin
+	prog=devlirc
+	button=WEST
+	config=REWIND
+end
+
+begin
+	prog=devlirc
+	button=REW
+	config=REWIND
+end
+
+begin
+	prog=devlirc
+	button=RIGHT
+	config=FF
+end
+
+begin
+	prog=devlirc
+	button=EAST
+	config=FF
+end
+
+begin
+	prog=devlirc
+	button=FF
+	config=FF
+end
+
+begin
+	prog=devlirc
+	button=PLAY
+	config=PLAY_PAUSE
+end
+
+begin
+	prog=devlirc
+	button=PAUSE
+	config=PLAY_PAUSE
+end
+
+begin
+	prog=devlirc
+	button=PLAY_PAUSE
+	config=PLAY_PAUSE
+end
+
+begin
+	prog=devlirc
+	button=AUDIO
+	config=3W_AUDIO
+end
+
+begin
+	prog=devlirc
+	button=UP
+	config=ADD
+end
+
+begin
+	prog=devlirc
+	button=DOWN
+	config=SUBTRACT
+end
+
+begin
+	prog=devlirc
+	button=HDD
+	config=F6
+end
+
+begin
+	prog=devlirc
+	button=SATLIST
+	config=F6
+end
+
+begin
+	prog=devlirc
+	button=ARCH
+	config=F6
+end
+
+begin
+	prog=devlirc
+	button=R_VOL+
+	repeat=1
+	delay=3
+	config=VOL_INC
+end
+begin
+	prog=devlirc
+	button=R_VOL-
+	repeat=1
+	delay=3
+	config=VOL_DEC
+end
+begin
+	prog=devlirc
+	button=NEXT
+	repeat=1
+	delay=3
+	config=ADD
+end
+begin
+	prog=devlirc
+	button=PREV
+	repeat=1
+	delay=3
+	config=SUBTRACT
+end
+begin
+	prog=devlirc
+	button=A_V
+	config=3W_AUDIO
+end
+begin
+	prog=devlirc
+	button=PC
+	config=F22
+end
+begin
+	prog=devlirc
+	button=AIR
+	config=F23
+end
+begin
+	prog=devlirc
+	button=ADVISER
+	config=F24
+end
+begin
+	prog=devlirc
+	button=PANEL
+	config=F7
+end
+
+begin
+	prog=devlirc
+	button=B
+	config=SNAPSHOT
+end
+begin
+	prog=devlirc
+	button=REN
+	config=SNAPSHOT
+end
+begin
+	prog=devlirc
+	button=LANG
+	config=LANG
+end
+begin
+	prog=devlirc
+	button=BACK
+	repeat=1
+	delay=3
+	config=BACK
+end
+begin
+	prog=devlirc
+	button=CAPITAL
+	config=CAPITAL
+end
+begin
+	prog=devlirc
+	button=VK_MUL
+	config=VK_MUL
+end
+
+begin
+	prog=devlirc
+	button=FACE_STANDBY
+	config=FACE_STANDBY
+end
+
+begin
+	prog=devlirc
+	button=FACE_POWEROFF
+	config=FACE_POWEROFF
+end
+
+begin
+	prog=devlirc
+	button=VOLUME_MINUS_NEW
+	repeat=1
+	delay=3
+	config=VOLUME_MINUS_NEW
+end
+
+begin
+	prog=devlirc
+	button=VOLUME_PLUS_NEW
+	repeat=1
+	delay=3
+	config=VOLUME_PLUS_NEW
+end
+
+begin
+	prog=devlirc
+	button=ANNONCE
+	config=ANNONCE
+end
+
+begin
+	prog=devlirc
+	button=IN_EFIR
+	config=IN_EFIR
+end

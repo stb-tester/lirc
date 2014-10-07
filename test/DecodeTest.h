@@ -30,9 +30,9 @@ class DecodeTest : public CppUnit::TestFixture
             CppUnit::TestSuite* testSuite =
                  new CppUnit::TestSuite( "ClientTest" );
             ADD_TEST("testDBS", testDBS);
+            ADD_TEST("testLongpress", testLongpress);
             return testSuite;
         };
-
 
         void setUp() {};
 
@@ -43,6 +43,13 @@ class DecodeTest : public CppUnit::TestFixture
             unsetenv("LIRC_SOCKET_PATH");
             unsetenv("LIRC_LOGLEVEL");
             system("tests/DBS/run-test.sh");
+        }
+
+        void testLongpress()
+        {
+            unsetenv("LIRC_SOCKET_PATH");
+            unsetenv("LIRC_LOGLEVEL");
+            system("tests/longpress/run-test.sh");
         }
 
 
