@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 			printf("%s\n", "irw " VERSION);
 			return (EXIT_SUCCESS);
 		case 'U':
-			setenv(PLUGINDIR_VAR, optarg, 1);
+			options_set_opt("lircd:pluginpath", optarg);
 			break;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);

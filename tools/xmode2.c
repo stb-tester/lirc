@@ -101,19 +101,18 @@ static struct option options[] = {
 	{0, 0, 0, 0}
 };
 
-static void help(void)
-{
-	printf("Usage: %s [options]\n", progname);
-	printf("\t -d --device=device\tread from given device\n");
-	printf("\t -H --driver=driver\t\tuse given driver\n");
-	printf("\t -U --plugindir=dir\t\tLoad drivers from given dir\n");
-	printf("\t -g --geometry=geometry\twindow geometry\n");
-	printf("\t -t --timediv=value\tms per unit\n");
-	printf("\t -m --mode\t\tenable alternative display mode\n");
-	printf("\t -r --raw\t\taccess device directly\n");
-	printf("\t -h --help\t\tdisplay usage summary\n");
-	printf("\t -v --version\t\tdisplay version\n");
-}
+static const char* const help =
+"\nUsage: xmode2 [options]\n"
+"\nOptions:\n"
+"    -d --device=device\t\tread from given device\n"
+"    -H --driver=driver\t\tuse given driver\n"
+"    -U --plugindir=dir\t\tLoad drivers from given dir\n"
+"    -g --geometry=geometry\twindow geometry\n"
+"    -t --timediv=value\t\tms per unit\n"
+"    -m --mode\t\t\tenable alternative display mode\n"
+"    -r --raw\t\t\taccess device directly\n"
+"    -h --help\t\t\tdisplay usage summary\n"
+"    -v --version\t\tdisplay version\n";
 
 static void add_defaults(void)
 {
@@ -140,7 +139,7 @@ static void parse_options(int argc, char** const argv)
 	add_defaults();
 	while ((c = getopt_long(argc, argv, "U:hvd:H:g:t:mr", options, NULL)) != -1) {
 		switch (c) {
-		case 'h':help();
+		case 'h':printf(help);
 			exit (EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
@@ -181,6 +180,7 @@ static void parse_options(int argc, char** const argv)
 		exit (EXIT_FAILURE);
 	}
 }
+
 
 void initscreen(char *geometry)
 {

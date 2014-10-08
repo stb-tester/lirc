@@ -40,7 +40,20 @@ static int gap = 10000;
 static int use_raw_access = 0;
 
 
-static struct option options[] = {
+static const char* const help = 
+"Usage: mode2 [options]\n"
+"\t -d --device=device\tread from given device\n"
+"\t -H --driver=driver\tuse given driver\n"
+"\t -U --plugindir=path\tLoad plugins from path.\n"
+"\t -m --mode\t\tenable column display mode\n"
+"\t -r --raw\t\taccess device directly\n"
+"\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
+"\t -s --scope=time\tenable 'scope like display with time us per char.\n"
+"\t -h --help\t\tdisplay usage summary\n"
+"\t -v --version\t\tdisplay version\n";
+
+
+static const struct option options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
 	{"device", required_argument, NULL, 'd'},
@@ -52,20 +65,6 @@ static struct option options[] = {
 	{"plugindir", required_argument, NULL, 'U'},
 	{0, 0, 0, 0}
 };
-
-static void help(void)
-{
-	printf("Usage: %s [options]\n", progname);
-	printf("\t -d --device=device\tread from given device\n");
-	printf("\t -H --driver=driver\tuse given driver\n");
-	printf("\t -U --plugindir=path\tLoad plugins from path.\n");
-	printf("\t -m --mode\t\tenable column display mode\n");
-	printf("\t -r --raw\t\taccess device directly\n");
-	printf("\t -g --gap=time\t\ttreat spaces longer than time as the gap\n");
-	printf("\t -s --scope=time\tenable 'scope like display with time us per char.\n");
-	printf("\t -h --help\t\tdisplay usage summary\n");
-	printf("\t -v --version\t\tdisplay version\n");
-}
 
 
 static void add_defaults(void)
@@ -96,7 +95,7 @@ static void parse_options(int argc, char** argv)
 	{
 		switch (c) {
 		case 'h':
-			help();
+			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
@@ -175,16 +174,23 @@ int main(int argc, char **argv)
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
-			fprintf(stderr, "%s: %s is not a character device\n", progname, device);
-			fprintf(stderr, "%s: use the -d option to specify the correct device\n", progname);
+			fprintf(stderr, 
+				"%s: %s is not a character device\n", 
+				progname, device);
+			fprintf(stderr, 
+				"%s: use the -d option to specify the"
+					" correct device\n", 
+				progname);
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
-			printf("This program is only intended for receivers supporting the pulse/space layer.\n");
+			printf("This program is only intended for receivers"
+			       " supporting the pulse/space layer.\n");
 			printf("Note that this is no error, but this program "
 			       "simply makes no sense for your\n" "receiver.\n");
 			printf("In order to test your setup run lircd with "
-			       "the --nodaemon option and \n" "then check if the remote works with the irw tool.\n");
+			       "the --nodaemon option and \n then check if the"
+			       " remote works with the irw tool.\n");
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
@@ -198,9 +204,11 @@ int main(int argc, char **argv)
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
 				printf("Please use the --raw option to access "
-				       "the device directly instead through\n" "the abstraction layer.\n");
+				       "the device directly instead through\n" 
+				       "the abstraction layer.\n");
 			} else {
-				printf("This program does not work for this hardware yet\n");
+				printf("This program does not work for this"
+ 				       " hardware yet\n");
 			}
 			exit(EXIT_FAILURE);
 		}
@@ -210,7 +218,9 @@ int main(int argc, char **argv)
 	if (mode == LIRC_MODE_LIRCCODE) {
 		if (use_raw_access) {
 			if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {
-				fprintf(stderr, "%s: could not get code length\n", progname);
+				fprintf(stderr, 
+					"%s: could not get code length\n", 
+					progname);
 				perror(progname);
 				close(fd);
 				exit(EXIT_FAILURE);
@@ -219,7 +229,9 @@ int main(int argc, char **argv)
 			code_length = curr_driver->code_length;
 		}
 		if (code_length > sizeof(ir_code) * CHAR_BIT) {
-			fprintf(stderr, "%s: cannot handle %u bit codes\n", progname, code_length);
+			fprintf(stderr, 
+				"%s: cannot handle %u bit codes\n", 
+				progname, code_length);
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
@@ -229,7 +241,10 @@ int main(int argc, char **argv)
 		int result;
 
 		if (use_raw_access) {
-			result = read(fd, (mode == LIRC_MODE_MODE2 ? (void *)&data : buffer), count);
+			result = read(fd, 
+				      (mode == LIRC_MODE_MODE2 ? 
+						(void *)&data : buffer), 
+				      count);
 			if (result != count) {
 				fprintf(stderr, "read() failed\n");
 				break;
@@ -238,7 +253,8 @@ int main(int argc, char **argv)
 			if (mode == LIRC_MODE_MODE2) {
 				data = curr_driver->readdata(0);
 				if (data == 0) {
-					fprintf(stderr, "readdata() failed\n");
+					fprintf(stderr,
+					        "readdata() failed\n");
 					break;
 				}
 			} else {
@@ -258,7 +274,9 @@ int main(int argc, char **argv)
 
 		switch (dmode) {
 		case 0:
-			printf("%s %u\n", (data & PULSE_BIT) ? "pulse" : "space", (__u32) (data & PULSE_MASK));
+			printf("%s %u\n", (
+			       data & PULSE_BIT) ? "pulse" : "space", 
+			       (__u32) (data & PULSE_MASK));
 			break;
 		case 1: {
 			static int bitno = 1;
@@ -291,7 +309,10 @@ int main(int argc, char **argv)
 			if ((data & PULSE_MASK) > gap)
 				printf("_\n\n_");
 			else
-				printf("%.*s", ((data & PULSE_MASK) + t_div / 2) / t_div, (data & PULSE_BIT) ? "------------" : "____________");
+				printf("%.*s", 
+				       ((data & PULSE_MASK) + t_div/2) / t_div, 
+				       (data & PULSE_BIT) ? 
+						"------------" : "____________");
 			break;
 }
 		fflush(stdout);
