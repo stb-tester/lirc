@@ -36,6 +36,21 @@
 typedef uint32_t __u32;
 #endif
 
+static const char* const help = 
+"\nSynopsis:\n"
+"    irsend [options] SEND_ONCE remote code [code...]\n"
+"    irsend [options] SEND_START remote code \n"
+"    irsend [options] SEND_STOP remote code \n"
+"    irsend [options] LIST remote\n"
+"    irsend [options] SET_TRANSMITTERS remote num [num...]\n"
+"    irsend [options] SIMULATE \"scancode repeat keysym remote\"\n"
+"Options:\n"
+"    -h --help\t\t\tdisplay usage summary\n"
+"    -v --version\t\tdisplay version\n"
+"    -d --device\t\t\tuse given lircd socket [" LIRCD "]\n"
+"    -a --address=host[:port]\tconnect to lircd at this address\n"
+"    -# --count=n\t\tsend command n times\n";
+
 char *prog;
 
 int send_packet(lirc_cmd_ctx* ctx, int fd)
@@ -51,6 +66,28 @@ int send_packet(lirc_cmd_ctx* ctx, int fd)
 	} while  (r == EAGAIN);
 	return r == 0 ? 0 : -1;
 }
+
+void reformat_simarg(char* code, char buffer[])
+{
+	unsigned int scancode;
+	unsigned int repeat;
+	char keysym[32];
+	char remote[64];
+	char trash[32];
+	int r;
+
+	r = sscanf(code, "%x %x %32s %64s %32s", 
+                   &scancode, &repeat, keysym, remote, trash);
+	if (r != 4) {
+		fprintf(stderr, "Bad simulate argument: %s\n", code);
+		exit(EXIT_FAILURE);
+	}
+	snprintf(buffer, PACKET_SIZE, "%016x %02x %s %s",
+                 scancode, repeat, keysym, remote);
+}
+
+
+	
 
 
 int main(int argc, char **argv)
@@ -84,12 +121,7 @@ int main(int argc, char **argv)
 			break;
 		switch (c) {
 		case 'h':
-			printf("Usage: %s [options] DIRECTIVE REMOTE CODE [CODE...]\n", prog);
-			printf("\t -h --help\t\t\tdisplay usage summary\n");
-			printf("\t -v --version\t\t\tdisplay version\n");
-			printf("\t -d --device\t\t\tuse given lircd socket [%s]\n", LIRCD);
-			printf("\t -a --address=host[:port]\tconnect to lircd at this address\n");
-			printf("\t -# --count=n\t\t\tsend command n times\n");
+			printf(help);
 			return (EXIT_SUCCESS);
 		case 'v':
 			printf("%s %s\n", prog, VERSION);
@@ -187,7 +219,8 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%s: invalid argument count\n", prog);
 			exit(EXIT_FAILURE);
 		}
-		r = lirc_command_init(&ctx,  "%s %s\n", directive, code);
+		reformat_simarg(code, buffer);
+		r = lirc_command_init(&ctx,  "%s %s\n", directive, buffer);
 		if (r != 0) {
 			fprintf(stderr, "%s: %s\n", prog, strerror(r));
 			exit(EXIT_FAILURE);
