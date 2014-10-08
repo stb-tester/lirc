@@ -9,7 +9,12 @@ CLEANFILES              = *~
 
 varrundir               = $(localstatedir)/run
 
-sbin_PROGRAMS           = lircd lircmd
+bin_PROGRAMS		= lircrcd
+
+lircrcd_SOURCES         = lircrcd.c
+lircrcd_LDADD           = ../lib/liblirc_client.la
+
+sbin_PROGRAMS           = lircd lircmd 
 
 lircd_SOURCES           = lircd.c
 lircd_LDADD             = ../lib/liblirc.la
@@ -18,6 +23,7 @@ lircmd_SOURCES          = lircmd.c
 lircmd_LDADD            = ../lib/liblirc.la
 
 noinst_PROGRAMS         = lircd.simsend lircd.simrec
+
 lircd_simsend_SOURCES   = lircd.c
 lircd_simsend_CFLAGS    = -DSIM_SEND
 lircd_simsend_LDADD     = ../lib/liblirc.la

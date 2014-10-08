@@ -13,7 +13,7 @@ EXTRA_PROGRAMS          += xmode2 irxevent
 endif
 
 sbin_PROGRAMS		= lirc-lsplugins
-bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lircrcd \
+bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend \
                           irtestcase irsimsend irsimreceive irrecord @x_progs@
 
 ## Simple programs
@@ -36,8 +36,6 @@ irtestcase_SOURCES      = irtestcase.c
 irtestcase_LDADD        = $(LIRC_LIBS)
 irsend_SOURCES          = irsend.c
 irsend_LDADD            = $(LIRC_LIBS)
-lircrcd_SOURCES         = lircrcd.c
-lircrcd_LDADD           = $(LIRC_LIBS)
 lirc_lsplugins_SOURCES  = lirc-lsplugins.c
 
 
@@ -51,7 +49,7 @@ xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
 
 dist_bin_SCRIPTS	= lirc-config-tool
 if HAVE_PYTHON
-dist_bin_SCRIPTS        += pronto2lirc lirc-setup 
+dist_bin_SCRIPTS        += pronto2lirc lirc-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py
 dist_pkgdata_DATA       = lirc-setup.ui
 endif
@@ -61,7 +59,7 @@ install-exec-hook:
 
 
 # Ugly fix until we deploy the script as a regular python thing.
-install-data-hook: 
+install-data-hook:
 	rm -f  $(DESTDIR)/$(bindir)/lirc-setup.ui
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgdatadir)/lirc-setup.ui \
