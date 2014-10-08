@@ -5,6 +5,15 @@
  *  license: GPL2 or later
  *  @brief Routines for dynamic drivers.
  *  @ingroup private_api
+ *
+ *  Functions in this file provides primitives to iterate over
+ *  the dynamic drivers + a single function to install such a driver.
+ *
+ *  Drivers are loaded from a path defined by (falling priority):
+ *
+ *    - The "lircd:pluginpath" option.
+ *    - The LIRC_PLUGIN_PATH environment variable.
+ *    - The hardcoded PLUGINDIR constant.
  */
 
 #include "driver.h"
@@ -15,7 +24,7 @@ extern "C" {
 
 /**
  *
- * Argument to for_each_driver. Called with the loaded struct driver*
+ * Argument to for_each_driver(). Called with the loaded struct driver*
  * data and the argument given to for_each_driver. Returns NULL if
  * iteration should continue, else a struct hardware* pointer.
  *
@@ -24,13 +33,14 @@ typedef struct driver* (*drv_guest_func)(struct driver*, void*);
 
 /**
  * Argument to for_each_plugin. Called with a path to the so-file,
- * a function to apply to each found driver (see drv_guest_func) and
- * an untyped argument given to for_each_plugin
+ * a function to apply to each found driver (see drv_guest_func()) and
+ * an untyped argument given to for_each_plugin(). Returns NULL if
+ * iteration should continue, else a struct driver* pointer.
  */
 typedef struct driver*
 (*plugin_guest_func)(const char*, drv_guest_func, void*);
 
-/* Search for driver with name and install it in the drv struct. */
+/** Search for driver with given  name and install it in the drv struct. */
 int hw_choose_driver(const char* name);
 
 /* Print name of all drivers on FILE. */

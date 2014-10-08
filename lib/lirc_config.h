@@ -93,7 +93,7 @@
 #define PACKET_SIZE             (256)
 
 /** Environment variable holding defaults for PLUGINDIR. */
-#define PLUGINDIR_VAR           "LIRC_PLUGINDIR"
+#define PLUGINDIR_VAR           "LIRC_PLUGIN_PATH"
 
 /** Bit manipulator in lirc_t, see lirc.h . Signals eof from remote. */
 #define LIRC_EOF                0x08000000
