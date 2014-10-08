@@ -79,10 +79,6 @@ void fprint_copyright(FILE * fout);
 
 extern struct ir_remote *last_remote;
 
-const char *USAGE = "Usage: irrecord [options] [config file]\n" \
-		    "       irrecord -a <config file> \n" \
-		    "       irrecord -l \n";
-
 struct ir_remote remote;
 struct ir_ncode ncode;
 
@@ -127,6 +123,48 @@ struct ir_ncode *next_code = NULL;
 struct ir_ncode *current_code = NULL;
 int current_index = 0;
 int current_rep = 0;
+
+
+static struct option long_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"analyse", no_argument, NULL, 'a'},
+	{"device", required_argument, NULL, 'd'},
+	{"options-file", required_argument, NULL, 'O'},
+	{"debug", required_argument, NULL, 'D'},
+	{"loglevel", required_argument, NULL, 'D'},
+	{"driver", required_argument, NULL, 'H'},
+	{"force", no_argument, NULL, 'f'},
+	{"disable-namespace", no_argument, NULL, 'n'},
+	{"list-namespace", no_argument, NULL, 'l'},
+	{"plugindir", required_argument, NULL, 'U'},
+	{"dynamic-codes", no_argument, NULL, 'Y'},
+	{"pre", no_argument, NULL, 'p'},
+	{"post", no_argument, NULL, 'P'},
+	{"test", no_argument, NULL, 't'},
+	{"invert", no_argument, NULL, 'i'},
+	{"trail", no_argument, NULL, 'T'},
+	{0, 0, 0, 0}
+};
+
+#define USAGE       "Usage: irrecord [options] [config file]\n" \
+		    "       irrecord -a <config file> \n" \
+		    "       irrecord -l \n"
+
+static const char* const help =
+USAGE
+"\nOptions:\n"
+"\t -H --driver=driver\tUse given driver\n"
+"\t -d --device=device\tRead from given device\n"
+"\t -a --analyse\t\tAnalyse raw_codes config files\n"
+"\t -l --list-namespace\tList valid button names\n"
+"\t -U --plugindir=dir\tLoad drivers from dir\n"
+"\t -f --force\t\tForce raw mode\n"
+"\t -n --disable-namespace\tDisable namespace checks\n"
+"\t -Y --dynamic-codes\tEnable dynamic codes\n"
+"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
+"\t -h --help\t\tDisplay this message\n"
+"\t -v --version\t\tDisplay version\n";
 
 
 static void get_commandline(int argc, char** argv, char* buff, size_t size)
@@ -248,46 +286,6 @@ void dosigterm(int sig)
 	raise(SIGTERM);
 }
 
-
-static struct option long_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"analyse", no_argument, NULL, 'a'},
-	{"device", required_argument, NULL, 'd'},
-	{"options-file", required_argument, NULL, 'O'},
-	{"debug", required_argument, NULL, 'D'},
-	{"driver", required_argument, NULL, 'H'},
-	{"force", no_argument, NULL, 'f'},
-	{"disable-namespace", no_argument, NULL, 'n'},
-	{"list-namespace", no_argument, NULL, 'l'},
-	{"plugindir", required_argument, NULL, 'U'},
-	{"dynamic-codes", no_argument, NULL, 'Y'},
-	{"pre", no_argument, NULL, 'p'},
-	{"post", no_argument, NULL, 'P'},
-	{"test", no_argument, NULL, 't'},
-	{"invert", no_argument, NULL, 'i'},
-	{"trail", no_argument, NULL, 'T'},
-	{0, 0, 0, 0}
-};
-
-
-static void help(void)
-{
-	printf(USAGE);
-	printf("Options:\n");
-	printf("\t -H --driver=driver\tuse given driver\n");
-	printf("\t -d --device=device\tread from given device\n");
-	printf("\t -a --analyse\t\tanalyse raw_codes config files\n");
-	printf("\t -l --list-namespace\tlist valid button names\n");
-	printf("\t -U --plugindir=dir\tdir where drivers are loaded from\n");
-	printf("\t -f --force\t\tforce raw mode\n");
-	printf("\t -n --disable-namespace\tdisables namespace checks\n");
-	printf("\t -Y --dynamic-codes\tEnable dynamic codes\n");
-	printf("\t -D --debug=level\tSet debug level (1..10)\n");
-	printf("\t -h --help\t\tdisplay this message\n");
-	printf("\t -v --version\t\tdisplay version\n");
-}
-
 static void add_defaults(void)
 {
         char level[4];
@@ -341,7 +339,7 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("irrecord:driver", optarg);
 			break;
 		case 'h':
-			help();
+			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'i':
 			options_set_opt("irrecord:invert", "True");
