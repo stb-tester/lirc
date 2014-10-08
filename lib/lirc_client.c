@@ -33,13 +33,13 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/un.h>
 #include <unistd.h>
-//#include <sys/wait.h>
 
 #include "lirc_client.h"
 
@@ -727,39 +727,89 @@ unsigned int lirc_flags(char *string)
 }
 
 
+
+
+
+
+/**
+ *  Retrieve the $HOME path in a malloc'ed *  MAXPATHLEN long buffer.
+ *  Returns NULL on malloc() failures, "/" as fallback if $HOME is empty.
+ *  Otherwise the returned path has no trailing "/".
+ */
+static char* get_homepath(void)
+{
+	char* home;
+	char* filename;
+
+	filename = malloc(MAXPATHLEN);
+	if (filename == NULL) {
+		lirc_printf("%s: out of memory\n", lirc_prog);
+		return NULL;
+	}
+	home = getenv("HOME");
+	home = home == NULL ? "/" : home;
+	strncpy(filename, home, MAXPATHLEN);
+	if (filename[strlen(filename) - 1] == '/') {
+		filename[strlen(filename) - 1] = '\0';
+	}
+	return filename;
+}
+
+
+/**
+ *  Retrieve the freedesktop configuration file path in a malloc'ed
+ *  MAXPATHLEN long buffer. Returns NULL on malloc() failure and ""
+ *  if the file does not exist.
+ */
+static char* get_freedesktop_path()
+{
+	char* path;
+
+	if (getenv("XDG_CONFIG_HOME") != NULL) {
+		path = malloc(MAXPATHLEN);
+		strncpy(path, getenv("XDG_CONFIG_HOME"), MAXPATHLEN);
+		strncat(path, "/", MAXPATHLEN - strlen(path));
+		strncat(path, CFG_LIRCRC, MAXPATHLEN - strlen(path));
+	} else {
+		path = get_homepath();
+		if (path == NULL) {
+			return NULL;
+		}
+		strncat(path, "/.config/lircrc", MAXPATHLEN - strlen(path));
+	}
+	if (access(path, R_OK) != 0) {
+		path[0] = '\0';
+	}
+	return path;
+}
+
+
 static char *lirc_getfilename(const char *file, const char *current_file)
 {
-	char *home, *filename;
+	char *filename;
 
 	if (file == NULL) {
-		home = getenv("HOME");
-		if (home == NULL) {
-			home = "/";
-		}
-		filename = (char *)malloc(strlen(home) + 1 + strlen(LIRCRC_USER_FILE) + 1);
+		filename = get_freedesktop_path();
 		if (filename == NULL) {
-			lirc_printf("%s: out of memory\n", lirc_prog);
 			return NULL;
+		} else if (strlen(filename) == 0) {
+			free(filename);
+			filename = get_homepath();
+			if (filename == NULL) {
+				return NULL;
+			}
+			strcat(filename, LIRCRC_USER_FILE);
 		}
-		strcpy(filename, home);
-		if (strlen(home) > 0 && filename[strlen(filename) - 1] != '/') {
-			strcat(filename, "/");
-		}
-		strcat(filename, LIRCRC_USER_FILE);
+		filename = realloc(filename, strlen(filename) + 1);
 	} else if (strncmp(file, "~/", 2) == 0) {
-		home = getenv("HOME");
-		if (home == NULL) {
-			home = "/";
-		}
-		filename = (char *)malloc(strlen(home) + strlen(file) + 1);
+		filename = get_homepath();
 		if (filename == NULL) {
-			lirc_printf("%s: out of memory\n", lirc_prog);
 			return NULL;
 		}
-		strcpy(filename, home);
 		strcat(filename, file + 1);
+		filename = realloc(filename, strlen(filename) + 1);
 	} else if (file[0] == '/' || current_file == NULL) {
-		/* absulute path or root */
+		/* absolute path or root */
 		filename = strdup(file);
 		if (filename == NULL) {
 			lirc_printf("%s: out of memory\n", lirc_prog);
