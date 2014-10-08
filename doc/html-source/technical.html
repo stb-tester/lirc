@@ -11,11 +11,11 @@ F |  +--------------+------------------------------------------------+
 T |                 |
 W |   /var/run/lirc/lircm (named pipe (FIFO) ==&gt; one connection)
 A |                 |
-R |     +-----------+-----------+   +-------------------------------+
-E |     | mouse daemon (lircmd) |   | tools (irexec, irxevent, ...) |
-  |     | configured with       |   | configured with ~/.lircrc     |
-  |     | lircmd.conf           |   |                               |
-  |     +-----------+-----------+   +-----------+-------------------+
+R |     +-----------+-----------+   +----------------------------------+
+E |     | mouse daemon (lircmd) |   | tools (irexec, irxevent, ...)    |
+  |     | configured with       |   | configured with ~/.config/lircrc |
+  |     | lircmd.conf           |   |                                  |
+  |     +-----------+-----------+   +-----------+----------------------+
   |                 |                           |
   |                 +-------------+-------------+
   |                               |

@@ -180,8 +180,8 @@ remote |        |       devinput v        |
             layer</a> or <A HREF="#key-symbols-using-lirc-drivers">an lirc
             driver</a> using the lircd.conf file.</li>
        <li> In the next step the application converts the key symbols
-            to application-specific strings using the ~/.lircrc file. This
-            is described in
+            to application-specific strings using the ~/.config/lircrc file.
+            This is described in
             <A HREF="#converting-key-symbols-to-application-strings">
              Convert the key symbols to application strings</a> .</li>
     </ul>
@@ -460,7 +460,7 @@ remote |        |       devinput v        |
        v      keysyms                Use irw to debug.
        |
   ---------------
-  | LIRC pass 2 |                     ~/.lircrc
+  | LIRC pass 2 |                     ~/.config/lircrc
   ---------------
        |
        |      /var/run/lirc/lircX
@@ -485,11 +485,11 @@ remote |        |       devinput v        |
     <ul><li>
       Check that you can start/stop a working service, irw is your friend.
     </li></ul>
-    <p>Using ~/.lircrc, convert the key symbols to application-specific
+    <p>Using ~/.config/lircrc, convert the key symbols to application-specific
       strings:
       <ul>
         <li> Read the <a href="configure.html#lircrc_format">.lircrc chapter
-          </a> and create your ~/.lircrc. lirc-config-tool can generate
+          </a> and create your ~/.config/lircrc. lirc-config-tool can generate
             a starting point <a href="appendix-5">(below)</a>.</li>
         <li>Restart the lircd daemon. Use <a href="ircat.html">ircat(1)</a>
             to verify your application settings i. e., what your
@@ -694,7 +694,7 @@ remote |        |       devinput v        |
     <h3 align="center"> A4: Normalizing the lircd.conf</h3>
     <p>
     Several of the pre-defined remotes uses non-standard key symbols. This
-    is a Bad Thing, which makes it harder to create the ~/.lircrc file
+    is a Bad Thing, which makes it harder to create the ~/.config/lircrc file
     in next step. It's also a prblem when using the uinput option, or when
     converting to use the build-in decoding.</p>
     <p>
@@ -870,7 +870,7 @@ remote |        |       devinput v        |
              run otherwise restricted commands.</li>
         <li> Enable the session service using e. g. gnome settings or
              corresponding tools.</li>
-        <li> Configure the ~/.lircrc file as described in
+        <li> Configure the ~/.config/lircrc file as described in
              <a href="configure.html#lircrc_format">.lircrc chapter </a>
              Note that you must specify "program = irexec" for irexec
              to pick up your configuration.</li>

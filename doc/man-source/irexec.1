@@ -9,7 +9,7 @@ This program lets you execute arbitrary commands on an IR signal decoded
 by lircd, the LIRC daemon. You can give irexec a command line parameter
 which has to be a name of a valid config file. If no command line
 parameters are given irexec reads the default config file which is
-usually ~/.lircrc.
+usually ~/.config/lircrc.
 
 If irexec executes a program it will wait until this program terminates.
 So append a '&' to the command string if you don't want that.
@@ -34,7 +34,7 @@ Use this program name instead of the default 'irexec' as identifier in
 the lircd.conf file.
 .SH NOTE
 
-If you start irexec, it reads your ~/.lircrc and reacts only on
+If you start irexec, it reads your ~/.config/lircrc and reacts only on
 prog= entries that point to irexec. If you have included more than one
 program in your .lircrc, then start all these programs, they react
 itself only to their according entries in .lircrc.

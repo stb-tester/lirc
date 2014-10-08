@@ -12,7 +12,7 @@ readonly   OUTPUT_DIR="$HOME/.config/lirc"
 
 declare -a  ALL_LIRCD_KEYS      # All buttons in /etc/lirc/lircd.conf
 declare -a  BAD_LIRCD_KEYS      # Buttons not listed by irrecord -l
-declare -a  DUPLICATE_KEYS      
+declare -a  DUPLICATE_KEYS
 declare -a  GOOD_KEYS
 declare -ar GOOD_KEYS=( $( irrecord -l | egrep '^KEY_' |
                                egrep -v 'KEY_KP[0-9]' |
@@ -130,8 +130,8 @@ use it later on while manually modifying the lircrc files.
 .PP
 When updating files, script always makes backup copies.
 .PP
-The generated lircrc files are intended to be included in a main ~/.lircrc
-file. A minimal such might look like
+The generated lircrc files are intended to be included in a main
+~/.config/lircrc file. A minimal such might look like
 .IP
     include ~/.config/lirc/mythtv.lircrc
 
@@ -686,7 +686,7 @@ function scan_keycodes
     if (( ${#DUPLICATE_KEYS[@]} != 0 )); then
         echo 'Duplicate keys:'
         for key in ${DUPLICATE_KEYS[@]}; do echo "    $key"; done
-    fi 
+    fi
     if (( ${#BAD_LIRCD_KEYS[@]} != 0 )); then
         echo 'Unusable keys:'
         for key in ${BAD_LIRCD_KEYS[@]}; do echo "    $key"; done
@@ -972,7 +972,7 @@ function get_options()
          m)   if [ -t 1 ]; then
                   manpage | nroff -man | more
               else
-                  manpage 
+                  manpage
               fi
               exit 0
               ;;
