@@ -90,7 +90,7 @@ class ClientTest : public CppUnit::TestFixture
             }
             string path = string("client.log");
             lirc_log_set_file(path.c_str());
-            lirc_log_open("ClientTest", 0, LIRC_STALK);
+            lirc_log_open("ClientTest", 0, LIRC_TRACE2);
 
             unlink("var/file-driver.out");
 

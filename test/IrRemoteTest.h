@@ -42,7 +42,7 @@ class IrRemoteTest : public CppUnit::TestFixture
         {
             string path = string("ir_remote.log");
             lirc_log_set_file(path.c_str());
-            lirc_log_open("IrRemoteTest", 0, LIRC_STALK);
+            lirc_log_open("IrRemoteTest", 0, LIRC_TRACE2);
             f = fopen("etc/lircd.conf.Aspire_6530G", "r");
             config = read_config(f, NAME);
         };

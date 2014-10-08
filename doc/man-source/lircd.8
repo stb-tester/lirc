@@ -57,11 +57,11 @@ of such connections is currently limited to 100.
 The connecting lircd instance will receive IR events from the lircd
 instance it connects to.
 .TP 4
-.B -D, --debug [level]
+.B -D, --loglevel [level]
 Determine the amount of logging information. [level] can be a symbolic
 syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
-also defines three additional levels 'trace', 'peep' and 'stalk' which
-gives even more messages ('stalk' bringing the most). However, in the
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'.
 .p
 The level can also be an integer in the range 0 (almost no messages) to

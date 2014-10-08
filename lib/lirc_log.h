@@ -30,12 +30,12 @@ extern "C" {
 
 
 /**
- * The defined loglevels. LIRC_TRACE..LIRC_STALK is mapped to LIRC_DEBUG in
+ * The defined loglevels. LIRC_TRACE..LIRC_TRACE2 is mapped to LIRC_DEBUG in
  * outputted messages, but generates more messages than DEBUG.
  */
 typedef enum {
-	LIRC_STALK 	= 10,
-	LIRC_PEEP 	= 9,
+	LIRC_TRACE2	= 10,
+	LIRC_TRACE1	= 9,
 	LIRC_TRACE 	= 8,
 	LIRC_DEBUG 	= LOG_DEBUG,
 	LIRC_INFO 	= LOG_INFO,
@@ -47,7 +47,7 @@ typedef enum {
 } loglevel_t;
 
 /** Max loglevel (for validation). */
-#define LIRC_MAX_LOGLEVEL LIRC_STALK
+#define LIRC_MAX_LOGLEVEL LIRC_TRACE2
 
 /** Mix loglevel (for validation). */
 #define LIRC_MIN_LOGLEVEL LIRC_ERROR
@@ -70,21 +70,21 @@ extern char progname[128];
 
 /**
  *  Compatibility log message stuff.. Accepts level 1..3 which are mapped to
- *  LIRC_TRACE..LIRC_STALK.
+ *  LIRC_TRACE..LIRC_TRACE2.
  */
 #define LOGPRINTF(level,fmt,args...) \
 	if (level + 7 <= loglevel ) logprintf(logmax(level + 7), fmt, ## args)
 
 /**
  *  Compatibility perror(3) wrapper Accepts level 1..3 which are mapped to
- *  LIRC_TRACE..LIRC_STALK.
+ *  LIRC_TRACE..LIRC_TRACE2.
  */
 #define LOGPERROR(level,s) \
 	if (level + 7 <= loglevel ) logperror(logmax(level + 7), s)
 
 
 /**
- * Convert a string, either a number or 'info', 'peep', error etc.
+ * Convert a string, either a number or 'info', 'trace1', error etc.
  * to a loglevel.
  */
 loglevel_t string2loglevel(const char* level);

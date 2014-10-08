@@ -42,11 +42,11 @@ class LogTest : public CppUnit::TestFixture
         {
             string path = string("logtest.log");
             lirc_log_set_file(path.c_str());
-            lirc_log_open("IrRemoteTest", 0, LIRC_STALK);
+            lirc_log_open("IrRemoteTest", 0, LIRC_TRACE2);
 
-            lirc_log_setlevel(LIRC_PEEP);
-            LOGPRINTF(2, "Testing LIRC_PEEP: %s", "PEEP arg");
-            LOGPRINTF(3, "Testing LIRC_STALK (disabled): %s", "STALK arg");
+            lirc_log_setlevel(LIRC_TRACE1);
+            LOGPRINTF(2, "Testing LIRC_TRACE1: %s", "TRACE1 arg");
+            LOGPRINTF(3, "Testing LIRC_TRACE2 (disabled): %s", "TRACE2 arg");
 
             lirc_log_setlevel(LIRC_TRACE);
             LOGPRINTF(2, "Testing LIRC_TRACE: %s", "TRACE arg");
@@ -66,16 +66,16 @@ class LogTest : public CppUnit::TestFixture
 
         void testLevels()
         {
-            CPPUNIT_ASSERT(log.find("LIRC_PEEP") != string::npos);
+            CPPUNIT_ASSERT(log.find("LIRC_TRACE1") != string::npos);
             CPPUNIT_ASSERT(log.find("enabled TRACE") != string::npos);
-            CPPUNIT_ASSERT(log.find("STALK") == string::npos);
+            CPPUNIT_ASSERT(log.find("TRACE2") == string::npos);
             CPPUNIT_ASSERT(log.find("disabled WARNING") == string::npos);
             CPPUNIT_ASSERT(log.find("enabled WARNING") != string::npos);
         };
 
         void testString2Level()
         {
-           CPPUNIT_ASSERT(string2loglevel("peep") == LIRC_PEEP);
+           CPPUNIT_ASSERT(string2loglevel("trace2") == LIRC_TRACE2);
            CPPUNIT_ASSERT(string2loglevel("error") == LIRC_ERROR);
            CPPUNIT_ASSERT(string2loglevel("InfO") == LIRC_INFO);
            CPPUNIT_ASSERT(string2loglevel("Notice") == LIRC_NOTICE);

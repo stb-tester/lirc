@@ -69,8 +69,8 @@ static const char* prio2text(int prio)
 		case LIRC_WARNING:	return "Warning";
 		case LIRC_ERROR:	return "Error";
 		case LIRC_TRACE:        return "Trace";
-		case LIRC_PEEP:         return "Trace1";
-		case LIRC_STALK:        return "Trace2";
+		case LIRC_TRACE1:       return "Trace1";
+		case LIRC_TRACE2:       return "Trace2";
 		default:		return "(Bad prio)";
 	}
 }
@@ -175,8 +175,8 @@ int lirc_log_setlevel(loglevel_t level)
 static loglevel_t symbol2loglevel(const char* levelstring)
 {
 	static const struct {const char* label; int value;} options[] = {
-		{"STALK" 	, LIRC_STALK},
-		{"PEEP" 	, LIRC_PEEP},
+		{"TRACE2" 	, LIRC_TRACE2},
+		{"TRACE1" 	, LIRC_TRACE1},
 		{"TRACE" 	, LIRC_TRACE},
 		{"DEBUG" 	, LIRC_DEBUG},
 		{"INFO" 	, LIRC_INFO},

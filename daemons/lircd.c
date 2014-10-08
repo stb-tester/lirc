@@ -80,8 +80,8 @@
  */
 
 #define DEBUG_HELP "Bad debug level: \"%s\"\n\n" \
-    "Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, PEEP, STALK or \n" \
-    "a sumber in the range 0..10.\n"
+    "Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, TRACE1,\n" \
+    " TRACE2 or a number in the range 0..10.\n"
 
 #ifndef PACKET_SIZE
 #define PACKET_SIZE 256

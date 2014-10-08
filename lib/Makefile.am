@@ -75,7 +75,7 @@ driver_api.dox:
 	cat $(srcdir)/driver_api.doxhead \
 	    $(top_srcdir)/doc/html-source/driver-api.html \
                 >driver_api.dox
-	echo "@example: drivers/default/makefile" >> driver_api.dox
+	echo "@example: drivers/default/Makefile" >> driver_api.dox
 	echo "*/" >> driver_api.dox
 
 lirc_client.dox:

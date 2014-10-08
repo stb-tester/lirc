@@ -62,7 +62,7 @@ contains one or more driver(s) visible in the user interface. </p>
 <p>This guide is intended for programmers
       writing and maintain "real" drivers.</p>
 
-  <p>At the time of writing, there are about  44 plugins and 54 drivers. Of the drivers, 13 are 
+  <p>At the time of writing, there are about  44 plugins and 54 drivers. Of the drivers, 13 are
      "general receivers"; the others  are LIRCCODE drivers. (The actual numbers vary depending
      on configuration i. e. libraries installed on the build system.)
      Since hardware related to LIRCCODE drivers (typically a TV-card) normally doesn't support
@@ -222,17 +222,17 @@ static int generic_deinit(void) {
     return 1;
 }
 
-static int generic_send(struct ir_remote *remote, struct ir_ncode *code) {
+static int generic_send(struct ir_remote* remote, struct ir_ncode* code) {
     result = send_buffer_put(remote, code);
     if (!result)
         return 0;
 
     /* Payload signal is now available in global variable send_buf. */
-    /* Process sendbuf */
+    /* Process sendbuf (see transmit.h). */
     return success;
 }
 
-static char *rec_func(struct ir_remote * remotes) {
+static char *rec_func(struct ir_remote* remotes) {
     if (!rec_buffer_clear) {
         /* handle errors */
         return NULL;
@@ -240,7 +240,7 @@ static char *rec_func(struct ir_remote * remotes) {
     return decode_all(remotes);
 }
 
-static char *decode_func(struct ir_remote * remote, struct decode_ctx_t * ctx) {
+static char *decode_func(struct ir_remote* remote, struct decode_ctx_t* ctx) {
     return receive_decode(remote, ctx);
 }
 
@@ -307,10 +307,10 @@ struct driver* hardwares[] = { &my_hardware, NULL };
   <code>mydrvctl_func(unsigned int cmd, void *arg)</code></h4>
       <p>Depending on the particular driver and hardware, additional
          functionality can be implemented here, with semantics as
-         determined by the driver. There are some cmd definitions in 
-         driver.h which could be used by any driver. Driver-specific 
+         determined by the driver. There are some cmd definitions in
+         driver.h which could be used by any driver. Driver-specific
          cmd constants should be > DRVCTL_MAX.</p>
-      <p> drvctl() returns 0 if OK, else a positive error code some of 
+      <p> drvctl() returns 0 if OK, else a positive error code some of
           which defined in driver.h </p>
       <p> driver.h defines the DRVCTL_SET_OPTION cmd. This is a generic
           way to set a named key to value which should cover many (most?)
@@ -339,10 +339,10 @@ struct driver* hardwares[] = { &my_hardware, NULL };
         (The only exception would be special constants for usage with the drvctl function.)</li>
     <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
         <code>lirc_driver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, i
-        and <code>transmit.h</code>) and if required also lirc-serial.h.
+        and <code>transmit.h</code>) and if required also <code>serial.h</code>.
         Inclusions of other LIRC files (including <code>config.h</code>) should be avoided.</li>
-    <li>The LIRC name of the driver is taken from the <code>name</code> field of the 
-        <code>hardware</code> struct.  The file name is thus irrelevant. For files containing 
+    <li>The LIRC name of the driver is taken from the <code>name</code> field of the
+        <code>hardware</code> struct.  The file name is thus irrelevant. For files containing
         only one driver, it is recommended to keep
         the name of the file equal to the name of the driver (with added file extension).</li>
 </ul>
@@ -380,9 +380,9 @@ struct driver* hardwares[] = { &my_hardware, NULL };
     The autotools are not needed, in particular not libtool.</p>
 
 <h2>Using C++</h2>
-<p>Plugins can also be written in C++. The used include files are required to be "C++-safe" 
-   i. e., the functions to be called from C++ have to be declared  <code>extern "C"</code>, 
-  to make sure that the generated code follows C's calling conventions. Since the plugin 
+<p>Plugins can also be written in C++. The used include files are required to be "C++-safe"
+   i. e., the functions to be called from C++ have to be declared  <code>extern "C"</code>,
+  to make sure that the generated code follows C's calling conventions. Since the plugin
   code is called only indirectly through the hardware struct,
         no <code>extern "C"</code> declarations are required in the plugin code. </p>
 
