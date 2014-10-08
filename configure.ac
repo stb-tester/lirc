@@ -53,7 +53,8 @@ if test "$ac_cv_func_daemon" != yes; then
     AC_MSG_ERROR([*** daemon() function not available on this system, giving up])
   fi
 fi
-AX_PYTHON_MODULE([yaml],[Required python3 module "yaml" is missing])
+AX_PYTHON_MODULE([yaml])
+AM_CONDITIONAL([HAVE_PYMOD_YAML], test $HAVE_PYMOD_YAML = "yes")
 forkpty=""
 AC_CHECK_FUNCS(forkpty)
 if test "$ac_cv_func_forkpty" != yes; then
@@ -392,6 +393,12 @@ AC_REPORT_CONDITIONAL([HAVE_PYTHON])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_DOXYGEN])
+AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
+
+if test "$HAVE_PYMOD_YAML" != "yes"; then
+    AC_MSG_WARN([python3-yaml is missing. lirc-setup will not work, table.html
+and lirc.hwdb will not be created.])
+fi
 
 echo
 echo "Now enter 'make' and 'make install' to compile and install the package."

@@ -34,10 +34,17 @@ if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
 
-dist_html_DATA          = $(html_includes) html-source/lirc.css table.html
+dist_html_DATA          = $(html_includes) html-source/lirc.css
+
+if HAVE_PYMOD_YAML
+dist_html_DATA		+= table.html
+endif
+
+if HAVE_PYMOD_YAML
+dist_pkgdata_DATA       = lirc.hwdb
+endif
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)
-dist_pkgdata_DATA       = lirc.hwdb
 
 imagedir                = $(docdir)/images
 dist_image_DATA         = images/atwf83.jpg \
