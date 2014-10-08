@@ -101,7 +101,7 @@ loglevel_t lirc_log_defaultlevel(void);
 /** Check if log is set up to use syslog or not. */
 int lirc_log_use_syslog();
 
-/** 
+/**
  * Write a message to log.
  *
  * @param prio Level of message
@@ -132,6 +132,16 @@ int lirc_log_close();
  * does indeed use syslog(1) instead. Must be called before lirc_log_open().
  */
 void lirc_log_set_file(const char* s);
+
+/**
+ * Retrieve a client path for logging according to freedesktop specs.
+ *
+ * @param basename  Basename for the logfile.
+ * @param buff Buffer to store result in.
+ * @param size Size of buffer
+ * @return 0 if OK, otherwise -1
+ */
+int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size);
 
 /** Print prefix + a hex dump of len bytes starting at  *buf. */
 void hexdump(char* prefix, unsigned char*  buf, int len);

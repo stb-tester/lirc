@@ -299,6 +299,28 @@ void logperror(loglevel_t prio, const char *s)
 	}
 }
 
+
+int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size)
+{
+	const char* home;
+
+	if (getenv("XDG_CACHE_HOME") != NULL ) {
+		strncpy(buffer, getenv("XDG_CACHE_HOME"), size);
+		buffer[size - 1] = '\0';
+		strncat(buffer, "/", size - strlen(buffer) - 1);
+	} else {
+	    	home = getenv("HOME");
+		home = home != NULL ? home : "/";
+		strncpy(buffer, home, size);
+		buffer[size - 1] = '\0';
+		strncat(buffer, "/.cache/", size - strlen(buffer) - 1);
+	}
+	strncat(buffer, basename, size - strlen(buffer) - 1);
+	strncat(buffer, ".log", size - strlen(buffer) - 1);
+	return 0;
+}
+
+
 void hexdump(char *prefix, unsigned char* buf, int len)
 // Dump a byte array as hex code, adding a prefix.
 {

@@ -27,7 +27,7 @@ static const int SEND_DELAY  = 2000000;
 #define     RUN_LIRCD   "../daemons/lircd -O client_test.conf \
                         etc/lircd.conf.Aspire_6530G"
 
-#define     RUN_LIRCRCD "../tools/lircrcd -o var/lircrcd.socket \
+#define     RUN_LIRCRCD "../daemons/lircrcd -o var/lircrcd.socket \
                         etc/mythtv.lircrc"
 
 #define IRSEND         " ../tools/irsend -d var/lircd.socket  SIMULATE  \
@@ -47,7 +47,9 @@ class ClientTest : public CppUnit::TestFixture
                  new CppUnit::TestSuite( "ClientTest" );
             //ADD_TEST("testReceive", testReceive);
             ADD_TEST("testReadConfig", testReadConfig);
-            ADD_TEST("testReadConfigOnly", testReadConfig);
+            ADD_TEST("testReadConfig1", testReadConfig1);
+            ADD_TEST("testReadConfig2", testReadConfig2);
+            ADD_TEST("testReadConfigOnly", testReadConfigOnly);
             ADD_TEST("testCode2Char", testCode2Char);
             ADD_TEST("testSetMode", testSetMode);
             ADD_TEST("testGetMode", testSetMode);
@@ -129,6 +131,59 @@ class ClientTest : public CppUnit::TestFixture
 
             CPPUNIT_ASSERT(lirc_readconfig(abspath("etc/mythtv.lircrc"),
                                            &config, NULL) == 0);
+        }
+
+        void testReadConfig1()
+        {
+            struct lirc_config* config;
+            const char* oldhome;
+
+            oldhome = getenv("HOME");
+            setenv("HOME", getenv("PWD"), 1);
+            CPPUNIT_ASSERT(lirc_readconfig(NULL, &config, NULL) == 0);
+            setenv("HOME", oldhome, 1);
+        }
+
+        void testReadConfig2()
+        {
+            struct lirc_config* config;
+            char path[128];
+
+            strcpy(path, getenv("PWD"));
+            strcat(path, "/.config");
+            setenv("XDG_CONFIG_HOME", path, 1);
+            CPPUNIT_ASSERT(lirc_readconfig(NULL, &config, NULL) == 0);
+            setenv("XDG_CONFIG_HOME", "", 1);
+        }
+
+
+        void testGetClientLog()
+        {
+            char buff[128];
+            char path[128];
+            const char* oldhome;
+
+            oldhome = getenv("HOME");
+            setenv("HOME", getenv("PWD"), 1);
+            lirc_log_get_clientlog("foo", path, sizeof(path));
+            strcpy(buff, getenv("HOME"));
+            strcat(buff, "/.cache/foo.log" );
+            CPPUNIT_ASSERT(strcmp(path, buff) == 0);
+            setenv("HOME", oldhome, 1);
+        }
+
+        void testGetClientLog2()
+        {
+            char buff[128];
+            char path[128];
+            const char* oldhome;
+
+            setenv("XDG_CACHE_HOME", getenv("PWD"), 1);
+            lirc_log_get_clientlog("foo", path, sizeof(path));
+            strcpy(buff, getenv("XDG_CACHE_HOME"));
+            strcat(buff, "/foo.log" );
+            CPPUNIT_ASSERT(strcmp(path, buff) == 0);
+            setenv("XDG_CACHE_HOME", NULL, 1);
         }
 
 
