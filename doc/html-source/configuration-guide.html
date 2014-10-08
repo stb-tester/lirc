@@ -489,7 +489,7 @@ remote |        |       devinput v        |
       strings:
       <ul>
         <li> Read the <a href="configure.html#lircrc_format">.lircrc chapter
-          </a> and create your ~/.lircrc. generate-lircrc.sh can generate
+          </a> and create your ~/.lircrc. lirc-config-tool can generate
             a starting point <a href="appendix-5">(below)</a>.</li>
         <li>Restart the lircd daemon. Use <a href="ircat.html">ircat(1)</a>
             to verify your application settings i. e., what your
@@ -705,14 +705,14 @@ remote |        |       devinput v        |
     The standard symbols a. k. a. the namespace, is listed by irrecord -l.
     </p>
     <p>
-    The script generate-lircrc is helpful here. List all non-standard
+    The script lirc-config-tool is helpful here. List all non-standard
     symbols in lircd.conf:
     <pre>
-        $ generate-lircrc.sh -s -c /etc/lirc/lircd.conf
+        $ lirc-config-tool -s -c /etc/lirc/lircd.conf
     </pre>
     Update the lircd.conf file with standard key symbols as applicable:
     <pre>
-        $ sudo generate-lircrc.sh -u -c /etc/lirc/lircd.conf
+        $ sudo lirc-config-tool -u -c /etc/lirc/lircd.conf
     </pre>
     </p>
 
@@ -721,25 +721,25 @@ remote |        |       devinput v        |
     <p>
     The .lircrc file basically combines the remote buttons with application
     capabilities. To actually write a .lircrc file from scratch is not that
-    hard, but it's a lot of work. generate-lircrc.sh can save some of this
+    hard, but it's a lot of work. lirc-config-tool can save some of this
     work by creating a starting point. For this to work , the lircd.conf
     file must be in place.</p>
     <p>
     The first step is to check if your application is supported by the script:
     <pre>
-        $ ./generate-lircrc.sh -l
+        $ ./lirc-config-tool -l
     </pre>
     if you find your application here, you can make an .lircrc for that app:
     <pre>
-        $ ./generate-lircrc.sh -o . vlc
+        $ ./lirc-config-tool -o . vlc
     </pre>
     If you're using the devinput lircd.conf, create a new version of that
     file which only contains the key symbols you are actually using. Use
-    this instead in the -c option to let generate-lircrc.sh make it's work.
+    this instead in the -c option to let lirc-config-tool make it's work.
     </p>The generated file will look like (excerpt!)</p>
     <pre>
 
-    # Created by /home/al/bin/generate-lircrc.sh at tis dec  3 23:26:18 CET 2013
+    # Created by /home/al/bin/lirc-config-tool at tis dec  3 23:26:18 CET 2013
 
     # See http://wiki.videolan.org/How_to_Use_Lirc
 
@@ -796,7 +796,7 @@ remote |        |       devinput v        |
     in the program (vlc) which are not bound to a button. Obviously, this
     saves some work.</p>
     <p>
-    The generate-lircrc.sh has a -h and a manpage option for more info.</p>
+    The lirc-config-tool has a -h and a manpage option for more info.</p>
     <p>
     BEWARE: The configuration file generated this way is a starting point. It
     needs to be inspected and tweaked before it actually does it's job.

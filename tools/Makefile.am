@@ -49,15 +49,19 @@ xmode2_SOURCES          = xmode2.c
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 
+dist_bin_SCRIPTS	= lirc-config-tool
 if HAVE_PYTHON
-dist_bin_SCRIPTS        = pronto2lirc lirc-setup
+dist_bin_SCRIPTS        += pronto2lirc lirc-setup 
 dist_noinst_SCRIPTS     = make_rel_symlink.py
 dist_pkgdata_DATA       = lirc-setup.ui
 endif
 
+install-exec-hook:
+	sed -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+
 
 # Ugly fix until we deploy the script as a regular python thing.
-install-data-hook:
+install-data-hook: 
 	rm -f  $(DESTDIR)/$(bindir)/lirc-setup.ui
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgdatadir)/lirc-setup.ui \

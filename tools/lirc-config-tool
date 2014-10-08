@@ -54,7 +54,8 @@ EOF
 function manpage()
 {
     cat << EOF
-.TH $(basename $0) "1" "November 2011" "User Commands"
+.TH $(basename $0)"1" "Last change: Sep 2014" "lircd @version@" \
+    "System Administration Utilities"
 .SH NAME
 $(basename $0) \- tool to scan and generate lirc config files
 .SH SYNOPSIS
@@ -968,7 +969,11 @@ function get_options()
               exit 0
               ;;
 
-         m)   manpage | nroff -man | more
+         m)   if [ -t 1 ]; then
+                  manpage | nroff -man | more
+              else
+                  manpage 
+              fi
               exit 0
               ;;
 

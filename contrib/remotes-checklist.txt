@@ -27,7 +27,7 @@ MUST:
           + Remote layout (ascii art showing symbol for each button).
 
     - Config file should use proper name symbols from namespace where
-      applicable (use generate-lircrc -sc to check status).
+      applicable (use lirc-config-tool -sc to check status).
 
     - Files with raw data should if possible be converted using
       irrecord -a
@@ -60,7 +60,7 @@ NOTES:
        + For mouse movements use MOUSE_N, MOUSE_S, MOUSE_NW, MOUSE_SE, etc.
        + KEY_RED..KEY_BLUE is preferred to KEY_A..KEY_D.
 
-    generate-lircrc -sc scans file for "bad" symbols. generate-lircrc -uc can
+    lirc-config-tool -sc scans file for "bad" symbols. lirc-config-tool -uc can
     update many ad-hoc symbols using heuristics - results must be checked!
 
     Remote sketch
