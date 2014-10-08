@@ -13,9 +13,9 @@ cd $here
 exec &> ../../var/space-enc-1.log
 set -x
 
-irsimreceive -U $LIRC_PLUGIN_PATH  119420.conf durations > decoded1.out
-irsimsend   -U $LIRC_PLUGIN_PATH -l decoded1 119420.conf  >/dev/null
-irsimreceive  -U $LIRC_PLUGIN_PATH 119420.conf simsend.out > decoded2.out
+irsimreceive  119420.conf durations > decoded1.out
+irsimsend   -l decoded1 119420.conf  >/dev/null
+irsimreceive  119420.conf simsend.out > decoded2.out
 
 diff decoded1.out decoded2.out
 
