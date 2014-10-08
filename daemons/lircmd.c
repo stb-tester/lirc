@@ -69,6 +69,30 @@ static int uinputfd = -1;
 static int useuinput = 0;
 loglevel_t loglevel = 0;
 
+
+static const struct option lircmd_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"nodaemon", no_argument, NULL, 'n'},
+	{"options-file", required_argument, NULL, 'O'},
+#       if defined(__linux__)
+	{"uinput", no_argument, NULL, 'u'},
+#       endif
+	{0, 0, 0, 0}
+};
+
+static const char* const help = 
+	"Usage: lircmd [options] [config-file]\n"
+	"\t -h --help\t\tDisplay this message\n"
+	"\t -v --version\t\tDisplay version\n"
+	"\t -n --nodaemon\t\tDon't fork to background\n"
+	"\t -O --options-file=file\tAlternative default options file\n"
+#       if defined(__linux__)
+	"\t -u --uinput\t\tGenerate Linux input events\n"
+#       endif
+;
+
+
 int map_buttons(int b)
 {
 	switch (b) {
@@ -728,30 +752,6 @@ struct trans_mouse *read_config(FILE * fd)
 }
 
 
-static const struct option lircmd_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"nodaemon", no_argument, NULL, 'n'},
-	{"options-file", required_argument, NULL, 'O'},
-#       if defined(__linux__)
-	{"uinput", no_argument, NULL, 'u'},
-#       endif
-	{0, 0, 0, 0}
-};
-
-
-static void lircmd_help(void)
-{
-	printf("Usage: %s [options] [config-file]\n", progname);
-	printf("\t -h --help\t\tdisplay this message\n");
-	printf("\t -v --version\t\tdisplay version\n");
-	printf("\t -n --nodaemon\t\tdon't fork to background\n");
-	printf("\t -O --options-file=file\talternative default options file\n");
-#       if defined(__linux__)
-	printf("\t -u --uinput\t\tgenerate Linux input events\n");
-#       endif
-}
-
 
 static void lircmd_add_defaults(void)
 {
@@ -786,7 +786,7 @@ static void lircmd_parse_options(int argc,  char** const argv)
 	{
 		switch (c) {
 		case 'h':
-			lircmd_help();
+			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("lircmd %s\n",  VERSION);

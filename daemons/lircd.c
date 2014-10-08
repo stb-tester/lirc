@@ -96,6 +96,63 @@ struct peer_connection {
 	int socket;
 };
 
+
+static  const char* const help =
+"Usage: lircd [options] <config-file>\n"
+"\t -h --help\t\t\tDisplay this message\n"
+"\t -v --version\t\t\tDisplay version\n"
+"\t -O --options-file\t\tOptions file\n"
+"\t -n --nodaemon\t\t\tDon't fork to background\n"
+"\t -p --permission=mode\t\tFile permissions for " LIRCD "\n"
+"\t -H --driver=driver\t\tUse given driver (-H help lists drivers)\n"
+"\t -d --device=device\t\tRead from given device\n"
+"\t -U --plugindir=dir\t\tDir where drivers are loaded from\n"
+"\t -l --listen[=[address:]port]\tListen for network connections\n"
+"\t -c --connect=host[:port]\tConnect to remote lircd server\n"
+"\t -o --output=socket\t\tOutput socket filename\n"
+"\t -P --pidfile=file\t\tDaemon pid file\n"
+"\t -L --logfile=file\t\tLog file path (default: use syslog)'\n"
+"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 0..10.\n"
+"\t -r --release[=suffix]\t\tAuto-generate release events\n"
+"\t -a --allow-simulate\t\tAccept SIMULATE command\n"
+"\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
+"\t -A --driver-options=key:value[;key:value...]\n"
+"\t\t\t\t\tSet driver options\n"
+#       if defined(__linux__)
+"\t -u --uinput\t\t\tgenerate Linux input events\n"
+#       endif
+"\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
+
+
+
+static const struct option lircd_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"nodaemon", no_argument, NULL, 'n'},
+	{"options-file", required_argument, NULL, 'O'},
+	{"permission", required_argument, NULL, 'p'},
+	{"driver", required_argument, NULL, 'H'},
+	{"device", required_argument, NULL, 'd'},
+	{"listen", optional_argument, NULL, 'l'},
+	{"connect", required_argument, NULL, 'c'},
+	{"output", required_argument, NULL, 'o'},
+	{"pidfile", required_argument, NULL, 'P'},
+	{"plugindir", required_argument, NULL, 'U'},
+	{"logfile", required_argument, NULL, 'L'},
+	{"debug", optional_argument, NULL, 'D'},	// compatibility
+	{"loglevel", optional_argument, NULL, 'D'},
+	{"release", optional_argument, NULL, 'r'},
+	{"allow-simulate", no_argument, NULL, 'a'},
+	{"dynamic-codes", no_argument, NULL, 'Y'},
+        {"driver-options", required_argument, NULL, 'A'},
+#        if defined(__linux__)
+	{"uinput", no_argument, NULL, 'u'},
+#        endif
+	{"repeat-max", required_argument, NULL, 'R'},
+	{0, 0, 0, 0}
+};
+
+
 void sigterm(int sig);
 void dosigterm(int sig);
 void sighup(int sig);
@@ -2113,60 +2170,6 @@ static int opt2host_port(const char* optarg,
 }
 
 
-static const struct option lircd_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"nodaemon", no_argument, NULL, 'n'},
-	{"options-file", required_argument, NULL, 'O'},
-	{"permission", required_argument, NULL, 'p'},
-	{"driver", required_argument, NULL, 'H'},
-	{"device", required_argument, NULL, 'd'},
-	{"listen", optional_argument, NULL, 'l'},
-	{"connect", required_argument, NULL, 'c'},
-	{"output", required_argument, NULL, 'o'},
-	{"pidfile", required_argument, NULL, 'P'},
-	{"plugindir", required_argument, NULL, 'U'},
-	{"logfile", required_argument, NULL, 'L'},
-	{"debug", optional_argument, NULL, 'D'},
-	{"release", optional_argument, NULL, 'r'},
-	{"allow-simulate", no_argument, NULL, 'a'},
-	{"dynamic-codes", no_argument, NULL, 'Y'},
-        {"driver-options", required_argument, NULL, 'A'},
-#        if defined(__linux__)
-	{"uinput", no_argument, NULL, 'u'},
-#        endif
-	{"repeat-max", required_argument, NULL, 'R'},
-	{0, 0, 0, 0}
-};
-
-
-static void lircd_help(void)
-{
-	printf("Usage: %s [options] <config-file>\n", progname);
-	printf("\t -h --help\t\t\tdisplay this message\n");
-	printf("\t -v --version\t\t\tdisplay version\n");
-	printf("\t -O --options-file\t\toptions file\n");
-	printf("\t -n --nodaemon\t\t\tdon't fork to background\n");
-	printf("\t -p --permission=mode\t\tfile permissions for " LIRCD "\n");
-	printf("\t -H --driver=driver\t\tuse given driver (-H help lists drivers)\n");
-	printf("\t -d --device=device\t\tread from given device\n");
-	printf("\t -U --plugindir=dir\t\tdir where drivers are loaded from\n");
-	printf("\t -l --listen[=[address:]port]\tlisten for network connections\n");
-	printf("\t -c --connect=host[:port]\tconnect to remote lircd server\n");
-	printf("\t -o --output=socket\t\toutput socket filename\n");
-	printf("\t -P --pidfile=file\t\tdaemon pid file\n");
-	printf("\t -L --logfile=file\t\tLog file path (default: use syslog)'\n");
-	printf("\t -D[level] --debug[=level]\t'info', 'warning', 'notice', etc., or 0..10.\n");
-	printf("\t -r --release[=suffix]\t\tauto-generate release events\n");
-	printf("\t -a --allow-simulate\t\taccept SIMULATE command\n");
-	printf("\t -Y --dynamic-codes\t\tEnable dynamic code generation\n");
-	printf("\t -A --driver-options=key:value[;key:value...]\n");
-	printf("\t\t\t\t\tSet driver options\n");
-#       if defined(__linux__)
-	printf("\t -u --uinput\t\t\tgenerate Linux input events\n");
-#       endif
-	printf("\t -R --repeat-max=limit\t\tallow at most this many repeats\n");
-}
 
 
 static void lircd_add_defaults(void)
@@ -2215,7 +2218,7 @@ static void lircd_parse_options(int argc, char** const argv)
 	{
 		switch (c) {
 		case 'h':
-			lircd_help();
+			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("lircd %s\n", VERSION);
