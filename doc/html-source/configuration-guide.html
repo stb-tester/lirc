@@ -432,9 +432,8 @@ remote |        |       devinput v        |
         <li>
        You can create your own configuration using the irrecord program.</li>
        <li>
-       If you are using several remotes you can paste the different
-       lircd.conf files for each remote into a common on. Lirc will try
-       top match input to all remotes and use the first match found. </li>
+       If you are using several remotes you need to combine several lircd.conf
+       files. See <a href="#appendix-8"> Appendix8</a> </li>
        <li>
        If you already have a config file for the libirman
        package you can convert it using the <em>irman2lirc</em> script
@@ -871,9 +870,43 @@ remote |        |       devinput v        |
         <li> Enable the session service using e. g. gnome settings or
              corresponding tools.</li>
         <li> Configure the ~/.config/lircrc file as described in
-             <a href="configure.html#lircrc_format">.lircrc chapter </a>
+    <a href="configure.html#lircrc_format">.lircrc chapter </a>
              Note that you must specify "program = irexec" for irexec
              to pick up your configuration.</li>
     </ul>
+    <A NAME="appendix-8"></A>
+    <h3 align="center">A8 : Using multiple remotes</h3>
+    lirc will happily accept several lircd.conf file. When doing so, it
+    will try to match input with each configuration until there is a match.
+    This means that the number of configurations has some limits, otherwise
+    it would take too long time. For practical scenarios say 2-4 remotes
+    this shouldn't really be a problem on modern hardware.
+
+    There are a number of ways to combine several configurations:
+    <ul>
+    <li> The old method has been to just paste several configuration files into
+         lircd.conf. This method is deprecated, since you will loose track of
+         which files that actually are in use. </li>
+
+    <li> Another way is to use the <code>include</code> directive. Using this,
+         you can include files without changing them e. g., using a file like
+<pre>
+                include "/usr/share/lirc-remotes/ei/tv90"
+                include "MKJ61842704"
+</pre>
+         A relative path like MKJ61842704 is supposed to live in the same
+         dir as the main lircd.conf file, usually <code>/etc/lirc</code>.
+         All-in-all, this is good method which preserves the original files
+         </li>
+    <li> Another way is to install the files in the directory lircd.conf.d.
+         This directory should b in the same place as the main
+         lircd.conf file, usually /etc/lirc/lircd.conf.d/. Any file in this
+         directory which has a name ending with <code>.conf</code> is
+         automagically included. One way to use this is to symlink remotes
+         from e. g., /usr/share/lirc-remotes to this directory. </li>
+    </ul>
+
+
+    <p>
   </BODY>
 </HTML>

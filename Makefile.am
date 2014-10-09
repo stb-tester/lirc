@@ -21,12 +21,18 @@ endif
 SUBDIRS                 = lib daemons tools doc $(SYSTEMD_DIR) plugins
 
 if INSTALL_ETC
+
 lirc_confdir            = $(sysconfdir)/lirc
 dist_lirc_conf_DATA     = lircd.conf lirc_options.conf lircmd.conf
+
+lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
+dist_lircdconfig_DATA	= README.conf.d
+
 endif
 
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
+
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
