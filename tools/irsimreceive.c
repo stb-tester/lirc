@@ -134,6 +134,7 @@ int main(int argc, char *argv[])
 {
 	long c;
 	struct ir_remote* remotes;
+	char path[128];
 
 	while ((c = getopt_long(argc, argv, "hvc:U:", options, NULL))
 	       != EOF) {
@@ -149,7 +150,7 @@ int main(int argc, char *argv[])
 			break;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr, 
+			fprintf(stderr,
                                 "Try `irsimsend -h' for more information.\n");
 			return (EXIT_FAILURE);
 		}
@@ -158,9 +159,10 @@ int main(int argc, char *argv[])
 		fprintf(stderr, USAGE);
 		return EXIT_FAILURE;
 	}
-	lirc_log_set_file("/dev/null");
+	lirc_log_get_clientlog("irsimrecieve", path, sizeof(path));
+	lirc_log_set_file(path);
 	lirc_log_open("irsimreceive", 1, LIRC_ERROR);
         setup(argv[optind + 1]);
-        remotes = read_lircd_conf(argv[optind]);	
+        remotes = read_lircd_conf(argv[optind]);
 	return simreceive(remotes);
 }

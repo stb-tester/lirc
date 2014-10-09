@@ -4,7 +4,7 @@
  ****************************************************************************
  *
  * irtestcase - Log synced streams of raw durations, codes and app strings.
- * 	
+ *
  */
 
 #ifdef HAVE_CONFIG_H
@@ -26,7 +26,7 @@
 #include "lirc_client.h"
 #include "lirc_private.h"
 
-static const char* const USAGE = 
+static const char* const USAGE =
 "Synopsis:\n"
 "irtestcase [-p prog -l lircrc] [-t testdata] <socket>\n"
 "irtestcase [ħ | -v]\n\n"
@@ -72,7 +72,7 @@ static void set_devicelog(int fd, const char* path)
 {
 	int r;
 	lirc_cmd_ctx command;
-	
+
 	unlink(path);
 	lirc_command_init(&command, "SET_INPUTLOG %s\n", path);
 	r = lirc_command_run(&command, fd);
@@ -88,7 +88,7 @@ static void set_testinput(int fd, const char* path)
 {
 	int r;
 	lirc_cmd_ctx command;
-	
+
 	lirc_command_init(&command, "DRV_OPTION set-infile %s\n", path);
 	r = lirc_command_run(&command, fd);
 	if (r != 0) {
@@ -104,7 +104,7 @@ static void init_testdir(void)
 	unlink(CODE_LOG);
 	unlink(APP_LOG);
 	unlink(DEVICE_LOG);
-	
+
 	mkdir(LOGDIR, 0755);
 	if (access(LOGDIR, F_OK) != 0) {
 		fprintf(stderr, "Cannot create log directory: %s\n", LOGDIR);
@@ -118,7 +118,7 @@ static void init_testdir(void)
 	if (opt_lircrc != NULL) {
 		app_log = fopen(APP_LOG, "w");
 		if (app_log == NULL) {
-			fprintf(stderr, 
+			fprintf(stderr,
 				"Cannot open %s, giving up\n", APP_LOG);
 			exit(2);
 		}
@@ -207,6 +207,7 @@ int main(int argc, char *argv[])
 	int fd_io;
 	int fd_cmd;
 	char* socketpath;
+	char path[128];
 	int c;
 
 	while ((c = getopt_long(argc, argv, "hl:p:t:v", opts, NULL)) != EOF) {
@@ -233,7 +234,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (argc > optind + 1) {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"irtestcase: Too many arguments (max one).\n");
 		fprintf(stderr, "Try `irtestcase --help'.\n");
 		return (EXIT_FAILURE);
@@ -251,19 +252,24 @@ int main(int argc, char *argv[])
 	fd_cmd = lirc_get_local_socket(NULL, 1);
 	if (fd_cmd < 0) {
 		fprintf(stderr, "Cannot open lircd socket.\n");
-		exit(3);	
+		exit(3);
 	}
 	set_devicelog(fd_cmd, DEVICE_LOG);
 	if (opt_testdata != NULL) {
 		send_later(fd_cmd, opt_testdata);
 	}
 
+	lirc_log_get_clientlog("irtestcase", path, sizeof(path));
+	lirc_log_set_file(path);
+	lirc_log_open("irtestcase", 1, LIRC_NOTICE);
+
 	socketpath = argc == optind + 1 ? argv[optind] : LIRCD;
 	setenv("LIRC_SOCKET_PATH", socketpath, 0);
 	fd_io = lirc_init(opt_prog, 1);
 	if (fd_io < 0) {
 		fprintf(stderr, "Cannot run lirc_init.\n");
-		exit(3);	
+		exit(3);
 	}
+
 	return irtestcase(fd_io, fd_cmd);
 }

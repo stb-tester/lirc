@@ -111,7 +111,7 @@ static void send_code(struct ir_remote* remote, struct ir_ncode* code)
 		remote->toggle_mask_state = 0;
 	}
 	if (has_toggle_bit_mask(remote)) {
-		remote->toggle_bit_mask_state = 
+		remote->toggle_bit_mask_state =
 		    (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
 	}
 	code->transmit_state = NULL;
@@ -119,14 +119,14 @@ static void send_code(struct ir_remote* remote, struct ir_ncode* code)
 	if (strcmp(code->name, last_code) == 0) {
 		repeat_remote = remote;
  	}
-	send_ir_ncode(remote, code, 0);	
+	send_ir_ncode(remote, code, 0);
 	repeat_remote = remote;
 	for (i = 1; i < opt_count; i += 1) {
 		send_ir_ncode(remote, code, 0);
 	}
 	repeat_remote = NULL;
 	strncpy(last_code, code->name, sizeof(last_code));
-	
+
 }
 
 
@@ -148,7 +148,7 @@ static int simsend_keysym(struct ir_remote* remote, const char* keysym)
 	code = get_code_by_name(remote, keysym);
 	if (code != NULL) {
 		send_code(remote, code);
-	        printf("%s\n", keysym);	
+	        printf("%s\n", keysym);
 	} else {
 		fprintf(stderr, "No such key: %s\n", keysym);
 		exit(EXIT_FAILURE);
@@ -182,7 +182,7 @@ static int simsend_list(struct ir_remote* remote)
 			printf("Illegal keycode: %s\n", keysym);
 		} else {
 			printf("%s\n", code->name);
-               	 	send_code(remote, code);		
+               	 	send_code(remote, code);
 		}
 		s = fgets(line, sizeof(line), f);
 	}
@@ -201,12 +201,13 @@ int parse_uint_arg(const char* optind, const char* errmsg)
 	}
 	return (int) c;
 }
-	
+
 
 int main(int argc, char *argv[])
 {
 	long c;
 	struct ir_remote* remote;
+        char path[128];
 
 	while ((c = getopt_long(argc, argv, "c:hk:l:s:U:v", options, NULL))
 	       != EOF) {
@@ -215,7 +216,7 @@ int main(int argc, char *argv[])
 			printf(USAGE);
 			return (EXIT_SUCCESS);
 		case 'c':
-			opt_count = parse_uint_arg(optarg, 
+			opt_count = parse_uint_arg(optarg,
 					    	   "Illegal count value\n");
 			break;
 		case 'v':
@@ -231,12 +232,12 @@ int main(int argc, char *argv[])
 			opt_listfile = optarg;
 			break;
 		case 's':
-			opt_startspace = parse_uint_arg(optarg, 
+			opt_startspace = parse_uint_arg(optarg,
 					    	   	"Illegal space value\n");
 			break;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr, 
+			fprintf(stderr,
                                 "Try `irsimsend -h' for more information.\n");
 			return (EXIT_FAILURE);
 		}
@@ -245,8 +246,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, USAGE);
 		return EXIT_FAILURE;
 	}
-	lirc_log_set_file(".simsend.log");
-	lirc_log_open("irsimsend", 1, LIRC_TRACE);
+	lirc_log_get_clientlog("irsimsend", path, sizeof(path));
+	lirc_log_set_file(path);
+	lirc_log_open("irsimsend", 1, LIRC_NOTICE);
         remote = setup(argv[optind]);
 	if (opt_startspace != -1) {
 		send_space(opt_startspace);

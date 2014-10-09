@@ -405,7 +405,9 @@ int main(int argc, char **argv)
 	int analyse = 0;
 	const char* opt;
 	char commandline[128];
+        char path[128];
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
+
 	get_commandline(argc, argv, commandline, sizeof(commandline));
 	force = 0;
 	hw_choose_driver(NULL);
@@ -435,6 +437,8 @@ int main(int argc, char **argv)
 	test = options_getboolean("irrecord:test");
 	invert = options_getboolean("irrecord:invert");
 	trail = options_getboolean("irrecord:trail");
+	lirc_log_get_clientlog("irrecord", path, sizeof(path));
+	lirc_log_set_file(path);
 	lirc_log_open("irrecord", 0, loglevel);
 	curr_driver->open_func(device);
 	if (strcmp(curr_driver->name, "null") == 0 && !analyse) {

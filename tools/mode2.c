@@ -40,7 +40,7 @@ static int gap = 10000;
 static int use_raw_access = 0;
 
 
-static const char* const help = 
+static const char* const help =
 "Usage: mode2 [options]\n"
 "\t -d --device=device\tread from given device\n"
 "\t -H --driver=driver\tuse given driver\n"
@@ -154,6 +154,11 @@ int main(int argc, char **argv)
 	__u32 code_length;
 	size_t count = sizeof(lirc_t);
 	int i;
+        char path[128];
+
+	lirc_log_get_clientlog("mode2", path, sizeof(path));
+	lirc_log_set_file(path);
+	lirc_log_open("mode2", 1, LIRC_NOTICE);
 
 	strncpy(progname, "mode2", sizeof(progname));
 	hw_choose_driver(NULL);
@@ -174,12 +179,12 @@ int main(int argc, char **argv)
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
-			fprintf(stderr, 
-				"%s: %s is not a character device\n", 
+			fprintf(stderr,
+				"%s: %s is not a character device\n",
 				progname, device);
-			fprintf(stderr, 
+			fprintf(stderr,
 				"%s: use the -d option to specify the"
-					" correct device\n", 
+					" correct device\n",
 				progname);
 			close(fd);
 			exit(EXIT_FAILURE);
@@ -204,7 +209,7 @@ int main(int argc, char **argv)
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
 				printf("Please use the --raw option to access "
-				       "the device directly instead through\n" 
+				       "the device directly instead through\n"
 				       "the abstraction layer.\n");
 			} else {
 				printf("This program does not work for this"
@@ -218,8 +223,8 @@ int main(int argc, char **argv)
 	if (mode == LIRC_MODE_LIRCCODE) {
 		if (use_raw_access) {
 			if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {
-				fprintf(stderr, 
-					"%s: could not get code length\n", 
+				fprintf(stderr,
+					"%s: could not get code length\n",
 					progname);
 				perror(progname);
 				close(fd);
@@ -229,8 +234,8 @@ int main(int argc, char **argv)
 			code_length = curr_driver->code_length;
 		}
 		if (code_length > sizeof(ir_code) * CHAR_BIT) {
-			fprintf(stderr, 
-				"%s: cannot handle %u bit codes\n", 
+			fprintf(stderr,
+				"%s: cannot handle %u bit codes\n",
 				progname, code_length);
 			close(fd);
 			exit(EXIT_FAILURE);
@@ -241,9 +246,9 @@ int main(int argc, char **argv)
 		int result;
 
 		if (use_raw_access) {
-			result = read(fd, 
-				      (mode == LIRC_MODE_MODE2 ? 
-						(void *)&data : buffer), 
+			result = read(fd,
+				      (mode == LIRC_MODE_MODE2 ?
+						(void *)&data : buffer),
 				      count);
 			if (result != count) {
 				fprintf(stderr, "read() failed\n");
@@ -275,7 +280,7 @@ int main(int argc, char **argv)
 		switch (dmode) {
 		case 0:
 			printf("%s %u\n", (
-			       data & PULSE_BIT) ? "pulse" : "space", 
+			       data & PULSE_BIT) ? "pulse" : "space",
 			       (__u32) (data & PULSE_MASK));
 			break;
 		case 1: {
@@ -309,9 +314,9 @@ int main(int argc, char **argv)
 			if ((data & PULSE_MASK) > gap)
 				printf("_\n\n_");
 			else
-				printf("%.*s", 
-				       ((data & PULSE_MASK) + t_div/2) / t_div, 
-				       (data & PULSE_BIT) ? 
+				printf("%.*s",
+				       ((data & PULSE_MASK) + t_div/2) / t_div,
+				       (data & PULSE_BIT) ?
 						"------------" : "____________");
 			break;
 }
