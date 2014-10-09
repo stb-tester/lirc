@@ -19,6 +19,7 @@
 # include <config.h>
 #endif
 
+#include <dirent.h>
 #include <errno.h>
 #include <limits.h>
 #include <unistd.h>
@@ -654,12 +655,102 @@ static const char *lirc_parse_relative(char *dst, size_t dst_size, const char *c
 	return dst;
 }
 
-struct ir_remote *read_config(FILE * f, const char *name)
+
+/** Compute the configdir e. g., /etc/lirc/lircd.conf.d from configpath. */
+void get_configdir(const char* configpath, char* path, ssize_t size)
 {
-	return read_config_recursive(f, name, 0);
+ 	char buff[128];
+	char* dir;
+
+	if (configpath[0] == '/') {
+        	strncpy(buff, configpath, sizeof(buff) - 1);
+	} else {
+		getcwd(buff, sizeof(buff));
+		strncat(buff, "/", sizeof(buff) - strlen(buff) - 1);
+		strncat(buff, configpath, sizeof(buff) - strlen(buff) - 1);
+	}
+	dir = dirname(buff);
+	strncpy(path, dir, size - 1);
+	strncat(path, "/", size - strlen(path) - 1);
+	strncat(path, "lircd.conf.d", size - strlen(path) - 1);
 }
 
-static struct ir_remote *read_config_recursive(FILE * f, const char *name, int depth)
+
+/** Return true if and only if str ends with ".conf". */
+static int ends_with_conf(const struct dirent* entry)
+{
+    char *dot = strrchr(entry->d_name, '.');
+    return (NULL == dot) ? 0 : strcmp(dot + 1, "conf") == 0;
+}
+
+
+/** Append list of remotes to an existing list root, return root. */
+static struct ir_remote*
+ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
+{
+	struct ir_remote* r;
+
+	for (r = root; r->next != NULL; r = r->next)
+		;
+	r->next = what;
+	what->next = NULL;
+	return root;
+}
+
+
+/** Parse and add all *.conf config files in dirpath to root. */
+static struct ir_remote*
+add_configs(struct ir_remote* root, const char* dirpath)
+{
+        struct ir_remote* remote;
+	char path[128];
+	FILE* f;
+	struct dirent** namelist;
+	int size;
+	int i;
+
+	size = scandir(dirpath, &namelist, ends_with_conf, alphasort);
+	if (size < 0) {
+		return root;
+	}
+	for (i = 0; i < size;  i++) {
+		snprintf(path, sizeof(path),
+			 "%s/%s", dirpath, namelist[i]->d_name);
+		free(namelist[i]);
+		f = fopen(path, "r");
+		if (f == NULL) {
+			logprintf(LIRC_WARNING,
+				  "Cannot open config file %s\n", path);
+			logperror(LIRC_WARNING, "System error message");
+			continue;
+		}
+		remote = read_config_recursive(f, path, 0);
+		if (remote == NULL) {
+			logprintf(LIRC_WARNING,
+			          "Cannot parse config file: %s\n", path);
+			continue;
+		}
+		root = ir_remotes_append(root, remote);
+	}
+	return root;
+}
+
+
+struct ir_remote* read_config(FILE * f, const char *name)
+{
+	char dirpath[128];
+	struct ir_remote* head;
+
+	head = read_config_recursive(f, name, 0);
+	get_configdir(name, dirpath, sizeof(dirpath));
+	head = add_configs(head, dirpath);
+	head = sort_by_bit_count(head);
+	return head;
+}
+
+
+static struct ir_remote*
+read_config_recursive(FILE * f, const char *name, int depth)
 {
 	char buf[LINE_LEN + 1], *key, *val, *val2;
 	int len, argc;
@@ -1094,7 +1185,6 @@ static struct ir_remote *read_config_recursive(FILE * f, const char *name, int d
 		rem = rem->next;
 	}
 
-	top_rem = sort_by_bit_count(top_rem);
 	return (top_rem);
 }
 

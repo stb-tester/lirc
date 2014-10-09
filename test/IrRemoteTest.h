@@ -10,7 +10,11 @@
 #include    <cppunit/TestSuite.h>
 #include    <cppunit/TestCaller.h>
 
-#define     NAME "Acer_Aspire_6530G_MCE"
+#ifdef      NAME
+#undef      NAME
+#endif
+
+#define     NAME "etc/lircd.conf.Aspire_6530G"
 
 #define     ADD_TEST(id, func) \
     testSuite->addTest(new CppUnit::TestCaller<IrRemoteTest>( \
@@ -22,6 +26,7 @@ class IrRemoteTest : public CppUnit::TestFixture
 {
     private:
 	    ir_remote* config;
+        ir_remote* acer_config;
 	    FILE* f;
 
     public:
@@ -35,64 +40,77 @@ class IrRemoteTest : public CppUnit::TestFixture
             ADD_TEST("testGaps", testGaps);
             ADD_TEST("testCodes", testCodes);
             ADD_TEST("testDefaults", testDefaults);
+            ADD_TEST("testImplicitInclude", testImplicitInclude);
             return testSuite;
         };
 
         void setUp()
         {
+            struct ir_remote* irc;
+
             string path = string("ir_remote.log");
             lirc_log_set_file(path.c_str());
             lirc_log_open("IrRemoteTest", 0, LIRC_TRACE2);
-            f = fopen("etc/lircd.conf.Aspire_6530G", "r");
+            f = fopen(NAME, "r");
+            CPPUNIT_ASSERT(f != NULL);
             config = read_config(f, NAME);
+            for (irc = config; irc != NULL; irc = irc->next) {
+                if (string(irc->name) == "Acer_Aspire_6530G_MCE") {
+                    acer_config = irc;
+                    break;
+                }
+            }
+            CPPUNIT_ASSERT(acer_config != NULL);
+
         };
 
         void tearDown()
         {
-            fclose(f);
+            if (f != NULL)
+                fclose(f);
         };
 
         void testName()
         {
-            CPPUNIT_ASSERT(string(config->name) == NAME);
+            CPPUNIT_ASSERT(string(config->name) == "ECHOSTAR-119420");
         };
 
         void testStart()
         {
-            CPPUNIT_ASSERT(config->bits == 13);
-            CPPUNIT_ASSERT(config->flags == RC6|CONST_LENGTH);
-            CPPUNIT_ASSERT(config->eps == 30);
-            CPPUNIT_ASSERT(config->aeps == 122);
+            CPPUNIT_ASSERT(acer_config->bits == 13);
+            CPPUNIT_ASSERT(acer_config->flags == RC6|CONST_LENGTH);
+            CPPUNIT_ASSERT(acer_config->eps == 30);
+            CPPUNIT_ASSERT(acer_config->aeps == 122);
         };
 
         void testPulses()
         {
-            CPPUNIT_ASSERT(config->pone == 482);
-            CPPUNIT_ASSERT(config->sone == 420);
-            CPPUNIT_ASSERT(config->phead == 2740);
-            CPPUNIT_ASSERT(config->shead == 860);
-            CPPUNIT_ASSERT(config->pzero == 482);
-            CPPUNIT_ASSERT(config->szero == 420);
-            CPPUNIT_ASSERT(config->pthree == 0);
-            CPPUNIT_ASSERT(config->stwo == 0);
-            CPPUNIT_ASSERT(config->ptwo == 0);
-            CPPUNIT_ASSERT(config->sthree == 0);
+            CPPUNIT_ASSERT(acer_config->pone == 482);
+            CPPUNIT_ASSERT(acer_config->sone == 420);
+            CPPUNIT_ASSERT(acer_config->phead == 2740);
+            CPPUNIT_ASSERT(acer_config->shead == 860);
+            CPPUNIT_ASSERT(acer_config->pzero == 482);
+            CPPUNIT_ASSERT(acer_config->szero == 420);
+            CPPUNIT_ASSERT(acer_config->pthree == 0);
+            CPPUNIT_ASSERT(acer_config->stwo == 0);
+            CPPUNIT_ASSERT(acer_config->ptwo == 0);
+            CPPUNIT_ASSERT(acer_config->sthree == 0);
         };
 
         void testGaps()
         {
-            CPPUNIT_ASSERT(config->pre_data_bits == 24);
-            CPPUNIT_ASSERT(config->pre_data == 0x1bff83);
-            CPPUNIT_ASSERT(config->gap == 110890);
-            CPPUNIT_ASSERT(config->toggle_bit_mask == 0x8000);
-            CPPUNIT_ASSERT(config->gap == 110890);
-            CPPUNIT_ASSERT(config->rc6_mask == 0x100000000);
+            CPPUNIT_ASSERT(acer_config->pre_data_bits == 24);
+            CPPUNIT_ASSERT(acer_config->pre_data == 0x1bff83);
+            CPPUNIT_ASSERT(acer_config->gap == 110890);
+            CPPUNIT_ASSERT(acer_config->toggle_bit_mask == 0x8000);
+            CPPUNIT_ASSERT(acer_config->gap == 110890);
+            CPPUNIT_ASSERT(acer_config->rc6_mask == 0x100000000);
         }
 
         void testCodes()
         {
              unordered_map<string, int> codemap;
-             struct ir_ncode* c = (struct ir_ncode*) (config->codes);
+             struct ir_ncode* c = (struct ir_ncode*) (acer_config->codes);
              while(c->name){
                 codemap[c->name] = c->code;
                 c++;
@@ -104,20 +122,29 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testDefaults()
         {
-             CPPUNIT_ASSERT(config->pthree == 0);
-             CPPUNIT_ASSERT(config->sthree == 0);
-             CPPUNIT_ASSERT(config->ptwo == 0);
-             CPPUNIT_ASSERT(config->stwo == 0);
-             CPPUNIT_ASSERT(config->pfoot == 0);
-             CPPUNIT_ASSERT(config->sfoot == 0);
-             CPPUNIT_ASSERT(config->prepeat == 0);
-             CPPUNIT_ASSERT(config->srepeat == 0);
-             CPPUNIT_ASSERT(config->pre_p == 0);
-             CPPUNIT_ASSERT(config->pre_s == 0);
-             CPPUNIT_ASSERT(config->dyncodes_name == 0);
-             CPPUNIT_ASSERT(config->post_data_bits == 0);
+             CPPUNIT_ASSERT(acer_config->pthree == 0);
+             CPPUNIT_ASSERT(acer_config->sthree == 0);
+             CPPUNIT_ASSERT(acer_config->ptwo == 0);
+             CPPUNIT_ASSERT(acer_config->stwo == 0);
+             CPPUNIT_ASSERT(acer_config->pfoot == 0);
+             CPPUNIT_ASSERT(acer_config->sfoot == 0);
+             CPPUNIT_ASSERT(acer_config->prepeat == 0);
+             CPPUNIT_ASSERT(acer_config->srepeat == 0);
+             CPPUNIT_ASSERT(acer_config->pre_p == 0);
+             CPPUNIT_ASSERT(acer_config->pre_s == 0);
+             CPPUNIT_ASSERT(acer_config->dyncodes_name == 0);
+             CPPUNIT_ASSERT(acer_config->post_data_bits == 0);
         }
 
+        void testImplicitInclude()
+        {
+            int c;
+            struct ir_remote* r;
+
+            for (c = 0, r = config; r != NULL; r = r->next)
+                c += 1;
+            CPPUNIT_ASSERT(c == 3);
+        }
 };
 
 #endif

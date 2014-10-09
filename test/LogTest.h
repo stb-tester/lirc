@@ -11,6 +11,10 @@
 #include    <cppunit/TestSuite.h>
 #include    <cppunit/TestCaller.h>
 
+#ifdef      NAME
+#undef      NAME
+#endif
+
 #define     NAME "Acer_Aspire_6530G_MCE"
 
 #undef      ADD_TEST
