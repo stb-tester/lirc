@@ -1848,11 +1848,12 @@ int lirc_simulate(int fd,
 
 
 /** Create and connect() socket to addr, print errors unless quiet. */
-static int do_connect(struct sockaddr* addr, size_t size, int quiet)
+static int
+do_connect(int domain, struct sockaddr* addr, size_t size, int quiet)
 {
 	int fd;
 
-	fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	fd = socket(domain, SOCK_STREAM, 0);
 	if (fd == -1) {
 		if (!quiet) {
 			fprintf(stderr, "do_connect: could not open socket\n");
@@ -1888,7 +1889,8 @@ int lirc_get_local_socket(const char* path, int quiet)
 	}
 	addr_un.sun_family = AF_UNIX;
 	strcpy(addr_un.sun_path, socket_path);
-	return do_connect((struct sockaddr *) &addr_un,
+	return do_connect(AF_UNIX,
+			  (struct sockaddr *) &addr_un,
 			  sizeof(addr_un),
 			  quiet);
 }
@@ -1912,7 +1914,8 @@ int lirc_get_remote_socket(const char* address, int port, int quiet)
 	        hostInfo->h_addr_list[0],
 	        hostInfo->h_length);
 	addr_in.sin_port = htons(port > 0 ? port : LIRC_INET_PORT);
-	return do_connect((struct sockaddr *)&addr_in,
+	return do_connect(hostInfo->h_addrtype,
+   			  (struct sockaddr *)&addr_in,
 			  sizeof(addr_in),
 			  quiet);
 	return 0;
