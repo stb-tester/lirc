@@ -56,6 +56,7 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <sys/file.h>
+#include <pwd.h>
 
 #if defined(__linux__)
 #include <linux/input.h>
@@ -121,6 +122,7 @@ static  const char* const help =
 #       if defined(__linux__)
 "\t -u --uinput\t\t\tgenerate Linux input events\n"
 #       endif
+"\t -e --effective-uid=uid\t\tRun as uid after init as root\n"
 "\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
 
 
@@ -145,6 +147,7 @@ static const struct option lircd_options[] = {
 	{"allow-simulate", no_argument, NULL, 'a'},
 	{"dynamic-codes", no_argument, NULL, 'Y'},
         {"driver-options", required_argument, NULL, 'A'},
+        {"effective-uid", required_argument, NULL, 'e'},
 #        if defined(__linux__)
 	{"uinput", no_argument, NULL, 'u'},
 #        endif
@@ -783,6 +786,35 @@ void remove_client(int fd)
 	LOGPRINTF(1, "internal error in remove_client: no such fd");
 }
 
+
+void drop_privileges()
+{
+	const char* user;
+	struct passwd* pw;
+	int r;
+
+	if (getuid() != 0) {
+		return;
+	}
+	user = options_getstring("lircd:effective-user");
+	if (user == NULL || strlen(user) == 0) {
+		logprintf(LIRC_WARNING, "Illegal effective uid (empty)");
+		return;
+	}
+	pw = getpwnam(user);
+	if (pw == NULL) {
+		logperror(LOG_WARNING, "Illegal effective uid:");
+		return;
+	}
+	r = setuid(pw->pw_uid);
+	if (r == -1) {
+		logperror(LOG_WARNING, "Cannot change UID");
+		return;
+	}
+	logprintf(LOG_NOTICE, "Running as user %s", user);
+}
+
+
 void add_client(int sock)
 {
 	int fd;
@@ -1073,6 +1105,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	if (useuinput) {
 		uinputfd = setup_uinputfd(progname);
 	}
+	drop_privileges();
 	if (listen_tcpip) {
 		int enable = 1;
 
@@ -1664,11 +1697,11 @@ int drv_option(int fd, char *message, char *arguments)
 	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
 	if (r != 0) {
 		logprintf(LIRC_WARNING, "Cannot set driver option");
-		return send_error(fd, message, 
+		return send_error(fd, message,
 				  "Cannot set driver option %d", errno);
 	}
 	return send_success(fd, message);
-}		
+}
 
 
 int set_inputlog(int fd, char *message, char *arguments)
@@ -1679,7 +1712,7 @@ int set_inputlog(int fd, char *message, char *arguments)
 
 	r = sscanf(arguments, "%128s", buff);
 	if (r != 1) {
-		return send_error(fd, message, 
+		return send_error(fd, message,
 				  "Illegal argument (protocol error): %s",
 				  arguments);
 	}
@@ -1689,15 +1722,15 @@ int set_inputlog(int fd, char *message, char *arguments)
 	}
 	f = fopen(buff, "w");
 	if (f == NULL) {
-		logprintf(LIRC_WARNING, 
+		logprintf(LIRC_WARNING,
 			  "Cannot open input logfile: %s", buff);
 		return send_error(fd,  message,
-				  "Cannot open input logfile: %s (errno: %d)", 
+				  "Cannot open input logfile: %s (errno: %d)",
 				  buff, errno);
 	}
 	rec_buffer_set_logfile(f);
 	return send_success(fd, message);
-}		
+}
 
 
 int get_command(int fd)
@@ -1910,6 +1943,7 @@ void input_message(const char *message, const char *remote_name, const char *but
 #endif
 }
 
+
 void broadcast_message(const char *message)
 {
 	int len, i;
@@ -1924,6 +1958,7 @@ void broadcast_message(const char *message)
 		}
 	}
 }
+
 
 static int mywaitfordata(long maxusec)
 {
@@ -2170,8 +2205,6 @@ static int opt2host_port(const char* optarg,
 }
 
 
-
-
 static void lircd_add_defaults(void)
 {
 	char level[4];
@@ -2196,6 +2229,8 @@ static void lircd_add_defaults(void)
 		"lircd:repeat-max", 	DEFAULT_REPEAT_MAX,
 		"lircd:configfile",  	LIRCDCFGFILE,
 		"lircd:driver-options", "",
+		"lircd:effective-user", "lirc",
+
 		(const char*)NULL, 	(const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -2204,7 +2239,7 @@ static void lircd_add_defaults(void)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring =  "A:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
+	const char* optstring = "A:e:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 		"u"
 #       endif
@@ -2223,6 +2258,14 @@ static void lircd_parse_options(int argc, char** const argv)
 		case 'v':
 			printf("lircd %s\n", VERSION);
 			exit(EXIT_SUCCESS);
+                case 'e':
+			if (getuid() != 0) {
+				logprintf(LIRC_WARNING,
+                                          "Trying to set user while"
+					      " not being root");
+			}
+			options_set_opt("lircd:effective-user", optarg);
+			break;
 		case 'O':
 			break;
 		case 'n':

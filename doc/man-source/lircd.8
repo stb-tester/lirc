@@ -131,6 +131,10 @@ Allows one to use codes which have been decoded for one remote but
 are not defined in lircd.conf.  New codes are dynamically
 created  with a default name. This feature is experimental and subject
 to all sorts of changes. It has not ben tested thoroughly.
+.TP
+.B -e, --effective-user <uid>
+If started as user root, lirc drops it privileges and runs as user <uid>
+after opening files etc.
 
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The search path used for this is determined
