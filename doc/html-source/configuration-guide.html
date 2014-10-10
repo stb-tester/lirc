@@ -905,6 +905,31 @@ remote |        |       devinput v        |
          automagically included. One way to use this is to symlink remotes
          from e. g., /usr/share/lirc-remotes to this directory. </li>
     </ul>
+    When using multiple remotes lircd tries to sort them so that the ones
+    which decodes faster are used first. Normally you could use this feature
+    as-is.  However, if you want to define the order yourself you should set
+    the attribute <code>manual_sort</code> to 1 in any of the configs. Doing
+    so disables the automatic sorting.
+    <p>
+    In manual sort mode the remotes are used in the order they appear in the
+    config file. Files in lircd.conf.d are used in order defined by the
+    filenames. The recommended way to use this is to name the links to
+    <code>00-my_first_remote.conf</code>,<code> 01-next-remote.conf</code>
+    etc. </p>
+    <p>
+    To add the manual_sort attribute to an existing remote is actually a bad
+    idea since it creates cross-depencies between configurations. A cleaner
+    way is to add a dummy remote like this in lircd.conf.d (the name does not
+    matter):
+<pre>
+        begin remote
+            name manual_sort
+            manual_sort 1
+            begin codes
+            end codes
+        end remote
+</pre>
+
 
 
     <p>

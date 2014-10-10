@@ -72,6 +72,12 @@ Include the given path using normal
 semantics. If the path is relative, it's  interpreted relative to the
 main lircd.conf file. <path> must be enclosed in double quotes.
 .TP 4
+.B manual_sort <1|0>
+Normally, lircd tries to sort multiple remotes so the one which decodes
+fastest are used first. Setting menual_sort to 1 in any remote disables
+this and uses the remotes in the order they are listed in lircd.conf or
+as the alphanumerically sorted filenames in lircd.conf.d.
+T.TP 4
 .B name <remote name>
 The unique name assigned to the remote control (may not contain whitespace).
 Within a single file all names must be unique. Parameter is mandatory.
