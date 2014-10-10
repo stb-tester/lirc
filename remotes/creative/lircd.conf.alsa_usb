@@ -10,7 +10,7 @@
 #
 # This remote comes with the SoundBlaster Audigy 2 NX USB sound card.  This file
 # was created using a home brew serial receiver.  I am not sure if the IR
-# reciever that is built into the Audigy 2 NX will work.
+# receiver that is built into the Audigy 2 NX will work.
 #
 
 begin remote

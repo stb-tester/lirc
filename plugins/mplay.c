@@ -84,7 +84,7 @@ static struct {
 	/* Date of the last reception */
 	struct timeval last_reception_time;
 	/* Flag wich indicate a timeout between the reception of repetition
-	   Some time the receiver lost a key code and only recieved
+	   Some time the receiver lost a key code and only received
 	   the associated repetition code. Then the driver interpret
 	   this repetition as a repetition of the last receive key code
 	   and not the lost one (ex: you press Volume+ after Volume-
@@ -242,7 +242,7 @@ int mplay2_init(void)
 
 	len = read(drv.fd, &psResponse, 11);
 	if (len < 0) {
-		LOGPRINTF(1, "No data recieved during reading");
+		LOGPRINTF(1, "No data received during reading");
 		mplay_deinit();
 		return 0;
 	} else

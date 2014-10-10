@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, USAGE);
 		return EXIT_FAILURE;
 	}
-	lirc_log_get_clientlog("irsimrecieve", path, sizeof(path));
+	lirc_log_get_clientlog("irsimreceive", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irsimreceive", 1, LIRC_ERROR);
         setup(argv[optind + 1]);

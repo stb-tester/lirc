@@ -67,7 +67,7 @@ static FILE* app_log = NULL;
 static FILE* code_log = NULL;
 
 
-/** Configure lircd to log recieved data from driver in path. */
+/** Configure lircd to log received data from driver in path. */
 static void set_devicelog(int fd, const char* path)
 {
 	int r;
