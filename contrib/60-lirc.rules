@@ -1,0 +1,4 @@
+# Installing this udev rule will make the /dev/lirc* devices accessible
+# for users in the group "lirc". To enable, copy to /etc/udev/rules.d or
+# /usr/lib/udev/rules.d.
+KERNEL=="lirc[0-9]*", SUBSYSTEM=="lirc", GROUP="lirc", MODE="0660"
