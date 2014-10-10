@@ -42,10 +42,11 @@ class IrRemoteTest : public CppUnit::TestFixture
             ADD_TEST("testDefaults", testDefaults);
             ADD_TEST("testImplicitInclude", testImplicitInclude);
             ADD_TEST("testRawSorting", testRawSorting);
+            ADD_TEST("testManualSorting", testManualSorting);
             return testSuite;
         };
 
-        void setUp()
+        void std_setup()
         {
             struct ir_remote* irc;
 
@@ -73,11 +74,13 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testName()
         {
+            std_setup();
             CPPUNIT_ASSERT(string(config->name) == "ECHOSTAR-119420");
         };
 
         void testStart()
         {
+            std_setup();
             CPPUNIT_ASSERT(acer_config->bits == 13);
             CPPUNIT_ASSERT(acer_config->flags == RC6|CONST_LENGTH);
             CPPUNIT_ASSERT(acer_config->eps == 30);
@@ -86,6 +89,7 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testPulses()
         {
+            std_setup();
             CPPUNIT_ASSERT(acer_config->pone == 482);
             CPPUNIT_ASSERT(acer_config->sone == 420);
             CPPUNIT_ASSERT(acer_config->phead == 2740);
@@ -100,6 +104,7 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testGaps()
         {
+            std_setup();
             CPPUNIT_ASSERT(acer_config->pre_data_bits == 24);
             CPPUNIT_ASSERT(acer_config->pre_data == 0x1bff83);
             CPPUNIT_ASSERT(acer_config->gap == 110890);
@@ -110,31 +115,33 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testCodes()
         {
-             unordered_map<string, int> codemap;
-             struct ir_ncode* c = (struct ir_ncode*) (acer_config->codes);
-             while(c->name){
-                codemap[c->name] = c->code;
-                c++;
-             };
-             CPPUNIT_ASSERT(codemap["KEY_POWER"] = 0x1bf3);
-             CPPUNIT_ASSERT(codemap["KEY_KPSLASH"] = 0x1be3);
-             CPPUNIT_ASSERT(codemap.size() == 45);
+            std_setup();
+            unordered_map<string, int> codemap;
+            struct ir_ncode* c = (struct ir_ncode*) (acer_config->codes);
+            while(c->name){
+               codemap[c->name] = c->code;
+               c++;
+            };
+            CPPUNIT_ASSERT(codemap["KEY_POWER"] = 0x1bf3);
+            CPPUNIT_ASSERT(codemap["KEY_KPSLASH"] = 0x1be3);
+            CPPUNIT_ASSERT(codemap.size() == 45);
         };
 
         void testDefaults()
         {
-             CPPUNIT_ASSERT(acer_config->pthree == 0);
-             CPPUNIT_ASSERT(acer_config->sthree == 0);
-             CPPUNIT_ASSERT(acer_config->ptwo == 0);
-             CPPUNIT_ASSERT(acer_config->stwo == 0);
-             CPPUNIT_ASSERT(acer_config->pfoot == 0);
-             CPPUNIT_ASSERT(acer_config->sfoot == 0);
-             CPPUNIT_ASSERT(acer_config->prepeat == 0);
-             CPPUNIT_ASSERT(acer_config->srepeat == 0);
-             CPPUNIT_ASSERT(acer_config->pre_p == 0);
-             CPPUNIT_ASSERT(acer_config->pre_s == 0);
-             CPPUNIT_ASSERT(acer_config->dyncodes_name == 0);
-             CPPUNIT_ASSERT(acer_config->post_data_bits == 0);
+            std_setup();
+            CPPUNIT_ASSERT(acer_config->pthree == 0);
+            CPPUNIT_ASSERT(acer_config->sthree == 0);
+            CPPUNIT_ASSERT(acer_config->ptwo == 0);
+            CPPUNIT_ASSERT(acer_config->stwo == 0);
+            CPPUNIT_ASSERT(acer_config->pfoot == 0);
+            CPPUNIT_ASSERT(acer_config->sfoot == 0);
+            CPPUNIT_ASSERT(acer_config->prepeat == 0);
+            CPPUNIT_ASSERT(acer_config->srepeat == 0);
+            CPPUNIT_ASSERT(acer_config->pre_p == 0);
+            CPPUNIT_ASSERT(acer_config->pre_s == 0);
+            CPPUNIT_ASSERT(acer_config->dyncodes_name == 0);
+            CPPUNIT_ASSERT(acer_config->post_data_bits == 0);
         }
 
         void testImplicitInclude()
@@ -142,6 +149,7 @@ class IrRemoteTest : public CppUnit::TestFixture
             int c;
             struct ir_remote* r;
 
+            std_setup();
             for (c = 0, r = config; r != NULL; r = r->next)
                 c += 1;
             CPPUNIT_ASSERT(c == 4);
@@ -149,9 +157,24 @@ class IrRemoteTest : public CppUnit::TestFixture
 
         void testRawSorting()
         {
+            std_setup();
             struct ir_remote* last = config->next->next->next;
             CPPUNIT_ASSERT(string(last->name) == "Melectronic_PP3600");
         }
+
+        void testManualSorting()
+        {
+            system("cp etc/00-manual_sort.conf etc/lircd.conf.d");
+            f = fopen(NAME, "r");
+            CPPUNIT_ASSERT(f != NULL);
+            config = read_config(f, NAME);
+            CPPUNIT_ASSERT(config != NULL);
+            unlink("etc/lircd.conf.d/00-manual_sort.conf");
+            const char* last = config->next->next->next->next->name;
+            CPPUNIT_ASSERT(string(last) == "Melectronic_PP3600");
+        }
+
+
 };
 
 #endif

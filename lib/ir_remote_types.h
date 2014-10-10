@@ -244,6 +244,7 @@ struct ir_remote {
 	lirc_t min_pulse_length, max_pulse_length;
 	lirc_t min_space_length, max_space_length;
 	int release_detected;	/**< set by release generator */
+	int manual_sort;        /**< If set in any remote, disables automatic sorting. */
 	struct ir_remote* next;
 };
 

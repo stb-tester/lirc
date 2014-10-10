@@ -416,6 +416,9 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 	} else if (strcasecmp("ignore_mask", key) == 0) {
 		rem->ignore_mask = s_strtocode(val);
 		return (1);
+	} else if (strcasecmp("manual_sort", key) == 0) {
+		rem->manual_sort = s_strtoi(val);
+		return (1);
 	}
 	/* obsolete name */
 	else if (strcasecmp("repeat_bit", key) == 0) {
@@ -594,12 +597,20 @@ static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
 }
 
 
-/** Sort remotes so the faster decoding ones comes first in list. */
+/**
+ * Sort remotes so the faster decoding ones comes first in list,
+ *  ignored if any remote has manual_sort == TRUE.
+ */
 static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 {
 
 	struct ir_remote *top, *rem, *next, *prev, *scan;
 
+	for (next = remotes; next != NULL; next = next->next) {
+		if (next->manual_sort) {
+			return remotes;
+		}
+	}
 	rem = remotes;
 	top = NULL;
 	while (rem != NULL) {
@@ -724,6 +735,9 @@ ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
 {
 	struct ir_remote* r;
 
+	if (root == NULL || what == NULL) {
+		return root;
+	}
 	for (r = root; r->next != NULL; r = r->next)
 		;
 	r->next = what;
