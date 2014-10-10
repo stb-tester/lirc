@@ -41,6 +41,7 @@ class IrRemoteTest : public CppUnit::TestFixture
             ADD_TEST("testCodes", testCodes);
             ADD_TEST("testDefaults", testDefaults);
             ADD_TEST("testImplicitInclude", testImplicitInclude);
+            ADD_TEST("testRawSorting", testRawSorting);
             return testSuite;
         };
 
@@ -143,7 +144,13 @@ class IrRemoteTest : public CppUnit::TestFixture
 
             for (c = 0, r = config; r != NULL; r = r->next)
                 c += 1;
-            CPPUNIT_ASSERT(c == 3);
+            CPPUNIT_ASSERT(c == 4);
+        }
+
+        void testRawSorting()
+        {
+            struct ir_remote* last = config->next->next->next;
+            CPPUNIT_ASSERT(string(last->name) == "Melectronic_PP3600");
         }
 };
 

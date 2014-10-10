@@ -562,8 +562,42 @@ static int sanityChecks(struct ir_remote *rem)
 	return 1;
 }
 
-struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
+/**
+ * Return -1, 0 or 1 if r1 is supposed to be faster, draw or slower to
+ * decode than r2. Non-raw remotes are supposed to be faster than raw
+ * ones. Raw remotes are compared using the number of codes, non-raw
+ * uses the bitcount. Nothing of this is ideal, so to speak.
+ */
+static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
 {
+	int r1_size;
+	int r2_size;
+	struct ir_ncode* c;
+
+	int r1_is_raw = is_raw(r1);
+	int r2_is_raw = is_raw(r2);
+
+	if (!r1_is_raw && r2_is_raw) return -1;
+	if (r1_is_raw && !r2_is_raw) return 1;
+
+	if (r1_is_raw && r2_is_raw){
+		for (c = r1->codes, r1_size = 0; c->name != NULL; c++)
+			r1_size += 1;
+		for (c = r2->codes, r2_size = 0; c->name != NULL; c++)
+			r2_size += 1;
+	} else {
+		r1_size = bit_count(r1);
+		r2_size = bit_count(r2);
+	}
+	if (r1_size == r2_size) return 0;
+	return r1_size < r2_size ? -1 : 1;
+}
+
+
+/** Sort remotes so the faster decoding ones comes first in list. */
+static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
+{
+
 	struct ir_remote *top, *rem, *next, *prev, *scan;
 
 	rem = remotes;
@@ -573,7 +607,7 @@ struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 
 		scan = top;
 		prev = NULL;
-		while (scan && bit_count(scan) <= bit_count(rem)) {
+		while (scan && remote_bits_cmp(scan, rem) <= 0) {
 			prev = scan;
 			scan = scan->next;
 		}
