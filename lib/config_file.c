@@ -604,16 +604,16 @@ static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
 static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 {
 
-	struct ir_remote *top, *rem, *next, *prev, *scan;
+	struct ir_remote *top, *rem, *next, *prev, *scan, *r;
 
-	for (next = remotes; next != NULL; next = next->next) {
-		if (next->manual_sort) {
+	for (r = remotes; r != NULL && r != (void*)-1; r = r->next) {
+		if (r->manual_sort) {
 			return remotes;
 		}
 	}
 	rem = remotes;
 	top = NULL;
-	while (rem != NULL) {
+	while (rem != NULL && rem != (void*)-1) {
 		next = rem->next;
 
 		scan = top;
