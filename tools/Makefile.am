@@ -13,7 +13,7 @@ EXTRA_PROGRAMS          += xmode2 irxevent
 endif
 
 sbin_PROGRAMS		= lirc-lsplugins
-bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend \
+bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lirc-lsremotes \
                           irtestcase irsimsend irsimreceive irrecord @x_progs@
 
 ## Simple programs
@@ -37,6 +37,9 @@ irtestcase_LDADD        = $(LIRC_LIBS)
 irsend_SOURCES          = irsend.c
 irsend_LDADD            = $(LIRC_LIBS)
 lirc_lsplugins_SOURCES  = lirc-lsplugins.c
+lirc_lsplugins_LDADD    = $(LIRC_LIBS)
+lirc_lsremotes_SOURCES  = lirc-lsremotes.c
+lirc_lsremotes_LDADD    = $(LIRC_LIBS)
 
 
 ## X programs

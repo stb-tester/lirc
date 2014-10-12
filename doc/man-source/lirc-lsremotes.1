@@ -1,0 +1,51 @@
+.TH lirc-lsremotes "1" "Last change: Oct 2014" "lirc-lsremotes @version@" "User Commands"
+.SH NAME
+lirc-lsremotes - parse lirc configuration files.
+.SH SYNOPSIS
+.B  lirc-lsremotes [options] <directory>
+.br
+.B  lirc-lsremotes [options] <file>
+
+
+.SH DESCRIPTION
+lirc-lsremotes can parse lirc remote configuration files (i. e., lircd.conf)
+and display a condensed index line, the complete data and/or diagnostics.
+.P
+When given a directory (first form) it expects this to contain a number of
+vendor directories, each of which containing one or more configuration files.
+.P
+In the second form lirc-lsremotes displays remote configurations for a given
+config file.
+
+.SH OPTIONS
+.TP 4
+.B -d, --dump
+Dump the complete configuration data for listed configurations.
+.TP 4
+.B  -s, --silent
+Only print diagnostics.
+.TP 4
+.B -v --version
+Print version info
+.TP 4
+.B -h, --help
+Print help message.
+.SH EXAMPLES
+Print a status line and possible diagnostics for a file:
+.nf
+.IP
+$ lirc-lsremotes  remotes/hitachi/RM-466E.lircd.conf
+.br
+lirc-lsremotes: Warning RM-466E: you should specify a valid gap value
+.br
+hitachi;RM-466E.lircd.conf;no_lircmd;no_photo;RM-466E;timing;no_raw
+.fi
+.P
+List a status line for all remotes under remotes, saving diagnostics into
+a file:
+.IP
+$ lirc-lsremotes  remotes > remotes.list 2>warnings.txt
+.
+
+.SH "SEE ALSO"
+http://sourceforge.net/projects/lirc-remotes

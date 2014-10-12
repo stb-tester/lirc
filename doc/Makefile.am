@@ -113,6 +113,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irxevent.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
+                           $(srcdir)/man-source/lirc-lsremotes.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
@@ -153,6 +154,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
                            man/lirc-lsplugins.1 \
+                           man/lirc-lsremotes.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd.conf.5 \
@@ -170,6 +172,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/irw.html \
                            man-html/lirc-config-tool.html \
                            man-html/lirc-lsplugins.html \
+                           man-html/lirc-lsremotes.html \
                            man-html/lirc-setup.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
