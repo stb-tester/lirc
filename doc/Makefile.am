@@ -100,9 +100,10 @@ man-html/xmode2.html: $(manpage_html)
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
 	doxygen >doxygen-warnings.txt 2>&1
-	tar czf $@ api-docs 
+	tar czf $@ api-docs
 
 man_sources             =  $(srcdir)/man-source/ircat.1 \
+                           $(srcdir)/man-source/irdb-get.1 \
                            $(srcdir)/man-source/irexec.1 \
                            $(srcdir)/man-source/irpty.1 \
                            $(srcdir)/man-source/irrecord.1 \
@@ -145,6 +146,7 @@ html_includes           =  $(srcdir)/html-source/foot.html \
                            $(srcdir)/html-source/head.html
 
 nodist_man_MANS         += man/ircat.1 \
+                           man/irdb-get.1 \
                            man/irexec.1 \
                            man/irpty.1 \
                            man/irrecord.1 \
@@ -163,6 +165,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/mode2.1
 
 manpage_html            += man-html/ircat.html \
+                           man-html/irdb-get.html \
                            man-html/irexec.html \
                            man-html/irpty.html \
                            man-html/irrecord.html \
