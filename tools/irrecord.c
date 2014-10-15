@@ -419,6 +419,7 @@ int main(int argc, char **argv)
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
+	analyse = options_getboolean("irrecord:analyse");
 	device = options_getstring("irrecord:device");
 	opt = options_getstring("lircd:debug");
 	loglevel = string2loglevel(opt);
