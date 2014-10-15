@@ -532,10 +532,14 @@ static int sanityChecks(struct ir_remote *rem)
 		return 0;
 	}
 	if (rem->gap == 0) {
-		logprintf(LIRC_WARNING, "you should specify a valid gap value");
+		logprintf(LIRC_WARNING,
+                     	  "%s: you should specify a valid gap value",
+			  rem->name);
 	}
 	if (has_repeat_gap(rem) && is_const(rem)) {
-		logprintf(LIRC_WARNING, "repeat_gap will be ignored if CONST_LENGTH flag is set");
+		logprintf(LIRC_WARNING,
+			  "%s: repeat_gap will be ignored if CONST_LENGTH flag is set",
+			  rem->name);
 	}
 
 	if (is_raw(rem))
@@ -966,8 +970,10 @@ read_config_recursive(FILE * f, const char *name, int depth)
 					parse_error = 1;
 				}
 				if (!parse_error && val2 != NULL) {
-					logprintf(LIRC_WARNING, "garbage after '%s' token in line %d ignored", val,
-						  line);
+					logprintf(LIRC_WARNING,
+						  "%s: garbage after '%s' token "
+						  "in line %d ignored",
+						  rem->name, val, line);
 				}
 			} else if (strcasecmp("end", key) == 0) {
 
@@ -1037,8 +1043,10 @@ read_config_recursive(FILE * f, const char *name, int depth)
 					parse_error = 1;
 				}
 				if (!parse_error && val2 != NULL) {
-					logprintf(LIRC_WARNING, "garbage after '%s'" " token in line %d ignored", val,
-						  line);
+					logprintf(LIRC_WARNING,
+						  "%s: garbage after '%s'"
+                                                  " token in line %d ignored",
+						   rem->name, val, line);
 				}
 			} else {
 				switch (mode) {
@@ -1047,8 +1055,10 @@ read_config_recursive(FILE * f, const char *name, int depth)
 					if (!parse_error
 					    && ((argc == 1 && val2 != NULL)
 						|| (argc == 2 && val2 != NULL && strtok(NULL, whitespace) != NULL))) {
-						logprintf(LIRC_WARNING, "garbage after '%s'" " token in line %d ignored",
-							  key, line);
+						logprintf(LIRC_WARNING,
+							  "%s: garbage after '%s'"
+							  " token in line %d ignored",
+							  rem->name, key, line);
 					}
 					break;
 				case ID_codes:
@@ -1086,8 +1096,9 @@ read_config_recursive(FILE * f, const char *name, int depth)
 						mode = ID_raw_name;
 						if (!parse_error && val2 != NULL) {
 							logprintf(LIRC_WARNING,
-								  "garbage after '%s'" " token in line %d ignored", key,
-								  line);
+								  "%s: garbage after '%s'"
+ 								  " token in line %d ignored",
+								   rem->name, key, line);
 						}
 					} else {
 						if (mode == ID_raw_codes) {
@@ -1305,7 +1316,9 @@ void calculate_signal_lengths(struct ir_remote *remote)
 		if (remote->min_total_signal_length > max_signal_length) {
 			remote->min_gap_length = remote->min_total_signal_length - max_signal_length;
 		} else {
-			logprintf(LIRC_WARNING, "min_gap_length is 0 for '%s' remote", remote->name);
+			logprintf(LIRC_WARNING,
+                             	  "min_gap_length is 0 for '%s' remote",
+				  remote->name);
 			remote->min_gap_length = 0;
 		}
 		if (remote->max_total_signal_length > min_signal_length) {
