@@ -135,7 +135,7 @@ def do_find():
             found.append(l)
     for l in found:
         tokens = l.split(";")
-        print("%-32s" % tokens[0] + "/" + tokens[1])
+        print(tokens[0] + "/" + tokens[1])
 
 
 def do_update():
