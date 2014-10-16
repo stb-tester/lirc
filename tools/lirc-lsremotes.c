@@ -143,14 +143,15 @@ void print_remotes(const char* path)
 		strncpy(photo, path, sizeof(photo));
 		get_photo(path, photo, sizeof(photo));
 		get_lircmd(path, lircmd, sizeof(lircmd));
-		printf("%s;%s;%s;%s;%s;%s;%s\n",
+		printf("%s;%s;%s;%s;%s;%s;%s;%s\n",
 			dir,
 			base,
 			lircmd,
 			photo,
 			r->name,
 			timing,
-			is_raw(r) ? "raw" : "no_raw");
+			is_raw(r) ? "raw" : "no_raw",
+			r->driver != NULL ? r->driver : "no_driver");
 		fflush(stdout);
 		if (opt_dump) {
 			fprint_remote(stdout, r, "Dumped by lirc-lsremotes");

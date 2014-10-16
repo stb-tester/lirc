@@ -360,6 +360,13 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 			return (1);
 		}
 	}
+	else if (strcasecmp("driver", key) == 0) {
+		if (rem->driver != NULL) {
+			free(rem->driver);
+		}
+	 	rem->driver = s_strdup(val);
+		return 1;
+	}
 	else if ((strcasecmp("bits", key)) == 0) {
 		rem->bits = s_strtoi(val);
 		return (1);

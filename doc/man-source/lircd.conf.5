@@ -74,10 +74,10 @@ main lircd.conf file. <path> must be enclosed in double quotes.
 .TP 4
 .B manual_sort <1|0>
 Normally, lircd tries to sort multiple remotes so the one which decodes
-fastest are used first. Setting menual_sort to 1 in any remote disables
+fastest are used first. Setting manual_sort to 1 in any remote disables
 this and uses the remotes in the order they are listed in lircd.conf or
 as the alphanumerically sorted filenames in lircd.conf.d.
-T.TP 4
+.TP 4
 .B name <remote name>
 The unique name assigned to the remote control (may not contain whitespace).
 Within a single file all names must be unique. Parameter is mandatory.
@@ -86,6 +86,10 @@ Within a single file all names must be unique. Parameter is mandatory.
 Flags are special text strings which describe various properties of the
 remote and determine the semantics of some of the following fields.
 Multiple flags should be separated by the pipe(|) symbol.  See FLAGS.
+.TP 4
+.B  driver <driver name>
+For lirccode drivers which does not have timing information the optional
+driver attribute names the driver which is required to use this remote.
 .TP 4
 .B bits <number of data bits>
 The number of data bits in the hexidecimal codes which describe each
@@ -157,7 +161,7 @@ A gap immediately following the trailing pulse, and preceding a repetition
 of the same code that's due to a the same press of the button.
 .TP 4
 .B min_repeat <minimum number of repetitions>
-The minimum times a signal is repeated when sent. Note that 0 means the 
+The minimum times a signal is repeated when sent. Note that 0 means the
 signal is sent only once. Not used when receiving.
 .TP 4
 .B toggle_bit <bit to toggle>

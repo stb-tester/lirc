@@ -92,7 +92,6 @@ void fprint_flags(FILE * f, int flags)
 
 void fprint_remotes(FILE * f, const struct ir_remote *all, const char* commandline)
 {
-
 	while (all) {
 		fprint_remote(f, all, commandline);
 		fprintf(f, "\n\n");
@@ -113,6 +112,10 @@ void fprint_remote_head(FILE * f, const struct ir_remote *rem)
 {
 	fprintf(f, "begin remote\n\n");
 	fprintf(f, "  name  %s\n", rem->name);
+	fprintf(f, "  manual_sort:  %d\n", rem->manual_sort);
+        if (rem->driver) {
+		fprintf(f, "  driver: %s\n", rem->driver);
+	}
 	if (!is_raw(rem)) {
 		fprintf(f, "  bits        %5d\n", rem->bits);
 	}
