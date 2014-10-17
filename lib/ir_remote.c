@@ -347,9 +347,6 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 	int found_code, have_code;
 	struct ir_ncode *codes, *found;
 
-	if (code & LIRC_EOF)
-		return &NCODE_EOF;
-
 	pre_mask = code_mask = post_mask = 0;
 
 	if (has_toggle_bit_mask(remote)) {
