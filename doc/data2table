@@ -13,7 +13,7 @@ HEADER_PATH = '../doc/html-source/head.html'
 
 MENUS = {'home_brew': 'Home-brew serial and parallel devices',
          'irda': 'IRDA/Cir hardware',
-         'other': 'Other (MIDI, Bluetooth, etc.)',
+         'other': 'Other (MIDI, Bluetooth, udp, etc.)',
          'other_serial': 'Other serial port devices',
          'pda': 'PDAs',
          'soundcard': 'Home-brew (soundcard input)',
