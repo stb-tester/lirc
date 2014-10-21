@@ -1,4 +1,4 @@
-.TH irdb-get "1" "Last change: March 2009" "irdb-get @version@" "User Commands"
+.TH irdb-get "1" "Last change: Oct 2014" "irdb-get @version@" "User Commands"
 .SH NAME
 irdb-get - list, search and download lirc configuration files.
 .SH SYNOPSIS
@@ -11,6 +11,8 @@ irdb-get - list, search and download lirc configuration files.
 .B  irdb download <id>
 .br
 .B  irdb list [pattern]
+.br
+.B  irdb find-driver  <string>
 
 
 .SH DESCRIPTION
@@ -33,9 +35,12 @@ Download the index from the remote repository.
 List all entries in the index file matching <string>. Matching is done
 using regular shell match syntax (i. e., not regex).
 .TP 4
+.B  find-driver <string>
+List all entries in the index with a given driver. The matching is
+exact, no wildcards.
+.TP 4
 .B info <id>
-Print some more info about a given entry. Downloads the
-index file if required.
+Print some more info about a given entry.
 .TP 4
 .B download <id>
 Download the configuration file for a given entry. The filename is printed

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+#
+# pylint: disable=invalid-name
 
 ''' Simple tool to search and download remote configurations. '''
+
 
 import fnmatch
 import os
@@ -20,6 +23,7 @@ Usage:
     irdb-get update
     irdb-get find  <string>
     irdb-get info  <id>
+    irdb-get find-driver <string>
     irdb-get download <id>
     irdb-get list [pattern]
 """
@@ -47,7 +51,7 @@ def get_list_lines():
         download_file(REMOTES_LIST_URL, REMOTES_LIST)
     with open(REMOTES_LIST) as f:
         list_ = f.read()
-    return list_.split('\n')
+    return [l for l in list_.split('\n') if l]
 
 
 def do_download():
@@ -74,7 +78,7 @@ def print_info(l):
     print("Name:             " + tokens[4])
     print("Timing info:      " + tokens[5])
     print("Raw:              " + tokens[6])
-    print("URI:              " + uri);
+    print("URI:              " + uri)
 
 
 def do_show():
@@ -91,7 +95,7 @@ def do_show():
         if tokens[0] == dir_ and tokens[1] == base:
             print_info(l)
             sys.exit(0)
-    print("No line matching: " + what);
+    print("No line matching: " + what)
     sys.exit(1)
 
 
@@ -119,6 +123,24 @@ def do_list():
         raw = '-' if tokens[6].startswith('no') else 'R'
         print("%s%s%s%s %-32s %s" %
               (timing, raw, photo, lircmd, tokens[4], path))
+
+
+def do_find_driver():
+    ''' Find files having exactly the driver in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        print("No driver specified")
+        print(USAGE)
+        sys.exit(1)
+    driver = sys.argv[2]
+    lines = get_list_lines()
+    found = []
+    for l in lines:
+        tokens = l.split(";")
+        if tokens[7] == driver:
+            found.append(l)
+    for l in found:
+        tokens = l.split(";")
+        print(tokens[0] + "/" + tokens[1])
 
 
 def do_find():
@@ -156,6 +178,8 @@ def main():
         do_download()
     elif sys.argv[1] == 'find':
         do_find()
+    elif sys.argv[1] == 'find-driver':
+        do_find_driver()
     elif sys.argv[1] == 'info':
         do_show()
     elif sys.argv[1] == 'list':
@@ -163,7 +187,7 @@ def main():
     elif sys.argv[1] == '-h' or sys.argv[1] == '--help':
         print(USAGE)
     else:
-        print("Illegal command: " + sys.argv[1]);
+        print("Illegal command: " + sys.argv[1])
         print(USAGE)
         sys.exit(1)
     sys.exit(0)
