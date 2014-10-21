@@ -1,6 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
+PYLINT                  = python3-pylint
+
 AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall -g
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
@@ -57,6 +59,14 @@ dist_bin_SCRIPTS        += pronto2lirc lirc-setup irdb-get
 dist_noinst_SCRIPTS     = make_rel_symlink.py
 dist_pkgdata_DATA       = lirc-setup.ui
 endif
+
+pylint: lirc-setup irdb-get
+	$(PYLINT) --rcfile=pylint.conf \
+        --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
+	$?
+
+pep8: lirc-setup irdb-get
+	pep8 --config=pep8.conf $?
 
 install-exec-hook:
 	sed -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
