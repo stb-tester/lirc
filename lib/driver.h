@@ -149,8 +149,8 @@ struct driver {
 			   	 struct decode_ctx_t* ctx);
 
 	/**
-	* Generic driver control function with semantics as defined by driver.
-	*
+	* Generic driver control function with semantics as defined by driver
+	* Returns 0 on success, else a positive error code.
 	*/
 	int (*const drvctl_func)(unsigned int cmd, void* arg);
 
@@ -179,12 +179,12 @@ struct driver {
 
 	const int api_version;           /**< API version (from version 2+).*/
 	const char* driver_version;      /**< Driver version (free text). */
-	int (*const close_func)(void);   /**< Hard closing. */
+	int (*const close_func)(void);   /**< Hard closing, returns 0 on OK.*/
 	const char* info;		 /**< Free text driver info. */
 
 };
 
-/** @} */ 
+/** @} */
 
 #ifdef IN_DRIVER
 /** Complete r/w access to drv for driver code including lirc_driver.h. */

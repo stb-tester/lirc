@@ -122,7 +122,7 @@ struct driver {
     <dt>device</dt>
     <dd>Typically the name of the device as text string in Linux. This
         corresponds to the <code>--device</code> argument to lircd
-        Not all drivers respect the device field; some have hardcoded
+        Not all drivers respect the device field as input; some have hardcoded
         device name(s), some use autodetecting code. </dd>
 
     <dt>fd</dt>
@@ -147,7 +147,7 @@ struct driver {
     <dt>decode_func</dt>
     <dd>Function pointer, for "real" drivers (not using LIRC_MODE_LIRCCODE),
         just use <code>receive_decode</code>, a function defined in <code>receive.c</code>.</dd>
-    <dt>ioctl_func</dt>
+    <dt>drvctl_func</dt>
     <dd>Function pointer, see below. May be NULL if there are no ioctls.</dd>
     <dt>
     <dt>readdata</dt>
@@ -329,8 +329,15 @@ struct driver* hardwares[] = { &my_hardware, NULL };
 
       <h4><code>close_func</code></h4>
       <code>int close_func(void)</code>
-      <p>Hard close of the device. Non-zero return value indicates success.</p>
+      <p>Hard close of the device. zero return value indicates success,
+         other values indicates an error. Some standard error codes are
+         defined in driver.h.</p>
 
+      <h4><code>open_func</code></h4>
+      <code>int open_func(void)</code>
+      <p>Open the device. This is the basic, possibly expensive steps
+         taken to make the device usable. Returns 0 on success, else an
+         error code, some of which defined in driver.h.</p>
 
 <h3>Comments</h3>
 <ul>
