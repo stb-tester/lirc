@@ -35,6 +35,8 @@
 
   * Dependencies:
       + Build scripts now requires python3.
+      + Build requires the pkg-config package, in particular
+        /usr/share/aclocal/pkg.m4
       + python3-PyYAML is strongly recommended. lirc builds without it, but
         crippled (no table.html or lirc.hwdb, lirc-setup doesn't work).
       + Doxygen is required to build api docs (ignored if missing).

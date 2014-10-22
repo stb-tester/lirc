@@ -1,4 +1,3 @@
-
 # lirc setup configuration files README.
 
 This README file lives in the same directory as a large number of
@@ -45,6 +44,7 @@ supports:
              with timing information.
            - 'lirccode' indicating that this capture device only supports
              remotes with a driver attribute being this one.
+
 note:   Message displayed to user when selecting this capture device.
 
 modules:
