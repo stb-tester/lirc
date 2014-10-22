@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS             = -I m4
 
 DISTCLEANFILES              = input_map.inc lirc/input_map.inc
+CLEANFILES                  = driver_api.dox lirc_client.dox
 EXTRA_DIST                  = input_map.inc input_map.sh \
 			      driver_api.dox  lirc_client.dox  mainpage.dox \
 			      driver_api.doxhead  lirc_client.doxhead
@@ -71,18 +72,16 @@ dist_lircinclude_HEADERS    = config_file.h \
                               transmit.h \
                               input_map.inc
 
-driver_api.dox:
-	cat $(srcdir)/driver_api.doxhead \
-	    $(top_srcdir)/doc/html-source/driver-api.html \
-                >driver_api.dox
-	echo "@example: drivers/default/Makefile" >> driver_api.dox
-	echo "*/" >> driver_api.dox
+driver_api.dox: $(srcdir)/driver_api.doxhead  \
+		$(top_srcdir)/doc/html-source/driver-api.html
+	cat $? > $@
+	echo "@example: drivers/default/Makefile" >> $@
+	echo "*/" >> $@
 
-lirc_client.dox:
-	cat $(srcdir)/lirc_client.doxhead \
-	    $(top_srcdir)/doc/html-source/lirc_client.html \
-	        >lirc_client.dox
-	echo "*/" >> lirc_client.dox
+lirc_client.dox: $(srcdir)/lirc_client.doxhead \
+		$(top_srcdir)/doc/html-source/lirc_client.html
+	cat $?  > $@
+	echo "*/" >> $@
 
 dox: driver_api.dox lirc_client.dox
 
