@@ -14,7 +14,7 @@ if BUILD_XTOOLS
 EXTRA_PROGRAMS          += xmode2 irxevent
 endif
 
-sbin_PROGRAMS		= lirc-lsplugins
+sbin_PROGRAMS           = lirc-lsplugins
 bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lirc-lsremotes \
                           irtestcase irsimsend irsimreceive irrecord @x_progs@
 
@@ -52,33 +52,33 @@ xmode2_SOURCES          = xmode2.c
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 
-dist_bin_SCRIPTS	= lirc-config-tool
+dist_bin_SCRIPTS        = lirc-config-tool
 
 if HAVE_PYTHON
-dist_bin_SCRIPTS        += pronto2lirc lirc-setup irdb-get
+dist_bin_SCRIPTS        += pronto2lirc irdb-get
 dist_noinst_SCRIPTS     = make_rel_symlink.py
-dist_pkgdata_DATA       = lirc-setup.ui
+pkgpython_PYTHON        = lirc_setup.py
+dist_pkgpython_SCRIPTS  = lirc-setup
+dist_pkgpython_DATA     = lirc-setup.ui
 endif
 
-pylint: lirc-setup irdb-get
+pylint: lirc_setup.py irdb-get
 	$(PYLINT) --rcfile=pylint.conf \
-        --msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
+	--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
 	$?
 
-pep8: lirc-setup irdb-get
+pep8: lirc-setup irdb-get lirc_setup.py
 	pep8 --config=pep8.conf $?
 
 install-exec-hook:
 	sed -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+	rm -f $(DESTDIR)/$(bindir)/lirc-setup
+	$(srcdir)/make_rel_symlink.py \
+	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \
+	    $(DESTDIR)/$(bindir)/lirc-setup
 
-
-# Ugly fix until we deploy the script as a regular python thing.
 install-data-hook:
-	rm -f  $(DESTDIR)/$(bindir)/lirc-setup.ui
+	rm -f $(DESTDIR)/$(pkgpythondir)/configs
 	$(srcdir)/make_rel_symlink.py \
-	    $(DESTDIR)/$(pkgdatadir)/lirc-setup.ui \
-	    $(DESTDIR)/$(bindir)/lirc-setup.ui
-	rm -f $(DESTDIR)/$(bindir)/configs
-	$(srcdir)/make_rel_symlink.py \
-	    $(DESTDIR)/$(pkgdatadir)/configs \
-	    $(DESTDIR)/$(bindir)/configs
+	    $(DESTDIR)$(pkgdatadir)/configs \
+	    $(DESTDIR)$(pkgpythondir)/configs
