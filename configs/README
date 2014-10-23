@@ -39,7 +39,8 @@ lircd_conf:
              lircd.conf file which has timing information.
 
 supports:
-        Supported lircd.conf files, multiple choice, optional:
+        Supported lircd.conf files, multiple choice, optional, defaults to
+        'timing':
            - 'timing' indicating a generic device  supporting any remote
              with timing information.
            - 'lirccode' indicating that this capture device only supports

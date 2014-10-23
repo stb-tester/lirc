@@ -54,20 +54,25 @@ xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
 
 dist_bin_SCRIPTS        = lirc-config-tool
 
+
 if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get
 dist_noinst_SCRIPTS     = make_rel_symlink.py
-pkgpython_PYTHON        = lirc_setup.py
-dist_pkgpython_SCRIPTS  = lirc-setup
-dist_pkgpython_DATA     = lirc-setup.ui
+pkgpython_PYTHON        = lirc-setup/mvc_control.py \
+                          lirc-setup/mvc_view.py \
+                          lirc-setup/mvc_model.py \
+                          lirc-setup/selectors.py \
+                          lirc-setup/baseview.py
+dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
+dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
 endif
 
-pylint: lirc_setup.py irdb-get
-	$(PYLINT) --rcfile=pylint.conf \
+pylint: irdb-get $(pkgpython_PYTHON)
+	PYTHONPATH=./lirc-setup $(PYLINT) --rcfile=pylint.conf \
 	--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
 	$?
 
-pep8: lirc-setup irdb-get lirc_setup.py
+pep8:   irdb-get $(pkgpython_PYTHON)
 	pep8 --config=pep8.conf $?
 
 install-exec-hook:

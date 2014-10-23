@@ -7,5 +7,5 @@ import os.path
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
-import lirc_setup
-lirc_setup.main()
+import mvc_control
+mvc_control.main()

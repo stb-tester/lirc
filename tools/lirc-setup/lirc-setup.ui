@@ -10,6 +10,7 @@
   </object>
   <object class="GtkWindow" id="config_browse_window">
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox4">
         <property name="visible">True</property>
@@ -174,6 +175,7 @@
   </object>
   <object class="GtkWindow" id="drv_select_remote_window">
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <property name="gravity">center</property>
     <child>
       <object class="GtkVBox" id="vbox12">
@@ -906,6 +908,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="spacing">10</property>
+                <property name="layout_style">end</property>
                 <child>
                   <object class="GtkButton" id="main_help_btn">
                     <property name="label">gtk-help</property>
@@ -917,7 +920,9 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
+                    <property name="pack_type">end</property>
                     <property name="position">0</property>
+                    <property name="secondary">True</property>
                   </packing>
                 </child>
                 <child>
@@ -975,7 +980,10 @@
   </object>
   <object class="GtkListStore" id="preconfig_liststore"/>
   <object class="GtkWindow" id="preconfig_select_window">
+    <property name="width_request">600</property>
+    <property name="height_request">300</property>
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox7">
         <property name="visible">True</property>
@@ -990,8 +998,8 @@
             <property name="label" translatable="yes">Select configuration</property>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -1051,8 +1059,9 @@
                 <property name="label" translatable="yes">Selected config (none).</property>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="padding">10</property>
                 <property name="position">2</property>
               </packing>
             </child>
@@ -1106,8 +1115,8 @@
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -1116,6 +1125,7 @@
   </object>
   <object class="GtkWindow" id="preconfig_window">
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="preconfig_main_vbox">
         <property name="visible">True</property>
@@ -1335,8 +1345,11 @@
   </object>
   <object class="GtkListStore" id="search_results_store"/>
   <object class="GtkWindow" id="search_select_window">
+    <property name="width_request">700</property>
+    <property name="height_request">400</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">LIRC: select remote</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox8">
         <property name="visible">True</property>
@@ -1479,6 +1492,7 @@
   </object>
   <object class="GtkWindow" id="select_com_window">
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox2">
         <property name="visible">True</property>
@@ -1741,6 +1755,7 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
+                <property name="x_padding">10</property>
               </packing>
             </child>
             <child>
@@ -1752,7 +1767,26 @@
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
+                <property name="x_padding">10</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -1849,6 +1883,8 @@
     </child>
   </object>
   <object class="GtkWindow" id="select_dev_window">
+    <property name="width_request">300</property>
+    <property name="height_request">300</property>
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <child>
@@ -1920,6 +1956,7 @@
   </object>
   <object class="GtkWindow" id="select_lpt_window">
     <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox5">
         <property name="visible">True</property>
@@ -2191,6 +2228,24 @@
             <child>
               <placeholder/>
             </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
           </object>
           <packing>
             <property name="expand">True</property>
@@ -2299,6 +2354,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">10</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -2359,21 +2415,166 @@
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="view_text_window">
+  <object class="GtkWindow" id="single_remote_select_window">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">lirc: Found one remote.</property>
+    <property name="window_position">center</property>
+    <property name="type_hint">dialog</property>
+    <child>
+      <object class="GtkBox" id="box2">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkAlignment" id="alignment32">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="top_padding">10</property>
+            <property name="bottom_padding">10</property>
+            <property name="left_padding">10</property>
+            <property name="right_padding">10</property>
+            <child>
+              <object class="GtkLabel" id="single_remote_config_lbl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0.019999999552965164</property>
+                <property name="label" translatable="yes">File id: vendor/example.lircd.conf</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkAlignment" id="alignment25">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="xalign">0</property>
+            <property name="top_padding">10</property>
+            <property name="bottom_padding">10</property>
+            <property name="left_padding">10</property>
+            <property name="right_padding">10</property>
+            <child>
+              <object class="GtkLabel" id="single_remote_supports_lbl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Supported remotes: some examples, 
+one more example...</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkAlignment" id="alignment35">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="top_padding">10</property>
+            <property name="bottom_padding">10</property>
+            <property name="left_padding">10</property>
+            <property name="right_padding">10</property>
+            <child>
+              <object class="GtkButtonBox" id="single_remote_buttonnbox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">10</property>
+                <property name="layout_style">end</property>
+                <child>
+                  <object class="GtkButton" id="single_remote_back_btn">
+                    <property name="label" translatable="yes">Back</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="single_remote_next_btn">
+                    <property name="label" translatable="yes">Next</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="view_text_window">
+    <property name="width_request">600</property>
+    <property name="height_request">600</property>
+    <property name="can_focus">False</property>
+    <property name="margin_right">2</property>
+    <property name="type_hint">dialog</property>
     <child>
       <object class="GtkVBox" id="vbox10">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow3">
+          <object class="GtkAlignment" id="alignment33">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can_focus">False</property>
+            <property name="top_padding">10</property>
+            <property name="bottom_padding">10</property>
             <child>
-              <object class="GtkTextView" id="view_text_view">
+              <object class="GtkScrolledWindow" id="scrolledwindow3">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <child>
+                  <object class="GtkViewport" id="viewport1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">10</property>
+                    <property name="margin_right">10</property>
+                    <property name="margin_top">10</property>
+                    <property name="margin_bottom">10</property>
+                    <child>
+                      <object class="GtkAlignment" id="alignment36">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="top_padding">10</property>
+                        <property name="bottom_padding">10</property>
+                        <property name="left_padding">10</property>
+                        <property name="right_padding">10</property>
+                        <child>
+                          <object class="GtkLabel" id="show_text_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">mumbo jumbo</property>
+                            <property name="selectable">True</property>
+                            <property name="lines">1</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

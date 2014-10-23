@@ -13,6 +13,7 @@ core*
 *.tar.bz2
 *.rej
 *.orig
+[#]*[#]
 Makefile.in
 Makefile
 *~
@@ -63,6 +64,7 @@ input_map.inc
 install-sh
 ltmain.sh
 missing
+py-compile
 setup-driver.sh
 .setup.config
 config.h
