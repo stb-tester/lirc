@@ -40,13 +40,13 @@ nobase_header_HEADERS   = include/media/lirc.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	for f in contrib remotes lirc.org include configs; do \
+	for f in contrib lirc.org include configs; do \
 	    cp -pr $(srcdir)/$$f $(DESTDIR)$(pkgdatadir); \
 	done
 
 dist-hook:
 	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)
-	for f in contrib remotes lirc.org include configs; do \
+	for f in contrib lirc.org include configs; do \
 	    cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	git log >$(distdir)/ChangeLog || :
 
