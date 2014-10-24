@@ -11,8 +11,8 @@
     when selecting both capture device and remote config. It sports auto-
     detection of most devices, searching and downloading from the remotes
     database and a considerable amount of bugs.
-  * The remotes/ directory which was part of the source is removed. New
-    configuration tools uses the remotes database at
+  * The remotes/ directory has become obsolete, only used for testing.
+    New configuration tools uses the remotes database at
     http://sf.net/p/lirc-remotes as the only source (#53).
   * Support for the Dangerous Prototypes irtoy device is added (#20).
   * Support for long keypresses has been added. See the "Configuring LIRC"
