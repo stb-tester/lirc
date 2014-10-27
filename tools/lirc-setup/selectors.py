@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 '''
  Simple lirc setup tool - selectors.
 
@@ -41,8 +39,6 @@ class RemoteSelector(baseview.Baseview):
             ''' Construct the remotes liststore treeview. '''
             treeview = self._create_treeview('drv_select_remote_view',
                                              ['Remote'])
-            treeview.get_selection().connect('changed',
-                                             on_treeview_change_cb)
             treeview.get_model().clear()
             for l in sorted(remotes):
                 treeview.get_model().append([l])
@@ -70,17 +66,14 @@ class RemoteSelector(baseview.Baseview):
             b = self.view.builder.get_object('drv_select_remote_next_btn')
             b.set_sensitive(True)
 
-        if len(remotes) == 0:
-            return
-        if len(remotes) == 1:
-            self.controller.model.set_remote(remotes[0])
-            return
+        l = self.view.builder.get_object('drv_select_remote_main_lbl')
+        l.set_text("Select remote configuration for driver")
         w = self.view.builder.get_object('drv_select_remote_window')
+        treeview = build_treeview(remotes)
         if not self.test_and_set_connected('drv_select_remote_window'):
-            build_treeview(remotes)
             w.connect('delete-event', on_window_delete_event_cb)
-            l = self.view.builder.get_object('drv_select_remote_main_lbl')
-            l.set_text("Select remote configuration for driver")
+            treeview.get_selection().connect('changed',
+                                             on_treeview_change_cb)
             b = self.view.builder.get_object('drv_select_remote_next_btn')
             b.connect('clicked', on_select_next_cb)
             b = self.view.builder.get_object('drv_select_remote_back_btn')
@@ -235,7 +228,7 @@ class AutoDeviceSelector(DeviceSelector):
 
 
 def factory(device_list, view, on_select_cb):
-    ''' Return a DeviceSelector handling config (a dict).'''
+    ''' Return a DeviceSelector handling device_list (a DeviceList).'''
     pattern = device_list.device_pattern
     if 'tty' in pattern:
         return SerialDeviceSelector(device_list, view, on_select_cb)

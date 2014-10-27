@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ''' Simple lirc setup tool - model part. '''
 
 YAML_MSG = '''
@@ -395,7 +393,7 @@ class UdpPortDeviceList(DeviceListModel):
         DeviceListModel.__init__(self, config)
 
     def list_devices(self):
-        self.label_by_device = {'default port 8765': '8765'}
+        self.label_by_device = {'8765': 'default port 8765'}
 
     def is_direct_installable(self):
         return False

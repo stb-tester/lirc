@@ -1,21 +1,16 @@
-#!/usr/bin/env python3
-
-''' Simple lirc setup tool. '''
+''' Simple lirc setup tool - view part. '''
 
 import os.path
 import os
-import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
-import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
-from gi.repository.Pango import FontDescription  # pylint: disable=F0401,E0611
 
 import baseview
 
+from baseview import _hasitem
+from baseview import _on_window_delete_event_cb
 
 REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
-_REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
-_OPTIONS_PATH = "/etc/lirc/lirc_options.conf"
 _DEBUG = 'LIRC_DEBUG' in os.environ
 
 NO_REMOTE_INFO = """
@@ -38,29 +33,29 @@ It needs to be configured which is normally more work than the devinput
 driver, but supports more devices and full functionality."""
 
 PRECONFIG_INFO = """
-For some devices which cannot be used with the default or the devinput
+For some capture devices which cannot be used with the default or the devinput
 driver lirc has specific support, often a lirc driver and/or kernel
-configuration of the standard driver(s). If you can find your remote here
+configuration of the standard driver(s). If you can find your device here
 it will configure this support. """
 
 MAIN_HELP = """
 
 <big>LIRC Configuration Tool Help.</big>
 
-NOTE: This tool is in early alpha stage! Here are numerous bugs and
-shortcomings. Please report issues on the mailing list or in the
-issue tracker at https://sourceforge.net/projects/lirc/!
+NOTE: This tool is in alpha stage! Here are numerous bugs and shortcomings.
+Please report issues on the mailing list or issue tracker at
+https://sourceforge.net/projects/lirc/!
 
 The tool allows you to configure lirc. This is done in three steps.
 
 In the first you should select a configuration file which corresponds to
 your remote. You can search for remotes from existing ones, browse brands
-or select to not use any pre-configured remote. In the last case you
+or select to not use any pre-configured file. In the last case you
 probably wants to record your own configuration file using irrecord(1)
 later.  This is the top pane of the window
 
 In the second step you should select a driver which can handle your
-capture device e. g., a usb dongle or a DIY serial device.  This is the 
+capture device e. g., a usb dongle or a DIY serial device. This is the
 bottom pane of the window.
 
 Actually, it doesn't really matter if you select remote or capture device
@@ -75,17 +70,6 @@ In the last step you should install the configuration. This will write a set
 of configuration files to the results directory, normally lirc-setup.conf.d.
 You should then install these files into their proper locations, see the
 README file in the results directory."""
-
-
-def _hasitem(dict_, key_):
-    ''' Test if dict contains a non-null value for key. '''
-    return key_ in dict_ and dict_[key_]
-
-
-def _on_window_delete_event_cb(window, event):
-    ''' Generic window close event. '''
-    window.hide()
-    return True
 
 
 def _get_lines_by_letter(lines):
@@ -119,7 +103,7 @@ class View(baseview.Baseview):
         def on_view_config_btn_cb(btn):
             ''' User pressed the view config file button. '''
             label = self.builder.get_object('selected_remote_lbl')
-            self.show_remote(label.get_text())
+            self.controller.show_remote(label.get_text())
             return True
 
         def on_info_btn_clicked(txt):
@@ -242,17 +226,6 @@ class View(baseview.Baseview):
             s += "\n"
         s = "<tt>" + s + "</tt>"
         self.show_info('lirc: Driver configuration', s)
-
-    def show_remote(self, remote):
-        ''' Display remote config file in text window. '''
-        # pylint: disable=no-member
-        uri = _REMOTES_BASE_URI + '/' + remote + '?format=raw'
-        try:
-            text = urllib.request.urlopen(uri).read().decode('utf-8',
-                                                             errors='ignore')
-        except urllib.error.URLError as ex:
-            text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
-        self.show_text(text, 'lirc: download error')
 
     def show_select_lpt_window(self, module):
         ''' Show window for selecting lpt1, lpt2... '''
@@ -487,7 +460,7 @@ class View(baseview.Baseview):
             btn = self.builder.get_object('single_remote_back_btn')
             btn.connect('clicked', lambda b: w.hide())
         w.show_all()
-          
+
     def show_search_results_select(self, lines):
         ''' User  has entered a search pattern, let her choose match.'''
 
@@ -516,7 +489,7 @@ class View(baseview.Baseview):
                 liststore.append([words[0], words[1], words[4]])
             treeview.set_model(liststore)
 
-        treeview = self._create_treeview('search_results_view', 
+        treeview = self._create_treeview('search_results_view',
                                          ['vendor', 'lircd.conf', 'device'])
         load_liststore(treeview, lines)
         if not self.test_and_set_connected('search_select_window'):
@@ -588,7 +561,7 @@ class View(baseview.Baseview):
         def on_config_browse_view_btn_cb(button, data=None):
             ''' User presses 'View' button. '''
             lbl = self.builder.get_object('config_browse_select_lbl')
-            self.show_remote(lbl.get_text())
+            self.controller.show_remote(lbl.get_text())
 
         w = self.builder.get_object('config_browse_window')
         if not self.test_and_set_connected('config_browse_window'):

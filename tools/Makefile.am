@@ -73,7 +73,7 @@ pylint: irdb-get $(pkgpython_PYTHON)
 	$?
 
 pep8:   irdb-get $(pkgpython_PYTHON)
-	pep8 --config=pep8.conf $?
+	python3-pep8 --config=pep8.conf $?
 
 install-exec-hook:
 	sed -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool

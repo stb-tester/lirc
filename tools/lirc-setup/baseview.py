@@ -1,15 +1,7 @@
-#!/usr/bin/env python3
-
 ''' Simple lirc setup tool - common parts of view components '''
 
-import os.path
-import os
 import sys
-import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
-import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
-
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
-from gi.repository.Pango import FontDescription  # pylint: disable=F0401,E0611
 
 
 def _hasitem(dict_, key_):

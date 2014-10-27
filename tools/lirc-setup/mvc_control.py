@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
-
 ''' Simple lirc setup tool - control part. '''
 
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 
 import os
+import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
+import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
 import mvc_model
 import mvc_view
 import selectors
 
 _DEBUG = 'LIRC_DEBUG' in os.environ
+_REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
 
 
 def _hasitem(dict_, key_):
@@ -163,6 +164,7 @@ class Controller(object):
 
     def show_devinput(self):
         ''' Configure the devinput driver i. e., the event device. '''
+        self.model.clear_capture_device()
         config = self.model.find_config('id', 'devinput')
         self.model.set_capture_device(config)
         self.configure_device(config, self.CHECK_REQUIRED)
@@ -229,6 +231,17 @@ class Controller(object):
                                       self.cli_options['results_dir'],
                                       self.view)
         self.view.show_info('Installation files written', log)
+
+    def show_remote(self, remote):
+        ''' Display remote config file in text window. '''
+        # pylint: disable=no-member
+        uri = _REMOTES_BASE_URI + '/' + remote + '?format=raw'
+        try:
+            text = urllib.request.urlopen(uri).read().decode('utf-8',
+                                                             errors='ignore')
+        except urllib.error.URLError as ex:
+            text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
+        self.view.show_text(text, 'lirc: download error')
 
 
 def main():
