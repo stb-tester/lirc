@@ -206,13 +206,13 @@ static void *atwf83_repeat()
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
-		write(fd, &current_code, sizeof(current_code));
+		chk_write(fd, &current_code, sizeof(current_code));
 	}
 exit_loop:
 
 	// Wake up main thread with special key code
 	current_code = remove_code;
-	write(fd, &current_code, sizeof(current_code));
+	chk_write(fd, &current_code, sizeof(current_code));
 	return NULL;
 }
 

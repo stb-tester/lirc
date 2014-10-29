@@ -375,21 +375,21 @@ int tira_setup(void)
 	   that don't seem to work... *shrug*
 	 */
 	usleep(2 * (100 * 1000));
-	read(drv.fd, response, 3);
+	chk_read(drv.fd, response, 3);
 
 	if (strncmp(response, "OIP", 3) == 0) {
-		read(drv.fd, &ptr, 1);	/* read the calibration value */
-		read(drv.fd, &ptr, 1);	/* read the version word */
+		chk_read(drv.fd, &ptr, 1);	/* read the calibration value */
+		chk_read(drv.fd, &ptr, 1);	/* read the version word */
 		/* Bits 4:7 in the version word set to one indicates a
 		   Tira-2 */
 		deviceflags = ptr & 0x0f;
 		if (ptr & 0xF0) {
 			logprintf(LIRC_INFO, "Tira-2 detected");
 			/* Lets get the firmware version */
-			write(drv.fd, "IV", 2);
+			chk_write(drv.fd, "IV", 2);
 			usleep(2 * (100 * 1000));
 			memset(response, 0, sizeof(response));
-			read(drv.fd, response, sizeof(response) - 1);
+			chk_read(drv.fd, response, sizeof(response) - 1);
 			logprintf(LIRC_INFO, "firmware version %s", response);
 		} else {
 			logprintf(LIRC_INFO, "Ira/Tira-1 detected");
@@ -447,7 +447,8 @@ int ira_setup(void)
 	int i;
 	int ptr;
 	/* Clear the port of any random data */
-	while (read(drv.fd, &ptr, 1) >= 0) ;
+	while (read(drv.fd, &ptr, 1) >= 0) 
+   		;
 
 	if (ira_setup_sixbytes(0) == 0)
 		return 0;

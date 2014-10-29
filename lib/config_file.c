@@ -721,7 +721,9 @@ void get_configdir(const char* configpath, char* path, ssize_t size)
 	if (configpath[0] == '/') {
         	strncpy(buff, configpath, sizeof(buff) - 1);
 	} else {
-		getcwd(buff, sizeof(buff));
+		if (getcwd(buff, sizeof(buff)) == NULL) {
+			logperror(LIRC_WARNING, "config_file: getcwd()");
+		}
 		strncat(buff, "/", sizeof(buff) - strlen(buff) - 1);
 		strncat(buff, configpath, sizeof(buff) - strlen(buff) - 1);
 	}

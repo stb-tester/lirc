@@ -3,7 +3,8 @@ ACLOCAL_AMFLAGS         = -I m4
 
 PYLINT                  = python3-pylint
 
-AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ -Wall -g
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ 
+AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la

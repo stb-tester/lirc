@@ -10,7 +10,7 @@ AM_LDFLAGS                  = -ldl
 
 BUILT_SOURCES               = lirc/input_map.inc
 
-AM_CPPFLAGS                 = -I$(top_srcdir)
+AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 

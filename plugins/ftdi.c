@@ -113,7 +113,7 @@ static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 		}
 
 		/* Send the sample */
-		write(pipe_rxir_w, &usecs, sizeof usecs);
+		chk_write(pipe_rxir_w, &usecs, sizeof usecs);
 
 		/* Remember last state */
 		laststate = curstate;
@@ -324,7 +324,7 @@ next:
 	pipe_tx2main[1] = -1;
 
 	/* wait for child to be started */
-	read(pipe_tx2main[0], &buf, 1);
+	chk_read(pipe_tx2main[0], &buf, 1);
 
 	return (1);
 
@@ -478,10 +478,10 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	buf[bufidx++] = 0;
 
 	/* let the child process transmit the pattern */
-	write(pipe_main2tx[1], buf, bufidx);
+	chk_write(pipe_main2tx[1], buf, bufidx);
 
 	/* wait for child process to be ready with it */
-	read(pipe_tx2main[0], buf, 1);
+	chk_read(pipe_tx2main[0], buf, 1);
 
 	return (1);
 }

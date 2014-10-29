@@ -83,7 +83,7 @@ static int outDevicesPrinted = 0;
 
 static void addCode(lirc_t data)
 {
-	write(master, &data, sizeof(lirc_t));
+	chk_write(master, &data, sizeof(lirc_t));
 }
 
 /* This routine will be called by the PortAudio engine when audio is needed.
@@ -209,7 +209,9 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 				if (!data->signaledDone) {
 					char done = 0;
 					data->signaledDone = 1;
-					(void)write(completedPipe[1], &done, sizeof(done));
+					chk_write(completedPipe[1], 
+                                                  &done, 
+                                                  sizeof(done));
 				}
 			}
 		}
@@ -307,7 +309,7 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	/* write carrier frequency */
 	freq = remote->freq ? remote->freq : DEFAULT_FREQ;
-	write(sendPipe[1], &freq, sizeof(freq));
+	chk_write(sendPipe[1], &freq, sizeof(freq));
 	if (freq != prevfreq) {
 		prevfreq = freq;
 		logprintf(LIRC_INFO, "Using carrier frequency %i", freq);
@@ -320,7 +322,7 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 	}
 
 	/* wait for the callback to signal us that all signals are written */
-	read(completedPipe[0], &completed, sizeof(completed));
+	chk_read(completedPipe[0], &completed, sizeof(completed));
 
 	return 1;
 }

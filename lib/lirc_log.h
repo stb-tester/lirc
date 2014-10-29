@@ -19,6 +19,7 @@
 #include <syslog.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #ifdef	__cplusplus
 extern "C" {
@@ -83,6 +84,7 @@ extern char progname[128];
 	if (level + 7 <= loglevel ) logperror(logmax(level + 7), s)
 
 
+
 /**
  * Convert a string, either a number or 'info', 'trace1', error etc.
  * to a loglevel.
@@ -145,6 +147,43 @@ int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size);
 
 /** Print prefix + a hex dump of len bytes starting at  *buf. */
 void hexdump(char* prefix, unsigned char*  buf, int len);
+
+/** Helper macro for STR().*/
+#define STRINGIFY(x) #x
+
+/** Return x in (double) quotes. */
+#define STR(x) STRINGIFY(x)
+
+/** Wrapper for write(2) which logs errors. */
+#define chk_write(fd, buf, count) \
+	do_chk_write(fd, buf, count, STR(__FILE__) ":" STR(__LINE__))
+
+
+/** Wrapper for read(2) which logs errors. */
+#define chk_read(fd, buf, count) \
+	do_chk_read(fd, buf, count, STR(__FILE__) ":" STR(__LINE__))
+
+
+/** Implement the chk_write() macro. */
+static inline void
+do_chk_write(int fd, const void *buf, size_t count, const char* msg)
+{
+	if (write(fd, buf, count) == -1) {
+		logperror(LIRC_WARNING, msg);
+	}
+}
+
+
+/** Implement the chk_read() macro. */
+static inline void
+do_chk_read(int fd, void *buf, size_t count, const char* msg) 
+{
+	if (read(fd, buf, count) == -1) {
+		logperror(LIRC_WARNING, msg);
+	}
+}
+
+
 
 /** @} */
 

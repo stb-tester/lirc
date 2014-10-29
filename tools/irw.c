@@ -26,6 +26,8 @@
 #include <errno.h>
 #include <getopt.h>
 
+#include "lirc_log.h"
+
 static struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'v'},
@@ -91,6 +93,6 @@ int main(int argc, char *argv[])
 		};
 		if (!i)
 			exit(0);
-		write(STDOUT_FILENO, buf, i);
+		chk_write(STDOUT_FILENO, buf, i);
 	};
 }

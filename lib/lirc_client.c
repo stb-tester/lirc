@@ -97,6 +97,14 @@ static char *lirc_buffer = NULL;
 
 char *prog;
 
+/** Wrapper for write(2) which logs errors. */
+static inline void
+chk_write(int fd, const void *buf, size_t count, const char* msg)
+{
+	if (write(fd, buf, count) == -1) {
+		perror(msg);
+	}
+}
 int lirc_command_init(lirc_cmd_ctx* ctx, const char* fmt, ...)
 {
 	va_list ap;
@@ -279,8 +287,9 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 				}
 			}
 			if (ctx->reply_to_stdout) {
-				write(0, string, strlen(string));
-				write(0, "\n", 1);
+				chk_write(0, string, strlen(string), 
+					  "reply (1)");
+				chk_write(0, "\n", 1, "reply (2)");
 			} else {
 				strncpy(ctx->reply,
 				        string,

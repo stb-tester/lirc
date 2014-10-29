@@ -117,8 +117,11 @@ static void recv_loop(int fd, int notify)
 					}
 
 					/* write the data and free it */
-					if (y > 0)
-						write(fd, buffer, sizeof(lirc_t) * y);
+					if (y > 0) {
+						chk_write(fd, 
+                                                          buffer, 
+                                                          sizeof(lirc_t) * y);
+					}
 					free(code);
 				}
 
@@ -163,7 +166,7 @@ static int iguana_init()
 				close(recv_pipe[1]);
 				close(notify[1]);
 				/* make sure child has set its signal handler to avoid race with iguana_deinit() */
-				read(notify[0], &dummy, 1);
+				chk_read(notify[0], &dummy, 1);
 				close(notify[0]);
 				sendConn = iguanaConnect(drv.device);
 				if (sendConn == -1)

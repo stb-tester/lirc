@@ -146,7 +146,12 @@ static int open_i2c_device(void)
 			return -1;
 		}
 		memset(s, 0, sizeof s);
-		fread(s, 1, sizeof s, f);
+		if (fread(s, 1, sizeof s, f) != sizeof(s)) {
+			if (ferror(f)) {
+				logprintf(LIRC_WARNING, 
+				 	  "Error reading i2c device");
+			}
+		}
 		fclose(f);
 
 		if (strncmp(s, "bt878", 5) == 0) {

@@ -362,9 +362,8 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx;
 		buffer[2] = dy;
 		buffer[3] = buffer[4] = 0;
-
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 5);
+			chk_write(lircm, buffer, 5);
 		}
 		break;
 	case imps_2:
@@ -376,9 +375,8 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx + (dx >= 0 ? 0 : 256);
 		buffer[2] = dy + (dy >= 0 ? 0 : 256);
 		buffer[3] = dz;
-
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 4);
+			chk_write(lircm, buffer, 4);
 		}
 		break;
 	case im_serial:
@@ -394,7 +392,7 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		    | ((buttons & BUTTON2) ? 0x10 : 0x00);
 
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 4);
+			chk_write(lircm, buffer, 4);
 		}
 		break;
 	}

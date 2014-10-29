@@ -439,7 +439,7 @@ static int commandir_receive_decode(struct ir_remote *remote, struct decode_ctx_
 
 	if (i > 0) {
 		static char rx_char[3] = { 3, 0, RXDECODE_HEADER_LIRC };
-		(void)write(tochild_write, rx_char, 3);
+		chk_write(tochild_write, rx_char, 3);
 	}
 
 	return i;
@@ -450,7 +450,7 @@ static int commandir_init()
 	long fd_flags;
 	if (haveInited) {
 		static char init_char[3] = { 3, 0, INIT_HEADER_LIRC };
-		(void)write(tochild_write, init_char, 3);
+		chk_write(tochild_write, init_char, 3);
 		return 1;
 	}
 
@@ -506,7 +506,7 @@ static int commandir_deinit(void)
 	 * connected so in the future we can still monitor in the client */
 	if (USB_KEEP_WARM && (!strncmp(progname, "lircd", 5))) {
 		static char deinit_char[3] = { 3, 0, DEINIT_HEADER_LIRC };
-		(void)write(tochild_write, deinit_char, 3);
+		chk_write(tochild_write, deinit_char, 3);
 		logprintf(LIRC_ERROR, "LIRC_deinit but keeping warm");
 	} else {
 		if (tochild_read >= 0) {
@@ -567,7 +567,7 @@ static int commandir_send(struct ir_remote *remote, struct ir_ncode *code)
 	cmdir_char[5] = (remote->freq >> 8) & (0xff);
 	cmdir_char[6] = (remote->freq & 0xff);
 
-	(void)write(tochild_write, cmdir_char, cmdir_char[0]);
+	chk_write(tochild_write, cmdir_char, cmdir_char[0]);
 
 	//cmdir_cnt = 3;
 
@@ -613,7 +613,7 @@ static int commandir_ioctl(unsigned int cmd, void *arg)
 		send_this_mask.idByte = CHANNEL_EN_MASK;
 		send_this_mask.new_tx_mask = *(unsigned int *)arg;
 
-		(void)write(tochild_write, &send_this_mask, sizeof(send_this_mask));
+		chk_write(tochild_write, &send_this_mask, sizeof(send_this_mask));
 		return (0);
 
 	default:
@@ -1730,9 +1730,11 @@ static int commandir_read()
 				//int tmp4 = 0;
 				if (zeroterminated > 1001) {
 					if (insert_fast_zeros > 0) {
-						//tmp4 =
-						    write(child_pipe_write, lirc_zero_buffer,
-							  sizeof(lirc_t) * insert_fast_zeros);
+						//tmp4 = write(...)
+						    chk_write(child_pipe_write, 
+                                                              lirc_zero_buffer,
+                                                              sizeof(lirc_t) 
+                                                              * insert_fast_zeros);
 					}
 					zeroterminated = 0;
 				} else {
@@ -2220,8 +2222,11 @@ static int commandir3_convert_RX(unsigned char *rxBuffer, int numNewValues)
 				mySize = 4;
 				break;
 			case USB_NO_DATA_BYTE:
-				//read_num =
-				    write(child_pipe_write, lirc_zero_buffer, sizeof(lirc_t) * insert_fast_zeros);
+				//read_num = write(..)
+				    chk_write(child_pipe_write, 
+                                              lirc_zero_buffer, 
+                                              sizeof(lirc_t) 
+                                                 * insert_fast_zeros);
 				mySize = 0;
 				break;
 			default:

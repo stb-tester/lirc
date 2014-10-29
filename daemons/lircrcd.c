@@ -872,14 +872,20 @@ int main(int argc, char **argv)
 	}
 
 	/* fork */
-	getcwd(dir, sizeof(dir));
+	if (getcwd(dir, sizeof(dir)) == NULL) {
+		lirc_freeconfig(config);
+		lirc_deinit();
+		perror("getcwd()");
+		return EXIT_FAILURE;
+	}
 	if (daemon(0, 0) == -1) {
 		fprintf(stderr, "%s: daemon() failed\n", progname);
 		perror(progname);
 		shutdown(socket, 2);
 		close(socket);
+		lirc_deinit();
 		lirc_freeconfig(config);
-		return -1;
+		return EXIT_FAILURE;
 	}
 	daemonized = 1;
 

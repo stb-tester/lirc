@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 	struct lirc_config *config;
 	int daemonize = 0;
 	char *program = "irexec";
+        int r;
 
 	prog = "irexec " VERSION;
 	while (1) {
@@ -98,7 +99,11 @@ int main(int argc, char *argv[])
 					logprintf(LIRC_DEBUG,
 						  "Execing command \"%s\"\n", c);
 				}
-				system(c);
+				r = system(c);
+				if (r != 0) {
+					logprintf(LIRC_NOTICE, 
+    						  "Shell returned %d", r);
+				}
 			}
 			free(code);
 			if (ret == -1)

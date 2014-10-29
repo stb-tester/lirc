@@ -132,7 +132,7 @@ static int visit_rc(const char* rc_dir, const char* device)
 		logprintf(LIRC_DEBUG, "Cannot open protocol file: %s", path);
 		return -1;
 	}
-	write(fd, "lirc\n" , 5);
+ 	chk_write(fd, "lirc\n" , 5);
 	logprintf(LIRC_NOTICE, "'lirc' written to protocols file %s", path);
 	close(fd);
 	return 0;

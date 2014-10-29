@@ -275,7 +275,7 @@ static int signal_to_int(lirc_t signal)
 static void tx_bytes(unsigned char *b, int n)
 {
 	LOGPRINTF(3, "sending %s", to_byte_string(b, n));
-	write(drv.fd, b, n);
+	chk_write(drv.fd, b, n);
 }				/* tx_bytes */
 
 static void enable_port(unsigned char port)

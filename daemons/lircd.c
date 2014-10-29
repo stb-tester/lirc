@@ -1040,7 +1040,9 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	rewind(pidf);
 	(void)fprintf(pidf, "%d\n", getpid());
 	(void)fflush(pidf);
-	(void)ftruncate(fileno(pidf), ftell(pidf));
+	if (ftruncate(fileno(pidf), ftell(pidf)) != 0) {
+		logperror(LIRC_WARNING, "lircd: ftruncate()");
+	}
 
 	/* create socket */
 	sockfd = -1;
@@ -1155,9 +1157,11 @@ void daemonize(void)
 	}
 	umask(0);
 	rewind(pidf);
-	(void)fprintf(pidf, "%d\n", getpid());
-	(void)fflush(pidf);
-	(void)ftruncate(fileno(pidf), ftell(pidf));
+	fprintf(pidf, "%d\n", getpid());
+	fflush(pidf);
+	if (ftruncate(fileno(pidf), ftell(pidf)) != 0) {
+		logperror(LIRC_WARNING, "lircd: ftruncate()");
+	}
 	daemonized = 1;
 }
 

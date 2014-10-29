@@ -123,7 +123,7 @@ static lirc_t readdata(lirc_t timeout)
 			infile = NULL;
 		}
 		snprintf(line, sizeof(line), close_msg, lineno);
-		write(outfile_fd, line, strlen(line));
+		chk_write(outfile_fd, line, strlen(line));
 		drv.fd = -1;
 		at_eof = 1;
 		logprintf(LIRC_DEBUG, "Closing infile after  %d lines", lineno);
@@ -200,7 +200,7 @@ static void write_line(const char* type, int duration)
 	char buffer[32];
 
         snprintf(buffer, sizeof(buffer), "%s %d\n",type, duration);
-        write(outfile_fd, buffer, strlen(buffer));
+        chk_write(outfile_fd, buffer, strlen(buffer));
 	if (duration & LIRC_EOF) {
 		logprintf(LIRC_NOTICE, "Exiting on input EOF" );
 		raise(SIGUSR1);
@@ -245,7 +245,7 @@ static int drvctl_func(unsigned int cmd, void* arg)
 			if (value <= 0 || value > 100000000)
 				return DRV_ERR_BAD_OPTION;
 			snprintf(buff, sizeof(buff), "space %ld\n", value);
-			write(outfile_fd, buff, strlen(buff));
+			chk_write(outfile_fd, buff, strlen(buff));
 			return 0;
 		}
 		else if (strcmp(opt->key, "set-infile") == 0) {
@@ -257,7 +257,7 @@ static int drvctl_func(unsigned int cmd, void* arg)
 			drv.fd = fileno(infile);
 			lineno = 1;
 			snprintf(buff, sizeof(buff), open_msg, opt->value);
-			write(outfile_fd, buff, strlen(buff));
+			chk_write(outfile_fd, buff, strlen(buff));
 			return 0;
 		}
 		else {

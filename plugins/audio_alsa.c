@@ -473,7 +473,7 @@ var_reset:			/* Reset variables */
 				x |= signal_state;
 
 				/* Write the LIRC code to the FIFO */
-				write(alsa_hw.fd, &x, sizeof(x));
+				chk_write(alsa_hw.fd, &x, sizeof(x));
 
 				signal_state ^= PULSE_BIT;
 			}

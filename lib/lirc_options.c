@@ -129,7 +129,9 @@ void options_load(int argc, char** const argv,
 		path = (path == NULL ? LIRC_OPTIONS_PATH : path);
 	}
 	if (*path != '/') {
-		getcwd(buff2, sizeof(buff2));
+		if (getcwd(buff2, sizeof(buff2)) == NULL) {
+			logperror(LIRC_WARNING, "options_load: getcwd():");
+		}
 		snprintf(buff, sizeof(buff), "%s/%s", buff2, path);
 		path = buff;
 	}
