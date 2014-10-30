@@ -297,10 +297,11 @@ AC_CHECK_HEADERS(linux/i2c-dev.h,[
 )
 
 
-PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],[AC_DEFINE(HAVE_SYSTEMD)],[true])
-CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
-LIBS="$LIBS $SYSTEMD_LIBS"
-
+PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon])
+if test -n "$SYSTEMD_LIBS"; then
+    CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
+    AC_DEFINE(HAVE_SYSTEMD)
+fi
 SYSTEMD_SYSTEMUNITDIR
 
 AC_MSG_NOTICE([Building all userspace drivers.])

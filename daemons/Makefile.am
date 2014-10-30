@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS         = -I m4
 
 AM_CPPFLAGS             = -I$(top_srcdir) -I$(top_srcdir)/lib -Wall 
 AM_CPPFLAGS             += -Wp,-D_FORTIFY_SOURCE=2
-AM_LDFLAGS              = -lpthread
+AM_LDFLAGS              = -lpthread $(SYSTEMD_LIBS) -Wl,--as-needed
 
 CLEANFILES              = *~
 
@@ -18,7 +18,7 @@ lircrcd_LDADD           = ../lib/liblirc_client.la
 sbin_PROGRAMS           = lircd lircmd 
 
 lircd_SOURCES           = lircd.c
-lircd_LDADD             = ../lib/liblirc.la
+lircd_LDADD             = ../lib/liblirc.la 
 
 lircmd_SOURCES          = lircmd.c
 lircmd_LDADD            = ../lib/liblirc.la

@@ -6,14 +6,14 @@ EXTRA_DIST                  = input_map.inc input_map.sh \
 			      driver_api.dox  lirc_client.dox  mainpage.dox \
 			      driver_api.doxhead  lirc_client.doxhead
 
-AM_LDFLAGS                  = -ldl
-
 BUILT_SOURCES               = lirc/input_map.inc
 
-AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
+AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
+                              -Wl,--as-needed
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 
+liblirc_la_LDFLAGS          = -ldl
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \
@@ -31,7 +31,6 @@ liblirc_la_SOURCES          = config_file.c \
 
 liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 liblirc_client_la_LDFLAGS   = -version-info 2:1:2
-liblirc_client_la_LIBADD    = liblirc.la
 
 liblirc_driver_la_SOURCES   = driver.h \
 			      driver.c \
