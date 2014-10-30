@@ -19,7 +19,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
  *
  *  20-02-05 VSS filter out 'e' (cancel) code triggered by other keys at t630
  *  21-01-05 VSS Pause after BTE menu aborted by user to allow turn off bluetooth at t630
