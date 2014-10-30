@@ -8,6 +8,7 @@ EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
+CHANGELOG_REVS          = lirc-0_9_1..HEAD
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
@@ -33,7 +34,6 @@ endif
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
-
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
 
@@ -44,10 +44,11 @@ install-data-hook:
 	    cp -pr $(srcdir)/$$f $(DESTDIR)$(pkgdatadir); \
 	done
 
-dist-hook:
+dist-hook: ChangeLog
 	for f in contrib lirc.org configs; do \
 	    cp -pr $(srcdir)/$$f $(distdir)/$$f; done
-	git log >$(distdir)/ChangeLog || :
+	chmod u+w $(distdir)
+	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
 
 uninstall-local:
 	chmod -R a+w $(DESTDIR)$(pkgdatadir)
@@ -61,9 +62,10 @@ paths.h: Makefile
 	@echo '#define LIBDIR           "$(libdir)"' >>$@
 
 ChangeLog: .phony
-	test -s ChangeLog || git log > ChangeLog || \
-	    echo "See http://http://sourceforge.net/p/lirc/git/ci//tree/" > \
-	    ChangeLog
+	test -s ChangeLog || ( \
+	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
+	) > ChangeLog
 
 lirc.org: .phony
 	tar czf lirc.org.tar.gz lirc.org --dereference

@@ -74,9 +74,6 @@ AM_CONDITIONAL([DARWIN], [case $host_os in darwin*) true;; *) false;; esac])
 
 x_progs="irxevent xmode2"
 AC_PATH_XTRA
-if test "$no_x" = "yes"; then
-  x_progs=
-fi
 AM_CONDITIONAL([BUILD_XTOOLS],[ test "x$x_progs" != x ])
 
 dnl getopt_long support
