@@ -2,13 +2,15 @@
 ## Makefile.am, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 ACLOCAL_AMFLAGS         = -I m4
 
-AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2
+AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2 -Wno-portability
 
 EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
 CHANGELOG_REVS          = lirc-0_9_1..HEAD
+TAR_DEREFERENCE         = $(shell tar --version | grep -q GNU \
+				 && echo 'tar -h' || echo 'tar -L')
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
@@ -34,25 +36,23 @@ endif
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
+nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
+
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	for f in contrib lirc.org configs; do \
-	    cp -pr $(srcdir)/$$f $(DESTDIR)$(pkgdatadir); \
-	done
+	cd $(srcdir); $(TAR_DEREFERENCE) -cf - lirc.org | \
+	    tar -C $(DESTDIR)$(docdir) -xf -
 
 dist-hook: ChangeLog
-	for f in contrib lirc.org configs; do \
-	    cp -pr $(srcdir)/$$f $(distdir)/$$f; done
 	chmod u+w $(distdir)
 	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
 
 uninstall-local:
-	chmod -R a+w $(DESTDIR)$(pkgdatadir)
-	rm -rf $(DESTDIR)$(pkgdatadir)
+	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
 
 paths.h: Makefile
 	@echo '#define DATADIR          "$(datadir)"' >$@
@@ -67,7 +67,7 @@ ChangeLog: .phony
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
-lirc.org: .phony
-	tar czf lirc.org.tar.gz lirc.org --dereference
+lirc.org.tar: .phony
+	$(TAR_DEREFERENCE) -cf $@ lirc.org 
 
 .phony:
