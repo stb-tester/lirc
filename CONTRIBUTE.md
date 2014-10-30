@@ -6,6 +6,7 @@ So, you are considering contributing to lirc? You are most welcome! Some points:
 
 We use the kernel coding standards, as described in [1]. Many lines in the code
 are actually too long according to these, but stick to the rules for new code.
+Using 'indent -linux' gives a good starting point w r t formatting.
 
 In the git-tools directory there is a pre-commit hook aimed to be installed in
 .git/hooks/pre-commit (a symlink works fine). This handles most of the boring
@@ -28,16 +29,16 @@ we call 'release'. In short:
 
 ## New remote configuration files
 
-There is a document contrib/remote-checklist.txt describing how to submit
-new remotes.
+There is a document describing how check and submit new remotes at [4].
 
 ## Testing and and bug reporting
 
 Non-trivial changes should be checked using the lirc-codecs-regression-test.sh
-in contrib/. Structural and  build system changes should be tested with
-'make distcheck'. New testing tools are more than welcome...
+in test/. Structural and  build system changes should be tested with
+'make distcheck'. All code  changes should be checked using the rudimentary 
+unit tests in test/run-tests.
 
-Please report bugs, RFE.s etc at sourceforge [3]; either the mailing list or the
+Please report bugs, RFE:s etc. at sourceforge[3]; either the mailing list or the
 issue tracker.
 
 ## Running from the source tree.
@@ -101,3 +102,4 @@ let gdb trap the crash. Something like
 [1] https://www.kernel.org/doc/Documentation/CodingStyle
 [2] http://nvie.com/posts/a-successful-git-branching-model
 [3] http://sourceforge.net/projects/lirc/
+[4] https://sourceforge.net/p/lirc-remotes/wiki/Checklist/
