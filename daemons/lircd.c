@@ -1045,6 +1045,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	if (ftruncate(fileno(pidf), ftell(pidf)) != 0) {
 		logperror(LIRC_WARNING, "lircd: ftruncate()");
 	}
+        ir_remote_init(options_getboolean("lircd:dynamic-codes"));
 
 	/* create socket */
 	sockfd = -1;

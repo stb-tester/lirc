@@ -99,7 +99,7 @@ static char* parse_O_arg(int argc, char** argv)
 	if (path && access(path, R_OK) != 0) {
 		fprintf(stderr, "Cannot open options file %s for read\n",
                         path);
-		exit(EXIT_FAILURE);
+		return NULL;		
 	}
 	return path;
 }

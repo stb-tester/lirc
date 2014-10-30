@@ -480,6 +480,14 @@ int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay);
 }
 #endif
 
+/**
+ * Initiate: define if dynamic codes should be used.
+ *
+ * @param use_dyncodes Should normally reflect "lircd:dynamic-codes" option.
+ *
+ */
+void ir_remote_init(int use_dyncodes);
+
 /** @} */
 
 #endif

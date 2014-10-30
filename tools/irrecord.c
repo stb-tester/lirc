@@ -433,6 +433,7 @@ int main(int argc, char **argv)
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
 	}
+        ir_remote_init(options_getboolean("lircd:dynamic-codes"));
 	get_pre = options_getboolean("irrecord:pre");
 	get_post = options_getboolean("irrecord:post");
 	test = options_getboolean("irrecord:test");

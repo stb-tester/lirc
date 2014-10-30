@@ -41,6 +41,7 @@ liblirc_driver_la_SOURCES   = driver.h \
                               lirc_log.h \
                               receive.c \
                               receive.h \
+			      release.c \
                               serial.h \
                               serial.c \
                               transmit.c \
