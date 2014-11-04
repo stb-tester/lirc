@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Sep 2014" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Nov 2014" "lircd @version@" "System Administration Utilities"
 .SH NAME
 lircd - LIRC daemon decodes infrared signals and provides them on a Unix
 domain socket.
@@ -13,17 +13,29 @@ lircd through a Unix domain socket which is located in
 codes received by lircd and they can send commands to lircd.
 .PP
 
+.SH ARGUMENTS
+.TP 4
+.B config file <path>
+The configuration file, by default /etc/lirc/lircd.conf. A relative
+path is interpreted from /etc/lirc.
+.IP
+The file is specific for the remote(s) that lircd should decode. The
+format is described in lircd.conf(5). Configuration files could be
+found using irdb-get(1) or lirc-setup(1). It's also possible to
+generate a config file using irrecord(1)
+
 .SH OPTIONS
 Common options:
 .TP 4
-.B -O, --options-file
-File containing default values for all options. See [FILES] below.
+.B -O, --options-file <path>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
 .TP 4
-.B -d, --device
+.B -d, --device <device>
 Select the character device which lircd should read from. The default
 is currently /dev/lirc0 on most systems.
 .IP "" 4
-If you're using the dev/input driver, you can use \fIname=STRING\fR or
+If you're using the devinput driver, you can use \fIname=STRING\fR or
 \fIphys=STRING\fR to select the device; lircd will look in /dev/input
 to find a device with a matching description. This is useful in case
 the device name isn't fixed. \fISTRING\fR may contain the '*' and '?'
@@ -31,7 +43,7 @@ wildcards and '\\' to mark them as literal. Use dmesg(1) to find the
 name and bus address (the names used under /dev/input/by-id are not
 always usable).
 .TP
-.B -H, --driver
+.B -H, --driver <driver>
 The driver to use.  Using
 .I --driver help
 lists all available drivers, see DRIVER LOADING below.
@@ -203,7 +215,8 @@ The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .SH "SEE ALSO"
-The documentation for
-.B lirc
-is maintained as html pages. They are located under html/ in the
-documentation directory.
+irdb-get(1)
+.br
+lirc-setup(1)
+.br
+rcd.conf(5)
