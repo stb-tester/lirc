@@ -803,7 +803,7 @@ void drop_privileges()
 	}
 	pw = getpwnam(user);
 	if (pw == NULL) {
-		logperror(LOG_WARNING, "Illegal effective uid:");
+		logperror(LOG_WARNING, "Illegal effective uid: %s", user);
 		return;
 	}
 	r = setuid(pw->pw_uid);
