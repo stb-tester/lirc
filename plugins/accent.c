@@ -240,8 +240,7 @@ char *accent_rec(struct ir_remote *remotes)
 		}
 		// Some data available to read.
 		if (read(drv.fd, &b[i], 1) == -1) {
-			logprintf(LIRC_ERROR, "read() failed at byte %d", i);
-			logperror(LIRC_ERROR, "read() failed");
+			logperror(LIRC_ERROR, "read() failed at byte %d", i);
 			return (NULL);
 		} else {
 			LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
@@ -357,8 +356,7 @@ int accent_open_serial_port(const char *device)
 
 	// Open the serial device.
 	if ((fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC)) < 0) {
-		logprintf(LIRC_ERROR, "Could not open the serial port");
-		logperror(LIRC_ERROR, "open() failed");
+		logperror(LIRC_ERROR, "Could not open the serial port");
 		return (-1);
 	}
 	// Get the parameters associated with the serial line.

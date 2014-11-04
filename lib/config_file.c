@@ -778,9 +778,8 @@ add_configs(struct ir_remote* root, const char* dirpath)
 		free(namelist[i]);
 		f = fopen(path, "r");
 		if (f == NULL) {
-			logprintf(LIRC_WARNING,
+			logperror(LIRC_WARNING,
 				  "Cannot open config file %s\n", path);
-			logperror(LIRC_WARNING, "System error message");
 			continue;
 		}
 		remote = read_config_recursive(f, path, 0);

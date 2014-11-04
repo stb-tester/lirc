@@ -188,8 +188,7 @@ int waitfordata(__u32 maxusec)
 			}
 			while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logprintf(LIRC_ERROR, "select() failed\n");
-				logperror(LIRC_ERROR, NULL);
+				logperror(LIRC_ERROR, "select() failed");
 				continue;
 			}
 		}

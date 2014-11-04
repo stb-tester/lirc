@@ -186,8 +186,7 @@ static int setup_uinputfd(const char *name, int source)
 		if (fd == -1) {
 			fd = open("/dev/misc/uinput", O_RDWR);
 			if (fd == -1) {
-				logprintf(LIRC_WARNING, "could not open %s\n", "uinput");
-				logperror(LIRC_WARNING, NULL);
+				logperror(LIRC_WARNING, "could not open %s\n", "uinput");
 				return -1;
 			}
 		}
@@ -262,8 +261,7 @@ static int setup_uinputfd(const char *name, int source)
 	return fd;
 
 setup_error:
-	logprintf(LIRC_ERROR, "could not setup %s\n", "uinput");
-	logperror(LIRC_ERROR, NULL);
+	logperror(LIRC_ERROR, "could not setup %s\n", "uinput");
 	close(fd);
 	return -1;
 }
@@ -432,8 +430,8 @@ int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 		}
 		if (print_warning) {
 			print_warning = 0;
-			logperror(LIRC_WARNING, "you are using an obsolete devinput config file");
-			logperror(LIRC_WARNING,
+			logprintf(LIRC_WARNING, "you are using an obsolete devinput config file");
+			logprintf(LIRC_WARNING,
 				  "get the new version at http://lirc.sourceforge.net/remotes/devinput/lircd.conf.devinput");
 		}
 	}
@@ -512,8 +510,7 @@ char *devinput_rec(struct ir_remote *remotes)
 		    || event.type == EV_SYN) {
 			LOGPRINTF(1, "forwarding: %04x %04x", event.type, event.code);
 			if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-				logprintf(LIRC_ERROR, "writing to uinput failed");
-				logperror(LIRC_ERROR, NULL);
+				logperror(LIRC_ERROR, "writing to uinput failed");
 			}
 			return NULL;
 		}

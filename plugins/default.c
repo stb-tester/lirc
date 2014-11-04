@@ -103,9 +103,8 @@ int default_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logprintf(LIRC_ERROR, "error reading from %s (ret %d, expected %d)",
+		logperror(LIRC_ERROR, "error reading from %s (ret %d, expected %d)",
 			  drv.device, ret, sizeof(data));
-		logperror(LIRC_ERROR, NULL);
 		default_deinit();
 
 		return 0;

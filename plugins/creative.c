@@ -136,8 +136,7 @@ char *creative_rec(struct ir_remote *remotes)
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
-			logperror(LIRC_ERROR, NULL);
+			logperror(LIRC_ERROR, "reading of byte %d failed", i);
 			return (NULL);
 		}
 		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */ ) {

@@ -315,8 +315,7 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	/* write signals to sendpipe */
 	if (write(sendPipe[1], signals, length * sizeof(lirc_t)) == -1) {
-		logprintf(LIRC_ERROR, "write failed");
-		logperror(LIRC_ERROR, "write()");
+		logperror(LIRC_ERROR, "write failed");
 		return 0;
 	}
 
