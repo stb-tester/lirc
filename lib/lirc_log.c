@@ -281,13 +281,19 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 /**
  * Prints a description of the last error to the log.
  * @param prio Priority of log request.
- * @param s Text string, typically the name of the function invoking the log request.
+ * @param fmt printf-style format string
  */
-void logperror(loglevel_t prio, const char *s)
+void logperror(loglevel_t prio, const char *fmt, ...)
 {
+	char s[256];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(s, sizeof(s), fmt, ap);
+	va_end(ap);
 	if (use_syslog){
 		if ((s) != NULL)
-			syslog(prio, "%s: %m\n", (char *)s);
+			syslog(prio, "%s: %m\n", s);
 		else
 			syslog(prio, "%m\n");
 	} else {

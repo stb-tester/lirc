@@ -110,7 +110,7 @@ int lirc_log_use_syslog();
 void logprintf(loglevel_t prio, const char *format_str, ...);
 
 /** Log current kernel error with a given level. */
-void logperror(loglevel_t prio, const char *s);
+void logperror(loglevel_t prio, const char *format, ...);
 int lirc_log_reopen(void);
 
 /**
