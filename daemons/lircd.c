@@ -798,7 +798,7 @@ void drop_privileges()
 	}
 	user = options_getstring("lircd:effective-user");
 	if (user == NULL || strlen(user) == 0) {
-		logprintf(LIRC_WARNING, "Illegal effective uid (empty)");
+		logprintf(LIRC_WARNING, "Running as root");
 		return;
 	}
 	pw = getpwnam(user);
