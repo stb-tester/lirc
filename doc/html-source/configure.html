@@ -688,14 +688,22 @@ include ~/.lirc/xawtv</PRE>
       time the mode they currently are in may differ between
       applications. Also key sequences might not be recognized equally
       because all programs then don't have the same starting point. In
-      order to solve this problem there is the new <A
+      order to solve this problem there is the <A
       HREF="lircrcd.html">lircrcd</A> program since version
       0.8.0. lircrcd's purpose is to synchronise all clients and
       maintain a common mode for all applications. In order to use the
       lircrcd feature you have to explicitly enable it by adding the
-      following line at the beginning of the file:
+      following line at the beginning of the file: </p>
 <pre>
-#! lircrcd
+lircrc_class default
 </pre>
-    </P>
-
+     <p>
+      This directive can only be used in a top-level file, not in an
+      included one. The string  <code>default</code> could actually be
+      any identifier; clients using a lircrc with the same string will
+      synchronized. </p>
+     <p>
+      In versions before 0.9.2 the same effect was acheived with a "shebang",
+      a first line in the file <code>#! lircrcd</code> From 0.9.2+, the
+      support for this deprecated and it will be removed in an upcoming
+      release.</p>

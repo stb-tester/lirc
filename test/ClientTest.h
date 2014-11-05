@@ -50,6 +50,7 @@ class ClientTest : public CppUnit::TestFixture
             ADD_TEST("testReadConfig1", testReadConfig1);
             ADD_TEST("testReadConfig2", testReadConfig2);
             ADD_TEST("testReadConfigOnly", testReadConfigOnly);
+            ADD_TEST("testReadConfigNew", testReadConfigNew);
             ADD_TEST("testCode2Char", testCode2Char);
             ADD_TEST("testSetMode", testSetMode);
             ADD_TEST("testGetMode", testSetMode);
@@ -213,6 +214,18 @@ class ClientTest : public CppUnit::TestFixture
             struct lirc_config* config;
             CPPUNIT_ASSERT(
                 lirc_readconfig_only("etc/mythtv.lircrc", &config, NULL) == 0);
+            if (getenv("LIRC_TEST_DEBUG") != NULL)
+                cout << "mythtv.lirc: lircrc_class: " << config->lircrc_class << "\n";
+            CPPUNIT_ASSERT(strcmp(config->lircrc_class, "mythtv-2") == 0);
+        }
+
+        void testReadConfigNew()
+        {
+            struct lirc_config* config; 
+            cout << "Please ignore message about deprecared lircrc shebang\n";
+            CPPUNIT_ASSERT(
+                lirc_readconfig_only("etc/mythtv-new.lircrc", &config, NULL) == 0);
+            CPPUNIT_ASSERT(strcmp(config->lircrc_class, "mythtv-new.lircrc") == 0);
         }
 
 

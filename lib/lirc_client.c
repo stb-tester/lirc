@@ -27,6 +27,7 @@
 #endif
 
 #include <errno.h>
+#include <libgen.h>
 #include <limits.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -80,7 +81,6 @@ enum packet_state {
 	P_DATA_N,
 	P_END
 };
-
 
 
 /*
@@ -317,7 +317,7 @@ bad_packet:
 }
 
 
-static void lirc_printf(char *format_str, ...)
+static void lirc_printf(const char *format_str, ...)
 {
 	va_list ap;
 
@@ -1016,13 +1016,41 @@ static void lirc_freeconfigentries(struct lirc_config_entry *first)
 }
 
 
+static void
+parse_shebang(char* line, int depth, const char* path, char* buff, size_t size)
+{
+	char* token;
+	char my_path[128];
+	const char* const SHEBANG_MSG = 
+		"Warning: Use of deprecated lircrc shebang."
+		" Use lircrc_class instead.\n";
+
+	token = strtok(line, "#! ");
+	buff[0] = '\0';
+	if (depth > 1) {
+		lirc_printf("Warning: ignoring shebang in included file.");
+		return;
+	}
+	if (strcmp(token, "lircrc") == 0) {
+		strncpy(my_path, path, sizeof(my_path) - 1);
+		strncat(buff, basename(my_path), size - 1);
+		lirc_printf(SHEBANG_MSG);
+	} else { 
+		lirc_printf("Warning: bad shebang (ignored)");
+	}
+}
+
+
 static int lirc_readconfig_only_internal(const char *file,
 					 struct lirc_config **config,
-					 int (check) (char *s), char **full_name, char **sha_bang)
+					 int (check) (char *s), char **full_name)
 {
+	const char* const INCLUDED_LIRCRC_CLASS = 
+		"Warning: lirc_class in included file (ignored)";
 	char *string, *eq, *token, *token2, *token3;
 	struct filestack_t *filestack, *stack_tmp;
 	int open_files;
+	char lircrc_class[128] = {'\0'};
 	struct lirc_config_entry *new_entry, *first, *last;
 	char *mode, *remote;
 	int ret = 0;
@@ -1056,16 +1084,14 @@ static int lirc_readconfig_only_internal(const char *file,
 			continue;
 		}
 		/* check for sha-bang */
-		if (firstline && sha_bang) {
+		if (firstline) {
 			firstline = 0;
 			if (strncmp(string, "#!", 2) == 0) {
-				*sha_bang = strdup(string + 2);
-				if (*sha_bang == NULL) {
-					lirc_printf("%s: out of memory\n", lirc_prog);
-					ret = -1;
-					free(string);
-					break;
-				}
+				parse_shebang(string, 
+					      open_files,
+					      file,
+					      lircrc_class, 
+					      sizeof(lircrc_class));
 			}
 		}
 		filestack->line++;
@@ -1076,6 +1102,18 @@ static int lirc_readconfig_only_internal(const char *file,
 				/* ignore empty line */
 			} else if (token[0] == '#') {
 				/* ignore comment */
+			} else if (strcasecmp(token, "lircrc_class") == 0) {
+				token2 = lirc_trim(strtok(NULL, ""));
+				if (strlen(token2) == 0) {
+					lirc_printf(
+						"Warning: no lircrc_class");
+				} else if (open_files == 1) {
+					strncat(lircrc_class,
+					token2,
+					sizeof(lircrc_class) - 1);
+				} else {
+					lirc_printf(INCLUDED_LIRCRC_CLASS);
+				}
 			} else if (strcasecmp(token, "include") == 0) {
 				if (open_files >= MAX_INCLUDES) {
 					lirc_printf("%s: too many files "
@@ -1290,6 +1328,11 @@ static int lirc_readconfig_only_internal(const char *file,
 		(*config)->next = first;
 		startupmode = lirc_startupmode((*config)->first);
 		(*config)->current_mode = startupmode ? strdup(startupmode) : NULL;
+                if (lircrc_class[0] != '\0') {
+			(*config)->lircrc_class = strdup(lircrc_class);
+		} else {
+			(*config)->lircrc_class = NULL;
+		}
 		(*config)->sockfd = -1;
 		if (full_name != NULL) {
 			*full_name = save_full_name;
@@ -1298,12 +1341,6 @@ static int lirc_readconfig_only_internal(const char *file,
 	} else {
 		*config = NULL;
 		lirc_freeconfigentries(first);
-		if (sha_bang != NULL ) {
-			if (*sha_bang != NULL) {
-				free(*sha_bang);
-				*sha_bang = NULL;
-			}
-		}
 	}
 	if (filestack) {
 		stack_free(filestack);
@@ -1335,17 +1372,16 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 {
 	struct sockaddr_un addr;
 	int sockfd = -1;
-	char *sha_bang, *sha_bang2, *filename;
-	char *command;
+	char* filename;
+	char command[128];
 	int ret;
 
 	filename = NULL;
-	sha_bang = NULL;
-	if (lirc_readconfig_only_internal(file, config, check, &filename, &sha_bang) == -1) {
+	if (lirc_readconfig_only_internal(file, config, check, &filename) == -1) {
 		return -1;
 	}
 
-	if (sha_bang == NULL) {
+	if ((*config)->lircrc_class == NULL) {
 		goto lirc_readconfig_compat;
 	}
 
@@ -1363,8 +1399,6 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 		goto lirc_readconfig_compat;
 	}
 	if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) != -1) {
-		if (sha_bang != NULL)
-			free(sha_bang);
 		(*config)->sockfd = sockfd;
 		free(filename);
 
@@ -1381,24 +1415,12 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	sockfd = -1;
 
 	/* launch lircrcd */
-	sha_bang2 = sha_bang != NULL ? sha_bang : "lircrcd";
-
-	command = malloc(strlen(sha_bang2) + 1 + strlen(filename) + 1);
-	if (command == NULL) {
-		goto lirc_readconfig_compat;
-	}
-	strcpy(command, sha_bang2);
-	strcat(command, " ");
-	strcat(command, filename);
-
+        snprintf(command, sizeof(command), 
+		 "lircrcd %s", (*config)->lircrc_class);
 	ret = system(command);
-
 	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS) {
 		goto lirc_readconfig_compat;
 	}
-
-	if (sha_bang != NULL)
-		free(sha_bang);
 	free(filename);
 
 	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -1421,8 +1443,6 @@ lirc_readconfig_compat:
 	/* compat fallback */
 	if (sockfd != -1)
 		close(sockfd);
-	if (sha_bang != NULL)
-		free(sha_bang);
 	free(filename);
 	return 0;
 }
@@ -1430,7 +1450,7 @@ lirc_readconfig_compat:
 
 int lirc_readconfig_only(const char *file, struct lirc_config **config, int (check) (char *s))
 {
-	return lirc_readconfig_only_internal(file, config, check, NULL, NULL);
+	return lirc_readconfig_only_internal(file, config, check, NULL);
 }
 
 
@@ -1441,6 +1461,8 @@ void lirc_freeconfig(struct lirc_config *config)
 			(void)close(config->sockfd);
 			config->sockfd = -1;
 		}
+		if (config->lircrc_class != NULL)
+			free(config->lircrc_class);
 		lirc_freeconfigentries(config->first);
 		free(config->current_mode);
 		free(config);

@@ -158,6 +158,7 @@ typedef uint32_t __u32;
 	};
 
 	struct lirc_config {
+		char* lircrc_class;  /**< The lircrc instance used, if any. */
 		char* current_mode;
 		struct lirc_config_entry* next;
 		struct lirc_config_entry* first;
