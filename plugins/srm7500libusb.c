@@ -376,7 +376,7 @@ static int srm7500_initialize_usbdongle()
 	}
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
-	if ((res < 0) && (res != -ENODATA)) {
+	if ((res < 0) && (res != -ENODATA) && (res != -EINVAL)) {
 		logperror(LIRC_ERROR, "could not detach kernel driver");
 		return 0;
 	}
