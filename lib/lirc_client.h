@@ -120,6 +120,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
+#include "lirc/paths.h"
 #include "lirc/lirc_config.h"
 
 #ifdef	__cplusplus
@@ -289,14 +290,12 @@ int lirc_code2char(struct lirc_config* config, char* code, char** string);
 	/**
  	* Retrieve default lircrcd socket path.
  	*
- 	* @param filename lircrc config file path.
+ 	* @param id Optional socket id, defaults (id == NULL) to "default".
  	* @param buf Return buffer.
  	* @param size Size of return buffer.
  	* @return -1 on errors, else 0.
  	*/
-	size_t lirc_getsocketname(const char* filename,
- 				  char* buf,
- 				  size_t size);
+	size_t lirc_getsocketname(const char* id, char* buf, size_t size);
 
 	/**
  	* Get mode  defined  in lircrc. Will use lircrcd if available, else

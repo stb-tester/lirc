@@ -1,4 +1,4 @@
-.TH LIRCRCD "8" "Last change: Sep 2014" "lircrcd @version@" "System Manager Manual"
+.TH LIRCRCD "8" "Last change: Nov 2014" "lircrcd @version@" "System Manager Manual"
 .SH NAME
 lircrcd - daemon to handle consistent .lircrc state among client applications
 .SH SYNOPSIS
@@ -8,14 +8,18 @@ lircrcd - daemon to handle consistent .lircrc state among client applications
 
 .B lircrcd
 reads the given .lircrc config file and synchronises the mode
-that the LIRC clients using this config file (\fBirexec\fR(1),
-\fBirxevent\fR(1) , etc.) are in. Using
+that the LIRC clients such as (\fBirexec\fR(1), \fBirxevent\fR(1) ,
+etc.) are in. Using
 .B lircrcd
 has to be explicitly
 enabled in the lircrc config file by adding the following line at the
 beginning of the file:
-.br
-#! lircrcd
+.IP
+lircrc_class default
+.P
+This must be done at the top-level file, not an included one. The lircrc_class
+string (here "default") could actually be anything; clients using the same
+string in their lircrc will be synchronized.
 .SH OPTIONS
 .TP
 \fB\-h\fR \fB\-\-help\fR
@@ -34,8 +38,12 @@ representation).
 .TP
 .BI \-o,\ \-\-output= socket
 With the \-\-output option you can select the Unix domain socket, which
-lircrcd will create. The default is to append a "d" character to the
-config filename given.
+lircrcd will create. The default is to create a socket in VARRUNDIR
+(usually /var/run/lirc), see FILES.
+.SH FILES
+lircrcd creates its socket(s) in the VARRUNDIR directory, usually
+/var/run/lirc.  The socket basename includes the user UID and the
+string from the lircrc_class option.
 .SH "SEE ALSO"
 The documentation for
 .B lirc

@@ -317,7 +317,7 @@ void add_client(int sock)
 	clin++;
 }
 
-static int opensocket(const char *configfile, const char *socketname, mode_t permission, struct sockaddr_un *addr)
+static int opensocket(const char *socket_id, const char *socketname, mode_t permission, struct sockaddr_un *addr)
 {
 	int sockfd;
 	struct stat s;
@@ -326,7 +326,7 @@ static int opensocket(const char *configfile, const char *socketname, mode_t per
 
 	/* get socket name */
 	if ((socketname == NULL &&
-	     lirc_getsocketname(configfile,
+	     lirc_getsocketname(socket_id,
 				addr->sun_path, sizeof(addr->sun_path)) >
 	     sizeof(addr->sun_path)) || (socketname != NULL && strlen(socketname) >= sizeof(addr->sun_path))) {
 		fprintf(stderr, "%s: filename too long", progname);
@@ -864,7 +864,7 @@ int main(int argc, char **argv)
 	}
 
 	/* open socket */
-	socket = opensocket(configfile, socketfile, permission, &addr);
+	socket = opensocket(config->lircrc_class, socketfile, permission, &addr);
 	if (socket == -1) {
 		lirc_freeconfig(config);
 		lirc_deinit();

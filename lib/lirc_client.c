@@ -1388,7 +1388,10 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	/* connect to lircrcd */
 
 	addr.sun_family = AF_UNIX;
-	if (lirc_getsocketname(filename, addr.sun_path, sizeof(addr.sun_path)) > sizeof(addr.sun_path)) {
+	if (lirc_getsocketname((*config)->lircrc_class, 
+			       addr.sun_path, 
+			       sizeof(addr.sun_path)) > sizeof(addr.sun_path)) 
+	{
 		lirc_printf("%s: WARNING: file name too long\n", lirc_prog);
 		goto lirc_readconfig_compat;
 	}
@@ -1828,13 +1831,11 @@ int lirc_nextcode(char **code)
 }
 
 
-size_t lirc_getsocketname(const char *filename, char *buf, size_t size)
+size_t lirc_getsocketname(const char *id, char *buf, size_t size)
 {
-	if (strlen(filename) + 2 <= size) {
-		strcpy(buf, filename);
-		strcat(buf, "d");
-	}
-	return strlen(filename) + 2;
+	id = id != NULL ? id : "default";
+	snprintf(buf, size, VARRUNDIR "/%d-%s-lircrcd.socket", getuid(), id);
+	return strlen(buf);
 }
 
 

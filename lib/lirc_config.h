@@ -1,6 +1,5 @@
 
 
-
 /**
  * @file lirc_config.h
  * @brief Local configuration constants not managed by autotools.
