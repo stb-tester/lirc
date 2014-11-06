@@ -441,7 +441,7 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 		pulse = *pulseptr++;
 
 		/* compute the pulsewidth (in # samples) */
-		pulsewidth = f_sample * ((__u32) (pulse & PULSE_MASK)) / 1000000ul;
+		pulsewidth = ((__u64) f_sample) * ((__u32) (pulse & PULSE_MASK)) / 1000000ul;
 
 		/* toggle pulse / space */
 		sendpulse = sendpulse ? 0 : 1;
