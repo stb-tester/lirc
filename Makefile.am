@@ -40,6 +40,7 @@ nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
+header_HEADERS          = paths.h
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
@@ -55,11 +56,14 @@ uninstall-local:
 	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
 
 paths.h: Makefile
-	@echo '#define DATADIR          "$(datadir)"' >$@
+	@echo "#ifndef PATHS_H"          >$@
+	@echo "#define PATHS_H"          >>$@
+	@echo '#define DATADIR          "$(datadir)"' >>$@
 	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>$@
 	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>$@
 	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>$@
 	@echo '#define LIBDIR           "$(libdir)"' >>$@
+	@echo "#endif"                  >>$@
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \
