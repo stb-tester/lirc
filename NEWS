@@ -13,7 +13,8 @@
     database and a considerable amount of bugs.
   * The remotes/ directory has become obsolete, only used for testing.
     New configuration tools uses the remotes database at
-    http://sf.net/p/lirc-remotes as the only source (#53).
+    http://sf.net/p/lirc-remotes as the only source (#53). A new tool
+    irdb-get(1) supports searching and downloading from remotes database.
   * Support for the Dangerous Prototypes irtoy device is added (#20).
   * Support for long keypresses has been added. See the "Configuring LIRC"
     chapter in the manual, search for "ignore_first_event" (#50).
@@ -29,9 +30,15 @@
   * The lircd.conf configuration has been updated. lircd will now besides
     the lircd.conf file also read all *.conf files in the
     /etc/lirc/lircd.conf.d directory. The already existing include directive
-    has been documented.
+    has been modified to accept wildcards and also been documented.
+  * lircd.conf has a new 'driver' attribute for configs requiring a specific
+    driver. Supported by irrecord(1), used by lirc-setup(1) and irdb-get(1).
   * Mechanisms to disable the implicit sorting of remotes has been added,
-    and the automatic sorting has been enhanced (#56).
+    and the automatic sorting has been enhanced (ticket #56).
+  * The enabling of lircrcd mode synchronization daemon has been changed. The
+    old "#! lircrcd" shebang is deprecated and a new, global lircrc option
+    "lircrc_class" is added (#62). The lircrcd sockets has been moved to
+    /var/run/lirc (#61). This might break some corner-case installations.
 
   * Dependencies:
       + Build scripts now requires python3.
@@ -62,9 +69,13 @@
     they are created on demand by the servers. If there already is e. g., a
     /var/run/lirc/lircd socket it will still be used without changing
     permissions (#46).
+  * The long-standing issues with parallel make are fixed.
   * Many more files are installed in the data directory e. g., configuration
     files and a local copy of the lirc.org website.
   * Old, non-functional kernel modules are removed.
+  * The configuration data which was in several places including
+    configure.ac and setup.data is now in the configs/ directory.
+
   * Support for sending data has been added to the lirc_client.h API.
     (ticket #35).
   * lirc now installs three separate libraries: lirc_private (internal),
@@ -72,8 +83,6 @@
     library has a so-file to link to, a  header file for compilation
     and a pkg-config .pc file for build. Applications  and drivers have
     been refactored to use the libraries.
-  * The configuration data which was in several places including
-    configure.ac and setup.data is now in the configs/ directory.
   * There are examples in the sources how to build new drivers. The
     documentation in this area is also improved (see the driver-api guide
     and doc/api-docs).
