@@ -159,8 +159,8 @@ struct decode_ctx_t {
  * One remote as represented in the configuration file.
  */
 struct ir_remote {
-	char* name;		/**< name of remote control */
-	char* driver;           /**< Name of driver for LIRCCODE cases. */
+	const char* name;	/**< name of remote control */
+	const char* driver;     /**< Name of driver for LIRCCODE cases. */
 	struct ir_ncode* codes;
 	int bits;		/**< bits (length of code) */
 	int flags;		/**< flags */

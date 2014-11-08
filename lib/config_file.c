@@ -347,7 +347,7 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 {
 	if ((strcasecmp("name", key)) == 0) {
 		if (rem->name != NULL)
-			free(rem->name);
+			free((void*) (rem->name));
 		rem->name = s_strdup(val);
 		logprintf(LIRC_INFO, "Using remote: %s.", val);
 		return (1);
@@ -363,7 +363,7 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 	}
 	else if (strcasecmp("driver", key) == 0) {
 		if (rem->driver != NULL) {
-			free(rem->driver);
+			free((void*)(rem->driver));
 		}
 	 	rem->driver = s_strdup(val);
 		return 1;
@@ -1318,7 +1318,7 @@ void free_config(struct ir_remote *remotes)
 		if (remotes->dyncodes_name != NULL)
 			free(remotes->dyncodes_name);
 		if (remotes->name != NULL)
-			free(remotes->name);
+			free((void*)(remotes->name));
 		if (remotes->codes != NULL) {
 			codes = remotes->codes;
 			while (codes->name != NULL) {
