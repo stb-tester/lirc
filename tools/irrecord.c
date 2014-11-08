@@ -565,17 +565,19 @@ int main(int argc, char **argv)
 	       "and create a config file for lircd.\n\n" "\n");
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
 		printf("Usually it's not necessary to create a new config file for devinput\n"
-		       "devices. A generic config file can be found at:\n" "http://www.lirc.org/remotes/devinput/\n"
-		       "You should try this config file before creating your own config file.\n" "\n");
+		       "devices. A generic config file can be found at:\n" 
+		       "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf"
+		       "It can be downloaded using irdb-get(1)\n"
+		       "Please try this config file before creating your own.\n" "\n");
 	}
 	printf("A proper config file for lircd is maybe the most vital part of this\n"
 	       "package, so you should invest some time to create a working config\n"
 	       "file. Although I put a good deal of effort in this program it is often\n"
 	       "not possible to automatically recognize all features of a remote\n"
 	       "control. Often short-comings of the receiver hardware make it nearly\n"
-	       "impossible. If you have problems to create a config file READ THE\n"
-	       "DOCUMENTATION of this package, especially section \"Adding new remote\n"
-	       "controls\" for how to get help.\n"
+	       "impossible. If you have problems to create a config file check the wiki\n"
+	       "at https://sourceforge.net/p/lirc-remotes/wiki, the Checklist and the\n"
+	       "manual page."
 	       "\n"
 	       "If there already is a remote control of the same brand available at\n"
 	       "http://www.lirc.org/remotes/ you might also want to try using such a\n"
@@ -587,11 +589,11 @@ int main(int argc, char **argv)
 	       "distribution of this package. You can use a template files by\n"
 	       "providing the path of the file as command line parameter.\n"
 	       "\n"
-	       "Please send the finished config files to <lirc-list@lists.sourceforge.net >\n"
-	       "so it can be made available to others. Don't forget to put all information\n"
-	       "that you can get about the remote control in the header of the file.\n"
-	       "Please use the symbols in the namespace where appropriate. \n\n"
-	       "Press RETURN to continue.\n\n");
+       	       "Please take the time to finish this file as described in\n"
+	       "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
+	       "and make it available to others by sending it to \n"
+	       "<lirc@bartelmus.de>\n\n"
+	       "Press RETURN to continue.\n");
 
 	getchar();
 
@@ -621,6 +623,7 @@ int main(int argc, char **argv)
 		}
 		break;
 	case LIRC_MODE_LIRCCODE:
+		remote.driver = curr_driver->name;
 		remote.bits = curr_driver->code_length;
 		if (!using_template && !get_gap_length(&remote)) {
 			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
@@ -2402,5 +2405,9 @@ int get_gap_length(struct ir_remote *remote)
 
 void fprint_copyright(FILE * fout)
 {
-	fprintf(fout, "\n" "# Please make this file available to others\n" "# by sending it to <lirc@bartelmus.de>\n");
+	fprintf(fout, "\n" 
+		"# Please take the time to finish this file as described in\n"
+                "# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
+                "# and make it available to others by sending it to \n"
+	        "# <lirc@bartelmus.de>\n");
 }
