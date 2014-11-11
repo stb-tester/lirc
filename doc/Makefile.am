@@ -14,10 +14,12 @@ dist_noinst_SCRIPTS     = data2table data2hwdb
 manpage_html            =
 man_sources             =
 nodist_html_DATA        =
+nodist_man_MANS         =
 
 if BUILD_XTOOLS
 man_sources             += $(srcdir)/man-source/xmode2.1 \
                            $(srcdir)/man-source/irxevent.1
+nodist_man_MANS         += man/xmode2.1 man/irxevent.1
 manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
@@ -142,7 +144,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
 html_includes           =  $(srcdir)/html-source/foot.html \
                            $(srcdir)/html-source/head.html
 
-nodist_man_MANS         =  man/ircat.1 \
+nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
                            man/irexec.1 \
                            man/irpty.1 \
