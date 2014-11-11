@@ -121,3 +121,4 @@ begin remote
 end remote
 
 
+include "lircd.conf.d/*"

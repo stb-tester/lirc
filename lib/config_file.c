@@ -21,6 +21,7 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <glob.h>
 #include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -348,7 +349,7 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 		if (rem->name != NULL)
 			free(rem->name);
 		rem->name = s_strdup(val);
-		LOGPRINTF(1, "parsing %s remote", val);
+		logprintf(LIRC_INFO, "Using remote: %s.", val);
 		return (1);
 	}
 	if (options_getboolean("lircd:dynamic-codes")) {
@@ -680,7 +681,12 @@ static const char *lirc_parse_include(char *s)
 	return s;
 }
 
-static const char *lirc_parse_relative(char *dst, size_t dst_size, const char *child, const char *current)
+
+/** Convert a relative path using another path as reference. */
+static const char *lirc_parse_relative(char *dst, 
+				       size_t dst_size, 
+				       const char *child, 
+				       const char *current)
 {
 	char *dir;
 	size_t dirlen;
@@ -712,45 +718,20 @@ static const char *lirc_parse_relative(char *dst, size_t dst_size, const char *c
 }
 
 
-/** Compute the configdir e. g., /etc/lirc/lircd.conf.d from configpath. */
-void get_configdir(const char* configpath, char* path, ssize_t size)
-{
- 	char buff[128];
-	char* dir;
-
-	if (configpath[0] == '/') {
-        	strncpy(buff, configpath, sizeof(buff) - 1);
-	} else {
-		if (getcwd(buff, sizeof(buff)) == NULL) {
-			logperror(LIRC_WARNING, "config_file: getcwd()");
-		}
-		strncat(buff, "/", sizeof(buff) - strlen(buff) - 1);
-		strncat(buff, configpath, sizeof(buff) - strlen(buff) - 1);
-	}
-	dir = dirname(buff);
-	strncpy(path, dir, size - 1);
-	strncat(path, "/", size - strlen(path) - 1);
-	strncat(path, "lircd.conf.d", size - strlen(path) - 1);
-}
-
-
-/** Return true if and only if str ends with ".conf". */
-static int ends_with_conf(const struct dirent* entry)
-{
-    char *dot = strrchr(entry->d_name, '.');
-    return (NULL == dot) ? 0 : strcmp(dot + 1, "conf") == 0;
-}
-
-
 /** Append list of remotes to an existing list root, return root. */
 static struct ir_remote*
 ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
 {
 	struct ir_remote* r;
 
-	if (root == NULL || what == NULL) {
+	if (root == (struct ir_remote*)-1)
+		root = NULL;
+	if (what == (struct ir_remote*)-1)
+		what = NULL;
+	if (root == NULL && what != NULL)
+		return what;
+	if (what == NULL)
 		return root;
-	}
 	for (r = root; r->next != NULL; r = r->next)
 		;
 	r->next = what;
@@ -759,55 +740,90 @@ ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
 }
 
 
-/** Parse and add all *.conf config files in dirpath to root. */
-static struct ir_remote*
-add_configs(struct ir_remote* root, const char* dirpath)
-{
-        struct ir_remote* remote;
-	char path[128];
-	FILE* f;
-	struct dirent** namelist;
-	int size;
-	int i;
-
-	size = scandir(dirpath, &namelist, ends_with_conf, alphasort);
-	if (size < 0) {
-		return root;
-	}
-	for (i = 0; i < size;  i++) {
-		snprintf(path, sizeof(path),
-			 "%s/%s", dirpath, namelist[i]->d_name);
-		free(namelist[i]);
-		f = fopen(path, "r");
-		if (f == NULL) {
-			logperror(LIRC_WARNING,
-				  "Cannot open config file %s\n", path);
-			continue;
-		}
-		remote = read_config_recursive(f, path, 0);
-		if (remote == NULL) {
-			logprintf(LIRC_WARNING,
-			          "Cannot parse config file: %s\n", path);
-			continue;
-		}
-		root = ir_remotes_append(root, remote);
-	}
-	return root;
-}
-
-
 struct ir_remote* read_config(FILE * f, const char *name)
 {
-	char dirpath[128];
 	struct ir_remote* head;
 
 	head = read_config_recursive(f, name, 0);
-	get_configdir(name, dirpath, sizeof(dirpath));
-	head = add_configs(head, dirpath);
 	head = sort_by_bit_count(head);
 	return head;
 }
 
+
+/**
+ * Parse a single config file.
+ *
+ * @param name Including file path.
+ * @paran depth Include depth, increased for each recursive inclusion.
+ * @param val include file absolute path, quoted.
+ * @param top_rem root of ir_remotes list.
+ * @return root of new list, with possibly added remotes.
+ *
+ */
+static struct ir_remote* 
+read_included(const char* name, int depth, char* val, struct ir_remote* top_rem)
+{
+	FILE *childFile;
+	const char *childName;
+	struct ir_remote* rem = NULL;
+
+	if (depth > MAX_INCLUDES) {
+		logprintf(LIRC_ERROR, "error opening child file defined at %s:%d", name, line);
+		logprintf(LIRC_ERROR, "too many files included");
+	        return top_rem;	
+	}
+	childName = lirc_parse_include(val);
+	if (!childName) {
+		logprintf(LIRC_ERROR, "error parsing child file value defined at line %d:", line);
+		logprintf(LIRC_ERROR, "invalid quoting");
+		return top_rem;
+	}
+	childFile = fopen(childName, "r");
+	if (childFile == NULL) {
+		logprintf(LIRC_ERROR, "error opening child file '%s' defined at line %d:",
+			  childName, line);
+		logprintf(LIRC_ERROR, "ignoring this child file for now.");
+		return NULL;
+	} else {
+		rem = read_config_recursive(childFile, childName, depth + 1);
+		top_rem = ir_remotes_append(top_rem, rem);
+	}
+        fclose(childFile);
+	return top_rem;
+}
+
+
+/**
+ * Parse all include files matched by glob pattern
+ *
+ * @param name Including file path.
+ * @paran depth Include depth, increased for each recursive inclusion.
+ * @param val path in include parameter, quoted.
+ * @param top_rem root of existing ir_remotes list.
+ * @return root of new list, with possibly added remotes.
+ *
+ */
+static struct ir_remote* read_all_included(const char* name, 
+					   int depth, 
+					   char* val, 
+					   struct ir_remote* top_rem)
+{
+	int i;
+	glob_t globbuf;
+	char buff[256] = {'\0'};
+
+        memset(&globbuf, 0, sizeof(globbuf));
+	val = val + 1;   // Strip quotes
+	val[strlen(val) - 1] = '\0';
+	lirc_parse_relative(buff, sizeof(buff), val, name);
+	glob(buff, 0, NULL, &globbuf);
+	for (i = 0; i <  globbuf.gl_pathc; i +=1) {
+		snprintf(buff, sizeof(buff), "\"%s\"", globbuf.gl_pathv[i]);
+		top_rem = read_included(name, depth, buff, top_rem);
+	}
+	globfree(&globbuf);
+	return top_rem;
+}
 
 static struct ir_remote*
 read_config_recursive(FILE * f, const char *name, int depth)
@@ -857,65 +873,12 @@ read_config_recursive(FILE * f, const char *name, int depth)
 			val2 = strtok(NULL, whitespace);
 			LOGPRINTF(3, "Tokens: \"%s\" \"%s\" \"%s\"", key, val, (val2 == NULL ? "(null)" : val));
 			if (strcasecmp("include", key) == 0) {
-				FILE *childFile;
-				const char *childName;
-				const char *fullPath;
-				char result[FILENAME_MAX + 1];
-
-				if (depth > MAX_INCLUDES) {
-					logprintf(LIRC_ERROR, "error opening child file defined at %s:%d", name, line);
-					logprintf(LIRC_ERROR, "too many files included");
-					parse_error = -1;
-					break;
-				}
-
-				childName = lirc_parse_include(val);
-				if (!childName) {
-					logprintf(LIRC_ERROR, "error parsing child file value defined at line %d:", line);
-					logprintf(LIRC_ERROR, "invalid quoting");
-					parse_error = -1;
-					break;
-				}
-
-				fullPath = lirc_parse_relative(result, sizeof(result), childName, name);
-				if (!fullPath) {
-					logprintf(LIRC_ERROR, "error composing relative file path defined at line %d:",
-						  line);
-					logprintf(LIRC_ERROR, "resulting path too long");
-					parse_error = -1;
-					break;
-				}
-
-				childFile = fopen(fullPath, "r");
-				if (childFile == NULL) {
-					logprintf(LIRC_ERROR, "error opening child file '%s' defined at line %d:",
-						  fullPath, line);
-					logprintf(LIRC_ERROR, "ignoring this child file for now.");
-				} else {
-					int save_line = line;
-
-					if (!top_rem) {
-						/* create first remote */
-						LOGPRINTF(2, "creating first remote");
-						rem = read_config_recursive(childFile, fullPath, depth + 1);
-						if (rem != (void *)-1 && rem != NULL) {
-							top_rem = rem;
-						} else {
-							rem = NULL;
-						}
-					} else {
-						/* create new remote */
-						LOGPRINTF(2, "creating next remote");
-						rem->next = read_config_recursive(childFile, fullPath, depth + 1);
-						if (rem->next != (void *)-1 && rem->next != NULL) {
-							rem = rem->next;
-						} else {
-							rem->next = NULL;
-						}
-					}
-					fclose(childFile);
-					line = save_line;
-				}
+				int save_line = line;
+				top_rem = read_all_included(name, 
+						    	    depth, 
+							    val,
+							    top_rem);
+				line = save_line;
 			} else if (strcasecmp("begin", key) == 0) {
 				if (strcasecmp("codes", val) == 0) {
 					/* init codes mode */
@@ -958,10 +921,11 @@ read_config_recursive(FILE * f, const char *name, int depth)
 						rem = top_rem = s_malloc(sizeof(struct ir_remote));
 					} else {
 						/* create new remote */
-						LOGPRINTF(2, "creating next remote");
-						rem->next = s_malloc(sizeof(struct ir_remote));;
-						rem = rem->next;
+                                                LOGPRINTF(2, "creating next remote");
+                                                rem = s_malloc(sizeof(struct ir_remote));
+						ir_remotes_append(top_rem, rem);
 					}
+
 				} else if (mode == ID_codes) {
 					code = defineCode(key, val, &name_code);
 					while (!parse_error && val2 != NULL) {

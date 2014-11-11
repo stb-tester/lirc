@@ -1,4 +1,4 @@
-.TH LIRCD.CONF "5" "Last change: Oct 2014" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: Nov 2014" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
@@ -70,7 +70,8 @@ frame layout e. g., the repeat parameter.
 Include the given path using normal
 .I include
 semantics. If the path is relative, it's  interpreted relative to the
-main lircd.conf file. <path> must be enclosed in double quotes.
+main lircd.conf file. <path> must be enclosed in double quotes. It can
+contain a glob(3) pattern in which case all matching files are included.
 .TP 4
 .B manual_sort <1|0>
 Normally, lircd tries to sort multiple remotes so the one which decodes

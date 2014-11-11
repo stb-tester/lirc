@@ -741,7 +741,9 @@ void config(void)
 	} else {
 		LOGPRINTF(1, "config file read");
 		if (config_remotes == NULL) {
-			logprintf(LIRC_WARNING, "config file contains no valid remote control definition");
+			logprintf(LIRC_WARNING,
+                                  "config file %s contains no valid remote control definition", 
+                                  filename);
 		}
 		/* I cannot free the data structure
 		   as they could still be in use */
