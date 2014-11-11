@@ -3,29 +3,28 @@ ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
 
-LIB_SRC			= $(srcdir)/../lib
-API_SRC			= $(LIB_SRC)/*.c \
-			  $(LIB_SRC)/*.h \
-			  $(LIB_SRC)/*.dox \
-			  $(LIB_SRC)/*.doxhead
+LIB_SRC                 = $(srcdir)/../lib
+API_SRC                 = $(LIB_SRC)/*.c \
+                          $(LIB_SRC)/*.h \
+                          $(LIB_SRC)/*.dox \
+                          $(LIB_SRC)/*.doxhead
 
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
-nodist_man_MANS         =
-generated_html          =
 manpage_html            =
+man_sources             =
 nodist_html_DATA        =
 
 if BUILD_XTOOLS
-nodist_man_MANS         += man/xmode2.1 man/irxevent.1
-manpage_html            += man-html/irxevent.html
-nodist_html_DATA        += man-html/xmode2.html
+man_sources             += $(srcdir)/man-source/xmode2.1 \
+                           $(srcdir)/man-source/irxevent.1
+manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
 if HAVE_DOXYGEN
-dist_doc_DATA	    	+= api-docs.tar.gz
+dist_doc_DATA           += api-docs.tar.gz
 endif
 
 htmldir                 = $(docdir)/html
@@ -37,7 +36,7 @@ endif
 dist_html_DATA          = $(html_includes) html-source/lirc.css
 
 if HAVE_PYMOD_YAML
-dist_html_DATA		+= table.html
+dist_html_DATA          += table.html
 endif
 
 if HAVE_PYMOD_YAML
@@ -57,6 +56,9 @@ dist_image_DATA         = images/atwf83.jpg \
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
+install-data-hook:
+	$(SED) -i "s/@version@/$(VERSION)/" $(DESTDIR)$(mandir)/*/*
+
 clean-local:
 	rm -rf html
 	rm -rf man
@@ -69,14 +71,14 @@ lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
 $(generated_html): $(html_sources)
-	test -d html || mkdir html
+	mkdir html 2>/dev/null || : 
 	cat $(srcdir)/html-source/head.html > $@
 	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
 	cat $(srcdir)/html-source/foot.html >> $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
 $(manpage_html): $(nodist_man_MANS)
-	test -d man-html || mkdir man-html
+	-test -d man-html || mkdir man-html
 	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
@@ -90,19 +92,15 @@ $(manpage_html): $(nodist_man_MANS)
 
 $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
-	cp -a $(man_sources) man
-	$(SED) -i "s/@version@/$(VERSION)/" man/*
-	cd man;  cp mode2.1 xmode2.1
-
-man-html/xmode2.html: $(manpage_html)
-	cp man-html/mode2.html $@
+	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
+	    cp $$src $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
 	doxygen >doxygen-warnings.txt 2>&1
 	tar czf $@ api-docs
 
-man_sources             =  $(srcdir)/man-source/ircat.1 \
+man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irdb-get.1 \
                            $(srcdir)/man-source/irexec.1 \
                            $(srcdir)/man-source/irpty.1 \
@@ -111,7 +109,6 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irsend.1 \
                            $(srcdir)/man-source/irtestcase.1 \
                            $(srcdir)/man-source/irw.1 \
-                           $(srcdir)/man-source/irxevent.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
@@ -123,7 +120,7 @@ man_sources             =  $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/mode2.1
 
 html_sources            =  $(srcdir)/html-source/alsa-usb.html \
-			   $(srcdir)/html-source/api-general.html \
+                           $(srcdir)/html-source/api-general.html \
                            $(srcdir)/html-source/atwf83.html \
                            $(srcdir)/html-source/audio-alsa.html \
                            $(srcdir)/html-source/audio.html \
@@ -145,7 +142,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
 html_includes           =  $(srcdir)/html-source/foot.html \
                            $(srcdir)/html-source/head.html
 
-nodist_man_MANS         += man/ircat.1 \
+nodist_man_MANS         =  man/ircat.1 \
                            man/irdb-get.1 \
                            man/irexec.1 \
                            man/irpty.1 \
@@ -183,7 +180,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircrcd.html \
                            man-html/mode2.html
 
-generated_html          += html/alsa-usb.html \
+generated_html          =  html/alsa-usb.html \
                            html/audio-alsa.html \
                            html/audio.html \
                            html/configuration-guide.html \
