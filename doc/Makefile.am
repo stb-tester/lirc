@@ -107,6 +107,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irexec.1 \
                            $(srcdir)/man-source/irpty.1 \
                            $(srcdir)/man-source/irrecord.1 \
+                           $(srcdir)/man-source/irsimreceive.1 \
                            $(srcdir)/man-source/irsimsend.1 \
                            $(srcdir)/man-source/irsend.1 \
                            $(srcdir)/man-source/irtestcase.1 \
@@ -149,6 +150,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irexec.1 \
                            man/irpty.1 \
                            man/irrecord.1 \
+                           man/irsimreceive.1 \
                            man/irsimsend.1 \
                            man/irsend.1 \
                            man/irtestcase.1 \
