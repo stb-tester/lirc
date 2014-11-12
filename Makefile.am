@@ -47,6 +47,7 @@ install-data-hook:
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 	cd $(srcdir); $(TAR_DEREFERENCE) -cf - lirc.org | \
 	    tar -C $(DESTDIR)$(docdir) -xf -
+	rm $(DESTDIR)$(datadir)/lirc/configs/check_configs.py
 
 dist-hook: ChangeLog
 	chmod u+w $(distdir)
