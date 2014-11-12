@@ -2233,7 +2233,7 @@ static void lircd_add_defaults(void)
 		"lircd:repeat-max", 	DEFAULT_REPEAT_MAX,
 		"lircd:configfile",  	LIRCDCFGFILE,
 		"lircd:driver-options", "",
-		"lircd:effective-user", "lirc",
+		"lircd:effective-user", "",
 
 		(const char*)NULL, 	(const char*)NULL
 	};
