@@ -40,12 +40,22 @@ void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandli
 {
 	time_t timet;
 	struct tm *tmp;
-	char buff[128];
+	char cmd[128];
+	char uname[64];
+	FILE* p;
 
+	p = popen("uname -r", "r");
+	if (p < 0) {
+		strcat(uname, "Cannot run uname -r(!)");
+	} else {
+		if (fgets(uname, sizeof(uname), p) != uname)
+			strcat(uname, "Cannot run uname -r (!)");
+		pclose(p);
+	}
 	if (commandline)
-		snprintf(buff, sizeof(buff), "# Command line: %s\n", commandline);
+		snprintf(cmd, sizeof(cmd), "%s",  commandline);
 	else
-		strncat(buff, "", sizeof(buff) - 1);
+		strcat(cmd, "");
 
 	timet = time(NULL);
 	tmp = localtime(&timet);
@@ -53,21 +63,21 @@ void fprint_comment(FILE * f, const struct ir_remote *rem, const char* commandli
 		"#\n"
 		"# This config file was automatically generated\n"
 		"# using lirc-%s(%s) on %s"
+		"# Command line used: %s\n"
+		"# Kernel version (uname -r): %s"
 		"#\n"
-		"# Command line used: %s"
-		"# Remote name (as of config file): %s\n\n"
+		"# Remote name (as of config file): %s\n"
 		"# Brand of remote device, the thing you hold in your hand:\n"
 		"# Remote device model nr: \n"
 		"# Remote device info url: \n"
-		"# Does remote device has a bundled capture device e. g., a usb"
+		"# Does remote device has a bundled capture device e. g., a usb\n"
 		"#     dongle? : \n"
 		"# For bundled USB capture devices: usb vendor id, product id \n"
 		"#     and device string (use dmesg or lsusb): \n"
 		"# Type of device controlled \n"
 		"#     (TV, VCR, Audio, DVD, Satellite, Cable, PVR, HTPC, ...) : \n"
-		"# Device(s) controlled by this remote: \n"
-		"# Kernel version (uname -r): \n\n",
-		VERSION, curr_driver->name, asctime(tmp), buff, rem->name);
+		"# Device(s) controlled by this remote: \n\n",
+		VERSION, curr_driver->name, asctime(tmp), cmd, uname, rem->name);
 }
 
 void fprint_flags(FILE * f, int flags)
@@ -112,9 +122,11 @@ void fprint_remote_head(FILE * f, const struct ir_remote *rem)
 {
 	fprintf(f, "begin remote\n\n");
 	fprintf(f, "  name  %s\n", rem->name);
-	fprintf(f, "  manual_sort:  %d\n", rem->manual_sort);
+	if (rem->manual_sort){
+		fprintf(f, "  manual_sort  %d\n", rem->manual_sort);
+	}
         if (rem->driver) {
-		fprintf(f, "  driver: %s\n", rem->driver);
+		fprintf(f, "  driver %s\n", rem->driver);
 	}
 	if (!is_raw(rem)) {
 		fprintf(f, "  bits        %5d\n", rem->bits);
