@@ -171,6 +171,45 @@ static const struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
+
+const char* const MSG_WELCOME =
+	"\nirrecord -  application for recording IR-codes" " for usage with lirc\n"
+	"Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n"
+	"\n"
+	"This program will record the signals from your remote control\n"
+	"and create a config file for lircd.\n"
+	"\n"
+	"A proper config file for lircd is maybe the most vital part of this\n"
+	"package, so you should invest some time to create a working config\n"
+	"file. Although I put a good deal of effort in this program it is often\n"
+	"not possible to automatically recognize all features of a remote\n"
+	"control. Often short-comings of the receiver hardware make it nearly\n"
+	"impossible. If you have problems to create a config file READ THE\n"
+	"DOCUMENTATION at https://sf.net/p/lirc-remotes/wiki\n"
+	"\n"
+	"If there already is a remote control of the same brand available at\n"
+	"http://sf.net/p/lirc-remotes you might want to try using such a\n"
+	"remote as a template. The config files already contains all\n"
+	"parameters of the protocol used by remotes of a certain brand and\n"
+	"knowing these parameters makes the job of this program much\n"
+	"easier. There are also template files for the most common protocols\n"
+	"available. Templates can be downloaded using irdb-get(1). You use a\n"
+        "template file by providing the path of the file as a command line\n"
+	"parameter.\n"
+	"\n"
+	"Please take the time to finish the file as described in\n"
+        "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
+	"to  <lirc@bartelmus.de> so it can be made available to others.\n";
+
+static const char* const MSG_DEVINPUT =
+	"Usually it's not necessary to create a new config file for devinput\n"
+        "devices. A generic config file can be found at:\n"
+	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
+	"It can be downloaded using irdb-get(1)\n"
+	"Please try this config file before creating your own.\n";
+
+
+
 static const struct driver hw_emulation = {
 	.name		= "emulation",
 	.device		= "/dev/null",
@@ -2150,40 +2189,11 @@ int main(int argc, char **argv)
 	}
 	do_init(&opts, &state);
 
-	printf("This program will record the signals from your remote control\n"
-	       "and create a config file for lircd.\n\n" "\n");
+	printf(MSG_WELCOME);
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
-		printf("Usually it's not necessary to create a new config file for devinput\n"
-		       "devices. A generic config file can be found at:\n"
-		       "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf"
-		       "It can be downloaded using irdb-get(1)\n"
-		       "Please try this config file before creating your own.\n" "\n");
+		printf(MSG_DEVINPUT);
 	}
-	printf("A proper config file for lircd is maybe the most vital part of this\n"
-	       "package, so you should invest some time to create a working config\n"
-	       "file. Although I put a good deal of effort in this program it is often\n"
-	       "not possible to automatically recognize all features of a remote\n"
-	       "control. Often short-comings of the receiver hardware make it nearly\n"
-	       "impossible. If you have problems to create a config file check the wiki\n"
-	       "at https://sourceforge.net/p/lirc-remotes/wiki, the Checklist and the\n"
-	       "manual page."
-	       "\n"
-	       "If there already is a remote control of the same brand available at\n"
-	       "http://www.lirc.org/remotes/ you might also want to try using such a\n"
-	       "remote as a template. The config files already contain all\n"
-	       "parameters of the protocol used by remotes of a certain brand and\n"
-	       "knowing these parameters makes the job of this program much\n"
-	       "easier. There are also template files for the most common protocols\n"
-	       "available in the remotes/generic/ directory of the source\n"
-	       "distribution of this package. You can use a template files by\n"
-	       "providing the path of the file as command line parameter.\n"
-	       "\n"
-	       "Please take the time to finish this file as described in\n"
-	       "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
-	       "and make it available to others by sending it to \n"
-	       "<lirc@bartelmus.de>\n\n"
-	       "Press RETURN to continue.\n");
-
+	printf("Press RETURN to continue.\n");
 	getchar();
 
 	remote.name = opts.filename;
