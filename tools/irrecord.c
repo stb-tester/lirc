@@ -133,6 +133,19 @@ struct main_state {
 };
 
 
+/** State in get_gap_length(). */
+struct gap_state {
+	struct lengths *gaps;
+	struct timeval start;
+	struct timeval end;
+	struct timeval last;
+	int flag;
+	int maxcount;
+	int lastmaxcount;
+	lirc_t gap;
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -194,16 +207,16 @@ const char* const MSG_WELCOME =
 	"knowing these parameters makes the job of this program much\n"
 	"easier. There are also template files for the most common protocols\n"
 	"available. Templates can be downloaded using irdb-get(1). You use a\n"
-        "template file by providing the path of the file as a command line\n"
+	"template file by providing the path of the file as a command line\n"
 	"parameter.\n"
 	"\n"
 	"Please take the time to finish the file as described in\n"
-        "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
+	"https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
 	"to  <lirc@bartelmus.de> so it can be made available to others.\n";
 
 static const char* const MSG_DEVINPUT =
 	"Usually it's not necessary to create a new config file for devinput\n"
-        "devices. A generic config file can be found at:\n"
+	"devices. A generic config file can be found at:\n"
 	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
 	"It can be downloaded using irdb-get(1)\n"
 	"Please try this config file before creating your own.\n";
@@ -350,6 +363,12 @@ static int resethw(void)
 		return (0);
 	}
 	return (1);
+}
+
+
+void gap_state_init(struct gap_state* state)
+{
+       memset(state, 0, sizeof(struct gap_state));
 }
 
 
@@ -1429,19 +1448,9 @@ static int get_data_length(struct ir_remote *remote, int interactive)
 }
 
 
-static int get_gap_length(struct ir_remote *remote)
+static int get_gap_length(struct gap_state *state, struct ir_remote *remote)
 {
-	struct lengths *gaps = NULL;
-	struct timeval start, end, last = { 0, 0 };
-	int flag;
-	struct lengths *scan;
-	int maxcount, lastmaxcount;
-	lirc_t gap;
-
-	remote->eps = eps;
-	remote->aeps = aeps;
-	flag = 0;
-	lastmaxcount = 0;
+	struct lengths* scan;
 
 	printf("Hold down an arbitrary button.\n");
 	while (1) {
@@ -1449,39 +1458,39 @@ static int get_gap_length(struct ir_remote *remote)
 			curr_driver->rec_func(NULL);
 		}
 		if (!mywaitfordata(10000000)) {
-			free_lengths(&gaps);
+			free_lengths(&(state->gaps));
 			return (0);
 		}
-		gettimeofday(&start, NULL);
+		gettimeofday(&(state->start), NULL);
 		while (availabledata()) {
 			curr_driver->rec_func(NULL);
 		}
-		gettimeofday(&end, NULL);
-		if (flag) {
-			gap = time_elapsed(&last, &start);
-			add_length(&gaps, gap);
-			merge_lengths(gaps);
-			maxcount = 0;
-			scan = gaps;
+		gettimeofday(&(state->end), NULL);
+		if (state->flag) {
+			state->gap = time_elapsed(&(state->last), &(state->start));
+			add_length(&(state->gaps), state->gap);
+			merge_lengths(state->gaps);
+			state->maxcount = 0;
+			scan = state->gaps;
 			while (scan) {
-				maxcount = max(maxcount, scan->count);
+				state->maxcount = max(state->maxcount, scan->count);
 				if (scan->count > SAMPLES) {
 					remote->gap = calc_signal(scan);
 					printf("\nFound gap length: %u\n", (__u32) remote->gap);
-					free_lengths(&gaps);
+					free_lengths(&(state->gaps));
 					return (1);
 				}
 				scan = scan->next;
 			}
-			if (maxcount > lastmaxcount) {
-				lastmaxcount = maxcount;
+			if (state->maxcount > state->lastmaxcount) {
+				state->lastmaxcount = state->maxcount;
 				printf(".");
 				fflush(stdout);
 			}
 		} else {
-			flag = 1;
+			state->flag = 1;
 		}
-		last = end;
+		state->last = state->end;
 	}
 	return (1);
 }
@@ -2174,12 +2183,14 @@ int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
+	struct gap_state gap_state;
 	int retval = EXIT_SUCCESS;
 	int retries;
 	int no_data = 0;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&state, 0, sizeof(state));
+	gap_state_init(&gap_state);
 	get_options(argc, argv, argv[optind], &opts);
 
 	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
@@ -2224,7 +2235,9 @@ int main(int argc, char **argv)
 	case LIRC_MODE_LIRCCODE:
 		remote.driver = curr_driver->name;
 		remote.bits = curr_driver->code_length;
-		if (!state.using_template && !get_gap_length(&remote)) {
+		remote.eps = eps;
+		remote.aeps = aeps;
+		if (!state.using_template && !get_gap_length(&gap_state, &remote)) {
 			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 			fclose(state.fout);
 			unlink(opts.filename);
