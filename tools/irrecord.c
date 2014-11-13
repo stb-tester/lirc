@@ -88,6 +88,25 @@ struct lengths {
 };
 
 
+/** Parsed run-time options, reflects long_options. */
+struct opts {
+	int dynamic_codes;
+	int analyse;
+	int force;
+	int disable_namespace;
+	const char *device;
+	int get_pre;
+	int get_post;
+	int test;
+	int invert;
+	int trail;
+	int list_namespace;
+	const char* filename;
+	const char* driver;
+	loglevel_t loglevel;
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -147,7 +166,7 @@ static const struct driver hw_emulation = {
 };
 
 
-
+// globals
 static struct ir_remote remote;
 static struct ir_ncode ncode;
 
@@ -155,9 +174,6 @@ static lirc_t signals[MAX_SIGNALS];
 
 static unsigned int eps = 30;
 static lirc_t aeps = 100;
-
-// Actual loglevel as per -D option, see lirc_log.h.
-loglevel_t loglevel = LIRC_WARNING;
 
 static struct ir_remote *emulation_data;
 static struct ir_ncode *next_code = NULL;
@@ -198,7 +214,7 @@ static void fprint_copyright(FILE * fout)
 		"# Please take the time to finish this file as described in\n"
                 "# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
                 "# and make it available to others by sending it to \n"
-	        "# <lirc@bartelmus.de>\n");
+		"# <lirc@bartelmus.de>\n");
 }
 
 
@@ -298,16 +314,17 @@ static void add_defaults(void)
 	char level[4];
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const defaults[] = {
-		"lircd:plugindir",		PLUGINDIR,
-		"irrecord:driver",		"devinput",
-		"irrecord:device",		 LIRC_DRIVER_DEVICE,
-		"irrecord:analyse",		"False",
-		"irrecord:force",		"False",
-		"irrecord:disable-namespace",	"False",
+		"lircd:plugindir",              PLUGINDIR,
+		"irrecord:driver",              "devinput",
+		"irrecord:device",               LIRC_DRIVER_DEVICE,
+		"irrecord:analyse",             "False",
+		"irrecord:force",               "False",
+		"irrecord:disable-namespace",   "False",
 		"irrecord:dynamic-codes",	"False",
-		"irrecord:list_namespace",	"False",
-		"lircd:debug",			 level,
-		(const char*)NULL,	(const char*)NULL
+		"irrecord:list_namespace",      "False",
+		"irrecord:filename",            "irrecord.conf",
+		"lircd:debug",                   level,
+		(const char*)NULL,      (const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
@@ -316,7 +333,6 @@ static void add_defaults(void)
 static void parse_options(int argc, char** const argv)
 {
 	int c;
-	char* level;
 
 	const char* const optstring = "had:D:H:fnlO:pPtiTU:vY";
 
@@ -330,12 +346,12 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("irrecord:analyse", "True");
 			break;
 		case 'D':
-			level = optarg ? optarg : "debug";
-			if (options_set_loglevel(level) == LIRC_BADLEVEL){
+			if (string2loglevel(optarg) == LIRC_BADLEVEL){
 				fprintf(stderr,
 					"Bad debug level: %s\n", optarg);
 				exit(EXIT_FAILURE);
 			}
+			options_set_opt("lircd:debug", optarg);
 			break;
 		case 'd':
 			options_set_opt("irrecord:device", optarg);
@@ -387,7 +403,7 @@ static void parse_options(int argc, char** const argv)
 		}
 	}
 	if (optind == argc - 1) {
-		options_set_opt("configfile", argv[optind]);
+		options_set_opt("irrecord:filename", argv[optind]);
 	} else if (optind != argc) {
 		fputs("irrecord: invalid argument count\n", stderr);
 		exit(EXIT_FAILURE);
@@ -1885,28 +1901,49 @@ static void analyse_remote(struct ir_remote *raw_data)
 }
 
 
+static int
+get_options(int argc, char** argv, const char* filename, struct opts* options)
+{
+	options->force = 0;
+	options_load(argc, argv, NULL, parse_options);
+	options->analyse = options_getboolean("irrecord:analyse");
+	options->device = options_getstring("irrecord:device");
+	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
+	options->driver = options_getstring("irrecord:driver");
+	options->force = options_getboolean("irrecord:force");
+	options->disable_namespace = options_getboolean("irrecord:disable-namespace");
+        options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
+	options->get_pre = options_getboolean("irrecord:pre");
+	options->get_post = options_getboolean("irrecord:post");
+	options->list_namespace = options_getboolean("irrecord:list_namespace");
+	options->test = options_getboolean("irrecord:test");
+	options->invert = options_getboolean("irrecord:invert");
+	options->trail = options_getboolean("irrecord:trail");
+	options->filename = options_getstring("irrecord:filename");
+	return 1;
+}
+
+
+
 int main(int argc, char **argv)
 {
-	char *filename;
+	struct opts opts;
 	FILE *fout, *fin;
 	int flags;
 	int retval = EXIT_SUCCESS;
 	struct decode_ctx_t decode_ctx;
-	int force;
-	int disable_namespace = 0;
 	int retries;
 	int no_data = 0;
 	struct ir_remote *remotes = NULL;
-	const char *device = NULL;
 	int using_template = 0;
-	int analyse = 0;
 	const char* opt;
 	char commandline[128];
         char path[128];
-	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
+
+	memset(&opts, 0, sizeof(opts));
+	get_options(argc, argv, argv[optind], &opts);
 
 	get_commandline(argc, argv, commandline, sizeof(commandline));
-	force = 0;
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
 	opt = options_getstring("irrecord:driver");
@@ -1916,72 +1953,54 @@ int main(int argc, char **argv)
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
-	analyse = options_getboolean("irrecord:analyse");
-	device = options_getstring("irrecord:device");
-	opt = options_getstring("lircd:debug");
-	loglevel = string2loglevel(opt);
-	if (loglevel < LIRC_MIN_LOGLEVEL || loglevel > LIRC_MAX_LOGLEVEL){
-		fprintf(stderr, "Bad debug value %s\n", opt);
-		exit(EXIT_FAILURE);
-	}
-	force = options_getboolean("irrecord:force");
-	disable_namespace = options_getboolean("irrecord:disable-namespace");
 	if (options_getboolean("irrecord:list-namespace")){
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
 	}
         ir_remote_init(options_getboolean("lircd:dynamic-codes"));
-	get_pre = options_getboolean("irrecord:pre");
-	get_post = options_getboolean("irrecord:post");
-	test = options_getboolean("irrecord:test");
-	invert = options_getboolean("irrecord:invert");
-	trail = options_getboolean("irrecord:trail");
 	lirc_log_get_clientlog("irrecord", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irrecord", 0, loglevel);
-	curr_driver->open_func(device);
-	if (strcmp(curr_driver->name, "null") == 0 && !analyse) {
+	curr_driver->open_func(opts.device);
+	if (strcmp(curr_driver->name, "null") == 0 && !opts.analyse) {
 		fprintf(stderr,
 		       "%s: irrecord does not make sense without hardware\n",
 			progname);
 		exit(EXIT_FAILURE);
 	}
-	filename = argv[optind];
-	if (filename == (char*) NULL)
-		filename = "irrecord.conf";
-	fin = fopen(filename, "r");
+	fin = fopen(opts.filename, "r");
 	if (fin != NULL) {
 		char *filename_new;
 
-		if (force) {
+		if (opts.force) {
 			fprintf(stderr,
 				"%s: file \"%s\" already exists\n" "%s: you cannot use the --force option "
-				"together with a template file\n", progname, filename, progname);
+				"together with a template file\n", progname, opts.filename, progname);
 			exit(EXIT_FAILURE);
 		}
-		remotes = read_config(fin, filename);
+		remotes = read_config(fin, opts.filename);
 		fclose(fin);
 		if (remotes == (void *)-1 || remotes == NULL) {
-			fprintf(stderr, "%s: file \"%s\" does not contain valid data\n", progname, filename);
+			fprintf(stderr, "%s: file \"%s\" does not contain valid data\n", progname, opts.filename);
 			exit(EXIT_FAILURE);
 		}
-		if (analyse) {
+		if (opts.analyse) {
 			memcpy((void*)curr_driver, &hw_emulation, sizeof(struct driver));
 			// hw = hw_emulation;
 			for_each_remote(remotes, analyse_remote);
 			return EXIT_SUCCESS;
 		}
 		using_template = 1;
-		if (test) {
-			if (trail)
+		if (opts.test) {
+			if (opts.trail)
 				for_each_remote(remotes, remove_trail);
 			for_each_remote(remotes, remove_pre_data);
 			for_each_remote(remotes, remove_post_data);
-			if (get_pre)
+			if (opts.get_pre)
 				for_each_remote(remotes, get_pre_data);
-			if (get_post)
+			if (opts.get_post)
 				for_each_remote(remotes, get_post_data);
-			if (invert)
+			if (opts.invert)
 				for_each_remote(remotes, invert_data);
 
 			fprint_remotes(stdout, remotes, commandline);
@@ -2000,26 +2019,26 @@ int main(int argc, char **argv)
 		}
 		if (remotes->next != NULL) {
 			fprintf(stderr, "%s: only first remote definition in file \"%s\" used\n", progname,
-				filename);
+				opts.filename);
 		}
-		filename_new = malloc(strlen(filename) + 10);
+		filename_new = malloc(strlen(opts.filename) + 10);
 		if (filename_new == NULL) {
 			fprintf(stderr, "%s: out of memory\n", progname);
 			exit(EXIT_FAILURE);
 		}
-		strcpy(filename_new, filename);
+		strcpy(filename_new, opts.filename);
 		strcat(filename_new, ".conf");
-		filename = filename_new;
+		opts.filename = filename_new;
 	} else {
-		if (analyse) {
+		if (opts.analyse) {
 			fprintf(stderr, "%s: no input file given, ignoring analyse flag\n", progname);
-			analyse = 0;
+			opts.analyse = 0;
 		}
 	}
-	fout = fopen(filename, "w");
+	fout = fopen(opts.filename, "w");
 	if (fout == NULL) {
 		fprintf(stderr, "%s: could not open new config file %s\n",
-			progname, filename);
+			progname, opts.filename);
 		perror(progname);
 		exit(EXIT_FAILURE);
 	}
@@ -2033,7 +2052,7 @@ int main(int argc, char **argv)
 				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
 				progname);
 			fclose(fout);
-			unlink(filename);
+			unlink(opts.filename);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -2042,7 +2061,7 @@ int main(int argc, char **argv)
 	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		fprintf(stderr, "%s: mode not supported\n", progname);
 		fclose(fout);
-		unlink(filename);
+		unlink(opts.filename);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
@@ -2052,7 +2071,7 @@ int main(int argc, char **argv)
 	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
 		fclose(fout);
-		unlink(filename);
+		unlink(opts.filename);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
@@ -2086,7 +2105,7 @@ int main(int argc, char **argv)
 	       "distribution of this package. You can use a template files by\n"
 	       "providing the path of the file as command line parameter.\n"
 	       "\n"
-       	       "Please take the time to finish this file as described in\n"
+	       "Please take the time to finish this file as described in\n"
 	       "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
 	       "and make it available to others by sending it to \n"
 	       "<lirc@bartelmus.de>\n\n"
@@ -2094,14 +2113,14 @@ int main(int argc, char **argv)
 
 	getchar();
 
-	remote.name = filename;
+	remote.name = opts.filename;
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
-		if (!using_template && !get_lengths(&remote, force, 1)) {
+		if (!using_template && !get_lengths(&remote, opts.force, 1)) {
 			if (remote.gap == 0) {
 				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 				fclose(fout);
-				unlink(filename);
+				unlink(opts.filename);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
@@ -2125,7 +2144,7 @@ int main(int argc, char **argv)
 		if (!using_template && !get_gap_length(&remote)) {
 			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 			fclose(fout);
-			unlink(filename);
+			unlink(opts.filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
@@ -2141,7 +2160,7 @@ int main(int argc, char **argv)
 		if (!get_toggle_bit_mask(&remote)) {
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(fout);
-			unlink(filename);
+			unlink(opts.filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
@@ -2186,7 +2205,7 @@ int main(int argc, char **argv)
 		if (strlen(buffer) == 0) {
 			break;
 		}
-		if (!disable_namespace && !is_in_namespace(buffer)) {
+		if (!opts.disable_namespace && !is_in_namespace(buffer)) {
 			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", buffer);
 			printf("Use '%s --list-namespace' to see a full list of valid button names\n", progname);
 			printf("Please try again.\n");
@@ -2352,14 +2371,14 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	fin = fopen(filename, "r");
+	fin = fopen(opts.filename, "r");
 	if (fin == NULL) {
 		fprintf(stderr, "%s: could not reopen config file\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	remotes = read_config(fin, filename);
+	remotes = read_config(fin, opts.filename);
 	fclose(fin);
 	if (remotes == NULL) {
 		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
@@ -2388,10 +2407,10 @@ int main(int argc, char **argv)
 	get_post_data(remotes);
 
 	/* write final config file */
-	fout = fopen(filename, "w");
+	fout = fopen(opts.filename, "w");
 	if (fout == NULL) {
 		fprintf(stderr, "%s: could not open final config file \"%s\"\n",
-			progname, filename);
+			progname, opts.filename);
 		perror(progname);
 		free_config(remotes);
 		return (EXIT_FAILURE);
