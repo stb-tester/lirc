@@ -163,6 +163,22 @@ struct lengths_state {
 };
 
 
+/** State in get_togggle_bit_mask(). */
+struct toggle_state {
+	struct decode_ctx_t decode_ctx;
+	int retval;
+	int retries;
+	int flag;
+	int  success;
+	ir_code first;
+	ir_code last;
+	int seq;
+	int repeats;
+	int found;
+	int inited;
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -414,6 +430,14 @@ void lengths_state_init(struct lengths_state* state, int interactive)
 		getchar();
 		flushhw();
 	}
+}
+
+
+void toggle_state_init(struct toggle_state* state)
+{
+	memset(state, 0, sizeof(struct toggle_state));
+	state->retries = 30;
+	state->retval = EXIT_SUCCESS;
 }
 
 
@@ -1898,16 +1922,13 @@ static int get_lengths(struct lengths_state* state, struct ir_remote *remote, in
 }
 
 
-static int get_toggle_bit_mask(struct ir_remote *remote)
+static int get_toggle_bit_mask(struct toggle_state* state, struct ir_remote *remote)
 {
 	struct decode_ctx_t decode_ctx;
-	int retval = EXIT_SUCCESS;
-	int retries, flag, success;
-	ir_code first, last;
-	int seq, repeats;
-	int found;
+	int i;
+	struct ir_ncode* codes;
+	ir_code mask;
 
-	struct ir_ncode *codes;
 	if (remote->codes) {
 		codes = remote->codes;
 		while (codes->name != NULL) {
@@ -1928,66 +1949,57 @@ static int get_toggle_bit_mask(struct ir_remote *remote)
 	fflush(stdout);
 	getchar();
 
-	retries = 30;
-	flag = success = 0;
-	first = 0;
-	last = 0;
-	seq = repeats = 0;
-	found = 0;
 	while (availabledata()) {
 		curr_driver->rec_func(NULL);
 	}
-	while (retval == EXIT_SUCCESS && retries > 0) {
+	while (state->retval == EXIT_SUCCESS && state->retries > 0) {
 		if (!mywaitfordata(10000000)) {
 			printf("%s: no data for 10 secs, aborting\n", progname);
-			retval = EXIT_FAILURE;
+			state->retval = EXIT_FAILURE;
 			break;
 		}
 		curr_driver->rec_func(remote);
 		if (is_rc6(remote) && remote->rc6_mask == 0) {
-			int i;
-			ir_code mask;
-
 			for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
 				remote->rc6_mask = mask;
-				success = curr_driver->decode_func(remote, &decode_ctx);
-				if (success) {
+				state->success = curr_driver->decode_func(remote, &decode_ctx);
+				if (state->success) {
 					remote->min_remaining_gap = decode_ctx.min_remaining_gap;
 					remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 					break;
 				}
 			}
-			if (success == 0)
+			if (state->success == 0)
 				remote->rc6_mask = 0;
 		} else {
-			success = curr_driver->decode_func(remote, &decode_ctx);
-			if (success) {
+			state->success = curr_driver->decode_func(remote, &decode_ctx);
+			if (state->success) {
 				remote->min_remaining_gap = decode_ctx.min_remaining_gap;
 				remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 			}
 		}
-		if (success) {
-			if (flag == 0) {
-				flag = 1;
-				first = decode_ctx.code;
-			} else if (!decode_ctx.repeat_flag || decode_ctx.code != last) {
-				seq++;
-				if (!found && first ^ decode_ctx.code) {
-					set_toggle_bit_mask(remote, first ^ decode_ctx.code);
-					found = 1;
+		if (state->success) {
+			if (state->flag == 0) {
+				state->flag = 1;
+				state->first = decode_ctx.code;
+			} else if (!decode_ctx.repeat_flag || decode_ctx.code != state->last) {
+				state->seq++;
+				if (!state->found && state->first ^ decode_ctx.code) {
+					set_toggle_bit_mask(remote, state->first ^ decode_ctx.code);
+					state->found = 1;
 				}
 				printf(".");
 				fflush(stdout);
-				retries--;
+				state->retries--;
 			} else {
-				repeats++;
+				state->repeats++;
 			}
-			last = decode_ctx.code;
+			state->last = decode_ctx.code;
 		} else {
-			retries--;
+			state->retries--;
 		}
 	}
-	if (!found) {
+	if (!state->found) {
 		printf("\nNo toggle bit mask found.\n");
 	} else {
 		if (remote->toggle_bit_mask > 0) {
@@ -1996,10 +2008,10 @@ static int get_toggle_bit_mask(struct ir_remote *remote)
 			printf("\nToggle mask found.\n");
 		}
 	}
-	if (seq > 0)
-		remote->min_repeat = repeats / seq;
+	if (state->seq > 0)
+		remote->min_repeat = state->repeats / state->seq;
 	logprintf(LIRC_DEBUG, "min_repeat=%d\n", remote->min_repeat);
-	return (found);
+	return (state->found);
 }
 
 
@@ -2200,6 +2212,7 @@ int main(int argc, char **argv)
 	struct opts opts;
 	struct main_state state;
 	struct gap_state gap_state;
+	struct toggle_state tgl_state;
 	struct lengths_state lengths_state;
 	int retval = EXIT_SUCCESS;
 	int retries;
@@ -2271,7 +2284,8 @@ int main(int argc, char **argv)
 		while (availabledata()) {
 			curr_driver->rec_func(NULL);
 		}
-		if (!get_toggle_bit_mask(&remote)) {
+		toggle_state_init(&tgl_state);
+		if (!get_toggle_bit_mask(&tgl_state, &remote)) {
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(state.fout);
 			unlink(opts.filename);
@@ -2509,10 +2523,11 @@ int main(int argc, char **argv)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-
 	if (!has_toggle_bit_mask(state.remotes)) {
-		if (!state.using_template && strcmp(curr_driver->name, "devinput") != 0)
-			get_toggle_bit_mask(state.remotes);
+		if (!state.using_template && strcmp(curr_driver->name, "devinput") != 0){
+			toggle_state_init(&tgl_state);
+			get_toggle_bit_mask(&tgl_state, state.remotes);
+		}
 	} else {
 		set_toggle_bit_mask(state.remotes, state.remotes->toggle_bit_mask);
 	}
