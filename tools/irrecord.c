@@ -600,6 +600,7 @@ int main(int argc, char **argv)
 	remote.name = filename;
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
+		remote.driver = NULL;
 		if (!using_template && !get_lengths(&remote, force, 1)) {
 			if (remote.gap == 0) {
 				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
