@@ -179,6 +179,21 @@ struct toggle_state {
 };
 
 
+/** State while recording buttons. */
+struct button_state {
+	int retval;
+	char buffer[BUTTON];
+	char* string;
+	lirc_t data;
+	lirc_t sum;
+	unsigned int count;
+	int flag;
+	int no_data;
+	int retries;
+	char message[128];
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -319,6 +334,15 @@ static int i_printf(int interactive, char *format_str, ...)
 }
 
 
+static void btn_state_set_message(struct button_state* state, const char* fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(state->message, sizeof(state->message), fmt, ap);
+	va_end(ap);
+}
+
+
 static void fprint_copyright(FILE * fout)
 {
 	fprintf(fout, "\n"
@@ -437,6 +461,13 @@ void toggle_state_init(struct toggle_state* state)
 {
 	memset(state, 0, sizeof(struct toggle_state));
 	state->retries = 30;
+	state->retval = EXIT_SUCCESS;
+}
+
+
+void button_state_init(struct button_state* state)
+{
+	memset(state, 0, sizeof(struct button_state));
 	state->retval = EXIT_SUCCESS;
 }
 
@@ -2214,13 +2245,13 @@ int main(int argc, char **argv)
 	struct gap_state gap_state;
 	struct toggle_state tgl_state;
 	struct lengths_state lengths_state;
-	int retval = EXIT_SUCCESS;
-	int retries;
-	int no_data = 0;
+	struct button_state btn_state_struct;
+	struct button_state* btn_state = &btn_state_struct;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&state, 0, sizeof(state));
 	gap_state_init(&gap_state);
+	button_state_init(btn_state);
 	get_options(argc, argv, argv[optind], &opts);
 
 	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
@@ -2301,40 +2332,37 @@ int main(int argc, char **argv)
 	fprint_remote_head(state.fout, &remote);
 	fprint_remote_signal_head(state.fout, &remote);
 	while (1) {
-		char buffer[BUTTON];
-		char *string;
-
-		if (no_data) {
+		if (btn_state->no_data) {
 			fprintf(stderr, "%s: no data for 10 secs," " aborting\n", progname);
 			printf("The last button did not seem to generate any signal.\n");
 			printf("Press RETURN to continue.\n\n");
 			getchar();
-			no_data = 0;
+			btn_state->no_data = 0;
 		}
 		printf("\nPlease enter the name for the next button (press <ENTER> to finish recording)\n");
-		string = fgets(buffer, BUTTON, stdin);
+		btn_state->string = fgets(btn_state->buffer, BUTTON, stdin);
 
-		if (string != buffer) {
+		if (btn_state->string != btn_state->buffer) {
 			fprintf(stderr, "%s: fgets() failed\n", progname);
-			retval = EXIT_FAILURE;
+			btn_state->retval = EXIT_FAILURE;
 			break;
 		}
-		buffer[strlen(buffer) - 1] = 0;
-		if (strchr(buffer, ' ') || strchr(buffer, '\t')) {
+		btn_state->buffer[strlen(btn_state->buffer) - 1] = 0;
+		if (strchr(btn_state->buffer, ' ') || strchr(btn_state->buffer, '\t')) {
 			printf("The name must not contain any whitespace.\n");
 			printf("Please try again.\n");
 			continue;
 		}
-		if (strcasecmp(buffer, "begin") == 0 || strcasecmp(buffer, "end") == 0) {
-			printf("'%s' is not allowed as button name\n", buffer);
+		if (strcasecmp(btn_state->buffer, "begin") == 0 || strcasecmp(btn_state->buffer, "end") == 0) {
+			printf("'%s' is not allowed as button name\n", btn_state->buffer);
 			printf("Please try again.\n");
 			continue;
 		}
-		if (strlen(buffer) == 0) {
+		if (strlen(btn_state->buffer) == 0) {
 			break;
 		}
-		if (!opts.disable_namespace && !is_in_namespace(buffer)) {
-			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", buffer);
+		if (!opts.disable_namespace && !is_in_namespace(btn_state->buffer)) {
+			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", btn_state->buffer);
 			printf("Use '%s --list-namespace' to see a full list of valid button names\n", progname);
 			printf("Please try again.\n");
 			continue;
@@ -2347,97 +2375,92 @@ int main(int argc, char **argv)
 				curr_driver->rec_func(NULL);
 			}
 		}
-		printf("\nNow hold down button \"%s\".\n", buffer);
+		printf("\nNow hold down button \"%s\".\n", btn_state->buffer);
 		fflush(stdout);
 		flushhw();
 
 		if (is_raw(&remote)) {
-			lirc_t data, sum;
-			unsigned int count;
-
-			count = 0;
-			sum = 0;
-			while (count < MAX_SIGNALS) {
+			btn_state->count = 0;
+			btn_state->sum = 0;
+			while (btn_state->count < MAX_SIGNALS) {
 				__u32 timeout;
 
-				if (count == 0)
+				if (btn_state->count == 0)
 					timeout = 10000000;
 				else
 					timeout = remote.gap * 5;
-				data = curr_driver->readdata(timeout);
-				if (!data) {
-					if (count == 0) {
-						no_data = 1;
+				btn_state->data = curr_driver->readdata(timeout);
+				if (!btn_state->data) {
+					if (btn_state->count == 0) {
+						btn_state->no_data = 1;
 						break;
 					}
-					data = remote.gap;
+					btn_state->data = remote.gap;
 				}
-				if (count == 0) {
-					if (!is_space(data) || data < remote.gap - remote.gap * remote.eps / 100) {
+				if (btn_state->count == 0) {
+					if (!is_space(btn_state->data) || btn_state->data < remote.gap - remote.gap * remote.eps / 100) {
 						printf("Sorry, something went wrong.\n");
 						sleep(3);
 						printf("Try again.\n");
 						flushhw();
-						count = 0;
+						btn_state->count = 0;
 						continue;
 					}
 				} else {
-					if (is_space(data)
-					    && (is_const(&remote) ? data >
-						(remote.gap > sum ? (remote.gap - sum) * (100 - remote.eps) / 100 : 0)
-						: data > remote.gap * (100 - remote.eps) / 100)) {
+					if (is_space(btn_state->data)
+					    && (is_const(&remote) ? btn_state->data >
+						(remote.gap > btn_state->sum ? (remote.gap - btn_state->sum) * (100 - remote.eps) / 100 : 0)
+						: btn_state->data > remote.gap * (100 - remote.eps) / 100)) {
 						printf("Got it.\n");
-						printf("Signal length is %d\n", count - 1);
-						if (count % 2) {
+						printf("Signal length is %d\n", btn_state->count - 1);
+						if (btn_state->count % 2) {
 							printf("That's weird because the signal length "
 							       "must be odd!\n");
 							sleep(3);
 							printf("Try again.\n");
 							flushhw();
-							count = 0;
+							btn_state->count = 0;
 							continue;
 						} else {
-							ncode.name = buffer;
-							ncode.length = count - 1;
+							ncode.name = btn_state->buffer;
+							ncode.length = btn_state->count - 1;
 							ncode.signals = signals;
 							fprint_remote_signal(state.fout, &remote, &ncode);
 							break;
 						}
 					}
-					signals[count - 1] = data & PULSE_MASK;
-					sum += data & PULSE_MASK;
+					signals[btn_state->count - 1] = btn_state->data & PULSE_MASK;
+					btn_state->sum += btn_state->data & PULSE_MASK;
 				}
-				count++;
+				btn_state->count++;
 			}
-			if (count == MAX_SIGNALS) {
+			if (btn_state->count == MAX_SIGNALS) {
 				printf("Signal is too long.\n");
 			}
-			if (retval == EXIT_FAILURE)
+			if (btn_state->retval == EXIT_FAILURE)
 				break;
 			continue;
 		}
-		retries = RETRIES;
-		while (retries > 0) {
-			int flag;
-
+		btn_state->retries = RETRIES;
+		while (btn_state->retries > 0) {
 			if (!mywaitfordata(10000000)) {
-				no_data = 1;
+				btn_state->no_data = 1;
 				break;
 			}
 			last_remote = NULL;
-			flag = 0;
+			btn_state->flag = 0;
 			sleep(1);
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
 				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
-					flag = 1;
+					btn_state->flag = 1;
 					break;
 				}
 			}
-			if (flag) {
+			if (btn_state->flag) {
 				ir_code code2;
 
-				ncode.name = buffer;
+				ncode.name = btn_state->buffer;
 				ncode.code = state.decode_ctx.code;
 				curr_driver->rec_func(NULL);
 				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
@@ -2459,34 +2482,34 @@ int main(int argc, char **argv)
 				break;
 			} else {
 				printf("Something went wrong. ");
-				if (retries > 1) {
+				if (btn_state->retries > 1) {
 					fflush(stdout);
 					sleep(3);
 					if (!resethw()) {
 						fprintf(stderr, "%s: Could not reset hardware.\n", progname);
-						retval = EXIT_FAILURE;
+						btn_state->retval = EXIT_FAILURE;
 						break;
 					}
 					flushhw();
-					printf("Please try again. (%d retries left)\n", retries - 1);
+					printf("Please try again. (%d btn_state->retries left)\n", btn_state->retries - 1);
 				} else {
 					printf("\n");
 					printf("Try using the -f option.\n");
 				}
-				retries--;
+				btn_state->retries--;
 				continue;
 			}
 		}
-		if (retries == 0)
-			retval = EXIT_FAILURE;
-		if (retval == EXIT_FAILURE)
+		if (btn_state->retries == 0)
+			btn_state->retval = EXIT_FAILURE;
+		if (btn_state->retval == EXIT_FAILURE)
 			break;
 	}
 	fprint_remote_signal_foot(state.fout, &remote);
 	fprint_remote_foot(state.fout, &remote);
 	fclose(state.fout);
 
-	if (retval == EXIT_FAILURE) {
+	if (btn_state->retval == EXIT_FAILURE) {
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
