@@ -2238,99 +2238,13 @@ static void do_init(struct opts* opts, struct main_state* state)
 }
 
 
-int main(int argc, char **argv)
+void record_buttons(struct main_state* state,
+		    struct button_state* btn_state,
+		    struct opts* opts)
+
 {
-	struct opts opts;
-	struct main_state state;
-	struct gap_state gap_state;
 	struct toggle_state tgl_state;
-	struct lengths_state lengths_state;
-	struct button_state btn_state_struct;
-	struct button_state* btn_state = &btn_state_struct;
 
-	memset(&opts, 0, sizeof(opts));
-	memset(&state, 0, sizeof(state));
-	gap_state_init(&gap_state);
-	button_state_init(btn_state);
-	get_options(argc, argv, argv[optind], &opts);
-
-	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
-	if (opts.list_namespace) {
-		fprint_namespace(stdout);
-		exit(EXIT_SUCCESS);
-	}
-	do_init(&opts, &state);
-
-	printf(MSG_WELCOME);
-	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
-		printf(MSG_DEVINPUT);
-	}
-	printf("Press RETURN to continue.\n");
-	getchar();
-
-	remote.name = opts.filename;
-	switch (curr_driver->rec_mode) {
-	case LIRC_MODE_MODE2:
-		lengths_state_init(&lengths_state, 1);
-		if (!state.using_template && !get_lengths(&lengths_state, &remote, opts.force, 1)) {
-			if (remote.gap == 0) {
-				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-				fclose(state.fout);
-				unlink(opts.filename);
-				if (curr_driver->deinit_func)
-					curr_driver->deinit_func();
-				exit(EXIT_FAILURE);
-			}
-			printf("Creating config file in raw mode.\n");
-			set_protocol(&remote, RAW_CODES);
-			remote.eps = eps;
-			remote.aeps = aeps;
-			break;
-		}
-		if lirc_log_is_enabled_for(LIRC_DEBUG) {
-			 printf("%d %u %u %u %u %u %d %d %d %u\n",
-				remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
-				(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
-				remote.aeps, (__u32) remote.gap);
-		}
-		break;
-	case LIRC_MODE_LIRCCODE:
-		remote.driver = curr_driver->name;
-		remote.bits = curr_driver->code_length;
-		remote.eps = eps;
-		remote.aeps = aeps;
-		if (!state.using_template && !get_gap_length(&gap_state, &remote)) {
-			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-			fclose(state.fout);
-			unlink(opts.filename);
-			if (curr_driver->deinit_func)
-				curr_driver->deinit_func();
-			exit(EXIT_FAILURE);
-		}
-		break;
-	}
-
-	if (!state.using_template && is_rc6(&remote)) {
-		sleep(1);
-		while (availabledata()) {
-			curr_driver->rec_func(NULL);
-		}
-		toggle_state_init(&tgl_state);
-		if (!get_toggle_bit_mask(&tgl_state, &remote)) {
-			printf("But I know for sure that RC6 has a toggle bit!\n");
-			fclose(state.fout);
-			unlink(opts.filename);
-			if (curr_driver->deinit_func)
-				curr_driver->deinit_func();
-			exit(EXIT_FAILURE);
-		}
-	}
-	printf("Now enter the names for the buttons.\n");
-
-	fprint_copyright(state.fout);
-	fprint_comment(state.fout, &remote, state.commandline);
-	fprint_remote_head(state.fout, &remote);
-	fprint_remote_signal_head(state.fout, &remote);
 	while (1) {
 		if (btn_state->no_data) {
 			fprintf(stderr, "%s: no data for 10 secs," " aborting\n", progname);
@@ -2361,7 +2275,7 @@ int main(int argc, char **argv)
 		if (strlen(btn_state->buffer) == 0) {
 			break;
 		}
-		if (!opts.disable_namespace && !is_in_namespace(btn_state->buffer)) {
+		if (!opts->disable_namespace && !is_in_namespace(btn_state->buffer)) {
 			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", btn_state->buffer);
 			printf("Use '%s --list-namespace' to see a full list of valid button names\n", progname);
 			printf("Please try again.\n");
@@ -2425,7 +2339,7 @@ int main(int argc, char **argv)
 							ncode.name = btn_state->buffer;
 							ncode.length = btn_state->count - 1;
 							ncode.signals = signals;
-							fprint_remote_signal(state.fout, &remote, &ncode);
+							fprint_remote_signal(state->fout, &remote, &ncode);
 							break;
 						}
 					}
@@ -2452,7 +2366,7 @@ int main(int argc, char **argv)
 			sleep(1);
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
+				if (curr_driver->decode_func(&remote, &(state->decode_ctx))) {
 					btn_state->flag = 1;
 					break;
 				}
@@ -2461,12 +2375,12 @@ int main(int argc, char **argv)
 				ir_code code2;
 
 				ncode.name = btn_state->buffer;
-				ncode.code = state.decode_ctx.code;
+				ncode.code = state->decode_ctx.code;
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
-					code2 = state.decode_ctx.code;
-					state.decode_ctx.code = ncode.code;
-					if (state.decode_ctx.code != code2) {
+				if (curr_driver->decode_func(&remote, &(state->decode_ctx))) {
+					code2 = state->decode_ctx.code;
+					state->decode_ctx.code = ncode.code;
+					if (state->decode_ctx.code != code2) {
 						ncode.next = malloc(sizeof(*(ncode.next)));
 						if (ncode.next) {
 							memset(ncode.next, 0, sizeof(*(ncode.next)));
@@ -2474,7 +2388,7 @@ int main(int argc, char **argv)
 						}
 					}
 				}
-				fprint_remote_signal(state.fout, &remote, &ncode);
+				fprint_remote_signal(state->fout, &remote, &ncode);
 				if (ncode.next) {
 					free(ncode.next);
 					ncode.next = NULL;
@@ -2505,9 +2419,9 @@ int main(int argc, char **argv)
 		if (btn_state->retval == EXIT_FAILURE)
 			break;
 	}
-	fprint_remote_signal_foot(state.fout, &remote);
-	fprint_remote_foot(state.fout, &remote);
-	fclose(state.fout);
+	fprint_remote_signal_foot(state->fout, &remote);
+	fprint_remote_foot(state->fout, &remote);
+	fclose(state->fout);
 
 	if (btn_state->retval == EXIT_FAILURE) {
 		if (curr_driver->deinit_func)
@@ -2516,48 +2430,145 @@ int main(int argc, char **argv)
 	}
 
 	if (is_raw(&remote)) {
-		return (EXIT_SUCCESS);
+		return;
 	}
 	if (!resethw()) {
 		fprintf(stderr, "%s: could not reset hardware.\n", progname);
 		exit(EXIT_FAILURE);
 	}
 
-	state.fin = fopen(opts.filename, "r");
-	if (state.fin == NULL) {
+	state->fin = fopen(opts->filename, "r");
+	if (state->fin == NULL) {
 		fprintf(stderr, "%s: could not reopen config file\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	state.remotes = read_config(state.fin, opts.filename);
-	fclose(state.fin);
-	if (state.remotes == NULL) {
+	state->remotes = read_config(state->fin, opts->filename);
+	fclose(state->fin);
+	if (state->remotes == NULL) {
 		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	if (state.remotes == (void *)-1) {
+	if (state->remotes == (void *)-1) {
 		fprintf(stderr, "%s: reading of config file failed\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	if (!has_toggle_bit_mask(state.remotes)) {
-		if (!state.using_template && strcmp(curr_driver->name, "devinput") != 0){
+	if (!has_toggle_bit_mask(state->remotes)) {
+		if (!state->using_template && strcmp(curr_driver->name, "devinput") != 0){
 			toggle_state_init(&tgl_state);
-			get_toggle_bit_mask(&tgl_state, state.remotes);
+			get_toggle_bit_mask(&tgl_state, state->remotes);
 		}
 	} else {
-		set_toggle_bit_mask(state.remotes, state.remotes->toggle_bit_mask);
+		set_toggle_bit_mask(state->remotes, state->remotes->toggle_bit_mask);
 	}
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
-	get_pre_data(state.remotes);
-	get_post_data(state.remotes);
+	get_pre_data(state->remotes);
+	get_post_data(state->remotes);
+}
+
+
+int main(int argc, char **argv)
+{
+	struct opts opts;
+	struct main_state state;
+	struct gap_state gap_state;
+	struct lengths_state lengths_state;
+	struct toggle_state tgl_state;
+	struct button_state btn_state;
+
+	memset(&opts, 0, sizeof(opts));
+	memset(&state, 0, sizeof(state));
+	get_options(argc, argv, argv[optind], &opts);
+
+	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
+	if (opts.list_namespace) {
+		fprint_namespace(stdout);
+		exit(EXIT_SUCCESS);
+	}
+	do_init(&opts, &state);
+
+	printf(MSG_WELCOME);
+	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
+		printf(MSG_DEVINPUT);
+	}
+	printf("Press RETURN to continue.\n");
+	getchar();
+
+	remote.name = opts.filename;
+	switch (curr_driver->rec_mode) {
+	case LIRC_MODE_MODE2:
+		remote.driver = NULL;
+		lengths_state_init(&lengths_state, 1);
+		if (!state.using_template && !get_lengths(&lengths_state, &remote, opts.force, 1)) {
+			if (remote.gap == 0) {
+				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
+				fclose(state.fout);
+				unlink(opts.filename);
+				if (curr_driver->deinit_func)
+					curr_driver->deinit_func();
+				exit(EXIT_FAILURE);
+			}
+			printf("Creating config file in raw mode.\n");
+			set_protocol(&remote, RAW_CODES);
+			remote.eps = eps;
+			remote.aeps = aeps;
+			break;
+		}
+		if lirc_log_is_enabled_for(LIRC_DEBUG) {
+			 printf("%d %u %u %u %u %u %d %d %d %u\n",
+				remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
+				(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
+				remote.aeps, (__u32) remote.gap);
+		}
+		break;
+	case LIRC_MODE_LIRCCODE:
+		remote.driver = curr_driver->name;
+		remote.bits = curr_driver->code_length;
+		remote.eps = eps;
+		remote.aeps = aeps;
+		gap_state_init(&gap_state);
+		if (!state.using_template && !get_gap_length(&gap_state, &remote)) {
+			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
+			fclose(state.fout);
+			unlink(opts.filename);
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
+			exit(EXIT_FAILURE);
+		}
+		break;
+	}
+
+	if (!state.using_template && is_rc6(&remote)) {
+		sleep(1);
+		while (availabledata()) {
+			curr_driver->rec_func(NULL);
+		}
+		toggle_state_init(&tgl_state);
+		if (!get_toggle_bit_mask(&tgl_state, &remote)) {
+			printf("But I know for sure that RC6 has a toggle bit!\n");
+			fclose(state.fout);
+			unlink(opts.filename);
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
+			exit(EXIT_FAILURE);
+		}
+	}
+	printf("Now enter the names for the buttons.\n");
+
+	fprint_copyright(state.fout);
+	fprint_comment(state.fout, &remote, state.commandline);
+	fprint_remote_head(state.fout, &remote);
+	fprint_remote_signal_head(state.fout, &remote);
+	button_state_init(&btn_state);
+	record_buttons(&state, &btn_state, &opts);
 
 	/* write final config file */
 	state.fout = fopen(opts.filename, "w");
