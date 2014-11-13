@@ -146,6 +146,23 @@ struct gap_state {
 };
 
 
+/**State in get_lengths() (which also uses lot's of global state. */
+struct lengths_state {
+	int retval;
+	int count;
+	lirc_t data;
+	lirc_t average;
+	lirc_t maxspace;
+	lirc_t sum;
+	lirc_t remaining_gap;
+	lirc_t header;
+	int first_signal;
+	enum analyse_mode mode;
+	int count_since_last;	 /**< Number of counted button presses. */
+	int maxcount;
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -372,6 +389,34 @@ void gap_state_init(struct gap_state* state)
 }
 
 
+void lengths_state_init(struct lengths_state* state, int interactive)
+{
+	count = 0;
+	count_spaces = 0;
+	count_3repeats = 0;
+	count_5repeats = 0;
+	count_signals = 0;
+	first_length = 0;
+	first_lengths = 0;
+	second_lengths = 0;
+	memset(state, 0, sizeof(struct lengths_state));
+	state->first_signal = -1;
+	state->retval = 1;
+
+	if (interactive) {
+		printf("Now start pressing buttons on your remote control.\n\n");
+		printf("It is very important that you press many different buttons and hold them\n"
+		       "down for approximately one second. Each button should generate at least one\n"
+		       "dot but in no case more than ten dots of output.\n"
+		       "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n");
+		printf("Press RETURN now to start recording.");
+		fflush(stdout);
+		getchar();
+		flushhw();
+	}
+}
+
+
 static void get_commandline(int argc, char** argv, char* buff, size_t size)
 {
 	int i;
@@ -493,7 +538,6 @@ static void parse_options(int argc, char** const argv)
 		exit(EXIT_FAILURE);
 	}
 }
-
 
 
 
@@ -1324,7 +1368,7 @@ static int get_data_length(struct ir_remote *remote, int interactive)
 				max2_plength = NULL;
 		}
 		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
-			printf("Pulse canditates: ");
+			printf("Pulse candidates: ");
 			printf("%u x %u", max_plength->count, (__u32) calc_signal(max_plength));
 			if (max2_plength)
 				printf(", %u x %u", max2_plength->count, (__u32)
@@ -1345,8 +1389,9 @@ static int get_data_length(struct ir_remote *remote, int interactive)
 				if (max2_slength->count < max_count * TH_IS_BIT / 100)
 					max2_slength = NULL;
 			}
-			if (max_count >= sum * TH_IS_BIT / 100) {
-				printf("Space canditates: ");
+			if (max_count >= sum * TH_IS_BIT / 100 &&
+                            lirc_log_is_enabled_for(LIRC_DEBUG)) {
+				printf("Space candidates: ");
 				printf("%u x %u", max_slength->count, (__u32) calc_signal(max_slength));
 				if (max2_slength)
 					printf(", %u x %u",
@@ -1602,86 +1647,55 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 }
 
 
-static int get_lengths(struct ir_remote *remote, int force, int interactive)
+static int get_lengths(struct lengths_state* state, struct ir_remote *remote, int force, int interactive)
 {
-	int retval;
-	lirc_t data, average, maxspace, sum, remaining_gap, header;
-	enum analyse_mode mode = MODE_GET_GAP;
-	int first_signal;
+	int i;
 
-	if (interactive) {
-		puts("Now start pressing buttons on your remote control.\n");
-		puts("It is very important that you press many different buttons and hold them\n"
-		       "down for approximately one second. Each button should generate at least one\n"
-		       "dot but in no case more than ten dots of output.\n"
-		       "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n");
-		fputs("Press RETURN now to start recording.", stdout);
-		fflush(stdout);
-		getchar();
-		flushhw();
-	}
-	retval = 1;
-	average = 0;
-	maxspace = 0;
-	sum = 0;
-	count = 0;
-	count_spaces = 0;
-	count_3repeats = 0;
-	count_5repeats = 0;
-	count_signals = 0;
-	first_signal = -1;
-	header = 0;
-	first_length = 0;
-	first_lengths = 0;
-	second_lengths = 0;
-	memset(lengths, 0, sizeof(lengths));
 	while (1) {
-		data = curr_driver->readdata(10000000);
-		if (!data) {
+		state->data = curr_driver->readdata(10000000);
+		if (!state->data) {
 			fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
-			retval = 0;
+			state->retval = 0;
 			break;
 		}
-		count++;
-		if (mode == MODE_GET_GAP) {
-			sum += data & PULSE_MASK;
-			if (average == 0 && is_space(data)) {
-				if (data > 100000) {
-					sum = 0;
+		state->count++;
+		if (state->mode == MODE_GET_GAP) {
+			state->sum += state->data & PULSE_MASK;
+			if (state->average == 0 && is_space(state->data)) {
+				if (state->data > 100000) {
+					state->sum = 0;
 					continue;
 				}
-				average = data;
-				maxspace = data;
-			} else if (is_space(data)) {
-				if (data > MIN_GAP || data > 100 * average ||
-				    /* this MUST be a gap */
-				    (data >= 5000 && count_spaces > 10 && data > 5 * average) || (data < 5000
-												  && count_spaces > 10
-												  && data >
-												  5 * maxspace / 2)
+				state->average = state->data;
+				state->maxspace = state->data;
+			} else if (is_space(state->data)) {
+				if (state->data > MIN_GAP || state->data > 100 * state->average ||
+					/* this MUST be a gap */
+					(state->data >= 5000 && count_spaces > 10
+						&& state->data > 5 * state->average)
+					|| (state->data < 5000 && count_spaces > 10
+						&& state->data > 5 * state->maxspace / 2)
 				    /* || Echostar
 				       (count_spaces>20 && data>9*maxspace/10) */
 				    )
 					/* this should be a gap */
 				{
 					struct lengths *scan;
-					int maxcount;
 					static int lastmaxcount = 0;
-					int i;
 
-					add_length(&first_sum, sum);
+					add_length(&first_sum, state->sum);
 					merge_lengths(first_sum);
-					add_length(&first_gap, data);
+					add_length(&first_gap, state->data);
 					merge_lengths(first_gap);
-					sum = 0;
+					state->sum = 0;
 					count_spaces = 0;
-					average = 0;
-					maxspace = 0;
+					state->average = 0;
+					state->maxspace = 0;
 
-					maxcount = 0;
+					state->maxcount = 0;
 					scan = first_sum;
 					while (scan) {
-						maxcount = max(maxcount, scan->count);
+						state->maxcount = max(state->maxcount, scan->count);
 						if (scan->count > SAMPLES) {
 							remote->gap = calc_signal(scan);
 							remote->flags |= CONST_LENGTH;
@@ -1694,7 +1708,7 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 					if (scan == NULL) {
 						scan = first_gap;
 						while (scan) {
-							maxcount = max(maxcount, scan->count);
+							state->maxcount = max(state->maxcount, scan->count);
 							if (scan->count > SAMPLES) {
 								remote->gap = calc_signal(scan);
 								i_printf(interactive, "\nFound gap: %lu\n",
@@ -1707,64 +1721,64 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 					if (scan != NULL) {
 						i_printf(interactive,
 							 "Please keep on pressing buttons like described above.\n");
-						mode = MODE_HAVE_GAP;
-						sum = 0;
-						count = 0;
-						remaining_gap =
+						state->mode = MODE_HAVE_GAP;
+						state->sum = 0;
+						state->count = 0;
+						state->remaining_gap =
 						    is_const(remote) ? (remote->gap >
-									data ? remote->gap -
-									data : 0) : (has_repeat_gap(remote) ? remote->
+									state->data ? remote->gap -
+									state->data : 0) : (has_repeat_gap(remote) ? remote->
 										     repeat_gap : remote->gap);
 						if (force) {
-							retval = 0;
+							state->retval = 0;
 							break;
 						}
 						continue;
 					}
 
 					if (interactive) {
-						for (i = maxcount - lastmaxcount; i > 0; i--) {
-							fputs(".", stdout);
+						for (i = state->maxcount - lastmaxcount; i > 0; i--) {
+							printf(".");
 							fflush(stdout);
 						}
 					}
-					lastmaxcount = maxcount;
+					lastmaxcount = state->maxcount;
 
 					continue;
 				}
-				average = (average * count_spaces + data)
+				state->average = (state->average * count_spaces + state->data)
 				    / (count_spaces + 1);
 				count_spaces++;
-				if (data > maxspace) {
-					maxspace = data;
+				if (state->data > state->maxspace) {
+					state->maxspace = state->data;
 				}
 			}
-			if (count > SAMPLES * MAX_SIGNALS * 2) {
+			if (state->count > SAMPLES * MAX_SIGNALS * 2) {
 				fprintf(stderr, "\n%s: could not find gap.\n", progname);
-				retval = 0;
+				state->retval = 0;
 				break;
 			}
-		} else if (mode == MODE_HAVE_GAP) {
-			if (count <= MAX_SIGNALS) {
-				signals[count - 1] = data & PULSE_MASK;
+		} else if (state->mode == MODE_HAVE_GAP) {
+			if (state->count <= MAX_SIGNALS) {
+				signals[state->count - 1] = state->data & PULSE_MASK;
 			} else {
 				fprintf(stderr, "%s: signal too long\n", progname);
-				retval = 0;
+				state->retval = 0;
 				break;
 			}
 			if (is_const(remote)) {
-				remaining_gap = remote->gap > sum ? remote->gap - sum : 0;
+				state->remaining_gap = remote->gap > state->sum ? remote->gap - state->sum : 0;
 			} else {
-				remaining_gap = remote->gap;
+				state->remaining_gap = remote->gap;
 			}
-			sum += data & PULSE_MASK;
+			state->sum += state->data & PULSE_MASK;
 
-			if (count > 2
-			    && ((data & PULSE_MASK) >= remaining_gap * (100 - eps) / 100
-				|| (data & PULSE_MASK) >= remaining_gap - aeps)) {
-				if (is_space(data)) {
+			if (state->count > 2
+			    && ((state->data & PULSE_MASK) >= state->remaining_gap * (100 - eps) / 100
+				|| (state->data & PULSE_MASK) >= state->remaining_gap - aeps)) {
+				if (is_space(state->data)) {
 					/* signal complete */
-					if (count == 4) {
+					if (state->count == 4) {
 						count_3repeats++;
 						add_length(&first_repeatp, signals[0]);
 						merge_lengths(first_repeatp);
@@ -1774,7 +1788,7 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 						merge_lengths(first_trail);
 						add_length(&first_repeat_gap, signals[3]);
 						merge_lengths(first_repeat_gap);
-					} else if (count == 6) {
+					} else if (state->count == 6) {
 						count_5repeats++;
 						add_length(&first_headerp, signals[0]);
 						merge_lengths(first_headerp);
@@ -1788,7 +1802,7 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 						merge_lengths(first_trail);
 						add_length(&first_repeat_gap, signals[5]);
 						merge_lengths(first_repeat_gap);
-					} else if (count > 6) {
+					} else if (state->count > 6) {
 						int i;
 
 						if (interactive) {
@@ -1798,7 +1812,7 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 						count_signals++;
 						add_length(&first_1lead, signals[0]);
 						merge_lengths(first_1lead);
-						for (i = 2; i < count - 2; i++) {
+						for (i = 2; i < state->count - 2; i++) {
 							if (i % 2) {
 								add_length(&first_space, signals[i]);
 								merge_lengths(first_space);
@@ -1807,13 +1821,13 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 								merge_lengths(first_pulse);
 							}
 						}
-						add_length(&first_trail, signals[count - 2]);
+						add_length(&first_trail, signals[state->count - 2]);
 						merge_lengths(first_trail);
-						lengths[count - 2]++;
-						add_length(&first_signal_length, sum - data);
+						lengths[state->count - 2]++;
+						add_length(&first_signal_length, state->sum - state->data);
 						merge_lengths(first_signal_length);
-						if (first_signal == 1
-						    || (first_length > 2 && first_length - 2 != count - 2)) {
+						if (state->first_signal == 1
+						    || (first_length > 2 && first_length - 2 != state->count - 2)) {
 							add_length(&first_3lead, signals[2]);
 							merge_lengths(first_3lead);
 							add_length(&first_headerp, signals[0]);
@@ -1821,18 +1835,18 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 							add_length(&first_headers, signals[1]);
 							merge_lengths(first_headers);
 						}
-						if (first_signal == 1) {
+						if (state->first_signal == 1) {
 							first_lengths++;
-							first_length = count - 2;
-							header = signals[0] + signals[1];
-						} else if (first_signal == 0 && first_length - 2 == count - 2) {
-							lengths[count - 2]--;
-							lengths[count - 2 + 2]++;
+							first_length = state->count - 2;
+							state->header = signals[0] + signals[1];
+						} else if (state->first_signal == 0 && first_length - 2 == state->count - 2) {
+							lengths[state->count - 2]--;
+							lengths[state->count - 2 + 2]++;
 							second_lengths++;
 						}
 					}
-					count = 0;
-					sum = 0;
+					state->count = 0;
+					state->sum = 0;
 				}
 #if 0
 				/* such long pulses may appear with
@@ -1853,16 +1867,16 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 					    || !get_lead_length(remote, interactive)
 					    || !get_repeat_length(remote, interactive)
 					    || !get_data_length(remote, interactive)) {
-						retval = 0;
+						state->retval = 0;
 					}
 					break;
 				}
-				if ((data & PULSE_MASK) <= (remaining_gap + header) * (100 + eps) / 100
-				    || (data & PULSE_MASK) <= (remaining_gap + header) + aeps) {
-					first_signal = 0;
-					header = 0;
+				if ((state->data & PULSE_MASK) <= (state->remaining_gap + state->header) * (100 + eps) / 100
+				    || (state->data & PULSE_MASK) <= (state->remaining_gap + state->header) + aeps) {
+					state->first_signal = 0;
+					state->header = 0;
 				} else {
-					first_signal = 1;
+					state->first_signal = 1;
 				}
 			}
 		}
@@ -1880,7 +1894,7 @@ static int get_lengths(struct ir_remote *remote, int force, int interactive)
 	free_lengths(&first_trail);
 	free_lengths(&first_repeatp);
 	free_lengths(&first_repeats);
-	return (retval);
+	return (state->retval);
 }
 
 
@@ -1993,6 +2007,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 {
 	struct ir_ncode *codes;
 	struct decode_ctx_t decode_ctx;
+	struct lengths_state lengths_state;
 	int code;
 	int code2;
 	struct ir_ncode *new_codes;
@@ -2011,7 +2026,8 @@ static void analyse_remote(struct ir_remote *raw_data)
 	current_code = NULL;
 	current_index = 0;
 	memset(&remote, 0, sizeof(remote));
-	get_lengths(&remote, 0, 0 /* not interactive */ );
+	lengths_state_init(&lengths_state, 0);
+	get_lengths(&lengths_state, &remote, 0, 0 /* not interactive */ );
 
 	if (is_rc6(&remote) && remote.bits >= 5) {
 		/* have to assume something as it's very difficult to
@@ -2184,6 +2200,7 @@ int main(int argc, char **argv)
 	struct opts opts;
 	struct main_state state;
 	struct gap_state gap_state;
+	struct lengths_state lengths_state;
 	int retval = EXIT_SUCCESS;
 	int retries;
 	int no_data = 0;
@@ -2210,7 +2227,8 @@ int main(int argc, char **argv)
 	remote.name = opts.filename;
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
-		if (!state.using_template && !get_lengths(&remote, opts.force, 1)) {
+		lengths_state_init(&lengths_state, 1);
+		if (!state.using_template && !get_lengths(&lengths_state, &remote, opts.force, 1)) {
 			if (remote.gap == 0) {
 				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
 				fclose(state.fout);
@@ -2317,6 +2335,7 @@ int main(int argc, char **argv)
 		}
 		printf("\nNow hold down button \"%s\".\n", buffer);
 		fflush(stdout);
+		flushhw();
 
 		if (is_raw(&remote)) {
 			lirc_t data, sum;
