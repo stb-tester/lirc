@@ -107,6 +107,21 @@ struct opts {
 };
 
 
+/** Overall state in main. */
+struct main_state {
+	FILE *fout;
+	FILE *fin;
+	int flags;
+	struct decode_ctx_t decode_ctx;
+	//int retries;   // -> btn_state
+	//int no_data;   // -> btn_state
+	struct ir_remote *remotes;
+	int using_template;
+	char commandline[128];
+	char path[128];
+};
+
+
 // Constants
 static const char* const help =
 USAGE
@@ -1928,22 +1943,17 @@ get_options(int argc, char** argv, const char* filename, struct opts* options)
 int main(int argc, char **argv)
 {
 	struct opts opts;
-	FILE *fout, *fin;
-	int flags;
+	struct main_state state;
 	int retval = EXIT_SUCCESS;
-	struct decode_ctx_t decode_ctx;
 	int retries;
 	int no_data = 0;
-	struct ir_remote *remotes = NULL;
-	int using_template = 0;
 	const char* opt;
-	char commandline[128];
-        char path[128];
 
 	memset(&opts, 0, sizeof(opts));
+	memset(&state, 0, sizeof(state));
 	get_options(argc, argv, argv[optind], &opts);
 
-	get_commandline(argc, argv, commandline, sizeof(commandline));
+	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
 	opt = options_getstring("irrecord:driver");
@@ -1958,8 +1968,8 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
         ir_remote_init(options_getboolean("lircd:dynamic-codes"));
-	lirc_log_get_clientlog("irrecord", path, sizeof(path));
-	lirc_log_set_file(path);
+	lirc_log_get_clientlog("irrecord", state.path, sizeof(state.path));
+	lirc_log_set_file(state.path);
 	lirc_log_open("irrecord", 0, loglevel);
 	curr_driver->open_func(opts.device);
 	if (strcmp(curr_driver->name, "null") == 0 && !opts.analyse) {
@@ -1968,8 +1978,8 @@ int main(int argc, char **argv)
 			progname);
 		exit(EXIT_FAILURE);
 	}
-	fin = fopen(opts.filename, "r");
-	if (fin != NULL) {
+	state.fin = fopen(opts.filename, "r");
+	if (state.fin != NULL) {
 		char *filename_new;
 
 		if (opts.force) {
@@ -1978,36 +1988,36 @@ int main(int argc, char **argv)
 				"together with a template file\n", progname, opts.filename, progname);
 			exit(EXIT_FAILURE);
 		}
-		remotes = read_config(fin, opts.filename);
-		fclose(fin);
-		if (remotes == (void *)-1 || remotes == NULL) {
+		state.remotes = read_config(state.fin, opts.filename);
+		fclose(state.fin);
+		if (state.remotes == (void *)-1 || state.remotes == NULL) {
 			fprintf(stderr, "%s: file \"%s\" does not contain valid data\n", progname, opts.filename);
 			exit(EXIT_FAILURE);
 		}
 		if (opts.analyse) {
 			memcpy((void*)curr_driver, &hw_emulation, sizeof(struct driver));
 			// hw = hw_emulation;
-			for_each_remote(remotes, analyse_remote);
+			for_each_remote(state.remotes, analyse_remote);
 			return EXIT_SUCCESS;
 		}
-		using_template = 1;
+		state.using_template = 1;
 		if (opts.test) {
 			if (opts.trail)
-				for_each_remote(remotes, remove_trail);
-			for_each_remote(remotes, remove_pre_data);
-			for_each_remote(remotes, remove_post_data);
+				for_each_remote(state.remotes, remove_trail);
+			for_each_remote(state.remotes, remove_pre_data);
+			for_each_remote(state.remotes, remove_post_data);
 			if (opts.get_pre)
-				for_each_remote(remotes, get_pre_data);
+				for_each_remote(state.remotes, get_pre_data);
 			if (opts.get_post)
-				for_each_remote(remotes, get_post_data);
+				for_each_remote(state.remotes, get_post_data);
 			if (opts.invert)
-				for_each_remote(remotes, invert_data);
+				for_each_remote(state.remotes, invert_data);
 
-			fprint_remotes(stdout, remotes, commandline);
-			free_config(remotes);
+			fprint_remotes(stdout, state.remotes, state.commandline);
+			free_config(state.remotes);
 			return (EXIT_SUCCESS);
 		}
-		remote = *remotes;
+		remote = *(state.remotes);
 		remote.name = NULL;
 		remote.codes = NULL;
 		remote.last_code = NULL;
@@ -2017,7 +2027,7 @@ int main(int argc, char **argv)
 			remote.pre_data_bits = 0;
 			remote.post_data_bits = 0;
 		}
-		if (remotes->next != NULL) {
+		if (state.remotes->next != NULL) {
 			fprintf(stderr, "%s: only first remote definition in file \"%s\" used\n", progname,
 				opts.filename);
 		}
@@ -2035,8 +2045,8 @@ int main(int argc, char **argv)
 			opts.analyse = 0;
 		}
 	}
-	fout = fopen(opts.filename, "w");
-	if (fout == NULL) {
+	state.fout = fopen(opts.filename, "w");
+	if (state.fout == NULL) {
 		fprintf(stderr, "%s: could not open new config file %s\n",
 			progname, opts.filename);
 		perror(progname);
@@ -2051,7 +2061,7 @@ int main(int argc, char **argv)
 			fprintf(stderr,
 				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
 				progname);
-			fclose(fout);
+			fclose(state.fout);
 			unlink(opts.filename);
 			exit(EXIT_FAILURE);
 		}
@@ -2060,17 +2070,17 @@ int main(int argc, char **argv)
 
 	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		fprintf(stderr, "%s: mode not supported\n", progname);
-		fclose(fout);
+		fclose(state.fout);
 		unlink(opts.filename);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
 
-	flags = fcntl(curr_driver->fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	state.flags = fcntl(curr_driver->fd, F_GETFL, 0);
+	if (state.flags == -1 || fcntl(curr_driver->fd, F_SETFL, state.flags | O_NONBLOCK) == -1) {
 		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
-		fclose(fout);
+		fclose(state.fout);
 		unlink(opts.filename);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
@@ -2116,10 +2126,10 @@ int main(int argc, char **argv)
 	remote.name = opts.filename;
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
-		if (!using_template && !get_lengths(&remote, opts.force, 1)) {
+		if (!state.using_template && !get_lengths(&remote, opts.force, 1)) {
 			if (remote.gap == 0) {
 				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-				fclose(fout);
+				fclose(state.fout);
 				unlink(opts.filename);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
@@ -2141,9 +2151,9 @@ int main(int argc, char **argv)
 	case LIRC_MODE_LIRCCODE:
 		remote.driver = curr_driver->name;
 		remote.bits = curr_driver->code_length;
-		if (!using_template && !get_gap_length(&remote)) {
+		if (!state.using_template && !get_gap_length(&remote)) {
 			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-			fclose(fout);
+			fclose(state.fout);
 			unlink(opts.filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
@@ -2152,14 +2162,14 @@ int main(int argc, char **argv)
 		break;
 	}
 
-	if (!using_template && is_rc6(&remote)) {
+	if (!state.using_template && is_rc6(&remote)) {
 		sleep(1);
 		while (availabledata()) {
 			curr_driver->rec_func(NULL);
 		}
 		if (!get_toggle_bit_mask(&remote)) {
 			printf("But I know for sure that RC6 has a toggle bit!\n");
-			fclose(fout);
+			fclose(state.fout);
 			unlink(opts.filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
@@ -2168,10 +2178,10 @@ int main(int argc, char **argv)
 	}
 	printf("Now enter the names for the buttons.\n");
 
-	fprint_copyright(fout);
-	fprint_comment(fout, &remote, commandline);
-	fprint_remote_head(fout, &remote);
-	fprint_remote_signal_head(fout, &remote);
+	fprint_copyright(state.fout);
+	fprint_comment(state.fout, &remote, state.commandline);
+	fprint_remote_head(state.fout, &remote);
+	fprint_remote_signal_head(state.fout, &remote);
 	while (1) {
 		char buffer[BUTTON];
 		char *string;
@@ -2271,7 +2281,7 @@ int main(int argc, char **argv)
 							ncode.name = buffer;
 							ncode.length = count - 1;
 							ncode.signals = signals;
-							fprint_remote_signal(fout, &remote, &ncode);
+							fprint_remote_signal(state.fout, &remote, &ncode);
 							break;
 						}
 					}
@@ -2300,7 +2310,7 @@ int main(int argc, char **argv)
 			sleep(1);
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &decode_ctx)) {
+				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
 					flag = 1;
 					break;
 				}
@@ -2309,12 +2319,12 @@ int main(int argc, char **argv)
 				ir_code code2;
 
 				ncode.name = buffer;
-				ncode.code = decode_ctx.code;
+				ncode.code = state.decode_ctx.code;
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &decode_ctx)) {
-					code2 = decode_ctx.code;
-					decode_ctx.code = ncode.code;
-					if (decode_ctx.code != code2) {
+				if (curr_driver->decode_func(&remote, &(state.decode_ctx))) {
+					code2 = state.decode_ctx.code;
+					state.decode_ctx.code = ncode.code;
+					if (state.decode_ctx.code != code2) {
 						ncode.next = malloc(sizeof(*(ncode.next)));
 						if (ncode.next) {
 							memset(ncode.next, 0, sizeof(*(ncode.next)));
@@ -2322,7 +2332,7 @@ int main(int argc, char **argv)
 						}
 					}
 				}
-				fprint_remote_signal(fout, &remote, &ncode);
+				fprint_remote_signal(state.fout, &remote, &ncode);
 				if (ncode.next) {
 					free(ncode.next);
 					ncode.next = NULL;
@@ -2353,9 +2363,9 @@ int main(int argc, char **argv)
 		if (retval == EXIT_FAILURE)
 			break;
 	}
-	fprint_remote_signal_foot(fout, &remote);
-	fprint_remote_foot(fout, &remote);
-	fclose(fout);
+	fprint_remote_signal_foot(state.fout, &remote);
+	fprint_remote_foot(state.fout, &remote);
+	fclose(state.fout);
 
 	if (retval == EXIT_FAILURE) {
 		if (curr_driver->deinit_func)
@@ -2371,23 +2381,23 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	fin = fopen(opts.filename, "r");
-	if (fin == NULL) {
+	state.fin = fopen(opts.filename, "r");
+	if (state.fin == NULL) {
 		fprintf(stderr, "%s: could not reopen config file\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	remotes = read_config(fin, opts.filename);
-	fclose(fin);
-	if (remotes == NULL) {
+	state.remotes = read_config(state.fin, opts.filename);
+	fclose(state.fin);
+	if (state.remotes == NULL) {
 		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	if (remotes == (void *)-1) {
+	if (state.remotes == (void *)-1) {
 		fprintf(stderr, "%s: reading of config file failed\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
@@ -2395,29 +2405,29 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!has_toggle_bit_mask(remotes)) {
-		if (!using_template && strcmp(curr_driver->name, "devinput") != 0)
-			get_toggle_bit_mask(remotes);
+	if (!has_toggle_bit_mask(state.remotes)) {
+		if (!state.using_template && strcmp(curr_driver->name, "devinput") != 0)
+			get_toggle_bit_mask(state.remotes);
 	} else {
-		set_toggle_bit_mask(remotes, remotes->toggle_bit_mask);
+		set_toggle_bit_mask(state.remotes, state.remotes->toggle_bit_mask);
 	}
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
-	get_pre_data(remotes);
-	get_post_data(remotes);
+	get_pre_data(state.remotes);
+	get_post_data(state.remotes);
 
 	/* write final config file */
-	fout = fopen(opts.filename, "w");
-	if (fout == NULL) {
+	state.fout = fopen(opts.filename, "w");
+	if (state.fout == NULL) {
 		fprintf(stderr, "%s: could not open final config file \"%s\"\n",
 			progname, opts.filename);
 		perror(progname);
-		free_config(remotes);
+		free_config(state.remotes);
 		return (EXIT_FAILURE);
 	}
-	fprint_copyright(fout);
-	fprint_remotes(fout, remotes, commandline);
-	free_config(remotes);
+	fprint_copyright(state.fout);
+	fprint_remotes(state.fout, state.remotes, state.commandline);
+	free_config(state.remotes);
 	printf("Successfully written config file.\n");
 	return (EXIT_SUCCESS);
 }
