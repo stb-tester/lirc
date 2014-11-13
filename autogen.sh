@@ -6,5 +6,4 @@ find . -name Makefile -a \( ! -path './drivers/**' -a ! -path './test/**' \) \
 find . -name Makefile.in -delete
 find . -name \*.la -delete
 autoreconf -i -f
-(cd contrib/hal/ && ./gen-hal-fdi.pl)
 cd plugins; ./make-pluginlist.sh > pluginlist.am
