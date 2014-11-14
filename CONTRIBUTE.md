@@ -35,7 +35,7 @@ There is a document describing how check and submit new remotes at [4].
 
 Non-trivial changes should be checked using the lirc-codecs-regression-test.sh
 in test/. Structural and  build system changes should be tested with
-'make distcheck'. All code  changes should be checked using the rudimentary 
+'make distcheck'. All code  changes should be checked using the rudimentary
 unit tests in test/run-tests.
 
 Please report bugs, RFE:s etc. at sourceforge[3]; either the mailing list or the
@@ -45,10 +45,12 @@ issue tracker.
 
 You can run the lirc programs directly from their source directory after a
 successful 'make' without installing things. One gotcha is that you need
-to provide the plugin directory on the command line. E. g., to run lircd:
+to provide the plugin directory on the command line. You also need to
+load the libraries in lib/. E. g., to run lircd:
 
     $ make
     $ cd daemons
+    $ export LD_LIBRARY_PATH=../lib/.libs
     $ ./lircd --nodaemon --plugindir=../plugins/.libs
 
 Note that the gnu tools places the generated so-files in the hidden .libs
@@ -61,6 +63,7 @@ least pidfile and output socket to it. A more complete example:
 
     $ make
     $ cd daemons
+    $ export LD_LIBRARY_PATH=../lib/.libs
     $ mkdir var || :
     $ ./lircd --nodaemon --plugindir=../plugins/.libs \
     >     --pidfile var/lircd.pd --output var/lircd.socket
