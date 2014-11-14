@@ -95,6 +95,18 @@ enum init_status {
 };
 
 
+/** Return from one attempt to determine lengths in get_lengths().*/
+enum lengths_status {
+	STS_LEN_OK,
+	STS_LEN_FAIL,
+	STS_LEN_RAW_OK,
+	STS_LEN_TIMEOUT,
+	STS_LEN_AGAIN,
+	STS_LEN_NO_GAP_FOUND,
+	STS_LEN_TOO_LONG,
+};
+
+
 /* analyse stuff */
 struct lengths {
 	unsigned int count;
@@ -158,8 +170,8 @@ struct lengths_state {
 	lirc_t header;
 	int first_signal;
 	enum analyse_mode mode;
-	int count_since_last;	 /**< Number of counted button presses. */
-	int maxcount;
+	int keypresses_done;   /**< Number of printed keypresses. */
+	int keypresses;    /**< Number of counted button presses. */
 };
 
 
@@ -595,12 +607,10 @@ static void parse_options(int argc, char** const argv)
 }
 
 
-
 static lirc_t calc_signal(struct lengths *len)
 {
 	return ((lirc_t) (len->sum / len->count));
 }
-
 
 
 static void set_toggle_bit_mask(struct ir_remote *remote, ir_code xor)
@@ -1081,6 +1091,24 @@ static void free_lengths(struct lengths **firstp)
 		first = next;
 	}
 	*firstp = NULL;
+}
+
+
+static void free_all_lengths(void)
+{
+	free_lengths(&first_space);
+	free_lengths(&first_pulse);
+	free_lengths(&first_sum);
+	free_lengths(&first_gap);
+	free_lengths(&first_repeat_gap);
+	free_lengths(&first_signal_length);
+	free_lengths(&first_headerp);
+	free_lengths(&first_headers);
+	free_lengths(&first_1lead);
+	free_lengths(&first_3lead);
+	free_lengths(&first_trail);
+	free_lengths(&first_repeatp);
+	free_lengths(&first_repeats);
 }
 
 
@@ -1702,254 +1730,229 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 }
 
 
-static int get_lengths(struct lengths_state* state, struct ir_remote *remote, int force, int interactive)
+static enum lengths_status get_lengths(struct lengths_state* state,
+				       struct ir_remote *remote,
+				       int force, int interactive)
 {
 	int i;
+	struct lengths *scan;
+	int maxcount = 0;
+	static int lastmaxcount = 0;
 
-	while (1) {
-		state->data = curr_driver->readdata(10000000);
-		if (!state->data) {
-			fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
-			state->retval = 0;
-			break;
-		}
-		state->count++;
-		if (state->mode == MODE_GET_GAP) {
-			state->sum += state->data & PULSE_MASK;
-			if (state->average == 0 && is_space(state->data)) {
-				if (state->data > 100000) {
-					state->sum = 0;
-					continue;
+	state->data = curr_driver->readdata(10000000);
+	if (!state->data) {
+		fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
+		state->retval = 0;
+		return STS_LEN_TIMEOUT;
+	}
+	state->count++;
+	if (state->mode == MODE_GET_GAP) {
+		state->sum += state->data & PULSE_MASK;
+		if (state->average == 0 && is_space(state->data)) {
+			if (state->data > 100000) {
+				state->sum = 0;
+				return STS_LEN_AGAIN;
+			}
+			state->average = state->data;
+			state->maxspace = state->data;
+		} else if (is_space(state->data)) {
+			if (state->data > MIN_GAP
+				|| state->data > 100 * state->average
+				/* this MUST be a gap */
+				|| (state->data >= 5000 && count_spaces > 10
+					&& state->data > 5 * state->average)
+				|| (state->data < 5000 && count_spaces > 10
+					&& state->data > 5 * state->maxspace / 2))
+			{
+				add_length(&first_sum, state->sum);
+				merge_lengths(first_sum);
+				add_length(&first_gap, state->data);
+				merge_lengths(first_gap);
+				state->sum = 0;
+				count_spaces = 0;
+				state->average = 0;
+				state->maxspace = 0;
+
+				maxcount = 0;
+				scan = first_sum;
+				while (scan) {
+					maxcount = max(maxcount, scan->count);
+					if (scan->count > SAMPLES) {
+						remote->gap = calc_signal(scan);
+						remote->flags |= CONST_LENGTH;
+						logprintf(LIRC_DEBUG,
+							  "Found const length: %u",
+							  (__u32) remote->gap);
+						break;
+					}
+					scan = scan->next;
 				}
-				state->average = state->data;
-				state->maxspace = state->data;
-			} else if (is_space(state->data)) {
-				if (state->data > MIN_GAP || state->data > 100 * state->average ||
-					/* this MUST be a gap */
-					(state->data >= 5000 && count_spaces > 10
-						&& state->data > 5 * state->average)
-					|| (state->data < 5000 && count_spaces > 10
-						&& state->data > 5 * state->maxspace / 2)
-				    /* || Echostar
-				       (count_spaces>20 && data>9*maxspace/10) */
-				    )
-					/* this should be a gap */
-				{
-					struct lengths *scan;
-					static int lastmaxcount = 0;
-
-					add_length(&first_sum, state->sum);
-					merge_lengths(first_sum);
-					add_length(&first_gap, state->data);
-					merge_lengths(first_gap);
-					state->sum = 0;
-					count_spaces = 0;
-					state->average = 0;
-					state->maxspace = 0;
-
-					state->maxcount = 0;
-					scan = first_sum;
+				if (scan == NULL) {
+					scan = first_gap;
 					while (scan) {
-						state->maxcount = max(state->maxcount, scan->count);
+						maxcount = max(maxcount, scan->count);
 						if (scan->count > SAMPLES) {
 							remote->gap = calc_signal(scan);
-							remote->flags |= CONST_LENGTH;
-							i_printf(interactive, "\nFound const length: %lu\n",
-								 (__u32) remote->gap);
+							state->mode = MODE_HAVE_GAP;
+							logprintf(LIRC_DEBUG,
+								  "Found gap: %u",
+								  (__u32) remote->gap);
 							break;
 						}
 						scan = scan->next;
 					}
-					if (scan == NULL) {
-						scan = first_gap;
-						while (scan) {
-							state->maxcount = max(state->maxcount, scan->count);
-							if (scan->count > SAMPLES) {
-								remote->gap = calc_signal(scan);
-								i_printf(interactive, "\nFound gap: %lu\n",
-									 (__u32) remote->gap);
-								break;
-							}
-							scan = scan->next;
-						}
-					}
-					if (scan != NULL) {
-						i_printf(interactive,
-							 "Please keep on pressing buttons like described above.\n");
-						state->mode = MODE_HAVE_GAP;
-						state->sum = 0;
-						state->count = 0;
-						state->remaining_gap =
-						    is_const(remote) ? (remote->gap >
-									state->data ? remote->gap -
-									state->data : 0) : (has_repeat_gap(remote) ? remote->
-										     repeat_gap : remote->gap);
-						if (force) {
-							state->retval = 0;
-							break;
-						}
-						continue;
-					}
-
-					if (interactive) {
-						for (i = state->maxcount - lastmaxcount; i > 0; i--) {
-							printf(".");
-							fflush(stdout);
-						}
-					}
-					lastmaxcount = state->maxcount;
-
-					continue;
 				}
-				state->average = (state->average * count_spaces + state->data)
-				    / (count_spaces + 1);
-				count_spaces++;
-				if (state->data > state->maxspace) {
-					state->maxspace = state->data;
+				if (scan != NULL) {
+					i_printf(interactive,
+						 "Please keep on pressing buttons like described above.\n");
+					state->mode = MODE_HAVE_GAP;
+					state->sum = 0;
+					state->count = 0;
+					state->remaining_gap =
+						 is_const(remote) ?
+							(remote->gap > state->data ?
+								remote->gap - state->data : 0)
+							:(has_repeat_gap(remote) ?
+								remote-> repeat_gap : remote->gap);
+					if (force) {
+						state->retval = 0;
+						return STS_LEN_RAW_OK;
+					}
+					return STS_LEN_AGAIN;
 				}
+				lastmaxcount = maxcount;
+				state->keypresses = lastmaxcount;
+				return STS_LEN_AGAIN;
 			}
-			if (state->count > SAMPLES * MAX_SIGNALS * 2) {
-				fprintf(stderr, "\n%s: could not find gap.\n", progname);
-				state->retval = 0;
-				break;
+			state->average = (state->average * count_spaces + state->data)
+			    / (count_spaces + 1);
+			count_spaces++;
+			if (state->data > state->maxspace) {
+				state->maxspace = state->data;
 			}
-		} else if (state->mode == MODE_HAVE_GAP) {
-			if (state->count <= MAX_SIGNALS) {
-				signals[state->count - 1] = state->data & PULSE_MASK;
-			} else {
-				fprintf(stderr, "%s: signal too long\n", progname);
-				state->retval = 0;
-				break;
-			}
-			if (is_const(remote)) {
-				state->remaining_gap = remote->gap > state->sum ? remote->gap - state->sum : 0;
-			} else {
-				state->remaining_gap = remote->gap;
-			}
-			state->sum += state->data & PULSE_MASK;
+		}
+		if (state->count > SAMPLES * MAX_SIGNALS * 2) {
+			state->retval = 0;
+			return STS_LEN_NO_GAP_FOUND;
+		} else {
+			state->keypresses = lastmaxcount;
+			return STS_LEN_AGAIN;
+		}
+	} else if (state->mode == MODE_HAVE_GAP) {
+		if (state->count <= MAX_SIGNALS) {
+			signals[state->count - 1] = state->data & PULSE_MASK;
+		} else {
+			state->retval = 0;
+			return STS_LEN_TOO_LONG;
+		}
+		if (is_const(remote)) {
+			state->remaining_gap = remote->gap > state->sum ? remote->gap - state->sum : 0;
+		} else {
+			state->remaining_gap = remote->gap;
+		}
+		state->sum += state->data & PULSE_MASK;
 
-			if (state->count > 2
-			    && ((state->data & PULSE_MASK) >= state->remaining_gap * (100 - eps) / 100
-				|| (state->data & PULSE_MASK) >= state->remaining_gap - aeps)) {
-				if (is_space(state->data)) {
-					/* signal complete */
-					if (state->count == 4) {
-						count_3repeats++;
-						add_length(&first_repeatp, signals[0]);
-						merge_lengths(first_repeatp);
-						add_length(&first_repeats, signals[1]);
-						merge_lengths(first_repeats);
-						add_length(&first_trail, signals[2]);
-						merge_lengths(first_trail);
-						add_length(&first_repeat_gap, signals[3]);
-						merge_lengths(first_repeat_gap);
-					} else if (state->count == 6) {
-						count_5repeats++;
+		if (state->count > 2
+		    && ((state->data & PULSE_MASK) >= state->remaining_gap * (100 - eps) / 100
+			|| (state->data & PULSE_MASK) >= state->remaining_gap - aeps)) {
+			if (is_space(state->data)) {
+				/* signal complete */
+				state->keypresses += 1;
+				if (state->count == 4) {
+					count_3repeats++;
+					add_length(&first_repeatp, signals[0]);
+					merge_lengths(first_repeatp);
+					add_length(&first_repeats, signals[1]);
+					merge_lengths(first_repeats);
+					add_length(&first_trail, signals[2]);
+					merge_lengths(first_trail);
+					add_length(&first_repeat_gap, signals[3]);
+					merge_lengths(first_repeat_gap);
+				} else if (state->count == 6) {
+					count_5repeats++;
+					add_length(&first_headerp, signals[0]);
+					merge_lengths(first_headerp);
+					add_length(&first_headers, signals[1]);
+					merge_lengths(first_headers);
+					add_length(&first_repeatp, signals[2]);
+					merge_lengths(first_repeatp);
+					add_length(&first_repeats, signals[3]);
+					merge_lengths(first_repeats);
+					add_length(&first_trail, signals[4]);
+					merge_lengths(first_trail);
+					add_length(&first_repeat_gap, signals[5]);
+					merge_lengths(first_repeat_gap);
+				} else if (state->count > 6) {
+					count_signals++;
+					add_length(&first_1lead, signals[0]);
+					merge_lengths(first_1lead);
+					for (i = 2; i < state->count - 2; i++) {
+						if (i % 2) {
+							add_length(&first_space, signals[i]);
+							merge_lengths(first_space);
+						} else {
+							add_length(&first_pulse, signals[i]);
+							merge_lengths(first_pulse);
+						}
+					}
+					add_length(&first_trail, signals[state->count - 2]);
+					merge_lengths(first_trail);
+					lengths[state->count - 2]++;
+					add_length(&first_signal_length, state->sum - state->data);
+					merge_lengths(first_signal_length);
+					if (state->first_signal == 1
+					    || (first_length > 2 && first_length - 2 != state->count - 2)) {
+						add_length(&first_3lead, signals[2]);
+						merge_lengths(first_3lead);
 						add_length(&first_headerp, signals[0]);
 						merge_lengths(first_headerp);
 						add_length(&first_headers, signals[1]);
 						merge_lengths(first_headers);
-						add_length(&first_repeatp, signals[2]);
-						merge_lengths(first_repeatp);
-						add_length(&first_repeats, signals[3]);
-						merge_lengths(first_repeats);
-						add_length(&first_trail, signals[4]);
-						merge_lengths(first_trail);
-						add_length(&first_repeat_gap, signals[5]);
-						merge_lengths(first_repeat_gap);
-					} else if (state->count > 6) {
-						int i;
+					}
+					if (state->first_signal == 1) {
+						first_lengths++;
+						first_length = state->count - 2;
+						state->header = signals[0] + signals[1];
+					} else if (state->first_signal == 0 && first_length - 2 == state->count - 2) {
+						lengths[state->count - 2]--;
+						lengths[state->count - 2 + 2]++;
+						second_lengths++;
+					}
+				}
+				state->count = 0;
+				state->sum = 0;
+			}
 
-						if (interactive) {
-							fputs(".", stdout);
-							fflush(stdout);
-						}
-						count_signals++;
-						add_length(&first_1lead, signals[0]);
-						merge_lengths(first_1lead);
-						for (i = 2; i < state->count - 2; i++) {
-							if (i % 2) {
-								add_length(&first_space, signals[i]);
-								merge_lengths(first_space);
-							} else {
-								add_length(&first_pulse, signals[i]);
-								merge_lengths(first_pulse);
-							}
-						}
-						add_length(&first_trail, signals[state->count - 2]);
-						merge_lengths(first_trail);
-						lengths[state->count - 2]++;
-						add_length(&first_signal_length, state->sum - state->data);
-						merge_lengths(first_signal_length);
-						if (state->first_signal == 1
-						    || (first_length > 2 && first_length - 2 != state->count - 2)) {
-							add_length(&first_3lead, signals[2]);
-							merge_lengths(first_3lead);
-							add_length(&first_headerp, signals[0]);
-							merge_lengths(first_headerp);
-							add_length(&first_headers, signals[1]);
-							merge_lengths(first_headers);
-						}
-						if (state->first_signal == 1) {
-							first_lengths++;
-							first_length = state->count - 2;
-							state->header = signals[0] + signals[1];
-						} else if (state->first_signal == 0 && first_length - 2 == state->count - 2) {
-							lengths[state->count - 2]--;
-							lengths[state->count - 2 + 2]++;
-							second_lengths++;
-						}
-					}
-					state->count = 0;
-					state->sum = 0;
+			/* such long pulses may appear with
+			   crappy hardware (receiver? / remote?)
+			 */
+			else {
+				remote->gap = 0;
+				return STS_LEN_NO_GAP_FOUND;
+			}
+
+			if (count_signals >= SAMPLES) {
+				i_printf(interactive, "\n");
+				get_scheme(remote, interactive);
+				if (!get_header_length(remote, interactive)
+				    || !get_trail_length(remote, interactive)
+				    || !get_lead_length(remote, interactive)
+				    || !get_repeat_length(remote, interactive)
+				    || !get_data_length(remote, interactive)) {
+					state->retval = 0;
 				}
-#if 0
-				/* such long pulses may appear with
-				   crappy hardware (receiver? / remote?)
-				 */
-				else {
-					fprintf(stderr, "%s: wrong gap\n", progname);
-					remote->gap = 0;
-					retval = 0;
-					break;
-				}
-#endif
-				if (count_signals >= SAMPLES) {
-					i_printf(interactive, "\n");
-					get_scheme(remote, interactive);
-					if (!get_header_length(remote, interactive)
-					    || !get_trail_length(remote, interactive)
-					    || !get_lead_length(remote, interactive)
-					    || !get_repeat_length(remote, interactive)
-					    || !get_data_length(remote, interactive)) {
-						state->retval = 0;
-					}
-					break;
-				}
-				if ((state->data & PULSE_MASK) <= (state->remaining_gap + state->header) * (100 + eps) / 100
-				    || (state->data & PULSE_MASK) <= (state->remaining_gap + state->header) + aeps) {
-					state->first_signal = 0;
-					state->header = 0;
-				} else {
-					state->first_signal = 1;
-				}
+				return state->retval == 0 ? STS_LEN_FAIL : STS_LEN_OK;
+			}
+			if ((state->data & PULSE_MASK) <= (state->remaining_gap + state->header) * (100 + eps) / 100
+			    || (state->data & PULSE_MASK) <= (state->remaining_gap + state->header) + aeps) {
+				state->first_signal = 0;
+				state->header = 0;
+			} else {
+				state->first_signal = 1;
 			}
 		}
 	}
-	free_lengths(&first_space);
-	free_lengths(&first_pulse);
-	free_lengths(&first_sum);
-	free_lengths(&first_gap);
-	free_lengths(&first_repeat_gap);
-	free_lengths(&first_signal_length);
-	free_lengths(&first_headerp);
-	free_lengths(&first_headers);
-	free_lengths(&first_1lead);
-	free_lengths(&first_3lead);
-	free_lengths(&first_trail);
-	free_lengths(&first_repeatp);
-	free_lengths(&first_repeats);
-	return (state->retval);
+	return STS_LEN_AGAIN;
 }
 
 
@@ -2046,6 +2049,41 @@ static int get_toggle_bit_mask(struct toggle_state* state, struct ir_remote *rem
 }
 
 
+/** analyse non-interactive  get_lengths. */
+void analyse_get_lengths(struct lengths_state* lengths_state)
+{
+	enum lengths_status status = STS_LEN_AGAIN;
+
+	while (status == STS_LEN_AGAIN) {
+		status = get_lengths(lengths_state, &remote, 0, 0);
+		switch (status) {
+		case STS_LEN_AGAIN:
+			break;
+		case STS_LEN_OK:
+			break;
+		case STS_LEN_FAIL:
+			logprintf(LIRC_ERROR, "get_lengths() failure");
+			return;
+		case STS_LEN_RAW_OK:
+			logprintf(LIRC_ERROR, "raw analyse result?!");
+			return;
+		case STS_LEN_TIMEOUT:
+			logprintf(LIRC_ERROR, "analyse timeout?!");
+			return;
+		case STS_LEN_NO_GAP_FOUND:
+			logprintf(LIRC_ERROR, "analyse, no gap?!");
+			return;
+		case STS_LEN_TOO_LONG:
+			logprintf(LIRC_ERROR, "analyse, signal too long?!");
+			return;
+		default:
+			printf("Cannot read raw data (%d)\n", status);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+
 static void analyse_remote(struct ir_remote *raw_data)
 {
 	struct ir_ncode *codes;
@@ -2070,7 +2108,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 	current_index = 0;
 	memset(&remote, 0, sizeof(remote));
 	lengths_state_init(&lengths_state, 0);
-	get_lengths(&lengths_state, &remote, 0, 0 /* not interactive */ );
+	analyse_get_lengths(&lengths_state);
 
 	if (is_rc6(&remote) && remote.bits >= 5) {
 		/* have to assume something as it's very difficult to
@@ -2089,7 +2127,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 	memset(new_codes, 0, new_codes_count * sizeof(*new_codes));
 	codes = raw_data->codes;
 	while (codes->name != NULL) {
-		//printf("decoding %s\n", codes->name);
+		// printf("decoding %s\n", codes->name);
 		current_code = NULL;
 		current_index = 0;
 		next_code = codes;
@@ -2244,7 +2282,7 @@ void record_buttons(struct main_state* state,
 
 {
 	struct toggle_state tgl_state;
-
+	flushhw();
 	while (1) {
 		if (btn_state->no_data) {
 			fprintf(stderr, "%s: no data for 10 secs," " aborting\n", progname);
@@ -2475,12 +2513,85 @@ void record_buttons(struct main_state* state,
 }
 
 
+/** View part of get_lengths. */
+static int mode2_get_lengths(struct opts* opts, struct main_state* state)
+{
+	enum lengths_status sts = STS_LEN_AGAIN;
+	struct lengths_state lengths_state;
+	int debug = lirc_log_is_enabled_for(LIRC_TRACE);
+	int diff;
+	int i;
+
+	if (!state->using_template ) {
+		lengths_state_init(&lengths_state, 1);
+		sts = STS_LEN_AGAIN;
+		while (sts == STS_LEN_AGAIN) {
+			sts = get_lengths(&lengths_state, &remote, opts->force, debug);
+			switch (sts) {
+			case STS_LEN_OK:
+				i_printf(1, "\n");
+				return 1;
+			case STS_LEN_FAIL:
+				i_printf(1, "\n");
+				return 0;
+			case STS_LEN_RAW_OK:
+				i_printf(1, "\n");
+				set_protocol(&remote, RAW_CODES);
+				remote.eps = eps;
+				remote.aeps = aeps;
+				return 1;
+			case STS_LEN_TIMEOUT:
+				fprintf(stderr,
+					"%s: no data for 10 secs, aborting\n",
+					progname);
+				exit(EXIT_FAILURE);
+			case STS_LEN_NO_GAP_FOUND:
+				fprintf(stderr,
+					"%s: gap not found, can't continue\n",
+					progname);
+				fclose(state->fout);
+				unlink(opts->filename);
+				if (curr_driver->deinit_func)
+					curr_driver->deinit_func();
+				exit(EXIT_FAILURE);
+			case STS_LEN_TOO_LONG:
+				fprintf(stderr,
+					"%s: signal too long\n",
+					progname);
+				printf("Creating config file in raw mode.\n");
+				set_protocol(&remote, RAW_CODES);
+				remote.eps = eps;
+				remote.aeps = aeps;
+				break;
+			case STS_LEN_AGAIN:
+				diff = lengths_state.keypresses -
+					lengths_state.keypresses_done;
+				for (i = 0; i < diff; i += 1) {
+					printf(".");
+				}
+				fflush(stdout);
+				lengths_state.keypresses_done += diff;
+				sts = STS_LEN_AGAIN;
+				break;
+			}
+		}
+		free_all_lengths();
+	}
+	if lirc_log_is_enabled_for(LIRC_DEBUG) {
+		printf("%d %u %u %u %u %u %d %d %d %u\n",
+			remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
+			(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
+			remote.aeps, (__u32) remote.gap);
+	}
+	return sts;
+}
+
+
 int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
 	struct gap_state gap_state;
-	struct lengths_state lengths_state;
 	struct toggle_state tgl_state;
 	struct button_state btn_state;
 
@@ -2506,28 +2617,7 @@ int main(int argc, char **argv)
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
 		remote.driver = NULL;
-		lengths_state_init(&lengths_state, 1);
-		if (!state.using_template && !get_lengths(&lengths_state, &remote, opts.force, 1)) {
-			if (remote.gap == 0) {
-				fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-				fclose(state.fout);
-				unlink(opts.filename);
-				if (curr_driver->deinit_func)
-					curr_driver->deinit_func();
-				exit(EXIT_FAILURE);
-			}
-			printf("Creating config file in raw mode.\n");
-			set_protocol(&remote, RAW_CODES);
-			remote.eps = eps;
-			remote.aeps = aeps;
-			break;
-		}
-		if lirc_log_is_enabled_for(LIRC_DEBUG) {
-			 printf("%d %u %u %u %u %u %d %d %d %u\n",
-				remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
-				(__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
-				remote.aeps, (__u32) remote.gap);
-		}
+		mode2_get_lengths(&opts, &state);
 		break;
 	case LIRC_MODE_LIRCCODE:
 		remote.driver = curr_driver->name;
@@ -2561,7 +2651,8 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	printf("Now enter the names for the buttons.\n");
+	printf("\nNow enter the names for the buttons.\n");
+	fflush(stdout);
 
 	fprint_copyright(state.fout);
 	fprint_comment(state.fout, &remote, state.commandline);
