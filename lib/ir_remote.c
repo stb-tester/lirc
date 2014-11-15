@@ -346,7 +346,7 @@ struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *na
 }
 
 static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post,
-			  ir_code * toggle_bit_mask_statep)
+			  int *repeat_flag, ir_code * toggle_bit_mask_statep)
 {
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
 	int found_code, have_code;
@@ -402,6 +402,10 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 
 	all = gen_ir_code(remote, pre, code, post);
 
+	if(*repeat_flag && has_repeat_mask(remote)) {
+	        all ^= remote->repeat_mask;
+	}
+
 	toggle_bit_mask_state = all & remote->toggle_bit_mask;
 
 	found = NULL;
@@ -415,7 +419,9 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 			next_all =
 			    gen_ir_code(remote, remote->pre_data, get_ir_code(codes, codes->current),
 					remote->post_data);
-			if (match_ir_code(remote, next_all, all)) {
+			if (match_ir_code(remote, next_all, all) ||
+			    (*repeat_flag && has_repeat_mask(remote) &&
+			     match_ir_code(remote, next_all, all ^ remote->repeat_mask))) {
 				found_code = 1;
 				if (codes->next != NULL) {
 					if (codes->current == NULL) {
@@ -623,7 +629,7 @@ char *decode_all(struct ir_remote *remotes)
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
 		if (curr_driver->decode_func(remote, &ctx)
-		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &toggle_bit_mask_state))) {
+		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &ctx.repeat_flag, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
 			if (ncode == &NCODE_EOF) {

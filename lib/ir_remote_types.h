@@ -226,6 +226,7 @@ struct ir_remote {
 	/** mask defines which bits can be
 	   ignored when matching a code */
 	ir_code ignore_mask;
+	ir_code repeat_mask;	/**< mask defines which bits are inverted for repeats */
 	/* end of user editable values */
 
 	ir_code toggle_bit_mask_state;

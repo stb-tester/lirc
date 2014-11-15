@@ -435,6 +435,11 @@ init_send_loop:
 			} else {
 				next_code = code->transmit_state->code;
 			}
+
+			if (repeat && has_repeat_mask(remote)) {
+			        next_code ^= remote->repeat_mask;
+			}
+
 			send_code(remote, next_code, repeat);
 			if (!sim && has_toggle_mask(remote)) {
 				remote->toggle_mask_state++;

@@ -283,6 +283,14 @@ static inline int has_ignore_mask(const struct ir_remote *remote)
 		return (0);
 }
 
+static inline int has_repeat_mask(struct ir_remote *remote)
+{
+	if (remote->repeat_mask > 0)
+		return (1);
+	else
+		return (0);
+}
+
 static inline int has_toggle_mask(const struct ir_remote *remote)
 {
 	if (remote->toggle_mask > 0)

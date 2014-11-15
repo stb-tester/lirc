@@ -407,6 +407,9 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 	} else if (strcasecmp("repeat_gap", key) == 0) {
 		rem->repeat_gap = s_strtou32(val);
 		return (1);
+	} else if (strcasecmp("repeat_mask", key) == 0) {
+		rem->repeat_mask = s_strtocode(val);
+		return (1);
 	}
 	/* obsolete: use toggle_bit_mask instead */
 	else if (strcasecmp("toggle_bit", key) == 0) {
