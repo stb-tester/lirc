@@ -115,7 +115,12 @@ uirt2_la_SOURCES            = uirt2.c uirt2_common.c uirt2_common.h
 plugin_LTLIBRARIES          += uirt2_raw.la
 uirt2_raw_la_SOURCES        = uirt2_raw.c uirt2_common.c uirt2_common.h
 
-if !DARWIN
+if DARWIN
+plugin_LTLIBRARIES          += osx_usbraw.la
+osx_usbraw_la_SOURCES       = osx_usbraw.c
+osx_usbraw_la_LDFLAGS       = $(AM_LDFLAGS) -framework IOKit -framework Cocoa
+
+else
 plugin_LTLIBRARIES          += hiddev.la
 hiddev_la_SOURCES           = hiddev.c
 
