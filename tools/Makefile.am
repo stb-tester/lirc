@@ -77,7 +77,7 @@ pep8:   irdb-get $(pkgpython_PYTHON)
 	python3-pep8 --config=pep8.conf $?
 
 install-exec-hook:
-	sed -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+	$(SED) -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \

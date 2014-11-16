@@ -246,7 +246,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 			} else if (strcasecmp(string, "ERROR") == 0) {
 				logprintf(LIRC_WARNING, "%s: command failed: %s",
 					prog, ctx->packet);
-				status = EREMOTEIO;
+				status = EIO;
 			} else {
 				goto bad_packet;
 			}

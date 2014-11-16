@@ -8,8 +8,7 @@ EXTRA_DIST                  = input_map.inc input_map.sh \
 
 BUILT_SOURCES               = lirc/input_map.inc
 
-AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
-                              -Wl,--as-needed
+AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
 
@@ -33,7 +32,6 @@ liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 liblirc_client_la_LDFLAGS   = -version-info 2:1:2
 
 liblirc_driver_la_SOURCES   = driver.h \
-			      driver.c \
                               ir_remote.c \
                               ir_remote.h \
                               ir_remote_types.h \
