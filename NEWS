@@ -15,7 +15,14 @@
     New configuration tools uses the remotes database at
     http://sf.net/p/lirc-remotes as the only source (#53). A new tool
     irdb-get(1) supports searching and downloading from remotes database.
+  * Building on MacOSX has been refreshed.
+  * Support for for sonyir on MacOSX is added. This is a single hiddev device;
+    with the framework in place hopefully more devices will be added over time.
   * Support for the Dangerous Prototypes irtoy device is added (#20).
+  * Support for the DIY assembly kit yard2 usb ir device is added. This is
+    an experimental driver which depends on a server which currently is not
+    packaged in any major distro; a Debian/Ubuntu PPA is available.
+  * Support for the Roku remote protocol added (#8).
   * Support for long keypresses has been added. See the "Configuring LIRC"
     chapter in the manual, search for "ignore_first_event" (#50).
   * lircd has been verified to run as regular user as long as it can open
@@ -49,6 +56,8 @@
       + Doxygen is required to build api docs (ignored if missing).
       + man2html is required to generate html manpages (the bundled version
         is dropped). If missing, no html manpages are generated.
+      + lirc-setup requires gtk3 libraries and python3-gobject bindings,
+        these are not required to build.
       + help2man is no longer required.
       + kernel sources are not required.
   * New configure options:
@@ -56,6 +65,8 @@
         (ticket #49).
       --with_lockdir=... Serial lock directory, /var/lock or /var/lockdev
         (ticket #44).
+      --enable-python3-fix: Install python3 wrapper to actual python3.x
+        version, bug walk-around for MacOSX.
   * Several options to configure have been dropped:
       --with-syslog: Logging defaults to using syslog, but using
         the --logfile runtime option switches to file loggging.
@@ -65,6 +76,7 @@
       --with-driver=... The build always builds all drivers
       --enable-maintainer-mode: lircd.simsend and lircd.simrec
         (test tools) are always created although not installed.
+  * The so-version of the liblirc library is bumped, backwards-compatible.
   * The lircd and lircmd sockets are not created at installation any more,
     they are created on demand by the servers. If there already is e. g., a
     /var/run/lirc/lircd socket it will still be used without changing
