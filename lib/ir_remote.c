@@ -54,7 +54,7 @@ struct ir_remote* repeat_remote = NULL;
 
 struct ir_ncode *repeat_code;
 
-static int dyncodes = -1;
+static int dyncodes = 0;
 
 void ir_remote_init(int use_dyncodes)
 {
