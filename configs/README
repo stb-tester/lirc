@@ -46,7 +46,7 @@ supports:
            - 'lirccode' indicating that this capture device only supports
              remotes with a driver attribute being this one.
 
-note:   Message displayed to user when selecting this capture device.
+note:   Message displayed when selecting this capture device, optional.
 
 modules:
         List of kernel module names required by this capture device, optional.
@@ -58,3 +58,7 @@ modinit:
         - 'run_select_module_tty' <default port> <module>. User
            selects IRQ and IO base address for a serial 5250 driver module,
            possibly with customized options.
+
+product_driver:
+        Capture device USB vendorId and productId on the form 1781:0938.
+

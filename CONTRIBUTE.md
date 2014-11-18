@@ -31,6 +31,22 @@ we call 'release'. In short:
 
 There is a document describing how check and submit new remotes at [4].
 
+## New drivers.
+
+A driver normally consists of a source file in plugins/ and a configuration
+file in configs/. A driver-specific README makes sense for more complex
+drivers. Besides some corner-cases there should be no header file.
+
+Please read the driver API info in the manual before writing new drivers. The
+configs/ directory has a README on the format.
+
+When submitting a driver for a specific remote, also submit the lircd.conf for
+this remote. This should should comply to [4]. A lirccode driver should always
+submit at least one lircd.conf.
+
+Besides running tests with your hardware, also check that the new driver can
+be installed using lirc-setup i. e., test also your configs/ file.
+
 ## Testing and and bug reporting
 
 Non-trivial changes should be checked using the lirc-codecs-regression-test.sh
