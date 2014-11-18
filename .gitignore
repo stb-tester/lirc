@@ -1,6 +1,7 @@
 # Mostly auto-generated build cruft
 .deps
 .libs
+.gdb*
 lirc.pc
 lirc-driver.pc
 core*
@@ -8,6 +9,7 @@ core*
 *.lo
 *.o
 *.ko
+*.so
 *.patch
 *.tar.gz
 *.tar.bz2
@@ -19,31 +21,19 @@ Makefile
 *~
 *.swp
 ChangeLog
+var
+*.log
 
 # lirc-setup cruft
-remotes.pickle*
-remotes.yaml*
 lirc-setup.conf.d
 
-drivers/*/.deps
-drivers/*/.tmp_versions
-drivers/*/.tmp_versions/*
-drivers/*/.lirc*
-drivers/*/Makefile.automake
-drivers/*/Module.symvers
-drivers/*/modules.order
-drivers/*/*.ko.unsigned
-drivers/*/*.mod.*
-
-contrib/hal/20-ircontrol-lirc.fdi
 doc/api-docs
 doc/man-html
 doc/man/*.[1-9]
-doc/man2html
-doc/man2html.o
 doc/html
 doc/lirc.hwdb
 doc/table.html
+
 doxygen-warnings.txt
 doxygen.warnings
 
@@ -75,6 +65,3 @@ libtool
 paths.h
 stamp-h1
 
-daemons/*.o
-daemons/*.a
-daemons/input_map.inc
