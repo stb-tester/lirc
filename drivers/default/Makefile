@@ -7,7 +7,7 @@
 
 all:  default.so
 
-CFLAGS          += $(shell pkg-config --cflags lirc-driver)
+CFLAGS          += $(shell pkg-config --cflags lirc-driver) -fpic
 LDFLAGS         += $(shell pkg-config --libs lirc-driver)
 PLUGINDIR       =  $(shell pkg-config --variable=plugindir lirc-driver)
 
