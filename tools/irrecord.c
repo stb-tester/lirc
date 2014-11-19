@@ -117,6 +117,16 @@ enum get_gap_status {
 };
 
 
+/** Return from one attempt in get_toggle_bit_mask(). */
+enum toggle_status {
+	STS_TGL_TIMEOUT,
+	STS_TGL_GOT_ONE_PRESS,
+	STS_TGL_NOT_FOUND,
+	STS_TGL_FOUND,
+	STS_TGL_AGAIN
+};
+
+
 /* analyse stuff */
 struct lengths {
 	unsigned int count;
@@ -292,6 +302,13 @@ static const char* const MSG_DEVINPUT =
 	"It can be downloaded using irdb-get(1)\n"
 	"Please try this config file before creating your own.\n";
 
+static const char* const MSG_TOGGLE_BIT_INTRO =
+	"Checking for toggle bit mask.\n"
+	"Please press an arbitrary button repeatedly as fast as possible.\n"
+	"Make sure you keep pressing the SAME button and that you DON'T HOLD\n"
+	"the button down!.\n"
+	"If you can't see any dots appear, wait a bit between button presses.\n\n"
+	"Press RETURN to continue.";
 
 
 static const struct driver hw_emulation = {
@@ -1629,6 +1646,31 @@ get_gap_length(struct gap_state *state, struct ir_remote *remote)
 	return STS_GAP_AGAIN;
 }
 
+
+/** Return true if a given remote needs to compute toggle_mask. */
+int needs_toggle_mask(struct ir_remote* remote)
+{
+	struct ir_ncode* codes;
+
+	if (! is_rc6(remote))
+		return 0;
+	if (remote->codes) {
+		codes = remote->codes;
+		while (codes->name != NULL) {
+			if (codes->next) {
+				/* asume no toggle bit mask when key
+				   sequences are used */
+				return 0;
+			}
+			codes++;
+		}
+	}
+	return 1;
+}
+
+
+
+
 /** Check options, possibly run simple ones. Returns status. */
 static enum init_status init(struct opts* opts, struct main_state* state)
 {
@@ -1962,96 +2004,83 @@ static enum lengths_status get_lengths(struct lengths_state* state,
 }
 
 
-static int get_toggle_bit_mask(struct toggle_state* state, struct ir_remote *remote)
+enum toggle_status
+get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 {
 	struct decode_ctx_t decode_ctx;
 	int i;
-	struct ir_ncode* codes;
 	ir_code mask;
 
-	if (remote->codes) {
-		codes = remote->codes;
-		while (codes->name != NULL) {
-			if (codes->next) {
-				/* asume no toggle bit mask when key
-				   sequences are used */
-				return 1;
-			}
-			codes++;
+	if (!state->inited) {
+		sleep(1);
+		while (availabledata()) {
+			curr_driver->rec_func(NULL);
 		}
+		state->inited = 1;
 	}
-
-	printf("Checking for toggle bit mask.\n");
-	printf("Please press an arbitrary button repeatedly as fast as possible.\n"
-	       "Make sure you keep pressing the SAME button and that you DON'T HOLD\n" "the button down!.\n"
-	       "If you can't see any dots appear, then wait a bit between button presses.\n" "\n"
-	       "Press RETURN to continue.");
-	fflush(stdout);
-	getchar();
-
-	while (availabledata()) {
-		curr_driver->rec_func(NULL);
+	if (state->retries <= 0) {
+		if (!state->found)
+			return STS_TGL_NOT_FOUND;
+		if (state->seq > 0)
+			remote->min_repeat = state->repeats / state->seq;
+       		logprintf(LIRC_DEBUG, "min_repeat=%d\n", remote->min_repeat);
+		return STS_TGL_FOUND;
 	}
-	while (state->retval == EXIT_SUCCESS && state->retries > 0) {
-		if (!mywaitfordata(10000000)) {
-			printf("%s: no data for 10 secs, aborting\n", progname);
-			state->retval = EXIT_FAILURE;
-			break;
-		}
-		curr_driver->rec_func(remote);
-		if (is_rc6(remote) && remote->rc6_mask == 0) {
-			for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
-				remote->rc6_mask = mask;
-				state->success = curr_driver->decode_func(remote, &decode_ctx);
-				if (state->success) {
-					remote->min_remaining_gap = decode_ctx.min_remaining_gap;
-					remote->max_remaining_gap = decode_ctx.max_remaining_gap;
-					break;
-				}
-			}
-			if (state->success == 0)
-				remote->rc6_mask = 0;
-		} else {
-			state->success = curr_driver->decode_func(remote, &decode_ctx);
+	if (!mywaitfordata(10000000))
+		return STS_TGL_TIMEOUT;
+	curr_driver->rec_func(remote);
+	if (is_rc6(remote) && remote->rc6_mask == 0) {
+		for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
+			remote->rc6_mask = mask;
+			state->success = curr_driver->decode_func(remote,
+								  &decode_ctx);
 			if (state->success) {
-				remote->min_remaining_gap = decode_ctx.min_remaining_gap;
-				remote->max_remaining_gap = decode_ctx.max_remaining_gap;
+				remote->min_remaining_gap =
+					decode_ctx.min_remaining_gap;
+				remote->max_remaining_gap =
+					decode_ctx.max_remaining_gap;
+				break;
 			}
 		}
-		if (state->success) {
-			if (state->flag == 0) {
-				state->flag = 1;
-				state->first = decode_ctx.code;
-			} else if (!decode_ctx.repeat_flag || decode_ctx.code != state->last) {
-				state->seq++;
-				if (!state->found && state->first ^ decode_ctx.code) {
-					set_toggle_bit_mask(remote, state->first ^ decode_ctx.code);
-					state->found = 1;
-				}
-				printf(".");
-				fflush(stdout);
-				state->retries--;
-			} else {
-				state->repeats++;
-			}
-			state->last = decode_ctx.code;
-		} else {
-			state->retries--;
-		}
-	}
-	if (!state->found) {
-		printf("\nNo toggle bit mask found.\n");
+		if (!state->success)
+			remote->rc6_mask = 0;
 	} else {
-		if (remote->toggle_bit_mask > 0) {
-			printf("\nToggle bit mask is 0x%llx.\n", (__u64) remote->toggle_bit_mask);
-		} else if (remote->toggle_mask != 0) {
-			printf("\nToggle mask found.\n");
+		state->success =
+			curr_driver->decode_func(remote,
+						 &decode_ctx);
+		if (state->success) {
+			remote->min_remaining_gap =
+				decode_ctx.min_remaining_gap;
+			remote->max_remaining_gap =
+				decode_ctx.max_remaining_gap;
 		}
 	}
-	if (state->seq > 0)
-		remote->min_repeat = state->repeats / state->seq;
-	logprintf(LIRC_DEBUG, "min_repeat=%d\n", remote->min_repeat);
-	return (state->found);
+	if (state->success) {
+		if (state->flag == 0) {
+			state->flag = 1;
+			state->first = decode_ctx.code;
+		} else if (!decode_ctx.repeat_flag
+			   || decode_ctx.code != state->last) {
+			state->seq++;
+			if (!state->found && state->first ^ decode_ctx.code) {
+				set_toggle_bit_mask(remote, state->first ^ decode_ctx.code);
+				state->found = 1;
+				if (state->seq > 0)
+					remote->min_repeat = state->repeats / state->seq;
+			}
+			state->retries--;
+			state->last = decode_ctx.code;
+			return STS_TGL_GOT_ONE_PRESS;
+		} else {
+			state->repeats++;
+		}
+		state->last = decode_ctx.code;
+	} else {
+		state->retries--;
+		while (availabledata())
+			curr_driver->rec_func(NULL);
+	}
+	return STS_TGL_AGAIN;
 }
 
 
@@ -2282,12 +2311,65 @@ static void do_init(struct opts* opts, struct main_state* state)
 }
 
 
+/** View part of get_toggle_bit_mask(). */
+static void do_get_toggle_bit_mask(struct ir_remote* remote,
+				   struct main_state* state,
+				   struct opts* opts)
+{
+	const char* const MISSING_MASK_MSG =
+		"But I know for sure that RC6 has a toggle bit!\n";
+	enum toggle_status sts;
+	struct toggle_state tgl_state;
+
+	printf(MSG_TOGGLE_BIT_INTRO);
+	fflush(stdout);
+	getchar();
+	flushhw();
+	toggle_state_init(&tgl_state);
+	sts = STS_TGL_AGAIN;
+	while (1) {
+		switch (sts) {
+			case STS_TGL_TIMEOUT:
+				fprintf(stderr,
+					"Timeout (10 sec), giving up");
+				exit(EXIT_FAILURE);
+			case STS_TGL_GOT_ONE_PRESS:
+				printf(".");
+				fflush(stdout);
+				sts = STS_TGL_AGAIN;
+				continue;
+			case STS_TGL_FOUND:
+				printf("\nToggle bit mask is 0x%llx.\n",
+				       (__u64) remote->toggle_bit_mask);
+				if (is_rc6(remote)) {
+					printf("RC6 mask is 0x%llx.\n",
+					       (__u64) remote->rc6_mask);
+				}
+				fflush(stdout);
+				return;
+			case STS_TGL_NOT_FOUND:
+				printf("Cannot find any toggle mask.\n");
+				if (!is_rc6(remote))
+					break;
+				printf(MISSING_MASK_MSG);
+				fclose(state->fout);
+				unlink(opts->filename);
+				if (curr_driver->deinit_func)
+					curr_driver->deinit_func();
+				exit(EXIT_FAILURE);
+			case STS_TGL_AGAIN:
+				break;
+		}
+		sts = get_toggle_bit_mask(&tgl_state, remote);
+	}
+}
+
+
 void record_buttons(struct main_state* state,
 		    struct button_state* btn_state,
 		    struct opts* opts)
 
 {
-	struct toggle_state tgl_state;
 	flushhw();
 	while (1) {
 		if (btn_state->no_data) {
@@ -2505,9 +2587,8 @@ void record_buttons(struct main_state* state,
 		exit(EXIT_FAILURE);
 	}
 	if (!has_toggle_bit_mask(state->remotes)) {
-		if (!state->using_template && strcmp(curr_driver->name, "devinput") != 0){
-			toggle_state_init(&tgl_state);
-			get_toggle_bit_mask(&tgl_state, state->remotes);
+		if (!state->using_template && needs_toggle_mask(state->remotes)) {
+			do_get_toggle_bit_mask(&remote, state, opts);
 		}
 	} else {
 		set_toggle_bit_mask(state->remotes, state->remotes->toggle_bit_mask);
@@ -2642,7 +2723,6 @@ int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
-	struct toggle_state tgl_state;
 	struct button_state btn_state;
 
 	memset(&opts, 0, sizeof(opts));
@@ -2673,20 +2753,8 @@ int main(int argc, char **argv)
 			break;
 	}
 
-	if (!state.using_template && is_rc6(&remote)) {
-		sleep(1);
-		while (availabledata()) {
-			curr_driver->rec_func(NULL);
-		}
-		toggle_state_init(&tgl_state);
-		if (!get_toggle_bit_mask(&tgl_state, &remote)) {
-			printf("But I know for sure that RC6 has a toggle bit!\n");
-			fclose(state.fout);
-			unlink(opts.filename);
-			if (curr_driver->deinit_func)
-				curr_driver->deinit_func();
-			exit(EXIT_FAILURE);
-		}
+	if (!state.using_template && needs_toggle_mask(&remote)) {
+		do_get_toggle_bit_mask(&remote, &state, &opts);
 	}
 	printf("\nNow enter the names for the buttons.\n");
 	fflush(stdout);
