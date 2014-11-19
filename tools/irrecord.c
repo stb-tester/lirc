@@ -100,7 +100,7 @@ lirc_t aeps = 100;
 
 /* some threshold values */
 
-#define TH_SPACE_ENC   80       /* I want less than 20% mismatches */
+#define TH_SPACE_ENC   80	/* I want less than 20% mismatches */
 #define TH_HEADER      90
 #define TH_REPEAT      90
 #define TH_TRAIL       90
@@ -147,9 +147,9 @@ static struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
-#define USAGE       "Usage: irrecord [options] [config file]\n" \
-		    "       irrecord -a <config file> \n" \
-		    "       irrecord -l \n"
+#define USAGE	    "Usage: irrecord [options] [config file]\n" \
+		    "	    irrecord -a <config file> \n" \
+		    "	    irrecord -l \n"
 
 static const char* const help =
 USAGE
@@ -249,18 +249,18 @@ lirc_t emulation_readdata(lirc_t timeout)
 
 struct driver hw_emulation = {
 	.name		= "emulation",
-	.device 	= "/dev/null",
+	.device		= "/dev/null",
 	.features	= LIRC_CAN_REC_MODE2,
 	.send_mode	= 0,
 	.rec_mode	= LIRC_MODE_MODE2,
 	.code_length	= 0,
-	.init_func      = NULL,
-	.deinit_func    = NULL,
-	.send_func      = NULL,
+	.init_func	= NULL,
+	.deinit_func	= NULL,
+	.send_func	= NULL,
 	.rec_func	= NULL,
-	.decode_func    = NULL,
+	.decode_func	= NULL,
 	.drvctl_func	= NULL,
-	.readdata 	= emulation_readdata,
+	.readdata	= emulation_readdata,
 	.open_func	= default_open,
 	.close_func	= default_close,
 	.api_version	= 2,
@@ -288,19 +288,19 @@ void dosigterm(int sig)
 
 static void add_defaults(void)
 {
-        char level[4];
-        snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const defaults[] = {
-		"lircd:plugindir",              PLUGINDIR,
-		"irrecord:driver",              "devinput",
-		"irrecord:device",               LIRC_DRIVER_DEVICE,
-		"irrecord:analyse",             "False",
-		"irrecord:force",               "False",
-		"irrecord:disable-namespace",   "False",
-		"irrecord:dynamic-codes",   	"False",
-		"irrecord:list_namespace",      "False",
-		"lircd:debug",                   level,
-		(const char*)NULL,      (const char*)NULL
+		"lircd:plugindir",		PLUGINDIR,
+		"irrecord:driver",		"devinput",
+		"irrecord:device",		 LIRC_DRIVER_DEVICE,
+		"irrecord:analyse",		"False",
+		"irrecord:force",		"False",
+		"irrecord:disable-namespace",	"False",
+		"irrecord:dynamic-codes",	"False",
+		"irrecord:list_namespace",	"False",
+		"lircd:debug",			 level,
+		(const char*)NULL,	(const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
@@ -325,7 +325,7 @@ static void parse_options(int argc, char** const argv)
 			level = optarg ? optarg : "debug";
 			if (options_set_loglevel(level) == LIRC_BADLEVEL){
 				fprintf(stderr,
-				        "Bad debug level: %s\n", optarg);
+					"Bad debug level: %s\n", optarg);
 				exit(EXIT_FAILURE);
 			}
 			break;
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
 	int analyse = 0;
 	const char* opt;
 	char commandline[128];
-        char path[128];
+	char path[128];
 	int get_pre = 0, get_post = 0, test = 0, invert = 0, trail = 0;
 
 	get_commandline(argc, argv, commandline, sizeof(commandline));
@@ -433,7 +433,7 @@ int main(int argc, char **argv)
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
 	}
-        ir_remote_init(options_getboolean("lircd:dynamic-codes"));
+	ir_remote_init(options_getboolean("lircd:dynamic-codes"));
 	get_pre = options_getboolean("irrecord:pre");
 	get_post = options_getboolean("irrecord:post");
 	test = options_getboolean("irrecord:test");
@@ -565,7 +565,7 @@ int main(int argc, char **argv)
 	       "and create a config file for lircd.\n\n" "\n");
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
 		printf("Usually it's not necessary to create a new config file for devinput\n"
-		       "devices. A generic config file can be found at:\n" 
+		       "devices. A generic config file can be found at:\n"
 		       "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf"
 		       "It can be downloaded using irdb-get(1)\n"
 		       "Please try this config file before creating your own.\n" "\n");
@@ -589,7 +589,7 @@ int main(int argc, char **argv)
 	       "distribution of this package. You can use a template files by\n"
 	       "providing the path of the file as command line parameter.\n"
 	       "\n"
-       	       "Please take the time to finish this file as described in\n"
+	       "Please take the time to finish this file as described in\n"
 	       "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
 	       "and make it available to others by sending it to \n"
 	       "<lirc@bartelmus.de>\n\n"
@@ -1160,11 +1160,11 @@ void get_pre_data(struct ir_remote *remote)
 	mask = (-1);
 	codes = remote->codes;
 	if (codes->name == NULL)
-		return;         /* at least 2 codes needed */
+		return;		/* at least 2 codes needed */
 	last = codes->code;
 	codes++;
 	if (codes->name == NULL)
-		return;         /* at least 2 codes needed */
+		return;		/* at least 2 codes needed */
 	while (codes->name != NULL) {
 		struct ir_code_node *loop;
 
@@ -1224,11 +1224,11 @@ void get_post_data(struct ir_remote *remote)
 	mask = (-1);
 	codes = remote->codes;
 	if (codes->name == NULL)
-		return;         /* at least 2 codes needed */
+		return;		/* at least 2 codes needed */
 	last = codes->code;
 	codes++;
 	if (codes->name == NULL)
-		return;         /* at least 2 codes needed */
+		return;		/* at least 2 codes needed */
 	while (codes->name != NULL) {
 		struct ir_code_node *loop;
 
@@ -2406,9 +2406,9 @@ int get_gap_length(struct ir_remote *remote)
 
 void fprint_copyright(FILE * fout)
 {
-	fprintf(fout, "\n" 
+	fprintf(fout, "\n"
 		"# Please take the time to finish this file as described in\n"
-                "# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
-                "# and make it available to others by sending it to \n"
-	        "# <lirc@bartelmus.de>\n");
+		"# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
+		"# and make it available to others by sending it to \n"
+		"# <lirc@bartelmus.de>\n");
 }
