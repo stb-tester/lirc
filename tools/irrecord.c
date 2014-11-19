@@ -107,6 +107,16 @@ enum lengths_status {
 };
 
 
+/** Return form one attempt to get gap in get_gap(). */
+enum get_gap_status {
+	STS_GAP_INIT,
+	STS_GAP_TIMEOUT,
+	STS_GAP_FOUND,
+	STS_GAP_GOT_ONE_PRESS,
+	STS_GAP_AGAIN
+};
+
+
 /* analyse stuff */
 struct lengths {
 	unsigned int count;
@@ -147,7 +157,8 @@ struct main_state {
 
 /** State in get_gap_length(). */
 struct gap_state {
-	struct lengths *gaps;
+	struct lengths* scan;
+	struct lengths* gaps;
 	struct timeval start;
 	struct timeval end;
 	struct timeval last;
@@ -1576,51 +1587,46 @@ static int get_data_length(struct ir_remote *remote, int interactive)
 }
 
 
-static int get_gap_length(struct gap_state *state, struct ir_remote *remote)
+static enum get_gap_status
+get_gap_length(struct gap_state *state, struct ir_remote *remote)
 {
-	struct lengths* scan;
-
-	printf("Hold down an arbitrary button.\n");
-	while (1) {
-		while (availabledata()) {
-			curr_driver->rec_func(NULL);
-		}
-		if (!mywaitfordata(10000000)) {
-			free_lengths(&(state->gaps));
-			return (0);
-		}
-		gettimeofday(&(state->start), NULL);
-		while (availabledata()) {
-			curr_driver->rec_func(NULL);
-		}
-		gettimeofday(&(state->end), NULL);
-		if (state->flag) {
-			state->gap = time_elapsed(&(state->last), &(state->start));
-			add_length(&(state->gaps), state->gap);
-			merge_lengths(state->gaps);
-			state->maxcount = 0;
-			scan = state->gaps;
-			while (scan) {
-				state->maxcount = max(state->maxcount, scan->count);
-				if (scan->count > SAMPLES) {
-					remote->gap = calc_signal(scan);
-					printf("\nFound gap length: %u\n", (__u32) remote->gap);
-					free_lengths(&(state->gaps));
-					return (1);
-				}
-				scan = scan->next;
-			}
-			if (state->maxcount > state->lastmaxcount) {
-				state->lastmaxcount = state->maxcount;
-				printf(".");
-				fflush(stdout);
-			}
-		} else {
-			state->flag = 1;
-		}
-		state->last = state->end;
+	while (availabledata()) {
+		curr_driver->rec_func(NULL);
 	}
-	return (1);
+	if (!mywaitfordata(10000000)) {
+		free_lengths(&(state->gaps));
+		return STS_GAP_TIMEOUT;
+	}
+	gettimeofday(&(state->start), NULL);
+	while (availabledata()) {
+		curr_driver->rec_func(NULL);
+	}
+	gettimeofday(&(state->end), NULL);
+	if (state->flag) {
+		state->gap = time_elapsed(&(state->last),
+					  &(state->start));
+		add_length(&(state->gaps), state->gap);
+		merge_lengths(state->gaps);
+		state->maxcount = 0;
+		state->scan = state->gaps;
+		while (state->scan) {
+			state->maxcount = max(state->maxcount, state->scan->count);
+			if (state->scan->count > SAMPLES) {
+				remote->gap = calc_signal(state->scan);
+				free_lengths(&(state->gaps));
+				return STS_GAP_FOUND;
+			}
+			state->scan = state->scan->next;
+		}
+		if (state->maxcount > state->lastmaxcount) {
+			state->lastmaxcount = state->maxcount;
+			return STS_GAP_GOT_ONE_PRESS;
+		}
+	} else {
+		state->flag = 1;
+	}
+	state->last = state->end;
+	return STS_GAP_AGAIN;
 }
 
 /** Check options, possibly run simple ones. Returns status. */
@@ -2587,11 +2593,55 @@ static int mode2_get_lengths(struct opts* opts, struct main_state* state)
 }
 
 
+/** View part of get_gap(). */
+void lirccode_get_lengths(struct opts* opts, struct main_state* state)
+{
+	struct gap_state gap_state;
+	enum get_gap_status sts;
+
+	remote.driver = curr_driver->name;
+	remote.bits = curr_driver->code_length;
+	remote.eps = eps;
+	remote.aeps = aeps;
+	if (state->using_template)
+		return;
+	flushhw();
+	gap_state_init(&gap_state);
+	sts = STS_GAP_INIT;
+	while (1) {
+		switch (sts) {
+		case STS_GAP_INIT:
+			printf("Hold down an arbitrary key\n");
+			sts = STS_GAP_AGAIN;
+			continue;
+		case STS_GAP_TIMEOUT:
+			fprintf(stderr,
+				"Timeout (10 sec), giving  up.\n");
+			fclose(state->fout);
+			unlink(opts->filename);
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
+			exit(EXIT_FAILURE);
+		case STS_GAP_FOUND:
+			printf("Found gap (%d us)\n", remote.gap);
+			return;
+		case STS_GAP_GOT_ONE_PRESS:
+			printf(".");
+			fflush(stdout);
+			sts = STS_GAP_AGAIN;
+			continue;
+		case STS_GAP_AGAIN:
+			break;
+		}
+		sts = get_gap_length(&gap_state, &remote);
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
-	struct gap_state gap_state;
 	struct toggle_state tgl_state;
 	struct button_state btn_state;
 
@@ -2615,25 +2665,12 @@ int main(int argc, char **argv)
 
 	remote.name = opts.filename;
 	switch (curr_driver->rec_mode) {
-	case LIRC_MODE_MODE2:
-		remote.driver = NULL;
-		mode2_get_lengths(&opts, &state);
-		break;
-	case LIRC_MODE_LIRCCODE:
-		remote.driver = curr_driver->name;
-		remote.bits = curr_driver->code_length;
-		remote.eps = eps;
-		remote.aeps = aeps;
-		gap_state_init(&gap_state);
-		if (!state.using_template && !get_gap_length(&gap_state, &remote)) {
-			fprintf(stderr, "%s: gap not found," " can't continue\n", progname);
-			fclose(state.fout);
-			unlink(opts.filename);
-			if (curr_driver->deinit_func)
-				curr_driver->deinit_func();
-			exit(EXIT_FAILURE);
-		}
-		break;
+		case LIRC_MODE_MODE2:
+			mode2_get_lengths(&opts, &state);
+			break;
+		case LIRC_MODE_LIRCCODE:
+			lirccode_get_lengths(&opts, &state);
+			break;
 	}
 
 	if (!state.using_template && is_rc6(&remote)) {
