@@ -903,7 +903,7 @@ int main(int argc, char **argv)
 	fprint_copyright(fout);
 	fprint_remotes(fout, remotes, commandline);
 	free_config(remotes);
-	printf("Successfully written config file.\n");
+	printf("Successfully written config file %s.\n", filename);
 	return (EXIT_SUCCESS);
 }
 
