@@ -159,7 +159,6 @@ struct main_state {
 	FILE *fout;
 	FILE *fin;
 	struct decode_ctx_t decode_ctx;
-	struct ir_remote *remotes;
 	int using_template;
 	char commandline[128];
 };
@@ -1677,6 +1676,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	char filename_new[256];
 	char logpath[256];
 	int flags;
+	struct ir_remote* my_remote;
 
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0) {
@@ -1696,9 +1696,9 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		if (opts->force) {
 			return STS_INIT_FORCE_TMPL;
 		}
-		state->remotes = read_config(state->fin, opts->filename);
+		my_remote = read_config(state->fin, opts->filename);
 		fclose(state->fin);
-		if (state->remotes == (void *)-1 || state->remotes == NULL) {
+		if (my_remote == (void *)-1 || my_remote == NULL) {
 			return STS_INIT_BAD_FILE;
 		}
 		state->using_template = 1;
@@ -1707,21 +1707,20 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		}
 		if (opts->test) {
 			if (opts->trail)
-				for_each_remote(state->remotes, remove_trail);
-			for_each_remote(state->remotes, remove_pre_data);
-			for_each_remote(state->remotes, remove_post_data);
+				for_each_remote(my_remote, remove_trail);
+			for_each_remote(my_remote, remove_pre_data);
+			for_each_remote(my_remote, remove_post_data);
 			if (opts->get_pre)
-				for_each_remote(state->remotes, get_pre_data);
+				for_each_remote(my_remote, get_pre_data);
 			if (opts->get_post)
-				for_each_remote(state->remotes, get_post_data);
+				for_each_remote(my_remote, get_post_data);
 			if (opts->invert)
-				for_each_remote(state->remotes, invert_data);
+				for_each_remote(my_remote, invert_data);
 
-			fprint_remotes(stdout, state->remotes, state->commandline);
-			free_config(state->remotes);
+			fprint_remotes(stdout, my_remote, state->commandline);
+			free_config(my_remote);
 			return (STS_INIT_TESTED);
 		}
-		remote = *(state->remotes);
 		remote.name = opts->filename;
 		remote.codes = NULL;
 		remote.last_code = NULL;
@@ -1731,7 +1730,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			remote.pre_data_bits = 0;
 			remote.post_data_bits = 0;
 		}
-		if (state->remotes->next != NULL) {
+		if (my_remote->next != NULL) {
 			fprintf(stderr, "%s: only first remote definition in file \"%s\" used\n", progname,
 				opts->filename);
 		}
@@ -2352,7 +2351,6 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 				if (!is_rc6(remote))
 					break;
 				printf(MISSING_MASK_MSG);
-				fclose(state->fout);
 				unlink(opts->filename);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
@@ -2370,6 +2368,7 @@ void record_buttons(struct main_state* state,
 		    struct opts* opts)
 
 {
+	struct ir_remote* remotes;
 	flushhw();
 	while (1) {
 		if (btn_state->no_data) {
@@ -2570,33 +2569,34 @@ void record_buttons(struct main_state* state,
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	state->remotes = read_config(state->fin, opts->filename);
+	remotes = read_config(state->fin, opts->filename);
 	fclose(state->fin);
-	if (state->remotes == NULL) {
+	if (remotes == NULL) {
 		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	if (state->remotes == (void *)-1) {
+	if (remotes == (void *)-1) {
 		fprintf(stderr, "%s: reading of config file failed\n", progname);
 		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		exit(EXIT_FAILURE);
 	}
-	if (!has_toggle_bit_mask(state->remotes)) {
-		if (!state->using_template && needs_toggle_mask(state->remotes)) {
+	if (!has_toggle_bit_mask(remotes)) {
+		if (!state->using_template && needs_toggle_mask(remotes)) {
 			do_get_toggle_bit_mask(&remote, state, opts);
 		}
 	} else {
-		set_toggle_bit_mask(state->remotes, state->remotes->toggle_bit_mask);
+		set_toggle_bit_mask(remotes, remotes->toggle_bit_mask);
 	}
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
-	get_pre_data(state->remotes);
-	get_post_data(state->remotes);
+	get_pre_data(remotes);
+	get_post_data(remotes);
+	remote = *remotes;
 }
 
 
@@ -2719,11 +2719,44 @@ void lirccode_get_lengths(struct opts* opts, struct main_state* state)
 }
 
 
+/** Write the provisionary config file without recorded buttons. */
+static void config_file_setup(struct main_state* state, struct opts* opts)
+{
+	state->fout = fopen(opts->filename, "w");
+	if (state->fout == NULL) {
+		fprintf(stderr, "%s: could not open new config file %s\n",
+			progname, opts->filename);
+		perror("While opening config file for write");
+		exit(EXIT_FAILURE);
+	}
+	fprint_copyright(state->fout);
+	fprint_comment(state->fout, &remote, state->commandline);
+	fprint_remote_head(state->fout, &remote);
+	fprint_remote_signal_head(state->fout, &remote);
+}
+
+
+/** Write the final config file. */
+static int config_file_finish(struct main_state* state, struct opts* opts)
+{
+	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
+		fprintf(stderr, "Could not open \"%s\"\n", opts->filename);
+		perror("While opening for write");
+		return 0;
+	}
+	fprint_copyright(state->fout);
+	fprint_remotes(state->fout, &remote, state->commandline);
+	printf("Successfully written config file %s.\n", opts->filename);
+	return 1;
+}
+
+
 int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
 	struct button_state btn_state;
+	int r;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&state, 0, sizeof(state));
@@ -2758,26 +2791,11 @@ int main(int argc, char **argv)
 	}
 	printf("\nNow enter the names for the buttons.\n");
 	fflush(stdout);
-
-	fprint_copyright(state.fout);
-	fprint_comment(state.fout, &remote, state.commandline);
-	fprint_remote_head(state.fout, &remote);
-	fprint_remote_signal_head(state.fout, &remote);
+	config_file_setup(&state, &opts);
 	button_state_init(&btn_state);
 	record_buttons(&state, &btn_state, &opts);
 
 	/* write final config file */
-	state.fout = fopen(opts.filename, "w");
-	if (state.fout == NULL) {
-		fprintf(stderr, "%s: could not open final config file \"%s\"\n",
-			progname, opts.filename);
-		perror(progname);
-		free_config(state.remotes);
-		return (EXIT_FAILURE);
-	}
-	fprint_copyright(state.fout);
-	fprint_remotes(state.fout, state.remotes, state.commandline);
-	free_config(state.remotes);
-	printf("Successfully written config file.\n");
-	return (EXIT_SUCCESS);
+	r = config_file_finish(&state, &opts);
+	return r ? EXIT_SUCCESS : EXIT_FAILURE;
 }
