@@ -127,8 +127,7 @@ class Controller(object):
             self.check(self.CHECK_NOTE)
             return
         elif len(remotes) == 1:
-            self.set_remote(remotes[0])
-            self.check(self.CHECK_NOTE)
+            self.set_remote(remotes[0], self.CHECK_NOTE)
         else:
             self.state = self.CHECK_DIALOG
             selector = selectors.RemoteSelector(self, self.lircd_conf_done)
@@ -180,13 +179,17 @@ class Controller(object):
         ''' Run the first step of the configure dialogs. '''
         self.check(self.CHECK_DEVICE)
 
-    def set_remote(self, remote):
+    def set_remote(self, remote, next_state=None):
         ''' Update the remote. '''
         config = self.model.get_bundled_driver(remote, self.view)
         if config:
             self.model.set_capture_device(config)
-            self.configure_device(config)
         self.model.set_remote(remote)
+        if not config:
+            return
+        if self.model.config['driver'] != config['driver'] or \
+            self.model.config['device'] != config['device']:
+                self.configure_device(config, next_state)
 
     def select_remote(self, pattern):
         ''' User has entered a search pattern, handle it. '''
