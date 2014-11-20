@@ -32,11 +32,7 @@
 #include "lirc_log.h"
 #include "lirc_client.h"
 
-#ifndef __u32
-typedef uint32_t __u32;
-#endif
-
-static const char* const help = 
+static const char* const help =
 "\nSynopsis:\n"
 "    irsend [options] SEND_ONCE remote code [code...]\n"
 "    irsend [options] SEND_START remote code \n"
@@ -76,7 +72,7 @@ void reformat_simarg(char* code, char buffer[])
 	char trash[32];
 	int r;
 
-	r = sscanf(code, "%x %x %32s %64s %32s", 
+	r = sscanf(code, "%x %x %32s %64s %32s",
                    &scancode, &repeat, keysym, remote, trash);
 	if (r != 4) {
 		fprintf(stderr, "Bad simulate argument: %s\n", code);
@@ -87,7 +83,7 @@ void reformat_simarg(char* code, char buffer[])
 }
 
 
-	
+
 
 
 int main(int argc, char **argv)
