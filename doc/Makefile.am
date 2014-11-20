@@ -58,9 +58,6 @@ dist_image_DATA         = images/atwf83.jpg \
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
-install-data-hook:
-	$(SED) -i "s/@version@/$(VERSION)/" $(DESTDIR)$(mandir)/*/*
-
 clean-local:
 	rm -rf html
 	rm -rf man
@@ -73,7 +70,7 @@ lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
 $(generated_html): $(html_sources)
-	mkdir html 2>/dev/null || : 
+	mkdir html 2>/dev/null || :
 	cat $(srcdir)/html-source/head.html > $@
 	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
 	cat $(srcdir)/html-source/foot.html >> $@
@@ -96,6 +93,7 @@ $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
 	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
 	    cp $$src $@
+	$(SED) -i "s/@version@/$(VERSION)/" $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
