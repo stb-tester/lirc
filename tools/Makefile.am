@@ -3,9 +3,13 @@ ACLOCAL_AMFLAGS         = -I m4
 
 PYLINT                  = python3-pylint
 
-AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@ 
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@
 AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
+
+if NEED_PYTHON3
+BUILT_SOURCES           = python3
+endif
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 
@@ -56,6 +60,10 @@ xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
 dist_bin_SCRIPTS        = lirc-config-tool
 
 
+if NEED_PYTHON3
+dist_bin_SCRIPTS        += python3
+endif
+
 if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get
 dist_noinst_SCRIPTS     = make_rel_symlink.py
@@ -75,6 +83,11 @@ pylint: irdb-get $(pkgpython_PYTHON)
 
 pep8:   irdb-get $(pkgpython_PYTHON)
 	python3-pep8 --config=pep8.conf $?
+
+python3:
+	echo "#!/bin/sh" > $@
+	echo "exec $(PYTHON) \$$@" >> $@
+	chmod 755 $@
 
 install-exec-hook:
 	$(SED) -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool

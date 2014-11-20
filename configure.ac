@@ -318,6 +318,12 @@ AC_ARG_ENABLE(install_etc,
 [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
+AC_ARG_ENABLE([python3_fix],
+  [  --enable-python3-fix    Install python3 symlink to python 3.x (macOS fix)],
+  [],
+  [enable_python3_fix="no"])
+AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
+
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
@@ -394,6 +400,7 @@ AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([USE_FIFOS])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_PYTHON])
+AC_REPORT_CONDITIONAL([NEED_PYTHON3])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_DOXYGEN])
