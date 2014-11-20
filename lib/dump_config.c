@@ -197,6 +197,9 @@ void fprint_remote_head(FILE * f, const struct ir_remote *rem)
 		if (has_toggle_mask(rem)) {
 			fprintf(f, "  toggle_mask    0x%llX\n", (unsigned long long)rem->toggle_mask);
 		}
+		if (rem->repeat_mask != 0) {
+			fprintf(f, "  repeat_mask    0x%llX\n", (unsigned long long)rem->repeat_mask);
+		}
 		if (rem->rc6_mask != 0) {
 			fprintf(f, "  rc6_mask    0x%llX\n", (unsigned long long)rem->rc6_mask);
 		}
