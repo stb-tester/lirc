@@ -9,5 +9,5 @@ includedir=@includedir@
 plugindir=${libdir}/lirc/plugins
 
 Libs: -llirc_driver
-Cflags: -I${includedir}
+Cflags: -I${includedir} -fpic
 plugindir: ${libdir}/lirc/plugins
