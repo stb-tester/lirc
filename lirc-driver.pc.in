@@ -1,0 +1,13 @@
+Name: lirc
+Description: LIRC Linux Infrared Control userspace driver lib.
+Version: @VERSION@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+plugindir=${libdir}/lirc/plugins
+
+Libs: -llirc_driver
+Cflags: -I${includedir} -fpic
+plugindir: ${libdir}/lirc/plugins

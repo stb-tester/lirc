@@ -1,0 +1,61 @@
+.TH MODE2 "1" "Last change: November 2001" "mode2 @version@" "User Commands"
+.SH NAME
+mode2, xmode2 - shows the pulse/space length of infrared signals
+.SH SYNOPSIS
+.B mode2
+[\fIoptions\fR]
+.SH DESCRIPTION
+The main purpose of these programs is to check operation of your
+home-brew LIRC receiver hardware and to see the IR waveform of the
+remote controller without an expensive oscilloscope. Very useful for
+debugging. Of course this program won't work with hardware that decodes
+the signals itself like e.g. TV cards or the Irman.
+
+mode2 will simply print pulse&space lengths to stdout.
+
+.SH OPTIONS
+
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display usage summary
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version
+.TP
+\fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
+read from given device
+.TP
+\fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
+use given driver
+.TP
+\fB\-m\fR \fB\-\-mode\fR
+enable alternative display mode
+.TP
+\fB\-r\fR \fB\-\-raw\fR
+access device directly
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. The search path used for this is determined
+by (falling priority):
+.IP \- 2
+The --plugindir option if available.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+
+.SH FILES
+
+.TP 4
+.B ~/.cache/mode2.log
+Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/mode2.log
+
+.SH "SEE ALSO"
+mode2(1), xmode2(1)
+
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

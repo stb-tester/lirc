@@ -90,24 +90,10 @@
 #include <unistd.h>
 
 #include "lirc_client.h"
+#include "lirc_log.h"
 
 static int bDaemon = 0;
 static int bInError = 0;
-
-#ifdef DEBUG
-static void debugprintf(char *format_str, ...)
-{
-	va_list ap;
-	va_start(ap, format_str);
-	if (!bDaemon)
-		vfprintf(stderr, format_str, ap);
-	va_end(ap);
-}
-#else
-static void debugprintf(char *format_str, ...)
-{
-}
-#endif
 
 struct keymodlist_t {
 	char *name;
@@ -129,7 +115,7 @@ static const char *key_delimiter = "-";
 static const char *active_window_name = "CurrentWindow";
 static const char *root_window_name = "RootWindow";
 
-static const char *progname = "irxevent";
+static const char *prog = "irxevent";
 static Display *dpy;
 static Window root;
 static XEvent xev;
@@ -167,7 +153,7 @@ static Window find_window(Window top, char *name)
 	if (XFetchName(dpy, top, &wname)) {
 		if (!strncmp(wname, name, strlen(name))) {
 			XFree(wname);
-			debugprintf("found it by wname 0x%x \n", top);
+			logprintf(LIRC_DEBUG, "found it by wname 0x%x \n", top);
 			return (top);	/* found it! */
 		};
 		XFree(wname);
@@ -176,7 +162,7 @@ static Window find_window(Window top, char *name)
 	if (XGetIconName(dpy, top, &iname)) {
 		if (!strncmp(iname, name, strlen(name))) {
 			XFree(iname);
-			debugprintf("found it by iname 0x%x \n", top);
+			logprintf(LIRC_DEBUG, "found it by iname 0x%x \n", top);
 			return (top);	/* found it! */
 		};
 		XFree(iname);
@@ -186,13 +172,13 @@ static Window find_window(Window top, char *name)
 		if (!strcmp(xch.res_class, name)) {
 			XFree(xch.res_name);
 			XFree(xch.res_class);
-			debugprintf("res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
+			logprintf(LIRC_DEBUG, "res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
 			return (top);	/* found it! */
 		};
 		if (!strcmp(xch.res_name, name)) {
 			XFree(xch.res_name);
 			XFree(xch.res_class);
-			debugprintf("res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
+			logprintf(LIRC_DEBUG, "res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
 			return (top);	/* found it! */
 		};
 		XFree(xch.res_name);
@@ -228,13 +214,13 @@ static Window find_sub_sub_window(Window top, int *x, int *y)
 	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL) {
 		return (base);	/* no more windows here */
 	};
-	debugprintf("found subwindows %d\n", nc);
+	logprintf(LIRC_DEBUG, "found subwindows %d\n", nc);
 
 	/* check if we hit a sub window and find the smallest one */
 	for (; nc > 0; nc--) {
 		if (XGetGeometry(dpy, children[nc - 1], &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
 			if ((rel_x <= *x) && (*x <= rel_x + width) && (rel_y <= *y) && (*y <= rel_y + height)) {
-				debugprintf("found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
+				logprintf(LIRC_DEBUG, "found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
 					    rel_y, width, height);
 				if ((width * height) < targetsize) {
 					target = children[nc - 1];
@@ -271,13 +257,13 @@ static Window find_sub_window(Window top, char *name, int *x, int *y)
 	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL) {
 		return (base);	/* no more windows here */
 	};
-	debugprintf("found subwindows %d\n", nc);
+	logprintf(LIRC_DEBUG, "found subwindows %d\n", nc);
 
 	/* check if we hit a sub window and find the smallest one */
 	for (; nc > 0; nc--) {
 		if (XGetGeometry(dpy, children[nc - 1], &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
 			if ((rel_x <= *x) && (*x <= rel_x + width) && (rel_y <= *y) && (*y <= rel_y + height)) {
-				debugprintf("found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
+				logprintf(LIRC_DEBUG, "found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
 					    rel_y, width, height);
 				if ((width * height) < targetsize) {
 					target = children[nc - 1];
@@ -311,7 +297,7 @@ static Window find_window_focused(Window top, char *name)
 
 	if ((w = find_window(top, name))) {
 		XGetInputFocus(dpy, &cur, &tmp);
-		debugprintf("current window: 0x%x named window: 0x%x\n", cur, w);
+		logprintf(LIRC_DEBUG, "current window: 0x%x named window: 0x%x\n", cur, w);
 
 		if (w == cur) {
 			/* window matched */
@@ -377,18 +363,18 @@ static void make_key(char *keyname, int x, int y, XKeyEvent * xev)
 #endif
 	{
 		part2 = strncpy(part2, part, 128);
-		//      debugprintf("-   %s \n",part);
+		//      logprintf(LIRC_DEBUG, "-   %s \n",part);
 		kmlptr = keymodlist;
 		while (kmlptr->name) {
-			//      debugprintf("--  %s %s \n", kmlptr->name, part);
+			//      logprintf(LIRC_DEBUG, "--  %s %s \n", kmlptr->name, part);
 			if (!strcasecmp(kmlptr->name, part))
 				xev->state |= kmlptr->mask;
 			kmlptr++;
 		}
-		//      debugprintf("--- %s \n",part);
+		//      logprintf(LIRC_DEBUG, "--- %s \n",part);
 	}
-	//  debugprintf("*** %s \n",part);
-	//  debugprintf("*** %s \n",part2);
+	//  logprintf(LIRC_DEBUG, "*** %s \n",part);
+	//  logprintf(LIRC_DEBUG, "*** %s \n",part2);
 
 	/*
 	 * New code 14-June-2005 by Warren Melnick, C.A.C. Media
@@ -403,19 +389,19 @@ static void make_key(char *keyname, int x, int y, XKeyEvent * xev)
 		sep_part = part2 + 7;
 		ks = strtoul(sep_part, NULL, 0);
 		kc = XKeysymToKeycode(dpy, ks);
-		debugprintf("KeySym String: %s, KeySym: %ld KeyCode: %d\n", part2, ks, kc);
+		logprintf(LIRC_DEBUG, "KeySym String: %s, KeySym: %ld KeyCode: %d\n", part2, ks, kc);
 	} else if (strncmp(part2, "KeyCode:", 8) == 0) {
 		sep_part = part2 + 8;
 		kc = (KeyCode) strtoul(sep_part, NULL, 0);
-		debugprintf("KeyCode String: %s, KeyCode: %d\n", part2, kc);
+		logprintf(LIRC_DEBUG, "KeyCode String: %s, KeyCode: %d\n", part2, kc);
 	}
 	if ((ks == 0) && (kc == 0)) {
 		ks = XStringToKeysym(part2);
 		kc = XKeysymToKeycode(dpy, ks);
-		debugprintf("Unmodified String: %s, KeySym: %d KeyCode: %d\n", part2, ks, kc);
+		logprintf(LIRC_DEBUG, "Unmodified String: %s, KeySym: %d KeyCode: %d\n", part2, ks, kc);
 	}
 	xev->keycode = kc;
-	debugprintf("state 0x%x, keycode 0x%x\n", xev->state, xev->keycode);
+	logprintf(LIRC_DEBUG, "state 0x%x, keycode 0x%x\n", xev->state, xev->keycode);
 	free(part2);
 	return;
 }
@@ -524,7 +510,7 @@ int check(char *s)
 
 	buffer = malloc(strlen(s) + 1);
 	if (buffer == NULL) {
-		fprintf(stderr, "%s: out of memory\n", progname);
+		fprintf(stderr, "%s: out of memory\n", prog);
 		return (-1);
 	}
 
@@ -540,7 +526,7 @@ int check(char *s)
 	    4 != sscanf(s, "xy_Key %d %d %s WindowID %i %s", &d, &d, buffer, &d, buffer) &&
 	    4 != sscanf(s, "xy_Key %d %d %s Focus WindowID %i %s", &d, &d, buffer, &d, buffer) &&
 	    4 != sscanf(s, "xy_Key %d %d %s %s", &d, &d, buffer, buffer)) {
-		fprintf(stderr, "%s: bad config string \"%s\"\n", progname, s);
+		fprintf(stderr, "%s: bad config string \"%s\"\n", prog, s);
 		free(buffer);
 		return (-1);
 	}
@@ -574,14 +560,14 @@ int main(int argc, char *argv[])
 			printf("Usage: %s [option]... [config file]\n"
 			       "       -d --daemon     fork and run in background\n"
 			       "       -h --help       display usage summary\n"
-			       "       -V --version    display version\n", progname);
+			       "       -V --version    display version\n", prog);
 			return (EXIT_SUCCESS);
 		case 'V':
-			printf("%s %s\n", progname, VERSION);
+			printf("%s %s\n", prog, VERSION);
 			return (EXIT_SUCCESS);
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr, "Try `%s --help' for more information.\n", progname);
+			fprintf(stderr, "Try `%s --help' for more information.\n", prog);
 			return (EXIT_FAILURE);
 		}
 	}
@@ -589,8 +575,8 @@ int main(int argc, char *argv[])
 	if (argc == optind + 1) {
 		config_file = argv[optind];
 	} else if (argc > optind + 1) {
-		fprintf(stderr, "%s: incorrect number of arguments.\n", progname);
-		fprintf(stderr, "Try `%s --help' for more information.\n", progname);
+		fprintf(stderr, "%s: incorrect number of arguments.\n", prog);
+		fprintf(stderr, "Try `%s --help' for more information.\n", prog);
 		return (EXIT_FAILURE);
 	}
 
@@ -623,7 +609,7 @@ int main(int argc, char *argv[])
 			if (ir == NULL)
 				continue;
 			while ((ret = lirc_code2char(config, ir, &c)) == 0 && c != NULL) {
-				debugprintf("Received code: %s Sending event: \n", ir);
+				logprintf(LIRC_DEBUG, "Received code: %s Sending event: \n", ir);
 				bInError = 0;	// reset error state, want to see error msg
 
 				*windowname = 0;
@@ -637,52 +623,52 @@ int main(int argc, char *argv[])
 						   &pointer_y, windowname)
 				    || 4 == sscanf(c, "xy_Key %d %d %s Focus %s", &pointer_x, &pointer_y, keyname,
 						   windowname)) {
-					debugprintf("Focus\n");
+					logprintf(LIRC_DEBUG, "Focus\n");
 					/* focussed ? */
 					if (*windowname) {
 						WindowID = find_window_focused(root, windowname);
 						if (!WindowID) {
-							debugprintf("target window '%s' doesn't have focus\n",
+							logprintf(LIRC_DEBUG, "target window '%s' doesn't have focus\n",
 								    windowname);
 							continue;
 						}
-						debugprintf("focused:  %s\n", windowname);
+						logprintf(LIRC_DEBUG, "focused:  %s\n", windowname);
 					} else {
 						Window cur;
 						int tmp;
 
 						XGetInputFocus(dpy, &cur, &tmp);
 						if (WindowID != cur) {
-							debugprintf("target window '0x%x' doesn't have focus\n",
+							logprintf(LIRC_DEBUG, "target window '0x%x' doesn't have focus\n",
 								    WindowID);
 							continue;
 						}
-						debugprintf("focused:  0x%x\n", WindowID);
+						logprintf(LIRC_DEBUG, "focused:  0x%x\n", WindowID);
 					}
 				} else if (2 == sscanf(c, "Key %s WindowID %i", keyname, &WindowID) ||
 					   4 == sscanf(c, "Button %d %d %d WindowID %i", &pointer_button, &pointer_x,
 						       &pointer_y, &WindowID)
 					   || 4 == sscanf(c, "xy_Key %d %d %s WindowID %i", &pointer_x, &pointer_y,
 							  keyname, &WindowID)) {
-					debugprintf("WindowID:  0x%x\n", WindowID);
+					logprintf(LIRC_DEBUG, "WindowID:  0x%x\n", WindowID);
 					/* WindowID passed */
 				} else if (2 == sscanf(c, "Key %s %s", keyname, windowname) ||
 					   4 == sscanf(c, "Button %d %d %d %s", &pointer_button, &pointer_x, &pointer_y,
 						       windowname)
 					   || 4 == sscanf(c, "xy_Key %d %d %s %s\n", &pointer_x, &pointer_y, keyname,
 							  windowname)) {
-					debugprintf("name: %s\n", windowname);
+					logprintf(LIRC_DEBUG, "name: %s\n", windowname);
 					WindowID = find_window(root, windowname);
 					if (WindowID == 0) {
-						debugprintf("target window '%s' not found\n", windowname);
+						logprintf(LIRC_DEBUG, "target window '%s' not found\n", windowname);
 						continue;
 					}
 				}
 
 				switch (c[0]) {
 				case 'K':	// Key
-					debugprintf("keyname: %s \t WindowID: 0x%x\n", keyname, WindowID);
-					debugprintf("%s\n", c);
+					logprintf(LIRC_DEBUG, "keyname: %s \t WindowID: 0x%x\n", keyname, WindowID);
+					logprintf(LIRC_DEBUG, "%s\n", c);
 					sendkey(keyname, 1, 1, (Window) WindowID, 0);
 					break;
 
@@ -692,7 +678,7 @@ int main(int argc, char *argv[])
 					if (subw) {
 						if (WindowID == subw)
 							subw = 0;
-						debugprintf("%s\n", c);
+						logprintf(LIRC_DEBUG, "%s\n", c);
 						switch (c[0]) {
 						case 'B':
 							sendbutton(pointer_button, pointer_x, pointer_y, WindowID,

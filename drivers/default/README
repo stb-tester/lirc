@@ -1,0 +1,6 @@
+This is a small example how to build a userspace driver
+out of the lirc tree. The Makefile is not portable at all,
+using many gnu make extensions.
+
+Of course, this will conflict in runtime with
+hw_default.so. Remove that one before testing this.

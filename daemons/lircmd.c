@@ -47,9 +47,9 @@ typedef uint64_t __u64;
 #endif
 
 #include "lirc_options.h"
+#include "lirc_log.h"
 
 #define CLICK_DELAY 50000	/* usecs */
-#define PACKET_SIZE 256
 #define WHITE_SPACE " \t"
 #define ALL ((char *) (-1))
 #define CIRCLE 10
@@ -67,9 +67,33 @@ typedef uint64_t __u64;
 
 static int uinputfd = -1;
 static int useuinput = 0;
-int debug = 0;
+loglevel_t loglevel = 0;
 
-inline int map_buttons(int b)
+
+static const struct option lircmd_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"nodaemon", no_argument, NULL, 'n'},
+	{"options-file", required_argument, NULL, 'O'},
+#       if defined(__linux__)
+	{"uinput", no_argument, NULL, 'u'},
+#       endif
+	{0, 0, 0, 0}
+};
+
+static const char* const help = 
+	"Usage: lircmd [options] [config-file]\n"
+	"\t -h --help\t\tDisplay this message\n"
+	"\t -v --version\t\tDisplay version\n"
+	"\t -n --nodaemon\t\tDon't fork to background\n"
+	"\t -O --options-file=file\tAlternative default options file\n"
+#       if defined(__linux__)
+	"\t -u --uinput\t\tGenerate Linux input events\n"
+#       endif
+;
+
+
+int map_buttons(int b)
 {
 	switch (b) {
 	case BUTTON1:
@@ -149,9 +173,7 @@ struct state_mouse new_ms, ms = {
 	{button_up, button_up, button_up}
 };
 
-#define progname   "lircmd"
 
-static const char *syslogident = "lircmd-" VERSION;
 const char *configfile = NULL;
 
 int lircd = -1;
@@ -226,7 +248,7 @@ void dohup(void)
 	}
 }
 
-#ifdef DAEMONIZE
+
 void daemonize(void)
 {
 	if (daemon(0, 0) == -1) {
@@ -236,7 +258,7 @@ void daemonize(void)
 	}
 	umask(0);
 }
-#endif /* DAEMONIZE */
+
 
 int setup_uinputfd(const char *name)
 {
@@ -340,9 +362,8 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx;
 		buffer[2] = dy;
 		buffer[3] = buffer[4] = 0;
-
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 5);
+			chk_write(lircm, buffer, 5);
 		}
 		break;
 	case imps_2:
@@ -354,9 +375,8 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx + (dx >= 0 ? 0 : 256);
 		buffer[2] = dy + (dy >= 0 ? 0 : 256);
 		buffer[3] = dz;
-
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 4);
+			chk_write(lircm, buffer, 4);
 		}
 		break;
 	case im_serial:
@@ -372,7 +392,7 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		    | ((buttons & BUTTON2) ? 0x10 : 0x00);
 
 		for (i = 0; i < f; i++) {
-			write(lircm, buffer, 4);
+			chk_write(lircm, buffer, 4);
 		}
 		break;
 	}
@@ -730,51 +750,31 @@ struct trans_mouse *read_config(FILE * fd)
 }
 
 
-static const struct option lircmd_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"nodaemon", no_argument, NULL, 'n'},
-	{"options-file", required_argument, NULL, 'O'},
-#       if defined(__linux__)
-	{"uinput", no_argument, NULL, 'u'},
-#       endif
-	{0, 0, 0, 0}
-};
-
-
-static void lircmd_help(void)
-{
-	printf("Usage: %s [options] [config-file]\n", progname);
-	printf("\t -h --help\t\tdisplay this message\n");
-	printf("\t -v --version\t\tdisplay version\n");
-	printf("\t -n --nodaemon\t\tdon't fork to background\n");
-	printf("\t -O --options-file=file\talternative default options file\n");
-#       if defined(__linux__)
-	printf("\t -u --uinput\t\tgenerate Linux input events\n");
-#       endif
-}
-
 
 static void lircmd_add_defaults(void)
 {
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+
 	const char* const defaults[] = {
 		"lircmd:nodaemon", 	"False",
 		"lircmd:uinput", 	"False",
 		"lircmd:configfile",    LIRCMDCFGFILE,
+		"lircmd:debug",		level,
 		(const char*)NULL, 	(const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
 
 
-static void lircmd_parse_options(int argc, char** argv)
+static void lircmd_parse_options(int argc,  char** const argv)
 {
 	int c;
 
 #       if defined(__linux__)
 	const char* const optstring =  "hvnuO";
 #       else
-	const char* const optstring = "hvnO"
+	const char* const optstring = "hvnO";
 #       endif
 
 	lircmd_add_defaults();
@@ -784,14 +784,13 @@ static void lircmd_parse_options(int argc, char** argv)
 	{
 		switch (c) {
 		case 'h':
-			lircmd_help();
+			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
-			printf("%s %s\n", progname, VERSION);
+			printf("lircmd %s\n",  VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
-			options_load(argc, argv, optarg, lircmd_parse_options);
-			return;
+			break;
 		case 'n':
 			options_set_opt("lircd:nodaemon", "True");
 			break;
@@ -809,7 +808,7 @@ static void lircmd_parse_options(int argc, char** argv)
 	if (optind == argc - 1) {
 		options_set_opt("configfile", argv[optind]);
 	} else if (optind != argc) {
-		fprintf(stderr, "%s: invalid argument count\n", progname);
+		fprintf(stderr, "lircmd: invalid argument count\n");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -846,7 +845,7 @@ void loop()
 			}
 		}
 		buffer[len + end_len] = 0;
-		ret = sscanf(buffer, "%*llx %x %s %s\n", &rep, button, remote);
+		ret = sscanf(buffer, "%*x %x %s %s\n", &rep, button, remote);
 		end = strchr(buffer, '\n');
 		if (end == NULL) {
 			end_len = 0;
@@ -870,11 +869,18 @@ int main(int argc, char **argv)
 	sigset_t block;
 	int nodaemon = 0;
 	const char *filename;
+	loglevel_t loglevel;
+	const char* level;
 
 	options_load(argc, argv, NULL, lircmd_parse_options);
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
+	level = options_getstring("lircmd:debug");
+	loglevel = string2loglevel(level);
+	lirc_log_open("lircmd",
+		       nodaemon,
+		       loglevel == LIRC_BADLEVEL? LIRC_DEBUG : loglevel);
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;
@@ -886,7 +892,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	};
 	if (connect(lircd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "%s: could not connect to socket\n", progname);
+		fprintf(stderr, "%s: could not connect to socket: %s\n",
+			progname, addr.sun_path);
 		perror(progname);
 		exit(EXIT_FAILURE);
 	};
@@ -944,12 +951,8 @@ int main(int argc, char **argv)
 		ms = new_ms;
 	}
 
-#ifdef DAEMONIZE
 	if (!nodaemon)
 		daemonize();
-#endif
-	openlog(syslogident, LOG_CONS, LOG_DAEMON);
-
 	signal(SIGPIPE, SIG_IGN);
 
 	act.sa_handler = sigterm;

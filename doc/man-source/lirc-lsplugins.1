@@ -1,0 +1,69 @@
+.TH LIRC-LSPLUGINS "1" "Last change: Sep 2014" "lirc-lsplugins @VERSION" "User Commands"
+.SH NAME
+lirc-lsplugins - print dynamic modules info
+.SH SYNOPSIS
+.B lirc-lsplugins
+\fI[-l] [-q] [-U plugindir]\fR
+\fI[drivers]\fR
+.br
+.B lirc-lsplugins
+\fI-e [-q] [-U plugindir]\fR
+.br
+.B lirc-lsplugins
+\fI-e [-q|-p|-h|-v]\fR
+.SH DESCRIPTION
+Tool which writes a simple list with info for each driver found. In
+particular, it writes info if a plugin can't be loaded e. g., due to
+unresolved references.
+.P
+The
+\fI[drivers]\fR
+argument is an optional selector which limits the output to matching drivers.
+The match is a glob-type match as done by fnmatch()
+.SH OPTIONS
+.TP
+\fB\-U\fR \fB\-\-plugindir <path>\fR
+Use <path> to search for plugins. The path is a':'-separated search path
+similar to e. g., $PATH.
+.TP
+\fB\-q\fR \fB\-\-quiet\fR
+Don't write headers and trailing legend.
+.TP
+\fB\-s\fR \fB\-\-summary\fR
+Just write a summary over number of plugins, drivers and errors.
+.TP
+\fB\-e\fR \fB\-\-errors\fR
+Only list plugins which can't be loaded, or does not contain any drivers.
+.TP
+\fB\-l\fR \fB\-\-long\fR
+Add info on driver features.
+.TP
+\fB\-p\fR \fB\-\-default-path\fR
+Print default search path and exit.
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display usage summary.
+.TP
+\fB\-v\fR \fB\-\-version\fR
+Display version info.
+.SH EXAMPLES
+.IP "" 4
+$ lirc-lsplugins -U ../lib/.libs:/usr/local/lib/lirc/plugins tira*
+.P
+Lists all drivers with name matching 'tira*' found in plugins living
+in ../lib/.libs or /usr/local/lib/lirc/plugins.
+.SH RETURN VALUE
+lirc-lsplugins returns a non-zero error code if there is at least one plugin
+from which no driver can be loaded or options and parameters can't be
+parsed. Otherwise it returns zero.
+.SH BUGS
+Some drivers change their capabilities in runtime after inspecting the
+underlying hardware. These runtime capabilities can not be listed by
+lirc-lsplugins.
+.SH STATUS
+This tool is in an early alpha stage. Both the output format and the
+command line syntax are subject to change.
+.SH "SEE ALSO"
+fnmatch(3)
+.br
+lircd(8)

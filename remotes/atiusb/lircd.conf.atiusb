@@ -1236,7 +1236,7 @@ end remote
 # model no. of remote control: 40005927
 # devices being controlled by this remote:
 #
-# This is an USB attached reciever wich works by radio, not by IR. It is
+# This is an USB attached receiver wich works by radio, not by IR. It is
 # most probably a relabeled ATI X10 device and sold together with the
 # Medion Notebook MD41300. It works with the lirc_atiusb driver while the
 # ati_remote module is NOT(!) loaded

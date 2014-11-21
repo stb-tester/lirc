@@ -1,0 +1,51 @@
+.TH LIRCRCD "8" "Last change: Nov 2014" "lircrcd @version@" "System Manager Manual"
+.SH NAME
+lircrcd - daemon to handle consistent .lircrc state among client applications
+.SH SYNOPSIS
+.B lircrcd
+[\fIoptions\fR] \fIconfig-file\fR
+.SH DESCRIPTION
+
+.B lircrcd
+reads the given .lircrc config file and synchronises the mode
+that the LIRC clients such as (\fBirexec\fR(1), \fBirxevent\fR(1) ,
+etc.) are in. Using
+.B lircrcd
+has to be explicitly
+enabled in the lircrc config file by adding the following line at the
+beginning of the file:
+.IP
+lircrc_class default
+.P
+This must be done at the top-level file, not an included one. The lircrc_class
+string (here "default") could actually be anything; clients using the same
+string in their lircrc will be synchronized.
+.SH OPTIONS
+.TP
+\fB\-h\fR \fB\-\-help\fR
+display help message
+.TP
+\fB\-v\fR \fB\-\-version\fR
+display version
+.TP
+.BI \-p,\ \-\-permission= mode
+The \-\-permission option gives the file permission of the Unix domain
+socket lircrcd creates on startup in octal representation. Read the
+documentation for chmod for further details. If no \-\-permission option
+is given when the socket is created the default is to give only the
+user owning the file read and write permissions (0600 in octal
+representation).
+.TP
+.BI \-o,\ \-\-output= socket
+With the \-\-output option you can select the Unix domain socket, which
+lircrcd will create. The default is to create a socket in VARRUNDIR
+(usually /var/run/lirc), see FILES.
+.SH FILES
+lircrcd creates its socket(s) in the VARRUNDIR directory, usually
+/var/run/lirc.  The socket basename includes the user UID and the
+string from the lircrc_class option.
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

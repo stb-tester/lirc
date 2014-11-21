@@ -1,0 +1,29 @@
+.TH irsimreceive "1" "Last change: Nov 2014" "irsimreceive @version@" "User Commands"
+.SH NAME
+irsimreceive- decode IR durations data.
+.SH SYNOPSIS
+.B irsimreceive [options]  <configfile>  <datafile>
+
+.SH DESCRIPTION
+This is a simple test tool which decodes duration data in <datafile>
+using an lircd.conf type <configfile>. The outputted data is
+in the same format as on the lircd output socket.
+
+.SH OPTIONS
+.TP 4
+.B -U, --plugindir <dir>
+Load drivers from <dir>.
+
+.TP 4
+.B -v , --version
+Print version and exit.
+
+.TP 4
+.B -h , --help
+Print help message.
+
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

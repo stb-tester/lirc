@@ -1,42 +1,3 @@
-    <!-- lircd.conf ++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="lircd.conf"></A><HR>
-    <H1 ALIGN="CENTER">Configuring lircd (the LIRC daemon)</H1>
-    <HR WIDTH="70%">
-
-    <OL>
-      <LI>Check if there is already a config file in
-        <em>/etc/lirc/lircd.conf</em>. If not</LI>
-
-      <LI>check if there is a config file available for your remote control
-        at the LIRC homepage and copy it to
-        <em>/etc/lirc/lircd.conf</em>. If not</LI>
-
-      <LI>start <em>irrecord</em> (finish all applications that access
-        <em>/dev/lirc</em> first) and follow the instructions given to
-        you by this program. Copy the resulting file to
-        <em>/etc/lirc/lircd.conf</em>. If you have trouble creating a
-        working config file please read the chapter about <A
-        HREF="help.html#new_remote">adding new remote controls</A>.
-      </LI>
-    </OL>
-
-    <P>
-      If you want to use more than one remote control you can simply
-      concatenate the config files: <em>cat config1 config2
-      &gt;config</em>
-    </P>
-    <P>
-      <B>Note:</B> If you already have a config file for the libirman
-      package you can convert it using the <em>irman2lirc</em> script
-      that you can find in the contrib directory.
-    </P>
-    <P>
-      It's also possible to convert CCF files and Pronto codes to a
-      valid lircd.conf file using the <A
-        HREF="pronto2lirc.html">pronto2lirc</A> script.
-    </P>
-
     <!-- lircd.conf fileformat +++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="lircd.conf_format"></A><HR>
@@ -44,11 +5,9 @@
     <HR WIDTH="70%">
 
     <P>
-      A description of the <A
-        HREF="http://winlirc.sourceforge.net/technicaldetails.html">file
-        format</A> is available on the WinLIRC pages. In fact you don't
-      need to know anything about it except that it's maybe the most
-      important part of the package.
+      A description of the  format is available in the lircd.conf(5) manpage.
+      In fact you probably  don't need to know anything about it except that
+      it's maybe the most important part of the package.
     </P>
 
     <!-- multiple devices ++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -74,15 +33,7 @@
       installed. The further steps depend on which user-space driver
       is used in lircd for your devices. Most devices (actually all
       devices that use a kernel module) use the <em>default</em>
-      driver. You can check which user-space driver is used for your
-      device by running <em>lircd --driver=?</em>. Remember that this
-      might change each time you compile lircd for a different
-      device. If you want to use devices that use different user-space
-      drivers then you have to compile LIRC once again using
-      <em>./configure --with-driver=any</em>. This will compile almost
-      any user-space driver into lircd that is available (but does not
-      compile any kernel modules, that's why you had to build them
-      individually before). After that you should check if the drivers
+      driver.  You should check if the drivers
       you want are listed now with <em>lircd --driver=?</em>. You
       should get something like this:
     </P>
@@ -126,7 +77,7 @@ Supported drivers:
     </P>
 <pre>
 &gt; ls -l /dev/lirc*
-crw-r--r--    1 root     root      61,   0 Apr 25  2001 /dev/lirc
+crw-r--r--    1 root     root      61,   0 Apr 25  2001 /dev/lirc0
 crw-r--r--    1 root     root      61,   1 Nov  6 19:24 /dev/lirc1
 </pre>
     <P>
@@ -450,6 +401,7 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
         [button = ...] (optional, for key sequences)
         repeat  = ...
         delay   = ...
+        ignore_first_events = ...
         config  = ...
         [config = ...] (optional, for toggle button behaviour)
         mode    = ...
@@ -491,7 +443,16 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
         before using the &quot;repeat&quot; configuration directive
         above. This is used to prevent double triggers of events when
         using a fast repeat rate. A value of zero, which also is the
-        default, will disable the delay function.
+        default, will disable the delay function. If &quot;repeat&quot;
+        value is zero but &quot;delay&quot; is set, there will be a
+        single event generated after the delay period expires (with
+        another one before delay period starts).
+      </DD>
+      <DT>ignore_first_events</DT>
+      <DD>ignores the specified amount of first events.
+        Same as &quot;delay&quot; but without an event before delay
+        period starts. This allows to define the reaction on the long
+        key presses. Should not be set together with &quot;delay&quot;.
       </DD>
       <DT>config</DT>
       <DD>is the string that will be passed to the according
@@ -717,8 +678,8 @@ include ~/.lirc/xawtv</PRE>
     </P>
 
     <P>
-      If you start a LIRC client program, it reads your ~/.lircrc and
-      reacts only on prog= entries which point to itself. All programs
+      If you start a LIRC client program, it reads your ~/.config/lircrc
+      and reacts only on prog= entries which point to itself. All programs
       should give you the possibility to use an alternative config
       file. If you have included more than one program in your
       .lircrc, then start all these programs, they react only to their
@@ -727,14 +688,22 @@ include ~/.lirc/xawtv</PRE>
       time the mode they currently are in may differ between
       applications. Also key sequences might not be recognized equally
       because all programs then don't have the same starting point. In
-      order to solve this problem there is the new <A
+      order to solve this problem there is the <A
       HREF="lircrcd.html">lircrcd</A> program since version
       0.8.0. lircrcd's purpose is to synchronise all clients and
       maintain a common mode for all applications. In order to use the
       lircrcd feature you have to explicitly enable it by adding the
-      following line at the beginning of the file:
+      following line at the beginning of the file: </p>
 <pre>
-#! lircrcd
+lircrc_class default
 </pre>
-    </P>
-
+     <p>
+      This directive can only be used in a top-level file, not in an
+      included one. The string  <code>default</code> could actually be
+      any identifier; clients using a lircrc with the same string will
+      synchronized. </p>
+     <p>
+      In versions before 0.9.2 the same effect was acheived with a "shebang",
+      a first line in the file <code>#! lircrcd</code> From 0.9.2+, the
+      support for this deprecated and it will be removed in an upcoming
+      release.</p>

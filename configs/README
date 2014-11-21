@@ -1,0 +1,64 @@
+# lirc setup configuration files README.
+
+This README file lives in the same directory as a large number of
+configuration files. Each of these represent an entry in the
+setup dialog user can select. If selected, it will configure
+a specific capture device, possibly running some dialogs.
+
+The config files are parsed as a YAML documents, see
+http://pyyaml.org/wiki/PyYAMLDocumentation#YAMLsyntax
+
+The fields:
+
+id:     Mandatory, unique identifier (no spaces allowed).
+
+label:  User visible description (mandatory).
+
+menu:   The menu this option is presented in, mandatory.
+        One of home_brew, irda, other, other_serial, pda, soundcard,
+        tv_card, usb.
+
+driver: The configured driver, mandatory.
+
+device: <device> [default device], optional, defaults to 'None'. <device>
+        is a glob pattern.  User can select between matches, configuration
+        fails if nothing matches. If there is a single match this is
+        silently selected without user interaction.  There is specific
+        support for:
+            - /dev/tty*. User can select an available tty.
+            - /dev/usb/* User can select a serial tty connected over USB.
+            - /dev/event/* User can select a /dev/input/event/* device.
+            - 'udp_port' [default port]. User can select an udp port
+            - 'None'. No device option is configured.
+            - 'auto'. No configuration, but a message is displayed.
+
+lircd_conf:
+        Path to lircd.conf, multiple choice, optional, defaults to 'any'.
+           - Path for a supported lircd.conf file
+           - 'any' indicating that this capture device can be used with any
+             lircd.conf file which has timing information.
+
+supports:
+        Supported lircd.conf files, multiple choice, optional, defaults to
+        'timing':
+           - 'timing' indicating a generic device  supporting any remote
+             with timing information.
+           - 'lirccode' indicating that this capture device only supports
+             remotes with a driver attribute being this one.
+
+note:   Message displayed when selecting this capture device, optional.
+
+modules:
+        List of kernel module names required by this capture device, optional.
+
+modinit:
+        Required kernel module init, multiple choice,  optional.
+        - 'run_select_lpt_port' <default port> <module>. User selects a
+           parallel port for a kernel module.
+        - 'run_select_module_tty' <default port> <module>. User
+           selects IRQ and IO base address for a serial 5250 driver module,
+           possibly with customized options.
+
+product_driver:
+        Capture device USB vendorId and productId on the form 1781:0938.
+

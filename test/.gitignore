@@ -1,0 +1,8 @@
+*.log
+*.pid
+*.received
+run-tests
+var/*
+echoserver
+testdata
+

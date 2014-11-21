@@ -1,61 +1,45 @@
-    <!-- FAQ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="faq"></A><HR>
-    <H1 ALIGN="CENTER">FAQ</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      There are various sources of information you should check before
-      writing mails directly to <A
-      HREF="mailto:lirc@bartelmus.de">me</A>. Please read the <A
-      HREF="http://www.lirc.org/">LIRC homepage</A> carefully and have
-      a look at the <A HREF="http://www.lirc.org/faq.html">FAQ</A>.
-    </P>
-    <P>
-      If your question is not answered there try the <A
-      HREF="http://lists.sourceforge.net/mailman/listinfo/lirc-list">LIRC
-      mailing list</A>. Before posting to the list check the <A
-      HREF="http://sourceforge.net/mailarchive/forum.php?forum_name=lirc-list">mailing list archive</A> for an answer.
-    </P>
-
     <!-- BUGS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
+    <A NAME="faq"></A>
     <A NAME="bugs"></A><HR>
-    <H1 ALIGN="CENTER">Reporting bugs</H1>
+    <H1 ALIGN="CENTER">Reporting bugs and FAQ</H1>
+
     <HR WIDTH="70%">
+      There are various sources of information you could check before
+      reporting a bug. Please read the <A HREF="http://www.lirc.org/">
+      LIRC homepage</A> carefully, have a look at the
+      <a HREF="http://www.lirc.org/faq.html">FAQ</a>, check the
+      <a href="https://sourceforge.net/p/lirc/tickets"> issue tracker</a>
+      and search the
+      <A HREF="https://sourceforge.net/p/lirc/mailman/lirc-list/">
+      mail archives</a>.
 
     <P>
-      If you believe that you have found a bug in LIRC your bug report
-      should contain the following information:
+      If you believe that you have found a bug in LIRC please report it on
+      the  <A HREF="http://lists.sourceforge.net/mailman/listinfo/lirc-list">
+      LIRC mailing list</A> or the
+      <a href="https://sourceforge.net/p/lirc/tickets">issue tracker</a>.
+      Information which is valuable in this context includes:
     </P>
     <UL>
       <LI>LIRC version, versions of all other packages involved</LI>
-      <LI>description of the IR hardware you are using</LI>
-      <LI>Are you using a SMP machine?</LI>
-      <LI>output of <em>ls -l /dev/lirc*</em></LI>
-      <LI>output of <em>lsmod</em></LI>
-      <LI>relevant passages from <em>/var/log/messages</em></LI>
-      <LI>contents of lircd's logfile <em>/var/log/lircd</em><BR> Compile
-        LIRC in debug mode. A new command line option
-        (<em>-d[debug_level]</em>) will become available for
-        <em>lircd</em>. The debug level (0 to 5) will control how much
-        additional debug output will be displayed. But be careful with
-        this. After some extensive debug sessions I once discovered that my
-        logfile was using 110 MBytes of disk space. :-)</LI>
-      <LI>a description of the problem so I can reproduce it</LI>
-      <LI>a patch that solves the problem (this one is optional)</LI>
-      <LI>the config files you are using (<em>lircd.conf</em>,
-        <em>lircmd.conf</em>, <em>.lircrc</em>)</LI>
+      <LI>Description of the IR hardware you are using</LI>
+      <LI>Output of <em>ls -l /dev/lirc*</em></LI>
+      <LI>Output of <em>lsmod</em></LI>
+      <LI>Relevant passages from <em>/var/log/messages</em> or journalctl(1)
+           </LI>
+      <LI>Contents of lircd's logfile if you are using a file (otherwise
+         the logs are  in syslog/journlctl). Use a high log level, at least
+         --debug LIRC_TRACE </li>
+      <LI>A description of the problem so it's possible to reproduce it</LI>
+      <LI>A patch that solves the problem (this one is optional)</LI>
+      <LI>The config files you are using (<em>lircd.conf</em>,
+         <em>lircmd.conf</em>, <em>.lircrc</em>,  <em>licr_optionsconf</em>)
+         </LI>
       <LI>If you have problems with a config file try to find the
         shortest example that does not work as one would expect and
         include it.</LI>
     </UL>
-    <P>
-      If you have problems with one of the TV card drivers you should
-      write to the according authors directly. You will find their
-      email addresses in the source code and at the <A
-      HREF="http://www.lirc.org/developers.html">developers page</A>.
-    </P>
 
     <!-- New remotes++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -155,17 +139,13 @@
       You need to provide the following info:
     </P>
     <UL>
-      <LI>version of LIRC that you are using<BR>
+      <LI>Version of LIRC that you are using.
         Check if you are using the current version and if there
         already is a config file for your remote control.</LI>
-      <LI>description of your problem</LI>
-      <LI>config file created by irrecord, if available</LI>
+      <LI>Description of your problem</LI>
+      <LI>Config file created by irrecord, if available</LI>
       <LI>
-       output of irrecord in <em>DEBUG mode</em> (you can compile
-        LIRC in DEBUG mode by selecting this feature in the
-        <em>Software configuration</em> section of the setup program
-        or by adding <em>--enable-debug</em> to the configure script
-        command line)</LI> <LI>output of mode2<BR>
+       Output of irrecord  using --debug=10.
 
         Make sure you hold down some buttons for a while so that
         repeat codes will be visible. Do NOT edit this output. Just
@@ -173,7 +153,4 @@
         url using pastebin.com or so</LI>
 
     </UL>
-    <P>
-      I won't be able to answer any emails that do not contain the
-      necessary information!
     </P>

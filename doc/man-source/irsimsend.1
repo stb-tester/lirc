@@ -1,0 +1,50 @@
+.TH irsimsend "1" "Last change: March 2009" "irsimsend @version@" "User Commands"
+.SH NAME
+irsimsend- send simulated IR data.
+.SH SYNOPSIS
+.B irsimsend [-v|-h|-c <count>|-U plugindir] irsimsend <configfile>
+
+.SH DESCRIPTION
+irsimsend is a simple test tool which given a configuration file will
+send all keys defined in that file or the keys listed in another file.
+The program uses the file driver to log all sent data (pulses/spaces
+durations) into a file 'simsend.out'. The symbols sent are printed on
+stdout.
+
+.SH OPTIONS
+
+.TP 4
+.B -c, --count  <count>
+Repeat each sent signal <count> times.
+
+.TP 4
+.B -U, --plugindir <path>
+Load drivers from <path>, a ':' separated search path similar to $PATH.
+
+.TP 4
+.B -l,--listfile <path>
+Send symbols listed in file instead of just the symbols in the config
+file. The file could either be listing a single key symbol per line,
+or have a complete code string like
+.I 000000000000a123 01 KEY_POWER brand
+on each line.
+
+.TP 4
+.B -v , --version
+Print version and exit.
+
+.TP 4
+.B -h , --help
+Print help message.
+.SH FILES
+
+.TP 4
+.B ~/.cache/irsimsend.log
+Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irsimsend.log
+
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

@@ -1,0 +1,638 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>LIRC - Software</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+        BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR>
+          <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+            <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+            <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+          </TD>
+        </TR>
+        <TR>
+          <TD WIDTH="100%" ALIGN="LEFT" VALIGN="TOP">&#160;<BR>
+
+            <!-- Text -->
+            <HR WIDTH="70%">
+            <H1 ALIGN="CENTER">Software</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <UL>
+                      <LI>
+                        <P>
+                          LIRC is a package that supports receiving and
+                          sending IR signals of the most common IR remote
+                          controls. A list of supported hardware is
+                          available in this <A
+                            HREF="html/table.html">overview</A>. It
+                          contains a daemon that decodes and sends IR
+                          signals, a mouse daemon that translates IR
+                          signals to mouse movements and a couple of user
+                          programs that allow to control your computer
+                          with a remote control.<BR> For Irman support
+                          download the latest <A
+                                                 HREF="http://sourceforge.net/project/showfiles.php?group_id=5444&package_id=317936">libirman</A>
+                          library. <!-- If you want to link the LIRC drivers
+                          statically to your kernel, have a look at
+                          Karsten Scheibler's <A
+                                                 HREF="http://unusedino.de/lirc/lirc_static.html">
+                            static LIRC package</A>. -->
+                        </P>
+                        <P>
+                          Look
+                          <A HREF="http://sourceforge.net/projects/lirc/files/LIRC">
+                          here</a> for current lirc.
+                        </P>
+                      <LI>
+                        <P>
+                          Xrc <A
+                                 HREF="http://prdownloads.sourceforge.net/lirc/xrc-0.6.5.tar.bz2">xrc-0.6.5.tar.bz2</A>,
+                          232 kB<BR>
+                          <BR>
+                          Xrc is a X application that lets you control
+                          your infra-red equipped consumer devices via
+                          LIRC. It requires the <A
+                                                   HREF="http://www.troll.no/">Qt library</A>.<BR>
+                          <A HREF="images/screenshot.gif">Screenshot1</A>,
+                          117&nbsp;kB
+                          <BR>
+                          <A HREF="images/screenshot.jpg">Screenshot2</A>,
+                          56&nbsp;kB
+                          <BR>
+                          <A
+                             HREF="images/screenshot1.gif">Screenshot3</A>
+                          showing the list feature,
+                          10&nbsp;kB
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          Xirw <A
+                                  HREF="http://prdownloads.sourceforge.net/lirc/xirw-0.4.2.tar.bz2">xirw-0.4.2.tar.bz2</A>,
+                          46 kB<BR>
+                          <BR>
+                          Xirw is a Qt-based X-application that shows you
+                          which commands are received by lirc.
+                          <BR>
+                          It requires the <A
+                                             HREF="http://www.troll.no/">Qt library</A>.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          XMMS Plugin <A
+                                         HREF="http://prdownloads.sourceforge.net/lirc/lirc-xmms-plugin-1.4.tar.bz2">lirc-xmms-plugin-1.4.tar.bz2</A>,
+                          143 kB<BR>
+                          <BR>
+                          This is a LIRC plugin for <A
+                                                       HREF="http://www.xmms.org/">xmms</A>. There's
+                          also a patch for lirc-xmms-plugin-1.2 from
+                          Ronald Naber to <A
+                                             HREF="http://members.tripodnet.nl/slierp/lirc-xmms.html">handle
+                            a large number of mp3 albums</A>.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://tardyp.free.fr/plircc/">plircc</A>
+                          (by Matti Airas)<BR>
+                          <BR>
+                          Perl LIRC Client, plircc, is a replacement for
+                          the standard irexec and irxevent LIRC
+                          clients. It implements a stack automaton for
+                          handling the states of the remote control,
+                          making it quite a bit more flexible than the
+                          standard tools.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://jlirc.sourceforge.net/">jlirc</A>
+                          (by Bjorn Bringert)<BR>
+                          <BR>
+                          Java API and tools for LIRC and WinLIRC
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://perso.ens-lyon.fr/damien.pous/shared/ocaml/lirc/">OCaml-LIRC</A>
+                          (by Damien Pous)<BR>
+                          <BR>
+                          OCaml interface to the lirc_client C API
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://sourceforge.net/projects/pylirc">pyLirc</A>
+                          (by Linus McCabe)<BR>
+                          <BR>
+                          Python module to interact with remote controls via lirc.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://search.cpan.org/~mgrimes/">Perl module</A>
+                          (by Mark Grimes)<BR>
+                          <BR>
+                          LIRC perl module. The module encasuplates
+                          parsing the Lirc config file (.lircrc), opening
+                          a connection to the Lirc device, and retrieving
+                          events from the device.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.bellinux.com/httpirc">HttpIrc</A>
+                          (by Alessio Bellino)<BR>
+                          <BR>
+                          PHP framework to use a (Win)LIRC server for sending infra-red commands from any web browser through HTTP.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.theiling.de/projects/pamlirc.html">PAM Authentication via LIRC</A>
+                          (by Henrik Theiling)<BR>
+                          <BR>
+                          <em>pam_lirc</em> is a PAM authentication module that lets you type your password on a remote control supported by LIRC.
+                        </P>
+                      </LI>
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <BR>
+            <HR WIDTH="70%"><BR>
+            <H1 ALIGN="CENTER">Applications with LIRC support</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <UL>
+                      <li>  <p><a href="http://www.videolan.org/vlc/index.html">
+                      VLC,</a> the well-known cross-platform media player
+                      supports lirc </p></li>
+                      <li> <a href="http://www.mythtv.org/">mythtv</a> is an
+                          open source DVR and HTPC solution which more or less
+                          assumes lirc to work. </li>
+                      <li><p> The <a href="http://xbmc.org/">xbmc</a> HTPC
+                           software supports lirc. </p> </li>
+
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://sourceforge.net/projects/mdtoceditor/">
+                            Minidisc TOC Editor</A><BR>
+                          <BR>
+                          <em>Minidisc TOC Editor</em> is an editor for
+                          the minidisc table of contents ((U)TOC).  The
+                          TOC will be sent to the deck using infra-red
+                          signals (LIRC).
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://sourceforge.net/projects/kwintv/">kwintv</A><BR>
+                          <BR>
+                          kwintv is a TV application for the
+                          <A HREF="http://www.kde.org">K Desktop Environment
+                            (KDE)</A> based on the
+                          <a
+                             href="http://roadrunner.swansea.uk.linux.org/v4l.shtml">video4linux</a>
+                          interface. kwintv allows you to watch TV in a
+                          window on your PC screen
+                          using a TV card which is supported by a
+                          <a
+                             href="http://roadrunner.swansea.uk.linux.org/v4l.shtml">video4linux</a>
+                          - based driver.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://zapping.sourceforge.net/">Zapping</A><BR>
+                          Zapping is a nice Gnome TV viewer.<BR>
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://mimms.sourceforge.net/">rdj</A><BR>
+                          <BR>
+                          rdj is a GTK+ radio interface for bttv video
+                          devices with radio tuners.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://irmp3.sourceforge.net/">IRMP3</A>
+                          - Multimedia Audio Jukebox<BR>
+                          <BR>
+                          IRMP3 is a multimedia audio jukebox for
+                          Linux. Normally it runs in background and does
+                          not provide any screen output. IRMP3 can be used
+                          to play mp3 files and has support for several
+                          input and display devices, like IR remote
+                          controls, LCD displays and keypads. A flexible,
+                          modularized source allows easy implementation of
+                          new functions.
+                        </P>
+                      </LI>
+                      <!-- LI>
+                    <P>
+                    <A
+                      HREF="http://www.leg.uct.ac.za/~carl/x11amp-lirc/">
+                      LIRC X11AMP Plugin</A> (link is currently
+                      broken, I've put the package <A
+                      HREF="software/snapshots/">here</A> in the
+                      meantime)<BR>
+                    <BR>
+                      LIRC Infra Red Controller for <A
+                      HREF="http://www.x11amp.org/">X11Amp</A>
+                    </P>
+                    </LI -->
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://sajberjukebox.sourceforge.net/">
+                            The Sajber Jukebox</A><BR>
+                          <BR>
+                          Sajber Jukebox is a mpeg layer 3 player with a
+                          graphical user interface. It's based on Woo-jae
+                          Jung's splay for the audio and Qt's graphical
+                          library for the interface.
+                        </P>
+                      </LI>
+                      <li>
+                        <P>
+                          <A
+                             HREF="http://xine.sourceforge.net/">xine
+                          </A><BR>
+                          <BR>
+                          xine is a free GPL-licensed video player for
+                          Unix-like systems. We can now play back mpeg-1
+                          and mpeg-2 system (audio and video) streams,
+                          mpeg elementary streams (video-only streams and
+                          mp3 audio streams) and AVI files (using external
+                          win32 codecs). xine supports direct DVD playback
+                          as well as VCD playback.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://thot.banki.hu/esp-team/MPlayer.html">MPlayer
+                          </A> -  The Movie Player for Linux<BR>
+                          <BR>
+                          Yes. Yet another movie player for linux.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://members.ozemail.com.au/~marimus/">osdmenu
+                          </A><BR>
+                          <BR>
+                          OSDMenu is a quick and dirty system for
+                          displaying navigable on-screen menus using
+                          libxosd. At the moment it (only) supports
+                          navigation via lirc. OSDMenu allows you to
+                          navigate custom menus and select items using
+                          only three (or even two) buttons on an IR remote
+                          control with LIRC.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://www.blackfiveservices.co.uk/">animenu
+                          </A><BR>
+                          <BR>
+                          Animenu is a simple menu program, fairly similar
+                          in purpose to osdmenu, but intended to be more
+                          graphically impressive.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://ostatic.com/irmenu">irmenu
+                          </A><BR>
+                          <BR>
+                          IrMenu is a program that allows to navigate a
+                          text menu using a remote control.  Prompts are
+                          &quot;displayed&quot;, that is, spoken, using your
+                          favorite text-to-speech program, such as IBM <A
+                                                                          HREF="http://viavoice.ibm.com">ViaVoice</A> or
+                          <A
+                             HREF="http://www.cstr.ed.ac.uk/projects/festival/">festival</A>.
+                        </P>
+                      </LI>
+                      <li>
+                        <P>
+                          <A HREF="http://sf.net/projects/irexecosd">irexecosd</A><BR>
+                          <BR>
+                          This software add an OSD display to irexec.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://pyhtpc.sourceforge.net">pyhtpc</A><BR>
+                          <BR>
+                          This project aims to create a workable GUI using
+                          the Python langauge. This GUI is designed to
+                          browse Media repositories and play the media
+                          items (sometimes refered to as an HTPC
+                          application).
+                        </P>
+                      </LI>
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <BR>
+            <HR WIDTH="70%"><BR>
+            <H1 ALIGN="CENTER">Ports</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <UL>
+                      <LI>
+                        <P>
+                          <A HREF="http://winlirc.sourceforge.net/">
+                            Windows port</A><BR>
+                          <BR>
+                          WinLIRC is the Windows 95/98 equivalent of LIRC,
+                          the Linux Infrared Remote Control program. WinLIRC
+                          is written and maintained by <A
+                                                          HREF="mailto:jim@jtan.com">Jim Paris</A>. It allows
+                          you to control your computer via a standard
+                          infrared remote control.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://ruslat.hotbox.ru/WLiRC/WLiRC.htm">Win98/NT4.0 port</A>
+                          <BR>
+                          <BR>
+                          WLiRC allows you to control your TV, VCR via
+                          computer.  WLiRC only sends commands in RAW
+                          format. For reception of IR-commands use WinLIRC
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          Mac OS X<BR>
+                          <BR>
+                          Current versions of LIRC work on Darwin with the
+                          audio driver from <A HREF="http://www.inf.ethz.ch/~mringwal/lirc/">Matthias
+                            Ringwald</A>.
+                        </P>
+                      </LI>
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <BR>
+            <HR WIDTH="70%"><BR>
+            <H1 ALIGN="CENTER">Misc</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <UL>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.hpcalc.org/details.php?id=5565">
+                            HP48Lirc</A>, <A HREF="http://www.hpcalc.org/hp48/utils/comms/hp48lirc.zip">hp48lirc.zip</A><BR>
+                          <BR>
+                          Use your HP48 to interface with LIRC.
+                        </P>
+                      </LI>
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+
+            <BR>
+            <HR WIDTH="70%"><BR>
+            <H1 ALIGN="CENTER">Hardware projects using LIRC</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <UL>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.open7x0.org/">Siemens
+                            Gigaset M7x0 Digital TV receivers</A>
+                          <BR>
+                          <BR>
+                          This is a commercial product with an
+                          alternative firmware developed by the
+                          open-source community.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.pepper.com/products/pepper.html">Pepper Pad</A>
+                          <BR>
+                          <BR>
+                          This is a commercial product. Quote from the
+                          website: &bdquo;The new Pepper Pad handheld media
+                          computer is the instant-on connection to the
+                          world of digital media and broadband
+                          services. The 2.3 lb. Pad has everything your
+                          customer wants most -- and nothing they don't,
+                          making their online experience fast, easy and
+                          fun.&ldquo;
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://wiki.tuxbox.org/DBox2_Software_Projekt">Tuxbox</A> - alternative operating system for the DBox2 set-top box<BR>
+                          <BR>
+                          Here you can find a <A
+                          HREF="http://wiki.tuxbox.org/LIRC">HOWTO</A>
+                          describing the configuration of LIRC on the
+                          DBox2.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.dashpc.com">DashPC - The
+                            LinuxCar</A>
+                          <BR>
+                          <BR>
+                          The DashPC car multimedia system is a UI for
+                          automobile multimedia implemented in Linux. Its
+                          provides a comprehensive interface for MP3, DVD,
+                          and CD playback, a radio card interface, and GPS
+                          navigation. It features an easy-to-use interface
+                          and a modular design. Its functionality is
+                          configurable and the system is expandable with
+                          the use of plug-ins, which currently include
+                          plug-ins for controlling video4linux supported
+                          radio cards, viewing images, and running
+                          external commands.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://paus.sourceforge.net">
+                            PAUS - Perl AUtomation System</A>
+                          <BR>
+                          <BR>
+                          With PAUS you can: control your house, make an
+                          alert system, create a remote-controlled mp3box
+                          and control whatever you want by means of simple
+                          scripts!  The program has modules to interface
+                          with LIRC, LCDPROC, the velleman k8000, etc.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://aelix.cs.iastate.edu/">
+                            LCDAT - Linux Compressed Digital Audio
+                            Transport</A>
+                          <BR>
+                          <BR>
+                          The LCDAT project aims to be a complete digital
+                          audio solution for a home audio system. Currently
+                          the main focus is placed on the capability to
+                          encode and decode the popular MP3 audio format,
+                          however modular software design makes addition of
+                          other audio codecs trivial.
+                        </P>
+                      </LI>
+                      <!-- LI>
+                    <P>
+                    <A
+                      HREF="http://home.ctc.shadowlan.net/%7Evinny/projects/CarPC/">
+                      CarPC Front Page</A><BR>
+                    <BR>
+                      What do MP3, GPS, and Linux have in common?
+                      They are in your car.
+                    </P>
+                    </LI -->
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://www.softlab.ece.ntua.gr/~sivann/rxcontrol/">
+                            MP3-O-PHONO</A><BR>
+                          <BR>
+                          This page is about a device that plays mp3 files
+                          from a CDROM. It's a transformed Intel-based PC
+                          running Linux and rxcontrol, with an LCD and
+                          keypad.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://www.multimania.com/soif/ltt/mp3/index.shtml">
+                            Car Mp3 Player by LTT Team</A><BR>
+                          <BR>
+                          Warning! This page is in French.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A
+                             HREF="http://www.cadsoft.de/people/kls/vdr/index.htm">
+                            VDR - Video Disk Recorder</A><BR>
+                          <BR>
+                          This project describes how to build your own
+                          digital satellite receiver and video disk
+                          recorder.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://www.engbedded.com/wake-on-lirc">
+                            Wake-On-LIRC</A><BR>
+                          <BR>
+                          With Wake-On-LIRC you can turn on your PC with
+                          your IR remote by sending a Wake-On-LAN pulse.
+                        </P>
+                      </LI>
+                      <LI>
+                        <P>
+                          <A HREF="http://user.cs.tu-berlin.de/~mutax/IR-Schalter/">
+                            LIRC-kompatibler Infraroteinschalter</A>
+                        </P>
+                      </LI>
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+            <!-- Text -->
+
+            <BR>&#160;<BR>
+            <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+            <BR>&#160;<BR>
+          </TD>
+        </TR>
+        <TR>
+          <TD CLASS="menu" WIDTH="100%">
+            &#160;<BR>
+          </TD>
+        </TR>
+    </TABLE>
+  </BODY>
+</HTML>

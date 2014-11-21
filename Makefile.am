@@ -1,59 +1,78 @@
-
 ## Process this file with automake to produce Makefile.in
 ## Makefile.am, (c)1999 Tom Wheeley <tw104@york.ac.uk>
-ACLOCAL_AMFLAGS             = -I m4
+ACLOCAL_AMFLAGS         = -I m4
 
-## we need version 1.5 of automake for DIST_SUBDIRS to work and dist-bzip2.
-AUTOMAKE_OPTIONS = 1.5 check-news dist-bzip2
+AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2 -Wno-portability
 
-EXTRA_DIST =  setup.sh setup-driver.sh setup-functions.sh setup.data data2setup.sh README TODO
-EXTRA_DIST += autogen.sh
+EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 
-## daemons/ and tools/ should appear before doc/ for help2man to work.
-if SYSTEMD_INSTALL
-    SYSTEMD_DIR = systemd
+DISTCLEANFILES          = configure.sh  ChangeLog paths.h
+CLEANFILES              = *~ remotes/*~ contrib/*~
+CHANGELOG_REVS          = lirc-0_9_1..HEAD
+TAR_DEREFERENCE         = $(shell tar --version | grep -q GNU \
+				 && echo 'tar -h' || echo 'tar -L')
+
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+    --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
+
+BUILT_SOURCES           = paths.h
+
+if WITH_SYSTEMDSYSTEMUNITDIR
+    SYSTEMD_DIR         = systemd
 endif
 
-SUBDIRS = drivers daemons tools doc $(SYSTEMD_DIR)
+SUBDIRS                 = lib daemons tools doc $(SYSTEMD_DIR) plugins
 
 if INSTALL_ETC
-lirc_confdir        = $(sysconfdir)/lirc
-dist_lirc_conf_DATA = lircd.conf lirc_options.conf lircmd.conf
+
+lirc_confdir            = $(sysconfdir)/lirc
+dist_lirc_conf_DATA     = lircd.conf lirc_options.conf lircmd.conf
+
+lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
+dist_lircdconfig_DATA	= README.conf.d
+
 endif
 
-## From automake documentation:
-## Note that EXTRA_DIST can only handle files in the current
-## directory; files in other directories will cause make dist runtime
-## failures.
+pkgconfigdir            = $(libdir)/pkgconfig
+dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
-## ----------------------------------------------------------------------
-## flags to pass to ./configure when calling "make distcheck" and "make
-## distcheck-light". Try to check as many features as possible! Also
-## need to give enable-sandboxed, so that staged install does not fail.
+nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
 
-## !!! BIG WARNING: this needs to be tweaked a bit more !!! ##
+headerdir               = $(includedir)/lirc
+nobase_header_HEADERS   = include/media/lirc.h
+header_HEADERS          = paths.h
 
-DISTCHECK_FLAGS = --with-driver=userspace --enable-sandboxed --sysconfdir=/tmp/etc
-DISTCHECK_CONFIGURE_FLAGS = ${DISTCHECK_FLAGS}
-DISTCHECK_LIGHT_FLAGS = --with-driver=none --enable-sandboxed
+install-data-hook:
+	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
+	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
+	cd $(srcdir); $(TAR_DEREFERENCE) -cf - lirc.org | \
+	    tar -C $(DESTDIR)$(docdir) -xf -
+	rm $(DESTDIR)$(datadir)/lirc/configs/check_configs.py
 
-distcheck-light:
-	$(MAKE) $(AM_MAKEFLAGS) DISTCHECK_FLAGS="$(DISTCHECK_LIGHT_FLAGS)" distcheck
+dist-hook: ChangeLog
+	chmod u+w $(distdir)
+	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
 
-m4dir                       = m4
-dist_m4_DATA                = m4/ac-path-kernel-source.m4
+uninstall-local:
+	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
 
-# ----------------------------------------------------------------------
+paths.h: Makefile
+	@echo "#ifndef PATHS_H"          >$@
+	@echo "#define PATHS_H"          >>$@
+	@echo '#define DATADIR          "$(datadir)"' >>$@
+	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>$@
+	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>$@
+	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>$@
+	@echo '#define LIBDIR           "$(libdir)"' >>$@
+	@echo "#endif"                  >>$@
 
-setup-driver.sh: data2setup.sh setup.data
-	./data2setup.sh > setup-driver.sh
+ChangeLog: .phony
+	test -s ChangeLog || ( \
+	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
+	) > ChangeLog
 
-dist-hook:
-	(cd $(srcdir)/contrib/hal/ && ./gen-hal-fdi.pl)
-	for f in contrib remotes; do \
-		cp -pr $(srcdir)/$$f $(distdir)/$$f; done
-	git log >$(distdir)/ChangeLog || :
+lirc.org.tar: .phony
+	$(TAR_DEREFERENCE) -cf $@ lirc.org
 
-DISTCLEANFILES = configure.sh .setup.config
-
-CLEANFILES = *~ remotes/*~ contrib/*~
+.phony:

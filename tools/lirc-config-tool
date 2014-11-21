@@ -1,0 +1,1073 @@
+#!/bin/bash
+# vim: set expandtab ts=4 sw=4:
+#
+# Generate lircrc files for various applications
+#
+# Usage: See help function below
+#
+# BTN_* keys in namespace are ignored.
+
+readonly   LIRC_CONF='/etc/lirc/lircd.conf'
+readonly   OUTPUT_DIR="$HOME/.config/lirc"
+
+declare -a  ALL_LIRCD_KEYS      # All buttons in /etc/lirc/lircd.conf
+declare -a  BAD_LIRCD_KEYS      # Buttons not listed by irrecord -l
+declare -a  DUPLICATE_KEYS
+declare -a  GOOD_KEYS
+declare -ar GOOD_KEYS=( $( irrecord -l | egrep '^KEY_' |
+                               egrep -v 'KEY_KP[0-9]' |
+                               egrep -v 'KEY_NUMERIC_[0-9]')
+)
+
+declare -A OPTIONS             # Option values, with single-letter
+                               # option as key.
+function help
+{
+    cat << EOF
+Generate lirc configuration files.
+
+Usage:
+    $( basename $0 ) -s [-c file]
+    $( basename $0 ) -u [-c file]
+    $( basename $0 ) -l
+    $( basename $0 ) [-o directory] [-c file] [files...]
+    $( basename $0 ) [-d] [-c file] [files...]
+
+Options:
+
+ -s         Scan lircd file for unusable keycodes and exit.
+ -u         Update existing lircd file to use key symbols in namespace.
+ -l         List available files to generate.
+ -d         Dump file template(s) usable as stdin on stdout.
+ -o <dir>   Output directory, defaults to $OUTPUT_DIR.
+ -c <file>  lircd(8) config file, defaults to $LIRC_CONF.
+ -h         Print this message.
+ -m         Display manpage.
+
+[files] is a list of files to build or dump, as listed by -l. Defaults
+to all available files except stdin.
+
+Only one of the options -s, -u, -l  and -d can be given.
+EOF
+}
+
+function manpage()
+{
+    cat << EOF
+.TH $(basename $0)"1" "Last change: Sep 2014" "lircd @version@" \
+    "System Administration Utilities"
+.SH NAME
+$(basename $0) \- tool to scan and generate lirc config files
+.SH SYNOPSIS
+.br
+.B
+.LL 90
+$(basename $0) \fR  \-s|-u [ -c FILE]
+.br
+.B
+.LL=20
+$(basename $0) \fR [-o DIR] [-d] [-c FILE] [FILES]
+.br
+.B
+$(basename $0) \fR  \-l
+.br
+.SH OPTIONS
+Without options, generates all available application specific lircrc
+files  in ~/.config/lirc. The optional [files] is a list of files to
+build or dump, as listed by -l.
+.TP
+\fB\-s\fR
+Scan lircd file for key symbols which are duplicated or not in namespace.
+.TP
+\fB\-u\fR
+Update existing lircd file to use key symbols in namespace.
+.TP
+\fB\-l\fR
+List available files to generate.
+.TP
+\fB\-d\fR
+Dump file templates usable as stdin on stdout.
+.TP
+\fB\-o \<dir\>\fR
+Output directory, defaults to ~/.config/lirc
+.TP
+\fB\-c \<lircd-filename\>\fR
+lircd(8) config file, defaults to /etc/lirc/lircd.conf
+.TP
+\fB\-h\fR
+Print help message
+.PP
+.SH DESCRIPTION
+.PP
+The script is designed to assist in the setup of the lirc(8)
+configuration files for ordinary remote controls. It is not aimed
+to handle full-blown keyboards or joystick devices. The generated
+lircrc files represents a starting point which will need further,
+manual refinements but might "work" in a basic sense in many cases.
+.PP
+The setup involves normalizing the lircd.conf to use symbols in the
+legal namespace, and to create application specific lircrc files which
+uses the normalized symbols.
+.PP
+To assist normalizing /etc/lircd.conf, the script can report symbols
+used which not are in the namespace. It can can also update many of
+these symbols to corresponding symbols within the namespace.
+.PP
+The script also can create application specific lircrc files such as
+mythtv.lircrc or vlc.lircrc. It then  uses  the normalized
+key symbols in /etc/lirdc.conf. By default, files are created in
+~/.config/lirc.
+.PP
+Generated lircrc files basically combines known keys from
+/etc/lirc/lircd.conf with template data for an application. The process
+results in a lircrc file, a list a of unused keys and some entries
+which don't match any existing key. The unused keys and unmatched entries
+are written as comments into the generated file.
+
+An 'illegal' key i. e., a key not in namespace, will not match any entry
+and will thus always be unused. However, it's perfectly possible to
+use it later on while manually modifying the lircrc files.
+.PP
+When updating files, script always makes backup copies.
+.PP
+The generated lircrc files are intended to be included in a main
+~/.config/lircrc file. A minimal such might look like
+.IP
+    include ~/.config/lirc/mythtv.lircrc
+
+.SH EXAMPLES
+.PP
+
+Scan /etc/lirc/lircd.conf for duplicated symbols and symbols not in namespace:
+.IP
+$(basename $0) -s
+.PP
+Update a local lircd.conf file to use symbols in namespace:
+.IP
+$(basename $0) -uc ./lircd.conf
+.PP
+List available files to generate:
+.IP
+$(basename $0) -l
+.PP
+Generate one of the files listed by -l, creates ~/.config/lirc/mythtv.lircrc:
+.IP
+$(basename $0) mythtv
+.PP
+Dump template data  for mythtv:
+.IP
+$(basename $0) -d mythtv \>mythtv.lircdata
+.PP
+Use possibly edited data to create a modified mythtv.lircrc in current dir:
+.IP
+$(basename $0) -o . stdin \< mythtv.lircdata
+
+.SH LIRCD.CONF CONVERSIONS
+The -s option simply reports all key symbols not in namespace. It also
+reports some symbols which although legal are inappropriate in this
+context, notably KEY_NUMERIC_0..KEY_NUMERIC_9. If present, duplicated
+keys are also reported.
+
+The -u option converts several known symbols to their corresponding
+KEY_* symbols. Symbols which have names like KEY_WINDOWS but not are in
+namespace gets a X_ prefix e. g., KEY_WINDOWS -> X_KEY_WINDOWS. The
+converted file thus guarantees that any key symbol starting with
+KEY_ is a legal symbol.
+
+All known numeric keys such as '1', 'KEY_1', 'KEY_KP_1', 'KEY_NUMERIC_1
+ are converted to KEY_1.
+
+All modifications are marked by comments in file.
+
+.SH EXTENDING
+The script can be extended to support more applications by providing a shell
+function named *.lircdata. E. g., to add a new application named
+"my_app" based on the built-in vlc application:
+.PP
+.ft CW
+         $ $(basename $0) -d vlc >my_app.lircdata
+         $ function my_app_lircdata()
+         > {
+         >    cat my_app.lircdata
+         > }
+         $ export -f my_app_lircdata
+         $ $(basename $0)  my_app
+.ft R
+
+.SH DATA FORMAT
+The script uses a simple, line-oriented format to represent the lircrc files.
+The purpose of the format is to be compact and thus to give a good overview,
+and also to be easy to parse.  Each line is divided in comma-separated tokens.
+There are four kind of lines.
+.PP
+Comment lines begins with a '#'. These are copied verbatim to the output file.
+.PP
+The first data line represents global items, applicable to all entrys. The
+first word is the program name. It's used in the first 'program=' line.
+Following words, if present, are optional lines which will be appended to each
+entry in the file.
+.PP
+A data line starting with 'begin' or 'end' is a  mode block designator. It's
+copied verbatim to output file.
+.PP
+All other data lines represents a button/config entry. The format is
+.ft CW
+    <button> <config> [extra]\.\.\.
+.ft
+.br
+The button value  is used in the  button = line, and the config item is used
+in the config = line. Both are mandatory. Following items, if any, are copied
+as verbatim lines to the entry.
+.PP
+An unlikely example: The data format
+
+.ft CW
+    myprog, flags = quit
+    begin volume_mode
+    KEY_VOLUMEUP, volume-up, delay=4, repeat=1
+    KEY_VOLUMEDOWN, volume-down
+    end volume_mode
+.ft
+.PP
+translates to:
+.PP
+.ft CW
+    begin volume_mode
+        begin
+            program = myprog
+            button  = KEY_VOLUME_UP
+            config  = volume-up
+            delay   = 4
+            repeat  = 1
+            flags   = quit
+        end
+        begin
+            program = myprog
+            button  = KEY_VOLUME_DOWN
+            config  = volume-down
+            flags   = quit
+        end
+    end volume_mode
+.ft
+
+.SH COPYRIGHT
+License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.PP
+lircd(8)
+.br
+http://www.lirc.org/ - Main lirc documentation
+
+EOF
+}
+
+
+function vlc_popupmenu_mode_lircdata
+{
+    xdotool="env DISPLAY=:0 xdotool"
+    xdotool_vlc="$xdotool search \' - VLC\'"
+    cat <<EOF
+      # Handle the context menu by letting xdotool emulate right click etc.
+      irexec, flags  = quit
+      begin vlc
+        KEY_UP,     $xdotool_vlc key Up
+        KEY_DOWN,   $xdotool_vlc key Down
+        KEY_LEFT,   $xdotool_vlc key Left
+        KEY_RIGHT,  $xdotool_vlc key Right
+        KEY_OK,     $xdotool_vlc key Return
+        KEY_ENTER,  $xdotool_vlc key Return
+        KEY_MENU,   $xdotool_vlc mousemove --window %1 200 200 click 3
+        KEY_BACK,   $xdotool mousemove_relative --  -10 -10 click 1
+      end vlc
+EOF
+}
+
+
+function vlc_lircdata
+{
+    cat <<EOF
+        # See http://wiki.videolan.org/How_to_Use_Lirc
+        vlc
+        KEY_REWIND,             key-slower
+        KEY_FASTFORWARD,        key-faster
+        KEY_MUTE,               key-vol-mute
+        KEY_STOP,               key-quit
+        KEY_EXIT,               key-quit
+        KEY_PAUSE,              key-pause
+        KEY_PLAY_PAUSE.         key-play-pause
+        KEY_PLAY,               key-play
+        KEY_VOLUMEUP,           key-vol-up
+        KEY_VOLUMEDOWN,         key-vol-down
+        KEY_DVD,                key-disc-menu
+        KEY_NEXT,               key-next
+        KEY_PREVIOUS,           key-prev
+        KEY_SUBTITLE,           key-subtitle-track
+        KEY_AUDIO,              key-audiodevice-cycle
+        KEY_LANGUAGE,           key-audiotrack
+        KEY_NEXTSONG,           key-next
+        KEY_PAGEUP,             key-next
+        KEY_PAGEDOWN,           key-previous
+        KEY_PREVIOUSSONG,       key-previous
+        KEY_TV,                 key-aspect-ratio
+        KEY_SCALE,              key-toggle-autoscale
+        KEY_ZOOMIN,             key-incr-scalefactor
+        KEY_ZOOMOUT,            key-decr-scalefactor
+EOF
+}
+
+
+function mplayer_lircdata
+{
+    cat <<EOF
+        # See http://www.mplayerhq.hu/DOCS/HTML/en/control.html
+        mplayer
+        KEY_UP,                 pt_up-step 1,         delay = 5
+        KEY_DOWN,               pt_up_step -1,        delay = 5
+        KEY_LEFT,               pt_step -1,           delay = 5
+        KEY_RIGHT,              pt_step 1,            delay = 5
+        KEY_REWIND,             seek -30 0
+        KEY_FASTFORWARD,        seek +30 0
+        KEY_MUTE,               mute
+        KEY_VOLUMEUP,           volume +1,            delay = 5
+        KEY_VOLUMEDOWN,         volume -1,            delay = 5
+        KEY_POWER,              quit
+        KEY_STOP,               quit
+        KEY_CHANNELDOWN,        tv_step_channel -1,   delay = 5
+        KEY_CHANNELUP,          tv_step_channel +1,   delay = 5
+        KEY_PLAYPAUSE,          pause
+        KEY_PAUSE,              pause
+        KEY_PLAY,               seek +1
+        KEY_MENU,               osd
+        KEY_F11                 vo_fullscreen
+        TBD_AUDIO_DELAY_UP,     audio_delay +0.1,     delay = 5
+        TBD_AUDIO_DELAY_DOWN,   audio_delay -0.1,     delay = 5
+EOF
+}
+
+
+function mythtv_lircdata
+{
+    cat << EOF
+        # See http://www.mythtv.org/wiki/LIRC and
+        # http://www.mythtv.org/wiki/Keybindings
+        mythtv
+        KEY_UP,                 Up,                   delay = 5
+        KEY_DOWN,               Down,                 delay = 5
+        KEY_LEFT,               Left,                 delay = 5
+        KEY_RIGHT,              Right,                delay = 5
+        KEY_END,                End
+        KEY_PAGEUP,             PageUp
+        KEY_PAGEDOWN,           PageDown
+        KEY_REWIND,             <
+        KEY_FASTFORWARD,        >
+        KEY_NEXT,               Z
+        KEY_PREVIOUS,           Q
+        KEY_MUTE,               |
+        KEY_CHANNELDOWN,        Down,                 delay = 5
+        KEY_CHANNELUP,          Up,                   delay = 5
+        KEY_OK,                 Return
+        KEY_MENU,               M
+        KEY_INFO,               I
+        KEY_PAUSE,              P
+        KEY_PLAY,               P
+        KEY_PLAYPAUSE,          P
+        KEY_RECORD,             R
+        KEY_0,                  0
+        KEY_1,                  1
+        KEY_2,                  2
+        KEY_3,                  3
+        KEY_4,                  4
+        KEY_5,                  5
+        KEY_6,                  6
+        KEY_7,                  7
+        KEY_8,                  8
+        KEY_9,                  9
+        KEY_CLEAR,              Esc
+        KEY_ENTER,              Return
+        KEY_DELETE,             D
+        KEY_EPG,                S
+        KEY_CYCLEWINDOWS,       W
+        KEY_TUNER,              C
+        TBD_CYCLE_COLOR_CTRL,   F
+        TBD_NEXT_FAVO_CHAN,     /
+        TBD_TOGGLE_FAVO_STATUS, ?
+        TBD_INCREASE_SPEED,     U,                    delay = 5
+        TBD_DECREASE_SPEED,     J,                    delay = 5
+EOF
+}
+
+
+function volume_mythtv_lircdata
+# Separate, since many (most?) doesn't use myth internal volume control.
+{
+    cat << EOF
+        mythtv
+        KEY_VOLUMEDOWN,          [
+        KEY_VOLUMEUP,            ]
+EOF
+}
+
+
+function volume_pulse_lircdata
+# Volume control using the module-lirc pulseaudio plugin.
+{
+    cat << EOF
+        # See http://www.pulseaudio.org/wiki/Modules#module-lirc
+        PulseAudio
+        KEY_VOLUMEDOWN,          volume-down
+        KEY_VOLUMEUP,            volume-up
+        X_TBD,                   mute-toggle
+        X_TBD,                   mute
+        X_TBD,                   reset
+EOF
+}
+
+
+function volume_alsa_lircdata
+# Volume control using the alsa mixer.
+{
+    local volume_lines="repeat = 10, delay  = 10"
+    cat << EOF
+        irexec
+        KEY_VOLUMEDOWN, amixer set Master 3%- &> /dev/null, $volume_lines
+        KEY_VOLUMEUP,   amixer set Master 3%+ &> /dev/null, $volume_lines
+EOF
+}
+
+
+function mode_numeric_lircdata
+{
+    local xdotool="env DISPLAY=:0 xdotool"
+    cat << EOF
+    irexec, flags  = quit
+        begin numeric
+           KEY_0,              $xdotool key 0
+           KEY_1,              $xdotool key 1
+           KEY_2,              $xdotool key 2
+           KEY_3,              $xdotool key 3
+           KEY_4,              $xdotool key 4
+           KEY_5,              $xdotool key 5
+           KEY_6,              $xdotool key 6
+           KEY_7,              $xdotool key 7
+           KEY_8,              $xdotool key 8
+           KEY_9,              $xdotool key 9
+           TBD_NUMERIC_POUND,  $xdotool key TBD
+           TBD_NUMERICSTAR,    $xdotool key TBD
+        end numeric
+EOF
+}
+
+
+function mode_browser_lircdata
+{
+    local xdotool="env DISPLAY=:0 xdotool"
+    local arrow_lines="repeat = 1, delay  = 4"
+    local mousemove="$xdotool mousemove_relative"
+    cat << EOF
+        # Uses arrow keys + OK-buttons to move cursor and click.
+        # Numeric keyboard are used as arrow keys on a PC keyboard.
+        # Note the flash-download script, it's just an example.
+        irexec, flags  = quit
+        begin browser
+           KEY_OK,            $xdotool click 1
+           KEY_INFO,          $xdotool click 3
+           KEY_BACK,          $xdotool key Escape
+           KEY_UP,            $mousemove 0 -10,     $arrow_lines
+           KEY_DOWN,          $mousemove 0 10,      $arrow_lines
+           KEY_RIGHT,         $mousemove 10 0,      $arrow_lines
+           KEY_LEFT,          $mousemove -- -10 0,  $arrow_lines
+           KEY_TV,            $xdotool key F11
+           KEY_CHANNELUP,     $xdotool key ctrl+plus
+           KEY_CHANNELDOWN,   $xdotool key ctrl+minus
+           KEY_HOME,          $xdotool key alt+F4
+           KEY_STOP,          $xdotool key ctrl+q
+           KEY_PREVIOUS,      $xdotool key ctrl+shift+Tab
+           KEY_NEXT,          $xdotool key ctrl+Tab
+           KEY_PAUSE,         $xdotool key Space
+           KEY_RECORD,        /usr/local/bin/flash-download &
+           KEY_PLAY,          $xdotool key Tab
+           KEY_STOP,          $xdotool key ctrl+q
+           KEY_FASTFORWARD,   $xdotool key alt+Right
+           KEY_REWIND,        $xdotool key Escape
+           KEY_1,             $xdotool key Home
+           KEY_2,             $xdotool key Up
+           KEY_3,             $xdotool key Page_Up
+           KEY_4,             $xdotool key Left
+           KEY_5,             $xdotool key Return
+           KEY_6,             $xdotool key Right
+           KEY_7,             $xdotool key End
+           KEY_8,             $xdotool key Down
+           KEY_9,             $xdotool key Page_Down
+           KEY_ENTER,         $xdotool key Return
+        end browser
+EOF
+}
+
+
+function stdin_lircdata()
+{
+    cat
+}
+
+
+function print_data
+{
+    eval ${1}_lircdata |
+      sed -e 's/^[ ]*//#   Strip leading blanks' \
+          -e 's/[ ]*$//#   Strip trailing blanks' \
+          -e 's/,[ ]*/,/g# "a,    b" -> "a,b"' || {
+                  echo "Cannot invoke function $1_lircdata. Sigh." >&2
+                  exit 2
+          }
+}
+
+
+function print_lircd_entry
+{
+    local prog=$1; local button=$2; local config=$3;
+
+    echo
+    echo "    begin"
+    echo "        prog   = $prog"
+    echo "        button = $button"
+    echo "        config = $config"
+    shift 3
+    for line in "$@"; do
+       test -n "$line" &&  echo "        $line"
+    done
+    echo "    end"
+}
+
+
+function print_lircd_trailer
+# Print a header + a list of items on stdin as a comment block
+{
+    local header="${1:-Missing header}"
+    local indent="$2"
+
+    echo "# $header"
+    echo '#'
+    awk -v indent="$indent" '{ print "#" indent $0 }'
+    echo '#'
+}
+
+
+function read_data_line
+# Read a line using ',' as IFS
+{
+    local OLDIFS="$IFS"
+    IFS=','
+    local result=0
+    read $@ || result=$?
+    IFS="$OLDIFS"
+    return $result
+}
+
+
+function make_lircrc
+#
+#  Create the lircrc file on stdout
+#
+#  Input:
+#     - stdin: list of data lines in print_data format (see manpage).
+#     - Global ALL_LIRCD_KEYS, BAD_LIRCD_KEYS.
+{
+    local unused_keys=( ${ALL_LIRCD_KEYS[@]} )
+    local unused_entries key entry
+
+    echo "# Created by $0 at $(date)"
+    echo
+    local prog extra1 extra2
+    while [[ "$prog" ==  \#* || "$prog" == ''  ]]; do
+        test "$prog" != '' && echo $prog
+        read_data_line prog extra1 extra2
+    done
+
+    while read_data_line button config line1 line2 line3
+    do
+        lines=( "$line1" "$line2" "$line3" "$extra1" "$extra2" )
+        if [[ "$button" == \#* ]]; then
+            echo $button $config $line1 $line2 $line3
+        elif [[ "$button" == begin* || "$button" = end* ]]; then
+            echo
+            echo "$button $config"
+        elif [[ "${unused_keys[*]}" == *$button* ]] ; then
+            print_lircd_entry  $prog $button "$config" "${lines[@]}"
+            unused_keys=( $( echo ${unused_keys[@]/$button/} ) )
+        else
+            entry=$( print_lircd_entry \
+                         $prog $button "$config" "${lines[@]}" )
+            unused_entries=( "${unused_entries[@]}" "$entry" )
+        fi
+    done
+
+    echo
+
+    if (( ${#BAD_LIRCD_KEYS[@]} != 0 )); then
+        for key in "${BAD_LIRCD_KEYS[@]}"; do
+            echo $key
+        done | print_lircd_trailer 'Illegal button names:' '    '
+    fi
+
+    if (( ${#unused_keys[@]} != 0 )); then
+        for key in "${unused_keys[@]}"; do
+            echo $key
+        done | print_lircd_trailer  'Unused buttons:' '    '
+    fi
+
+    if (( ${#unused_entries[@]} != 0 )); then
+        for entry in "${unused_entries[@]}"; do
+            echo "$entry"
+        done | print_lircd_trailer 'Unused capabilities:' ''
+    fi
+}
+
+
+function get_path
+# Construct output path for a target, make backup if required.
+{
+    local path="${OPTIONS['o']}/$1.lircrc"
+    if test -f $path; then
+        local backup=$path.$(date +"%y%m%d%H%M%S")
+        cp $path $backup
+    fi
+    echo $path $backup
+}
+
+
+function print_lircd_keys
+# Print all keycodes in /etc/lirc/lircd.conf
+{
+    awk '/begin[ ]+codes/,/end[ ]+codes/ {
+                                           if ($1 == "begin")  next;
+                                           if ($1 == "end" ) next;
+                                           print $1;
+                                         }' < ${OPTIONS['c']}
+}
+
+
+function parse_lircd
+# Set up global ALL_LIRCD_KEYS and BAD_LIRCD_KEYS
+{
+    local key
+    unset ALL_LIRCD_KEYS
+    unset BAD_LIRCD_KEYS
+    unset DUPLICATE_KEYS
+    local all_keys
+
+    for key in $( print_lircd_keys )
+    do
+        if [[ ${all_keys[@]} == *$key* ]]; then
+            DUPLICATE_KEYS=( ${DUPLICATE_KEYS[@]} $key )
+        fi
+        all_keys=( ${all_keys[@]} $key )
+        if [[ ${GOOD_KEYS[*]} == *$key* ]]
+        then
+            ALL_LIRCD_KEYS=( ${ALL_LIRCD_KEYS[@]} $key )
+        elif test -n "${key##\#*}"
+        then
+            BAD_LIRCD_KEYS=( ${BAD_LIRCD_KEYS[@]} $key )
+        fi
+    done
+}
+
+
+function scan_keycodes
+{
+    local key
+    parse_lircd
+
+    local count=${#ALL_LIRCD_KEYS[@]}
+    echo "Found $count button definitions in ${OPTIONS['c']}"
+
+    if (( ${#DUPLICATE_KEYS[@]} != 0 )); then
+        echo 'Duplicate keys:'
+        for key in ${DUPLICATE_KEYS[@]}; do echo "    $key"; done
+    fi
+    if (( ${#BAD_LIRCD_KEYS[@]} != 0 )); then
+        echo 'Unusable keys:'
+        for key in ${BAD_LIRCD_KEYS[@]}; do echo "    $key"; done
+    else
+        echo "All definitions in legal namespace"
+    fi
+}
+
+
+function check_targets
+{
+   local target
+   local good_targets=( $( list_all_files ) )
+
+   for target in $@; do
+       if [[ ${good_targets[*]} != *$target* ]]; then
+           echo "$target: Illegal target"
+           exit 1
+       fi
+   done
+}
+
+
+function list_all_files
+#  List all files i. e., list all functions of the form *_lircdata,
+#  without the suffix
+{
+    declare -F | awk '/_lircdata$/ {
+                                     gsub( "_lircdata","",$3)
+                                     printf "%s ", $3
+                                   }
+                               END { print "" }'
+}
+
+
+function translate_key
+# Convert "old style" key symbol to symbol in namespace,
+# one token look-ahead.
+{
+    if [[ "$1" == KEY* ]]; then
+        local key="$1"
+    else
+        local key=${1,,}
+    fi
+    case "${key}" in
+        KEY_NUMERIC_[0-9]|KEY_KP[0-9]|[0-9]*)
+                        echo $1 | sed 's/.*\([0-9]\)/KEY_\1/' ;;
+        KEY_*)          if [[ ${GOOD_KEYS[*]} == *$1* ]]; then
+                            echo "$1"
+                        else
+                            echo "X_$1"
+                        fi
+                        ;;
+        '#'|'\*')       if [[ "$2" != 0x* ]]; then
+                            echo $1
+                            continue
+                        fi
+                        case $1 in
+                            '\*') echo KEY_NUMERIC_STAR;;
+                            '#')  echo KEY_NUMERIC_POUND;;
+                            *)    echo X_WTF;;
+                        esac
+                        ;;
+        [a-z])          echo "KEY_${1^*}" ;;
+        zero|up_zero)   echo "KEY_0" ;;
+        one|up_one)     echo "KEY_1" ;;
+        two|up_two)     echo "KEY_2" ;;
+        three|up_three) echo "KEY_3" ;;
+        four|up_four)   echo "KEY_4" ;;
+        five|up_five)   echo "KEY_5" ;;
+        six|up_six)     echo "KEY_6" ;;
+        seven|up_seven) echo "KEY_7" ;;
+        eight|up_eight) echo "KEY_8" ;;
+        nine|up_nine)   echo "KEY_9" ;;
+
+        appexit)        echo "KEY_EXIT" ;;
+        asterisk)       echo "KEY_KPASTERISK" ;;
+        audio)          echo "KEY_AUDIO" ;;
+        back)           echo "KEY_BACK" ;;
+        backspace)      echo "KEY_BACKSPACE" ;;
+        backward)       echo "KEY_REWIND" ;;
+        blue)           echo "KEY_BLUE" ;;
+        cancel)         echo "KEY_CANCEL" ;;
+        cd)             echo "KEY_CD" ;;
+        ch+|ch*up|chan*+|chan*plus|channel+)
+                        echo "KEY_CHANNELUP" ;;
+        ch-|ch*down|chan*-|chan*minus|channel*)
+                        echo "KEY_CHANNELDOWN" ;;
+        clear)          echo "KEY_CLEAR" ;;
+        close*)         echo "KEY_CLOSE" ;;
+        delete)         echo "KEY_DELETE" ;;
+        down)           echo "KEY_DOWN" ;;
+        dvd*menu)       echo "KEY_MENU" ;;
+        dvd*)           echo "KEY_DVD" ;;
+        email)          echo "KEY_EMAIL" ;;
+        eject)          echo "KEY_EJECTCD" ;;
+        *exit)          echo "KEY_EXIT" ;;
+        end)            echo "KEY_END" ;;
+        enter)          echo "KEY_ENTER" ;;
+        epg)            echo "KEY_EPG" ;;
+        esc)            echo "KEY_ESC" ;;
+        F[0-9])         echo $1 | sed 's/F\([0-9]\)/KEY_F\1/' ;;
+        fast*forward|fast*fwd|ff|ffw|ffwd)
+                        echo "KEY_FASTFORWARD" ;;
+        fm|radio)       echo "KEY_RADIO" ;;
+        folder*)        echo "KEY_DIRECTORY" ;;
+        forward|fw|fwd|fwd_up)
+                        echo "KEY_FORWARD" ;;
+        green)          echo "KEY_GREEN" ;;
+        guide)          echo "KEY_INFO" ;;
+        hash)           echo "KEY_NUMERIC_POUND" ;;
+        help)           echo "KEY_HELP" ;;
+        home)           echo "KEY_HOME" ;;
+        info)           echo "KEY_INFO" ;;
+        lang*)          echo "KEY_LANGUAGE" ;;
+        left)           echo "KEY_LEFT" ;;
+        list)           echo "KEY_LIST" ;;
+        live*tv)        echo "KEY_TV" ;;
+        max*)           echo "KEY_MAX" ;;
+        menu)           echo "KEY_MENU" ;;
+        minus)          echo "KEY_KPMINUS" ;;
+        mode)           echo "KEY_MODE" ;;
+        mp3)            echo "KEY_MP3" ;;
+        mute)           echo "KEY_MUTE" ;;
+        next*|skip)     echo "KEY_NEXT" ;;
+        ok)             echo "KEY_OK" ;;
+        on*)            echo "KEY_POWER" ;;
+        options)        echo "KEY_OPTIONS" ;;
+        osd)            echo "KEY_MENU" ;;
+        pause)          echo "KEY_PAUSE" ;;
+        phone)          echo "KEY_PHONE" ;;
+        pc)             echo "KEY_PC" ;;
+        pg*up)          echo "KEY_PAGEUP";;
+        pg*down|pg_dn)  echo "KEY_PAGEDOWN";;
+        play*pause)     echo "KEY_PLAYPAUSE" ;;
+        play*)          echo "KEY_PLAY" ;;
+        power*|pwr)     echo "KEY_POWER" ;;
+        prev*ch)        echo "KEY_CHANNELDOWN" ;;
+        prev)           echo "KEY_PREVIOUS" ;;
+        prog*up|p+)     echo "KEY_CHANNELUP" ;;
+        prog*down|p-)   echo "KEY_CHANNELDOWN" ;;
+        pre|prev|prev*ch|preview)
+                        echo "KEY_PREVIOUS" ;;
+        quit)           echo "KEY_QUIT" ;;
+        recall)         echo "KEY_AGAIN" ;;
+        rec*)           echo "KEY_RECORD" ;;
+        red)            echo "KEY_RED" ;;
+        repeat|replay)  echo "KEY_AGAIN" ;;
+        return)         echo "KEY_ENTER" ;;
+        rew*)           echo "KEY_REWIND" ;;
+        right)          echo "KEY_RIGHT" ;;
+        select)         echo "KEY_SELECT" ;;
+        setup)          echo "KEY_SETUP" ;;
+        skipback)       echo "KEY_REWIND" ;;
+        skipfwd)        echo "KEY_FASTFORWARD" ;;
+        sleep)          echo "KEY_SLEEP" ;;
+        slow)           echo "KEY_SLOW" ;;
+        source)         echo "KEY_CYCLEWINDOWS" ;;
+        space)          echo "KEY_SPACE" ;;
+        star)           echo "KEY_NUMERIC_STAR" ;;
+        start)          echo "KEY_PLAY" ;;
+        stop)           echo "KEY_STOP" ;;
+        sub*)           echo "KEY_SUBTITLE" ;;
+        tab)            echo "KEY_TAB" ;;
+        text|txt)       echo "KEY_TEXT" ;;
+        time)           echo "KEY_TIME" ;;
+        title)          echo "KEY_TITLE" ;;
+        tv)             echo "KEY_TV" ;;
+        up)             echo "KEY_UP" ;;
+        vcr)            echo "KEY_VCR" ;;
+        video*)         echo "KEY_VIDEO" ;;
+        vol*+|vol*up|vol*plus)
+                        echo "KEY_VOLUMEUP";;
+        vol*-|vol*down|vol*minus)
+                        echo "KEY_VOLUMEDOWN";;
+        web|www*)       echo "KEY_WWW";;
+        yellow)         echo "KEY_YELLOW" ;;
+        zoom)           echo "KEY_ZOOM" ;;
+        zoom+)          echo "KEY_ZOOMIN" ;;
+        zoom-)          echo "KEY_ZOOMOUT" ;;
+
+        '+')            echo "KEY_KPPLUS" ;;
+        '-')            echo "KEY_KPMINUS" ;;
+        '.')            echo "KEY_DOT" ;;
+
+        *)              echo $1;;
+    esac
+}
+
+
+function print_update_lircd_results()
+{
+    parse_lircd
+    if (( $1 == 0 )); then
+       echo "Conversion complete, no bad keys to convert"
+    elif (( ${#BAD_LIRCD_KEYS[@]} == 0)); then
+       echo "Conversion complete, all $1 bad keys converted ."
+    else
+       echo -n "$(( $1 - ${#BAD_LIRCD_KEYS[@]} )) keys converted,"
+       echo " remaining keys not within namespace:"
+       for key in ${BAD_LIRCD_KEYS[@]}; do
+            echo "    $key"
+       done
+    fi
+}
+
+
+function update_lircd_conf
+# Try to convert /etc/lirc/lircd to use keys in namespace
+{
+    parse_lircd
+    local old_bad_key_count=${#BAD_LIRCD_KEYS[@]}
+
+    local backup=${OPTIONS['c']}.$(date +"%y%m%d%H%M%S")
+    cp ${OPTIONS['c']} $backup
+
+    local reset_shopt=$( shopt -p nocasematch )
+    shopt -s nocasematch
+
+    local translate=0
+    while read; do
+        REPLY=${REPLY%%[[:space:]]}
+        local words=( $( echo ${REPLY//\*/\\\*} ) ) # '*' -> '\*'
+        case "${words[0]} ${words[1]}" in
+            begin*codes )
+                translate=1
+                echo "$REPLY"
+                ;;
+
+            end*codes )
+                translate=0;
+                echo "$REPLY"
+                ;;
+
+            *)  if (( "$translate" == 0 )); then
+                    echo "$REPLY"
+                    continue
+                fi
+                key=$( translate_key "${words[@]}" )
+                case "$key" in
+                    \#*|${words[0]})
+                        echo "$REPLY"; continue
+                        ;;
+                    *)  comment=" #  Was: ${words[0]}"
+                        printf "          %-25s%-25s%s\n"  \
+                            $key ${words[1]} "$comment"
+                        ;;
+                esac
+        esac
+    done <$backup >${OPTIONS['c']}
+
+    eval $reset_shopt
+
+    print_update_lircd_results $old_bad_key_count
+}
+
+
+function get_options()
+# Set up global OPTIONS, handle simple options directly.
+{
+    OPTIONS['o']="$OUTPUT_DIR"
+    OPTIONS['c']="$LIRC_CONF"
+    OPTIONS['t']="$( list_all_files | sed 's/stdin//' )"
+    OPTIONS['s']=0; OPTIONS['d']=0; OPTIONS['u']=0
+
+    local flag
+    while getopts "o:c:dlsumh" flag
+    do
+        case $flag in
+
+         o|c)
+              OPTIONS[$flag]="$OPTARG"
+              ;;
+
+         s|d|u)
+              OPTIONS[$flag]=1
+              ;;
+
+         l)   list_all_files
+              exit 0
+              ;;
+
+         m)   if [ -t 1 ]; then
+                  manpage | nroff -man | more
+              else
+                  manpage
+              fi
+              exit 0
+              ;;
+
+         h)   help
+              exit 0
+              ;;
+
+         *)   echo "Use \"$0 -h\"  for help" >&2
+              exit 1
+              ;;
+         esac
+    done
+    shift $(( OPTIND - 1 ))
+
+    if (( $# > 0 )); then
+        check_targets "$@"
+        OPTIONS['t']="$*"
+    fi
+}
+
+
+function check_options
+# More tests that options and env are sane, exits on error.
+{
+
+    [ -w ${OPTIONS['o']}  ] || mkdir -p ${OPTIONS['o']} || {
+        echo "Cannot use output dir \"${OPTIONS['o']}\"" >&2
+        exit 1
+    }
+    [ -r ${OPTIONS['c']} ] || {
+        echo "Cannot read input file \"${OPTIONS['c']}\"" >&2
+        exit 1
+    }
+    [[ ${OPTIONS[*]} == *stdin* ]] && [ -z "${OPTIONS['p']}" ] && {
+        echo "You need to give -p when using stdin" >&2
+        exit 1
+    }
+    if (( ${OPTIONS['s']} +  ${OPTIONS['d']} + ${OPTIONS['u']}   > 1 ))
+    then
+        echo "Options s, d  and u are mutually exclusive."
+        exit 1
+    fi
+    irrecord -v &> /dev/null || {
+        echo "Cannot find irrecord command (not installed?)" >&2
+        exit 2
+    }
+}
+
+
+function print_created_file
+# Report created file, either single file or file + backup
+{
+    local file=$( basename "$1")
+    if [ -n "$2" ]; then
+       local backup=$( basename $2 )
+       printf "    %-25s Backup: %s\n" $file $backup
+    else
+       echo   "    $file"
+    fi
+}
+
+
+function print_lircd_summary
+{
+    echo "Scanned ${OPTIONS['c']}"
+    echo -n "    Found ${#ALL_LIRCD_KEYS[@]} key symbols"
+    (( ${#BAD_LIRCD_KEYS[@]} != 0 )) && \
+         echo -n ", ${#BAD_LIRCD_KEYS[@]} unusable"
+    echo '.'
+}
+
+get_options "${@}"
+check_options
+
+if (( ${OPTIONS['s']} != 0 )); then
+    scan_keycodes
+elif (( ${OPTIONS['u']} != 0 )); then
+    update_lircd_conf
+elif (( ${OPTIONS['d']} != 0 )); then
+    for target in $( echo ${OPTIONS['t']} ); do
+        eval ${target}_lircdata
+    done
+else
+    echo "Output dir:"
+    echo "    ${OPTIONS['o']}"
+
+    parse_lircd
+    print_lircd_summary
+
+    echo "Created:"
+    for target in $( echo ${OPTIONS[t]} )
+    do
+        paths=( $( get_path $target ) )
+        print_data $target | make_lircrc >"${paths[0]}"
+        print_created_file ${paths[@]}
+    done
+fi

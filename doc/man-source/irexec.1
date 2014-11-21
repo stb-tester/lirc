@@ -1,0 +1,57 @@
+.TH IREXEC "1" "Last change: Nov 2014" "irexec @version@" "User Commands"
+.SH NAME
+irexec - run programs with one button press
+.SH SYNOPSIS
+.B irexec
+[\fIoptions\fR] [\fIconfig_file\fR]
+.SH DESCRIPTION
+This program lets you execute arbitrary commands on an IR signal decoded
+by lircd, the LIRC daemon. You can give irexec a command line parameter
+which has to be a name of a valid config file. If no command line
+parameters are given irexec reads the default config file which is
+usually ~/.config/lircrc.
+
+If irexec executes a program it will wait until this program terminates.
+So append a '&' to the command string if you don't want that.
+
+The config string consists of the command to be run. Potential
+uses are shutting down the computer, starting a dial-up connection etc.
+.SH OPTIONS
+.TP 4
+.B -h, --help
+Display usage summary
+.TP 4
+.B -v, --version
+Display version
+.TP 4
+.B  -d, --daemon
+Make irexec fork to background. That way you can easily start irexec
+from an init script. In this case you should specify a config file on the
+command line as irexec won't be able to find your home directory.
+.TP 4
+.B -n, --name <name>
+Use this program name instead of the default 'irexec' as identifier in
+the lircd.conf file.
+.SH ENVIRONMENT
+.TP 4
+LIRC_SOCKET_PATH
+Path to the lircd socket irexec reads from, defaults to /var/run/lirc/lircd.
+
+.SH NOTE
+
+If you start irexec, it reads your ~/.config/lircrc and reacts only on
+prog= entries that point to irexec. If you have included more than one
+program in your .lircrc, then start all these programs, they react
+itself only to their according entries in .lircrc.
+
+irexec should run as a service. The contrib directory contains a .desktop
+file which could be dropped in ~/.local/autostart. Doing so creates a
+service which can be handled by regular desktop tools on all major
+desktops. If you need to run run restricted commands such as powering
+off the machine, you can use sudo to allow regular users to run specific
+commands. See the Configuration Guide in the html documentation.
+.SH "SEE ALSO"
+The documentation for
+.B lirc
+is maintained as html pages. They are located under html/ in the
+documentation directory.

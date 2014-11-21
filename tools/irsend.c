@@ -25,193 +25,66 @@
 #  include "config.h"
 #endif
 
-#include <netdb.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <getopt.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/un.h>
 #include <errno.h>
-#include <signal.h>
 #include <limits.h>
 
-#include <stdint.h>
+#include "lirc_log.h"
+#include "lirc_client.h"
 
-#ifndef __u32
-typedef uint32_t __u32;
-#endif
+static const char* const help =
+"\nSynopsis:\n"
+"    irsend [options] SEND_ONCE remote code [code...]\n"
+"    irsend [options] SEND_START remote code \n"
+"    irsend [options] SEND_STOP remote code \n"
+"    irsend [options] LIST remote\n"
+"    irsend [options] SET_TRANSMITTERS remote num [num...]\n"
+"    irsend [options] SIMULATE \"scancode repeat keysym remote\"\n"
+"Options:\n"
+"    -h --help\t\t\tdisplay usage summary\n"
+"    -v --version\t\tdisplay version\n"
+"    -d --device\t\t\tuse given lircd socket [" LIRCD "]\n"
+"    -a --address=host[:port]\tconnect to lircd at this address\n"
+"    -# --count=n\t\tsend command n times\n";
 
-#define PACKET_SIZE 256
-/* three seconds */
-#define TIMEOUT 3
+char *prog;
 
-int timeout = 0;
-char *progname;
-
-void sigalrm(int sig)
+int send_packet(lirc_cmd_ctx* ctx, int fd)
 {
-	timeout = 1;
+	int r;
+
+	do {
+		r = lirc_command_run(ctx, fd);
+		if (r != 0 && r != EAGAIN) {
+			fprintf(stderr,
+			        "Error running command: %s\n", strerror(r));
+		}
+	} while  (r == EAGAIN);
+	return r == 0 ? 0 : -1;
 }
 
-const char *read_string(int fd)
+void reformat_simarg(char* code, char buffer[])
 {
-	static char buffer[PACKET_SIZE + 1] = "";
-	char *end;
-	static int ptr = 0;
-	ssize_t ret;
+	unsigned int scancode;
+	unsigned int repeat;
+	char keysym[32];
+	char remote[64];
+	char trash[32];
+	int r;
 
-	if (ptr > 0) {
-		memmove(buffer, buffer + ptr, strlen(buffer + ptr) + 1);
-		ptr = strlen(buffer);
-		end = strchr(buffer, '\n');
-	} else {
-		end = NULL;
+	r = sscanf(code, "%x %x %32s %64s %32s",
+                   &scancode, &repeat, keysym, remote, trash);
+	if (r != 4) {
+		fprintf(stderr, "Bad simulate argument: %s\n", code);
+		exit(EXIT_FAILURE);
 	}
-	alarm(TIMEOUT);
-	while (end == NULL) {
-		if (PACKET_SIZE <= ptr) {
-			fprintf(stderr, "%s: bad packet\n", progname);
-			ptr = 0;
-			return (NULL);
-		}
-		ret = read(fd, buffer + ptr, PACKET_SIZE - ptr);
-
-		if (ret <= 0 || timeout) {
-			if (timeout) {
-				fprintf(stderr, "%s: timeout\n", progname);
-			} else {
-				alarm(0);
-			}
-			ptr = 0;
-			return (NULL);
-		}
-		buffer[ptr + ret] = 0;
-		ptr = strlen(buffer);
-		end = strchr(buffer, '\n');
-	}
-	alarm(0);
-	timeout = 0;
-
-	end[0] = 0;
-	ptr = strlen(buffer) + 1;
-#       ifdef DEBUG
-	printf("buffer: -%s-\n", buffer);
-#       endif
-	return (buffer);
+	snprintf(buffer, PACKET_SIZE, "%016x %02x %s %s",
+                 scancode, repeat, keysym, remote);
 }
 
-enum packet_state {
-	P_BEGIN,
-	P_MESSAGE,
-	P_STATUS,
-	P_DATA,
-	P_N,
-	P_DATA_N,
-	P_END
-};
 
-int send_packet(int fd, const char *packet)
-{
-	int done, todo;
-	const char *string, *data;
-	char *endptr;
-	enum packet_state state;
-	int status, n;
-	__u32 data_n = 0;
 
-	todo = strlen(packet);
-	data = packet;
-	while (todo > 0) {
-		done = write(fd, (void *)data, todo);
-		if (done < 0) {
-			fprintf(stderr, "%s: could not send packet\n", progname);
-			perror(progname);
-			return (-1);
-		}
-		data += done;
-		todo -= done;
-	}
 
-	/* get response */
-	status = 0;
-	state = P_BEGIN;
-	n = 0;
-	while (1) {
-		string = read_string(fd);
-		if (string == NULL)
-			return (-1);
-		switch (state) {
-		case P_BEGIN:
-			if (strcasecmp(string, "BEGIN") != 0) {
-				continue;
-			}
-			state = P_MESSAGE;
-			break;
-		case P_MESSAGE:
-			if (strncasecmp(string, packet, strlen(string)) != 0 || strlen(string) + 1 != strlen(packet)) {
-				state = P_BEGIN;
-				continue;
-			}
-			state = P_STATUS;
-			break;
-		case P_STATUS:
-			if (strcasecmp(string, "SUCCESS") == 0) {
-				status = 0;
-			} else if (strcasecmp(string, "END") == 0) {
-				status = 0;
-				return (status);
-			} else if (strcasecmp(string, "ERROR") == 0) {
-				fprintf(stderr, "%s: command failed: %s", progname, packet);
-				status = -1;
-			} else {
-				goto bad_packet;
-			}
-			state = P_DATA;
-			break;
-		case P_DATA:
-			if (strcasecmp(string, "END") == 0) {
-				return (status);
-			} else if (strcasecmp(string, "DATA") == 0) {
-				state = P_N;
-				break;
-			}
-			goto bad_packet;
-		case P_N:
-			errno = 0;
-			data_n = (__u32) strtoul(string, &endptr, 0);
-			if (!*string || *endptr) {
-				goto bad_packet;
-			}
-			if (data_n == 0) {
-				state = P_END;
-			} else {
-				state = P_DATA_N;
-			}
-			break;
-		case P_DATA_N:
-			fprintf(stderr, "%s: %s\n", progname, string);
-			n++;
-			if (n == data_n)
-				state = P_END;
-			break;
-		case P_END:
-			if (strcasecmp(string, "END") == 0) {
-				return (status);
-			}
-			goto bad_packet;
-			break;
-		}
-	}
-bad_packet:
-	fprintf(stderr, "%s: bad return packet\n", progname);
-	return (-1);
-}
 
 int main(int argc, char **argv)
 {
@@ -222,13 +95,12 @@ int main(int argc, char **argv)
 	char *address = NULL;
 	unsigned short port = LIRC_INET_PORT;
 	unsigned long count = 1;
-	struct sockaddr_un addr_un;
-	struct sockaddr_in addr_in;
 	int fd;
 	char buffer[PACKET_SIZE + 1];
-	struct sigaction act;
+	int r;
+	lirc_cmd_ctx ctx;
 
-	progname = "irsend";
+	prog = "irsend";
 
 	while (1) {
 		int c;
@@ -245,15 +117,10 @@ int main(int argc, char **argv)
 			break;
 		switch (c) {
 		case 'h':
-			printf("Usage: %s [options] DIRECTIVE REMOTE CODE [CODE...]\n", progname);
-			printf("\t -h --help\t\t\tdisplay usage summary\n");
-			printf("\t -v --version\t\t\tdisplay version\n");
-			printf("\t -d --device\t\t\tuse given lircd socket [%s]\n", LIRCD);
-			printf("\t -a --address=host[:port]\tconnect to lircd at this address\n");
-			printf("\t -# --count=n\t\t\tsend command n times\n");
+			printf(help);
 			return (EXIT_SUCCESS);
 		case 'v':
-			printf("%s %s\n", progname, VERSION);
+			printf("%s %s\n", prog, VERSION);
 			return (EXIT_SUCCESS);
 		case 'd':
 			lircd = optarg;
@@ -266,14 +133,14 @@ int main(int argc, char **argv)
 
 				address = strdup(optarg);
 				if (!address) {
-					fprintf(stderr, "%s: out of memory\n", progname);
+					fprintf(stderr, "%s: out of memory\n", prog);
 					return (EXIT_FAILURE);
 				}
 				p = strchr(address, ':');
 				if (p != NULL) {
 					val = strtoul(p + 1, &end, 10);
 					if (!(*(p + 1)) || *end || val < 1 || val > USHRT_MAX) {
-						fprintf(stderr, "%s: invalid port number: %s\n", progname, p + 1);
+						fprintf(stderr, "%s: invalid port number: %s\n", prog, p + 1);
 						return (EXIT_FAILURE);
 					}
 					port = (unsigned short)val;
@@ -287,7 +154,7 @@ int main(int argc, char **argv)
 
 				count = strtoul(optarg, &end, 10);
 				if (!*optarg || *end) {
-					fprintf(stderr, "%s: invalid count value: %s\n", progname, optarg);
+					fprintf(stderr, "%s: invalid count value: %s\n", prog, optarg);
 					return (EXIT_FAILURE);
 				}
 				break;
@@ -297,57 +164,22 @@ int main(int argc, char **argv)
 		}
 	}
 	if (optind + 2 > argc) {
-		fprintf(stderr, "%s: not enough arguments\n", progname);
+		fprintf(stderr, "%s: not enough arguments\n", prog);
 		return (EXIT_FAILURE);
 	}
 
-	if (lircd == NULL) {
+	if (lircd == NULL)
 		lircd = LIRCD;
-	} else {
-		if (strlen(lircd) + 1 > sizeof(addr_un.sun_path)) {
-			/* lircd is longer than sockaddr_un.sun_path field */
-			fprintf(stderr, "%s: socket name is too long\n", progname);
-			return (EXIT_FAILURE);
-		}
-	}
-
-	act.sa_handler = sigalrm;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;	/* we need EINTR */
-	sigaction(SIGALRM, &act, NULL);
-
 	if (address == NULL) {
-		addr_un.sun_family = AF_UNIX;
-		strcpy(addr_un.sun_path, lircd);
-		fd = socket(AF_UNIX, SOCK_STREAM, 0);
+		fd = lirc_get_local_socket(lircd ? lircd : NULL, 0);
 	} else {
-		struct hostent *hostInfo;
-
-		hostInfo = gethostbyname(address);
-		if (hostInfo == NULL) {
-			fprintf(stderr, "%s: host %s unknown\n", progname, address);
-			return (EXIT_FAILURE);
-		}
-		addr_in.sin_family = hostInfo->h_addrtype;
-		memcpy((char *)&addr_in.sin_addr.s_addr, hostInfo->h_addr_list[0], hostInfo->h_length);
-		addr_in.sin_port = htons(port);
-		fd = socket(AF_INET, SOCK_STREAM, 0);
+		fd = lirc_get_remote_socket(address, port, 0);
 	}
-
-	if (fd == -1) {
-		fprintf(stderr, "%s: could not open socket\n", progname);
-		perror(progname);
+	if (fd < 0) {
+		fprintf(stderr, "%s: could not open socket: %s\n",
+			prog, strerror(-fd));
 		exit(EXIT_FAILURE);
 	};
-
-	if (connect(fd,
-		    address ? (struct sockaddr *)&addr_in :
-		    (struct sockaddr *)&addr_un, address ? sizeof(addr_in) : sizeof(addr_un)) == -1) {
-		fprintf(stderr, "%s: could not connect to socket\n", progname);
-		perror(progname);
-		exit(EXIT_FAILURE);
-	};
-
 	if (address)
 		free(address);
 	address = NULL;
@@ -359,7 +191,7 @@ int main(int argc, char **argv)
 		if (strlen(directive) + strlen(code) + 2 < PACKET_SIZE) {
 			sprintf(buffer, "%s %s", directive, code);
 		} else {
-			fprintf(stderr, "%s: input too long\n", progname);
+			fprintf(stderr, "%s: input too long\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		while (optind < argc) {
@@ -367,51 +199,53 @@ int main(int argc, char **argv)
 			if (strlen(buffer) + strlen(code) + 2 < PACKET_SIZE) {
 				sprintf(buffer + strlen(buffer), " %s", code);
 			} else {
-				fprintf(stderr, "%s: input too long\n", progname);
+				fprintf(stderr, "%s: input too long\n", prog);
 				exit(EXIT_FAILURE);
 			}
 		}
 		strcat(buffer, "\n");
-		if (send_packet(fd, buffer) == -1) {
+		lirc_command_init(&ctx, buffer);
+		if (send_packet(&ctx, fd) == -1) {
 			exit(EXIT_FAILURE);
 		}
 	}
 	if (strcasecmp(directive, "simulate") == 0) {
 		code = argv[optind++];
 		if (optind != argc) {
-			fprintf(stderr, "%s: invalid argument count\n", progname);
+			fprintf(stderr, "%s: invalid argument count\n", prog);
 			exit(EXIT_FAILURE);
 		}
-		if (strlen(directive) + strlen(code) + 2 < PACKET_SIZE) {
-			sprintf(buffer, "%s %s\n", directive, code);
-		} else {
-			fprintf(stderr, "%s: input too long\n", progname);
+		reformat_simarg(code, buffer);
+		r = lirc_command_init(&ctx,  "%s %s\n", directive, buffer);
+		if (r != 0) {
+			fprintf(stderr, "%s: %s\n", prog, strerror(r));
 			exit(EXIT_FAILURE);
 		}
-		if (send_packet(fd, buffer) == -1) {
+		if (send_packet(&ctx, fd) == -1) {
 			exit(EXIT_FAILURE);
 		}
 	} else {
 		remote = argv[optind++];
 
 		if (optind == argc) {
-			fprintf(stderr, "%s: not enough arguments\n", progname);
+			fprintf(stderr, "%s: not enough arguments\n", prog);
 			exit(EXIT_FAILURE);
 		}
 		while (optind < argc) {
 			code = argv[optind++];
-
-			if (strlen(directive) + strlen(remote) + strlen(code) + 3 < PACKET_SIZE) {
-				if (strcasecmp(directive, "SEND_ONCE") == 0 && count > 1) {
-					sprintf(buffer, "%s %s %s %lu\n", directive, remote, code, count);
-				} else {
-					sprintf(buffer, "%s %s %s\n", directive, remote, code);
-				}
-				if (send_packet(fd, buffer) == -1) {
-					exit(EXIT_FAILURE);
-				}
+			if (strcasecmp(directive, "SEND_ONCE") == 0 && count > 1) {
+				r = lirc_command_init(&ctx, "%s %s %s %lu\n",
+				   	    directive, remote, code, count);
 			} else {
-				fprintf(stderr, "%s: input too long\n", progname);
+				r = lirc_command_init(&ctx,  "%s %s %s\n",
+						     directive, remote, code);
+			}
+			if (r != 0) {
+				fprintf(stderr, "%s: input too long\n", prog);
+				exit(EXIT_FAILURE);
+			}
+			lirc_command_reply_to_stdout(&ctx);
+			if (send_packet(&ctx, fd) == -1) {
 				exit(EXIT_FAILURE);
 			}
 		}

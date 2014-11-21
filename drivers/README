@@ -1,0 +1,6 @@
+drivers examples README
+=======================
+
+This directory has historically been the place for lirc kernel
+module sources. Nowadays, it's just example code how to build
+a userspace driver out-of-reee and a lirc kernel module example.

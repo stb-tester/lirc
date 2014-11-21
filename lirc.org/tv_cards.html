@@ -1,0 +1,247 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>LIRC - Support for TV Cards</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+    BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0"
+      SUMMARY="">
+      <TR>
+        <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+          <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+          <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+        </TD>
+      </TR>
+      <TR>
+        <TD WIDTH="100%">&#160;<BR>
+
+          <HR WIDTH="70%">
+          <H1 ALIGN="CENTER">Support for TV Cards</H1>
+          <HR WIDTH="50%"><BR>
+
+          <TABLE WIDTH="100%" SUMMARY="">
+            <TR>
+              <TD WIDTH="15%">
+                &#160;
+              </TD>
+              <TD WIDTH="70%">
+                <!-- Text -->
+                <P><EM>Note:</EM> I leave this page here only for
+                  historical reasons. In the meantime many more TV cards
+                  are supported than listed here. You will find the
+                  up-to-date list of supported cards inside the setup
+                  dialog of the LIRC package.</P>
+
+                <P>
+                  The following page shows you the state of TV card
+                  driver development. Please make sure you are using
+                  the most up-to-date LIRC version (preferably CVS
+                  version) if you are trying one of the TV card
+                  drivers. Support for more TV cards can only be added
+                  if someone volunteers to maintain the according
+                  driver. Chances are good that also other TV cards
+                  will work with these drivers or will need only minor
+                  changes. Please tell the according authors or me if
+                  you manage to make your TV card work with these
+                  drivers.
+                </P>
+                <TABLE BORDER=1 CELLPADDING=10
+                  SUMMARY="List of supported TV cards">
+                  <TR>
+                    <TH>
+                      Model
+                    </TH>
+                    <TH>
+                      Remarks
+                    </TH>
+                    <TH>
+                      Status
+                    </TH>
+                  </TR>
+                  <TR>
+                    <TD>
+                      CPH0xx cards (Askey, Typhoon, Anubis, TView, etc.)
+                    </TD>
+                    <TD>
+                      Please send me a notice if you managed to make
+                      this card work.
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Chronos Video Shuttle II
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Hauppauge TV&nbsp;cards
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      AVerMedia TV&nbsp;cards
+                    </TD>
+                    <TD>
+                      I'd like to thank the people from the German
+                      division of AVerMedia for supporting us in
+                      implementing these drivers.
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Fly Video 98
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Pixelview TV cards
+                    </TD>
+                    <TD>
+                      There seem to be two different kinds of remote
+                      control adapters for these TV cards; one
+                      connected to the serial port and one connected
+                      directly to the TV card. Chances are good that
+                      both models will be supported. Code for the
+                      serial port models are already available in the
+                      <A HREF="cvs.html">CVS</A>.
+                    </TD>
+                    <TD ALIGN="center">
+                      n/a - <SPAN CLASS="working">working</SPAN>
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Pixelview PlayTV pro
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Prolink PV-BT878P+4E (PixelView PlayTV PAK)
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Pixelview RemoteMaster<BR>RC2000
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Pixelview RemoteMaster<BR>RC3000
+                    </TD>
+                    <TD>
+                      A proper config file is still missing. Contact
+                      me if you have this remote control.
+                    </TD>
+                    <TD ALIGN="center">
+                      n/a
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      Grand TV Pro
+                    </TD>
+                    <TD>
+                      This TV card comes with a receiver connected
+                      to the serial port. Making LIRC support for it
+                      will be trivial. I will actually add LIRC
+                      support for it if enough people send me a mail
+                      (or money&nbsp;;-) ).
+                    </TD>
+                    <TD ALIGN="center">
+                      n/a
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      ProVideo PV951
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                  <TR>
+                    <TD>
+                      BestBuy Easy TV
+                    </TD>
+                    <TD>
+                      &nbsp;
+                    </TD>
+                    <TD CLASS="working" ALIGN="center">
+                      working
+                    </TD>
+                  </TR>
+                </TABLE>
+                <!-- Text -->
+              </TD>
+              <TD WIDTH="15%">
+                &#160;
+              </TD>
+            </TR>
+          </TABLE>
+
+          <BR>&#160;<BR>
+          <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+          <BR>&#160;<BR>
+        </TD>
+      </TR>
+      <TR>
+        <TD CLASS="menu" WIDTH="100%">
+          &#160;<BR>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>

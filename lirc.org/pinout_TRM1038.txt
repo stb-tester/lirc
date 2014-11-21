@@ -1,0 +1,10 @@
+TRM1038 pinout (bottom view):
+
+  +---+
+  | o | 3 Vcc
+ /|   |
+| | o | 2 Ground
+ \|   |
+  | o | 1 Vout
+  +---+
+

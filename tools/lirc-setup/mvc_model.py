@@ -1,0 +1,604 @@
+''' Simple lirc setup tool - model part. '''
+
+YAML_MSG = '''
+"Cannot import the yaml library. Please install the python3
+yaml package, on many distributions known as python3-PyYAML. It is also
+available as a pypi package at https://pypi.python.org/pypi/PyYAML.'''
+
+
+import ast
+import configparser
+import glob
+import os
+import os.path
+import subprocess
+import sys
+import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
+import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
+
+try:
+    import yaml
+except ImportError:
+    print(YAML_MSG)
+    sys.exit(1)
+
+REMOTES_LIST = os.path.expanduser('~/.cache/remotes.list')
+REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
+_MODINIT_PATH = "lirc-modinit.conf"
+_OPTIONS_PATH = "/etc/lirc/lirc_options.conf"
+_REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
+_RESULTS_DIR = 'lirc-setup.conf.d'
+_USAGE = "Usage: lirc-setup [results directory]"
+_MANUAL_REMOTE_INSTALL = '(manual install)'
+
+_DEBUG = 'LIRC_DEBUG' in os.environ
+
+README = """
+This is some configuration files created by lirc-setup. To install them,
+try the following commands:
+
+sudo cp lircd_options.conf /etc/lirc/lircd_options.conf
+sudo cp lirc-modinit.conf /etc/modprobe.d
+sudo cp lircd.conf /etc/lirc/lircd.conf
+sudo cp lircmd.conf /etc/lirc/lircmd.conf
+
+Of course, if you already have a working configuration don't forget to
+make backup copies as required! Note that all files are not always present.
+"""
+
+
+def _hasitem(dict_, key_):
+    ''' Test if dict contains a non-null value for key. '''
+    return key_ in dict_ and dict_[key_]
+
+
+def _here(path):
+    ' Return path added to current dir for __file__. '
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+
+
+def parse_options():
+    ''' Parse command line optios into a returned dict. '''
+    options = {}
+    if len(sys.argv) == 1:
+        options['results_dir'] = _RESULTS_DIR
+    elif len(sys.argv) == 2:
+        options['results_dir'] = sys.argv[1]
+    else:
+        sys.stderr.write(_USAGE)
+        sys.exit(1)
+    return options
+
+
+def find_rc(lirc):
+    ''' Return the /sys/class/rc/rc* device corresponding to lirc device. '''
+    lirc = os.path.basename(lirc)
+    for rc in glob.glob('/sys/class/rc/rc*'):
+        if os.path.exists(os.path.join(rc, lirc)):
+            return rc
+    return None
+
+
+def download_file(view, url, path):
+    ''' Download location url to a file. '''
+    try:
+        urllib.request.urlretrieve(url, path)
+    except urllib.error.HTTPError as ex:
+        text = "Cannot download %s : %s" % (url, str(ex))
+        view.show_warning('Download error', text)
+
+
+def get_bundled_remotes(config, view):
+    ''' Return the bundled remote file for a device config dict,
+    a possibly empty list of remote ids.
+    '''
+    if 'supports' not in config or config['supports'] == 'timing':
+        if 'lircd_conf' in config:
+            return [config['lircd_conf']]
+        else:
+            return []
+    else:
+        found = []
+        if 'lircd_conf' in config:
+            found = [config['lircd_conf']]
+        if _hasitem(view.model.config, 'driver'):
+            driver = view.model.config['driver']
+            for l in view.model.get_remotes_list(view):
+                words = l.split(';')
+                if words[7] == driver:
+                    found.append(words[0] + "/" + words[1])
+        return found
+
+
+def get_dmesg_help(device):
+    ''' Return dmesg lines matching device.'''
+    lines = subprocess.check_output('dmesg').decode('utf-8').split('\n')
+    rc = find_rc(device)
+    if rc:
+        rc = os.path.basename(rc)
+    else:
+        rc = 'fjdsk@$'
+    dev = os.path.basename(device)
+    return [l for l in lines if dev in l or rc in l]
+
+
+def list_ttys():
+    ''' List all currently used ttys on this host. '''
+
+    def driver_path(s):
+        ''' Path to driver directory for given /class/tty/x device,. '''
+        return os.path.join(s, 'device', 'driver')
+
+    # (Not tested)
+    # def is_inactive_5250(s):
+    #     try:
+    #         driver = os.path.basename(os.readlink(driver_path(s)))
+    #     except (IOError, OSError):
+    #         return False
+    #     return driver != 'serial5250'
+
+    syslist = glob.glob("/sys/class/tty/*")
+    syslist = [s for s in syslist if os.path.exists(driver_path(s))]
+    # syslist = [s for s in syslist if not is_inactive_5250(s)]
+    devices = ["/dev/" + os.path.basename(s) for s in syslist]
+    return devices
+
+
+def write_results(config, result_dir, view):
+    ''' Write the set of new configuration files into results directory, '''
+    # pylint: disable=too-many-branches
+
+    def write_modinit(log):
+        ''' Possibly write the modprobe.d config file. '''
+        if not _hasitem(config, 'modsetup'):
+            return log
+        modinit = '# Generated by lirc-setup\n'
+        modinit += config['modsetup'] + '\n'
+        path = os.path.join(result_dir, _MODINIT_PATH)
+        with open(path, 'w') as f:
+            f.write(modinit)
+        log += 'Info: modprobe.d configuration: %s\n' % config['modsetup']
+        return log
+
+    def write_blacklist(log):
+        ''' Possibly update blacklist in the /etc/modprobe.d file. '''
+        if not _hasitem(config, 'blacklist'):
+            return log
+        blacklist = '# Generated by lirc-setup\n'
+        blacklist += config['blacklist'] + '\n'
+        path = os.path.join(result_dir, _MODINIT_PATH)
+        with open(path, 'a') as f:
+            f.write(blacklist)
+        log += \
+             'Info: modprobe.d blacklist config: %s \n' % config['blacklist']
+        return log
+
+    def write_options(options, log):
+        ''' Update options in new lirc_options.conf. '''
+        inited = False
+        if not options.has_section('lircd'):
+            options.add_section('lircd')
+        if not _hasitem(config, 'lircd_conf'):
+            log += 'Warning: No lircd.conf found, requierd by lircd.\n'
+        for opt in ['device', 'lircd_conf', 'lircmd_conf']:
+            if not _hasitem(config, opt):
+                continue
+            if not inited:
+                log += 'Info: new values in lircd_options.conf\n<tt>'
+                inited = True
+            value = config[opt]
+            if not opt == 'device':
+                value = os.path.basename(value)
+            options.set('lircd', opt, value)
+            log += "%-16s: %s\n" % (opt, value)
+        if _hasitem(config, 'modprobe'):
+            if not options.has_section('modprobe'):
+                options.add_section('modprobe')
+            options.set('modprobe', 'modules', config['modprobe'])
+            log += "%-16s: %s\n" % ('modules', config['modprobe'])
+        log += '</tt>'
+        path = os.path.join(result_dir, 'lirc_options.conf')
+        with open(path, 'w') as f:
+            f.write("# Generated by lirc-setup\n")
+            options.write(f)
+        return log
+
+    def get_configfiles(log):
+        ''' Download lircd.conf and perhaps lircmd.conf, '''
+
+        def error(ex, uri):
+            ''' Handle download error. '''
+            text = "Cannot download %s : %s" % (uri, str(ex))
+            view.show_error("Download error", text)
+
+        if 'lircd_conf' not in config or not config['lircd_conf'] \
+            or config['lircd_conf'] == _MANUAL_REMOTE_INSTALL:
+                # pylint: disable=bad-indentation
+                text = "No lircd.conf defined, skipping"
+                view.show_warning("Download error", text)
+                return log
+        for item in ['lircd_conf', 'lircmd_conf']:
+            if item not in config:
+                continue
+            uri = os.path.join(_REMOTES_BASE_URI, config[item])
+            path = os.path.join(result_dir, os.path.basename(config[item]))
+            try:
+                urllib.request.urlretrieve(uri + '?format=raw', path)
+                log += 'Info: Downloaded %s to %s\n' % (str(uri), str(path))
+            except urllib.error.HTTPError as ex:
+                error(ex, uri)
+        return log
+
+    options = configparser.RawConfigParser()
+    options.read(_OPTIONS_PATH)
+    log = 'Writing installation files in %s\n' % result_dir
+    log = write_options(options, log)
+    log = write_modinit(log)
+    log = write_blacklist(log)
+    log = get_configfiles(log)
+    path = os.path.join(result_dir, 'README')
+    with open(path, 'w') as f:
+        f.write(README)
+    return log
+
+
+def check_resultsdir(dirpath):
+    ''' Check that dirpath is ok, return possibly empty error message.'''
+    if not os.path.exists(dirpath):
+        try:
+            os.makedirs(dirpath)
+            return ''
+        except os.error as err:
+            return "Cannot create directory %s:" % dirpath + str(err)
+    elif not os.listdir(dirpath):
+        if os.access(dirpath, os.W_OK):
+            return ''
+        else:
+            return "Directory %s is not writeable" % dirpath
+    else:
+        return "Directory %s is in the way. Please remove it or use" \
+            " another directory." % dirpath
+
+
+def check_modules(config):
+    ''' Check modules options, return results as a string. '''
+    if 'modules' not in config or not config['modules']:
+        return ''
+    with open('/proc/modules') as f:
+        all_modules = f.readlines()
+    all_modules = [m.split()[0] for m in all_modules]
+
+    modules = ast.literal_eval(config['modules'])
+    if not isinstance(modules, list):
+        modules = []
+
+    s = ''
+    for m in modules:
+        cmd = ['sh -c "find /lib/modules/$(uname -r) -name %s.ko"' % m]
+        try:
+            found = subprocess.check_output(cmd, shell=True).decode('utf-8')
+        except (OSError, subprocess.CalledProcessError):
+            found = []
+        else:
+            found = found.strip()
+        if m in found:
+            s += 'modules: %s: OK, module exists\n' % m
+            if m in all_modules:
+                s += 'modules: %s: OK, module is loaded\n' % m
+            else:
+                s += 'modules: %s: Info, module is not loaded.\n' % m
+                if 'modprobe' not in config:
+                    config['modprobe'] = list()
+                config['modprobe'].extend([m])
+        else:
+            s += 'modules: %s: Error, module does not exist\n' % m
+    return s
+
+
+class DeviceListModel(object):
+    ''' The list of devices corresponding to the device: wildcard in config.'''
+    AUTO_CONFIG = "atilibusb"   # A driver configuration with device: auto.
+
+    def __init__(self, config):
+        self.driver_id = config['id']
+        self.config = config
+        self.device_pattern = config['device']
+        self.label_by_device = {}
+        self.list_devices()
+        if not self.label_by_device:
+            self.label_by_device = {}
+
+    def list_devices(self):
+        ''' List all available devices. '''
+        assert self is True, 'Invalid call to abstract list_devices()'
+
+    def is_direct_installable(self):
+        ''' Return True  if this can be installed without a dialog. '''
+        return len(self.label_by_device) == 1
+
+    def is_empty(self):
+        ''' Return true if there is no matching device.'''
+        return len(self.label_by_device) == 0
+
+
+class EventDeviceListModel(DeviceListModel):
+    ''' List of devinput /dev/input/ devices . '''
+
+    def __init__(self, model):
+        config = model.find_config('id', 'devinput')
+        DeviceListModel.__init__(self, config)
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels from /input/by-id. '''
+        self.label_by_device = {}
+        oldcwd = os.getcwd()
+        try:
+            os.chdir("/dev/input/by-id/")
+            for l in glob.glob("/dev/input/by-id/*"):
+                try:
+                    device = os.path.realpath(os.readlink(l))
+                except OSError:
+                    device = l
+                self.label_by_device[device] = os.path.basename(l)
+        except FileNotFoundError:    # pylint: disable=undefined-variable
+            pass
+        finally:
+            os.chdir(oldcwd)
+
+
+class LircDeviceListModel(DeviceListModel):
+    '''  /dev/lirc? device list. '''
+
+    def __init__(self, model):
+        config = model.find_config('id', 'default')
+        DeviceListModel.__init__(self, config)
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for /dev/lirc devices. '''
+        self.label_by_device = {}
+        for dev in glob.glob('/dev/lirc?'):
+            rc = find_rc(dev)
+            self.label_by_device[dev] = "%s (%s)" % (dev, rc)
+
+
+class GenericDeviceListModel(DeviceListModel):
+    ''' Generic /dev/xxx* device list. '''
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for matching devices. '''
+        self.label_by_device = {}
+        for match in glob.glob(self.config['device']):
+            self.label_by_device[match] = match
+
+
+class SerialDeviceListModel(DeviceListModel):
+    ''' Let user select a device for a userspace serial driver. '''
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for matching devices. '''
+        self.label_by_device = {}
+        for dev in list_ttys():
+            rc = find_rc(dev)
+            if rc:
+                self.label_by_device[dev] = "%s (%s)" % (dev, rc)
+            else:
+                self.label_by_device[dev] = dev
+
+
+class UdpPortDeviceList(DeviceListModel):
+    ''' Dummy list for the udp driver port. '''
+
+    def __init__(self, model):
+        config = model.find_config('id', 'udp')
+        DeviceListModel.__init__(self, config)
+
+    def list_devices(self):
+        self.label_by_device = {'8765': 'default port 8765'}
+
+    def is_direct_installable(self):
+        return False
+
+    def is_empty(self):
+        ''' Return true if there is no matching device.'''
+        return False
+
+
+class AutoDeviceList(DeviceListModel):
+    ''' Dummy list for the driver: 'auto'  entries. '''
+
+    def __init__(self, model):
+        config = model.find_config('id', self.AUTO_CONFIG)
+        DeviceListModel.__init__(self, config)
+
+    def list_devices(self):
+        self.label_by_device = \
+            {'auto': 'automatically probed device'}
+
+    def is_direct_installable(self):
+        return True
+
+    def is_empty(self):
+        return False
+
+
+def device_list_factory(config, model):
+    ''' Given a device: wildcard from config, return a DeviceList. '''
+
+    device_wildcard = config['device']
+    if device_wildcard.startswith('/dev/input'):
+        return EventDeviceListModel(model)
+    elif device_wildcard.startswith('/dev/lirc'):
+        return LircDeviceListModel(model)
+    elif device_wildcard.startswith('/dev/tty'):
+        return SerialDeviceListModel(config)
+    elif device_wildcard == 'auto':
+        return AutoDeviceList(model)
+    elif device_wildcard == 'udp_port':
+        return UdpPortDeviceList(model)
+    else:
+        return GenericDeviceListModel(config)
+
+
+class Model(object):
+    ''' The basic model is the selected remote, driver and device. '''
+
+    NO_SUCH_REMOTE = None
+    NO_SUCH_DRIVER = 0
+    DEVICE_ATTR = ['modinit', 'lircmd_conf', 'driver', 'device', 'note',
+                   'label', 'modprobe', 'conflicts', 'modules', 'supports']
+
+    def __init__(self):
+        self.config = {}
+        self.configs = {}
+        self.device_list = None
+        self.remotes_index = None
+        self._listeners = []
+
+    def reset(self):
+        ''' Reset to pristine state... '''
+        Model.__init__(self)
+
+    def _call_listeners(self):
+        ''' Call all listeners. '''
+        for listener in self._listeners:
+            listener()
+
+    def add_listener(self, listener):
+        ''' Add function to be called when model changes.'''
+        self._listeners.append(listener)
+
+    def set_remote(self, remote):
+        ''' Update the remote configuration file. '''
+        self.config['lircd_conf'] = remote
+        self._call_listeners()
+
+    def clear_remote(self):
+        ''' Unset the lircd_conf status. '''
+        self.config['lircd_conf'] = ''
+        self._call_listeners()
+
+    def set_manual_remote(self):
+        ''' Set the remote to 'no remote', i.e., manual install. '''
+        self.set_remote(_MANUAL_REMOTE_INSTALL)
+
+    def is_remote_manual(self):
+        ''' return True if lircd.conf should be installed manually. '''
+        return self.config['lircd_conf'] == _MANUAL_REMOTE_INSTALL
+
+    def set_capture_device(self, config):
+        ''' Given a device dict update selected capture device. '''
+        for key in self.DEVICE_ATTR:
+            if key in config:
+                self.config[key] = str(config[key])
+        if 'lircd_conf' in config and 'lircd_conf' not in self.config:
+            self.config['lircd_conf'] = config['lircd_conf']
+        if 'supports' not in self.config:
+            self.config['supports'] = 'timing'
+        self._call_listeners()
+
+    def clear_capture_device(self):
+        ''' Indeed: unset the capture device. '''
+        for key in self.DEVICE_ATTR:
+            if key in self.config:
+                del self.config[key]
+        self._call_listeners()
+
+    def set_device(self, device):
+        ''' Update the device  + label part in config.'''
+        self.config['device'] = device
+        self.config['label'] += ' on ' + device
+        self._call_listeners()
+
+    def get_remotes_list(self, view):
+        ''' Download and return the directory file as a list of lines. '''
+        if not self.remotes_index:
+            if not os.path.exists(REMOTES_LIST):
+                download_file(view, REMOTES_LIST_URL, REMOTES_LIST)
+            with open(REMOTES_LIST) as f:
+                list_ = f.read()
+            self.remotes_index = [l for l in list_.split('\n') if l]
+        return self.remotes_index
+
+    def is_installable(self):
+        ''' Do we have a configuration which can be installed? '''
+        for item in ['lircd_conf', 'driver']:
+            if item not in self.config or not self.config[item]:
+                return False
+        conf = self.config['lircd_conf']
+        conf = conf.replace('(', '').replace(')', '').lower()
+        return conf != 'any' and conf != 'none'
+
+    def get_bundled_driver(self, remote, view):
+        ''' Return the bundled capture device file for remote,
+        possibly None (no such remote) or 0 (no such driver)
+        '''
+        for l in self.get_remotes_list(view):
+            words = l.split(';')
+            key = words[0] + "/" + words[1]
+            if key == remote:
+                if words[7] == 'no_driver':
+                    return None
+                config = self.find_config('id', words[7])
+                if not config:
+                    return self.NO_SUCH_DRIVER
+                return config
+        return self.NO_SUCH_REMOTE
+
+    def has_lircd_conf(self):
+        ''' Return if there is a valid lircd_conf in config. '''
+        if 'lircd_conf' not in self.config:
+            return False
+        cf = self.config['lircd_conf']
+        if not cf:
+            return False
+        cf = cf.replace('(', '').replace(')', '').replace(' ', '').lower()
+        if not cf or cf == 'any' or cf == 'none':
+            return False
+        return True
+
+    def has_label(self):
+        ''' Test if there is a valid driver label in config. '''
+        if 'label' not in self.config:
+            return False
+        lbl = self.config['label']
+        if not lbl or lbl.lower().endswith('(none)'):
+            return False
+        return True
+
+    def load_configs(self):
+        ''' Load config files into self.configs. '''
+        if self.configs:
+            return
+        self.configs = {}
+        if os.path.exists(_here('configs')):
+            configs = _here('configs')
+        elif os.path.exists(_here('../configs')):
+            configs = _here('../configs')
+        else:
+            return None
+        for path in glob.glob(configs + '/*.conf'):
+            with open(path) as f:
+                cf = yaml.load(f.read())
+            self.configs[cf['config']['id']] = cf['config']
+
+    def get_configs(self):
+        ''' Return all configurations. '''
+        self.load_configs()
+        return self.configs
+
+    def find_config(self, key, value):
+        ''' Return item (a dict) in configs where config[key] == value. '''
+        self.load_configs()
+        found = \
+            [c for c in self.configs.values() if key in c and c[key] == value]
+        if len(found) > 1:
+            print("find_config: not properly found %s, %s): " % (key, value)
+                  + ', '.join([c['id'] for c in found]))
+            return None
+        elif not found:
+            print("find_config: Nothing  found for %s, %s): " % (key, value))
+            return None
+        return dict(found[0])
+
+
+# vim: set expandtab ts=4 sw=4:

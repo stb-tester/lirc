@@ -21,17 +21,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-#include "lirc_client.h"
 
-char *progname;
+#include "lirc_client.h"
+#include "lirc_log.h"
+
+static char *prog;
 
 int main(int argc, char *argv[])
 {
 	struct lirc_config *config;
 	int daemonize = 0;
 	char *program = "irexec";
+        int r;
 
-	progname = "irexec " VERSION;
+	prog = "irexec " VERSION;
 	while (1) {
 		int c;
 		static struct option long_options[] = {
@@ -53,7 +56,7 @@ int main(int argc, char *argv[])
 			printf("\t -n --name\t\tuse this program name\n");
 			return (EXIT_SUCCESS);
 		case 'v':
-			printf("%s\n", progname);
+			printf("%s\n", prog);
 			return (EXIT_SUCCESS);
 		case 'd':
 			daemonize = 1;
@@ -67,7 +70,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (optind < argc - 1) {
-		fprintf(stderr, "%s: too many arguments\n", progname);
+		fprintf(stderr, "%s: too many arguments\n", prog);
 		return (EXIT_FAILURE);
 	}
 
@@ -81,8 +84,8 @@ int main(int argc, char *argv[])
 
 		if (daemonize) {
 			if (daemon(0, 0) == -1) {
-				fprintf(stderr, "%s: can't daemonize\n", progname);
-				perror(progname);
+				fprintf(stderr, "%s: can't daemonize\n", prog);
+				perror(prog);
 				lirc_freeconfig(config);
 				lirc_deinit();
 				exit(EXIT_FAILURE);
@@ -92,12 +95,15 @@ int main(int argc, char *argv[])
 			if (code == NULL)
 				continue;
 			while ((ret = lirc_code2char(config, code, &c)) == 0 && c != NULL) {
-#ifdef DEBUG
 				if (!daemonize) {
-					printf("Execing command \"%s\"\n", c);
+					logprintf(LIRC_DEBUG,
+						  "Execing command \"%s\"\n", c);
 				}
-#endif
-				system(c);
+				r = system(c);
+				if (r != 0) {
+					logprintf(LIRC_NOTICE, 
+    						  "Shell returned %d", r);
+				}
 			}
 			free(code);
 			if (ret == -1)

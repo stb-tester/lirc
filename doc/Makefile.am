@@ -1,133 +1,200 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-EXTRA_DIST              = release-html.sh release-man.sh table.sh
-DISTCLEANFILES          = man/* html/* man-html/* lirc.hwdb
-noinst_PROGRAMS         = man2html
+DISTCLEANFILES          = man/* html/* man-html/*
 
+LIB_SRC                 = $(srcdir)/../lib
+API_SRC                 = $(LIB_SRC)/*.c \
+                          $(LIB_SRC)/*.h \
+                          $(LIB_SRC)/*.dox \
+                          $(LIB_SRC)/*.doxhead
+
+dist_noinst_SCRIPTS     = data2table data2hwdb
+
+manpage_html            =
+man_sources             =
+nodist_html_DATA        =
 nodist_man_MANS         =
-generated_html          =
 
+if BUILD_XTOOLS
+man_sources             += $(srcdir)/man-source/xmode2.1 \
+                           $(srcdir)/man-source/irxevent.1
 nodist_man_MANS         += man/xmode2.1 man/irxevent.1
-generated_html          += html/xmode2.html html/irxevent.html
-
-nodist_man_MANS         += man/smode2.1
-generated_html          += html/smode2.html
+manpage_html            += man-html/irxevent.html man-html/xmode2.html
+endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = lirc.css irxevent.keys
+if HAVE_DOXYGEN
+dist_doc_DATA           += api-docs.tar.gz
+endif
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html)
+nodist_html_DATA        += $(generated_html)
+if HAVE_MAN2HTML
+nodist_html_DATA        += $(manpage_html)
+endif
+
 dist_html_DATA          = $(html_includes) html-source/lirc.css
 
+if HAVE_PYMOD_YAML
+dist_html_DATA          += table.html
+endif
+
+if HAVE_PYMOD_YAML
+dist_pkgdata_DATA       = lirc.hwdb
+endif
+
 dist_noinst_DATA        = $(man_sources) $(html_sources)
+
+imagedir                = $(docdir)/images
+dist_image_DATA         = images/atwf83.jpg \
+                          images/audio_transmitter.png \
+                          images/audio_wave.png \
+                          images/diode.gif \
+                          images/lirc.gif \
+                          images/marb18.jpg
+
+
+all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 clean-local:
 	rm -rf html
 	rm -rf man
+	rm -rf man-html
 
-all: $(nodist_man_MANS) $(nodist_html_DATA) lirc.hwdb
+table.html:
+	$(PYTHON) $(srcdir)/data2table > table.html
 
-$(generated_html): $(nodist_man_MANS)
+lirc.hwdb:
+	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-$(nodist_man_MANS): $(man_sources) man2html
+$(generated_html): $(html_sources)
+	mkdir html 2>/dev/null || :
+	cat $(srcdir)/html-source/head.html > $@
+	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
+	cat $(srcdir)/html-source/foot.html >> $@
+	$(SED) -i "s/@version@/$(VERSION)/" $@
+
+$(manpage_html): $(nodist_man_MANS)
+	-test -d man-html || mkdir man-html
+	cat $(srcdir)/html-source/head.html > $@
+	src=$$(echo $(srcdir)/$@ | \
+                   $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
+	man2html -M ../html/index.html $${src}* | \
+	            $(SED) -e '1,/<BODY>/d' \
+	                -e '/<\/BODY>/,$$d' \
+	                -e '/HREF="#index"/d' \
+	                -e '/NAME="index"/,/^Time:/d' \
+	                -e '/SEE ALSO/,/^<HR>/d' >> $@
+	cat  $(srcdir)/html-source/foot.html >> $@
+
+$(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
-	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
-	        builddir="$(builddir)"  top_builddir="$(top_builddir)" \
-	        $(srcdir)/release-man.sh $(nodist_man_MANS)
+	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
+	    cp $$src $@
+	$(SED) -i "s/@version@/$(VERSION)/" $@
 
-$(nodist_html_DATA) : $(html_sources) $(nodist_man_MANS)
-	-test -d html || mkdir html
-	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
-	    builddir="$(builddir)" top_builddir="$(top_builddir)" \
-	    $(srcdir)/release-html.sh
-	cp $(srcdir)/html-source/lirc.css html
+api-docs.tar.gz: $(API_SRC)
+	cd ../lib;  $(MAKE) dox
+	doxygen >doxygen-warnings.txt 2>&1
+	tar czf $@ api-docs
 
-lirc.hwdb: html/table.html
-html/table.html:
-	-test -d html || mkdir html
-	top_srcdir="$(top_srcdir)" srcdir="$(srcdir)" \
-	        builddir="$(builddir)" top_builddir="$(top_builddir)" \
-	        $(srcdir)/table.sh lirc.hwdb > html/table.html
+man_sources             += $(srcdir)/man-source/ircat.1 \
+                           $(srcdir)/man-source/irdb-get.1 \
+                           $(srcdir)/man-source/irexec.1 \
+                           $(srcdir)/man-source/irpty.1 \
+                           $(srcdir)/man-source/irrecord.1 \
+                           $(srcdir)/man-source/irsimreceive.1 \
+                           $(srcdir)/man-source/irsimsend.1 \
+                           $(srcdir)/man-source/irsend.1 \
+                           $(srcdir)/man-source/irtestcase.1 \
+                           $(srcdir)/man-source/irw.1 \
+                           $(srcdir)/man-source/lirc-config-tool.1 \
+                           $(srcdir)/man-source/lirc-lsplugins.1 \
+                           $(srcdir)/man-source/lirc-lsremotes.1 \
+                           $(srcdir)/man-source/lirc-setup.1 \
+                           $(srcdir)/man-source/lircd.8 \
+                           $(srcdir)/man-source/lircd.conf.5 \
+                           $(srcdir)/man-source/lircmd.8 \
+                           $(srcdir)/man-source/lircrcd.8 \
+                           $(srcdir)/man-source/mode2.1
 
+html_sources            =  $(srcdir)/html-source/alsa-usb.html \
+                           $(srcdir)/html-source/api-general.html \
+                           $(srcdir)/html-source/atwf83.html \
+                           $(srcdir)/html-source/audio-alsa.html \
+                           $(srcdir)/html-source/audio.html \
+                           $(srcdir)/html-source/configuration-guide.html \
+                           $(srcdir)/html-source/configure.html \
+                           $(srcdir)/html-source/devinput.html \
+                           $(srcdir)/html-source/driver-api.html \
+                           $(srcdir)/html-source/help.html \
+                           $(srcdir)/html-source/imon-24g.html \
+                           $(srcdir)/html-source/imon.html \
+                           $(srcdir)/html-source/index.html \
+                           $(srcdir)/html-source/install.html \
+                           $(srcdir)/html-source/lirc_client.html \
+                           $(srcdir)/html-source/programs.html \
+                           $(srcdir)/html-source/pronto2lirc.html \
+                           $(srcdir)/html-source/technical.html \
+                           $(srcdir)/html-source/tira.html
 
-imagedir                = $(docdir)/images
-dist_image_DATA         =  images/atwf83.jpg \
-                           images/audio_transmitter.png \
-                           images/audio_wave.png \
-                           images/diode.gif \
-                           images/lirc.gif \
-                           images/marb18.jpg
+html_includes           =  $(srcdir)/html-source/foot.html \
+                           $(srcdir)/html-source/head.html
 
-man_sources             =  man-source/daemons.inc \
-                           man-source/irexec.inc \
-                           man-source/irw.inc \
-                           man-source/lircrcd.inc \
-                           man-source/irpty.inc \
-                           man-source/irxevent.inc \
-                           man-source/mode2-common.inc \
-                           man-source/help2man.inc \
-                           man-source/irrecord.inc \
-                           man-source/lircd.inc \
-                           man-source/mode2.inc \
-                           man-source/smode2.inc \
-                           man-source/ircat.inc \
-                           man-source/irsend.inc \
-                           man-source/lircmd.inc \
-                           man-source/xmode2.inc
-
-html_sources            =  html-source/alsa-usb.html \
-                           html-source/atwf83.html \
-                           html-source/audio-alsa.html \
-                           html-source/audio.html \
-                           html-source/configuration-guide.html \
-                           html-source/configure.html \
-                           html-source/devinput.html \
-                           html-source/help.html \
-                           html-source/imon-24g.html \
-                           html-source/imon.html \
-                           html-source/index.html \
-                           html-source/install.html \
-                           html-source/programs.html \
-                           html-source/pronto2lirc.html \
-                           html-source/technical.html \
-                           html-source/tira.html
-
-html_includes           =  html-source/foot.html html-source/head.html
-
-nodist_man_MANS         += man/irexec.1 \
-                           man/ircat.1 \
+nodist_man_MANS         += man/ircat.1 \
+                           man/irdb-get.1 \
+                           man/irexec.1 \
                            man/irpty.1 \
                            man/irrecord.1 \
+                           man/irsimreceive.1 \
+                           man/irsimsend.1 \
+                           man/irsend.1 \
+                           man/irtestcase.1 \
                            man/irw.1 \
+                           man/lirc-config-tool.1 \
+                           man/lirc-lsplugins.1 \
+                           man/lirc-lsremotes.1 \
+                           man/lirc-setup.1 \
                            man/lircd.8 \
+                           man/lircd.conf.5 \
                            man/lircmd.8 \
-                           man/lircrcd.1 \
-                           man/mode2.1 \
-                           man/irsend.1
+                           man/lircrcd.8 \
+                           man/mode2.1
 
-generated_html          += html/alsa-usb.html \
+manpage_html            += man-html/ircat.html \
+                           man-html/irdb-get.html \
+                           man-html/irexec.html \
+                           man-html/irpty.html \
+                           man-html/irrecord.html \
+                           man-html/irsimsend.html \
+                           man-html/irsend.html \
+                           man-html/irtestcase.html \
+                           man-html/irw.html \
+                           man-html/lirc-config-tool.html \
+                           man-html/lirc-lsplugins.html \
+                           man-html/lirc-lsremotes.html \
+                           man-html/lirc-setup.html \
+                           man-html/lircd.html \
+                           man-html/lircd.conf.html \
+                           man-html/lircmd.html \
+                           man-html/lircrcd.html \
+                           man-html/mode2.html
+
+generated_html          =  html/alsa-usb.html \
                            html/audio-alsa.html \
                            html/audio.html \
                            html/configuration-guide.html \
                            html/configure.html \
                            html/devinput.html \
+                           html/driver-api.html \
                            html/help.html \
                            html/imon-24g.html \
                            html/imon.html \
                            html/index.html \
                            html/install.html \
-                           html/ircat.html \
-                           html/irexec.html \
-                           html/irpty.html \
-                           html/irrecord.html \
-                           html/irsend.html \
-                           html/irw.html \
-                           html/lircd.html \
-                           html/lircmd.html \
-                           html/lircrcd.html \
-                           html/mode2.html \
+                           html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \
                            html/technical.html \

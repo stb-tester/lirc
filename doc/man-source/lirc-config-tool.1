@@ -1,0 +1,204 @@
+.TH lirc-config-tool "1" "November 2011" "User Commands"
+.SH NAME
+lirc-config-tool \- tool to scan and generate lirc config files
+.SH SYNOPSIS
+.br
+.B
+lirc-config-tool \fR  \-s|-u [ -c FILE]
+.br
+.B
+lirc-config-tool \fR [-o DIR] [-d] [-c FILE] [FILES]
+.br
+.B
+lirc-config-tool \fR  \-l
+.br
+.SH OPTIONS
+Without options, generates all available application specific lircrc
+files  in ~/.config/lirc. The optional [files] is a list of files to
+build or dump, as listed by -l.
+.TP
+\fB\-s\fR
+Scan lircd file for key symbols which are duplicated or not in namespace.
+.TP
+\fB\-u\fR
+Update existing lircd file to use key symbols in namespace.
+.TP
+\fB\-l\fR
+List available files to generate.
+.TP
+\fB\-d\fR
+Dump file templates usable as stdin on stdout.
+.TP
+\fB\-o \<dir\>\fR
+Output directory, defaults to ~/.config/lirc
+.TP
+\fB\-c \<lircd-filename\>\fR
+lircd(8) config file, defaults to /etc/lirc/lircd.conf
+.TP
+\fB\-h\fR
+Print help message
+.PP
+.SH DESCRIPTION
+.PP
+The script is designed to assist in the setup of the lirc(8)
+configuration files for ordinary remote controls. It is not aimed
+to handle full-blown keyboards or joystick devices. The generated
+lircrc files represents a starting point which will need further,
+manual refinements but might "work" in a basic sense in many cases.
+.PP
+The setup involves normalizing the lircd.conf to use symbols in the
+legal namespace, and to create application specific lircrc files which
+uses the normalized symbols.
+.PP
+To assist normalizing /etc/lircd.conf, the script can report symbols
+used which not are in the namespace. It can can also update many of
+these symbols to corresponding symbols within the namespace.
+.PP
+The script also can create application specific lircrc files such as
+mythtv.lircrc or vlc.lircrc. It then  uses  the normalized
+key symbols in /etc/lirdc.conf. By default, files are created in
+~/.config/lirc.
+.PP
+Generated lircrc files basically combines known keys from
+/etc/lirc/lircd.conf with template data for an application. The process
+results in a lircrc file, a list a of unused keys and some entries
+which don't match any existing key. The unused keys and unmatched entries
+are written as comments into the generated file.
+
+An 'illegal' key i. e., a key not in namespace, will not match any entry
+and will thus always be unused. However, it's perfectly possible to
+use it later on while manually modifying the lircrc files.
+.PP
+When updating files, script always makes backup copies.
+.PP
+The generated lircrc files are intended to be included in a main
+~/.config/lircrc file. A minimal such might look like
+.IP
+    include ~/.config/lirc/mythtv.lircrc
+
+.SH EXAMPLES
+.PP
+
+Scan /etc/lirc/lircd.conf for duplicated symbols and symbols not in namespace:
+.IP
+lirc-config-tool -s
+.PP
+Update a local lircd.conf file to use symbols in namespace:
+.IP
+lirc-config-tool -uc ./lircd.conf
+.PP
+List available files to generate:
+.IP
+lirc-config-tool -l
+.PP
+Generate one of the files listed by -l, creates ~/.config/lirc/mythtv.lircrc:
+.IP
+lirc-config-tool mythtv
+.PP
+Dump template data  for mythtv:
+.IP
+lirc-config-tool -d mythtv \>mythtv.lircdata
+.PP
+Use possibly edited data to create a modified mythtv.lircrc in current dir:
+.IP
+lirc-config-tool -o . stdin \< mythtv.lircdata
+
+.SH LIRCD.CONF CONVERSIONS
+The -s option simply reports all key symbols not in namespace. It also
+reports some symbols which although legal are inappropriate in this
+context, notably KEY_NUMERIC_0..KEY_NUMERIC_9. If present, duplicated
+keys are also reported.
+
+The -u option converts several known symbols to their corresponding
+KEY_* symbols. Symbols which have names like KEY_WINDOWS but not are in
+namespace gets a X_ prefix e. g., KEY_WINDOWS -> X_KEY_WINDOWS. The
+converted file thus guarantees that any key symbol starting with
+KEY_ is a legal symbol.
+
+All known numeric keys such as '1', 'KEY_1', 'KEY_KP_1', 'KEY_NUMERIC_1
+ are converted to KEY_1.
+
+All modifications are marked by comments in file.
+
+.SH EXTENDING
+The script can be extended to support more applications by providing a shell
+function named *.lircdata. E. g., to add a new application named
+"my_app" based on the built-in vlc application:
+.PP
+.ft CW
+         $ lirc-config-tool -d vlc >my_app.lircdata
+         $ function my_app_lircdata()
+         > {
+         >    cat my_app.lircdata
+         > }
+         $ export -f my_app_lircdata
+         $ lirc-config-tool  my_app
+.ft R
+
+.SH DATA FORMAT
+The script uses a simple, line-oriented format to represent the lircrc files.
+The purpose of the format is to be compact and thus to give a good overview,
+and also to be easy to parse.  Each line is divided in comma-separated tokens.
+There are four kind of lines.
+.PP
+Comment lines begins with a '#'. These are copied verbatim to the output file.
+.PP
+The first data line represents global items, applicable to all entrys. The
+first word is the program name. It's used in the first 'program=' line.
+Following words, if present, are optional lines which will be appended to each
+entry in the file.
+.PP
+A data line starting with 'begin' or 'end' is a  mode block designator. It's
+copied verbatim to output file.
+.PP
+All other data lines represents a button/config entry. The format is
+.ft CW
+    <button> <config> [extra]\.\.\.
+.ft
+.br
+The button value  is used in the  button = line, and the config item is used
+in the config = line. Both are mandatory. Following items, if any, are copied
+as verbatim lines to the entry.
+.PP
+An unlikely example: The data format
+
+.ft CW
+    myprog, flags = quit
+    begin volume_mode
+    KEY_VOLUMEUP, volume-up, delay=4, repeat=1
+    KEY_VOLUMEDOWN, volume-down
+    end volume_mode
+.ft
+.PP
+translates to:
+.PP
+.ft CW
+    begin volume_mode
+        begin
+            program = myprog
+            button  = KEY_VOLUME_UP
+            config  = volume-up
+            delay   = 4
+            repeat  = 1
+            flags   = quit
+        end
+        begin
+            program = myprog
+            button  = KEY_VOLUME_DOWN
+            config  = volume-down
+            flags   = quit
+        end
+    end volume_mode
+.ft
+
+.SH COPYRIGHT
+License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.PP
+lircd(8)
+.br
+http://www.lirc.org/ - Main lirc documentation
+

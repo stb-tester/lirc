@@ -1,0 +1,367 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>LIRC - FAQ</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+        BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR>
+          <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+            <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+            <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+          </TD>
+        </TR>
+        <TR>
+          <TD WIDTH="100%" ALIGN="LEFT" VALIGN="TOP">&#160;<BR>
+
+            <!-- Text -->
+            <HR WIDTH="70%">
+            <H1 ALIGN="CENTER">FAQ</H1>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+                    <H1>Hardware related</H1>
+                    <OL>
+                      <!-- LI>
+                        My Irman receiver is not working in 0.8.2?<BR>
+                        <BR>
+                        Irman support is broken in 0.8.2. Please use 0.8.7.<BR>
+                        <BR>
+                      </LI -->
+                      <LI>
+                        Is my USB IrDA dongle supported by LIRC?<BR>
+                        <BR>
+                        No, it's technically not possible to use USB IrDA
+                        dongles (as specified by the <A HREF="http://www.irda.org/">Infrared Data Association</A>) with LIRC. This does not apply to USB receivers in general.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Can I use my home-brew receiver and transmitter on
+                        the same serial port?<BR>
+                        <BR>
+                        Yes, just make sure that you enable transmitter
+                        support during configuration of LIRC.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        The value of the resistor in the receiver circuit
+                        is labeled as '4k7' Ohm. Is this 4.7 Ohm, 4.7 kOhm
+                        or what?<BR>
+                        <BR>
+                        4k7 Ohm means 4700 Ohm. k is the abbreviation of
+                        kilo.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Can I use a home-brew LIRC receiver with a Serial
+                        to USB adapter?<BR>
+                        <BR>
+                        No, this won't work. But there is a project
+                        working on a dedicated <A HREF="http://tusb3210.sourceforge.net">USB
+                          transceiver</A> or you can connect an IR
+                        receiver to a <A
+                          HREF="http://www.huitsing.nl/irftdi/">FTDI
+                          based USB chip</A>. Using an Irman with USB
+                        adapter should work though.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        I have a Hauppauge TV card. Can I use a different
+                        remote control with this TV card except the
+                        original Hauppauge remote control?<BR>
+                        <BR>
+                        The Hauppauge remote control uses the <A HREF="http://lirc.sourceforge.net/remotes/rc-5/RC-5-extented">RC-5</A>
+                        protocol. You should be able to use any TV remote
+                        control that uses this protocol. Common brands
+                        that use this protocol are Philips and
+                        Marantz. A short description how to setup LIRC with an <A HREF="http://sourceforge.net/mailarchive/forum.php?thread_name=200801192321.02652.tahoward%40nc.rr.com&forum_name=lirc-list">universal remote control</A> was posted on the mailing list.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        How do the drivers for the home-brew receivers
+                        work? Do they use polling?<BR>
+                        <BR>
+                        No, the serial port driver is fully interrupt
+                        driven. On each edge of the IR signal the
+                        interrupt handler is called and the time since the
+                        last interrupt is calculated. As the parallel port
+                        only generates interrupts on the rising edge of
+                        the input signal, the parallel port driver uses
+                        polling with the help of the hardware timer until
+                        the signal becomes low again. As it is polling
+                        only for microseconds this has no noticeable effect
+                        on system performance.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        I would like to connect an LCD display and an
+                        home-brew IR receiver to the same serial
+                        port. Will this work?<BR>
+                        <BR>
+                        No, unless somebody writes a driver that merges
+                        the functionality of the kernel serial port driver
+                        and the LIRC lirc_serial driver. This is not
+                        trivial. I don't have any plans to do it.<BR>
+                        <BR>
+                      </LI>
+                      <!-- LI>
+                        Does LIRC support the Creative Infra CD-ROM?<BR>
+                        <BR>
+                        Yes, current CVS snapshots will support this device.<BR>
+                        <BR>
+                      </LI -->
+                      <!-- LI>
+                        Does LIRC support the Hauppauge DVB-s card?<BR>
+                        <BR>
+                        Yes, you need the DVB driver from <A HREF="http://www.linuxtv.org/download/dvb/">linuxtv.org</A>.<BR>
+                        <BR>
+                      </LI -->
+                      <!-- AD --><LI>
+                        <!-- AD -->I need a IR transmitter device to
+                        <!-- AD -->control my TV/VCR/Settop box. But I'd
+                        <!-- AD -->rather buy a device than
+                        <!-- AD --><A HREF="transmitters.html">solder my own</A>.
+                        <!-- AD -->Where can I buy LIRC compatible
+                        <!-- AD -->transmitters?<BR>
+                        <!-- AD --><BR>
+                        <!-- AD -->You can buy serial port or USB
+                        <!-- AD -->transceivers at
+                        <!-- AD --><A HREF="http://www.irtrans.de/">www.irtrans.de</A>.
+                        <!-- AD -->They provide a LIRC compatible socket
+                        <!-- AD -->interface.<BR>
+                        <!-- AD --><BR>
+                        <!-- AD --></LI>
+                    </OL>
+                    <H1>Software setup</H1>
+                    <OL>
+                      <LI>
+                        I have trouble to create a working lircd config file
+                        for my remote. What can I do?<BR>
+                        <BR>
+                        Please read the documentation about how to <A
+                          HREF="html/help.html#new_remote">
+                          add new remote controls</A>.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Which kernel module do I have to load for my
+                        hardware?<BR>
+                        <BR>
+                        The documentation contains a detailed <A
+                        HREF="http://www.lirc.org/html/table.html">list</A>
+                        how to setup the various devices supported by
+                        LIRC.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        When I run irrecord or mode2 I get an error
+                        message like this:
+                        <PRE>
+mode2: error opening /dev/lirc
+mode2: Device or resource busy
+                        </PRE>
+                        Another application is probably already accessing
+                        /dev/lirc. Only one process can use the device at
+                        a time. You can find out which process uses the
+                        device by calling (as root) <em>fuser
+                          /dev/lirc</em>.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Most of the time I have to push a button twice for
+                        LIRC to recognize it. What's wrong?<BR>
+                        <BR>
+                        <P>The remote control probably uses the RC-5,
+                        RC-6 or RECS80 protocol, but irrecord wasn't
+                        able to recognize this correctly.
+                        </P>
+                        <P>Try running <em>irrecord
+                        remotes/generic/RC-5.conf</em>, <em>irrecord
+                        remotes/generic/RC-6.conf</em> or <em>irrecord
+                        remotes/generic/RECS80.conf</em>.  You will
+                        find these template config files inside the
+                        LIRC source package.  If this won't work read
+                        <A
+                        HREF="html/help.html#new_remote">this</A>.
+                        </P>
+                      </LI>
+                      <LI>
+                        Every time I press a button on my remote control
+                        irw will show at least 5 events (or any other
+                        number &gt; 1) independent of how short I try
+                        pressing the button.<BR>
+                        <P>In most cases this is the correct behavior. Many
+                          remote controls send the same code multiple times
+                          to make sure that at least one code comes through
+                          to the receiver when you press a button for a
+                          short time. The default .lircrc setup ignores
+                          repeat events. If you want to use the button to do
+                          things repeatedly when it is being hold down, like
+                          e.g. increasing the volume or something similar,
+                          you should use the <em>delay</em> token (will be
+                          available in 0.7.0) in your .lircrc file.</P>
+                        <P>You can identify such remotes by the fact that
+                          irrecord usually will add a <em>min_repeat</em>
+                          field for this remote control to the lircd.conf
+                          config file.</P>
+                        <P>If you want to suppress those repeats
+                          already at lircd level, you can also add
+                          <em>suppress_repeat x</em> to the
+                          lircd.conf config file where <em>x</em> is
+                          the number of repeats you want  to
+                          suppress. This feature is available in lircd
+                          since release 0.8.6.
+                        </P>
+                      </LI>
+                      <LI>
+                        Only root can run LIRC applications. When I run
+                        LIRC applications (e.g. irexec) I get
+                        this error message:
+                        <PRE>
+    irexec: could not connect to socket
+                        </PRE>
+                        You have to change the file permissions of
+                        /dev/lircd. Usually it should be safe to give
+                        everyone read and write permissions. I try to make
+                        the daemon as secure as possible. You can also
+                        create a special group for this purpose.
+                        <PRE>
+    chmod 666 /dev/lircd
+                        </PRE>
+                        <BR>
+                      </LI>
+                      <!-- LI>
+                        I'm running Mandrake 9.0 and I can't get LIRC
+                        working.<BR>
+                        <BR>
+                        Mandrake comes with pre-compiled LIRC kernel
+                        modules in
+                        /lib/modules/2.4.19-16mdk/kernel/3rdparty/lirc/.
+                        Unfortunately it seems that they are broken. Make
+                        sure that these kernel modules are not loaded
+                        instead of the modules you have compiled
+                        yourself.<BR>
+                        <BR>
+                      </LI -->
+                      <LI>
+                        I'm running Mandrake 9.2 and the LIRC applications
+                        all report:
+                        <PRE>
+could not connect to socket
+connection refused
+                        </PRE>
+                        <BR>
+                        These applications expect the lircd socket in /tmp
+                        (blame Mandrake).
+                        The following command will fix the problem.
+                        <PRE>
+ln -s /dev/lircd /tmp/.lircd
+                        </PRE>
+                        Please note that you might have to execute this
+                        command on every system startup as /tmp usually is
+                        cleaned up during startup.<BR>
+                        <BR>
+                      </LI>
+                    </OL>
+                    <H1>Misc</H1>
+                    <OL>
+                      <LI>
+                        I need a config file for &lt;<em>brand</em>&gt;
+                        &lt;<em>device</em>&gt;. Do you have such a config
+                        file?<BR>
+                        <BR>
+                        If it's not on the website, then I don't have
+                        it. Please don't ask me for config files.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Do you speak German?<BR>
+                        <BR>
+                        <!-- Yes, I will answer mails in German,
+                        English, Polish and French. -->Please only
+                        use English when sending emails.<BR>
+                        <BR>
+                      </LI>
+                      <LI>
+                        Why didn't you answer my mail?<BR>
+                        <BR>
+                        <P>
+                          I get way more mails than I can handle. If you
+                          don't get an answer to your question the
+                          probability is very high that you will find the
+                          answer in the documentation.
+                        </P>
+                        <P>
+                          Mails about Total irRemote will go to /dev/null
+                          unread.
+                        </P>
+                      </LI>
+                    </OL>
+
+                    <CENTER><HR WIDTH="50%"></CENTER><BR>
+                    <A NAME="howtos"></A>
+                    <H1>HOWTOs</H1>
+                    <UL>
+                      <LI>
+                        <A HREF="Remote Control XMMS.pdf">Learn how to
+                          control everyone's favourite XMMS with a TV
+                          remote</A> - PDF (2348 kB)
+                      </LI>
+                      <LI>
+                        <A HREF="http://stuff.nekhbet.ro/2006/07/10/make-an-infrared-remote-control-for-pc.html">Illustration how to build a serial port receiver</A>
+                      </LI>
+                      <LI>
+                        <A HREF="http://www.mandrake.tips.4.free.fr/lirc.html">Setting up LIRC on Mandrake</A>
+                      </LI>
+                      <!-- LI>
+                        <A HREF="http://home.swiftdsl.com.au/~tmccoy/index.php?option=content&amp;task=view&amp;id=11&amp;Itemid=26">Buliding serial port receiver and setting up on Debian</A>
+                      </LI -->
+                      <LI>
+                        <A HREF="http://reboot.box.lt/TV-HOWTO/">Leadtek
+                          Winfast TV 2000 XP Deluxe on Fedora Core 3</A> (Lithuanian)
+                      </LI>
+                      <LI>
+                        <A HREF="http://www.fullcustom.es/mod2_resw.html">Description how to build a serial port receiver in Spanish</A>
+                      </LI>
+                      <LI>
+                        <A
+                          HREF="http://www.mediaboxblog.co.uk/blog1.php/2008/05/22/howto-home-brew-ir-receiver-for-lirc">Building and setup of IR receiver using soundcard input</A>
+                      </LI>
+
+                    </UL>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <!-- Text -->
+
+            <BR>&#160;<BR>
+            <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+            <BR>&#160;<BR>
+          </TD>
+        </TR>
+        <TR>
+          <TD CLASS="menu" WIDTH="100%">
+            &#160;<BR>
+          </TD>
+        </TR>
+    </TABLE>
+  </BODY>
+
+</HTML>

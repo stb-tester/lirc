@@ -1,0 +1,34 @@
+.TH LIRC-SETUP "1" "Last change: Oct 2014" "lirc-setup @version@" "User Commands"
+.SH NAME
+lirc-setup - Interactive lirc setup tool
+.SH SYNOPSIS
+.B lirc-setup
+[\fIoutput directory\fR]
+.SH DESCRIPTION
+A simple tool which creates a lirc configuration after
+some user dialogs which defines driver, device, modprobe
+actions, etc. The results are written as separate files
+in the output directory which defaults to lirc-setup.conf.d
+.PP
+
+.SH FILES
+.TP 4
+.B configs
+The lirc hardware database. By default the file is searched for
+in ., .., /usr/share/lirc and the dir where lirc-setup lives.
+configs is a directory with a separate file for each meny entry.
+See the configs/README.
+.TP 4
+.B lirc-setup.conf.d
+The output directory. On normal exits this contains at least a
+lircd.conf and lirc_options.conf file. Optional files lirc-modprobe.conf
+and lircmd.conf
+.TP 0
+Several other support files are downloaded from the lirc website
+as part of the configuration process.
+
+.SH "SEE ALSO"
+.TP 4
+.B http://sf.net/p/lirc-remotes
+The lirc remote configurations database, a separate project. lirc-setup
+fetches all remote configurations from this point.

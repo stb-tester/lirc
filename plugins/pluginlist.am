@@ -1,0 +1,70 @@
+## Created by make-pluginlist.sh
+plugin_LTLIBRARIES              += accent.la
+accent_la_SOURCES                = accent.c
+
+plugin_LTLIBRARIES              += bte.la
+bte_la_SOURCES                   = bte.c
+
+plugin_LTLIBRARIES              += creative.la
+creative_la_SOURCES              = creative.c
+
+plugin_LTLIBRARIES              += default.la
+default_la_SOURCES               = default.c
+
+plugin_LTLIBRARIES              += ea65.la
+ea65_la_SOURCES                  = ea65.c
+
+plugin_LTLIBRARIES              += file.la
+file_la_SOURCES                  = file.c
+
+plugin_LTLIBRARIES              += irlink.la
+irlink_la_SOURCES                = irlink.c
+
+plugin_LTLIBRARIES              += irtoy.la
+irtoy_la_SOURCES                 = irtoy.c
+
+plugin_LTLIBRARIES              += logitech.la
+logitech_la_SOURCES              = logitech.c
+
+plugin_LTLIBRARIES              += mouseremote.la
+mouseremote_la_SOURCES           = mouseremote.c
+
+plugin_LTLIBRARIES              += mp3anywhere.la
+mp3anywhere_la_SOURCES           = mp3anywhere.c
+
+plugin_LTLIBRARIES              += mplay.la
+mplay_la_SOURCES                 = mplay.c
+
+plugin_LTLIBRARIES              += pcmak.la
+pcmak_la_SOURCES                 = pcmak.c
+
+plugin_LTLIBRARIES              += pinsys.la
+pinsys_la_SOURCES                = pinsys.c
+
+plugin_LTLIBRARIES              += pixelview.la
+pixelview_la_SOURCES             = pixelview.c
+
+plugin_LTLIBRARIES              += silitek.la
+silitek_la_SOURCES               = silitek.c
+
+plugin_LTLIBRARIES              += simreceive.la
+simreceive_la_SOURCES            = simreceive.c
+
+plugin_LTLIBRARIES              += simsend.la
+simsend_la_SOURCES               = simsend.c
+
+plugin_LTLIBRARIES              += slinke.la
+slinke_la_SOURCES                = slinke.c
+
+plugin_LTLIBRARIES              += tira.la
+tira_la_SOURCES                  = tira.c
+
+plugin_LTLIBRARIES              += udp.la
+udp_la_SOURCES                   = udp.c
+
+plugin_LTLIBRARIES              += usbx.la
+usbx_la_SOURCES                  = usbx.c
+
+plugin_LTLIBRARIES              += yard2.la
+yard2_la_SOURCES                 = yard2.c
+

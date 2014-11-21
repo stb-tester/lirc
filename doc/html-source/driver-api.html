@@ -1,0 +1,474 @@
+  <hr>
+    <h1 align="center">Documentation of the LIRC driver API version 2.</h1>
+    <hr>
+
+    <p>This document describes the API used by the LIRC userspace drivers in version 2.<p>
+      <!--p>A dynamic driver can be distributed as source and/or binary, and installed in existing LIRC setups without recompiling.</p-->
+
+    <p>It is targeted at active C programmers, and not written with the intention to be
+       understandable by non-programmers.
+     </p>
+
+     <p>The guide aims at being fully compatible with the upcoming release LIRC 0.9.2. (CLARIFY)</p>
+
+    <hr width="70%">
+    <br>
+    <h1>Introduction</h1>
+    <p>There are three kinds of drivers in LIRC:
+    <ol>
+        <li>Kernel drivers, also called kernel modules. </li>
+        <li>User space, statically linked drivers.</li>
+        <li>User space, dynamically linked drivers.</li>
+    </ol>
+    <p>Kernel drivers will not be covered in the present article. User space drivers are
+        nothing else but normal compiled C functions, running as the invoking user (which may or may not be root).
+        Therefore, the decomposition between "program" and driver is a priori not always necessary,
+        but instead serves modularization and structuring.
+    </p>
+
+    <p>In the beginning, due to its focus on very simple hardware, LIRC was very centered around kernal modules
+        like directly connected LEDs or IR sensors. Modern hardware, due to embedded micro processors etc.,
+        have less requirements on precise timing, and
+        user space drivers are normally the preferred solution. One such driver consists of a C file, containing a number of function,
+        which are linked into the executing program (e. g., Lircd).
+        Traditionally (at least for LIRC) linking takes place during
+        the build process (statically linking). The API for these drivers we will call "Driver API version 1".</p>
+
+    <p>Dynamically loaded drivers was introduced LIRC just recently, <em>replacing</em> the statically linked drivers.
+        It turned out to be necessary to slighty augment the driver API version 1. The new version will
+        be referred to as "Driver API version 2".</p>
+
+    <p>In this guide, the word <em>plugin</em> refers to the so-file on disk. Each such file
+contains one or more driver(s) visible in the user interface. </p>
+
+<h1>Two flavors of drivers</h1>
+<p>An IR signal consists of a sequence of on-times (pulses) and off-times (gaps). (We disregard modulation for the time being.)
+        A full-fledged IR driver, on reading, can deliver the timing of these period ("durations"). On sending,
+        it can be fed with a list of durations, and it sends these on- and off-periods as (modulated) IR signals. Such a piece of
+        hardware is suitable for receiving and/or transmitting "arbitrary" IR sequences.</p>
+
+<p>Much IR hardware was not designed as general-purpose IR hardware, but to allow e.g. a laptop computer or a TV
+      card to be be controlled by the supplied remote. This hardware in general decodes the IR signal in its own hardware,
+      and delivers, for recognized signals, an integer code denoting the code received (like "play").
+      For signals not following the protocol, no output is generated. This property
+      is indicated in the drivers as the feature <code>LIRC_CAN_REC_LIRCCODE</code>.</p>
+
+  <p>As usable and flexible IR hardware for LIRC, these devices are second choice.
+      The "learns" (configuration files) from such a device is of very limited value, and not portable to other IR devices,
+      since timing information is missing. In the configuration file,
+      this can be determined by the lines <code>one 0 0</code> and <code>one 0 0</code>,
+      which is clearly not usable without the context, namely the hardware used for capturing.</p>
+
+<p>This guide is intended for programmers
+      writing and maintain "real" drivers.</p>
+
+  <p>At the time of writing, there are about  44 plugins and 54 drivers. Of the drivers, 13 are
+     "general receivers"; the others  are LIRCCODE drivers. (The actual numbers vary depending
+     on configuration i. e. libraries installed on the build system.)
+     Since hardware related to LIRCCODE drivers (typically a TV-card) normally doesn't support
+     sending there is no LIRCCODE driver which can send data. </p>
+
+  <p> The tool lirc-lsplugins can be used to generate overviews of the drivers and their
+     capabilities. </p>
+  </p>
+    <!--hr width="70%">
+    <br-->
+    <h1>The C interface</h1>
+    <p>A (user space) driver is a C file where all the functions are declared <code>static</code>, i.e. not (directly)
+        visible from outside of the file. The only thing visible from outside is a particular data structure,
+        containing some data elements, and some pointers to functions, that in these way effectively are made public API.
+        In this way a certain encapsulation is achieved. The data structure will be described next.</p>
+    <h2>The <code>struct driver</code></h2>
+    <p>The <code>struct driver</code> is the data structure representing the driver for LIRC.
+        It is defined in <code>driver.h</code> (in directory <code>lib</code>).
+
+
+    <pre>
+struct driver {
+        char *device;
+        int fd;
+        __u32 features;
+        __u32 send_mode;
+        __u32 rec_mode;
+        __u32 code_length;
+        int (*init_func) (void);
+        int (*deinit_func) (void);
+        int (*send_func) (struct ir_remote* remote, struct ir_ncode* code);
+        char* (*rec_func) (struct ir_remote* remotes);
+        int (*decode_func) (struct ir_remote* remote, struct decode_ctx_t* ctx);
+        int (*drvctl_func) (unsigned int cmd, void* arg);
+         lirc_t(*readdata) (lirc_t timeout);
+        char *name;
+        unsigned int resolution;
+
+        /* The following fields are API version 2 extensions */
+        const int api_version;
+        const char* driver_version;
+        const char* info;
+        int (*const close_func)(void);
+        int (*const open_func)(const char* device);
+};
+    </pre>
+    <p>These fields will next be described. Note that a driver sometimes "misuses" a field;
+        e.g. the UDP driver expects a port number (as string) in the <code>device</code> field.
+    </p>
+    <p>Also note that some function pointer may be NULL, indicating that the driver
+        does not implement the said functionality (e.g. sending of IR signals).</p>
+
+    <p>The structures <code>ir_remote, ir_ncode</code> and, <code>ir_code</code> are declared in the file <code>ir_remote_types.h</code>.
+        The data type <code>lirc_t</code> (what a meaningful name!) is an integer value used in many places for storing timing data.
+        It is defined by <code>#define int</code> in <code>lirc.h</code>.
+    <dl>
+    <dt>device</dt>
+    <dd>Typically the name of the device as text string in Linux. This
+        corresponds to the <code>--device</code> argument to lircd
+        Not all drivers respect the device field as input; some have hardcoded
+        device name(s), some use autodetecting code. </dd>
+
+    <dt>fd</dt>
+    <dd>A file descriptor associated with the driver.</dd>
+
+    <dt>features</dt>
+    <dd>Code for the features of the present device, see Appendix. It consist of the bitwise or of a number of possible features.</dd>
+    <dt>send_mode</dt>
+    <dd>Use <code>LIRC_MODE_PULSE</code>.</dd>
+    <dt>rec_mode</dt>
+    <dd>Use <code>LIRC_MODE_MODE2</code>.</dd>
+    <dt>code_length</dt>
+    <dd>Only of relevance for LIRC_MODE_LIRCCODE drivers, for which it is the size in bits of the LIRCCODE.</dd>
+    <dt>init_func</dt>
+    <dd>Function pointer, see below.</dd>
+    <dt>deinit_func</dt>
+    <dd>Function pointer, see below.</dd>
+    <dt>send_func<dt>
+    <dd>Function pointer, see below. NULL if the driver cannot transmit.</dd>
+    <dt>rec_func<dt>
+    <dd>Function pointer, see below. NULL if the driver cannot receive.</dd>
+    <dt>decode_func</dt>
+    <dd>Function pointer, for "real" drivers (not using LIRC_MODE_LIRCCODE),
+        just use <code>receive_decode</code>, a function defined in <code>receive.c</code>.</dd>
+    <dt>drvctl_func</dt>
+    <dd>Function pointer, see below. May be NULL if there are no ioctls.</dd>
+    <dt>
+    <dt>readdata</dt>
+    <dd>Function pointer, see below. Is NULL if the driver reads uses LIRC_MODE_LIRCCODE.</dd>
+    <dt>name<dt>
+    <dd>Name of the driver in a human readable form, as listed e.g. by <code>lircd --driver help</code>
+        or <code>irrecord --driver help</code>. Although not enforced,
+        it is recommended to use names following the syntax for C identifiers.</dd>
+    <dt>resolution</dt>
+    <dd>The resolution in microseconds of the recorded durations when reading signals.
+        Used as default value for the <code>aeps</code> parameter in remotes.</dd>
+    <dt>api_version<dt>
+    <dd>Use 2.</dd>
+    <dt>driver_version</dt>
+    <dd>Free form string used to identify the version of the driver, if desired.</dd>
+    <dt>info</dt>
+    <dd>Free form string, overall driver information.</dd>
+    <dt>open_func</dt>
+    <dd>Function pointer, see below.</dd>
+    <dt>close_func</dt>
+    <dd>Function pointer, see below.</dd>
+    </dl>
+
+    <h2>Driver lifecycle and <code>lircd</code></h2>
+    <p>
+        The driver is loaded, used and unloaded by the executing program according to the
+    following:
+    <ol>
+    <li>
+        The program Lircd  code determines what driver to use (normally the <code>--driver</code>
+        runtime option) and invokes <code>hw_choose_driver()</code> (in <code>drv_admin.c</code>) which
+         loads the driver and exposes the driver interface
+         in the global variable <code>drv</code> (which is a <code>struct driver</code>).</li>
+    <li> <code>Lircd</code> invokes the <code>open_func()</code> which establishes the device to use,
+         usually based on the runtime option <code>--device</code>.</li>
+    <li>When a client connects, either for sending or receiving, the function <code>init_func()</code> is invoked,
+        initializing the driver. In some drivers,
+        the capabilities of the drivers, i.e. the field <code>features</code>, are available only after initializing.
+        The driver also exports the <code>fd</code> field, a file
+         descriptor (a positive int) for the underlying file.</li>
+    <li>From this point, calls to <code>read_func()</code> and <code>send_func()</code> are possible.</li>
+    <li>When the last client is terminated, executing program calls  <code>deinit_func()</code>. Note that
+        the Lircd program  may need the device again e.g., if  another sending request
+        is received, so a hard closing of a device may not be optimal here.</li>
+    <li>As a last operation, executing program should call the <code>close_func()</code>. This
+         relinquishes all resources allocated by the driver.</li>
+    <li>Calls to <code>drvctl_func()</code> are possible at any time. They are the responsibility of the programmer.
+            In particular, ioctl operations may fail under some circumstances.</li>
+    <li>The associated functions are not guaranteed to be executed in the order described.
+        In general, the driver should not break if e.g., the <code>init_func()</code> is called on an already open device, or
+        <code>deinit_func()</code> called on a device not open.</li>
+    </ol>
+
+    <h2>Driver structure</h2>
+    <p>Typical structure of a driver file will be shown next.</p>
+    <pre>
+/* Include system includes files as needed */
+
+#include "lirc_driver.h" /* The overall include, mandatory, often sufficient.  */
+#include "serial.h"      /* For drivers using serial hardware. */
+
+/* Global (but "static") variable definition. */
+
+/* static function definitions. */
+static int generic_init() {
+    /* Open device/hardware */
+
+    send_buffer_init();
+    return 1;
+}
+
+static int generic_deinit(void) {
+    /* close device */
+    return 1;
+}
+
+static int generic_send(struct ir_remote* remote, struct ir_ncode* code) {
+    result = send_buffer_put(remote, code);
+    if (!result)
+        return 0;
+
+    /* Payload signal is now available in global variable send_buf. */
+    /* Process sendbuf (see transmit.h). */
+    return success;
+}
+
+static char *rec_func(struct ir_remote* remotes) {
+    if (!rec_buffer_clear) {
+        /* handle errors */
+        return NULL;
+    }
+    return decode_all(remotes);
+}
+
+static char *decode_func(struct ir_remote* remote, struct decode_ctx_t* ctx) {
+    return receive_decode(remote, ctx);
+}
+
+static int generic_drvctl(unsigned int cmd, void *arg) {
+    /* Do something device specific, e.g.
+       return ioctl(drv.fd, cmd, arg); */
+    return cmd == 42 ? 1 : 0;
+}
+
+static lirc_t *readdata(lirc_t timeout) {
+    /* compute and return the next duration in microseconds */
+}
+
+struct driver my_driver = {
+   /* see above. */
+}
+
+
+struct driver* hardwares[] = { &my_hardware, NULL };
+    </pre>
+  </p>
+  <h3>Syntax and semantics of the functions</h3>
+  <p>Note that, even if implementing the functions in C++, there is no need to declare them as <code>external "C"</code>.</p>
+
+  <h4><code>init_func</code></h4>
+  <code>int myinit_func(void)</code> <p>Function called for initializing the driver and the hardware.
+      It should return nonzero in the case of success.
+        This function simple opens the device.
+        In addition, the functions <code>rec_buffer_init(void)</code> and/or
+        <code>send_buffer_init(void)</code> needs to be called.</p>
+
+  <h4><code>deinit_func</code></h4>
+  <code>int mydeinit_func(void)</code>
+  <p>Function called for suspending the driver.
+      Zero return value indicates failure, all other return values success.</p>
+
+  <h4><code>send_func</code></h4>
+  <code>int mysend_func(struct ir_remote *remote, struct ir_ncode *code)</code>
+  <p>Function called for sending an IR code, residing in the second argument. For this, the function
+      <code>send_buffer_put(struct ir_remote *remote, struct ir_ncode *code)</code> is called, with the same arguments.
+      This makes the global variable <code>send_bug</code> containing the durations in micro seconds for the IR signal.
+      The field <code>data</code> is a pointer to <code>wptr</code> number of numbers, having the data type <code>lirc_t</code>.
+  Returns non-zero if operation successful.</p>
+
+  <p>Called from <code>ir_remote.c</code>.
+
+  <h4><code>rec_func</code></h4>
+  <code>char* myrec_func(struct ir_remote* remotes)</code>
+  <p>The canonical implementation for non-LIRCCODE drivers is </p>
+  <pre>
+        if (!rec_buffer_clear) {
+            /* handle errors */
+            return NULL;
+        }
+        return decode_all(remotes);
+  </pre>
+  This is a non-blocking function which returns NULL if there is no data
+  available currently, but might very well succeed later.
+<h4><code>decode_func</code></h4>
+<code>char *mydecode_func(struct ir_remote * remote, struct decode_ctx_t* ctx)</code>
+  <p>For non-LIRC_MODE_LIRCCODE, just call <code>receive_decode</code>,
+ or write <code>receive_decode</code> directly in the <code>struct driver</code>.
+  <h4><code>drvctl_func</code></h4>
+  <code>mydrvctl_func(unsigned int cmd, void *arg)</code></h4>
+      <p>Depending on the particular driver and hardware, additional
+         functionality can be implemented here, with semantics as
+         determined by the driver. There are some cmd definitions in
+         driver.h which could be used by any driver. Driver-specific
+         cmd constants should be > DRVCTL_MAX.</p>
+      <p> drvctl() returns 0 if OK, else a positive error code some of
+          which defined in driver.h </p>
+      <p> driver.h defines the DRVCTL_SET_OPTION cmd. This is a generic
+          way to set a named key to value which should cover many (most?)
+          needs for the drvctl() function. </p>
+
+      <h4><code>readdata</code></h4>
+      <code>lirc_t myreaddata(lirc_t timeout)</code>
+      <p>This function returns one integer of read information from the device. For this, it may wait for a time
+          determined by the argument, in micro seconds.
+          The return value has the semantic of a duration (pulse or gap) in microseconds.
+          For this reason, 0 is an "impossible" value, and would indicate an error.
+          In LIRC, only the lower 24 bits are used for the length of the duration
+          (making the largest duration that LIRC can represent 2^24 - 1 = 16777215 microseconds). See the example code.</p>
+
+      <p>The function is called from the daemon Lircd as well as from irrecord, and mode2.</p>
+
+      <h4><code>close_func</code></h4>
+      <code>int close_func(void)</code>
+      <p>Hard close of the device. zero return value indicates success,
+         other values indicates an error. Some standard error codes are
+         defined in driver.h.</p>
+
+      <h4><code>open_func</code></h4>
+      <code>int open_func(void)</code>
+      <p>Open the device. This is the basic, possibly expensive steps
+         taken to make the device usable. Returns 0 on success, else an
+         error code, some of which defined in driver.h.</p>
+
+<h3>Comments</h3>
+<ul>
+    <li>Since no elements are exported, except for through the <code>hardwares</code> array,
+        an associated header file (<code>.h</code>-file) is neither necessary nor desired.
+        (The only exception would be special constants for usage with the drvctl function.)</li>
+    <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
+        <code>lirc_driver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, i
+        and <code>transmit.h</code>) and if required also <code>serial.h</code>.
+        Inclusions of other LIRC files (including <code>config.h</code>) should be avoided.</li>
+    <li>The LIRC name of the driver is taken from the <code>name</code> field of the
+        <code>hardware</code> struct.  The file name is thus irrelevant. For files containing
+        only one driver, it is recommended to keep
+        the name of the file equal to the name of the driver (with added file extension).</li>
+</ul>
+<h2>Generating console output</h2>
+<p>It is possible to generate console output in any way; writing on <code>stdout</code> or <code>stderr</code>,
+    using e.g. stdio or C++ streams. However, to conform with the working of the rest of LIRC,
+    it is recommended to use only the functions
+    <code>void logprintf(int prio,  const char *format_str, ...)</code>
+    and <code>void logperror (int prio, const char *s)</code>, which are declared in the header <code>lirc_log.h</code>.</p>
+
+<h2>Timing issues</h2>
+<h3>Sending</h3>
+<p>The daemon <code>Lircd</code> takes care of the timing between the IR sequences, calling the <code>send_func</code> as it sees fit.
+    Also, the final gap is the responsibility of Lircd.
+    For example, if a signal is to be
+    sent repeatedly every <em>x</em> milliseconds, <code>Lircd</code> will take care of the timing, at least as long as <code>send_func</code>
+    does not consume too much time.</p>
+<h3>Receiving</h3>
+<p>Except for the timeout argument to <code>readdata</code>, there does not appear to be any timing issues
+    the driver author needs to address.</p>
+
+<h2>Compiling</h2>
+<h3>Compiling in-tree</h3>
+<p>To compile in-tree and assuming autogen.sh and ./configure has been run
+   just copy the plugin source code to the plugins directory and run
+<pre>
+    $ cd plugins;
+    $ ./make-pluginlist.sh &gt; pluginlist.am
+    $ make
+</pre>
+<h3>Compiling out-of-tree</h3>
+<p>Plugins can also easily be built out-of tree. Only some include files from LIRC are needed.
+    Just a trivial compilation is needed. A simple generic Makefile is provided in the Appendix,
+    another example is available in the sources as  @ref drivers/default/Makefile.
+    The autotools are not needed, in particular not libtool.</p>
+
+<h2>Using C++</h2>
+<p>Plugins can also be written in C++. The used include files are required to be "C++-safe"
+   i. e., the functions to be called from C++ have to be declared  <code>extern "C"</code>,
+  to make sure that the generated code follows C's calling conventions. Since the plugin
+  code is called only indirectly through the hardware struct,
+        no <code>extern "C"</code> declarations are required in the plugin code. </p>
+
+<h3>Adding additional libraries</h3>
+<p>Extra libraries, as well as include files, can be simply added to the Makefile
+    (or Makefile.am for the case of in-tree builds). Note that for libraries located
+    outside of the "standard" directories, it may be required to use an <code>-L</code>
+    and an <code>-rpath</code> argument to the linker arguments.
+See the Makefile in Appendix 2.</p>
+
+<h1>Appendix. List of features (<code>lirc.h</code>).</h1>
+<p>There are four "modes of operation" of LIRC: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2, LIRC_MODE_LIRCCODE.
+    In the current code, no semantic difference between the first three can be inferred.
+    For the meaning of the last, see above ("Two flavors of drivers").</p>
+
+<p>There are a number of "features" that a driver can have or not have:</p>
+    <dl>
+        <dt>LIRC_CAN_SEND_RAW</dt><dd>The driver is capable of sending using "LIRC_MODE_RAW"</dd>
+        <dt>LIRC_CAN_SEND_PULSE</dt><dd>The driver is capable of sending using "LIRC_MODE_PULSE"</dd>
+        <dt>LIRC_CAN_SEND_MODE2</dt><dd>The driver is capable of sending using "LIRC_MODE_MODE"</dd>
+        <dt>LIRC_CAN_SEND_LIRCCODE</dt><dd>The driver is capable of sending using "LIRC_MODE_LIRCCODE"</dd>
+        <dt>LIRC_CAN_REC_RAW</dt><dd>The driver is capable of receiving using "LIRC_MODE_RAW"</dd>
+        <dt>LIRC_CAN_REC_PULSE</dt><dd>The driver is capable of receiving using "LIRC_MODE_PULSE"</dd>
+        <dt>LIRC_CAN_REC_MODE2</dt><dd>The driver is capable of receiving using "LIRC_MODE_MODE2"</dd>
+        <dt>LIRC_CAN_REC_LIRCCODE</dt><dd>The driver is capable of receiving using "LIRC_MODE_RAW"</dd>
+        <dt>LIRC_CAN_SET_SEND_CARRIER</dt><dd>The driver is capable of setting the sending modulaton frequency</dd>
+        <dt>LIRC_CAN_SET_SEND_DUTY_CYCLE</dt><dd>The driver is capable of setting the sending duty cycle</dd>
+        <dt>LIRC_CAN_SET_TRANSMITTER_MASK</dt><dd>The driver is capable of setting a transmitter mask, determining which transmitter is invokend when sending</dd>
+        <dt>LIRC_CAN_MEASURE_CARRIER</dt><dd>The driver is capable of measuring the modulation frequency when receiving</dd>
+        <dt>LIRC_CAN_NOTIFY_DECODE</dt><dd>Unknown. Not present on any current driver.</dd>
+    </dl>
+
+<h1>Appendix 2. Generic Makefile</h1>
+<pre>
+# Generic Makefile for compiling LIRC plugins out of tree.
+# Copyright: public domain
+
+# Following two or three lines should be adjusted
+
+# Where are the LIRC sources located (needed for include files only)
+LIRC_SRC=/home/bengt/lirc/master
+
+# Where are out plugins to be installed
+PLUGINDIR := /home/bengt/lirc/root/lib/lirc/plugins
+
+# Some extra includes and/or libraries might be needed
+#EXTRA_INCLUDES := -I/usr/include/libxml2
+#EXTRA_LIBS := -lxml2 -lDecodeIR -Wl,-rpath=/local/lib64
+
+MACHINE := -m64
+INCLUDE := -I$(LIRC_SRC)/lib -I$(LIRC_SRC) $(EXTRA_INCLUDES)
+OPTIMIZE := -O2
+DEBUG := -g
+SHARED :=-shared -fPIC
+WARNINGS=-Wall
+CC := gcc
+CPP := g++
+
+# Rule for compiling C
+%.so: %.c
+        $(CC)  $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
+
+# Rule for compiling C++
+%.so: %.cpp
+        $(CPP) $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
+
+default:
+        @echo "There is no default target in this makefile."
+        @echo "Type \"make plugin.so\" to compile the plugin named plugin,"
+        @echo "and \"make install\" to install it"
+
+install:
+        cp *.so $(PLUGINDIR)
+
+clean:
+        rm -f *.so
+
+</pre>
+
+<hr width="70%">

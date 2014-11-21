@@ -1,0 +1,77 @@
+.TH irdb-get "1" "Last change: Oct 2014" "irdb-get @version@" "User Commands"
+.SH NAME
+irdb-get - list, search and download lirc configuration files.
+.SH SYNOPSIS
+.B  irdb update
+.br
+.B  irdb find  <string>
+.br
+.B  irdb info  <id>
+.br
+.B  irdb download <id>
+.br
+.B  irdb list [pattern]
+.br
+.B  irdb find-driver  <string>
+
+
+.SH DESCRIPTION
+irdb-get can list, search and download lirc remote configuration files.
+It works by downloading an index file, making all operations besides
+the actual download local.
+.P
+Entries in the index are identified by an <id>. Such an id is on the
+form
+.I dir/remote
+e. g.,
+.I x10/ati_remote_wonder_III
+
+.SH COMMANDS
+.TP 4
+.B update
+Download the index from the remote repository.
+.TP 4
+.B  find <string>
+List all entries in the index file matching <string>. Matching is done
+using regular shell match syntax (i. e., not regex).
+.TP 4
+.B  find-driver <string>
+List all entries in the index with a given driver. The matching is
+exact, no wildcards.
+.TP 4
+.B info <id>
+Print some more info about a given entry.
+.TP 4
+.B download <id>
+Download the configuration file for a given entry. The filename is printed
+on stdout.
+.TP 4
+.B list <pattern>
+List entries matching <pattern>. <pattern> is on the form dir/remote e. g.,
+.I x10/ati*
+or
+.I */ati_remote_wonder* .
+
+The first word in the list is something like -RL- where the letters represent:
+.RS 4
+.IP R 4
+raw configuration.
+.IP T 4
+remote has timing information i. e., it can be used with generic
+capture devices.
+.IP L 4
+remote has a lircmd config file.
+.IP P 4
+remote has a photo
+.RE
+.TP 4
+.B -h , --help
+Print help message.
+
+.SH FILES
+.TP 4
+.B ~/.cache/remotes.list
+The index file downloaded on demand or by the update command.
+
+.SH "SEE ALSO"
+http://sourceforge.net/projects/lirc-remotes

@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+''' Create the legacy hwdb table using data in config files '''
+
+import glob
+import os
+import sys
+import yaml
+
+HEADER = '''
+# LIRC - Hardware DataBase
+#
+# THIS IS A GENERATED FILE. DO NOT EDIT.
+#
+# This file lists all the remote controls supported by LIRC
+# in a parseable form. It's legacy file kept for compatiblity.
+# The current file hardware.yaml should be a better source in
+# most cases.
+#
+# The format is:
+#
+# [remote controls type]
+# description;driver;lirc driver;HW_DEFAULT;lircd_conf;
+#
+# The HW_DEFAULT field is always empty.
+#
+#
+
+'''
+
+MENUS = {'home_brew': 'Home-brew serial and parallel devices',
+         'irda': 'IRDA/Cir hardware',
+         'other': 'Other (MIDI, Bluetooth, udp, etc.)',
+         'other_serial': 'Other serial port devices',
+         'pda': 'PDAs',
+         'soundcard': 'Home-brew (soundcard input)',
+         'tv_card': 'TV cards',
+         'usb': 'USB devices'
+}
+
+def here(path):
+    ' Return path added to current dir for __file__. '
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+
+
+def load_configs(configdir_arg):
+    ''' Load config files into a dict keyed by id. '''
+    configs = {}
+
+    if configdir_arg:
+        configdir = configdir_arg
+    elif os.path.exists(here('configs')):
+        configdir = here('configs')
+    elif os.path.exists(here('../configs')):
+        configdir = here('../configs')
+    else:
+        print("Cannot find the configuration files")
+        sys.exit(1)
+    configs = {}
+    for path in glob.glob(configdir + '/*.conf'):
+        if path == 'configuration.conf':
+            continue
+        with open(path) as f:
+            cf = yaml.load(f.read())
+        configs[cf['config']['id']] = cf['config']
+    return configs
+
+def _add_submenu(menu, configs):
+    ''' Return all entries for a submenu as a string of table rows. '''
+
+    def getit(remote,  what, _default=''):
+        ''' Get a value from a remote, use default if not existing. '''
+        try:
+            value = remote[what]
+            if isinstance(value, list):
+                return ' '.join(value)
+            return value
+        except KeyError:
+            return _default
+
+    s = '[' + MENUS[menu] + ']\n'
+    for remote in configs:
+        s += getit(remote, 'label') + ';'
+        s += getit(remote, 'modules') + ';'
+        s += getit(remote, 'driver') + ';;'
+        files = [getit(remote, 'lircd_conf'), getit(remote, 'lircmd.conf')]
+        files = [f_ for f_ in files if f_]
+        s += ' '.join(files).replace('run_select_any_config', '') + ';\n'
+    return s
+
+def main():
+    if len(sys.argv) == 2:
+        configdir = sys.argv[1]
+    elif len(sys.argv) == 1:
+        configdir = None
+    else:
+        print("Usage: data2hwdb [configuration directory]")
+        sys.exit(1)
+
+    configs = load_configs(configdir)
+    print(HEADER)
+    for menu in MENUS.keys():
+        menuconfigs = [cf for cf in configs.values() if cf['menu'] == menu]
+        print(_add_submenu(menu, menuconfigs))
+
+main()

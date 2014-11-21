@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>How to connect an IR receiver to an audio card</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+    <META NAME="description"
+          CONTENT="LIRC - linux infrared remote control">
+    <META NAME="keywords"
+          CONTENT="linux,kernel module,remote control,multimedia,rc5,recs-80">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+        BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+
+<H1>What is it</H1>
+
+<P>This is perhaps the simplest and cheapest homebrew IR receiver
+hardware for PC that can be built ever. It uses just one piece: a IR
+module (any, more details on them can be found on lirc home page) and
+a (very) optional diode.</P>
+
+<H1>The schematics</H1>
+
+<P>The basic idea is that the output of the IR module (somewhere in
+the range from 0 to ~3-4V) can be limited by using the attenuator
+built into every audio-card (also known as "mixer sliders"). For
+purists it could be done by connecting a diode so that it shunts any
+output voltages above ~0.6V (it is shown hashed on the schematics) but
+this is not needed at all (I personally am not using the diode).</P>
+
+<P>Here is the circuit:</P>
+
+<TABLE ALIGN=CENTER BORDER=3>
+<TR><TD><IMG SRC="images/ir-audio.png" ALT="circuit" WIDTH="470" HEIGHT="436"></TD></TR></TABLE>
+
+<P>And here is the pin-out of the TSOP1736 integrated circuit:</P>
+
+<TABLE ALIGN=CENTER BORDER=3>
+<TR><TD><IMG SRC="images/tsop173x.png" ALT="TSOP1736 pin-out" WIDTH="246" HEIGHT="196"></TD></TR></TABLE>
+
+<P>For other ICs I would recommend taking a look into the respective
+data-sheet, they usually can be easily found on the net.</P>
+
+<H1>Advantages</H1>
+
+<P>Nevertheless to the simplicity of the circuit, it has
+advantages. One of the advantages is that it eats very little CPU
+time, because sampling the IR output is done by the sound card in
+background, and you don't ever need high sampling rates nor sample
+sizes: 8kHz 8-bit sampling is more than enough for our job.</P>
+
+<P>Another advantage is that often you can avoid any external
+connectors (like the one in the COM or LPT port) - you can use just
+one of the lots of internal pin-connectors that every modern
+motherboard has. So the device can be fully hidden inside the computer
+case (except the receiver's photodiode, of course).</P>
+
+<H1>Disadvantages</H1>
+
+<P>Of course there are disadvantages too :-). One of the disadvantages
+is that you need a power source. But usually there are so many power
+pins on the motherboard that you always can find a spare +5V power
+source. Consult your motherboard documentation for details.</P>
+
+<P>Another potential disadvantage is that you need a duplex sound card,
+e.g.  one that can play and record at one time. Most modern sound cards
+are duplex, so most probably you won't have problems with this. Also
+if you have just one sound card you won't be able to record sound and
+do infrared control at the same time (if your card has just one
+ADC).</P>
+
+<H1>Usage</H1>
+
+<P>To use this receiver, you will need to compile lirc with support
+for the <B>audio-alsa</B> driver. For more information about the
+driver and its usage you can refer to the <A
+HREF="html/audio-alsa.html">LIRC documentation</A>.</P>
+
+<HR>
+<P>
+Author: <A HREF="mailto:anpaza@mail.ru">Andrew Zabolotny</A>
+</P>
+
+</BODY>
+</HTML>

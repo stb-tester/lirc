@@ -1,0 +1,257 @@
+.TH LIRCD.CONF "5" "Last change: Nov 2014" "lircd.conf @version@" "File Formats Manual"
+.SH NAME
+lircd.conf \- lirc main configuration file
+.SH DESCRIPTION
+The file has two purposes: to provide timing information to the driver
+so it can decode the data to button presses, and to provide a mapping
+from button presses to key symbols used by lircd(8).
+.PP
+The basic structure is a list of remote blocks.  Whitespace and line
+breaks are used as delimiters.
+.PP
+If the comment character (#) appears as the first character on a line
+the rest of the line is ignored.
+.SH REMOTE BLOCKS
+Remote blocks are either normal or raw.
+.PP
+Normal remote blocks begin with
+.B begin remote
+and ends with
+.B end remote.
+The first part of the block describes the basic properties of the
+remote, see REMOTE DESCRIPTION SECTION.  Following this is a codes
+section, which is delimited by
+.B begin codes
+and
+.B end codes.
+
+Each line in a codes section contains the name of a button on the remote
+followed by a hexidecimal data value matching the data part of the IR
+frame (see REMOTE DESCRIPTION SECTION). You may not assign the same name
+to two buttons in the same remote section.
+.PP
+Raw remote blocks are identical to normal blocks besides the codes
+section which is a list of button descriptions enclosed by
+.B begin raw_codes
+and
+.B end raw_codes.
+
+A raw button description begins with the parameter
+.B name
+followed by
+the name of the button. The button description ends with the next button
+description or the end of the raw_codes block. The lines in between is a
+list of decimal numbers describing the signal sent by that button. The
+first number indicates the duration of the first pulse in microseconds.
+The second number indicates the duration of the space which follows it.
+Pulse and space durations alternate for as long as is necessary. The
+last duration should represent a pulse.
+.SH REMOTE DESCRIPTION SECTION
+Each line in this section contains a parameter followed by the value or
+values that should be assigned to that parameter. Parameters
+are optional unless otherwise stated.
+.PP
+All values are decimal integers that are either dimensionless or have units
+of microseconds unless otherwise stated. Hexidecimal numbers should be
+prefixed by 0x. If the remote does not have a particular "feature," then
+the line may be omitted. The button code is sent just after the pre signal
+and just before the post signal.
+.PP
+Some parameters describe the bits in the IR protocol. The frame is
+normally defined like
+.IP
+|header|plead|pre data|pre|data|post|post data|ptrail|foot|gap|
+.PP
+where most parameters defaults to 0. Some parameters change the overall
+frame layout e. g., the repeat parameter.
+
+.TP 4
+.B include \*(rq<path>\*(rq
+Include the given path using normal
+.I include
+semantics. If the path is relative, it's  interpreted relative to the
+main lircd.conf file. <path> must be enclosed in double quotes. It can
+contain a glob(3) pattern in which case all matching files are included.
+.TP 4
+.B manual_sort <1|0>
+Normally, lircd tries to sort multiple remotes so the one which decodes
+fastest are used first. Setting manual_sort to 1 in any remote disables
+this and uses the remotes in the order they are listed in lircd.conf or
+as the alphanumerically sorted filenames in lircd.conf.d.
+.TP 4
+.B name <remote name>
+The unique name assigned to the remote control (may not contain whitespace).
+Within a single file all names must be unique. Parameter is mandatory.
+.TP 4
+.B flags <flag1><|flag2>...
+Flags are special text strings which describe various properties of the
+remote and determine the semantics of some of the following fields.
+Multiple flags should be separated by the pipe(|) symbol.  See FLAGS.
+.TP 4
+.B  driver <driver name>
+For lirccode drivers which does not have timing information the optional
+driver attribute names the driver which is required to use this remote.
+.TP 4
+.B bits <number of data bits>
+The number of data bits in the hexidecimal codes which describe each
+button (decimal integer).
+.TP 4
+.B eps <relative error tolerance>
+The relative error tolerance for received signals in percent. By default,
+irrecord set this to 30 (i. e., 30%).
+.TP 4
+.B aeps <absolute error tolerance>
+The absolute error tolerance for received signals (microseconds). The
+default is the hardcoded driver dependent resolution value. By
+default irrecord sets this to 100.
+.TP 4
+.B header <phead> <shead>
+The initial pulse and space sent (microseconds).
+.TP 4
+.B three <pthree> <sthree>
+Only used by RC-MM remotes
+.TP 4
+.B two <ptwo> <stwo>
+Only used by RC-MM remotes
+.TP 4
+.B one <pone> <sone>
+The pulse and space lengths representing a one.
+.TP 4
+.B zero <pzero> <szero>
+The pulse and space lengths representing a zero.
+.TP 4
+.B ptrail <trailing pulse>
+A trailing pulse, immediately following the post_data.
+.TP 4
+.B plead <leading pulse>
+A leading pulse, immediately after the header.
+.TP 4
+.B foot <pfoot> <sfoot>
+A pulse and space, immediately following the trailing pulse.
+.TP 4
+.B repeat <prepeat> <srepeat>
+A pulse and space that replaces everything between leading pulse and the
+trailing pulse, whenever a signal is repeated. The foot is not sent, and
+the header is not sent unless the REPEAT_HEADER flag is present.
+.TP 4
+.B pre_data_bits <number of pre_data_bits>
+The number of bits in the pre_data code.
+.TP 4
+.B pre_data <hexidecimal number>
+Hexidecimal code indicating the sequence of ones and zeros immediately
+following the leading pulse.
+.TP 4
+.B post_data_bits <number of post data bits>
+The number of bits in the post_data code.
+.TP 4
+.B post_data <hexidecimal number>
+Hexidecimal code indicating the sequence of ones and zeros immediately
+following the post signal.
+.TP 4
+.B pre <ppre> <spre>
+A pulse and space immediately following the pre_data.
+.TP 4
+.B post <ppost> <spost>
+A pulse and space immediately following the button code.
+.TP 4
+.B gap <gap length>
+A (typically long) space which follows the trailing pulse.
+.TP 4
+.B repeat_gap <repeat_gap length>
+A gap immediately following the trailing pulse, and preceding a repetition
+of the same code that's due to a the same press of the button.
+.TP 4
+.B min_repeat <minimum number of repetitions>
+The minimum times a signal is repeated when sent. Note that 0 means the
+signal is sent only once. Not used when receiving.
+.TP 4
+.B toggle_bit <bit to toggle>
+A bit of the pre_data, code, or post_data that is toggled between one and
+zero each time a button is pressed. This parameter is obsoleted by
+toggle_bit_mask and should be used in new configs.
+.TP 4
+.B toggle_bit_mask <hexadecimal mask>
+Bits which are  toggled between one and zero each time a button is pressed.
+The mask is applied to the concatenated value of pre data - data - post_data.
+.TP 4
+.B repeat_mask <mask>
+Mask defines which bits are inverted for repeats.
+.TP 4
+.B frequency <hertz>
+Remote carrier frequency, defaults to 38000.
+.TP 4
+.B duty_cycle <on time>
+The percentage of time during a pulse that infrared light is being sent
+(default is 50).
+
+.SH FLAGS
+
+Flags are values set in the flags parameter.
+.TP 4
+.B RC5
+The remote uses the RC5 protocol.
+.TP 4
+.B  RC6
+The remote uses the RC6 protocol.
+.TP 4
+.B RCMM
+The remote uses the RC-MM protocol (transmitting not supported).
+.TP 4
+.B SHIFT_ENC
+Obsolete flag, now a synonym for RC5. The position of the pulse
+(before or after the space) determines whether the bit is a one
+or a zero.
+.TP 4
+.B SPACE_ENC
+A one and a zero can be distinguished by the length of the spaces,
+used by the NEC protocol and others.
+.TP 4
+.B REVERSE
+Reverses the bit order of the pre_data, the post_data and the codes
+(e.g., 0x123 becomes 0xC48). If this flag is present, the least
+significant bit is sent first.
+.TP 4
+.B NO_HEAD_REP
+The header is not sent when a signal (the button is held down) is
+repeated even though there is no special repeat code.
+.TP 4
+.B NO_FOOT_REP
+The foot is not sent when a signal is repeated (the button is held
+down) even though there is no special repeat code .
+.TP 4
+.B CONST_LENGTH
+The total signal length is always constant. The gap length now represents
+the length of the entire signal, and the actual gap at the end of the
+signal is adjusted accordingly.
+.TP 4
+.B RAW_CODES
+The codes are in raw format.
+.TP 4
+.B REPEAT_HEADER
+Send the header when the signal is repeated even though the remote has a
+special repeat code.
+.PP
+.SH DISCLAIMER
+LIRC was designed to collect IR data and save it in a private, compact,
+yet human readable format with the purpose of being able to re-transmit
+(or re-recognize) these signals. It was not designed with the goal of
+providing a well documented and tested configuration file format that
+could be used e.g., to generate arbitrary IR signals or to convert them
+to other formats. The configuration file should thus not be considered a
+public interface to LIRC.
+.PP
+This manpage should be understood with this in mind. It was authored by
+reading the code of LIRC, and does not constitute an authoritative
+specification of the behavior of LIRC and its configuration file.  Also,
+some less commonly used flags and parameters are not documented.
+
+.PP
+.SH SEE\ ALSO
+.TP 4
+lircd(8)
+.TP 4
+irrecord(1)
+.TP 4
+http://en.wikipedia.org/wiki/RC-5
+.TP 4
+http://www.sbprojects.com/knowledge/ir/

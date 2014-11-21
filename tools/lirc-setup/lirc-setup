@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+
+''' Wrapper for the lirc_setup thing, meant to be a symlink. '''
+
+import sys
+import os.path
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+import mvc_control
+mvc_control.main()

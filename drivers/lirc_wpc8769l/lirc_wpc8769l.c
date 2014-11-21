@@ -51,17 +51,170 @@
 #include <linux/irq.h>
 
 #include <linux/acpi.h>
+#include <linux/types.h>
 
 #include <linux/platform_device.h>
+#include <asm-generic/bitops/find.h>
 
-#include "drivers/kcompat.h"
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 35)
-#include <media/lirc.h>
-#include <media/lirc_dev.h>
-#else
-#include "drivers/lirc.h"
-#include "drivers/lirc_dev/lirc_dev.h"
-#endif
+#include "media/lirc_dev.h"
+#include "media/lirc.h"
+
+/* Name of the ACPI resource used to autodetect the receiver. */
+#define WPC8769L_ACPI_HID "WEC1020"
+
+/* Number of microseconds for a whole byte of samples. */
+/* This is assuming 20 kHz bit sampling frequency.     */
+#define WPC8769L_USECS_PER_BYTE 400
+
+/* Number of microseconds for a bit sample. */
+#define WPC8769L_USECS_PER_BIT (WPC8769L_USECS_PER_BYTE >> 3)
+
+/* Number of bytes in each data burst. */
+#define WPC8769L_BYTES_PER_BURST 14
+
+/* Number of 0xff bytes before reset. */
+#define WPC8769L_FF_BYTES_BEFORE_RESET 250
+
+/* Microseconds timeout for last part of code. */
+#define WPC8769L_LAST_TIMEOUT_JIFFIES (HZ / 20)
+
+/* Microseconds timeout for last part of code. */
+#define WPC8769L_LAST_TIMEOUT_JIFFIES (HZ / 20)
+
+/* Size of I/O region 1. */
+#define WPC8769L_IO_REGION_1_SIZE 0x08
+
+/* Size of I/O region 2. */
+#define WPC8769L_IO_REGION_2_SIZE 0x20
+
+/* Size of a byte array for a complete burst, rounded
+ * up to an integral number of unsigned longs. */
+#define WPC8769L_BYTE_BUFFER_SIZE \
+	(((WPC8769L_BYTES_PER_BURST + 1 + BITS_PER_LONG / 8 - 1) \
+	/ (BITS_PER_LONG / 8)) * (BITS_PER_LONG / 8))
+
+
+
+/* WPC8769L register set definitions. Note that these are all wild guesses.*/
+
+/* Registers for I/O range 1. */
+#define WPC8769L_SELECT_REG			0x03
+
+/*------------*/
+#define WPC8769L_BANK_00			0x00
+
+#define WPC8769L_DATA_REG			0x00
+
+#define WPC8769L_INTERRUPT_REG			0x01
+#define WPC8769L_INTERRUPT_1_MASK		0x01
+#define WPC8769L_INTERRUPT_2_MASK		0x01
+
+#define WPC8769L_DATA_STATUS_REG		0x02
+#define WPC8769L_DATA_READY_MASK		0x01
+#define WPC8769L_DATA_STATUS_MASK_1		0x02
+#define WPC8769L_DATA_STATUS_MASK_2		0xd0
+
+#define WPC8769L_CONFIG_REG			0x04
+#define WPC8769L_CONFIG_OFF_MASK		0xe0
+#define WPC8769L_CONFIG_ON_MASK			0xc0
+
+#define WPC8769L_DATA_ACK_REG			0x05
+#define WPC8769L_DATA_ACK_MASK			0x01
+
+#define WPC8769L_TIMEOUT_RESET_REG		0x07
+#define WPC8769L_TIMEOUT_RESET_MASK		0x20
+
+/*------------*/
+#define WPC8769L_BANK_E0			0xe0
+
+#define WPC8769L_CONFIG6_REG			0x00
+#define WPC8769L_CONFIG6_MASK			0x4b
+
+#define WPC8769L_CONFIG7_REG			0x01
+
+#define WPC8769L_HARDWARE_ENABLE1_REG		0x02
+#define WPC8769L_HARDWARE_ENABLE1_MASK		0x01
+
+#define WPC8769L_CONFIG5_REG			0x04
+#define WPC8769L_CONFIG5_ON_MASK		0x30
+
+#define WPC8769L_REMAINING_RX_DATA_REG		0x07
+
+/*------------*/
+#define WPC8769L_BANK_E4			0xe4
+
+#define WPC8769L_READ_ON_STARTUP_REG		0x00
+
+/*------------*/
+#define WPC8769L_BANK_EC			0xec
+
+#define WPC8769L_CONFIG3_REG			0x04
+#define WPC8769L_CONFIG3_ON_MASK		0x01
+#define WPC8769L_CONFIG3_MASK_1			0x10
+
+/*------------*/
+#define WPC8769L_BANK_F0			0xf0
+
+#define WPC8769L_WAKEUP_STATUS_LEG_REG		0x02
+#define WPC8769L_WAKEUP_STATUS_LEG_MASK		0x04
+#define WPC8769L_WAKEUP_STATUS_LEG_MASK_A	0x02
+#define WPC8769L_WAKEUP_STATUS_LEG_MASK_B	0x08
+
+/*------------*/
+#define WPC8769L_BANK_F4			0xf4
+
+#define WPC8769L_CONFIG9_REG			0x01
+
+#define WPC8769L_CONFIG4_REG			0x02
+#define WPC8769L_CONFIG4_AND_MASK		0x0f
+#define WPC8769L_CONFIG4_ON_MASK		0x50
+
+#define WPC8769L_CONFIG8_REG			0x04
+
+#define WPC8769L_CONFIG2_REG			0x07
+#define WPC8769L_CONFIG2_OFF_MASK		0x20
+#define WPC8769L_CONFIG2_MASK_1			0x10
+
+
+/* Registers for I/O range 2. */
+#define WPC8769L_WAKEUP_ACK_REG			0x00
+#define WPC8769L_WAKEUP_ACK_MASK		0x10
+
+#define WPC8769L_WAKEUP_ENABLE_REG		0x02
+#define WPC8769L_WAKEUP_ENABLE_MASK		0x10
+
+#define WPC8769L_BANK2_CLOCK_REG		0x04
+#define WPC8769L_CLOCK_OFF_MASK			0x02
+#define WPC8769L_CLOCK_ON_MASK			0x01
+
+#define WPC8769L_WAKEUP_CONFIG_REG		0x1a
+#define WPC8769L_WAKEUP_CONFIG_PRE_MASK		0x80
+#define WPC8769L_MAX_INFO_BITS_BIAS		0x0e
+#define WPC8769L_MAX_INFO_BITS_SHIFT		0x01
+
+#define WPC8769L_WAKEUP_CONFIG3_REG		0x13
+#define WPC8769L_WAKEUP_CONFIG3_OFF_MASK	0x10
+#define WPC8769L_WAKEUP_CONFIG3_ON_MASK		0x21
+#define WPC8769L_WAKEUP_CONFIG3_A_SHIFT		0x01
+#define WPC8769L_WAKEUP_CONFIG3_A_MASK		0x03
+#define WPC8769L_WAKEUP_CONFIG3_B_SHIFT		0x03
+#define WPC8769L_WAKEUP_CONFIG3_B_MASK		0x01
+
+#define WPC8769L_WAKEUP_STATUS_REG		0x14
+#define WPC8769L_WAKEUP_WOKE_UP_MASK		0x01
+#define WPC8769L_WAKEUP_CONFIGURING_MASK	0x17
+
+#define WPC8769L_WAKEUP_CONFIG2_REG		0x15
+#define WPC8769L_WAKEUP_CONFIG2_AND_MASK	0xf9
+#define WPC8769L_WAKEUP_CONFIG2_OR_MASK		0x01
+
+#define WPC8769L_WAKEUP_DATA_PTR_REG		0x18
+#define WPC8769L_WAKEUP_DATA_BITS		0x20
+#define WPC8769L_WAKEUP_DATA_BASE		0x10
+#define WPC8769L_WAKEUP_MASK_BASE		0x20
+
+#define WPC8769L_WAKEUP_DATA_REG		0x19
+
 
 #include "lirc_wpc8769l.h"
 
@@ -105,11 +258,11 @@ static unsigned int baseport2;
 static unsigned int irq;
 
 /* Debugging flag. */
-static int debug;
+static bool debug;
 
 /* If true, we skip ACPI autodetection and use the parameter-supplied I/O and
  * IRQ. */
-static int skip_probe;
+static bool skip_probe;
 
 /* Whether the device is open or not. */
 static int lirc_wpc8769l_is_open;
@@ -360,14 +513,14 @@ static irqreturn_t irq_handler(int irqno, void *blah, struct pt_regs *regs)
 		size = count << 3;
 
 		ldata = (unsigned long *) data_buf;
-		next_one = generic_find_next_le_bit(ldata, size, 0);
+		next_one = find_next_bit(ldata, size, 0);
 
 		if (next_one > 0)
 			put_pulse_bit(next_one
 				* WPC8769L_USECS_PER_BIT);
 
 		while (next_one < size) {
-			next_zero = generic_find_next_zero_le_bit(ldata,
+			next_zero = find_next_zero_bit(ldata,
 				size, next_one + 1);
 
 			put_space_bit(
@@ -375,7 +528,7 @@ static irqreturn_t irq_handler(int irqno, void *blah, struct pt_regs *regs)
 				* WPC8769L_USECS_PER_BIT);
 
 			if (next_zero < size) {
-				next_one = generic_find_next_le_bit(ldata,
+				next_one = find_next_bit(ldata,
 					size, next_zero + 1);
 
 				put_pulse_bit(
@@ -922,12 +1075,12 @@ static int wpc8769l_acpi_detect(void)
 #ifdef MODULE
 static struct platform_device *lirc_wpc8769l_platform_dev;
 
-static int __devinit lirc_wpc8769l_probe(struct platform_device *dev)
+static int lirc_wpc8769l_probe(struct platform_device *dev)
 {
 	return 0;
 }
 
-static int __devexit lirc_wpc8769l_remove(struct platform_device *dev)
+static int lirc_wpc8769l_remove(struct platform_device *dev)
 {
 	return 0;
 }
@@ -955,7 +1108,7 @@ static int lirc_wpc8769l_resume(struct platform_device *dev)
 
 static struct platform_driver lirc_wpc8769l_platform_driver = {
 	.probe		= lirc_wpc8769l_probe,
-	.remove		= __devexit_p(lirc_wpc8769l_remove),
+	.remove		= lirc_wpc8769l_remove,
 	.suspend	= lirc_wpc8769l_suspend,
 	.resume		= lirc_wpc8769l_resume,
 	.driver		= {

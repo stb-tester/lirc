@@ -1,0 +1,222 @@
+.TH LIRCD "8" "Last change: Nov 2014" "lircd @version@" "System Administration Utilities"
+.SH NAME
+lircd - LIRC daemon decodes infrared signals and provides them on a Unix
+domain socket.
+.SH SYNOPSIS
+.B lircd
+[\fIoptions\fR] [\fIconfig file\fR]
+.SH DESCRIPTION
+The main task of lircd is to decode the infrared signals and provide
+an uniform interface for client applications. Clients can connect to
+lircd through a Unix domain socket which is located in
+\/var/run/lirc/lircd.  Using this socket they will get the infrared
+codes received by lircd and they can send commands to lircd.
+.PP
+
+.SH ARGUMENTS
+.TP 4
+.B config file <path>
+The configuration file, by default /etc/lirc/lircd.conf. A relative
+path is interpreted from /etc/lirc.
+.IP
+The file is specific for the remote(s) that lircd should decode. The
+format is described in lircd.conf(5). Configuration files could be
+found using irdb-get(1) or lirc-setup(1). It's also possible to
+generate a config file using irrecord(1)
+
+.SH OPTIONS
+Common options:
+.TP 4
+.B -O, --options-file <path>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
+.TP 4
+.B -d, --device <device>
+Select the character device which lircd should read from. The default
+is currently /dev/lirc0 on most systems.
+.IP "" 4
+If you're using the devinput driver, you can use \fIname=STRING\fR or
+\fIphys=STRING\fR to select the device; lircd will look in /dev/input
+to find a device with a matching description. This is useful in case
+the device name isn't fixed. \fISTRING\fR may contain the '*' and '?'
+wildcards and '\\' to mark them as literal. Use dmesg(1) to find the
+name and bus address (the names used under /dev/input/by-id are not
+always usable).
+.TP
+.B -H, --driver <driver>
+The driver to use.  Using
+.I --driver help
+lists all available drivers, see DRIVER LOADING below.
+.TP
+.B -h, --help
+Displays short thelp message.
+.IP "" 0
+Other options:
+.TP 4
+.B -a, --allow-simulate
+Enable the SIMULATE command which can
+be issued using irsend(1). This will allow simulating arbitrary IR events
+from the command line. Use this option with caution because it will give all
+users with access to the lircd socket wide control over you system.
+E.g. if you have configured your system to shut down by a button press
+on your remote control, everybody will be able to shut down
+your system from the command line.
+.TP 4
+.B -c, --connect [host[:port]]
+Allows you to connect to other lircd servers that provide a network
+socket at the given host and port number. The number
+of such connections is currently limited to 100.
+The connecting lircd instance will receive IR events from the lircd
+instance it connects to.
+.TP 4
+.B -D, --loglevel [level]
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+.P
+The level can also be an integer in the range 0 (almost no messages) to
+10.
+.TP 4
+.B -A, --driver-options key:value[|key:value...]
+Set one or more options for the driver. The argument is a list of
+key:value pairs delimited by '|'. The key can not contain spaces, but
+such are allowed in the value part. Certain characters including '#'
+and ';' are used as comment markers in the config file and are not
+allowed anywhere.
+.TP 4
+.B -l, --listen [[address:]port]]
+Let lircd listen for network
+connections on the given address/port. The default address is 0.0.0.0,
+which means that connections on all network interfaces will be accepted.
+The default port is 8765. No security checks are currently implemented.
+The listening lircd instance will send all IR events to the connecting
+lircd instances.
+.TP 4
+.B -L, --logfile <logfile path>
+Select the lircd daemon log file. logfile is either the string 'syslog'
+indicating that syslog(1) should be used or a log file path. The default
+is to use syslog.
+.TP 4
+.B -o, --output <output socket>
+Select Unix domain socket, which lircd will write remote key codes to.
+The default currently is \/var/run/lirc/lircd.
+.TP 4
+.B \-p, --permission
+Gives the file permission of \/var/run/lirc/lircd if it has to be
+created in octal representation. See chmod(1).
+If no \-\-permission option is given when the
+socket is initially created the default is to give all users read
+and write permissions (0666 in octal representation). If
+/var/run/lirc/lircd already exists this option has no effect.
+.TP 4
+.B -p, --pidfile <path>
+Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
+.TP
+.B -U --plugindir
+The --plugindir option sets the directory from which lircd loads it's
+userspace drivers. These are *.so files, by default found as described
+under DRIVER LOADING.
+.TP 4
+.B -r, --release [suffix]
+Enables automatic generation of release events for each button press.
+ lircd will append the given suffix to the button name for each release
+event. If no suffix is given the default suffix is '_UP'.
+.TP
+.B -R, --repeat-max <limit>
+Sets an upper limit to the number of repeats when sending a signal. The
+current default is 600. A SEND_START request will repeat the signal this
+many times. Also, if the number of repeats in a SEND_ONCE request exceeds
+this number, it will be replaced by this number.
+.TP
+.B -u, --uinput
+Enable automatic generation
+of Linux input events. lircd will open /dev/input/uinput and inject
+key events to the Linux kernel. The key code depends on the name that
+was given a button in the lircd config file, e.g. if the button is
+named KEY_1, the '1' key code will be generated. You will find a
+complete list of possible button names in /usr/include/linux/input.h.
+.TP
+.B -Y, --dynamic-codes  [EXPERIMENTAL]
+Allows one to use codes which have been decoded for one remote but
+are not defined in lircd.conf.  New codes are dynamically
+created  with a default name. This feature is experimental and subject
+to all sorts of changes. It has not ben tested thoroughly.
+.TP
+.B -e, --effective-user <uid>
+If started as user root, lirc drops it privileges and runs as user <uid>
+after opening files etc.
+
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. The search path used for this is determined
+by (falling priority):
+.IP \- 2
+The --plugindir option if available.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+.SH "SEE ALSO"
+mode2(1), smode2(1), xmode2(1)
+
+
+
+.SH FILES
+.TP 4
+.B /etc/lirc/lircd.conf
+Main config file, see lircd.conf(5).
+
+.TP 4
+.B /etc/lirc/lirc_options.conf
+The options file. lircd handles the values under the [lircd] section
+in this file. The location can be changed using the -O/--options-file
+command-line option or using the environment variable LIRC_OPTIONS_PATH.
+The values here are used as defaults for any option not present on
+command line.
+
+.SH ENVIRONMENT
+.TP 4
+.B LIRC_OPTIONS_PATH
+Plugin load path, se DRIVER LOADING
+.TP 4
+.B LIRC_DEBUG_OPTIONS
+If set, enables debugging in early stages when the --debug parameter is
+yet not parsed.
+
+.SH SIGNALS
+.TP 4
+.B HUP
+On receiving SIGHUP lircd re-reads the lircd.conf configuration file
+(but not lirc_options.conf) and adjusts itself if the file has changed.
+.TP 4
+.B USR1
+On receiving SIGUSR1 lircd makes a clean exit.
+
+.SH DAEMONS
+lircd  is a daemon. You should start it in some init script
+depending on your system. Besides the preferred systemd setup which is
+installed by default there are also example scripts for other distros
+and init systems in the contrib directory.
+.SH "DRIVER LOADING"
+Drivers are loaded dynamically. This is done from a traditional *ux
+\':\'-separated path where each component in the path is searched (leading
+part first, trailing last).
+.P
+The path used for this is determined by (falling priority):
+.IP \- 2
+The --plugindir option.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
+.IP \- 2
+The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+.SH "SEE ALSO"
+irdb-get(1)
+.br
+lirc-setup(1)
+.br
+rcd.conf(5)

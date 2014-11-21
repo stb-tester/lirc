@@ -1,0 +1,29 @@
+/**
+\mainpage
+
+The LIRC lib/ directory is indeed code used in various places. It offers
+three views:
+
+   - External  applications which neds to receive or send IR signals uses
+     the lirc_client.h header file and links to liblirc.so using -llirc.
+     This is a mature, reasonably stable interface.  See @ref lirc_client
+     and @ref client_manual.
+
+   - User space drivers includes the lirc_driver.h header and links to
+     liblirc_driver.so using -llirc_driver. The other way around lirc
+     accesses the driver as defined in the driver.h file (struct driver)
+     This interface is new and willl probably need some time to stabilize.
+     See @ref driver_api and @ref driver_manual.
+
+   - Internal lirc  applications includes the lirc_private.h header file and
+     links to liblirc_private.so using -llirc_private. This interface is
+     subject to change without notice.
+
+For build and configuration there are two pkg-config .pc files: lirc.pc and
+lirc_client.pc. These provides the proper compilation and link flags. See
+@ref drivers/default/Makefile for an example how to use.
+
+The bundled excerpts from the manual are the same as in the LIRC manual, but
+also here to be readily available and linked by doxygen in the API context.
+
+*/

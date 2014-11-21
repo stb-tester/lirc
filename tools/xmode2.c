@@ -59,11 +59,7 @@
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 
-#include "drivers/lirc.h"
-#include "daemons/ir_remote.h"
-#include "daemons/hardware.h"
-#include "daemons/hw-types.h"
-#include "daemons/lirc_log.h"
+#include "lirc_private.h"
 
 Display *d1;
 Window w0, w1;			/*w0 = root */
@@ -84,52 +80,107 @@ XSetWindowAttributes winatt1;
 long event_mask1;
 XEvent event_return1;
 
-#ifdef DEBUG
-int debug = 10;
-#else
-int debug = 0;
-#endif
-char *hostname = "";
-int daemonized = 0;
-char *progname;
+static int div_ = 5;
+static int dmode = 0;
+static struct stat s;
+static int use_stdin = 0;
+static int use_raw_access = 0;
 
+static char *device = "";
+static char *geometry = NULL;
 
-int waitfordata(unsigned long maxusec)
+static struct option options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"device", required_argument, NULL, 'd'},
+	{"driver", required_argument, NULL, 'H'},
+	{"geometry", required_argument, NULL, 'g'},
+	{"timediv", required_argument, NULL, 't'},
+	{"mode", no_argument, NULL, 'm'},
+	{"raw", no_argument, NULL, 'r'},
+	{0, 0, 0, 0}
+};
+
+static const char* const help =
+"\nUsage: xmode2 [options]\n"
+"\nOptions:\n"
+"    -d --device=device\t\tread from given device\n"
+"    -H --driver=driver\t\tuse given driver\n"
+"    -U --plugindir=dir\t\tLoad drivers from given dir\n"
+"    -g --geometry=geometry\twindow geometry\n"
+"    -t --timediv=value\t\tms per unit\n"
+"    -m --mode\t\t\tenable alternative display mode\n"
+"    -r --raw\t\t\taccess device directly\n"
+"    -h --help\t\t\tdisplay usage summary\n"
+"    -v --version\t\tdisplay version\n";
+
+static void add_defaults(void)
 {
-	fd_set fds;
-	int ret;
-	struct timeval tv;
+        char level[4];
+        snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	const char* const defaults[] = {
+		"lircd:plugindir",            PLUGINDIR,
+		"lircd:debug",                level,
+		"xmode2:driver",              "devinput",
+		"xmode2:analyse",             "False",
+		"xmode2:force",               "False",
+		"xmode2:disable-namespace",   "False",
+		"xmode2:dynamic-codes",       "False",
+		"xmode2:list_namespace",      "False",
+		(const char*)NULL,      (const char*)NULL
+	};
+	options_add_defaults(defaults);
+}
 
-	while (1) {
-		FD_ZERO(&fds);
-		FD_SET(hw.fd, &fds);
-		do {
-			do {
-				if (maxusec > 0) {
-					tv.tv_sec = maxusec / 1000000;
-					tv.tv_usec = maxusec % 1000000;
-					ret = select(hw.fd + 1, &fds, NULL, NULL, &tv);
-					if (ret == 0)
-						return (0);
-				} else {
-					ret = select(hw.fd + 1, &fds, NULL, NULL, NULL);
-				}
-			}
-			while (ret == -1 && errno == EINTR);
-			if (ret == -1) {
-				logprintf(LOG_ERR, "select() failed\n");
-				logperror(LOG_ERR, NULL);
-				continue;
-			}
-		}
-		while (ret == -1);
 
-		if (FD_ISSET(hw.fd, &fds)) {
-			/* we will read later */
-			return (1);
+static void parse_options(int argc, char** const argv)
+{
+	int c;
+	add_defaults();
+	while ((c = getopt_long(argc, argv, "U:hvd:H:g:t:mr", options, NULL)) != -1) {
+		switch (c) {
+		case 'h':printf(help);
+			exit (EXIT_SUCCESS);
+		case 'H':
+			if (hw_choose_driver(optarg) != 0) {
+				fprintf(stderr, "Driver `%s' not found", optarg);
+				fprintf(stderr, " (wrong or missing -U/--plugindir?)\n");
+				hw_print_drivers(stderr);
+				exit(EXIT_FAILURE);
+			}
+			break;
+		case 'v':
+			printf("%s %s\n", progname, VERSION);
+			exit (EXIT_SUCCESS);
+		case 'd':
+			device = optarg;
+			break;
+		case 'g':
+			geometry = optarg;
+			break;
+		case 't':	/* timediv */
+			div_ = strtol(optarg, NULL, 10);
+			break;
+		case 'm':
+			dmode = 1;
+			break;
+		case 'r':
+			use_raw_access = 1;
+			break;
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
+		default:
+			printf("Usage: %s [options]\n", progname);
+			exit (EXIT_FAILURE);
 		}
 	}
+	if (optind < argc) {
+		fprintf(stderr, "%s: too many arguments\n", progname);
+		exit (EXIT_FAILURE);
+	}
 }
+
 
 void initscreen(char *geometry)
 {
@@ -189,86 +240,13 @@ int main(int argc, char **argv)
 	lirc_t x1, y1, x2, y2;
 	int result;
 	char textbuffer[80];
-	int div = 5;
-	int dmode = 0;
-	struct stat s;
-	int use_stdin = 0;
-	int have_device = 0;
-	int use_raw_access = 0;
-
-	char *device = LIRC_DRIVER_DEVICE;
-	char *geometry = NULL;
-
-	progname = "xmode2";
+	lirc_log_open("xmode2", 0, LIRC_INFO);
 	hw_choose_driver(NULL);
-	while (1) {
-		int c;
-		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"device", required_argument, NULL, 'd'},
-			{"driver", required_argument, NULL, 'H'},
-			{"geometry", required_argument, NULL, 'g'},
-			{"timediv", required_argument, NULL, 't'},
-			{"mode", no_argument, NULL, 'm'},
-			{"raw", no_argument, NULL, 'r'},
-			{0, 0, 0, 0}
-		};
-		c = getopt_long(argc, argv, "hvd:H:g:t:mr", long_options, NULL);
-		if (c == -1)
-			break;
-		switch (c) {
-		case 'h':
-			printf("Usage: %s [options]\n", progname);
-			printf("\t -h --help\t\tdisplay usage summary\n");
-			printf("\t -v --version\t\tdisplay version\n");
-			printf("\t -d --device=device\tread from given device\n");
-			printf("\t -H --driver=driver\t\tuse given driver\n");
-			printf("\t -g --geometry=geometry\twindow geometry\n");
-			printf("\t -t --timediv=value\tms per unit\n");
-			printf("\t -m --mode\t\tenable alternative display mode\n");
-			printf("\t -r --raw\t\taccess device directly\n");
-			return (EXIT_SUCCESS);
-		case 'H':
-			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not supported.\n", optarg);
-				hw_print_drivers(stderr);
-				exit(EXIT_FAILURE);
-			}
-			break;
-		case 'v':
-			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
-		case 'd':
-			device = optarg;
-			have_device = 1;
-			break;
-		case 'g':
-			geometry = optarg;
-			break;
-		case 't':	/* timediv */
-			div = strtol(optarg, NULL, 10);
-			break;
-		case 'm':
-			dmode = 1;
-			break;
-		case 'r':
-			use_raw_access = 1;
-			break;
-		default:
-			printf("Usage: %s [options]\n", progname);
-			return (EXIT_FAILURE);
-		}
-	}
-	if (optind < argc) {
-		fprintf(stderr, "%s: too many arguments\n", progname);
-		return (EXIT_FAILURE);
-	}
+	options_load(argc, argv, NULL, parse_options);
 	if (strcmp(device, LIRCD) == 0) {
 		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
 		return EXIT_FAILURE;
 	}
-
 	if (!isatty(STDIN_FILENO)) {
 		use_stdin = 1;
 		fd = STDIN_FILENO;
@@ -297,15 +275,16 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	} else {
-		if (have_device)
-			hw.device = device;
-		if (!hw.init_func()) {
-			return EXIT_FAILURE;
+		curr_driver->open_func(device);
+		if (curr_driver->init_func  && !curr_driver->init_func()) {
+			fprintf(stderr, "Cannot initialize hardware");
+			exit(EXIT_FAILURE);
 		}
-		fd = hw.fd;	/* please compiler */
-		mode = hw.rec_mode;
+
+		fd = curr_driver->fd;	/* please compiler */
+		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
-			if (strcmp(hw.name, "default") == 0) {
+			if (strcmp(curr_driver->name, "default") == 0) {
 				printf("Please use the --raw option to access "
 				       "the device directly instead through\n" "the abstraction layer.\n");
 			} else {
@@ -321,7 +300,7 @@ int main(int argc, char **argv)
 	maxfd = fd > xfd ? fd : xfd;
 	y1 = 20;
 	x1 = x2 = 0;
-	sprintf(textbuffer, "%d ms/unit", div);
+	sprintf(textbuffer, "%d ms/unit", div_);
 	for (y2 = 0; y2 < w1_w; y2 += 10)
 		XDrawLine(d1, w1, gc1, y2, 0, y2, w1_h);
 	XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
@@ -393,7 +372,7 @@ int main(int argc, char **argv)
 			}
 			if (result != 0) {
 				//                  printf("%.8x\t",data);
-				x2 = (data & PULSE_MASK) / (div * 50);
+				x2 = (data & PULSE_MASK) / (div_ * 50);
 				if (x2 > 400) {
 					if (!dmode) {
 						y1 += 15;

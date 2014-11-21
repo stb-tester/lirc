@@ -1,12 +1,17 @@
+__pycache__
 ircat
 irexec
 irpty
+irrecord
 irsend
+irsimsend
+irsimreceive
+irtestcase
 irw
 irxevent
-lircrcd
+lirc-lsplugins
+lirc-lsremotes
 mode2
+python3
 xmode2
 
-liblirc_client.la
-lirc_client.lo

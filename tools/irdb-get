@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+#
+# pylint: disable=invalid-name
+
+''' Simple tool to search and download remote configurations. '''
+
+
+import fnmatch
+import os
+import os.path
+import sys
+import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
+import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
+
+REMOTES_LIST_DIR = os.path.expanduser('~/.cache')
+REMOTES_LIST = os.path.join(REMOTES_LIST_DIR, 'remotes.list')
+
+REMOTE_CODEBASE = "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree"
+REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
+
+USAGE = """
+Usage:
+    irdb-get update
+    irdb-get find  <string>
+    irdb-get info  <id>
+    irdb-get find-driver <string>
+    irdb-get download <id>
+    irdb-get list [pattern]
+"""
+
+
+def here(path):
+    ' Return path added to current dir for __file__. '
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+
+
+def download_file(url, path):
+    ''' Download url to a file. '''
+    if not os.path.exists(REMOTES_LIST_DIR):
+        os.mkdir(REMOTES_LIST_DIR)
+    try:
+        urllib.request.urlretrieve(url, path)
+    except urllib.error.HTTPError as ex:
+        text = "Cannot download %s : %s" % (url, str(ex))
+        print(text)
+
+
+def get_list_lines():
+    ''' Download remotes.list if required, return as list of lines. '''
+    if not os.path.exists(REMOTES_LIST):
+        download_file(REMOTES_LIST_URL, REMOTES_LIST)
+    with open(REMOTES_LIST) as f:
+        list_ = f.read()
+    return [l for l in list_.split('\n') if l]
+
+
+def do_download():
+    ''' Download a file as given in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        print("No remote to download")
+        print(USAGE)
+        sys.exit(1)
+    remote = sys.argv[2]
+    uri = os.path.join(REMOTE_CODEBASE, 'remotes', remote)
+    path = os.path.basename(remote)
+    download_file(uri + '?format=raw', path)
+    print("Downloaded %s as %s" % (uri, path))
+
+
+def print_info(l):
+    ''' Print some info for list line. '''
+    tokens = l.split(';')
+    uri = os.path.join(REMOTE_CODEBASE, 'remotes', tokens[0])
+    print("Directory:        " + tokens[0])
+    print("lircd.conf file:  " + tokens[1])
+    print("lirmcd.conf file: " + tokens[2])
+    print("Photo:            " + tokens[3])
+    print("Name:             " + tokens[4])
+    print("Timing info:      " + tokens[5])
+    print("Raw:              " + tokens[6])
+    print("URI:              " + uri)
+
+
+def do_show():
+    ''' Show info for id in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        print("No id string")
+        print(USAGE)
+        sys.exit(1)
+    what = sys.argv[2]
+    dir_, base = what.split("/")
+    lines = get_list_lines()
+    for l in lines:
+        tokens = l.split(";")
+        if tokens[0] == dir_ and tokens[1] == base:
+            print_info(l)
+            sys.exit(0)
+    print("No line matching: " + what)
+    sys.exit(1)
+
+
+def do_list():
+    ''' List files matching optional pattern in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        pattern = '*/*'
+    elif len(sys.argv) == 3:
+        pattern = sys.argv[2]
+    else:
+        print("Too many arguments")
+        print(USAGE)
+        sys.exit(1)
+    lines = get_list_lines()
+    for l in lines:
+        tokens = l.split(';')
+        if len(tokens) < 2:
+            continue
+        path = tokens[0] + "/" + tokens[1]
+        if not fnmatch.fnmatch(path, pattern):
+            continue
+        lircmd = '-' if tokens[2].startswith('no') else 'L'
+        photo = '-' if tokens[3].startswith('no') else 'P'
+        timing = '-' if tokens[5].startswith('no') else 'T'
+        raw = '-' if tokens[6].startswith('no') else 'R'
+        print("%s%s%s%s %-32s %s" %
+              (timing, raw, photo, lircmd, tokens[4], path))
+
+
+def do_find_driver():
+    ''' Find files having exactly the driver in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        print("No driver specified")
+        print(USAGE)
+        sys.exit(1)
+    driver = sys.argv[2]
+    lines = get_list_lines()
+    found = []
+    for l in lines:
+        tokens = l.split(";")
+        if tokens[7] == driver:
+            found.append(l)
+    for l in found:
+        tokens = l.split(";")
+        print(tokens[0] + "/" + tokens[1])
+
+
+def do_find():
+    ''' Find files containing pattern in sys.argv[2]. '''
+    if len(sys.argv) < 3:
+        print("No search string")
+        print(USAGE)
+        sys.exit(1)
+    what = sys.argv[2]
+    lines = get_list_lines()
+    found = []
+    for l in lines:
+        if what in l:
+            found.append(l)
+    for l in found:
+        tokens = l.split(";")
+        print(tokens[0] + "/" + tokens[1])
+
+
+def do_update():
+    ''' Download the directory from website. '''
+    download_file(REMOTES_LIST_URL, REMOTES_LIST)
+
+
+def main():
+    ''' Indeed: main program. '''
+
+    if len(sys.argv) < 2:
+        print("No command given")
+        print(USAGE)
+        sys.exit(1)
+    if sys.argv[1] == 'update':
+        do_update()
+    elif sys.argv[1] == 'download':
+        do_download()
+    elif sys.argv[1] == 'find':
+        do_find()
+    elif sys.argv[1] == 'find-driver':
+        do_find_driver()
+    elif sys.argv[1] == 'info':
+        do_show()
+    elif sys.argv[1] == 'list':
+        do_list()
+    elif sys.argv[1] == '-h' or sys.argv[1] == '--help':
+        print(USAGE)
+    else:
+        print("Illegal command: " + sys.argv[1])
+        print(USAGE)
+        sys.exit(1)
+    sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
+
+
+# vim: set expandtab ts=4 sw=4:

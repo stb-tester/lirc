@@ -1,66 +1,103 @@
-
 ## Process this file with automake to produce Makefile.in
-ACLOCAL_AMFLAGS             = -I m4
+ACLOCAL_AMFLAGS         = -I m4
 
-AM_CPPFLAGS = -I$(top_srcdir) @X_CFLAGS@ -Wall
+PYLINT                  = python3-pylint
 
-EXTRA_PROGRAMS = smode2 xmode2 irxevent
-bin_PROGRAMS = irw irpty irexec ircat mode2 irsend \
-        lircrcd \
-        @vga_progs@ @x_progs@
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@
+AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
+AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
-## simple programs
-irw_SOURCES = irw.c
-irpty_SOURCES = irpty.c
-irpty_DEPENDENCIES = liblirc_client.la
-irpty_LDADD = liblirc_client.la @forkpty@
-irexec_SOURCES = irexec.c
-irexec_DEPENDENCIES = liblirc_client.la
-irexec_LDADD = liblirc_client.la @daemon@
-ircat_SOURCES = ircat.c
-ircat_DEPENDENCIES = liblirc_client.la
-ircat_LDADD = liblirc_client.la
-mode2_SOURCES = mode2.c
-irsend_SOURCES = irsend.c
-
-mode2_LDADD = ../daemons/libhw_module.a @hw_module_libs@
-
-## vga programs
-smode2_SOURCES = smode2.c
-smode2_LDADD = -lvga -lvgagl
-
-## x programs
-irxevent_SOURCES = irxevent.c
-irxevent_LDADD = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ liblirc_client.la
-irxevent_DEPENDENCIES = liblirc_client.la
-xmode2_SOURCES = xmode2.c
-xmode2_LDADD = ../daemons/libhw_module.a @hw_module_libs@ \
-        @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@
-
-## lircrcd
-
-lircrcd_SOURCES = lircrcd.c
-lircrcd_DEPENDENCIES = liblirc_client.la
-lircrcd_LDADD = liblirc_client.la
-
-## libraries
-lircincludedir = $(includedir)/lirc
-
-lib_LTLIBRARIES = liblirc_client.la
-liblirc_client_la_SOURCES = lirc_client.c lirc_client.h ../daemons/lirc_log.c ../daemons/lirc_log.h
-liblirc_client_la_LDFLAGS = -version-info 2:1:2
-
-lircinclude_HEADERS = lirc_client.h
-
-if HAVE_PYTHON
-bin_SCRIPTS = pronto2lirc
-
-pronto2lirc: $(srcdir)/pronto2lirc.py
-	echo "#! ${PYTHON}" >$@
-	cat $< >>$@
-	chmod +x $@
+if NEED_PYTHON3
+BUILT_SOURCES           = python3
 endif
 
-EXTRA_DIST = pronto2lirc.py
+LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 
-CLEANFILES = *~ pronto2lirc
+EXTRA_PROGRAMS          =
+
+if BUILD_XTOOLS
+EXTRA_PROGRAMS          += xmode2 irxevent
+endif
+
+sbin_PROGRAMS           = lirc-lsplugins
+bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lirc-lsremotes \
+                          irtestcase irsimsend irsimreceive irrecord @x_progs@
+
+## Simple programs
+irw_SOURCES             = irw.c
+irpty_SOURCES           = irpty.c
+irpty_LDADD             = @forkpty@ -lpthread $(LIRC_LIBS)
+irexec_SOURCES          = irexec.c
+irexec_LDADD            = @daemon@ $(LIRC_LIBS)
+ircat_SOURCES           = ircat.c
+ircat_LDADD             = $(LIRC_LIBS)
+irrecord_SOURCES        = irrecord.c
+irrecord_LDADD          = $(LIRC_LIBS)
+irsimsend_SOURCES       = irsimsend.c
+irsimsend_LDADD         = $(LIRC_LIBS)
+irsimreceive_SOURCES    = irsimreceive.c
+irsimreceive_LDADD      = $(LIRC_LIBS)
+mode2_SOURCES           = mode2.c
+mode2_LDADD             = $(LIRC_LIBS)
+irtestcase_SOURCES      = irtestcase.c
+irtestcase_LDADD        = $(LIRC_LIBS)
+irsend_SOURCES          = irsend.c
+irsend_LDADD            = $(LIRC_LIBS)
+lirc_lsplugins_SOURCES  = lirc-lsplugins.c
+lirc_lsplugins_LDADD    = $(LIRC_LIBS)
+lirc_lsremotes_SOURCES  = lirc-lsremotes.c
+lirc_lsremotes_LDADD    = $(LIRC_LIBS)
+
+
+## X programs
+irxevent_SOURCES        = irxevent.c
+irxevent_LDADD          = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+                          $(LIRC_LIBS)
+xmode2_SOURCES          = xmode2.c
+xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+                          $(LIRC_LIBS)
+
+dist_bin_SCRIPTS        = lirc-config-tool
+
+
+if NEED_PYTHON3
+dist_bin_SCRIPTS        += python3
+endif
+
+if HAVE_PYTHON
+dist_bin_SCRIPTS        += pronto2lirc irdb-get
+dist_noinst_SCRIPTS     = make_rel_symlink.py
+pkgpython_PYTHON        = lirc-setup/mvc_control.py \
+                          lirc-setup/mvc_view.py \
+                          lirc-setup/mvc_model.py \
+                          lirc-setup/selectors.py \
+                          lirc-setup/baseview.py
+dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
+dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
+endif
+
+pylint: irdb-get $(pkgpython_PYTHON)
+	PYTHONPATH=./lirc-setup $(PYLINT) --rcfile=pylint.conf \
+	--msg-template='{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}' \
+	$?
+
+pep8:   irdb-get $(pkgpython_PYTHON)
+	python3-pep8 --config=pep8.conf $?
+
+python3:
+	echo "#!/bin/sh" > $@
+	echo "exec $(PYTHON) \$$@" >> $@
+	chmod 755 $@
+
+install-exec-hook:
+	$(SED) -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+	rm -f $(DESTDIR)/$(bindir)/lirc-setup
+	$(srcdir)/make_rel_symlink.py \
+	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \
+	    $(DESTDIR)/$(bindir)/lirc-setup
+
+install-data-hook:
+	rm -f $(DESTDIR)/$(pkgpythondir)/configs
+	$(srcdir)/make_rel_symlink.py \
+	    $(DESTDIR)$(pkgdatadir)/configs \
+	    $(DESTDIR)$(pkgpythondir)/configs
