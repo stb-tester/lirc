@@ -28,9 +28,10 @@ liblirc_la_SOURCES          = config_file.c \
                               serial.c \
                               transmit.c
 
+liblirc_client_la_LDFLAGS   = -version-info 3:0:3
 liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
-liblirc_client_la_LDFLAGS   = -version-info 2:1:2
 
+liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
 liblirc_driver_la_SOURCES   = driver.h \
                               ir_remote.c \
                               ir_remote.h \
