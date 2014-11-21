@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS         = -I m4
 
 AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2 -Wno-portability
 
-EXTRA_DIST              = README TODO autogen.sh CONTRIBUTE.md ChangeLog
+EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
@@ -73,6 +73,6 @@ ChangeLog: .phony
 	) > ChangeLog
 
 lirc.org.tar: .phony
-	$(TAR_DEREFERENCE) -cf $@ lirc.org 
+	$(TAR_DEREFERENCE) -cf $@ lirc.org
 
 .phony:
