@@ -2,13 +2,15 @@ LIRC release procedure (more or less)
 -------------------------------------
 
 Pre-requisites:
-- Compiles --with-driver=all without warnings
+- Compiles without warnings
+- Unit tests pass.
+- 'make distcheck' pass
 - Encoder/decoder regression tests all pass
 - liblirc_client: version number change required?
         current:release:age
         http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html#Libtool-versioning
 - git master branch is committed and pushed
-- Update NEWS and doc/html-source/install.html (the Updating stuff).
+- Update NEWS.
 - Create a new git release branch:
       git checkout -b <version>
 
@@ -17,25 +19,25 @@ Steps for a new release (pre or final)
 
 1) Checkout the release branch.
 
-2) Update NEWS and doc/html-source/install.html (the Updating stuff).
+2) Update NEWS.
 
 3) Update version number in:
         README, NEWS, configure.ac
    Update the news entry in README.
 
-4) Commit, tag and push branch:
+4) Commit and push branch:
         git commit -a -s -m "Update for lirc <version> release"
-        git tag -a  lirc-<version> HEAD    # Using version like lirc-0_9_0
-        git push --tags origin <release-branch>
 
 5) Create tarball:
         ./autogen.sh
-        ./configure --with-driver=all --enable-sandboxed
+        ./configure
         make distcheck
 
 6) Merge release branch into the 'release' branch:
        git checkout release
        git merge -X theirs <release branch>
+       git tag -a  lirc-<version> HEAD    # Using version like lirc-0_9_0
+       git push --tags origin <release-branch>
    Check that the tags are present also in the release branch (no rebase
    problems):
        git log --oneline --decorate -25
