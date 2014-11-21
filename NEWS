@@ -1,7 +1,7 @@
 0.9.3-devel
   * TBD
 
-0.9.2-devel
+0.9.2pre1  11/21/14
   * The smode2 program has been retired from the build, although it still
     is available in contrib/.
   * The setup.sh script is removed (build always build all drivers).

@@ -21,7 +21,6 @@ Updated versions of lirc is available using the website http://lirc.org.
 More complete build and install instructions are available in the
 manual, the Installation chapter. The fast track:
 
-    $ ./autogen.sh
     $ ./configure
     $ make
     $ sudo make install
