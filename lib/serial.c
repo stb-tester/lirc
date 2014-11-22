@@ -344,7 +344,7 @@ tty_create_lock_retry:
 						logprintf(LIRC_WARNING, "stale lockfile removed");
 						goto tty_create_lock_retry;
 					} else {
-						logperror(LIRC_ERROR, 
+						logperror(LIRC_ERROR,
                                                           "could not remove stale lockfile");
 					}
 					return (0);
@@ -380,7 +380,7 @@ tty_create_lock_retry:
 		if (errno != EINVAL) {	/* symlink */
 			logperror(LIRC_ERROR, "readlink() failed for \"%s\"", name);
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
@@ -395,8 +395,8 @@ tty_create_lock_retry:
 			if (getcwd(cwd, FILENAME_MAX) == NULL) {
 				logperror(LIRC_ERROR, "getcwd() failed");
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -406,11 +406,11 @@ tty_create_lock_retry:
 			strcpy(dirname, name);
 			dirname[strlen(name) - strlen(last)] = 0;
 			if (chdir(dirname) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "chdir() to \"%s\" failed", dirname);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -419,7 +419,7 @@ tty_create_lock_retry:
 		}
 		if (tty_create_lock(symlink) == -1) {
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
@@ -429,8 +429,8 @@ tty_create_lock_retry:
 			if (chdir(cwd) == -1) {
 				logperror(LIRC_ERROR, "chdir() to \"%s\" failed", cwd);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -485,8 +485,8 @@ int tty_delete_lock(void)
 			}
 			if (pid == getpid()) {
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					retval = 0;
 					continue;
