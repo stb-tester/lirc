@@ -66,7 +66,7 @@
   * New configure options:
       --with-systemdsystemunitdir=... Installation path for systemd files
         (ticket #49).
-      --with_lockdir=... Serial lock directory, /var/lock or /var/lockdev
+      --with-lockdir=... Serial lock directory, /var/lock or /var/lockdev
         (ticket #44).
       --enable-python3-fix: Install python3 wrapper to actual python3.x
         version, bug walk-around for MacOSX.
