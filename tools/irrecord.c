@@ -413,13 +413,13 @@ int main(int argc, char **argv)
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
 	opt = options_getstring("irrecord:driver");
-	if (hw_choose_driver(opt) != 0) {
+	analyse = options_getboolean("irrecord:analyse");
+	if (hw_choose_driver(opt) != 0 && ! analyse) {
 		fprintf(stderr, "Driver `%s' not found", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
-	analyse = options_getboolean("irrecord:analyse");
 	device = options_getstring("irrecord:device");
 	opt = options_getstring("lircd:debug");
 	loglevel = string2loglevel(opt);
@@ -1283,8 +1283,10 @@ void for_each_remote(struct ir_remote *remotes, remote_func func)
 	}
 }
 
+
 void analyse_remote(struct ir_remote *raw_data)
 {
+	const char* const commandline = "Created using --analyse (-a)";
 	struct ir_ncode *codes;
 	struct decode_ctx_t decode_ctx;
 	int code;
@@ -1369,7 +1371,7 @@ void analyse_remote(struct ir_remote *raw_data)
 	}
 	new_codes[new_index].name = NULL;
 	remote.codes = new_codes;
-	fprint_remotes(stdout, &remote, (const char*)NULL);
+	fprint_remotes(stdout, &remote, commandline);
 	remote.codes = NULL;
 	free(new_codes);
 }
@@ -2243,15 +2245,18 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				if (max2_slength->count < max_count * TH_IS_BIT / 100)
 					max2_slength = NULL;
 			}
-			if (max_count >= sum * TH_IS_BIT / 100) {
-				printf("Space canditates: ");
-				printf("%u x %u", max_slength->count, (__u32) calc_signal(max_slength));
-				if (max2_slength)
-					printf(", %u x %u",
-					       max2_slength->count, (__u32) calc_signal(max2_slength));
-				printf("\n");
+			if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
+				if (max_count >= sum * TH_IS_BIT / 100) {
+					printf("Space candidates: ");
+					printf("%u x %u", max_slength->count,
+					       (__u32) calc_signal(max_slength));
+					if (max2_slength)
+						printf(", %u x %u",
+						       max2_slength->count,
+						       (__u32) calc_signal(max2_slength));
+					printf("\n");
+				}
 			}
-
 			remote->eps = eps;
 			remote->aeps = aeps;
 			if (is_biphase(remote)) {
