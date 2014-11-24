@@ -39,6 +39,12 @@
 
 #include "lirc_driver.h"
 
+#ifndef MSG_NOSIGNAL
+// MSG_NOSIGNAL is not defined in MacOSX. (Is this even needed
+// since    lircd.c sets SIGPIPE to SIG_IGN?)
+#define MSG_NOSIGNAL 0
+#endif
+
 /* Defines */
 #define YARDSRV_SOCK_PATH	"/tmp/yardsrv_sock"
 #define SRVCMD_IRREG		0xEE
