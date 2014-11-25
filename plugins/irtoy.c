@@ -381,6 +381,10 @@ static irtoy_t *irtoy_hw_init(int fd)
 
 static int init_device(void)
 {
+	if (access(drv.device, R_OK) != 0) {
+		logprintf(LIRC_DEBUG, "irtoy: cannot access %s", drv.device);
+		return 0;
+	}
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "irtoy: could not create lock files");
 		return(0);
@@ -444,25 +448,35 @@ static char _devname[20];
 
 static int init(void)
 {
-    int n = -1;
-    int i;
+	int i;
+	int found;
+	char tmp[64];
+	const char* const MSG_MORE_DEVICES =
+		"Additional irtoy device found: %s (ignored)";
+	const char* const MSG_FOUND = "irtoy device found on %s";
 
-    sscanf(drv.device, "/dev/ttyACM%d", &n);
-    if (n == -1) /* parsing failed, fallback to old behavior. */
-        return init_device();
-
-    drv.device = _devname;
-    for (i = n; i < 9; i++) {
-        int status;
-        sprintf(_devname, "/dev/ttyACM%d", i);
-        status = init_device();
-        if (status) {
-            logprintf(LIRC_INFO, "irtoy_found on %s", _devname);
-            return status;
-        }
-    }
-    /* If i get here, original drv.device has been destroyed. But who cares? */
-    return 0;
+	if (drv.device == NULL) {
+		logprintf(LIRC_ERROR, "irtoy: NULL device.");
+		return 0;
+	}
+	if (strcmp(drv.device, "auto") != 0)
+		return init_device();
+	for (found = 0, i = 0; i <= 9; i++) {
+		if (found) {
+			sprintf(tmp, "/dev/ttyACM%d", i);
+			drv.device = tmp;
+			if (init_device())
+				logprintf(LIRC_WARNING, MSG_MORE_DEVICES, tmp);
+			drv.device = _devname;
+		} else {
+			sprintf(_devname, "/dev/ttyACM%d", i);
+			drv.device = _devname;
+			found = init_device();
+			if (found)
+				logprintf(LIRC_INFO, MSG_FOUND, _devname);
+		}
+	}
+	return found;
 }
 
 static int deinit(void)
