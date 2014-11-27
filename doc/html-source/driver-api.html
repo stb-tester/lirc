@@ -300,7 +300,8 @@ struct driver* hardwares[] = { &my_hardware, NULL };
         return decode_all(remotes);
   </pre>
   This is a non-blocking function which returns NULL if there is no data
-  available currently, but might very well succeed later.
+  available currently, but might very well succeed later. The device might get closed as part
+  of error handling, so calling code should be prepared to reopen device if required.
 <h4><code>decode_func</code></h4>
 <code>char *mydecode_func(struct ir_remote * remote, struct decode_ctx_t* ctx)</code>
   <p>For non-LIRC_MODE_LIRCCODE, just call <code>receive_decode</code>,
