@@ -151,7 +151,10 @@ struct lengths {
 };
 
 
-/** Parsed run-time options, reflects long_options. */
+/**
+ * Parsed run-time options, reflects long_options and the command line,
+ * mostly a const object.
+ */
 struct opts {
 	int dynamic_codes;
 	int analyse;
@@ -167,16 +170,15 @@ struct opts {
 	const char* filename;
 	const char* driver;
 	loglevel_t loglevel;
+	int using_template;
+	char commandline[128];
 };
 
 
 /** Overall state in main. */
 struct main_state {
 	FILE *fout;
-	FILE *fin;
 	struct decode_ctx_t decode_ctx;
-	int using_template;
-	char commandline[128];
 };
 
 
@@ -1693,6 +1695,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	char logpath[256];
 	int flags;
 	struct ir_remote* my_remote;
+	FILE* f;
 
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0) {
@@ -1706,18 +1709,18 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	if (strcmp(curr_driver->name, "null") == 0 && !opts->analyse) {
 		return STS_INIT_NO_DRIVER;
 	}
-	state->fin = fopen(opts->filename, "r");
-	if (state->fin != NULL) {
+	f = fopen(opts->filename, "r");
+	if (f != NULL) {
 
 		if (opts->force) {
 			return STS_INIT_FORCE_TMPL;
 		}
-		my_remote = read_config(state->fin, opts->filename);
-		fclose(state->fin);
+		my_remote = read_config(f, opts->filename);
+		fclose(f);
 		if (my_remote == (void *)-1 || my_remote == NULL) {
 			return STS_INIT_BAD_FILE;
 		}
-		state->using_template = 1;
+		opts->using_template = 1;
 		if (opts->analyse) {
 			return STS_INIT_ANALYZE;
 		}
@@ -1733,7 +1736,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			if (opts->invert)
 				for_each_remote(my_remote, invert_data);
 
-			fprint_remotes(stdout, my_remote, state->commandline);
+			fprint_remotes(stdout, my_remote, opts->commandline);
 			free_config(my_remote);
 			return (STS_INIT_TESTED);
 		}
@@ -2329,7 +2332,7 @@ static void do_init(struct opts* opts, struct main_state* state)
 /** View part of get_toggle_bit_mask(). */
 static void do_get_toggle_bit_mask(struct ir_remote* remote,
 				   struct main_state* state,
-				   struct opts* opts)
+				   const struct opts* opts)
 {
 	const char* const MISSING_MASK_MSG =
 		"But I know for sure that RC6 has a toggle bit!\n";
@@ -2382,13 +2385,14 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 static enum button_status record_buttons(struct button_state* btn_state,
 					 enum button_status last_status,
 					 struct main_state* state,
-					 struct opts* opts)
+					 const struct opts* opts)
 {
 	ir_code code2;
 	int decode_ok;
 	__u32 timeout;
 	int retries;
 	struct ir_remote* my_remote;
+	FILE* f;
 
 	if (btn_state->no_data) {
 		btn_state->no_data = 0;
@@ -2584,13 +2588,13 @@ static enum button_status record_buttons(struct button_state* btn_state,
 			return STS_BTN_HARD_ERROR;
 		}
 
-		state->fin = fopen(opts->filename, "r");
-		if (state->fin == NULL) {
+		f = fopen(opts->filename, "r");
+		if (f == NULL) {
 			btn_state_set_message(btn_state, "Could not reopen config file");
 			return STS_BTN_HARD_ERROR;
 		}
-		my_remote = read_config(state->fin, opts->filename);
-		fclose(state->fin);
+		my_remote = read_config(f, opts->filename);
+		fclose(f);
 		if (my_remote == NULL) {
 			btn_state_set_message(btn_state,
 				"config file contains no valid remote"
@@ -2605,7 +2609,7 @@ static enum button_status record_buttons(struct button_state* btn_state,
 			return STS_BTN_HARD_ERROR;
 		}
 		if (!has_toggle_bit_mask(my_remote)) {
-			if (!state->using_template &&
+			if (!opts->using_template &&
 				strcmp(curr_driver->name, "devinput") != 0)
 			{
 				do_get_toggle_bit_mask(my_remote, state, opts);
@@ -2637,7 +2641,7 @@ static enum button_status record_buttons(struct button_state* btn_state,
 /** View part: Record data for one button. */
 static enum button_status get_button_data(struct button_state* btn_state,
 			    		  struct main_state* state,
-			    		  struct opts* opts)
+			    		  const struct opts* opts)
 {
 	const char* const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
 	const char* const MSG_BAD_RETURN = "Bad return from  get_button_data";
@@ -2688,7 +2692,7 @@ static enum button_status get_button_data(struct button_state* btn_state,
 }
 
 
-void do_record_buttons(struct main_state* state, struct opts* opts)
+void do_record_buttons(struct main_state* state, const struct opts* opts)
 {
 	struct button_state btn_state;
 	enum button_status sts = STS_BTN_INIT;
@@ -2753,7 +2757,7 @@ void do_record_buttons(struct main_state* state, struct opts* opts)
 
 
 /** View part of get_lengths. */
-static int mode2_get_lengths(struct opts* opts, struct main_state* state)
+static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 {
 	enum lengths_status sts = STS_LEN_AGAIN;
 	struct lengths_state lengths_state;
@@ -2761,7 +2765,7 @@ static int mode2_get_lengths(struct opts* opts, struct main_state* state)
 	int diff;
 	int i;
 
-	if (!state->using_template ) {
+	if (!opts->using_template ) {
 		lengths_state_init(&lengths_state, 1);
 		sts = STS_LEN_AGAIN;
 		while (sts == STS_LEN_AGAIN) {
@@ -2827,7 +2831,7 @@ static int mode2_get_lengths(struct opts* opts, struct main_state* state)
 
 
 /** View part of get_gap(). */
-void lirccode_get_lengths(struct opts* opts, struct main_state* state)
+void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 {
 	struct gap_state gap_state;
 	enum get_gap_status sts;
@@ -2836,7 +2840,7 @@ void lirccode_get_lengths(struct opts* opts, struct main_state* state)
 	remote.bits = curr_driver->code_length;
 	remote.eps = eps;
 	remote.aeps = aeps;
-	if (state->using_template)
+	if (opts->using_template)
 		return;
 	flushhw();
 	gap_state_init(&gap_state);
@@ -2872,7 +2876,7 @@ void lirccode_get_lengths(struct opts* opts, struct main_state* state)
 
 
 /** Write the provisionary config file without recorded buttons. */
-static void config_file_setup(struct main_state* state, struct opts* opts)
+static void config_file_setup(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {
@@ -2882,14 +2886,14 @@ static void config_file_setup(struct main_state* state, struct opts* opts)
 		exit(EXIT_FAILURE);
 	}
 	fprint_copyright(state->fout);
-	fprint_comment(state->fout, &remote, state->commandline);
+	fprint_comment(state->fout, &remote, opts->commandline);
 	fprint_remote_head(state->fout, &remote);
 	fprint_remote_signal_head(state->fout, &remote);
 }
 
 
 /** Write the final config file. */
-static int config_file_finish(struct main_state* state, struct opts* opts)
+static int config_file_finish(struct main_state* state, const struct opts* opts)
 {
 	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
 		fprintf(stderr, "Could not open \"%s\"\n", opts->filename);
@@ -2897,7 +2901,7 @@ static int config_file_finish(struct main_state* state, struct opts* opts)
 		return 0;
 	}
 	fprint_copyright(state->fout);
-	fprint_remotes(state->fout, &remote, state->commandline);
+	fprint_remotes(state->fout, &remote, opts->commandline);
 	return 1;
 }
 
@@ -2912,7 +2916,7 @@ int main(int argc, char **argv)
 	memset(&state, 0, sizeof(state));
 	get_options(argc, argv, argv[optind], &opts);
 
-	get_commandline(argc, argv, state.commandline, sizeof(state.commandline));
+	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
 	if (opts.list_namespace) {
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
@@ -2935,7 +2939,7 @@ int main(int argc, char **argv)
 			lirccode_get_lengths(&opts, &state);
 			break;
 	}
-	if (!state.using_template && is_rc6(&remote))
+	if (!opts.using_template && is_rc6(&remote))
 		do_get_toggle_bit_mask(&remote, &state, &opts);
 	config_file_setup(&state, &opts);
 	do_record_buttons(&state, &opts);
