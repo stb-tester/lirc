@@ -127,6 +127,22 @@ enum toggle_status {
 };
 
 
+/** Return from one pass in record_buttons(). */
+enum button_status {
+	STS_BTN_INIT,
+ 	STS_BTN_GET_NAME,
+	STS_BTN_INIT_DATA,
+	STS_BTN_GET_RAW_DATA,
+	STS_BTN_GET_DATA,
+	STS_BTN_BUTTON_DONE,
+	STS_BTN_BUTTONS_DONE,
+	STS_BTN_ALL_DONE,
+	STS_BTN_SOFT_ERROR,
+	STS_BTN_HARD_ERROR,
+	STS_BTN_TIMEOUT,
+};
+
+
 /* analyse stuff */
 struct lengths {
 	unsigned int count;
@@ -2363,240 +2379,376 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 }
 
 
-void record_buttons(struct main_state* state,
-		    struct button_state* btn_state,
-		    struct opts* opts)
-
+static enum button_status record_buttons(struct button_state* btn_state,
+					 enum button_status last_status,
+					 struct main_state* state,
+					 struct opts* opts)
 {
-	struct ir_remote* remotes;
-	flushhw();
-	while (1) {
-		if (btn_state->no_data) {
-			fprintf(stderr, "%s: no data for 10 secs," " aborting\n", progname);
-			printf("The last button did not seem to generate any signal.\n");
-			printf("Press RETURN to continue.\n\n");
-			getchar();
-			btn_state->no_data = 0;
-		}
-		printf("\nPlease enter the name for the next button (press <ENTER> to finish recording)\n");
-		btn_state->string = fgets(btn_state->buffer, BUTTON, stdin);
+	ir_code code2;
+	int decode_ok;
+	__u32 timeout;
+	int retries;
+	struct ir_remote* my_remote;
 
-		if (btn_state->string != btn_state->buffer) {
-			fprintf(stderr, "%s: fgets() failed\n", progname);
-			btn_state->retval = EXIT_FAILURE;
-			break;
+	if (btn_state->no_data) {
+		btn_state->no_data = 0;
+		return STS_BTN_TIMEOUT;
+	}
+	switch (last_status) {
+	case STS_BTN_INIT:
+		return STS_BTN_GET_NAME;
+	case STS_BTN_GET_NAME:
+		if (strchr(btn_state->buffer, ' ') != NULL) {
+			btn_state_set_message(
+				btn_state,
+				"The name must not contain any whitespace.");
+			return STS_BTN_SOFT_ERROR;
 		}
-		btn_state->buffer[strlen(btn_state->buffer) - 1] = 0;
-		if (strchr(btn_state->buffer, ' ') || strchr(btn_state->buffer, '\t')) {
-			printf("The name must not contain any whitespace.\n");
-			printf("Please try again.\n");
-			continue;
+		if (strchr(btn_state->buffer, '\t') != NULL) {
+			btn_state_set_message(btn_state,
+				"The name must not contain any whitespace.");
+			return STS_BTN_SOFT_ERROR;
 		}
-		if (strcasecmp(btn_state->buffer, "begin") == 0 || strcasecmp(btn_state->buffer, "end") == 0) {
-			printf("'%s' is not allowed as button name\n", btn_state->buffer);
-			printf("Please try again.\n");
-			continue;
+		if (strcasecmp(btn_state->buffer, "begin") == 0) {
+			btn_state_set_message(btn_state,
+				"'%s' is not allowed as button name\n",
+				btn_state->buffer);
+			return STS_BTN_SOFT_ERROR;
+		}
+		if (strcasecmp(btn_state->buffer, "end") == 0) {
+			btn_state_set_message(btn_state,
+				"'%s' is not allowed as button name\n",
+				btn_state->buffer);
+			return STS_BTN_SOFT_ERROR;
 		}
 		if (strlen(btn_state->buffer) == 0) {
-			break;
+			return STS_BTN_BUTTONS_DONE;
 		}
-		if (!opts->disable_namespace && !is_in_namespace(btn_state->buffer)) {
-			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", btn_state->buffer);
-			printf("Use '%s --list-namespace' to see a full list of valid button names\n", progname);
-			printf("Please try again.\n");
-			continue;
+		if (!opts->disable_namespace &&
+				!is_in_namespace(btn_state->buffer))
+		{
+			btn_state_set_message(btn_state,
+				"'%s' is not in name space"
+				" (use --disable-namespace to disable checks)\n",
+				btn_state->buffer);
+			return STS_BTN_SOFT_ERROR;
 		}
-
-		if (is_raw(&remote)) {
+		return STS_BTN_INIT_DATA;
+	case STS_BTN_INIT_DATA:
+		if (opts->force) {
 			flushhw();
 		} else {
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
 			}
 		}
-		printf("\nNow hold down button \"%s\".\n", btn_state->buffer);
-		fflush(stdout);
-		flushhw();
-
-		if (is_raw(&remote)) {
-			btn_state->count = 0;
-			btn_state->sum = 0;
-			while (btn_state->count < MAX_SIGNALS) {
-				__u32 timeout;
-
-				if (btn_state->count == 0)
-					timeout = 10000000;
-				else
-					timeout = remote.gap * 5;
-				btn_state->data = curr_driver->readdata(timeout);
-				if (!btn_state->data) {
-					if (btn_state->count == 0) {
-						btn_state->no_data = 1;
-						break;
-					}
-					btn_state->data = remote.gap;
-				}
-				if (btn_state->count == 0) {
-					if (!is_space(btn_state->data) || btn_state->data < remote.gap - remote.gap * remote.eps / 100) {
-						printf("Sorry, something went wrong.\n");
-						sleep(3);
-						printf("Try again.\n");
-						flushhw();
-						btn_state->count = 0;
-						continue;
-					}
-				} else {
-					if (is_space(btn_state->data)
-					    && (is_const(&remote) ? btn_state->data >
-						(remote.gap > btn_state->sum ? (remote.gap - btn_state->sum) * (100 - remote.eps) / 100 : 0)
-						: btn_state->data > remote.gap * (100 - remote.eps) / 100)) {
-						printf("Got it.\n");
-						printf("Signal length is %d\n", btn_state->count - 1);
-						if (btn_state->count % 2) {
-							printf("That's weird because the signal length "
-							       "must be odd!\n");
-							sleep(3);
-							printf("Try again.\n");
-							flushhw();
-							btn_state->count = 0;
-							continue;
-						} else {
-							ncode.name = btn_state->buffer;
-							ncode.length = btn_state->count - 1;
-							ncode.signals = signals;
-							fprint_remote_signal(state->fout, &remote, &ncode);
-							break;
-						}
-					}
-					signals[btn_state->count - 1] = btn_state->data & PULSE_MASK;
-					btn_state->sum += btn_state->data & PULSE_MASK;
-				}
-				btn_state->count++;
-			}
-			if (btn_state->count == MAX_SIGNALS) {
-				printf("Signal is too long.\n");
-			}
-			if (btn_state->retval == EXIT_FAILURE)
-				break;
-			continue;
-		}
-		btn_state->retries = RETRIES;
-		while (btn_state->retries > 0) {
+		if (curr_driver->fd == -1)
+			curr_driver->init_func();
+		return opts->force ? STS_BTN_GET_RAW_DATA : STS_BTN_GET_DATA;
+	case STS_BTN_GET_DATA:
+		for(retries = RETRIES; retries > 0;) {
 			if (!mywaitfordata(10000000)) {
 				btn_state->no_data = 1;
-				break;
+				return STS_BTN_TIMEOUT;
 			}
+			decode_ok = 0;
 			last_remote = NULL;
-			btn_state->flag = 0;
 			sleep(1);
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &(state->decode_ctx))) {
-					btn_state->flag = 1;
+				if (curr_driver->decode_func(&remote,
+							     &(state->decode_ctx))) {
+					decode_ok = 1;
 					break;
 				}
 			}
-			if (btn_state->flag) {
-				ir_code code2;
-
-				ncode.name = btn_state->buffer;
-				ncode.code = state->decode_ctx.code;
-				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote, &(state->decode_ctx))) {
-					code2 = state->decode_ctx.code;
-					state->decode_ctx.code = ncode.code;
-					if (state->decode_ctx.code != code2) {
-						ncode.next = malloc(sizeof(*(ncode.next)));
-						if (ncode.next) {
-							memset(ncode.next, 0, sizeof(*(ncode.next)));
-							ncode.next->code = code2;
-						}
-					}
+			if (!decode_ok) {
+				if (retries <= 0) {
+					btn_state_set_message(btn_state,
+						"Try using the -f option.\n");
+					return STS_BTN_HARD_ERROR;
 				}
-				fprint_remote_signal(state->fout, &remote, &ncode);
-				if (ncode.next) {
-					free(ncode.next);
-					ncode.next = NULL;
+				if (!resethw()) {
+					btn_state_set_message(btn_state,
+						"Could not reset hardware.\n");
+					return STS_BTN_HARD_ERROR;
 				}
-				break;
-			} else {
-				printf("Something went wrong. ");
-				if (btn_state->retries > 1) {
-					fflush(stdout);
-					sleep(3);
-					if (!resethw()) {
-						fprintf(stderr, "%s: Could not reset hardware.\n", progname);
-						btn_state->retval = EXIT_FAILURE;
-						break;
-					}
-					flushhw();
-					printf("Please try again. (%d btn_state->retries left)\n", btn_state->retries - 1);
-				} else {
-					printf("\n");
-					printf("Try using the -f option.\n");
-				}
-				btn_state->retries--;
-				continue;
+				btn_state_set_message(btn_state,
+						      "Please try again (%d retries left).\n",
+						      retries - 1);
+				flushhw();
+				retries--;
+				return STS_BTN_SOFT_ERROR;
 			}
-		}
-		if (btn_state->retries == 0)
-			btn_state->retval = EXIT_FAILURE;
-		if (btn_state->retval == EXIT_FAILURE)
+			ncode.name = btn_state->buffer;
+			ncode.code = state->decode_ctx.code;
+			curr_driver->rec_func(NULL);
+			if (!curr_driver->decode_func(&remote,
+						      &(state->decode_ctx))) {
+				code2 = state->decode_ctx.code;
+				state->decode_ctx.code = ncode.code;
+				if (state->decode_ctx.code != code2) {
+					ncode.next = malloc(sizeof(*(ncode.next)));
+					if (ncode.next) {
+						memset(ncode.next, 0, sizeof(*(ncode.next)));
+						ncode.next->code = code2;
+					}
+				}
+			}
 			break;
-	}
-	fprint_remote_signal_foot(state->fout, &remote);
-	fprint_remote_foot(state->fout, &remote);
-	fclose(state->fout);
-
-	if (btn_state->retval == EXIT_FAILURE) {
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		exit(EXIT_FAILURE);
-	}
-
-	if (is_raw(&remote)) {
-		return;
-	}
-	if (!resethw()) {
-		fprintf(stderr, "%s: could not reset hardware.\n", progname);
-		exit(EXIT_FAILURE);
-	}
-
-	state->fin = fopen(opts->filename, "r");
-	if (state->fin == NULL) {
-		fprintf(stderr, "%s: could not reopen config file\n", progname);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		exit(EXIT_FAILURE);
-	}
-	remotes = read_config(state->fin, opts->filename);
-	fclose(state->fin);
-	if (remotes == NULL) {
-		fprintf(stderr, "%s: config file contains no valid remote control definition\n", progname);
-		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		exit(EXIT_FAILURE);
-	}
-	if (remotes == (void *)-1) {
-		fprintf(stderr, "%s: reading of config file failed\n", progname);
-		fprintf(stderr, "%s: this shouldn't ever happen!\n", progname);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		exit(EXIT_FAILURE);
-	}
-	if (!has_toggle_bit_mask(remotes)) {
-		if (!state->using_template && needs_toggle_mask(remotes)) {
-			do_get_toggle_bit_mask(&remote, state, opts);
 		}
-	} else {
-		set_toggle_bit_mask(remotes, remotes->toggle_bit_mask);
+		fprint_remote_signal(state->fout, &remote, &ncode);
+		if (ncode.next) {
+			free(ncode.next);
+			ncode.next = NULL;
+		}
+		return STS_BTN_BUTTON_DONE;
+	case STS_BTN_GET_RAW_DATA:
+		btn_state->count = 0;
+		btn_state->sum = 0;
+		while (btn_state->count < MAX_SIGNALS) {
+			if (btn_state->count == 0)
+				timeout = 10000000;
+			else
+				timeout = remote.gap * 5;
+			btn_state->data = curr_driver->readdata(timeout);
+			if (!btn_state->data) {
+				if (btn_state->count == 0) {
+					return STS_BTN_TIMEOUT;
+				}
+				btn_state->data = remote.gap;
+			}
+			if (btn_state->count == 0) {
+				if (!is_space(btn_state->data)
+				    || btn_state->data < remote.gap - remote.gap * remote.eps / 100)
+				{
+					sleep(3);
+					flushhw();
+					btn_state->count = 0;
+					btn_state_set_message(btn_state,
+							      "Something went wrong.");
+					return STS_BTN_SOFT_ERROR;
+				}
+			} else {
+				if (is_space(btn_state->data)
+				    && (is_const(&remote) ?
+					btn_state->data > (remote.gap > btn_state->sum ?
+							(remote.gap - btn_state->sum) * (100 - remote.eps) / 100
+							: 0)
+					: btn_state->data > remote.gap * (100 - remote.eps) / 100))
+				{
+					printf("Got it.\n");
+					printf("Signal length is %d\n",
+					       btn_state->count - 1);
+					if (btn_state->count % 2) {
+						const char* const MSG_EVEN_LENGTH =
+							"Signal length is %d\n"
+							"That's weird because the signal length "
+						       	" must be odd!\n";
+						btn_state_set_message(btn_state,
+								  MSG_EVEN_LENGTH,
+								  btn_state->count - 1);
+						sleep(3);
+						flushhw();
+						btn_state->count = 0;
+						return STS_BTN_SOFT_ERROR;
+					}
+					ncode.name = btn_state->buffer;
+					ncode.length = btn_state->count - 1;
+					ncode.signals = signals;
+					fprint_remote_signal(state->fout,
+							     &remote,
+							     &ncode);
+					break;
+				}
+				signals[btn_state->count - 1] =
+					btn_state->data & PULSE_MASK;
+				btn_state->sum += btn_state->data & PULSE_MASK;
+			}
+			btn_state->count++;
+		}
+		if (btn_state->count == MAX_SIGNALS) {
+			btn_state_set_message(btn_state, "Signal is too long.\n");
+			return STS_BTN_SOFT_ERROR;
+		}
+		return STS_BTN_BUTTON_DONE;
+	case STS_BTN_BUTTONS_DONE:
+		fprint_remote_signal_foot(state->fout, &remote);
+		fprint_remote_foot(state->fout, &remote);
+		fclose(state->fout);
+		if (is_raw(&remote)) {
+			return STS_BTN_ALL_DONE;
+		}
+		if (!resethw()) {
+			btn_state_set_message(btn_state, "Could not reset hardware.");
+			return STS_BTN_HARD_ERROR;
+		}
+
+		state->fin = fopen(opts->filename, "r");
+		if (state->fin == NULL) {
+			btn_state_set_message(btn_state, "Could not reopen config file");
+			return STS_BTN_HARD_ERROR;
+		}
+		my_remote = read_config(state->fin, opts->filename);
+		fclose(state->fin);
+		if (my_remote == NULL) {
+			btn_state_set_message(btn_state,
+				"config file contains no valid remote"
+				 " control definition, this shouldn't"
+				 " ever happen!");
+			return STS_BTN_HARD_ERROR;
+		}
+		if (my_remote == (void *)-1) {
+			btn_state_set_message(btn_state,
+				"Reading of config file failed"
+				" this should never happenn");
+			return STS_BTN_HARD_ERROR;
+		}
+		if (!has_toggle_bit_mask(my_remote)) {
+			if (!state->using_template &&
+				strcmp(curr_driver->name, "devinput") != 0)
+			{
+				do_get_toggle_bit_mask(my_remote, state, opts);
+			}
+		} else {
+			set_toggle_bit_mask(my_remote,
+					    my_remote->toggle_bit_mask);
+		}
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
+		get_pre_data(my_remote);
+		get_post_data(my_remote);
+		remote = *my_remote;
+		return STS_BTN_ALL_DONE;
+	case STS_BTN_BUTTON_DONE:
+		return STS_BTN_BUTTON_DONE;
+	case STS_BTN_HARD_ERROR:
+		return STS_BTN_HARD_ERROR;
+	default:
+		btn_state_set_message(btn_state,
+				      "record_buttons(): bad state: %d\n",
+				      last_status);
+		return STS_BTN_HARD_ERROR;
+
 	}
-	if (curr_driver->deinit_func)
-		curr_driver->deinit_func();
-	get_pre_data(remotes);
-	get_post_data(remotes);
-	remote = *remotes;
+}
+
+
+/** View part: Record data for one button. */
+static enum button_status get_button_data(struct button_state* btn_state,
+			    		  struct main_state* state,
+			    		  struct opts* opts)
+{
+	const char* const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
+	const char* const MSG_BAD_RETURN = "Bad return from  get_button_data";
+	enum button_status sts = STS_BTN_INIT_DATA;
+
+	btn_state->retries = 30;
+	last_remote = NULL;
+			sts = STS_BTN_INIT_DATA;
+	sleep(1);
+	while (btn_state->retries > 0) {
+		switch (sts) {
+		case STS_BTN_INIT_DATA:
+			printf("\nNow hold down button \"%s\".\n",
+			       btn_state->buffer);
+			fflush(stdout);
+			flushhw();
+			break;
+		case STS_BTN_GET_DATA:
+		case STS_BTN_GET_RAW_DATA:
+			break;
+		case STS_BTN_TIMEOUT:
+			printf("Timeout (10 seconds), try again\n");
+			sts = STS_BTN_INIT_DATA;
+			continue;
+		case STS_BTN_SOFT_ERROR:
+			printf("Something went wrong: ");
+			printf(btn_state->message);
+			if (btn_state->retries <= 0 && !opts->force) {
+				printf("Try using the -f option.\n");
+				break;
+			}
+			printf("Please try again. (%d retries left)\n",
+			        btn_state->retries - 1);
+			sts = STS_BTN_INIT_DATA;
+			continue;
+		case STS_BTN_BUTTON_DONE:
+		case STS_BTN_HARD_ERROR:
+		case STS_BTN_ALL_DONE:
+			return sts;
+		default:
+			btn_state_set_message(btn_state, MSG_BAD_STS, sts);
+			return STS_BTN_HARD_ERROR;
+		}
+		sts = record_buttons(btn_state, sts, state, opts);
+	}
+	btn_state_set_message(btn_state, MSG_BAD_RETURN, sts);
+	return STS_BTN_HARD_ERROR;
+}
+
+
+void do_record_buttons(struct main_state* state, struct opts* opts)
+{
+	struct button_state btn_state;
+	enum button_status sts = STS_BTN_INIT;
+	char* s;
+
+	button_state_init(&btn_state);
+	flushhw();
+	while (1) {
+		switch (sts) {
+		case STS_BTN_INIT:
+			break;
+ 		case STS_BTN_GET_NAME:
+			printf("\nPlease enter the name for the next button"
+                               " (press <ENTER> to finish recording)\n");
+			s = fgets(btn_state.buffer,
+				  sizeof(btn_state.buffer),
+				  stdin);
+			if (s != btn_state.buffer) {
+				btn_state_set_message(&btn_state,
+						      "%s: fgets() failed\n",
+						      progname);
+				sts = STS_BTN_HARD_ERROR;
+				break;
+			}
+			s = strchr(s, '\n');
+			if (s != NULL)
+				*s = '\0';
+			break;
+		case STS_BTN_INIT_DATA:
+			sts = get_button_data(&btn_state, state, opts);
+			continue;
+		case STS_BTN_GET_DATA:
+		case STS_BTN_GET_RAW_DATA:
+			printf("Oops (data states in record_buttons().");
+			break;
+		case STS_BTN_BUTTON_DONE:
+			sts = STS_BTN_GET_NAME;
+			continue;
+		case STS_BTN_BUTTONS_DONE:
+			break;
+		case STS_BTN_ALL_DONE:
+			return;
+		case STS_BTN_TIMEOUT:
+			printf("Illegal data-state timeout\n");
+			sts = STS_BTN_INIT;
+			continue;
+		case STS_BTN_SOFT_ERROR:
+			printf(btn_state.message);
+			printf("Press RETURN to continue.\n\n");
+			getchar();
+			sts = STS_BTN_INIT;
+			continue;
+		case STS_BTN_HARD_ERROR:
+			fprintf(stderr, "Unrecoverable error: ");
+			fprintf(stderr, "%s\n", btn_state.message);
+			fprintf(stderr, "Giving up\n");
+			exit(EXIT_FAILURE);
+	    }
+	    sts = record_buttons(&btn_state, sts, state, opts);
+	}
 }
 
 
@@ -2746,7 +2898,6 @@ static int config_file_finish(struct main_state* state, struct opts* opts)
 	}
 	fprint_copyright(state->fout);
 	fprint_remotes(state->fout, &remote, state->commandline);
-	printf("Successfully written config file %s.\n", opts->filename);
 	return 1;
 }
 
@@ -2755,8 +2906,7 @@ int main(int argc, char **argv)
 {
 	struct opts opts;
 	struct main_state state;
-	struct button_state btn_state;
-	int r;
+	int r = 1;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&state, 0, sizeof(state));
@@ -2785,17 +2935,12 @@ int main(int argc, char **argv)
 			lirccode_get_lengths(&opts, &state);
 			break;
 	}
-
-	if (!state.using_template && needs_toggle_mask(&remote)) {
+	if (!state.using_template && is_rc6(&remote))
 		do_get_toggle_bit_mask(&remote, &state, &opts);
-	}
-	printf("\nNow enter the names for the buttons.\n");
-	fflush(stdout);
 	config_file_setup(&state, &opts);
-	button_state_init(&btn_state);
-	record_buttons(&state, &btn_state, &opts);
-
-	/* write final config file */
-	r = config_file_finish(&state, &opts);
+	do_record_buttons(&state, &opts);
+	if (!is_raw(&remote))
+		r = config_file_finish(&state, &opts);
+	printf("Successfully written config file %s.\n", opts.filename);
 	return r ? EXIT_SUCCESS : EXIT_FAILURE;
 }
