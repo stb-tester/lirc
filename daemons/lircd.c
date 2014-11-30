@@ -82,7 +82,7 @@
 
 #define DEBUG_HELP "Bad debug level: \"%s\"\n\n" \
     "Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, TRACE1,\n" \
-    " TRACE2 or a number in the range 0..10.\n"
+    " TRACE2 or a number in the range 3..10.\n"
 
 #ifndef PACKET_SIZE
 #define PACKET_SIZE 256
@@ -113,7 +113,7 @@ static  const char* const help =
 "\t -o --output=socket\t\tOutput socket filename\n"
 "\t -P --pidfile=file\t\tDaemon pid file\n"
 "\t -L --logfile=file\t\tLog file path (default: use syslog)'\n"
-"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 0..10.\n"
+"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 3..10.\n"
 "\t -r --release[=suffix]\t\tAuto-generate release events\n"
 "\t -a --allow-simulate\t\tAccept SIMULATE command\n"
 "\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"

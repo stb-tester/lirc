@@ -162,7 +162,7 @@ USAGE
 "\t -f --force\t\tForce raw mode\n"
 "\t -n --disable-namespace\tDisable namespace checks\n"
 "\t -Y --dynamic-codes\tEnable dynamic codes\n"
-"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
+"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
 "\t -h --help\t\tDisplay this message\n"
 "\t -v --version\t\tDisplay version\n";
 
