@@ -23,6 +23,7 @@
 #define LIRC_LOCKDIR "/var/lock/lockdev"
 #endif
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -31,6 +32,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <sys/types.h>
@@ -297,6 +299,7 @@ int tty_setcsize(int fd, int csize)
  * Creates a lock file of the type /var/local/LCK.. + name
  * @param name Name of the device
  * @return non-zero if successful
+ * @see  http://www.pathname.com/fhs/2.2/fhs-5.9.html
  */
 int tty_create_lock(const char *name)
 {
@@ -344,7 +347,7 @@ tty_create_lock_retry:
 						logprintf(LIRC_WARNING, "stale lockfile removed");
 						goto tty_create_lock_retry;
 					} else {
-						logperror(LIRC_ERROR, 
+						logperror(LIRC_ERROR,
                                                           "could not remove stale lockfile");
 					}
 					return (0);
@@ -380,7 +383,7 @@ tty_create_lock_retry:
 		if (errno != EINVAL) {	/* symlink */
 			logperror(LIRC_ERROR, "readlink() failed for \"%s\"", name);
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
@@ -395,8 +398,8 @@ tty_create_lock_retry:
 			if (getcwd(cwd, FILENAME_MAX) == NULL) {
 				logperror(LIRC_ERROR, "getcwd() failed");
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -406,11 +409,11 @@ tty_create_lock_retry:
 			strcpy(dirname, name);
 			dirname[strlen(name) - strlen(last)] = 0;
 			if (chdir(dirname) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "chdir() to \"%s\" failed", dirname);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -419,7 +422,7 @@ tty_create_lock_retry:
 		}
 		if (tty_create_lock(symlink) == -1) {
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR, 
+				logperror(LIRC_ERROR,
                                           "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
@@ -429,8 +432,8 @@ tty_create_lock_retry:
 			if (chdir(cwd) == -1) {
 				logperror(LIRC_ERROR, "chdir() to \"%s\" failed", cwd);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					/* FALLTHROUGH */
 				}
@@ -441,13 +444,18 @@ tty_create_lock_retry:
 	return (1);
 }
 
+/**
+ * Delete any lock(s) owned by this process.
+ * @return 0 on errors, else 1.
+ * @see  http://www.pathname.com/fhs/2.2/fhs-5.9.html
+ */
 int tty_delete_lock(void)
 {
 	DIR *dp;
 	struct dirent *ep;
 	int lock;
 	int len;
-	char id[20 + 1], *endptr;
+	char id[20] = {'\0'};
 	char filename[FILENAME_MAX + 1];
 	long pid;
 	int retval = 1;
@@ -465,28 +473,36 @@ int tty_delete_lock(void)
 				continue;
 			}
 			strcat(filename, ep->d_name);
+			if (strstr(filename, "LCK..") == NULL) {
+				logprintf(LIRC_DEBUG,
+					  "Ignoring non-LCK.. logfile %s",
+					  filename);
+				retval = 0;
+				continue;
+			}
 			lock = open(filename, O_RDONLY);
 			if (lock == -1) {
 				retval = 0;
 				continue;
 			}
-			len = read(lock, id, 20);
+			len = read(lock, id, sizeof(id) - 1);
 			close(lock);
 			if (len <= 0) {
 				retval = 0;
 				continue;
 			}
-			id[len] = 0;
-			pid = strtol(id, &endptr, 10);
-			if (!*id || (*endptr && *endptr != '\n')) {
-				logprintf(LIRC_WARNING, "invalid lockfile (%s) detected", filename);
+			pid = strtol(id, NULL, 10);
+			if (pid == LONG_MIN || pid == LONG_MAX || pid == 0) {
+				logprintf(LIRC_DEBUG,
+					  "Can't parse lockfile %s (ignored)",
+					  filename);
 				retval = 0;
 				continue;
 			}
 			if (pid == getpid()) {
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR, 
-                                                  "could not delete file \"%s\"", 
+					logperror(LIRC_ERROR,
+                                                  "could not delete file \"%s\"",
                                                   filename);
 					retval = 0;
 					continue;

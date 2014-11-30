@@ -82,7 +82,7 @@
 
 #define DEBUG_HELP "Bad debug level: \"%s\"\n\n" \
     "Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, TRACE1,\n" \
-    " TRACE2 or a number in the range 0..10.\n"
+    " TRACE2 or a number in the range 3..10.\n"
 
 #ifndef PACKET_SIZE
 #define PACKET_SIZE 256
@@ -113,7 +113,7 @@ static  const char* const help =
 "\t -o --output=socket\t\tOutput socket filename\n"
 "\t -P --pidfile=file\t\tDaemon pid file\n"
 "\t -L --logfile=file\t\tLog file path (default: use syslog)'\n"
-"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 0..10.\n"
+"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 3..10.\n"
 "\t -r --release[=suffix]\t\tAuto-generate release events\n"
 "\t -a --allow-simulate\t\tAccept SIMULATE command\n"
 "\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
@@ -281,6 +281,8 @@ extern FILE *lf;
 #define MAX_CLIENTS     ((FD_SETSIZE-6)/2)
 
 static int sockfd, sockinet;
+static int do_shutdown;
+
 static int uinputfd = -1;
 static int clis[MAX_CLIENTS];
 
@@ -449,7 +451,9 @@ void dosigterm(int sig)
 		shutdown(clis[i], 2);
 		close(clis[i]);
 	};
-	shutdown(sockfd, 2);
+	if (do_shutdown) {
+		shutdown(sockfd, 2);
+	}
 	close(sockfd);
 
 #if defined(__linux__)
@@ -742,7 +746,7 @@ void config(void)
 		LOGPRINTF(1, "config file read");
 		if (config_remotes == NULL) {
 			logprintf(LIRC_WARNING,
-                                  "config file %s contains no valid remote control definition", 
+                                  "config file %s contains no valid remote control definition",
                                   filename);
 		}
 		/* I cannot free the data structure
@@ -1049,6 +1053,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 
 	/* create socket */
 	sockfd = -1;
+	do_shutdown = 0;
 #ifdef HAVE_SYSTEMD
 	n = sd_listen_fds(0);
 	if (n > 1) {
@@ -1065,6 +1070,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 			perror(progname);
 			goto start_server_failed0;
 		}
+		do_shutdown = 1;
 
 		/*
 		   get owner, permissions, etc.

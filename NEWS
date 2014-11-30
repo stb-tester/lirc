@@ -1,3 +1,5 @@
+0.9.2pre2  11/21/30
+  * Fixes for #67 - #75 besides #71.
 0.9.2pre1  11/21/14
   * The smode2 program has been retired from the build, although it still
     is available in contrib/.
@@ -63,7 +65,7 @@
   * New configure options:
       --with-systemdsystemunitdir=... Installation path for systemd files
         (ticket #49).
-      --with_lockdir=... Serial lock directory, /var/lock or /var/lockdev
+      --with-lockdir=... Serial lock directory, /var/lock or /var/lockdev
         (ticket #44).
       --enable-python3-fix: Install python3 wrapper to actual python3.x
         version, bug walk-around for MacOSX.

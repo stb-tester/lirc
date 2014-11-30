@@ -135,7 +135,7 @@ struct driver {
 			       struct ir_ncode*  code);
 
 	/**
-	 * Receive data from remote.
+	 * Receive data from remote. Might close device on error conditions.
 	 * @param The remote to read from.
 	 * @return Formatted, statically allocated string with decoded
 	 *         data: "remote-name code-name code repetitions"

@@ -247,6 +247,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 	int save_errno = errno;
 	va_list ap;
 
+#ifdef SYSTEMD_LOGPERROR_FIX
 	if (nodaemon && prio <= loglevel) {
 		fprintf(stderr, "%s: %s ", progname, prio2text(prio));
 		va_start(ap, format_str);
@@ -255,6 +256,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 		fputc('\n', stderr);
 		fflush(stderr);
 	}
+#endif
 	if (use_syslog) {
 		va_start(ap, format_str);
 		vsyslog(prio, format_str, ap);
