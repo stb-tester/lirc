@@ -1,16 +1,22 @@
-0.9.2pre3  11/21/30
+0.9.2 12/09/14
+  * Documentation fixes
+
+0.9.2pre3  12/04/14
   * Add fix for #70, by mistake omitted in pre2.
-0.9.2pre2  11/21/30
-  * Fixes for #67 - #75 besides #71.
+
+0.9.2pre2  11/30/14
+  * Fixes for #67 - #75 besides #71 and #74.
+
 0.9.2pre1  11/21/14
-  * The smode2 program has been retired from the build, although it still
-    is available in contrib/.
-  * The setup.sh script is removed (build always build all drivers).
+  * Removed functionality:
+    + The smode2 program has been retired from the build, although it still
+      is available in contrib/.
+    + The setup.sh script is removed (build always builds all drivers).
   * Drivers are loaded dynamically. Many programs including lircd now
     needs to know where the drivers are located to be able to use
     them. There are new options, environment variables and hard-coded
     defaults. See the manpages for more.
-  * A new tool lirc-lsplugins is added to inspect dynamic modules.
+  * A new tool lirc-lsplugins is added to inspect dynamic driver modules.
   * New, unstable configuration script lirc-setup. The script guides user
     when selecting both capture device and remote config. It sports auto-
     detection of most devices, searching and downloading from the remotes
@@ -20,37 +26,39 @@
     http://sf.net/p/lirc-remotes as the only source (#53). A new tool
     irdb-get(1) supports searching and downloading from remotes database.
   * Building on MacOSX has been refreshed.
-  * Support for for sonyir on MacOSX is added. This is a single hiddev device;
-    with the framework in place hopefully more devices will be added over time.
-  * Support for the Dangerous Prototypes irtoy device is added (#20).
-  * Support for the DIY assembly kit yard2 usb ir device is added. This is
-    an experimental driver which depends on a server which currently is not
-    packaged in any major distro; a Debian/Ubuntu PPA is available.
-  * Support for the Roku remote protocol added (#8).
-  * Support for long keypresses has been added. See the "Configuring LIRC"
-    chapter in the manual, search for "ignore_first_event" (#50).
+  * New devices and features:
+    + Support for the Dangerous Prototypes irtoy device is added (#20).
+    + Support for for sonyir on MacOSX is added. This is a single hiddev
+      device; with the framework in place hopefully more devices will be
+      added over time.
+    + Support for the DIY assembly kit yard2 usb ir device is added. This is
+      an experimental driver which depends on a server which currently is not
+      packaged in any major distro; a Debian/Ubuntu PPA is available.
+    + Support for the Roku remote protocol added (#8).
+    + Support for long keypresses has been added. See the "Configuring LIRC"
+      chapter in the manual, search for "ignore_first_event" (#50).
   * lircd has been verified to run as regular user as long as it can open
     devices and such. A new option --effective-user makes lircd drop it's
     privileges after opening devices if started as root. A new udev rule
     is shipped to make /dev/lirc* accessible for users in group 'lirc" (#56).
   * Logging runtime option is renamed: debug -> loglevel. Levels can be given
     symbolically e. g., 'info' or 'error'. Old option name is still supported.
-  * The default location for the user lircrc-file has been changed from
-    ~/.lircrc to ~/.config/lircrc. The old location is still used as fallback.
-    (ticket #52).
-  * The lircd.conf configuration has been updated. lircd will now besides
-    the lircd.conf file also read all *.conf files in the
-    /etc/lirc/lircd.conf.d directory. The already existing include directive
-    has been modified to accept wildcards and also been documented.
-  * lircd.conf has a new 'driver' attribute for configs requiring a specific
-    driver. Supported by irrecord(1), used by lirc-setup(1) and irdb-get(1).
-  * Mechanisms to disable the implicit sorting of remotes has been added,
-    and the automatic sorting has been enhanced (ticket #56).
-  * The enabling of lircrcd mode synchronization daemon has been changed. The
-    old "#! lircrcd" shebang is deprecated and a new, global lircrc option
-    "lircrc_class" is added (#62). The lircrcd sockets has been moved to
-    /var/run/lirc (#61). This might break some corner-case installations.
-
+  * Configuration changes
+    + The default location for the user lircrc-file has been changed from
+      ~/.lircrc to ~/.config/lircrc. The old location is still used as fallback.
+      (ticket #52).
+    + The lircd.conf configuration has been updated. lircd will now besides
+      the lircd.conf file also read all *.conf files in the
+      /etc/lirc/lircd.conf.d directory. The already existing include directive
+      has been modified to accept wildcards and also been documented.
+    + lircd.conf has a new 'driver' attribute for configs requiring a specific
+      driver. Supported by irrecord(1), used by lirc-setup(1) and irdb-get(1).
+    + Mechanisms to disable the implicit sorting of remotes has been added,
+      and the automatic sorting has been enhanced (ticket #56).
+    + The enabling of lircrcd mode synchronization daemon has been changed. The
+      old "#! lircrcd" shebang is deprecated and a new, global lircrc option
+      "lircrc_class" is added (#62). The lircrcd sockets has been moved to
+      /var/run/lirc (#61). This might break some corner-case installations.
   * Dependencies:
       + Build scripts now requires python3.
       + Build requires the pkg-config package, in particular
@@ -80,32 +88,35 @@
       --with-driver=... The build always builds all drivers
       --enable-maintainer-mode: lircd.simsend and lircd.simrec
         (test tools) are always created although not installed.
-  * The so-version of the liblirc library is bumped, backwards-compatible.
-  * The lircd and lircmd sockets are not created at installation any more,
-    they are created on demand by the servers. If there already is e. g., a
-    /var/run/lirc/lircd socket it will still be used without changing
-    permissions (#46).
-  * The long-standing issues with parallel make are fixed.
-  * Many more files are installed in the data directory e. g., configuration
-    files and a local copy of the lirc.org website.
-  * Old, non-functional kernel modules are removed.
-  * The configuration data which was in several places including
-    configure.ac and setup.data is now in the configs/ directory.
-
-  * Support for sending data has been added to the lirc_client.h API.
-    (ticket #35).
-  * lirc now installs three separate libraries: lirc_private (internal),
-    lirc (for external applications) and lirc_driver for drivers. Each
-    library has a so-file to link to, a  header file for compilation
-    and a pkg-config .pc file for build. Applications  and drivers have
-    been refactored to use the libraries.
-  * There are examples in the sources how to build new drivers. The
-    documentation in this area is also improved (see the driver-api guide
-    and doc/api-docs).
-  * The doc/ directory has support for creating doxygen API documentation.
+  * Installation changes.
+    + The so-version of the liblirc library is bumped, backwards-compatible.
+    + The lircd and lircmd sockets are not created at installation any more,
+      they are created on demand by the servers. If there already is e. g., a
+      /var/run/lirc/lircd socket it will still be used without changing
+      permissions (#46).
+    + The long-standing issues with parallel make are fixed.
+    + Many more files are installed in the data directory e. g., configuration
+      files and a local copy of the lirc.org website.
+    + Old, non-functional kernel modules are removed.
+    + The configuration data which was in several places including
+      configure.ac and setup.data is now in the configs/ directory.
+  * API and programming features.
+    + Support for sending data has been added to the lirc_client.h API.
+      (ticket #35).
+    + lirc now installs three separate libraries: lirc_private (internal),
+      lirc (for external applications) and lirc_driver for drivers. Each
+      library has a so-file to link to, a  header file for compilation
+      and a pkg-config .pc file for build. Applications  and drivers have
+      been refactored to use the libraries.
+    + The hard-coded socket used by the lirc_client API can now be
+      tweaked using LIRC_SOCKET_PATH environment variable (ticket #31).
+    + There are examples in the sources how to build new drivers. The
+      documentation in this area is also improved (see the driver-api guide
+      and doc/api-docs).
+    + The doc/ directory has support for creating doxygen API documentation.
   * Test overhaul: new unit tests available in test/. New test tools
-    irsimsend and irsimreceive which works without lircd. The contrib/
-    lirc-codec-regression-test have been updated.
+    irsimsend and irsimreceive which works without lircd. The
+    lirc-codec-regression-test script has been updated.
 
 0.9.1 06/14/14
   * Added systemd support: unit files, socket activation.
