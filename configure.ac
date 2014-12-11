@@ -183,11 +183,18 @@ AC_CHECK_HEADER(usb.h,[
   ],[
   AM_CONDITIONAL([BUILD_USB],[false])]
 )
-AC_CHECK_HEADER(ftdi.h,[
+PKG_CHECK_MODULES([FTDI],[libftdi],,[true])
+test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1],,[true])
+
+if test -n "$FTDI_LIBS"; then
+  CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
+  LDFLAGS="$LDFLAGS $FTDI_LIBS"
+  AC_DEFINE(HAVE_FTDI)
   AM_CONDITIONAL([BUILD_FTDI],[true])
-  ],[
+  AC_SUBST(FTDI_LIBS)
+else
   AM_CONDITIONAL([BUILD_FTDI],[false])]
-)
+fi
 AC_CHECK_HEADER(iguanaIR.h,[
   AM_CONDITIONAL([BUILD_IGUANAIR],[true])
   ],[
