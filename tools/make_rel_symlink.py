@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import os.path
@@ -32,16 +32,16 @@ if sys.argv[1] == "-p":
     sys.argv = sys.argv[ 1:]
 
 if len( sys.argv ) != 3:
-    print USAGE
+    print(USAGE)
     sys.exit( 1 )
 
 if  os.path.isdir(  sys.argv[2] ):
-    print "Removing link target dir:" +  sys.argv[2]
+    print("Removing link target dir:" +  sys.argv[2])
     shutil.rmtree( sys.argv[2])
 
 link_path = relative_ln_s( sys.argv[1], sys.argv[2] )
 if just_print:
-    print link_path
+    print(link_path)
 else:
     os.chdir( os.path.dirname( sys.argv[2]))
     target = os.path.basename( sys.argv[2])
