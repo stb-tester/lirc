@@ -111,7 +111,7 @@ static void  lines_next(line_t* line)
 {
 	lines[line_ix++] = line;
 	if (line_ix >= MAX_PLUGINS -1){
-		fprintf(stderr, "Too many plugins, giving up. Sorry.");
+		fputs("Too many plugins, giving up. Sorry.", stderr);
 		exit(2);
 	}
 }
@@ -152,7 +152,7 @@ static void line_print(const line_t* line)
 	printf("%-20s%-6s%s\n",
                line->name,  line->flags, line->path);
 	if (line->errors)
-		printf(line->errors);
+		puts(line->errors);
 }
 
 static void print_folded_item(const char* arg)
@@ -163,7 +163,7 @@ static void print_folded_item(const char* arg)
 	char* token;
 
 	if (arg == NULL) {
-		printf("None\n");
+		puts("None\n");
 		return;
 	}
 	buff = alloca(strlen(arg) + 1);
@@ -171,18 +171,18 @@ static void print_folded_item(const char* arg)
 	token = strtok(buff, " \t");
 	while (token != NULL) {
 		if (strlen(token) + pos > 80) {
-			printf("\n\t\t");
+			puts("\n\t\t");
 			pos = 0;
 		}
 		if (pos != START_POS && pos != 0){
-			printf(" ");
+			puts(" ");
 			pos += 1;
 		}
-		printf(token);
+		puts(token);
 		pos += strlen(token);
 		token = strtok(NULL, " \t");
 	}
-	printf("\n");
+	puts("\n");
 }
 
 
@@ -220,7 +220,7 @@ static void line_print_long(const line_t* line)
 	printf("Version:\t%s\n", line->version ? line->version : "(None)");
 	printf("Driver info:\t");
 	print_folded_item(line->info);
-	printf("\n");
+	puts("\n");
 }
 
 
@@ -356,13 +356,13 @@ void lsplugins(const char* pluginpath, const char* which)
 		}
 	}
 	if (!opt_quiet) {
-		printf("#\n#\n");
+		puts("#\n#\n");
 		if (!opt_long) {
-			printf(LEGEND);
-			printf("#\n");
+			puts(LEGEND);
+			puts("#\n");
 		}
 		if (opt_long)
-			printf(LONG_LEGEND);
+			puts(LONG_LEGEND);
 		}
 }
 
@@ -383,10 +383,10 @@ int main(int argc, char** argv)
 				pluginpath = optarg;
 				break;
 			case 'h':
-				printf(USAGE);
+				puts(USAGE);
 				exit(0);
 			case 'v':
-				printf("Version: " VERSION "\n");
+				puts("Version: " VERSION "\n");
 				exit(0);
 			case 'p':
 				printf("Default path: %s\n", pluginpath);
@@ -404,13 +404,13 @@ int main(int argc, char** argv)
 				opt_long = 1;
 				break;
 			default:
-				fprintf(stderr, USAGE);
+				fputs(USAGE, stderr);
 				exit(1);
 		}
 	}
         if (argc - optind  >  1) {
-		fprintf(stderr, "Too many arguments.\n");
-                fprintf(stderr, USAGE);
+		fputs("Too many arguments.\n", stderr);
+                fputs(USAGE, stderr);
                 exit(2);
         }
 	which = (argc - optind == 1 ?  argv[argc - 1] : "*");

@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 			break;
 		switch (c) {
 		case 'h':
-			printf(help);
+			fputs(help, stdout);
 			return (EXIT_SUCCESS);
 		case 'v':
 			printf("%s %s\n", prog, VERSION);

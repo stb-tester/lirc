@@ -784,7 +784,7 @@ static void lircmd_parse_options(int argc,  char** const argv)
 	{
 		switch (c) {
 		case 'h':
-			printf(help);
+			puts(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("lircmd %s\n",  VERSION);

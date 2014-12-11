@@ -139,12 +139,13 @@ static void parse_options(int argc, char** const argv)
 	add_defaults();
 	while ((c = getopt_long(argc, argv, "U:hvd:H:g:t:mr", options, NULL)) != -1) {
 		switch (c) {
-		case 'h':printf(help);
+		case 'h':puts(help);
 			exit (EXIT_SUCCESS);
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
 				fprintf(stderr, "Driver `%s' not found", optarg);
-				fprintf(stderr, " (wrong or missing -U/--plugindir?)\n");
+				fputs(" (wrong or missing -U/--plugindir?)\n",
+                                       stderr);
 				hw_print_drivers(stderr);
 				exit(EXIT_FAILURE);
 			}
@@ -186,7 +187,7 @@ void initscreen(char *geometry)
 {
 	d1 = XOpenDisplay(0);
 	if (d1 == NULL) {
-		printf("Can't open display.\n");
+		puts("Can't open display.\n");
 		exit(0);
 	}
 
@@ -208,10 +209,10 @@ void initscreen(char *geometry)
 
 	cm1 = DefaultColormap(d1, 0);
 	if (!XAllocNamedColor(d1, cm1, "blue", &xc1, &xc2))
-		printf("coudn't allocate blue color\n");
+		puts("couldn't allocate blue color\n");
 	f1_str = XLoadQueryFont(d1, font1_name);
 	if (f1_str == NULL) {
-		printf("could't load font\n");
+		puts("could't load font\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -266,10 +267,10 @@ int main(int argc, char **argv)
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
-			printf("This program is only intended for receivers supporting the pulse/space layer.\n");
-			printf("Note that this is no error, but this program "
+			puts("This program is only intended for receivers supporting the pulse/space layer.\n");
+			puts("Note that this is no error, but this program "
 			       "simply makes no sense for your\n" "receiver.\n");
-			printf("In order to test your setup run lircd with "
+			puts("In order to test your setup run lircd with "
 			       "the --nodaemon option and \n" "then check if the remote works with the irw tool.\n");
 			close(fd);
 			exit(EXIT_FAILURE);
@@ -277,7 +278,7 @@ int main(int argc, char **argv)
 	} else {
 		curr_driver->open_func(device);
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
-			fprintf(stderr, "Cannot initialize hardware");
+			fputs("Cannot initialize hardware", stderr);
 			exit(EXIT_FAILURE);
 		}
 
@@ -285,10 +286,10 @@ int main(int argc, char **argv)
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
-				printf("Please use the --raw option to access "
+				puts("Please use the --raw option to access "
 				       "the device directly instead through\n" "the abstraction layer.\n");
 			} else {
-				printf("This program does not work for this hardware yet\n");
+				puts("This program does not work for this hardware yet\n");
 			}
 			exit(EXIT_FAILURE);
 		}

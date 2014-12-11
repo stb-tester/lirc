@@ -105,6 +105,8 @@ chk_write(int fd, const void *buf, size_t count, const char* msg)
 		perror(msg);
 	}
 }
+
+
 int lirc_command_init(lirc_cmd_ctx* ctx, const char* fmt, ...)
 {
 	va_list ap;
@@ -287,7 +289,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 				}
 			}
 			if (ctx->reply_to_stdout) {
-				chk_write(0, string, strlen(string), 
+				chk_write(0, string, strlen(string),
 					  "reply (1)");
 				chk_write(0, "\n", 1, "reply (2)");
 			} else {
@@ -1021,7 +1023,7 @@ parse_shebang(char* line, int depth, const char* path, char* buff, size_t size)
 {
 	char* token;
 	char my_path[128];
-	const char* const SHEBANG_MSG = 
+	const char* const SHEBANG_MSG =
 		"Warning: Use of deprecated lircrc shebang."
 		" Use lircrc_class instead.\n";
 
@@ -1035,7 +1037,7 @@ parse_shebang(char* line, int depth, const char* path, char* buff, size_t size)
 		strncpy(my_path, path, sizeof(my_path) - 1);
 		strncat(buff, basename(my_path), size - 1);
 		lirc_printf(SHEBANG_MSG);
-	} else { 
+	} else {
 		lirc_printf("Warning: bad shebang (ignored)");
 	}
 }
@@ -1045,7 +1047,7 @@ static int lirc_readconfig_only_internal(const char *file,
 					 struct lirc_config **config,
 					 int (check) (char *s), char **full_name)
 {
-	const char* const INCLUDED_LIRCRC_CLASS = 
+	const char* const INCLUDED_LIRCRC_CLASS =
 		"Warning: lirc_class in included file (ignored)";
 	char *string, *eq, *token, *token2, *token3;
 	struct filestack_t *filestack, *stack_tmp;
@@ -1087,10 +1089,10 @@ static int lirc_readconfig_only_internal(const char *file,
 		if (firstline) {
 			firstline = 0;
 			if (strncmp(string, "#!", 2) == 0) {
-				parse_shebang(string, 
+				parse_shebang(string,
 					      open_files,
 					      file,
-					      lircrc_class, 
+					      lircrc_class,
 					      sizeof(lircrc_class));
 			}
 		}
@@ -1388,9 +1390,9 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	/* connect to lircrcd */
 
 	addr.sun_family = AF_UNIX;
-	if (lirc_getsocketname((*config)->lircrc_class, 
-			       addr.sun_path, 
-			       sizeof(addr.sun_path)) > sizeof(addr.sun_path)) 
+	if (lirc_getsocketname((*config)->lircrc_class,
+			       addr.sun_path,
+			       sizeof(addr.sun_path)) > sizeof(addr.sun_path))
 	{
 		lirc_printf("%s: WARNING: file name too long\n", lirc_prog);
 		goto lirc_readconfig_compat;
@@ -1418,7 +1420,7 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	sockfd = -1;
 
 	/* launch lircrcd */
-        snprintf(command, sizeof(command), 
+        snprintf(command, sizeof(command),
 		 "lircrcd %s", (*config)->lircrc_class);
 	ret = system(command);
 	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS) {

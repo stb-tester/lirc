@@ -92,7 +92,7 @@ static void set_testinput(int fd, const char* path)
 	lirc_command_init(&command, "DRV_OPTION set-infile %s\n", path);
 	r = lirc_command_run(&command, fd);
 	if (r != 0) {
-		fprintf(stderr, "Cannot set test input file\n");
+		fputs("Cannot set test input file\n", stderr);
 		exit(2);
 	}
 }
@@ -137,7 +137,7 @@ static int nextcode(int fd, char* buff, ssize_t size)
 		exit(errno);
 	};
 	if (strstr(buff, "__EOF") != NULL) {
-		printf("Exit on EOF\n");
+		puts("Exit on EOF\n");
 		exit(0);
 	}
 	if (i >= 0) {
@@ -176,16 +176,16 @@ static int irtestcase(int fd_io, int fd_cmd)
 
 	if (opt_lircrc != NULL) {
 		if (lirc_readconfig_only(opt_lircrc, &config, NULL) != 0) {
-			fprintf(stderr, "Cannot initiate lircrc decoding\n");
+			fputs("Cannot initiate lircrc decoding\n", stderr);
 			exit(2);
 		}
 	}
 	while (nextcode(fd_io, code, sizeof(code)) == 1) {
-		printf(code);
+		puts(code);
 		if (strstr(code, "__EOF") != NULL) {
 			exit(0);
 		}
-		fprintf(code_log, code);
+		fputs(code, code_log);
 		if (opt_lircrc != NULL){
 			r = lirc_code2char(config, code, &c);
 			while (r == 0 && c != NULL) {
@@ -222,36 +222,35 @@ int main(int argc, char *argv[])
 			opt_testdata = optarg;
 			break;
 		case 'h':
-			printf(USAGE);
+			puts(USAGE);
 			return (EXIT_SUCCESS);
 		case 'v':
 			printf("%s\n", "irtestcase " VERSION);
 			return (EXIT_SUCCESS);
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr, "Try `irtestcase --help'.\n");
+			fputs("Try `irtestcase --help'.\n", stderr);
 			return (EXIT_FAILURE);
 		}
 	}
 	if (argc > optind + 1) {
-		fprintf(stderr,
-			"irtestcase: Too many arguments (max one).\n");
-		fprintf(stderr, "Try `irtestcase --help'.\n");
+		fputs("irtestcase: Too many arguments (max one).\n", stderr);
+		fputs("Try `irtestcase --help'.\n", stderr);
 		return (EXIT_FAILURE);
 	}
 	if (strcmp(opt_prog, DEFAULT_PROG) != 0 && opt_lircrc == NULL) {
-		fprintf(stderr, "--prog requires --lircrc/-l. Giving up.\n");
+		fputs("--prog requires --lircrc/-l. Giving up.\n", stderr);
 		return (EXIT_FAILURE);
 	}
 	if (opt_lircrc != NULL && strcmp(opt_prog, DEFAULT_PROG) == 0) {
-		fprintf(stderr, "--lircrc requires --prog/-p. Giving up.\n");
+		fputs("--lircrc requires --prog/-p. Giving up.\n", stderr);
 		return (EXIT_FAILURE);
 	}
 
 	init_testdir();
 	fd_cmd = lirc_get_local_socket(NULL, 1);
 	if (fd_cmd < 0) {
-		fprintf(stderr, "Cannot open lircd socket.\n");
+		fputs("Cannot open lircd socket.\n", stderr);
 		exit(3);
 	}
 	set_devicelog(fd_cmd, DEVICE_LOG);
@@ -267,7 +266,7 @@ int main(int argc, char *argv[])
 	setenv("LIRC_SOCKET_PATH", socketpath, 0);
 	fd_io = lirc_init(opt_prog, 1);
 	if (fd_io < 0) {
-		fprintf(stderr, "Cannot run lirc_init.\n");
+		fputs("Cannot run lirc_init.\n", stderr);
 		exit(3);
 	}
 

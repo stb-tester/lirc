@@ -258,16 +258,16 @@ int main(int argc, char** argv)
 			opt_silent = 1;
 			break;
 		case 'h':
-			printf(USAGE);
-			return (EXIT_SUCCESS);
+			puts(USAGE);
+			return EXIT_SUCCESS;
 		case 'v':
 			printf("%s\n", "lirc-lsremotes " VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr,
-                                "Try `lirc-lsremotes -h' for more information.\n");
-			return (EXIT_FAILURE);
+			fputs("Try `lirc-lsremotes -h' for more information.\n",
+                               stderr);
+			return EXIT_FAILURE;
 		}
 	}
 	if (argc == optind + 2) {
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
 		dirpath = argv[optind];
 		configs = "*";
 	} else {
-		fprintf(stderr, USAGE);
+		fputs(USAGE, stderr);
 		return EXIT_FAILURE;
 	}
 	lirc_log_get_clientlog("lirc-lsremotes", path, sizeof(path));

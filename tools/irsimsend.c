@@ -65,8 +65,8 @@ static struct ir_remote* setup(const char* path)
 	FILE* f;
 
 	if (hw_choose_driver("file") == -1) {
-		fprintf(stderr,
-			"Cannot load file driver (bad plugin path?)\n");
+		fputs("Cannot load file driver (bad plugin path?)\n",
+                       stderr);
 		exit(EXIT_FAILURE);
 	}
 	unlink(OUTFILE);
@@ -196,7 +196,7 @@ int parse_uint_arg(const char* optind, const char* errmsg)
 
 	c = strtol(optarg, NULL, 10);
 	if (c > INT_MAX || c < 0 || errno == EINVAL || errno == ERANGE) {
-		fprintf(stderr, errmsg);
+		fputs(errmsg, stderr);
 		exit(EXIT_FAILURE);
 	}
 	return (int) c;
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 	       != EOF) {
 		switch (c) {
 		case 'h':
-			printf(USAGE);
+			puts(USAGE);
 			return (EXIT_SUCCESS);
 		case 'c':
 			opt_count = parse_uint_arg(optarg,
@@ -237,13 +237,13 @@ int main(int argc, char *argv[])
 			break;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr,
-                                "Try `irsimsend -h' for more information.\n");
+			fputs("Try `irsimsend -h' for more information.\n",
+                               stderr);
 			return (EXIT_FAILURE);
 		}
 	}
 	if (argc != optind + 1) {
-		fprintf(stderr, USAGE);
+		fputs(USAGE, stderr);
 		return EXIT_FAILURE;
 	}
 	lirc_log_get_clientlog("irsimsend", path, sizeof(path));

@@ -2266,7 +2266,7 @@ static void lircd_parse_options(int argc, char** const argv)
 	{
 		switch (c) {
 		case 'h':
-			printf(help);
+			puts(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("lircd %s\n", VERSION);
@@ -2414,7 +2414,7 @@ int main(int argc, char **argv)
 		opt = options_getstring("lircd:listen_hostport");
 		if (opt){
 			if (opt2host_port(opt, &address, &port, errmsg) != 0){
-				fprintf(stderr, errmsg);
+				fputs(errmsg, stderr);
 				return(EXIT_FAILURE);
 			}
 		} else

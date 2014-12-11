@@ -43,25 +43,25 @@ static void setup(const char* path)
 		exit(EXIT_FAILURE);
 	}
 	if (hw_choose_driver("file") == -1) {
-		fprintf(stderr,
-			"Cannot load file driver (bad plugin path?)\n");
+		fputs("Cannot load file driver (bad plugin path?)\n",
+                      stderr);
 		exit(EXIT_FAILURE);
 	}
 	r = curr_driver->open_func("dummy.out");
 	if (r == 0) {
-		fprintf(stderr, "Cannot open driver\n");
+		fputs("Cannot open driver\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 	r = curr_driver->init_func();
 	if (r == 0) {
-		fprintf(stderr, "Cannot init driver\n");
+		fputs("Cannot init driver\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 	strcpy(option.key, "set-infile");
 	strncpy(option.value, path, sizeof(option.value));
 	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
 	if (r != 0) {
-		fprintf(stderr, "Cannot set driver infile.\n");
+		fputs("Cannot set driver infile.\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -102,7 +102,7 @@ void printcode(char* s)
 	int len;
 
 	if (s == NULL) {
-		printf( "None\n");
+		puts("None\n");
 	} else {
 		len = strlen(s);
                 if (strlen(s) > 2 && s[len -1] == '\n') {
@@ -140,23 +140,23 @@ int main(int argc, char *argv[])
 	       != EOF) {
 		switch (c) {
 		case 'h':
-			printf(USAGE);
-			return (EXIT_SUCCESS);
+			puts(USAGE);
+			return EXIT_SUCCESS;
 		case 'v':
 			printf("%s\n", "irw " VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'U':
 			options_set_opt("lircd:pluginpath", optarg);
 			break;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fprintf(stderr,
-                                "Try `irsimsend -h' for more information.\n");
-			return (EXIT_FAILURE);
+			fputs("Try `irsimsend -h' for more information.\n",
+                              stderr);
+			return EXIT_FAILURE;
 		}
 	}
 	if (argc != optind + 2) {
-		fprintf(stderr, USAGE);
+		fputs(USAGE, stderr);
 		return EXIT_FAILURE;
 	}
 	lirc_log_get_clientlog("irsimreceive", path, sizeof(path));
