@@ -7,16 +7,12 @@
  *
  */
 
-#define _GNU_SOURCE
-
 #include <config.h>
 
 #include <dirent.h>
 #include <getopt.h>
 #include <errno.h>
 #include <fnmatch.h>
-
-
 #include <glob.h>
 #include <libgen.h>
 #include <limits.h>

@@ -17,11 +17,6 @@
  * @author  Christoph Bartelmus, Trent Piepho,  Michal Svec
  */
 
-// define _XOPEN_SOURCE for WEXITSTATUS
-#define _XOPEN_SOURCE
-// define _BSD_SOURCE for strdup()
-#define _BSD_SOURCE
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -34,6 +29,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/stat.h>

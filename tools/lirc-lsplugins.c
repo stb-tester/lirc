@@ -8,7 +8,7 @@
 #define __BEGIN_DECLS  extern "C" {
 #define __END_DECLS    }
 
-#define  _GNU_SOURCE
+#define _GNU_SOURCE
 
 #include <dlfcn.h>
 #include <stdlib.h>
