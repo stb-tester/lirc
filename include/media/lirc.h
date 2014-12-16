@@ -106,9 +106,11 @@ extern "C" {
 #define LIRC_CAN_SET_REC_TIMEOUT          0x10000000
 #define LIRC_CAN_SET_REC_FILTER           0x08000000
 
+
 /** This flag indicates that the receiver is capable of estimating
  *  the carrier frequency of received IR signals. */
 #define LIRC_CAN_MEASURE_CARRIER          0x02000000
+#define LIRC_CAN_USE_WIDEBAND_RECEIVER    0x04000000
 
 /** Extract sending features from its argument. */
 #define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
@@ -196,6 +198,7 @@ extern "C" {
 
 #define LIRC_SETUP_START               _IO('i', 0x00000021)
 #define LIRC_SETUP_END                 _IO('i', 0x00000022)
+#define LIRC_SET_WIDEBAND_RECEIVER     _IOW('i', 0x00000023, __u32)
 
 #ifdef	__cplusplus
 }
