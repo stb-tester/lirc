@@ -1,0 +1,67 @@
+.TH LIRC 4 "Dec 2014" "Linux" "Linux Programmer's Manual"
+.SH NAME
+lirc \- lirc devices
+.SH DESCRIPTION
+.B  /dev/lirc*
+are character devices providing a low-level bi-directional interface to IR
+remotes. When receiving data the driver works in two different modes
+depending on the underlying hardware.
+.P
+Some hardware (typically TV-cards) decodes the IR signal internally and just
+provides decoded button presses as integer values. Drivers for this kind of
+hardware works in LIRC_MODE_LIRCCODE. Such hardware usually does not support
+sending IR signals. Furthermore, it usually only works with a specific remote
+which is bundled with e.g., a tv-card.
+.P
+Other hardware provides a stream of pulse/space durations. Such drivers works
+in LIRC_MODE_MODE2.  Sometimes, this kind of hardware also supports
+sending IR data. It can be used with (almost) any kind of remote.
+.P
+The LIRC_GET_REC_MODE ioctl allows probing for the mode.
+
+.SH Reading using LIRC_MODE_MODE2 drivers
+In the  LIRC_MODE_MODE2 mode, the driver read() provides 32-bit values
+representing a space or a pulse duration, by convention typed as lirc_t.
+The time of the duration (us) is encoded in the lower 24 bits. The upper
+8 bit reflects the type of package:
+.TP 4
+LIRC_MODE2_SPACE
+Value reflects a space duration (us).
+.TP 4
+LIRC_MODE2_PULSE
+Value reflects a pulse duration (us).
+.TP 4
+LIRC_MODE2_FREQUENCY
+Value reflects a frequency (hz), see the LIRC_SET_MEASURE_CARRIER ioctl.
+.TP 4
+LIRC_MODE2_TIMEOUT
+The package reflects a timeout, see the LIRC_SET_REC_TIMEOUT_REPORTS ioctl.
+
+.SH Reading using LIRC_MODE_LIRCCODE drivers.
+In the LIRC_MODE_LIRCCODE mode, the data returned by read() reflects decoded
+button presses. The length of each packet could be retrieved using the
+LIRC_GET_LENGTH ioctl. read() on the device must be done in blocks matching
+the bit count, rounded up so it matches full bytes.
+
+.SH Sending data.
+When sending data, only the LIRC_MODE_PULSE mode is supported. The data
+written to the chardev using write() is a pulse/space sequence of integer
+values. Pulses and spaces are only marked implicitly by their position. The
+data must start and end with a pulse, thus it must always include an odd
+number of samples.  The write() function  blocks until the data has been
+transmitted by the hardware. If more data is provided than the hardware can
+send, the driver returns EINVAL
+
+.SH BUGS
+
+Using these devices requires the kernel source header file lirc.h. That this
+file is not public is a bug, see
+https://bugzilla.kernel.org/show_bug.cgi?id=75751.
+.P
+This manual page should really be part of the upstream man-pages project.
+
+
+.SH SEE ALSO
+.B  lirc_ioctl(4)
+.br
+.B https://www.kernel.org/doc/htmldocs/media_api/lirc_dev.html
