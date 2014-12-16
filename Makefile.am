@@ -9,8 +9,6 @@ EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
 CHANGELOG_REVS          = lirc-0_9_1..HEAD
-TAR_DEREFERENCE         = $(shell tar --version | grep -q GNU \
-				 && echo 'tar -h' || echo 'tar -L')
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
@@ -45,8 +43,10 @@ header_HEADERS          = paths.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	cd $(srcdir); $(TAR_DEREFERENCE) -cf - lirc.org | \
-	    tar -C $(DESTDIR)$(docdir) -xf -
+	cp -ar $(srcdir)/lirc.org       $(DESTDIR)$(docdir)
+	cp -ar $(srcdir)/doc/images     $(DESTDIR)$(docdir)/lirc.org
+	cp -a  $(srcdir)/doc/man-html/* $(DESTDIR)$(docdir)/lirc.org/html
+	cp -ar $(srcdir)/doc/html/*     $(DESTDIR)$(docdir)/lirc.org/html
 	rm $(DESTDIR)$(datadir)/lirc/configs/check_configs.py
 
 dist-hook: ChangeLog
@@ -72,7 +72,10 @@ ChangeLog: .phony
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
-lirc.org.tar: .phony
-	$(TAR_DEREFERENCE) -cf $@ lirc.org
+lirc.org.local: .phony
+	cd doc; $(MAKE)
+	rm -rf lirc.org/images; cp -ar doc/images lirc.org
+	rm -f lirc.org/html/*
+	cp doc/html/* doc/man-html/* lirc.org/html
 
 .phony:

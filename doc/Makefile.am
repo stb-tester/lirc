@@ -55,7 +55,8 @@ dist_image_DATA         = images/atwf83.jpg \
                           images/audio_wave.png \
                           images/diode.gif \
                           images/lirc.gif \
-                          images/marb18.jpg
+                          images/marb18.jpg \
+			  images/banner_en_1.gif
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -83,7 +84,7 @@ $(manpage_html): $(nodist_man_MANS)
 	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
-	man2html -M ../html/index.html $${src}* | \
+	man2html -M ../html/index.html $${src}.[1-8] | \
 	            $(SED) -e '1,/<BODY>/d' \
 	                -e '/<\/BODY>/,$$d' \
 	                -e '/HREF="#index"/d' \
