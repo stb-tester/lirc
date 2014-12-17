@@ -1,22 +1,7 @@
-/****************************************************************************
- ** hw_mplay.c **************************************************************
- ****************************************************************************
- *
- * LIRC driver for Vlsys mplay usb ftdi serial port remote control.
- *
- * Driver inspire from hw_accent et hw_alsa_usb.
- *
- * The vlsys mplay is a remote control with an Ir receiver connected to the
- * usb bus via a ftdi driver. The device communicate with the host at 38400
- * 8N1.
- *
- * For each keypress on the remote controle, one code byte is transmitted
- * follow by regular fixe code byte for repetition if the key is held-down.
- * For example, if you press key 1, the remote first send 0x4d (key code)
- * and next regulary send 0x7e (repetetion code) as you held-down the key.
- * For key 2 you get 0x4e 0x7e 0x7e ...
- *
- * Copyright (c) 2007 Benoit Laurent <ben905@free.fr>
+/* Copyright (c) 2007 Benoit Laurent <ben905@free.fr>
+ * Copyright (c) 2011,2012
+ *                    Wolfgang Hauck <wolfgang.hauck@gmx.de>
+ *                    (Added support for wheel/knob.)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+/**
+ * @file    mplay.c
+ * @brief   LIRC driver for Vlsys mplay usb ftdi serial port remote control.
+ *
+ * Driver inspired by hw_accent et hw_alsa_usb.
+ *
+ * The vlsys mplay is a remote control with an Ir receiver connected to the
+ * usb bus via a ftdi driver. The device communicates with the host at 38400
+ * 8N1.
+ *
+ * For each keypress on the remote control, one code byte is transmitted
+ * followed by regular fixe code byte for repetition if the key is held-down.
+ * For example, if you press key 1, the remote first sends 0x4d (key code)
+ * and next regulary send 0x7e (repetition code) as you hold-down the key.
+ * For key 2 you get 0x4e 0x7e 0x7e ...
+ */
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -42,63 +43,165 @@
 #define LIRC_IRTTY "/dev/ttyUSB0"
 #endif
 
+
+#include <errno.h>
 #include <stdio.h>
-#include <sys/types.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <time.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <sys/types.h>
+#include <sys/timerfd.h>
+#include <sys/ioctl.h>
 
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
-/* The mplay code length in bit */
+/** The mplay code length in bit. */
 #define MPLAY_CODE_LENGTH 8
 
-/* Code value send by the mplay to indicate a repeatition of the last code */
-#define MPLAY_REPEAT_CODE 0x7e
+/** Wheel angle period. */
+#define MPLAY_ANGLE_PERIOD 4
 
-/* Mplay serial baud rate */
+/** There was no latest action. */
+#define MPLAY_ACTION_NONE -1
+/** Latest relevant action was wheel turn. */
+#define MPLAY_ACTION_WHEEL 0
+/** Latest relevant action was button press. */
+#define MPLAY_ACTION_BUTTON 1
+
+/** IR termination code sent by listener thread in error cases. */
+#define MPLAY_CODE_ERROR 0xFF
+/** Code if no action took place */
+#define MPLAY_CODE_NOP 0x00
+/** Code sent to LIRC framework for counter-clockwise rotation. */
+#define MPLAY_CODE_TURN_LEFT 0x80
+/** Code sent to LIRC framework for clockwise rotation. */
+#define MPLAY_CODE_TURN_RIGHT 0x81
+/** Code sent to LIRC framework for knob press. */
+#define MPLAY_CODE_KNOB 0x82
+/** Code value sent by the mplay to indicate a repetition of the last code. */
+#define MPLAY_CODE_REPEAT 0x7E
+
+/** Period of listener thread in nanoseconds in idle phase (40ms). */
+#define MPLAY_LISTENER_PERIOD_IDLE 40000000
+/** Period of listener thread in nanoseconds when wheel is busy (2.5ms). */
+#define MPLAY_LISTENER_PERIOD_BUSY 2500000
+/** Counter for poll actions during busy phase until going idle. */
+#define MPLAY_LISTENER_COUNTER_WAIT_WHEEL 64
+/** Counter for poll actions during busy phase until going idle. */
+#define MPLAY_LISTENER_COUNTER_WAIT_BUTTON 8
+/** Bit position for rotation sensor A. */
+#define MPLAY_ROTATION_SENSOR_POS_A 8
+/** Mask for rotation sensor A. */
+#define MPLAY_ROTATION_SENSOR_MASK_A (1 << MPLAY_ROTATION_SENSOR_POS_A)
+/** Bit position for rotation sensor B. */
+#define MPLAY_ROTATION_SENSOR_POS_B 5
+/** Mask for rotation sensor B. */
+#define MPLAY_ROTATION_SENSOR_MASK_B (1 << MPLAY_ROTATION_SENSOR_POS_B)
+/** Mask for rotation sensor. */
+#define MPLAY_ROTATION_SENSOR_MASK (MPLAY_ROTATION_SENSOR_MASK_A | \
+	MPLAY_ROTATION_SENSOR_MASK_B)
+
+/** Mplay serial baud rate. */
 #define MPLAY_BAUD_RATE 38400
 
-/* Max time in micro seconde between the reception of repetition code. After
-   this time, we ignore the key repeat */
-#define MAX_TIME_BETWEEN_TWO_REPETITION_CODE 500000
+/** Mplay2 serial baud rate. */
+#define MPLAY2_BAUD_RATE 57600
+
+/** Mplay2 initialisation character sent to device. */
+#define MPLAY2_INIT_CHAR 0x96
+
+/** Mplay2 initialisation length of response to initialisation character. */
+#define MPLAY2_INIT_RESPONSE_LENGTH 11
+
+/** Min time in micro seconds between button presses (125ms). Faster button
+ * presses are ignored because they are likely to be generated by bouncing
+ * effects. Here, only the knob is subject to bouncing effects. */
+#define MIN_TIME_BETWEEN_PRESSES 125000
+/** If two knob presses occur within 400ms, this is interpreted as a
+ * repetition. */
+#define MAX_TIME_KNOB_PRESS_IS_REPETITION 400000
+
+/** Max time in microseconds between the reception of repetition code (400ms).
+ * After this time, we ignore key repetitions. */
+#define MAX_TIME_BETWEEN_TWO_REPETITION_CODE 400000
+
+/** Convert serial line status to gray code. */
+#define MPLAY_STATUS_TO_GRAY(s) \
+	((((s) & MPLAY_ROTATION_SENSOR_MASK_A) >>  \
+	(MPLAY_ROTATION_SENSOR_POS_A - 1)) | \
+	(((s) & MPLAY_ROTATION_SENSOR_MASK_B) >> \
+	(MPLAY_ROTATION_SENSOR_POS_B)))
+/** Convert gray code to binary.  */
+#define MPLAY_GRAY_TO_BIN(g) ((g) ^ ((g) >> 1))
 
 //Forwards:
-extern int mplay_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-
+extern int mplayfamily_decode(struct ir_remote *remote,
+	struct decode_ctx_t* ctx);
 extern int mplay_init(void);
 extern int mplay2_init(void);
-extern int mplay_deinit(void);
-extern char *mplay_rec(struct ir_remote *remotes);
+extern int mplayfamily_deinit(void);
+extern char *mplayfamily_rec(struct ir_remote *remotes);
 
 
-/**************************************************************************
- * Definition of local struct that permit to save data from call to call
+/**
+ * @brief Definition of local struct that permits saving data from call to call
  * of the driver.
- **************************************************************************/
+ */
 static struct {
-	/* the last receive code */
+	/** The last receive code. */
 	ir_code rc_code;
-	/* Int wich indicate that the last reception was a repetition */
+	/** Int which indicates that the last reception was a repetition. */
 	int repeat_flag;
-	/* Date of the last reception */
+	/** Date of the last reception. */
 	struct timeval last_reception_time;
-	/* Flag wich indicate a timeout between the reception of repetition
-	   Some time the receiver lost a key code and only received
-	   the associated repetition code. Then the driver interpret
-	   this repetition as a repetition of the last receive key code
-	   and not the lost one (ex: you press Volume+ after Volume-
-	   and the sound continu to go down). To avoid this problem
-	   we set a max time between two repetition. */
+	/** Flag which indicates a timeout between the reception of
+	 * repetitions, or detects spurious knob presses following shortly
+	 * after knob has actually been pressed.
+	 *
+	 * Sometimes the receiver loses a key code and only receives the
+	 * associated repetition code. Then the driver interprets this
+	 * repetition as a repetition of the last received key code and not of
+	 * the lost one (e.g. you press volume+ after volume- and the sound
+	 * continues to go down). To avoid this problem we set a max time
+	 * between two repetitions.
+	 *
+	 * As another phenomenon, the knob produces too many codes following
+	 * the first knob press too soon. So, there has to be a minimum
+	 * distance between button presses.
+	 */
 	int timeout_repetition_flag;
-} mplay_local_data = {
-	0, 0, {
-0, 0}, 0};
+	/** MPLAY_ACTION_WHEEL if wheel was turned latest,
+	 * MPLAY_ACTION_BUTTON if remote control button was pressed latest,
+	 * MPLAY_ACTION_NONE otherwise. */
+	int latest_action;
+	/** Latest pressed button other than knob (for handling of repeat
+	 * sequences). */
+	unsigned char latest_button;
+	/** File descriptor of serial port where IR is attached to. */
+	int fd;
+	/** File descriptors of pipe into LIRC framework. */
+	int pipefd[2];
+	/** ID of thread that listens on the serial port. */
+	pthread_t tid;
+} mplayfamily_local_data = {
+	.rc_code = 0,
+	.repeat_flag = 0,
+	.last_reception_time = {0, 0},
+	.timeout_repetition_flag = 0,
+ 	.latest_action = MPLAY_ACTION_NONE,
+	.latest_button = MPLAY_CODE_ERROR,
+	.fd = -1,
+	.pipefd =  {-1, -1},
+	.tid = -1
+};
 
-/**************************************************************************
- * Definition of the standard internal hardware interface
- * use by lirc for the mplay device
- **************************************************************************/
+/**
+ * @brief Definition of the standard internal hardware interface used by lirc
+ * for the mplay device.
+ */
 const struct driver hw_mplay = {
 	.name		=	"mplay",
 	.device		=	LIRC_IRTTY,
@@ -107,23 +210,25 @@ const struct driver hw_mplay = {
 	.rec_mode	=	LIRC_MODE_LIRCCODE,
 	.code_length	=	MPLAY_CODE_LENGTH,
 	.init_func	=	mplay_init,
-	.deinit_func	=	mplay_deinit,
+	.deinit_func	=	mplayfamily_deinit,
 	.open_func	=	default_open,
 	.close_func	=	default_close,
 	.send_func	=	NULL,
-	.rec_func	=	mplay_rec,
-	.decode_func	=	mplay_decode,
+	.rec_func	=	mplayfamily_rec,
+	.decode_func	=	mplayfamily_decode,
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.info		=	"LIRC driver for Vlsys mplay usb ftdi serial"
+				" port remote control, tested with a Zalman"
+				" Hd135 case."
 };
 
-/**************************************************************************
- * Definition of the standard internal hardware interface
- * use by lirc for the mplay v2 (Monueal Moncaso) devices
- **************************************************************************/
+/**
+ * @brief Definition of the standard internal hardware interface used by lirc
+ * for the mplay v2 (Moneual MonCaso) devices.
+ */
 const struct driver hw_mplay2 = {
 	.name		=	"mplay2",
 	.device		=	LIRC_IRTTY,
@@ -132,245 +237,708 @@ const struct driver hw_mplay2 = {
 	.rec_mode	=	LIRC_MODE_LIRCCODE,
 	.code_length	=	MPLAY_CODE_LENGTH,
 	.init_func	=	mplay2_init,
-	.deinit_func	=	mplay_deinit,
+	.deinit_func	=	mplayfamily_deinit,
 	.open_func	=	default_open,
 	.close_func	=	default_close,
 	.send_func	=	NULL,
-	.rec_func	=	mplay_rec,
-	.decode_func	=	mplay_decode,
+	.rec_func	=	mplayfamily_rec,
+	.decode_func	=	mplayfamily_decode,
 	.drvctl_func	=	NULL,
 	.readdata	=	NULL,
 	.api_version	=	2,
 	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.info		=	"LIRC driver for Vlsys mplay usb ftdi serial"
+			 	" port remote control, tested with a Moneual"
+				" Moncaso 312 case"
+
 };
 const struct driver* hardwares[] = { &hw_mplay, &hw_mplay2, NULL };
 
-
-/**************************************************************************
- * Lock and initialize the serial port.
- * This function is called by the LIRC daemon when the first client
- * registers itself.
- * Return 1 on success, 0 on error.
- **************************************************************************/
-int mplay_init(void)
+/**
+ * @brief Initialises mplay receiver.
+ * @return 1 on success, 0 on error.
+ */
+static int mplay_init_receiver(void)
 {
-	int result = 1;
-	LOGPRINTF(1, "Entering mplay_init()");
-	/* Creation of a lock file for the port */
-	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "Could not create the lock file");
-		LOGPRINTF(1, "Could not create the lock file");
-		result = 0;
-	}
-	/* Try to open serial port */
-	else if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-		logprintf(LIRC_ERROR, "Could not open the serial port");
-		LOGPRINTF(1, "Could not open the serial port");
-		mplay_deinit();
-		result = 0;
-	}
-	/* Serial port configuration */
-	else if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, MPLAY_BAUD_RATE)) {
-		logprintf(LIRC_ERROR, "could not configure the serial port for '%s'", drv.device);
-		LOGPRINTF(1, "could not configure the serial port for '%s'", drv.device);
-		mplay_deinit();
-	}
-	return result;
+	return 1;
 }
 
-int mplay2_init(void)
+/**
+ * @brief Sends initialisation character to MonCaso 312/320 IR device (helper
+ * function for mplay2_init).
+ */
+static int mplay2_send_init_char(void)
 {
-	struct termios portset;
-	signed int len;
-	char buf = 0x96;
-	char psResponse[11];
+	const char init = MPLAY2_INIT_CHAR;
 
-	LOGPRINTF(1, "Entering mplay_init()");
-	/* Creation of a lock file for the port */
-	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "Could not create the lock file");
-		LOGPRINTF(1, "Could not create the lock file");
+	if (write(mplayfamily_local_data.fd, &init, 1) < 0) {
 		return 0;
+	} else {
+		return 1;
 	}
+}
 
-	LOGPRINTF(1, "open serial port");
-	/* Try to open serial port (Monueal Moncaso 312 device doesn't like O_NONBLOCK */
-	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
-		logprintf(LIRC_ERROR, "Could not open the serial port");
-		LOGPRINTF(1, "Could not open the serial port");
-		tty_delete_lock();
-		return 0;
+/**
+ * @return 1 on success, 0 on error.
+ * @brief Retrieves initialisation response from MonCaso 312/320 IR device
+ * (helper function for mplay2_init).
+ *
+ * MonCaso 320 returns ".M428.M428.".
+ */
+static int mplay2_retrieve_init_response(void)
+{
+	int i;
+	/* contains string terminating zero */
+	char response[MPLAY2_INIT_RESPONSE_LENGTH + 1];
+
+	/* Reset response buffer */
+	memset(response, 0, sizeof(response));
+
+	/* Read-function blocks until characters arrive from serial device */
+	fcntl(mplayfamily_local_data.fd, F_SETFL, 0);
+	/* Get response to initialisation character */
+	for (i = 0; i < MPLAY2_INIT_RESPONSE_LENGTH; i++) {
+		/* Get next character (blocks until arrival to avoid polling) */
+		if (read(mplayfamily_local_data.fd, &response[i], 1) < 0) {
+			return 0;
+		}
 	}
-
-	/* Get serial device parameters */
-	if (tcgetattr(drv.fd, &portset) < 0) {
-		logprintf(LIRC_ERROR, "Could not get serial port attributes");
-		LOGPRINTF(1, "Could not get serial port attributes");
-		mplay_deinit();
-		return 0;
-	}
-
-	/* use own termios struct instead of using tty_reset , Moncaso doesn't like TCSAFLUSH */
-	portset.c_cflag &= ~PARENB;
-	portset.c_cflag &= ~CSTOPB;
-	portset.c_cflag &= ~CSIZE;
-	portset.c_cflag = B57600 | CS8;
-	portset.c_cflag |= (CLOCAL | CREAD);
-	portset.c_iflag |= (IXON | IXOFF | IXANY);
-	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~(ICANON | ECHOE | ECHO | ISIG);
-	portset.c_cc[VSTART] = 0x11;
-	portset.c_cc[VSTOP] = 0x13;
-	portset.c_cc[VEOF] = 0x20;
-	portset.c_cc[VMIN] = 1;
-	portset.c_cc[VTIME] = 3;
-
-	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
-		logprintf(LIRC_ERROR, "Error setting TCSANOW mode of serial device");
-		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
-		mplay_deinit();
-		return 0;
-	}
-
-	len = write(drv.fd, &buf, 1);
-	if (len < 0) {
-		LOGPRINTF(1, "couldn't write to device");
-		mplay_deinit();
-		return 0;
-	}
-
-	len = read(drv.fd, &psResponse, 11);
-	if (len < 0) {
-		LOGPRINTF(1, "No data received during reading");
-		mplay_deinit();
-		return 0;
-	} else
-		LOGPRINTF(1, "read chars: %s", psResponse);
-
-	if (tcgetattr(drv.fd, &portset) < 0) {
-		logprintf(LIRC_ERROR, "Could not get serial port attributes");
-		LOGPRINTF(1, "Could not get serial port attributes");
-		mplay_deinit();
-		return 0;
-	}
-
-	portset.c_cflag &= ~PARENB;
-	portset.c_cflag &= ~CSTOPB;
-	portset.c_cflag &= ~CSIZE;
-	portset.c_cflag = B57600 | CS8;
-	portset.c_cflag |= (CLOCAL | CREAD);
-	portset.c_iflag |= (IXON | IXOFF | IXANY);
-	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~(ICANON | ECHOE | ECHO | ISIG);
-	portset.c_cc[VSTART] = 0x11;
-	portset.c_cc[VSTOP] = 0x13;
-	portset.c_cc[VEOF] = 0x1C;
-	portset.c_cc[VMIN] = 1;
-	portset.c_cc[VTIME] = 3;
-
-	if (tcsetattr(drv.fd, TCSANOW, &portset) < 0) {
-		logprintf(LIRC_ERROR, "Error setting TCSANOW mode of serial device");
-		LOGPRINTF(1, "Error setting TCSANOW mode of serial device");
-		mplay_deinit();
-		return 0;
-	}
+	/* Restore non-blocking behaviour */
+	fcntl(mplayfamily_local_data.fd, F_SETFL, FNDELAY);
+	LOGPRINTF(1, "Device initialisation response: %s", response);
 
 	return 1;
 }
 
-/**************************************************************************
- * Close and release the serial line.
- **************************************************************************/
-int mplay_deinit(void)
+/**
+ * @return 1 on success, 0 on error.
+ * @brief Initialises MonCaso 312/320 IR receiver.
+ */
+static int mplay2_init_receiver(void)
 {
-	LOGPRINTF(1, "Entering mplay_deinit()");
-	close(drv.fd);
-	tty_delete_lock();
-	drv.fd = -1;
-	return (1);
+	return mplay2_send_init_char() && mplay2_retrieve_init_response();
 }
 
-/**************************************************************************
- * Receive a code (1 byte) from the remote.
- * This function is called by the LIRC daemon when I/O is pending
- * from a registered client, e.g. irw.
+/**
+ * @brief Cleans up resources used by the listener thread.
+ * @return   void
+ */
+static void mplayfamily_listen_cleanup(void* arg)
+{
+	close((intptr_t) arg);
+}
+
+/**
+ * @brief Sets period for polling loop in listener thread.
+ * @return 1 on success, 0 on error; errno is set.
+ */
+static int mplayfamily_set_listener_period(int fd, unsigned int period)
+{
+	struct timespec now;
+	struct itimerspec p;
+	if (clock_gettime(CLOCK_MONOTONIC, &now) < 0) {
+		return 0;
+	}
+	p.it_interval.tv_sec = 0;
+	p.it_interval.tv_nsec = period;
+	p.it_value.tv_sec = now.tv_sec;
+	p.it_value.tv_nsec = now.tv_nsec;
+	if (timerfd_settime (fd, TFD_TIMER_ABSTIME, &p, NULL) < 0) {
+		return 0;
+	}
+	return 1;
+}
+
+/**
+ * @brief Gets a wheel action.
  *
- * return NULL if nothing have been received or a lirc code
- **************************************************************************/
-char *mplay_rec(struct ir_remote *remotes)
+ * The function returns a virtual button press if the absolute angle has
+ * changed and is a multiple of 4. The absolute value is constructed from the
+ * sensor measure values by tracking the turn actions. If a wheel action has
+ * taken place, the function re-triggers the busy phase by setting the busy
+ * counter to a maximum and reducing the polling period.
+ * @param fd File descriptor of periodic timer.
+ * @param[in,out] counter Counter, used to control idle/busy polling phases.
+ * @param[in,out] sensor Angle measured by sensor, values 0, 1, 2, 3.
+ * @param[in,out] absolute Absolute angle, tracks sensor measurement values.
+ * @param[in,out] event Event angle, when turn took place.
+ * @return MPLAY_CODE_TURN_LEFT, MPLAY_CODE_TURN_RIGHT, MPLAY_CODE_NOP,
+ * MPLAY_CODE_ERROR.
+ */
+static unsigned char mplayfamily_get_wheel(
+	int fd, unsigned int *counter,
+	unsigned int *sensor, unsigned int *absolute, unsigned int *event)
+{
+	unsigned char code = MPLAY_CODE_NOP;
+	unsigned int status; /* Status of wheel sensors */
+	unsigned int new; /* new angle */
+
+	/* Read status of angle sensor */
+	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0) {
+		logperror(LOG_ERR, "mplay listener ioctl failed");
+		return MPLAY_CODE_ERROR;
+	}
+	/* Evaluate wheel status */
+	else {
+		new = MPLAY_GRAY_TO_BIN(MPLAY_STATUS_TO_GRAY(status));
+		/* Check if wheel has been turned */
+		if (new != *sensor) {
+			signed int diff;
+			unsigned int direction =
+				(new - *sensor + MPLAY_ANGLE_PERIOD)
+				% MPLAY_ANGLE_PERIOD;
+			LOGPRINTF(3, "mplay wheel reports angle %d", new);
+			if (direction > MPLAY_ANGLE_PERIOD / 2) {
+				(*absolute)--;
+				LOGPRINTF(3, "mplay wheel turned left");
+			} else if (direction < MPLAY_ANGLE_PERIOD / 2) {
+				(*absolute)++;
+				LOGPRINTF(3, "mplay wheel turned right");
+			} else {
+				*absolute += (*absolute - new)
+					% MPLAY_ANGLE_PERIOD;
+				LOGPRINTF(3, "mplay wheel turn skipped");
+			}
+			diff = *absolute - *event;
+			LOGPRINTF(3, "mplay wheel absolute %u, diff %d",
+				*absolute, diff);
+			if (diff % MPLAY_ANGLE_PERIOD == 0) {
+				if (diff > 0) {
+					LOGPRINTF(2, "mplay wheel clockwise");
+					*event = *absolute;
+					code = MPLAY_CODE_TURN_RIGHT;
+				} else if (diff < 0) {
+					LOGPRINTF(2, "mplay wheel counter "
+						"clockwise");
+					*event = *absolute;
+					code = MPLAY_CODE_TURN_LEFT;
+				}
+			}
+			*sensor = new;
+			if (*counter == 0) {
+				/* Something has happened, so return to busy
+				 * polling mode; which is only necessary if
+				 * busy period has expired. */
+				if (!mplayfamily_set_listener_period(fd,
+						MPLAY_LISTENER_PERIOD_BUSY)) {
+					logperror(LOG_ERR,
+						"mplay listener could not set "
+						"listener period");
+				}
+				LOGPRINTF(2, "mplay polls with busy rate, "
+				"wheel has been turned");
+			}
+			/* Stay alert for a while, enter busy phase */
+			*counter = MPLAY_LISTENER_COUNTER_WAIT_WHEEL;
+		}
+	}
+
+	if (code != MPLAY_CODE_NOP) {
+		mplayfamily_local_data.latest_action = MPLAY_ACTION_WHEEL;
+		LOGPRINTF(3,
+			"get wheel: latest action %u, latest button 0x%02x",
+			mplayfamily_local_data.latest_action,
+			mplayfamily_local_data.latest_button);
+	}
+
+	return code;
+}
+
+/**
+ * @brief Returns button presses as read from the serial line.
+ * @param fd File descriptor of periodic timer.
+ * @param[in,out] counter Counter, used to control idle/busy polling phases.
+ *
+ * The repeat code 0x7E is replaced with the button code, if it conflicts with
+ * wheel actions (repeat code would refer to wheel actions instead of button
+ * presses). If the knob has been pressed, the function re-triggers the busy
+ * phase in order to catch all spurious knob presses caused by bouncing
+ * effects.
+ */
+static unsigned char mplayfamily_get_button(int fd, unsigned int *counter)
+{
+	unsigned char code = MPLAY_CODE_NOP;
+
+	/* length of last received button message from serial port */
+	signed int len;
+
+	/* Read any pressed button from IR receiver */
+	len = read(mplayfamily_local_data.fd, &code, sizeof(code));
+	if (len == sizeof(code)) {
+		LOGPRINTF(2, "mplay listener received 0x%02x", code);
+		if (code == MPLAY_CODE_REPEAT) {
+			if (mplayfamily_local_data.latest_action
+					== MPLAY_ACTION_WHEEL) {
+				LOGPRINTF(2, "mplay replaces code by 0x%02x",
+					code);
+				code = mplayfamily_local_data.latest_button;
+				mplayfamily_local_data.latest_action =
+					MPLAY_ACTION_BUTTON;
+			}
+		} else if (code != MPLAY_CODE_KNOB) {
+			mplayfamily_local_data.latest_button = code;
+			mplayfamily_local_data.latest_action =
+				MPLAY_ACTION_BUTTON;
+		} else {
+			mplayfamily_local_data.latest_action =
+				MPLAY_ACTION_WHEEL;
+			if (*counter < MPLAY_LISTENER_COUNTER_WAIT_BUTTON) {
+				if (*counter == 0) {
+					/* Knob has been pressed, so return to
+					 * busy polling mode to catch spurious
+					 * presses, but only if busy period has
+					 * expired. */
+					if (!mplayfamily_set_listener_period(
+						fd, MPLAY_LISTENER_PERIOD_BUSY)
+						) {
+						logperror(LOG_ERR,
+							"mplay listener could "
+							"not set listener "
+							"period");
+					}
+					LOGPRINTF(2,
+						"mplay polls with busy rate, "
+						"knob has been pressed");
+				}
+				/* Stay alert for a while, enter busy phase */
+				*counter = MPLAY_LISTENER_COUNTER_WAIT_BUTTON;
+			}
+		}
+		LOGPRINTF(3, "mplay get button: latest action %u, "
+			"latest button 0x%02x",
+			mplayfamily_local_data.latest_action,
+			mplayfamily_local_data.latest_button);
+	}
+	/* Handle read error */
+	else if (len < 0) {
+		/* Check if actually an error has occurred */
+		if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			logperror(LOG_ERR,
+				"mplay listener serial port read error");
+			code = MPLAY_CODE_ERROR;
+		}
+	}
+
+	return code;
+}
+
+/**
+ * @brief Polls for button presses and wheel actions.
+ * @return   void
+ *
+ * Polls for button presses and wheel actions; they are piped into the LIRC
+ * framework where LIRC accesses the read end of a pipe. The function
+ * implements a polling loop and is called in a polling thread, which is
+ * cancellation safe.
+ *
+ * The function reads every MPLAY_LISTENER_PERIOD_IDLE milliseconds from the
+ * serial port and evaluates the serial port status lines. If the wheel is
+ * turned or the knob is pressed, the polling period is temporarily shortened
+ * to MPLAY_LISTENER_PERIOD_BUSY. Wheel turns are reported as remote control
+ * button presses delivering the values MPLAY_CODE_TURN_LEFT and
+ * MPLAY_CODE_TURN_RIGHT.
+ *
+ * Button presses from the remote control are read from the serial port.
+ * Note: Repeat sequences can be interrupted by wheel actions, but no button is
+ * discarded (one repeat code 0x7E is replaced by the original button code
+ * having started the repeat sequence).
+ *
+ * Wheel turns are reported as angles 0, 1, 3, 4 given in gray code, which is
+ * delivered in two status lines of the serial port (see masks
+ * MPLAY_ROTATION_SENSOR_MASK_A and MPLAY_ROTATION_SENSOR_MASK_B).
+ *
+ * The wheel has a rasterisation, and if the the wheel snaps in at angles 0 a
+ * button press is simulated (provided a minimal angle distance is given). The
+ * rasterisation has the additional advantage that it prevents a jumping
+ * between left/right turns (caused by measurement errors and mechanical
+ * imprecisions) when turning in only one direction.
+ */
+static void *mplayfamily_listen(void* arg)
+{
+	/* status of wheel sensors */
+	unsigned int status;
+	/* current angle position 0, 1, 2 or 3 measured by sensor */
+	unsigned int sensor;
+	/* absolute angle position */
+	unsigned int absolute;
+	/* angle where a wheel button press was generated */
+	unsigned int turned;
+	/* file descriptor polling timer */
+	int fd;
+	uint64_t expired;
+	/* button presses */
+	unsigned char code_wheel, code_button;
+	/* controls duration of idle and busy polling phase */
+	unsigned int counter = 1;
+
+	LOGPRINTF(1, "Entering mplayfamily_listen()");
+
+	/* Read status of rotation sensor for the first time */
+	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0) {
+		LOGPERROR(LOG_ERR, "mplay listener ioctl failed");
+	}
+	sensor = MPLAY_GRAY_TO_BIN(MPLAY_STATUS_TO_GRAY(status));
+	absolute = sensor;
+	turned = absolute;
+	LOGPRINTF(3, "mplay sensor %u", sensor);
+
+	/* Create periodic timer for polling loop */
+	if ((fd = timerfd_create(CLOCK_MONOTONIC, 0)) < 0) {
+		logperror(LOG_ERR, "mplay listener could not create timer");
+		return NULL;
+	}
+	pthread_cleanup_push(mplayfamily_listen_cleanup, (void*)(intptr_t) fd);
+
+	/* Poll for button presses and wheel actions */
+	while (1) {
+		/* If busy phase expires return to idle period */
+		if (counter > 0) {
+			counter--;
+			if (counter == 0) {
+				if (!mplayfamily_set_listener_period(fd,
+						MPLAY_LISTENER_PERIOD_IDLE)) {
+					logperror(LOG_ERR,
+						"mplay listener could not set "
+						"listener period");
+				}
+				LOGPRINTF(2, "mplay polls with idle rate");
+			}
+		}
+		/* Wait for next event of periodic polling timer */
+		if (read(fd, &expired, sizeof(uint64_t)) != sizeof(uint64_t)) {
+			logperror(LOG_ERR, "mplay listener timer failed");
+			goto poll_exit;
+		}
+		/* Evaluate wheel status */
+		code_wheel = mplayfamily_get_wheel(fd, &counter, &sensor,
+			&absolute, &turned);
+		if (code_wheel != MPLAY_CODE_NOP) {
+			/* Pass wheel event to LIRC framework via pipe */
+			if (write(mplayfamily_local_data.pipefd[1],
+					&code_wheel, sizeof(code_wheel)) < 0) {
+				logperror(LOG_ERR,
+					"mplay listener pipe write error");
+				goto poll_exit;
+			} else if(code_wheel == MPLAY_CODE_ERROR) {
+				goto poll_exit;
+			}
+		}
+		/* Process all pending button presses and pass them to the LIRC
+		* framework via pipe */
+		code_button = mplayfamily_get_button(fd, &counter);
+		if (code_button != MPLAY_CODE_NOP) {
+			/* Pass button event to LIRC framework via pipe */
+			if (write(mplayfamily_local_data.pipefd[1],
+					&code_button,
+					sizeof(code_button)) < 0) {
+				logperror(LOG_ERR,
+					"mplay listener pipe write error");
+			} else if (code_button == MPLAY_CODE_ERROR) {
+				goto poll_exit;
+			}
+		}
+	}
+
+  poll_exit:
+	pthread_cleanup_pop(1);
+	LOGPRINTF(1, "Leaving mplayfamily_listen()");
+	return NULL;
+}
+
+/**
+ * @brief Locks and initialises a receiver of the mplay family.
+ * @param init_receiver Function to intialise receiver.
+ * @param baud Baud rate for serial port.
+ * @return 1 on success, 0 on error.
+ *
+ * Unless the driver specified has appended the option "nowheel" (example:
+ * --device="/dev/ttyUSB0,nowheel") the function installs a pipe from a
+ * polling listener thread into the LIRC framework. The listener thread
+ * watches the serial port, generates remote control button presses (with wheel
+ * actions) and pipes them into the LIRC framework.
+ *
+ * Otherwise the LIRC framework reads directly from the serial port (using
+ * select, thus blocking until actually a button press arrives).
+ *
+ * The first alternative using the listener thread consumes more CPU resources.
+ */
+static int mplayfamily_init(int (*init_receiver)(void), int baud)
+{
+	char device[128];
+	char* separator;
+	int nowheel = 0;
+	int result = 1;
+
+	LOGPRINTF(1, "Entering mplayfamily_init()");
+
+	/* Extract device name and option */
+	LOGPRINTF(1, "Device string '%s'", drv.device);
+	strncpy(device, drv.device, sizeof(device));
+	device[sizeof(device) - 1] = 0;
+	/* A comma announces an option. */
+	separator = strchr(device, ',');
+	if (separator != NULL) {
+		LOGPRINTF(1, "Found option string '%s'", separator + 1);
+		*separator = 0;
+		nowheel = strcmp(separator + 1, "nowheel") == 0;
+	}
+	LOGPRINTF(1,
+		  "Using device path '%s' (wheel disabled state is %d)",
+		  device, nowheel);
+
+	/* Creation of pipe between this driver and LIRC framework */
+	if (!nowheel && pipe(mplayfamily_local_data.pipefd) == -1) {
+		logprintf(LOG_ERR, "Could not create pipe");
+		result = 0;
+	}
+	/* Creation of a lock file for serial port */
+	else if (!tty_create_lock(device)) {
+		logprintf(LOG_ERR, "Could not create lock file for '%s'",
+			device);
+		result = 0;
+	}
+	/* Try to open serial port */
+	else if ((mplayfamily_local_data.fd = open(device,
+			O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+		logprintf(LOG_ERR, "Could not open serial port '%s'", device);
+		result =  0;
+	}
+	/* Serial port configuration */
+	else if (!tty_reset(mplayfamily_local_data.fd) ||
+		 !tty_setbaud(mplayfamily_local_data.fd, baud)) {
+		logprintf(LOG_ERR, "Couldn't configure serial port '%s'",
+			device);
+		result = 0;
+	}
+	/* Initialise a receiver of the mplay family */
+	else if (!init_receiver()) {
+		logprintf(LOG_ERR, "Could not initialise device");
+		result = 0;
+	}
+	/* Install serial port listener */
+	else if (!nowheel && pthread_create(&mplayfamily_local_data.tid, NULL,
+			mplayfamily_listen, NULL)) {
+		logprintf(LOG_ERR, "Could not create \"listener thread\"");
+		return 0;
+	}
+
+	/* Clean up if an error has occured */
+	if (result == 0) {
+		logperror(LOG_ERR, "mplayfamily_init()");
+		mplayfamily_deinit();
+	}
+
+	/* Redirect reads from serial port to pipe if wheel should be
+	 * supported */
+	drv.fd = nowheel ? mplayfamily_local_data.fd
+		: mplayfamily_local_data.pipefd[0];
+	return result;
+}
+
+/**
+ * @brief Lock and initialize the serial port for a mplay receiver.
+ * @return 1 on success, 0 on error.
+ *
+ * This function is called by the LIRC daemon when the first client registers
+ * itself.
+ */
+int mplay_init(void)
+{
+	LOGPRINTF(1, "Entering mplay_init()");
+	return mplayfamily_init(mplay_init_receiver, MPLAY_BAUD_RATE);
+}
+
+/**
+ * @brief Locks and initialises the serial port, MonCaso 312/320 variant.
+ * @return 1 on success, 0 on error.
+ *
+ * This function is called by the LIRC daemon when the first client registers
+ * itself.
+ */
+int mplay2_init(void)
+{
+    LOGPRINTF(1, "Entering mplay2_init()");
+    return mplayfamily_init(mplay2_init_receiver, MPLAY2_BAUD_RATE);
+}
+
+/**
+ * @brief Close serial line and pipe; and release the serial line.
+ * @return 1 on success, 0 on error.
+ */
+int mplayfamily_deinit(void)
+{
+	LOGPRINTF(1, "Entering mplayfamily_deinit()");
+	if (mplayfamily_local_data.tid != -1) {
+		if (pthread_cancel(mplayfamily_local_data.tid) < 0) {
+			logperror(LOG_ERR, "mplay could not cancel listener");
+			return 0;
+		}
+		pthread_join(mplayfamily_local_data.tid, NULL);
+		mplayfamily_local_data.tid = -1;
+	}
+	if (mplayfamily_local_data.pipefd[0] != -1) {
+		close (mplayfamily_local_data.pipefd[0]);
+		mplayfamily_local_data.pipefd[0] = -1;
+	}
+	if (mplayfamily_local_data.pipefd[1] != -1) {
+		close (mplayfamily_local_data.pipefd[1]);
+		mplayfamily_local_data.pipefd[1] = -1;
+	}
+	if (drv.fd != -1) {
+		close(drv.fd);
+		tty_delete_lock();
+		drv.fd = -1;
+		mplayfamily_local_data.fd = -1;
+	}
+	return 1;
+}
+
+/**
+ * @brief Utility function to handle repeated button presses.
+ * @return NULL if nothing has been received, otherwise a lirc code.
+ */
+char *mplayfamily_rec_handle_repetition(struct ir_remote *remotes,
+	struct timeval *current_time)
+{
+	if (mplayfamily_local_data.timeout_repetition_flag == 1) {
+		LOGPRINTF(2, "Ignored received repetition code (timeout)");
+		/* We ignore the repetition */
+		return NULL;
+	} else if (MAX_TIME_BETWEEN_TWO_REPETITION_CODE >= time_elapsed(
+			&mplayfamily_local_data.last_reception_time,
+			current_time)) {
+		LOGPRINTF(2, "Accepted received repetition code");
+		/* This reception is a repeat */
+		mplayfamily_local_data.repeat_flag = 1;
+		/* We save the reception time */
+		mplayfamily_local_data.last_reception_time = *current_time;
+		LOGPRINTF(1, "code: 0x%02x",
+			(unsigned int)mplayfamily_local_data.rc_code);
+		LOGPRINTF(1, "repeat_flag: %d",
+			mplayfamily_local_data.repeat_flag);
+		LOGPRINTF(2, "current_time: %li sec %li usec",
+			current_time->tv_sec, current_time->tv_usec);
+		return decode_all(remotes);
+	} else {
+		LOGPRINTF(2, "Received invalid repetition code (timeout)");
+		/* Too much time between repetitions, the receiver has probably
+		 * missed a valide key code. We ignore the repetition. */
+		mplayfamily_local_data.timeout_repetition_flag = 1;
+		mplayfamily_local_data.repeat_flag = 0;
+		return NULL;
+	}
+}
+
+/**
+ * @brief Utility function to handle button press.
+ * @return NULL if nothing has been received, otherwise a lirc code.
+ */
+char *mplayfamily_rec_handle_new(struct ir_remote *remotes,
+	struct timeval *current_time, unsigned char rc_code)
+{
+	if (rc_code != MPLAY_CODE_KNOB) {
+		/* Any button other than knob */
+		LOGPRINTF(2, "Accepted new received code");
+		mplayfamily_local_data.repeat_flag = 0;
+		mplayfamily_local_data.rc_code = rc_code;
+		mplayfamily_local_data.timeout_repetition_flag = 0;
+		mplayfamily_local_data.last_reception_time = *current_time;
+	} else if (mplayfamily_local_data.rc_code != MPLAY_CODE_KNOB
+			|| time_elapsed(
+			&mplayfamily_local_data.last_reception_time,
+			current_time) > MIN_TIME_BETWEEN_PRESSES) {
+		/* Knob has been pressed after sufficiently large amount of
+		 * time */
+		LOGPRINTF(2, "Accepted new knob code");
+		if (mplayfamily_local_data.rc_code == MPLAY_CODE_KNOB &&
+				time_elapsed(
+				&mplayfamily_local_data.last_reception_time,
+				current_time) <
+				MAX_TIME_KNOB_PRESS_IS_REPETITION) {
+			LOGPRINTF(2,
+				"Interpret knob code as repeated knob code");
+			mplayfamily_local_data.repeat_flag = 1;
+		} else {
+			mplayfamily_local_data.repeat_flag = 0;
+		}
+		mplayfamily_local_data.rc_code = rc_code;
+		mplayfamily_local_data.timeout_repetition_flag = 0;
+		mplayfamily_local_data.last_reception_time = *current_time;
+	} else {
+		/* This seems to be a spurious knob press, so ignore it. It has
+		 * been received too shortly after the last received knob
+		 * press. */
+		LOGPRINTF(2,
+			"Ignored spurious code 0x%02x at %li sec %li usec",
+			rc_code, current_time->tv_sec, current_time->tv_usec);
+		return NULL;
+	}
+	LOGPRINTF(1, "code: 0x%02x",
+		(unsigned int)mplayfamily_local_data.rc_code);
+	LOGPRINTF(1, "repeat_flag: %d", mplayfamily_local_data.repeat_flag);
+	LOGPRINTF(2, "current_time: %li sec %li usec", current_time->tv_sec,
+		current_time->tv_usec);
+	return decode_all(remotes);
+}
+
+/**
+ * @brief Receive a code (1 byte) from the remote.
+ * @return NULL if nothing has been received, otherwise a lirc code.
+ *
+ * This function is called by the LIRC daemon when I/O is pending from a
+ * registered client, e.g. irw.
+ */
+char *mplayfamily_rec(struct ir_remote *remotes)
 {
 	unsigned char rc_code;
 	signed int len;
 	struct timeval current_time;
-	LOGPRINTF(1, "Entering mplay_rec()");
+	LOGPRINTF(1, "Entering mplayfamily_rec()");
 	len = read(drv.fd, &rc_code, 1);
 	gettimeofday(&current_time, NULL);
 	if (len != 1) {
-		/* Something go wrong during the read, we close the device
-		   for prevent endless looping when the device
-		   is disconnected */
-		LOGPRINTF(1, "Reading error in mplay_rec()");
-		mplay_deinit();
+		/* Something went wrong during the read, we close the device
+		 * to prevent endless looping when the device is disconnected */
+		LOGPRINTF(1, "Reading error in mplayfamily_rec()");
+		mplayfamily_deinit();
 		return NULL;
 	} else {
 		/* We have received a code */
-		if (rc_code == MPLAY_REPEAT_CODE) {
-			if (mplay_local_data.timeout_repetition_flag == 1) {
-				/* We ignore the repetition */
-				return NULL;
-			} else {
-				if (time_elapsed(&mplay_local_data.last_reception_time, &current_time) <=
-				    MAX_TIME_BETWEEN_TWO_REPETITION_CODE) {
-					/* This reception is a repeat */
-					mplay_local_data.repeat_flag = 1;
-					/* We save the reception time */
-					mplay_local_data.last_reception_time = current_time;
-				} else {
-					/* To much time between repetition,
-					   the receiver have  probably miss
-					   a valide key code. We ignore the
-					   repetition */
-					mplay_local_data.timeout_repetition_flag = 1;
-					mplay_local_data.repeat_flag = 0;
-					return NULL;
-				}
-			}
+		if (rc_code == MPLAY_CODE_REPEAT) {
+			/* This is a repetition code */
+			return mplayfamily_rec_handle_repetition(remotes,
+				&current_time);
 		} else {
 			/* This is a new code */
-			mplay_local_data.rc_code = rc_code;
-			mplay_local_data.repeat_flag = 0;
-			mplay_local_data.timeout_repetition_flag = 0;
-			mplay_local_data.last_reception_time = current_time;
+			return mplayfamily_rec_handle_new(remotes,
+				&current_time, rc_code);
 		}
-		LOGPRINTF(1, "code: %u", (unsigned int)mplay_local_data.rc_code);
-		LOGPRINTF(1, "repeat_flag: %d", mplay_local_data.repeat_flag);
-		return decode_all(remotes);
 	}
 }
 
-/**************************************************************************
- * This function is called by the LIRC daemon during the transform of a
- * received code into an lirc event.
+/**
+ * @brief This function is called by the LIRC daemon during the transformation
+ * of a received code into an lirc event. It gets the global variable code
+ * (remote keypress code).
  *
- * It gets the global variable code (remote keypress code).
- *
- * It returns:
- *  prep                Code prefix (zero for this LIRC driver)
- *  codep               Code of keypress
- *  postp               Trailing code (zero for this LIRC dirver)
- *  repeat_flagp        True if the keypress is a repeated keypress
- *  min_remaining_gapp  Min extimated time gap remaining before next code
- *  max_remaining_gapp  Max extimated time gap remaining before next code
- **************************************************************************/
-int mplay_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+ * @return 1 on success, 0 on error.
+ * @return ctx->prep Code prefix (zero for this LIRC driver).
+ * @return ctx->codep Code of keypress.
+ * @return ctx->postp Trailing code (zero for this LIRC dirver).
+ * @return ctx->repeat_flagp True if the keypress is a repeated keypress.
+ * @return ctx->min_remaining_gapp Min estimated time gap remaining before next code.
+ * @return ctx->max_remaining_gapp Max estimated time gap remaining before next code.
+ */
+int mplayfamily_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "Entering mplay_decode(), code = %u\n", (unsigned int)mplay_local_data.rc_code);
+	LOGPRINTF(1, "Entering mplayfamily_decode(), code=0x%02x\n",
+		(unsigned int)mplayfamily_local_data.rc_code);
 
-	if (!map_code(remote, ctx, 0, 0, MPLAY_CODE_LENGTH, mplay_local_data.rc_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, MPLAY_CODE_LENGTH,
+			mplayfamily_local_data.rc_code, 0, 0)) {
 		return (0);
 	}
-	ctx->repeat_flag = mplay_local_data.repeat_flag;
+	ctx->repeat_flag = mplayfamily_local_data.repeat_flag;
 	ctx->min_remaining_gap = 0;
 	ctx->max_remaining_gap = 0;
 	return 1;
