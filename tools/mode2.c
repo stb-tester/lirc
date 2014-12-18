@@ -192,9 +192,9 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
 			puts("This program is only intended for receivers"
-			       " supporting the pulse/space layer.\n");
+			       " supporting the pulse/space layer.");
 			puts("Note that this is no error, but this program "
-			       "simply makes no sense for your\n" "receiver.\n");
+			       "simply makes no sense for your receiver.");
 			puts("In order to test your setup run lircd with "
 			       "the --nodaemon option and \n then check if the"
 			       " remote works with the irw tool.\n");
@@ -270,11 +270,11 @@ int main(int argc, char **argv)
 		}
 
 		if (mode != LIRC_MODE_MODE2) {
-			puts("code: 0x");
+			fputs("code: 0x", stdout);
 			for (i = 0; i < count; i++) {
 				printf("%02x", (unsigned char)buffer[i]);
 			}
-			puts("\n");
+			puts("");
 			fflush(stdout);
 			continue;
 		}
@@ -294,19 +294,19 @@ int main(int argc, char **argv)
 			if (data & PULSE_BIT) {
 				if ((bitno & 1) == 0) {
 					/* not in expected order */
-					puts("-pulse");
+					fputs("-pulse", stdout);
 				}
 			} else {
 				if (bitno & 1) {
 					/* not in expected order */
-					puts("-space");
+					fputs("-space", stdout);
 				}
 				if (((data & PULSE_MASK) > gap) || (bitno >= 6)) {
 					/* real long space or more
 					   than 6 codes, start new line */
-					puts("\n");
+					puts("");
 					if ((data & PULSE_MASK) > gap)
-						puts("\n");
+						puts("");
 					bitno = 0;
 				}
 			}
@@ -314,7 +314,7 @@ int main(int argc, char **argv)
 		}
 		case 2:
 			if ((data & PULSE_MASK) > gap)
-				puts("_\n\n_");
+				fputs("_\n\n_", stdout);
 			else
 				printf("%.*s",
 				       ((data & PULSE_MASK) + t_div/2) / t_div,

@@ -187,7 +187,7 @@ void initscreen(char *geometry)
 {
 	d1 = XOpenDisplay(0);
 	if (d1 == NULL) {
-		puts("Can't open display.\n");
+		puts("Can't open display.");
 		exit(0);
 	}
 
@@ -209,10 +209,10 @@ void initscreen(char *geometry)
 
 	cm1 = DefaultColormap(d1, 0);
 	if (!XAllocNamedColor(d1, cm1, "blue", &xc1, &xc2))
-		puts("couldn't allocate blue color\n");
+		puts("couldn't allocate blue color");
 	f1_str = XLoadQueryFont(d1, font1_name);
 	if (f1_str == NULL) {
-		puts("could't load font\n");
+		puts("could't load font");
 		exit(EXIT_FAILURE);
 	}
 
@@ -267,11 +267,11 @@ int main(int argc, char **argv)
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
-			puts("This program is only intended for receivers supporting the pulse/space layer.\n");
+			puts("This program is only intended for receivers supporting the pulse/space layer.");
 			puts("Note that this is no error, but this program "
-			       "simply makes no sense for your\n" "receiver.\n");
+			       "simply makes no sense for your\n" "receiver.");
 			puts("In order to test your setup run lircd with "
-			       "the --nodaemon option and \n" "then check if the remote works with the irw tool.\n");
+			       "the --nodaemon option and \n" "then check if the remote works with the irw tool.");
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
@@ -287,9 +287,9 @@ int main(int argc, char **argv)
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
 				puts("Please use the --raw option to access "
-				       "the device directly instead through\n" "the abstraction layer.\n");
+				       "the device directly instead through\n" "the abstraction layer.");
 			} else {
-				puts("This program does not work for this hardware yet\n");
+				puts("This program does not work for this hardware yet.");
 			}
 			exit(EXIT_FAILURE);
 		}

@@ -137,7 +137,7 @@ static int nextcode(int fd, char* buff, ssize_t size)
 		exit(errno);
 	};
 	if (strstr(buff, "__EOF") != NULL) {
-		puts("Exit on EOF\n");
+		puts("Exit on EOF");
 		exit(0);
 	}
 	if (i >= 0) {
@@ -181,7 +181,7 @@ static int irtestcase(int fd_io, int fd_cmd)
 		}
 	}
 	while (nextcode(fd_io, code, sizeof(code)) == 1) {
-		puts(code);
+		fputs(code, stdout);
 		if (strstr(code, "__EOF") != NULL) {
 			exit(0);
 		}

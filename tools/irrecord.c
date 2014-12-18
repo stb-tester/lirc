@@ -339,7 +339,7 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("irrecord:driver", optarg);
 			break;
 		case 'h':
-			puts(help);
+			fputs(help, stdout);
 			exit(EXIT_SUCCESS);
 		case 'i':
 			options_set_opt("irrecord:invert", "True");
@@ -528,7 +528,6 @@ int main(int argc, char **argv)
 	}
 	puts("\nirrecord -  application for recording IR-codes" " for usage with lirc\n" "\n"
 	       "Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n");
-	puts("\n");
 
 	if (curr_driver->init_func) {
 		if (!curr_driver->init_func()) {
@@ -568,7 +567,7 @@ int main(int argc, char **argv)
 		       "devices. A generic config file can be found at:\n"
 		       "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf"
 		       "It can be downloaded using irdb-get(1)\n"
-		       "Please try this config file before creating your own.\n" "\n");
+		       "Please try this config file before creating your own.\n");
 	}
 	puts("A proper config file for lircd is maybe the most vital part of this\n"
 	       "package, so you should invest some time to create a working config\n"
@@ -593,7 +592,7 @@ int main(int argc, char **argv)
 	       "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
 	       "and make it available to others by sending it to \n"
 	       "<lirc@bartelmus.de>\n\n"
-	       "Press RETURN to continue.\n");
+	       "Press RETURN to continue.");
 
 	getchar();
 
@@ -610,7 +609,7 @@ int main(int argc, char **argv)
 					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
 			}
-			puts("Creating config file in raw mode.\n");
+			puts("Creating config file in raw mode.");
 			set_protocol(&remote, RAW_CODES);
 			remote.eps = eps;
 			remote.aeps = aeps;
@@ -643,7 +642,7 @@ int main(int argc, char **argv)
 			curr_driver->rec_func(NULL);
 		}
 		if (!get_toggle_bit_mask(&remote)) {
-			puts("But I know for sure that RC6 has a toggle bit!\n");
+			puts("But I know for sure that RC6 has a toggle bit!");
 			fclose(fout);
 			unlink(filename);
 			if (curr_driver->deinit_func)
@@ -651,7 +650,7 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
-	puts("Now enter the names for the buttons.\n");
+	puts("Now enter the names for the buttons.");
 
 	fprint_copyright(fout);
 	fprint_comment(fout, &remote, commandline);
@@ -663,8 +662,8 @@ int main(int argc, char **argv)
 
 		if (no_data) {
 			fprintf(stderr, "%s: no data for 10 secs," " aborting\n", progname);
-			puts("The last button did not seem to generate any signal.\n");
-			puts("Press RETURN to continue.\n\n");
+			puts("The last button did not seem to generate any signal.");
+			puts("Press RETURN to continue.\n");
 			getchar();
 			no_data = 0;
 		}
@@ -678,13 +677,13 @@ int main(int argc, char **argv)
 		}
 		buffer[strlen(buffer) - 1] = 0;
 		if (strchr(buffer, ' ') || strchr(buffer, '\t')) {
-			puts("The name must not contain any whitespace.\n");
-			puts("Please try again.\n");
+			puts("The name must not contain any whitespace.");
+			puts("Please try again.");
 			continue;
 		}
 		if (strcasecmp(buffer, "begin") == 0 || strcasecmp(buffer, "end") == 0) {
 			printf("'%s' is not allowed as button name\n", buffer);
-			puts("Please try again.\n");
+			puts("Please try again.");
 			continue;
 		}
 		if (strlen(buffer) == 0) {
@@ -693,7 +692,7 @@ int main(int argc, char **argv)
 		if (!disable_namespace && !is_in_namespace(buffer)) {
 			printf("'%s' is not in name space (use --disable-namespace to disable checks)\n", buffer);
 			printf("Use '%s --list-namespace' to see a full list of valid button names\n", progname);
-			puts("Please try again.\n");
+			puts("Please try again.");
 			continue;
 		}
 
@@ -730,9 +729,9 @@ int main(int argc, char **argv)
 				}
 				if (count == 0) {
 					if (!is_space(data) || data < remote.gap - remote.gap * remote.eps / 100) {
-						puts("Sorry, something went wrong.\n");
+						puts("Sorry, something went wrong.");
 						sleep(3);
-						puts("Try again.\n");
+						puts("Try again.");
 						flushhw();
 						count = 0;
 						continue;
@@ -742,13 +741,13 @@ int main(int argc, char **argv)
 					    && (is_const(&remote) ? data >
 						(remote.gap > sum ? (remote.gap - sum) * (100 - remote.eps) / 100 : 0)
 						: data > remote.gap * (100 - remote.eps) / 100)) {
-						puts("Got it.\n");
+						puts("Got it.");
 						printf("Signal length is %d\n", count - 1);
 						if (count % 2) {
 							puts("That's weird because the signal length "
-							       "must be odd!\n");
+							       "must be odd!");
 							sleep(3);
-							puts("Try again.\n");
+							puts("Try again.");
 							flushhw();
 							count = 0;
 							continue;
@@ -766,7 +765,7 @@ int main(int argc, char **argv)
 				count++;
 			}
 			if (count == MAX_SIGNALS) {
-				puts("Signal is too long.\n");
+				puts("Signal is too long.");
 			}
 			if (retval == EXIT_FAILURE)
 				break;
@@ -814,7 +813,7 @@ int main(int argc, char **argv)
 				}
 				break;
 			} else {
-				puts("Something went wrong. ");
+				fputs("Something went wrong. ", stdout);
 				if (retries > 1) {
 					fflush(stdout);
 					sleep(3);
@@ -826,8 +825,8 @@ int main(int argc, char **argv)
 					flushhw();
 					printf("Please try again. (%d retries left)\n", retries - 1);
 				} else {
-					puts("\n");
-					puts("Try using the -f option.\n");
+					puts("");
+					puts("Try using the -f option.");
 				}
 				retries--;
 				continue;
@@ -1033,11 +1032,11 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 		}
 	}
 
-	puts("Checking for toggle bit mask.\n");
-	puts("Please press an arbitrary button repeatedly as fast as possible.\n"
+	puts("Checking for toggle bit mask.");
+	fputs("Please press an arbitrary button repeatedly as fast as possible.\n"
 	       "Make sure you keep pressing the SAME button and that you DON'T HOLD\n" "the button down!.\n"
 	       "If you can't see any dots appear, then wait a bit between button presses.\n" "\n"
-	       "Press RETURN to continue.");
+	       "Press RETURN to continue.", stdout);
 	fflush(stdout);
 	getchar();
 
@@ -1089,7 +1088,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 					set_toggle_bit_mask(remote, first ^ decode_ctx.code);
 					found = 1;
 				}
-				puts(".");
+				fputs(".", stdout);
 				fflush(stdout);
 				retries--;
 			} else {
@@ -1101,12 +1100,12 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 		}
 	}
 	if (!found) {
-		puts("\nNo toggle bit mask found.\n");
+		puts("\nNo toggle bit mask found.");
 	} else {
 		if (remote->toggle_bit_mask > 0) {
 			printf("\nToggle bit mask is 0x%llx.\n", (__u64) remote->toggle_bit_mask);
 		} else if (remote->toggle_mask != 0) {
-			puts("\nToggle mask found.\n");
+			puts("\nToggle mask found.");
 		}
 	}
 	if (seq > 0)
@@ -1533,12 +1532,12 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 	int first_signal;
 
 	if (interactive) {
-		puts("Now start pressing buttons on your remote control.\n\n");
+		puts("Now start pressing buttons on your remote control.\n");
 		puts("It is very important that you press many different buttons and hold them\n"
 		       "down for approximately one second. Each button should generate at least one\n"
 		       "dot but in no case more than ten dots of output.\n"
-		       "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n");
-		puts("Press RETURN now to start recording.");
+		       "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n");
+		fputs("Press RETURN now to start recording.", stdout);
 		fflush(stdout);
 		getchar();
 		flushhw();
@@ -1647,7 +1646,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 
 					if (interactive) {
 						for (i = maxcount - lastmaxcount; i > 0; i--) {
-							puts(".");
+							fputs(".", stdout);
 							fflush(stdout);
 						}
 					}
@@ -1715,7 +1714,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 						int i;
 
 						if (interactive) {
-							puts(".");
+							fputs(".", stdout);
 							fflush(stdout);
 						}
 						count_signals++;
@@ -2130,7 +2129,7 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 
 	if (!((count_3repeats > SAMPLES / 2 ? 1 : 0) ^ (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
 		if (count_3repeats > SAMPLES / 2 || count_5repeats > SAMPLES / 2) {
-			puts("Repeat inconsitentcy.\n");
+			puts("Repeat inconsitentcy.");
 			return (0);
 		}
 		i_printf(interactive, "No repeat code found.\n");
@@ -2151,7 +2150,7 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 		}
 		if (max_count >= sum * TH_REPEAT / 100) {
 			if (count_5repeats > count_3repeats && !has_header(remote)) {
-				puts("Repeat code has header," " but no header found!\n");
+				puts("Repeat code has header," " but no header found!");
 				return (0);
 			}
 			if (count_5repeats > count_3repeats && has_header(remote)) {
@@ -2199,7 +2198,7 @@ void unlink_length(struct lengths **first, struct lengths *remove)
 			scan = scan->next;
 		}
 	}
-	puts("unlink_length(): report this bug!\n");
+	puts("unlink_length(): report this bug!");
 }
 
 int get_data_length(struct ir_remote *remote, int interactive)
@@ -2224,12 +2223,12 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				max2_plength = NULL;
 		}
 		if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
-			puts("Pulse canditates: ");
+			fputs("Pulse candidates: ", stdout);
 			printf("%u x %u", max_plength->count, (__u32) calc_signal(max_plength));
 			if (max2_plength)
 				printf(", %u x %u", max2_plength->count, (__u32)
 				       calc_signal(max2_plength));
-			puts("\n");
+			puts("");
 		}
 
 		max_slength = get_max_length(first_space, &sum);
@@ -2247,21 +2246,21 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			}
 			if (lirc_log_is_enabled_for(LIRC_DEBUG)) {
 				if (max_count >= sum * TH_IS_BIT / 100) {
-					puts("Space candidates: ");
+					fputs("Space candidates: ", stdout);
 					printf("%u x %u", max_slength->count,
 					       (__u32) calc_signal(max_slength));
 					if (max2_slength)
 						printf(", %u x %u",
 						       max2_slength->count,
 						       (__u32) calc_signal(max2_slength));
-					puts("\n");
+					puts("");
 				}
 			}
 			remote->eps = eps;
 			remote->aeps = aeps;
 			if (is_biphase(remote)) {
 				if (max2_plength == NULL || max2_slength == NULL) {
-					puts("Unknown encoding found.\n");
+					puts("Unknown encoding found.");
 					return (0);
 				}
 				i_printf(interactive, "Signals are biphase encoded.\n");
@@ -2276,11 +2275,11 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				remote->szero = remote->sone;
 			} else {
 				if (max2_plength == NULL && max2_slength == NULL) {
-					puts("No encoding found.\n");
+					fputs("No encoding found.", stdout);
 					return (0);
 				}
 				if (max2_plength && max2_slength) {
-					puts("Unknown encoding found.\n");
+					fputs("Unknown encoding found.", stdout);
 					return (0);
 				}
 				p1 = calc_signal(max_plength);
@@ -2348,7 +2347,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 		}
 		free_lengths(&max_plength);
 	}
-	puts("Could not find data lengths.\n");
+	puts("Could not find data lengths.");
 	return (0);
 }
 
@@ -2366,7 +2365,7 @@ int get_gap_length(struct ir_remote *remote)
 
 	flag = 0;
 	lastmaxcount = 0;
-	puts("Hold down an arbitrary button.\n");
+	puts("Hold down an arbitrary button.");
 	while (1) {
 		while (availabledata()) {
 			curr_driver->rec_func(NULL);
@@ -2398,7 +2397,7 @@ int get_gap_length(struct ir_remote *remote)
 			}
 			if (maxcount > lastmaxcount) {
 				lastmaxcount = maxcount;
-				puts(".");
+				fputs(".", stdout);
 				fflush(stdout);
 			}
 		} else {

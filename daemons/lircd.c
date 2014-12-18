@@ -2263,7 +2263,7 @@ static void lircd_parse_options(int argc, char** const argv)
 	{
 		switch (c) {
 		case 'h':
-			puts(help);
+			fputs(help, stdout);
 			exit(EXIT_SUCCESS);
 		case 'v':
 			printf("lircd %s\n", VERSION);

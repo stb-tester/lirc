@@ -152,7 +152,7 @@ static void line_print(const line_t* line)
 	printf("%-20s%-6s%s\n",
                line->name,  line->flags, line->path);
 	if (line->errors)
-		puts(line->errors);
+		fputs(line->errors, stdout);
 }
 
 static void print_folded_item(const char* arg)
@@ -163,7 +163,7 @@ static void print_folded_item(const char* arg)
 	char* token;
 
 	if (arg == NULL) {
-		puts("None\n");
+		puts("None");
 		return;
 	}
 	buff = alloca(strlen(arg) + 1);
@@ -171,18 +171,18 @@ static void print_folded_item(const char* arg)
 	token = strtok(buff, " \t");
 	while (token != NULL) {
 		if (strlen(token) + pos > 80) {
-			puts("\n\t\t");
+			fputs("\n\t\t", stdout);
 			pos = 0;
 		}
 		if (pos != START_POS && pos != 0){
-			puts(" ");
+			fputs(" ", stdout);
 			pos += 1;
 		}
-		puts(token);
+		fputs(token, stdout);
 		pos += strlen(token);
 		token = strtok(NULL, " \t");
 	}
-	puts("\n");
+	puts("");
 }
 
 
@@ -220,7 +220,7 @@ static void line_print_long(const line_t* line)
 	printf("Version:\t%s\n", line->version ? line->version : "(None)");
 	printf("Driver info:\t");
 	print_folded_item(line->info);
-	puts("\n");
+	puts("");
 }
 
 
@@ -356,10 +356,10 @@ void lsplugins(const char* pluginpath, const char* which)
 		}
 	}
 	if (!opt_quiet) {
-		puts("#\n#\n");
+		puts("#\n#");
 		if (!opt_long) {
-			puts(LEGEND);
-			puts("#\n");
+			fputs(LEGEND, stdout);
+			fputs("#", stdout);
 		}
 		if (opt_long)
 			puts(LONG_LEGEND);

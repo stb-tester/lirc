@@ -102,7 +102,7 @@ void printcode(char* s)
 	int len;
 
 	if (s == NULL) {
-		puts("None\n");
+		puts("None");
 	} else {
 		len = strlen(s);
                 if (strlen(s) > 2 && s[len -1] == '\n') {
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 	       != EOF) {
 		switch (c) {
 		case 'h':
-			puts(USAGE);
+			fputs(USAGE, stdout);
 			return EXIT_SUCCESS;
 		case 'v':
 			printf("%s\n", "irw " VERSION);
