@@ -49,8 +49,6 @@ hiddev96hidraw1: USB HID v1.00 Device [HID 15c2:0045] on usb-0000:00:02.0-2
                       In the above, we can see that the usbhid driver has claimed
                       our iMON device, and manual quirk addition is required.
 
-                    </P>
-
                     <P>
                       Newer devices have two USB IR endpoints, which lead to
                       lirc 0.8.5 and earlier setting up two lirc devices for
@@ -70,8 +68,6 @@ lircd --driver=default --device=/dev/lirc1 --pidfile=/var/run/lirc1.pid --output
                         distribution-provided init scripts, manual startup or
                         what have you, in most cases. It really does work
                         though...
-
-                    </P>
 
                     <P>
                       With post-0.8.5 lirc, the dual interface iMON devices

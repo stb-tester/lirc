@@ -1,5 +1,3 @@
-    <!-- configuration-guide +++++++++++++++++++++++++++++++++++++++++++++ -->
-
     <A NAME="configuration-guide"></A>
     <H1 ALIGN="CENTER">Configuration guide</H1>
     <HR WIDTH="70%">
@@ -36,7 +34,7 @@
       <li>
         You might need LIRC's capabilities e. g., modes where a single
         remote button can be teached to deliver different keys to the
-        application. </a>
+        application. </li>
       <li>
         You might want to send IR signals to other devices (IR blasting).
         </li>
@@ -88,10 +86,10 @@ remote |        |       devinput v        |
     </p>
     <ul><li>
     A common scenario is to not involve lirc at all, the upmost
-    path in the picture (kernel -&gt Linux input layer -&gt application).
+    path in the picture (kernel -&gt; Linux input layer -&gt; application).
     Unless there is reason to use lirc <a href="#why-use-lirc">(above)</a>)
     this is probably the way to go.
-    </ul></li>
+    </li></ul>
     <p>
     If you need to use lirc, there is two cases depending on if your
     remote is supported by the kernel or not.
@@ -100,12 +98,12 @@ remote |        |       devinput v        |
     <li>
     If it's supported, you should probably at least first try using the
     linux input layer decoding and use that as input to lirc. This is the
-    devinput data path in picture (kernel -&gt Linux input layer -&gt lirc
-    -&gt app).
+    devinput data path in picture (kernel -&gt; Linux input layer -&gt; lirc
+    -&gt; app).
     </li>
     <li>
     If the kernel built-in decoding can't be used you need to use a lirc
-    driver instead. This is the bottom data path (kernel -&gtlirc -&gt app).
+    driver instead. This is the bottom data path (kernel -&gt; lirc -&gt; app).
     </li>
     </ul>
     <p>
@@ -131,7 +129,7 @@ remote |        |       devinput v        |
            v
            |
       ------------
-      ! kernel & !
+      ! kernel   !
       ! driver   !
       ------------
            |
@@ -211,8 +209,9 @@ remote |        |       devinput v        |
         Driver em28xx, table rc-pinnacle-pctv-hd
         Supported protocols: NEC RC-5 RC-6
         Enabled protocols: RC-5
-        Extra capabilities: <access denied>
-    </pre> </li>
+        Extra capabilities: &lt;access denied&gt;
+    </pre>
+    <p>
     If you get this kind of output you know the event device
     (/dev/input/event11) and the kernel module loaded (em28xx).
     Furthermore, since ir-keytable finds the device you know that the
@@ -232,7 +231,7 @@ remote |        |       devinput v        |
      input: MCE IR Keyboard/Mouse (mceusb) as /devices/virtual/input/input17
      rc rc0: lirc_dev: driver ir-lirc-codec (mceusb) registered at minor = 0
    </pre>
-    </p>
+    <p>
     If you just find something like this you have a device which isn't an ir
     device (in this case an RF remote):
     <pre>
@@ -247,7 +246,6 @@ remote |        |       devinput v        |
     hid-generic 0003:20E8:5820.0001: input,hidraw0: USB HID v10.01 Keyboard
         [JTTEL Inc. JTTEL Composite Devices] on usb-0000:00:1d.1-1/input0
     </pre>
-    </p>
     <p>
     For devices like these which not are registered as rc devices (and thus
     not recognized by ir-keytable) you need to find out the corresponding
@@ -333,7 +331,7 @@ remote |        |       devinput v        |
     and key symbols everything is fine. Otherwise, try to change the
     protocol (see the ir-keytable manpage). If this doesn't work, it
     might be the end of the road and you might need to use the lirc
-    driver option instead.  </p>
+    driver option instead.
     <p>
     Check that all buttons generate output when testing. If there are
     buttons which are not mapped (no key symbol) you might not be
@@ -352,7 +350,7 @@ remote |        |       devinput v        |
     Press remote buttons. You should see the key symbols being printed.
     When so you are done and can proceed to
     <A HREF="#key-symbols-to-app-strings">Convert key symbols to application
-    strings</a> </p>
+    strings</a>
     <p>
     Depending on your box, it might be that the event device found this
     way changes after a reboot. If this becomes o problem, look into
@@ -417,7 +415,6 @@ remote |        |       devinput v        |
     To install the lircd.conf first read the
     <a href="configure.html#lircd.conf">lircd.conf </a> chapter. After that,
     decide on one of the following ways.
-    </p>
     <ul>
       <li>
         If you have been using a userspace driver from the driver list, make
@@ -450,8 +447,7 @@ remote |        |       devinput v        |
         <pre>
         $ lircd --driver default --device /dev/lirc0
         </pre>
-    Verify the results using irw(1). Check all buttons! </li>
-    </ul>
+    Verify the results using irw(1). Check all buttons!
     <A NAME="key-symbols-to-app-strings"></A>
     <A NAME="converting-key-symbols-to-application-strings"></A><HR>
     <h3 align="center">Converting key symbols to application strings</h3>
@@ -481,7 +477,6 @@ remote |        |       devinput v        |
           # systemctl status lircd.socket lircd.service
           # journalctl -b 0  /usr/sbin/lircd
 </pre>
-    </p>
     <ul><li>
       Check that you can start/stop a working service, irw is your friend.
     </li></ul>
@@ -495,7 +490,6 @@ remote |        |       devinput v        |
             to verify your application settings i. e., what your
             application actually receives when pushing the remote button.</li>
       </ul>
-    </p>
     <p>Test the application, and investigate further steps:</p>
     <ul>
       <li> Configure your application to use the same socket as irw and
@@ -551,7 +545,7 @@ remote |        |       devinput v        |
         # echo -- 'lirc' > /sys/class/rc/rc0/protocols
     </pre>
     Here, 'rc0' is OK if you have only one infrared device. Note that
-    this is not persistent, you need to do this after each boot.  </p>
+    this is not persistent, you need to do this after each boot.
     <p>
     Using '-lirc' instead restores the normal kernel operation when
     stopping LIRC. </>
@@ -563,7 +557,7 @@ remote |        |       devinput v        |
        SUBSYSTEM=="rc", ATTR{protocols}="lirc"
     </pre>
     This is persistent and makes all ir devices send data only
-    through /dev/lirc where it can be retrieved by the 'default' driver.</p>
+    through /dev/lirc where it can be retrieved by the 'default' driver.
     <A NAME="blacklisting-modules"></A>
     <h4 align="center">Blacklisting modules.</h4>
     <p>
@@ -581,7 +575,6 @@ remote |        |       devinput v        |
     to boot the system without the usb device connected, and do a lsmod.
     After that, connect the device and make a new lsmod. Comparing the
     different outputs might give a clue.
-    </p>
     <A NAME="serial_port_reservation"></A>
     <h4 align="center">Disabling kernel serial port reservation</h4>
     <p>
@@ -612,9 +605,8 @@ remote |        |       devinput v        |
             Driver em28xx, table rc-pinnacle-pctv-hd
             Supported protocols: NEC RC-5 RC-6
             Enabled protocols: RC-5
-            Extra capabilities: <access denied>
+            Extra capabilities: &lt;access denied&gt;
     </pre>
-    </p>
     <p>
     If the reported device matches your expectations you're done - here we
     have /dev/input/event11.</p>
@@ -629,7 +621,7 @@ remote |        |       devinput v        |
     $ ls -l /dev/input/by-id/usb-eHome_Infrared_Transceiver_TS0013Yn-event-if00
     lrwxrwxrwx [cut] /dev/input/by-id/usb-eHome_Infrared_Transceiver_TS0013Yn-event-if00 -> ../event13
     </pre>
-    So, here your interface is /dev/input/event13, and your're done.</p>
+    So, here your interface is /dev/input/event13, and your're done.
     <p>
     If this does not work, cat the input devices under /sys.
     <pre>
@@ -642,7 +634,7 @@ remote |        |       devinput v        |
         P: Phys=usb-0000:00:1d.7-1/input0
         S: Sysfs=/devices/pci0000:00/0000:00:1d.7/usb1/1-1/rc/rc0/input14
     </pre>
-    Here, the device is /dev/input/event14. </p>
+    Here, the device is /dev/input/event14.
 
     <A NAME="appendix-3"></A>
     <h3 align="center"> A3: Understanding the driver table</h3>
@@ -678,7 +670,7 @@ remote |        |       devinput v        |
     </pre>
     If it's listed, kernel should load it automatically on-demand. If it's
     not you have to build the staging drivers, also outside the scope of
-    this document.  </p>
+    this document.
     <p> The Supported Remotes column reflects what kind of lircd.conf files
     which are supported. Common values are 'Any' meaning that any file
     from the website could be used or 'bundled' meaning that the driver
@@ -714,7 +706,6 @@ remote |        |       devinput v        |
     <pre>
         $ sudo lirc-config-tool -u -c /etc/lirc/lircd.conf
     </pre>
-    </p>
 
     <A NAME="appendix-5"></A>
     <h3 align="center"> A5: Generating the .lircrc</h3>
@@ -736,7 +727,7 @@ remote |        |       devinput v        |
     If you're using the devinput lircd.conf, create a new version of that
     file which only contains the key symbols you are actually using. Use
     this instead in the -c option to let lirc-config-tool make it's work.
-    </p>The generated file will look like (excerpt!)</p>
+    The generated file will look like (excerpt!)
     <pre>
 
     # Created by /home/al/bin/lirc-config-tool at tis dec  3 23:26:18 CET 2013
@@ -815,7 +806,7 @@ remote |        |       devinput v        |
         /devices/pci0000:00/0000:00:12.0/usb4/4-4/4-4:1.0/rc/rc0
     </pre>
     Here you can see the device's name: "Media center Ed. eHome..." and it's
-    address: ...usb4/4-4/4-4:1.0/rc/rc0.</p>
+    address: ...usb4/4-4/4-4:1.0/rc/rc0.
     <p>
     As long as you have only one remote of each kind you can use simple
     name matching like in
@@ -900,17 +891,17 @@ remote |        |       devinput v        |
          All-in-all, this is good method which preserves the original files
          </li>
     <li> Another way is to install the files in the directory lircd.conf.d.
-         This directory should b in the same place as the main
+         This directory should be in the same place as the main
          lircd.conf file, usually /etc/lirc/lircd.conf.d/. Any file in this
          directory which has a name ending with <code>.conf</code> is
-         automagically included. One way to use this is to symlink remotes
-         from e. g., /usr/share/lirc-remotes to this directory. </li>
+         automagically included. </li>
     </ul>
+    <p>
     When using multiple remotes lircd tries to sort them so that the ones
     which decodes faster are used first. Normally you could use this feature
     as-is.  However, if you want to define the order yourself you should set
     the attribute <code>manual_sort</code> to 1 in any of the configs. Doing
-    so disables the automatic sorting.
+    so disables the automatic sorting.</p>
     <p>
     In manual sort mode the remotes are used in the order they appear in the
     config file. Files in lircd.conf.d are used in order defined by the
@@ -919,7 +910,7 @@ remote |        |       devinput v        |
     etc. </p>
     <p>
     To add the manual_sort attribute to an existing remote is actually a bad
-    idea since it creates cross-depencies between configurations. A cleaner
+    idea since it creates cross-dependencies between configurations. A cleaner
     way is to add a dummy remote like this in lircd.conf.d (the name does not
     matter):
 <pre>
@@ -930,9 +921,3 @@ remote |        |       devinput v        |
             end codes
         end remote
 </pre>
-
-
-
-    <p>
-  </BODY>
-</HTML>
