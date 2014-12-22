@@ -93,7 +93,7 @@ To generate a core and show the stacktrace:
     #14 0x08049d39 in main (argc=2, argv=0xbffff034) at lircd.c:2250
 
 You dont need a core file. You can also start your program inside gdb and
-let gdb trap the crash. Something like
+let gdb trap the crash. Something like:
 
     $ cd daemons
     $ libtool --mode=execute gdb lircd

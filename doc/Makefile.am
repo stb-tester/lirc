@@ -1,9 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-DISTCLEANFILES          = man/* html/* man-html/*
+DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl
 
-EXTRA_DIST              = Doxyfile manpage.xsl docpage.xsl page.xsl
+EXTRA_DIST              = Doxyfile make-driver-toc.sh \
+                          manpage.xsl docpage.xsl.in page.xsl
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
@@ -61,9 +62,7 @@ dist_image_DATA         = images/atwf83.jpg \
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 clean-local:
-	rm -rf html
-	rm -rf man
-	rm -rf man-html
+	rm -rf $(DISTCLEANFILES)
 
 table.html:
 	$(PYTHON) $(srcdir)/data2table  | \
@@ -72,9 +71,12 @@ table.html:
 lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-$(generated_html): $(html_sources) $(srcdir)/docpage.xsl
+driver-toc.xsl: .phony
+	$(srcdir)/make-driver-toc.sh > $@
+
+$(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
 	mkdir html 2>/dev/null || :
-	xsltproc --html $(srcdir)/docpage.xsl \
+	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
@@ -95,6 +97,8 @@ api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
 	doxygen >doxygen-warnings.txt 2>&1
 	tar czf $@ api-docs
+
+.phony:
 
 man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irdb-get.1 \
@@ -118,25 +122,25 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircrcd.8 \
                            $(srcdir)/man-source/mode2.1
 
-html_sources            =  $(srcdir)/html-source/alsa-usb.html \
+html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/api-general.html \
-                           $(srcdir)/html-source/atwf83.html \
-                           $(srcdir)/html-source/audio-alsa.html \
-                           $(srcdir)/html-source/audio.html \
+                           $(srcdir)/html-source/atwf83_driver.html \
+                           $(srcdir)/html-source/audio-alsa_driver.html \
+                           $(srcdir)/html-source/audio_driver.html \
                            $(srcdir)/html-source/configuration-guide.html \
                            $(srcdir)/html-source/configure.html \
-                           $(srcdir)/html-source/devinput.html \
+                           $(srcdir)/html-source/devinput_driver.html \
                            $(srcdir)/html-source/driver-api.html \
                            $(srcdir)/html-source/help.html \
-                           $(srcdir)/html-source/imon-24g.html \
-                           $(srcdir)/html-source/imon.html \
+                           $(srcdir)/html-source/imon-24g_driver.html \
+                           $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/technical.html \
-                           $(srcdir)/html-source/tira.html
+                           $(srcdir)/html-source/tira_driver.html
 
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
@@ -181,21 +185,21 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircrcd.html \
                            man-html/mode2.html
 
-generated_html          =  html/alsa-usb.html \
-                           html/audio-alsa.html \
-                           html/atwf83.html \
-                           html/audio.html \
+generated_html          =  html/alsa-usb_driver.html \
+                           html/audio-alsa_driver.html \
+                           html/atwf83_driver.html \
+                           html/audio_driver.html \
                            html/configuration-guide.html \
                            html/configure.html \
-                           html/devinput.html \
+                           html/devinput_driver.html \
                            html/driver-api.html \
                            html/help.html \
-                           html/imon-24g.html \
-                           html/imon.html \
+                           html/imon-24g_driver.html \
+                           html/imon_driver.html \
                            html/index.html \
                            html/install.html \
                            html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \
                            html/technical.html \
-                           html/tira.html
+                           html/tira_driver.html
