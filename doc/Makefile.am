@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
 
-EXTRA_DIST              = Doxyfile
+EXTRA_DIST              = Doxyfile manpage.xsl docpage.xsl page.xsl
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
@@ -15,7 +15,6 @@ dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
 man_sources             =
-nodist_html_DATA        =
 nodist_man_MANS         =
 
 if BUILD_XTOOLS
@@ -26,18 +25,18 @@ manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
-dist_doc_DATA           = lirc.css irxevent.keys
+dist_doc_DATA           = irxevent.keys
 if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        += $(generated_html)
+nodist_html_DATA        = $(generated_html)
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
 
-dist_html_DATA          = $(html_includes) html-source/lirc.css
+dist_html_DATA          =  html-source/lirc.css
 
 if HAVE_PYMOD_YAML
 dist_html_DATA          += table.html
@@ -67,30 +66,24 @@ clean-local:
 	rm -rf man-html
 
 table.html:
-	$(PYTHON) $(srcdir)/data2table > table.html
+	$(PYTHON) $(srcdir)/data2table  | \
+	    xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-$(generated_html): $(html_sources)
+$(generated_html): $(html_sources) $(srcdir)/docpage.xsl
 	mkdir html 2>/dev/null || :
-	cat $(srcdir)/html-source/head.html > $@
-	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
-	cat $(srcdir)/html-source/foot.html >> $@
+	xsltproc --html $(srcdir)/docpage.xsl \
+	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
-$(manpage_html): $(nodist_man_MANS)
+$(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
 	-test -d man-html || mkdir man-html
-	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
-	man2html -M ../html/index.html $${src}.[1-8] | \
-	            $(SED) -e '1,/<BODY>/d' \
-	                -e '/<\/BODY>/,$$d' \
-	                -e '/HREF="#index"/d' \
-	                -e '/NAME="index"/,/^Time:/d' \
-	                -e '/SEE ALSO/,/^<HR>/d' >> $@
-	cat  $(srcdir)/html-source/foot.html >> $@
+	    man2html -M ../html/index.html $${src}.[1-8] | \
+	        sed '1,/^$$/d' | xsltproc --html $(srcdir)/manpage.xsl - > $@
 
 $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
@@ -145,9 +138,6 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/technical.html \
                            $(srcdir)/html-source/tira.html
 
-html_includes           =  $(srcdir)/html-source/foot.html \
-                           $(srcdir)/html-source/head.html
-
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
                            man/irexec.1 \
@@ -193,6 +183,7 @@ manpage_html            += man-html/ircat.html \
 
 generated_html          =  html/alsa-usb.html \
                            html/audio-alsa.html \
+                           html/atwf83.html \
                            html/audio.html \
                            html/configuration-guide.html \
                            html/configure.html \

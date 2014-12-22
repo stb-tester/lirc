@@ -21,6 +21,11 @@ AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
 if test x$PKGCONFIG = xno; then
   AC_MSG_ERROR([Required program pkg-config is missing])
 fi
+AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
+if test x$XSLTPROC != "xyes"; then
+    AC_MSG_ERROR([
+      xsltproc is required to build. It usually comes with libxml])
+fi
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])

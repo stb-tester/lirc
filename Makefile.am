@@ -73,6 +73,7 @@ ChangeLog: .phony
 
 lirc.org.local: .phony
 	cd doc; $(MAKE)
+	chmod -R u+w lirc.org
 	rm -rf lirc.org/images; cp -ar doc/images lirc.org
 	rm -f lirc.org/html/*
 	cp doc/html/* doc/man-html/* lirc.org/html
