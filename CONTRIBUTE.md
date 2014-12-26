@@ -33,19 +33,7 @@ There is a document describing how check and submit new remotes at [4].
 
 ## New drivers.
 
-A driver normally consists of a source file in plugins/ and a configuration
-file in configs/. A driver-specific README makes sense for more complex
-drivers. Besides some corner-cases there should be no header file.
-
-Please read the driver API info in the manual before writing new drivers. The
-configs/ directory has a README on the format.
-
-When submitting a driver for a specific remote, also submit the lircd.conf for
-this remote. This should should comply to [4]. A lirccode driver should always
-submit at least one lircd.conf.
-
-Besides running tests with your hardware, also check that the new driver can
-be installed using lirc-setup i. e., test also your configs/ file.
+Info on how to build new drivers is in the wiki [4].
 
 ## Testing and and bug reporting
 
@@ -121,4 +109,4 @@ let gdb trap the crash. Something like
 [1] https://www.kernel.org/doc/Documentation/CodingStyle
 [2] http://nvie.com/posts/a-successful-git-branching-model
 [3] http://sourceforge.net/projects/lirc/
-[4] https://sourceforge.net/p/lirc-remotes/wiki/Checklist/
+[4] https://sourceforge.net/p/lirc/wiki/Drivers
