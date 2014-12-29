@@ -2,8 +2,8 @@ Name: lirc
 Description: LIRC Linux Infrared Control client libs.
 Version: @VERSION@
 
-datarootdir=@datarootdir@
 prefix=@prefix@
+datarootdir=@datarootdir@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
