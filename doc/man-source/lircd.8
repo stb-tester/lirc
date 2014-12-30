@@ -62,12 +62,13 @@ E.g. if you have configured your system to shut down by a button press
 on your remote control, everybody will be able to shut down
 your system from the command line.
 .TP 4
-.B -c, --connect [host[:port]]
+.B -c, --connect [host[:port]][,[host[:port]]]
 Allows you to connect to other lircd servers that provide a network
 socket at the given host and port number. The number
 of such connections is currently limited to 100.
 The connecting lircd instance will receive IR events from the lircd
-instance it connects to.
+instance it connects to.  To connect to multiple servers, add them with a
+comma separated list.
 .TP 4
 .B -D, --loglevel [level]
 Determine the amount of logging information. [level] can be a symbolic

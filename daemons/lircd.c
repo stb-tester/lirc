@@ -875,6 +875,7 @@ void add_client(int sock)
 	clin++;
 }
 
+
 int add_peer_connection(const char *server)
 {
 	char *sep;
@@ -2249,6 +2250,24 @@ static void lircd_add_defaults(void)
 	options_add_defaults(defaults);
 }
 
+
+int parse_peer_connections(const char *opt)
+{
+	char buff[256];
+	static const char* const SEP = ", ";
+	char* host;
+
+	if (opt == NULL)
+		return 1;
+	strncpy(buff, opt, sizeof(buff) - 1);
+	for (host = strtok(buff, SEP); host; host = strtok(NULL, SEP)) {
+		if (!add_peer_connection(host))
+			return 0;
+	}
+	return 1;
+}
+
+
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
@@ -2421,10 +2440,8 @@ int main(int argc, char **argv)
 			port =  LIRC_INET_PORT;
 	}
 	opt = options_getstring("lircd:connect");
-	if (opt != NULL) {
-		if (!add_peer_connection(opt))
-			return(EXIT_FAILURE);
-	}
+	if (!parse_peer_connections(opt))
+		return(EXIT_FAILURE);
 	loglevel_opt = options_getint("lircd:debug");
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
