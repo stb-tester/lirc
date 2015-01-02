@@ -1,5 +1,8 @@
 0.9.3-devel
-  * TBD
+  * The mplay driver has been updated with patches which has been
+    available.
+  * New build dependency: xsltproc (usually coming with libxml).
+  * Unlinked and hard to find driver docs and manpages have been linked.
 
 0.9.2 12/09/14
   * Documentation fixes
