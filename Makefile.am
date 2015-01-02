@@ -44,15 +44,9 @@ install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 	cp -ar $(srcdir)/lirc.org       $(DESTDIR)$(docdir)
+	chmod -R u+w  $(DESTDIR)$(docdir)/lirc.org
 	cp -ar $(srcdir)/doc/images     $(DESTDIR)$(docdir)/lirc.org
-if HAVE_MAN2HTML
-	cp -a  $(srcdir)/doc/man-html/* $(DESTDIR)$(docdir)/lirc.org/html
-endif
-if HAVE_PYMOD_YAML
-	cp -a  $(srcdir)/doc/table.html $(DESTDIR)$(docdir)/lirc.org/html
-endif
-	cp -ar $(srcdir)/doc/html/*     $(DESTDIR)$(docdir)/lirc.org/html
-	rm $(DESTDIR)$(datadir)/lirc/configs/check_configs.py
+	cp -ar $(DESTDIR)$(docdir)/html/* $(DESTDIR)$(docdir)/lirc.org/html
 
 dist-hook: ChangeLog
 	chmod u+w $(distdir)
