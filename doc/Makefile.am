@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl
+DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl table.html
 
 EXTRA_DIST              = Doxyfile make-driver-toc.sh \
                           manpage.xsl docpage.xsl.in page.xsl
@@ -64,7 +64,7 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 clean-local:
 	rm -rf $(DISTCLEANFILES)
 
-table.html:
+table.html: driver-toc.xsl
 	$(PYTHON) $(srcdir)/data2table  | \
 	    xsltproc --html docpage.xsl - > table.html
 
