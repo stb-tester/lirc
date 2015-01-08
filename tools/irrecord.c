@@ -67,14 +67,6 @@
 
 #define SAMPLES        80
 
-#define USAGE	    "Usage: irrecord [options] [config file]\n" \
-		    "	    irrecord -a <config file> \n" \
-		    "	    irrecord -l \n"
-
-
-// forwards
-static lirc_t emulation_readdata(lirc_t timeout);
-
 // type declarations
 typedef void (*remote_func) (struct ir_remote * remotes);
 
@@ -136,6 +128,7 @@ enum button_status {
 	STS_BTN_INIT_DATA,
 	STS_BTN_GET_RAW_DATA,
 	STS_BTN_GET_DATA,
+        STS_BTN_GET_TOGGLE_BITS,
 	STS_BTN_BUTTON_DONE,
 	STS_BTN_BUTTONS_DONE,
 	STS_BTN_ALL_DONE,
@@ -246,97 +239,21 @@ struct button_state {
 };
 
 
+// globals
+struct ir_remote remote;
+struct ir_ncode ncode;
+
+unsigned int eps = 30;
+lirc_t aeps = 100;
+
+
+/*    -------------------------- C file -------------------------------- */
+
+
+// forwards
+static lirc_t emulation_readdata(lirc_t timeout);
+
 // Constants
-static const char* const help =
-USAGE
-"\nOptions:\n"
-"\t -H --driver=driver\tUse given driver\n"
-"\t -d --device=device\tRead from given device\n"
-"\t -a --analyse\t\tAnalyse raw_codes config files\n"
-"\t -l --list-namespace\tList valid button names\n"
-"\t -U --plugindir=dir\tLoad drivers from dir\n"
-"\t -f --force\t\tForce raw mode\n"
-"\t -n --disable-namespace\tDisable namespace checks\n"
-"\t -Y --dynamic-codes\tEnable dynamic codes\n"
-"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
-"\t -h --help\t\tDisplay this message\n"
-"\t -v --version\t\tDisplay version\n";
-
-static const struct option long_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"analyse", no_argument, NULL, 'a'},
-	{"device", required_argument, NULL, 'd'},
-	{"options-file", required_argument, NULL, 'O'},
-	{"debug", required_argument, NULL, 'D'},
-	{"loglevel", required_argument, NULL, 'D'},
-	{"driver", required_argument, NULL, 'H'},
-	{"force", no_argument, NULL, 'f'},
-	{"disable-namespace", no_argument, NULL, 'n'},
-	{"list-namespace", no_argument, NULL, 'l'},
-	{"plugindir", required_argument, NULL, 'U'},
-	{"dynamic-codes", no_argument, NULL, 'Y'},
-	{"pre", no_argument, NULL, 'p'},
-	{"post", no_argument, NULL, 'P'},
-	{"test", no_argument, NULL, 't'},
-	{"invert", no_argument, NULL, 'i'},
-	{"trail", no_argument, NULL, 'T'},
-	{0, 0, 0, 0}
-};
-
-
-const char* const MSG_WELCOME =
-	"\nirrecord -  application for recording IR-codes" " for usage with lirc\n"
-	"Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n"
-	"\n"
-	"This program will record the signals from your remote control\n"
-	"and create a config file for lircd.\n"
-	"\n"
-	"A proper config file for lircd is maybe the most vital part of this\n"
-	"package, so you should invest some time to create a working config\n"
-	"file. Although I put a good deal of effort in this program it is often\n"
-	"not possible to automatically recognize all features of a remote\n"
-	"control. Often short-comings of the receiver hardware make it nearly\n"
-	"impossible. If you have problems to create a config file READ THE\n"
-	"DOCUMENTATION at https://sf.net/p/lirc-remotes/wiki\n"
-	"\n"
-	"If there already is a remote control of the same brand available at\n"
-	"http://sf.net/p/lirc-remotes you might want to try using such a\n"
-	"remote as a template. The config files already contains all\n"
-	"parameters of the protocol used by remotes of a certain brand and\n"
-	"knowing these parameters makes the job of this program much\n"
-	"easier. There are also template files for the most common protocols\n"
-	"available. Templates can be downloaded using irdb-get(1). You use a\n"
-	"template file by providing the path of the file as a command line\n"
-	"parameter.\n"
-	"\n"
-	"Please take the time to finish the file as described in\n"
-	"https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
-	"to  <lirc@bartelmus.de> so it can be made available to others.\n";
-
-static const char* const MSG_DEVINPUT =
-	"Usually it's not necessary to create a new config file for devinput\n"
-	"devices. A generic config file can be found at:\n"
-	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
-	"It can be downloaded using irdb-get(1)\n"
-	"Please try this config file before creating your own.\n";
-
-static const char* const MSG_TOGGLE_BIT_INTRO =
-	"Checking for toggle bit mask.\n"
-	"Please press an arbitrary button repeatedly as fast as possible.\n"
-	"Make sure you keep pressing the SAME button and that you DON'T HOLD\n"
-	"the button down!.\n"
-	"If you can't see any dots appear, wait a bit between button presses.\n\n"
-	"Press RETURN to continue.";
-
-static const char* MSG_LENGTHS_INIT =
-	"Now start pressing buttons on your remote control.\n\n"
-	"It is very important that you press many different buttons and hold them\n"
-	"down for approximately one second. Each button should generate at least one\n"
-	"dot but in no case more than ten dots of output.\n"
-	"Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n";
-
-
 static const struct driver hw_emulation = {
 	.name		= "emulation",
 	.device		= "/dev/null",
@@ -358,14 +275,8 @@ static const struct driver hw_emulation = {
 };
 
 
-// globals
-static struct ir_remote remote;
-static struct ir_ncode ncode;
-
 static lirc_t signals[MAX_SIGNALS];
 
-static unsigned int eps = 30;
-static lirc_t aeps = 100;
 
 static struct ir_remote *emulation_data;
 static struct ir_ncode *next_code = NULL;
@@ -552,111 +463,6 @@ static void get_commandline(int argc, char** argv, char* buff, size_t size)
 	}
 	buff[--dest] = '\0';
 }
-
-
-/** Set up default values for all command line options + filename. */
-static void add_defaults(void)
-{
-	char level[4];
-	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
-	const char* const defaults[] = {
-		"lircd:plugindir",		PLUGINDIR,
-		"irrecord:driver",		"devinput",
-		"irrecord:device",		 LIRC_DRIVER_DEVICE,
-		"irrecord:analyse",		"False",
-		"irrecord:force",		"False",
-		"irrecord:disable-namespace",	"False",
-		"irrecord:dynamic-codes",	"False",
-		"irrecord:list_namespace",	"False",
-		"irrecord:filename",		"irrecord.conf",
-		"lircd:debug",			 level,
-		(const char*)NULL,	(const char*)NULL
-	};
-	options_add_defaults(defaults);
-}
-
-
-/** Parse command line, update the options dict. */
-static void parse_options(int argc, char** const argv)
-{
-	int c;
-
-	const char* const optstring = "had:D:H:fnlO:pPtiTU:vY";
-
-	add_defaults();
-	optind = 1;
-	while ((c = getopt_long(argc, argv, optstring, long_options, NULL))
-		!= -1 )
-	{
-		switch (c) {
-		case 'a':
-			options_set_opt("irrecord:analyse", "True");
-			break;
-		case 'D':
-			if (string2loglevel(optarg) == LIRC_BADLEVEL){
-				fprintf(stderr,
-					"Bad debug level: %s\n", optarg);
-				exit(EXIT_FAILURE);
-			}
-			options_set_opt("lircd:debug", optarg);
-			break;
-		case 'd':
-			options_set_opt("irrecord:device", optarg);
-			break;
-		case 'f':
-			options_set_opt("irrecord:force", "True");
-			break;
-		case 'H':
-			options_set_opt("irrecord:driver", optarg);
-			break;
-		case 'h':
-			fputs(help, stdout);
-			exit(EXIT_SUCCESS);
-		case 'i':
-			options_set_opt("irrecord:invert", "True");
-			break;
-		case 'l':
-			options_set_opt("irrecord:list-namespace", "True");
-			break;
-		case 'n':
-			options_set_opt("irrecord:disable-namespace", "True");
-			break;
-		case 'O':
-			return;
-		case 'P':
-			options_set_opt("irrecord:post", "True");
-			break;
-		case 'p':
-			options_set_opt("irrecord:pre", "True");
-			break;
-		case 't':
-			options_set_opt("irrecord:test", "True");
-			break;
-		case 'T':
-			options_set_opt("irrecord:trail", "True");
-			break;
-		case 'U':
-			options_set_opt("lircd:plugindir", optarg);
-			break;
-		case 'Y':
-			options_set_opt("lircd:dynamic-codes", "True");
-			break;
-		case 'v':
-			printf("irrecord %s\n",  VERSION);
-			exit(EXIT_SUCCESS);
-		default:
-			fputs(USAGE, stderr);
-			exit(EXIT_FAILURE);
-		}
-	}
-	if (optind == argc - 1) {
-		options_set_opt("irrecord:filename", argv[optind]);
-	} else if (optind != argc) {
-		fputs("irrecord: invalid argument count\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-}
-
 
 static lirc_t calc_signal(struct lengths *len)
 {
@@ -1749,126 +1555,6 @@ int needs_toggle_mask(struct ir_remote* remote)
 }
 
 
-
-
-/** Check options, possibly run simple ones. Returns status. */
-static enum init_status init(struct opts* opts, struct main_state* state)
-{
-	char filename_new[256];
-	char logpath[256];
-	int flags;
-	struct ir_remote* my_remote;
-	FILE* f;
-
-	hw_choose_driver(NULL);
-	if (!opts->analyse && hw_choose_driver(opts->driver) != 0) {
-		return STS_INIT_BAD_DRIVER;
-	}
-	ir_remote_init(opts->dynamic_codes);
-	lirc_log_get_clientlog("irrecord", logpath, sizeof(logpath));
-	lirc_log_set_file(logpath);
-	lirc_log_open("irrecord", 0, opts->loglevel);
-	curr_driver->open_func(opts->device);
-	if (strcmp(curr_driver->name, "null") == 0 && !opts->analyse) {
-		return STS_INIT_NO_DRIVER;
-	}
-	f = fopen(opts->filename, "r");
-	if (f != NULL) {
-
-		if (opts->force) {
-			return STS_INIT_FORCE_TMPL;
-		}
-		my_remote = read_config(f, opts->filename);
-		fclose(f);
-		if (my_remote == (void *)-1 || my_remote == NULL) {
-			return STS_INIT_BAD_FILE;
-		}
-		opts->using_template = 1;
-		if (opts->analyse) {
-			return STS_INIT_ANALYZE;
-		}
-		if (opts->test) {
-			if (opts->trail)
-				for_each_remote(my_remote, remove_trail);
-			for_each_remote(my_remote, remove_pre_data);
-			for_each_remote(my_remote, remove_post_data);
-			if (opts->get_pre)
-				for_each_remote(my_remote, get_pre_data);
-			if (opts->get_post)
-				for_each_remote(my_remote, get_post_data);
-			if (opts->invert)
-				for_each_remote(my_remote, invert_data);
-
-			fprint_remotes(stdout, my_remote, opts->commandline);
-			free_config(my_remote);
-			return (STS_INIT_TESTED);
-		}
-		remote.name = opts->filename;
-		remote.codes = NULL;
-		remote.last_code = NULL;
-		remote.next = NULL;
-		if (remote.pre_p == 0
-		    && remote.pre_s == 0
-		    && remote.post_p == 0
-		    && remote.post_s == 0) {
-			remote.bits = bit_count(&remote);
-			remote.pre_data_bits = 0;
-			remote.post_data_bits = 0;
-		}
-		if (my_remote->next != NULL) {
-			fprintf(stderr,
-			        "%s: only first remote definition in file \"%s\" used\n",
-				progname, opts->filename);
-		}
-		snprintf(filename_new, sizeof(filename_new),
-			 "%s.conf", opts->filename);
-		opts->filename = strdup(filename_new);
-	} else {
-		if (opts->analyse) {
-			fprintf(stderr,
-			        "%s: no input file given, ignoring analyse flag\n",
-			        progname);
-			opts->analyse = 0;
-		}
-	}
-	state->fout = fopen(opts->filename, "w");
-	if (state->fout == NULL) {
-		return STS_INIT_FOPEN;
-	}
-	if (curr_driver->init_func) {
-		if (!curr_driver->init_func()) {
-			fclose(state->fout);
-			unlink(opts->filename);
-			return STS_INIT_HW_FAIL;
-		}
-	}
-	aeps = (curr_driver->resolution > aeps ?
-			curr_driver->resolution : aeps);
-	if (curr_driver->rec_mode != LIRC_MODE_MODE2
-	    && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
-		return STS_INIT_BAD_MODE;
-		fclose(state->fout);
-		unlink(opts->filename);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		return STS_INIT_BAD_MODE;
-	}
-	flags = fcntl(curr_driver->fd, F_GETFL, 0);
-	if (flags == -1
-	    || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		fprintf(stderr,
-			"%s: could not set O_NONBLOCK flag\n",
-			progname);
-		fclose(state->fout);
-		unlink(opts->filename);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-		return STS_INIT_O_NONBLOCK;
-	}
-	return STS_INIT_OK;
-}
-
-
 static enum lengths_status get_lengths(struct lengths_state* state,
 				       struct ir_remote *remote,
 				       int force, int interactive)
@@ -2340,31 +2026,6 @@ static void analyse_remote(struct ir_remote *raw_data)
 	free(new_codes);
 }
 
-
-static int
-get_options(int argc, char** argv, const char* filename, struct opts* options)
-{
-	options->force = 0;
-	options_load(argc, argv, NULL, parse_options);
-	options->analyse = options_getboolean("irrecord:analyse");
-	options->device = options_getstring("irrecord:device");
-	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
-	options->driver = options_getstring("irrecord:driver");
-	options->force = options_getboolean("irrecord:force");
-	options->disable_namespace =
-		options_getboolean("irrecord:disable-namespace");
-	options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
-	options->get_pre = options_getboolean("irrecord:pre");
-	options->get_post = options_getboolean("irrecord:post");
-	options->list_namespace =
-		options_getboolean("irrecord:list_namespace");
-	options->test = options_getboolean("irrecord:test");
-	options->invert = options_getboolean("irrecord:invert");
-	options->trail = options_getboolean("irrecord:trail");
-	options->filename = options_getstring("irrecord:filename");
-	return 1;
-}
-
 /** The --analyse wrapper. */
 static void do_analyse(struct opts* opts, struct main_state* state)
 {
@@ -2386,115 +2047,6 @@ static void do_analyse(struct opts* opts, struct main_state* state)
 		analyse_remote(r);
 	}
 }
-
-
-/** View part of init: run init() and handle results. Returns or exits. */
-static void do_init(struct opts* opts, struct main_state* state)
-{
-	enum init_status sts;
-
-	sts = init(opts, state);
-	switch (sts) {
-		case STS_INIT_BAD_DRIVER:
-			fprintf(stderr, "Driver `%s' not found", opts->driver);
-			fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
-			hw_print_drivers(stderr);
-			exit(EXIT_FAILURE);
-		case STS_INIT_NO_DRIVER:
-			fprintf(stderr,
-			       "irrrecord: irrecord does not make sense without hardware\n");
-			exit(EXIT_FAILURE);
-		case STS_INIT_FORCE_TMPL:
-			fprintf(stderr,
-				"%s: file \"%s\" already exists\n" "%s: you cannot use the --force option "
-				"together with a template file\n",
-				progname, opts->filename, progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_BAD_FILE:
-			fprintf(stderr,
-				"%s: file \"%s\" does not contain valid data\n",
-				progname, opts->filename);
-			exit(EXIT_FAILURE);
-		case STS_INIT_TESTED:
-			exit(0);
-		case STS_INIT_FOPEN:
-			fprintf(stderr,
-				"%s: could not open new config file %s\n",
-				progname, opts->filename);
-			perror(progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_HW_FAIL:
-			fprintf(stderr,
-				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
-				progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_BAD_MODE:
-			fprintf(stderr, "%s: mode not supported\n", progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_O_NONBLOCK:
-			fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_ANALYZE:
-			do_analyse(opts, state);
-			exit(EXIT_SUCCESS);
-		case STS_INIT_OK:
-			return;
-	}
-}
-
-
-/** View part of get_toggle_bit_mask(). */
-static void do_get_toggle_bit_mask(struct ir_remote* remote,
-				   struct main_state* state,
-				   const struct opts* opts)
-{
-	const char* const MISSING_MASK_MSG =
-		"But I know for sure that RC6 has a toggle bit!\n";
-	enum toggle_status sts;
-	struct toggle_state tgl_state;
-
-	printf(MSG_TOGGLE_BIT_INTRO);
-	fflush(stdout);
-	getchar();
-	flushhw();
-	toggle_state_init(&tgl_state);
-	sts = STS_TGL_AGAIN;
-	while (1) {
-		switch (sts) {
-			case STS_TGL_TIMEOUT:
-				fprintf(stderr,
-					"Timeout (10 sec), giving up");
-				exit(EXIT_FAILURE);
-			case STS_TGL_GOT_ONE_PRESS:
-				printf(".");
-				fflush(stdout);
-				sts = STS_TGL_AGAIN;
-				continue;
-			case STS_TGL_FOUND:
-				printf("\nToggle bit mask is 0x%llx.\n",
-				       (__u64) remote->toggle_bit_mask);
-				if (is_rc6(remote)) {
-					printf("RC6 mask is 0x%llx.\n",
-					       (__u64) remote->rc6_mask);
-				}
-				fflush(stdout);
-				return;
-			case STS_TGL_NOT_FOUND:
-				printf("Cannot find any toggle mask.\n");
-				if (!is_rc6(remote))
-					break;
-				printf(MISSING_MASK_MSG);
-				unlink(opts->filename);
-				if (curr_driver->deinit_func)
-					curr_driver->deinit_func();
-				exit(EXIT_FAILURE);
-			case STS_TGL_AGAIN:
-				break;
-		}
-		sts = get_toggle_bit_mask(&tgl_state, remote);
-	}
-}
-
 
 static enum button_status record_buttons(struct button_state* btn_state,
 					 enum button_status last_status,
@@ -2698,13 +2250,15 @@ static enum button_status record_buttons(struct button_state* btn_state,
 			return STS_BTN_ALL_DONE;
 		}
 		if (!resethw()) {
-			btn_state_set_message(btn_state, "Could not reset hardware.");
+			btn_state_set_message(btn_state,
+					      "Could not reset hardware.");
 			return STS_BTN_HARD_ERROR;
 		}
 
 		f = fopen(opts->filename, "r");
 		if (f == NULL) {
-			btn_state_set_message(btn_state, "Could not reopen config file");
+			btn_state_set_message(btn_state,
+					      "Could not reopen config file");
 			return STS_BTN_HARD_ERROR;
 		}
 		my_remote = read_config(f, opts->filename);
@@ -2719,14 +2273,15 @@ static enum button_status record_buttons(struct button_state* btn_state,
 		if (my_remote == (void *)-1) {
 			btn_state_set_message(btn_state,
 				"Reading of config file failed"
-				" this should never happenn");
+				" this should never happen.");
 			return STS_BTN_HARD_ERROR;
 		}
 		if (!has_toggle_bit_mask(my_remote)) {
 			if (!opts->using_template &&
 				strcmp(curr_driver->name, "devinput") != 0)
 			{
-				do_get_toggle_bit_mask(my_remote, state, opts);
+				remote = *(my_remote);
+				return STS_BTN_GET_TOGGLE_BITS;
 			}
 		} else {
 			set_toggle_bit_mask(my_remote,
@@ -2748,6 +2303,492 @@ static enum button_status record_buttons(struct button_state* btn_state,
 				      last_status);
 		return STS_BTN_HARD_ERROR;
 
+	}
+}
+
+
+/** Write the provisionary config file. */
+static void
+config_file_setup(struct main_state* state, const struct opts* opts)
+{
+	state->fout = fopen(opts->filename, "w");
+	if (state->fout == NULL) {
+		fprintf(stderr, "%s: could not open new config file %s\n",
+			progname, opts->filename);
+		perror("While opening config file for write");
+		exit(EXIT_FAILURE);
+	}
+	fprint_copyright(state->fout);
+	fprint_comment(state->fout, &remote, opts->commandline);
+	fprint_remote_head(state->fout, &remote);
+	fprint_remote_signal_head(state->fout, &remote);
+}
+
+
+/** Write the final config file. */
+static int
+config_file_finish(struct main_state* state, const struct opts* opts)
+{
+	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
+		fprintf(stderr, "Could not open \"%s\"\n", opts->filename);
+		perror("While opening for write");
+		return 0;
+	}
+	fprint_copyright(state->fout);
+	fprint_remotes(state->fout, &remote, opts->commandline);
+	return 1;
+}
+
+
+/*   -----------------------------  UI part --------------------------   */
+
+#define USAGE	    "Usage: irrecord [options] [config file]\n" \
+		    "	    irrecord -a <config file> \n" \
+		    "	    irrecord -l \n"
+
+
+static const char* const help =
+USAGE
+"\nOptions:\n"
+"\t -H --driver=driver\tUse given driver\n"
+"\t -d --device=device\tRead from given device\n"
+"\t -a --analyse\t\tAnalyse raw_codes config files\n"
+"\t -l --list-namespace\tList valid button names\n"
+"\t -U --plugindir=dir\tLoad drivers from dir\n"
+"\t -f --force\t\tForce raw mode\n"
+"\t -n --disable-namespace\tDisable namespace checks\n"
+"\t -Y --dynamic-codes\tEnable dynamic codes\n"
+"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
+"\t -h --help\t\tDisplay this message\n"
+"\t -v --version\t\tDisplay version\n";
+
+
+static const struct option long_options[] = {
+	{"help", no_argument, NULL, 'h'},
+	{"version", no_argument, NULL, 'v'},
+	{"analyse", no_argument, NULL, 'a'},
+	{"device", required_argument, NULL, 'd'},
+	{"options-file", required_argument, NULL, 'O'},
+	{"debug", required_argument, NULL, 'D'},
+	{"loglevel", required_argument, NULL, 'D'},
+	{"driver", required_argument, NULL, 'H'},
+	{"force", no_argument, NULL, 'f'},
+	{"disable-namespace", no_argument, NULL, 'n'},
+	{"list-namespace", no_argument, NULL, 'l'},
+	{"plugindir", required_argument, NULL, 'U'},
+	{"dynamic-codes", no_argument, NULL, 'Y'},
+	{"pre", no_argument, NULL, 'p'},
+	{"post", no_argument, NULL, 'P'},
+	{"test", no_argument, NULL, 't'},
+	{"invert", no_argument, NULL, 'i'},
+	{"trail", no_argument, NULL, 'T'},
+	{0, 0, 0, 0}
+};
+
+
+const char* const MSG_WELCOME =
+	"\nirrecord -  application for recording IR-codes" " for usage with lirc\n"
+	"Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n"
+	"\n"
+	"This program will record the signals from your remote control\n"
+	"and create a config file for lircd.\n"
+	"\n"
+	"A proper config file for lircd is maybe the most vital part of this\n"
+	"package, so you should invest some time to create a working config\n"
+	"file. Although I put a good deal of effort in this program it is often\n"
+	"not possible to automatically recognize all features of a remote\n"
+	"control. Often short-comings of the receiver hardware make it nearly\n"
+	"impossible. If you have problems to create a config file READ THE\n"
+	"DOCUMENTATION at https://sf.net/p/lirc-remotes/wiki\n"
+	"\n"
+	"If there already is a remote control of the same brand available at\n"
+	"http://sf.net/p/lirc-remotes you might want to try using such a\n"
+	"remote as a template. The config files already contains all\n"
+	"parameters of the protocol used by remotes of a certain brand and\n"
+	"knowing these parameters makes the job of this program much\n"
+	"easier. There are also template files for the most common protocols\n"
+	"available. Templates can be downloaded using irdb-get(1). You use a\n"
+	"template file by providing the path of the file as a command line\n"
+	"parameter.\n"
+	"\n"
+	"Please take the time to finish the file as described in\n"
+	"https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
+	"to  <lirc@bartelmus.de> so it can be made available to others.\n";
+
+static const char* const MSG_DEVINPUT =
+	"Usually it's not necessary to create a new config file for devinput\n"
+	"devices. A generic config file can be found at:\n"
+	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
+	"It can be downloaded using irdb-get(1)\n"
+	"Please try this config file before creating your own.\n";
+
+static const char* const MSG_TOGGLE_BIT_INTRO =
+	"Checking for toggle bit mask.\n"
+	"Please press an arbitrary button repeatedly as fast as possible.\n"
+	"Make sure you keep pressing the SAME button and that you DON'T HOLD\n"
+	"the button down!.\n"
+	"If you can't see any dots appear, wait a bit between button presses.\n\n"
+	"Press RETURN to continue.";
+
+static const char* MSG_LENGTHS_INIT =
+	"Now start pressing buttons on your remote control.\n\n"
+	"It is very important that you press many different buttons and hold them\n"
+	"down for approximately one second. Each button should generate at least one\n"
+	"dot but in no case more than ten dots of output.\n"
+	"Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n";
+
+
+/** Set up default values for all command line options + filename. */
+static void add_defaults(void)
+{
+	char level[4];
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	const char* const defaults[] = {
+		"lircd:plugindir",		PLUGINDIR,
+		"irrecord:driver",		"devinput",
+		"irrecord:device",		 LIRC_DRIVER_DEVICE,
+		"irrecord:analyse",		"False",
+		"irrecord:force",		"False",
+		"irrecord:disable-namespace",	"False",
+		"irrecord:dynamic-codes",	"False",
+		"irrecord:list_namespace",	"False",
+		"irrecord:filename",		"irrecord.conf",
+		"lircd:debug",			 level,
+		(const char*)NULL,	(const char*)NULL
+	};
+	options_add_defaults(defaults);
+}
+
+
+/** Parse command line, update the options dict. */
+static void parse_options(int argc, char** const argv)
+{
+	int c;
+
+	const char* const optstring = "had:D:H:fnlO:pPtiTU:vY";
+
+	add_defaults();
+	optind = 1;
+	while ((c = getopt_long(argc, argv, optstring, long_options, NULL))
+		!= -1 )
+	{
+		switch (c) {
+		case 'a':
+			options_set_opt("irrecord:analyse", "True");
+			break;
+		case 'D':
+			if (string2loglevel(optarg) == LIRC_BADLEVEL){
+				fprintf(stderr,
+					"Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			options_set_opt("lircd:debug", optarg);
+			break;
+		case 'd':
+			options_set_opt("irrecord:device", optarg);
+			break;
+		case 'f':
+			options_set_opt("irrecord:force", "True");
+			break;
+		case 'H':
+			options_set_opt("irrecord:driver", optarg);
+			break;
+		case 'h':
+			fputs(help, stdout);
+			exit(EXIT_SUCCESS);
+		case 'i':
+			options_set_opt("irrecord:invert", "True");
+			break;
+		case 'l':
+			options_set_opt("irrecord:list-namespace", "True");
+			break;
+		case 'n':
+			options_set_opt("irrecord:disable-namespace", "True");
+			break;
+		case 'O':
+			return;
+		case 'P':
+			options_set_opt("irrecord:post", "True");
+			break;
+		case 'p':
+			options_set_opt("irrecord:pre", "True");
+			break;
+		case 't':
+			options_set_opt("irrecord:test", "True");
+			break;
+		case 'T':
+			options_set_opt("irrecord:trail", "True");
+			break;
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
+		case 'Y':
+			options_set_opt("lircd:dynamic-codes", "True");
+			break;
+		case 'v':
+			printf("irrecord %s\n",  VERSION);
+			exit(EXIT_SUCCESS);
+		default:
+			fputs(USAGE, stderr);
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (optind == argc - 1) {
+		options_set_opt("irrecord:filename", argv[optind]);
+	} else if (optind != argc) {
+		fputs("irrecord: invalid argument count\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
+
+/** Check options, possibly run simple ones. Returns status. */
+static enum init_status init(struct opts* opts, struct main_state* state)
+{
+	char filename_new[256];
+	char logpath[256];
+	int flags;
+	struct ir_remote* my_remote;
+	FILE* f;
+
+	hw_choose_driver(NULL);
+	if (!opts->analyse && hw_choose_driver(opts->driver) != 0) {
+		return STS_INIT_BAD_DRIVER;
+	}
+	ir_remote_init(opts->dynamic_codes);
+	lirc_log_get_clientlog("irrecord", logpath, sizeof(logpath));
+	lirc_log_set_file(logpath);
+	lirc_log_open("irrecord", 0, opts->loglevel);
+	curr_driver->open_func(opts->device);
+	if (strcmp(curr_driver->name, "null") == 0 && !opts->analyse) {
+		return STS_INIT_NO_DRIVER;
+	}
+	f = fopen(opts->filename, "r");
+	if (f != NULL) {
+
+		if (opts->force) {
+			return STS_INIT_FORCE_TMPL;
+		}
+		my_remote = read_config(f, opts->filename);
+		fclose(f);
+		if (my_remote == (void *)-1 || my_remote == NULL) {
+			return STS_INIT_BAD_FILE;
+		}
+		opts->using_template = 1;
+		if (opts->analyse) {
+			return STS_INIT_ANALYZE;
+		}
+		if (opts->test) {
+			if (opts->trail)
+				for_each_remote(my_remote, remove_trail);
+			for_each_remote(my_remote, remove_pre_data);
+			for_each_remote(my_remote, remove_post_data);
+			if (opts->get_pre)
+				for_each_remote(my_remote, get_pre_data);
+			if (opts->get_post)
+				for_each_remote(my_remote, get_post_data);
+			if (opts->invert)
+				for_each_remote(my_remote, invert_data);
+
+			fprint_remotes(stdout, my_remote, opts->commandline);
+			free_config(my_remote);
+			return (STS_INIT_TESTED);
+		}
+		remote.name = opts->filename;
+		remote.codes = NULL;
+		remote.last_code = NULL;
+		remote.next = NULL;
+		if (remote.pre_p == 0
+		    && remote.pre_s == 0
+		    && remote.post_p == 0
+		    && remote.post_s == 0) {
+			remote.bits = bit_count(&remote);
+			remote.pre_data_bits = 0;
+			remote.post_data_bits = 0;
+		}
+		if (my_remote->next != NULL) {
+			fprintf(stderr,
+			        "%s: only first remote definition in file \"%s\" used\n",
+				progname, opts->filename);
+		}
+		snprintf(filename_new, sizeof(filename_new),
+			 "%s.conf", opts->filename);
+		opts->filename = strdup(filename_new);
+	} else {
+		if (opts->analyse) {
+			fprintf(stderr,
+			        "%s: no input file given, ignoring analyse flag\n",
+			        progname);
+			opts->analyse = 0;
+		}
+	}
+	state->fout = fopen(opts->filename, "w");
+	if (state->fout == NULL) {
+		return STS_INIT_FOPEN;
+	}
+	if (curr_driver->init_func) {
+		if (!curr_driver->init_func()) {
+			fclose(state->fout);
+			unlink(opts->filename);
+			return STS_INIT_HW_FAIL;
+		}
+	}
+	aeps = (curr_driver->resolution > aeps ?
+			curr_driver->resolution : aeps);
+	if (curr_driver->rec_mode != LIRC_MODE_MODE2
+	    && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
+		return STS_INIT_BAD_MODE;
+		fclose(state->fout);
+		unlink(opts->filename);
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
+		return STS_INIT_BAD_MODE;
+	}
+	flags = fcntl(curr_driver->fd, F_GETFL, 0);
+	if (flags == -1
+	    || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		fprintf(stderr,
+			"%s: could not set O_NONBLOCK flag\n",
+			progname);
+		fclose(state->fout);
+		unlink(opts->filename);
+		if (curr_driver->deinit_func)
+			curr_driver->deinit_func();
+		return STS_INIT_O_NONBLOCK;
+	}
+	return STS_INIT_OK;
+}
+
+static int
+get_options(int argc, char** argv, const char* filename, struct opts* options)
+{
+	options->force = 0;
+	options_load(argc, argv, NULL, parse_options);
+	options->analyse = options_getboolean("irrecord:analyse");
+	options->device = options_getstring("irrecord:device");
+	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
+	options->driver = options_getstring("irrecord:driver");
+	options->force = options_getboolean("irrecord:force");
+	options->disable_namespace =
+		options_getboolean("irrecord:disable-namespace");
+	options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
+	options->get_pre = options_getboolean("irrecord:pre");
+	options->get_post = options_getboolean("irrecord:post");
+	options->list_namespace =
+		options_getboolean("irrecord:list_namespace");
+	options->test = options_getboolean("irrecord:test");
+	options->invert = options_getboolean("irrecord:invert");
+	options->trail = options_getboolean("irrecord:trail");
+	options->filename = options_getstring("irrecord:filename");
+	return 1;
+}
+
+
+/** View part of get_toggle_bit_mask(). */
+static void do_get_toggle_bit_mask(struct ir_remote* remote,
+				   struct main_state* state,
+				   const struct opts* opts)
+{
+	const char* const MISSING_MASK_MSG =
+		"But I know for sure that RC6 has a toggle bit!\n";
+	enum toggle_status sts;
+	struct toggle_state tgl_state;
+
+	printf(MSG_TOGGLE_BIT_INTRO);
+	fflush(stdout);
+	getchar();
+	flushhw();
+	toggle_state_init(&tgl_state);
+	sts = STS_TGL_AGAIN;
+	while (1) {
+		switch (sts) {
+			case STS_TGL_TIMEOUT:
+				fprintf(stderr,
+					"Timeout (10 sec), giving up");
+				exit(EXIT_FAILURE);
+			case STS_TGL_GOT_ONE_PRESS:
+				printf(".");
+				fflush(stdout);
+				sts = STS_TGL_AGAIN;
+				continue;
+			case STS_TGL_FOUND:
+				printf("\nToggle bit mask is 0x%llx.\n",
+				       (__u64) remote->toggle_bit_mask);
+				if (is_rc6(remote)) {
+					printf("RC6 mask is 0x%llx.\n",
+					       (__u64) remote->rc6_mask);
+				}
+				fflush(stdout);
+				return;
+			case STS_TGL_NOT_FOUND:
+				printf("Cannot find any toggle mask.\n");
+				if (!is_rc6(remote))
+					break;
+				printf(MISSING_MASK_MSG);
+				unlink(opts->filename);
+				if (curr_driver->deinit_func)
+					curr_driver->deinit_func();
+				exit(EXIT_FAILURE);
+			case STS_TGL_AGAIN:
+				break;
+		}
+		sts = get_toggle_bit_mask(&tgl_state, remote);
+	}
+}
+
+
+/** View part of init: run init() and handle results. Returns or exits. */
+static void do_init(struct opts* opts, struct main_state* state)
+{
+	enum init_status sts;
+
+	sts = init(opts, state);
+	switch (sts) {
+		case STS_INIT_BAD_DRIVER:
+			fprintf(stderr, "Driver `%s' not found", opts->driver);
+			fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
+			hw_print_drivers(stderr);
+			exit(EXIT_FAILURE);
+		case STS_INIT_NO_DRIVER:
+			fprintf(stderr,
+			       "irrrecord: irrecord does not make sense without hardware\n");
+			exit(EXIT_FAILURE);
+		case STS_INIT_FORCE_TMPL:
+			fprintf(stderr,
+				"%s: file \"%s\" already exists\n" "%s: you cannot use the --force option "
+				"together with a template file\n",
+				progname, opts->filename, progname);
+			exit(EXIT_FAILURE);
+		case STS_INIT_BAD_FILE:
+			fprintf(stderr,
+				"%s: file \"%s\" does not contain valid data\n",
+				progname, opts->filename);
+			exit(EXIT_FAILURE);
+		case STS_INIT_TESTED:
+			exit(0);
+		case STS_INIT_FOPEN:
+			fprintf(stderr,
+				"%s: could not open new config file %s\n",
+				progname, opts->filename);
+			perror(progname);
+			exit(EXIT_FAILURE);
+		case STS_INIT_HW_FAIL:
+			fprintf(stderr,
+				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
+				progname);
+			exit(EXIT_FAILURE);
+		case STS_INIT_BAD_MODE:
+			fprintf(stderr, "%s: mode not supported\n", progname);
+			exit(EXIT_FAILURE);
+		case STS_INIT_O_NONBLOCK:
+			fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
+			exit(EXIT_FAILURE);
+		case STS_INIT_ANALYZE:
+			do_analyse(opts, state);
+			exit(EXIT_SUCCESS);
+		case STS_INIT_OK:
+			return;
 	}
 }
 
@@ -2780,6 +2821,9 @@ static enum button_status get_button_data(struct button_state* btn_state,
 			printf("Timeout (10 seconds), try again\n");
 			sts = STS_BTN_INIT_DATA;
 			continue;
+		case STS_BTN_GET_TOGGLE_BITS:
+			do_get_toggle_bit_mask(&remote, state, opts);
+			return STS_BTN_ALL_DONE;
 		case STS_BTN_SOFT_ERROR:
 			printf("Something went wrong: ");
 			printf(btn_state->message);
@@ -2806,6 +2850,7 @@ static enum button_status get_button_data(struct button_state* btn_state,
 }
 
 
+/** View part of record_buttons. */
 void do_record_buttons(struct main_state* state, const struct opts* opts)
 {
 	struct button_state btn_state;
@@ -2853,6 +2898,9 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 			printf("Illegal data-state timeout\n");
 			sts = STS_BTN_INIT;
 			continue;
+		case STS_BTN_GET_TOGGLE_BITS:
+			do_get_toggle_bit_mask(&remote, state, opts);
+			return;
 		case STS_BTN_SOFT_ERROR:
 			printf(btn_state.message);
 			printf("Press RETURN to continue.\n\n");
@@ -2993,39 +3041,6 @@ void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 		}
 		sts = get_gap_length(&gap_state, &remote);
 	}
-}
-
-
-/** Write the provisionary config file. */
-static void
-config_file_setup(struct main_state* state, const struct opts* opts)
-{
-	state->fout = fopen(opts->filename, "w");
-	if (state->fout == NULL) {
-		fprintf(stderr, "%s: could not open new config file %s\n",
-			progname, opts->filename);
-		perror("While opening config file for write");
-		exit(EXIT_FAILURE);
-	}
-	fprint_copyright(state->fout);
-	fprint_comment(state->fout, &remote, opts->commandline);
-	fprint_remote_head(state->fout, &remote);
-	fprint_remote_signal_head(state->fout, &remote);
-}
-
-
-/** Write the final config file. */
-static int
-config_file_finish(struct main_state* state, const struct opts* opts)
-{
-	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
-		fprintf(stderr, "Could not open \"%s\"\n", opts->filename);
-		perror("While opening for write");
-		return 0;
-	}
-	fprint_copyright(state->fout);
-	fprint_remotes(state->fout, &remote, opts->commandline);
-	return 1;
 }
 
 
