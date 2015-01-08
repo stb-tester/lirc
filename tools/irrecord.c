@@ -1837,8 +1837,8 @@ get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 }
 
 
-/** analyse non-interactive  get_lengths. */
-void analyse_get_lengths(struct lengths_state* lengths_state)
+/** analyse non-interactive get_lengths, returns boolean ok/fail. */
+int analyse_get_lengths(struct lengths_state* lengths_state)
 {
 	enum lengths_status status = STS_LEN_AGAIN;
 
@@ -1854,29 +1854,31 @@ void analyse_get_lengths(struct lengths_state* lengths_state)
 			break;
 		case STS_LEN_FAIL:
 			logprintf(LIRC_ERROR, "get_lengths() failure");
-			return;
+			return 0;
 		case STS_LEN_RAW_OK:
 			logprintf(LIRC_ERROR, "raw analyse result?!");
-			return;
+			return 0;
 		case STS_LEN_TIMEOUT:
 			logprintf(LIRC_ERROR, "analyse timeout?!");
-			return;
+			return 0;
 		case STS_LEN_NO_GAP_FOUND:
 			logprintf(LIRC_ERROR, "analyse, no gap?!");
-			return;
+			return 0;
 		case STS_LEN_TOO_LONG:
 			logprintf(LIRC_ERROR, "analyse, signal too long?!");
-			return;
+			return 0;
 		default:
 			logprintf(LIRC_ERROR,
 				  "Cannot read raw data (%d)", status);
-			exit(EXIT_FAILURE);
+			return 0;
 		}
 	}
+	return 1;
 }
 
 
-static void analyse_remote(struct ir_remote *raw_data)
+/** Implement the analyse task, return 1 for ok, 0 for errors. */
+static int analyse_remote(struct ir_remote *raw_data)
 {
 	struct ir_ncode *codes;
 	struct decode_ctx_t decode_ctx;
@@ -1892,7 +1894,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 		logprintf(LIRC_ERROR,
 			  "remote %s not in raw mode, ignoring",
 			  raw_data->name);
-		return;
+		return 0;
 	}
 	flushhw();
 	aeps = raw_data->aeps;
@@ -1903,7 +1905,8 @@ static void analyse_remote(struct ir_remote *raw_data)
 	current_index = 0;
 	memset(&remote, 0, sizeof(remote));
 	lengths_state_init(&lengths_state);
-	analyse_get_lengths(&lengths_state);
+	if (!analyse_get_lengths(&lengths_state))
+		return 0;
 
 	if (is_rc6(&remote) && remote.bits >= 5) {
 		/* have to assume something as it's very difficult to
@@ -1917,7 +1920,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 	new_codes = malloc(new_codes_count * sizeof(*new_codes));
 	if (new_codes == NULL) {
 		logprintf(LIRC_ERROR, "Out of memory");
-		return;
+		return 0;
 	}
 	memset(new_codes, 0, new_codes_count * sizeof(*new_codes));
 	codes = raw_data->codes;
@@ -1944,7 +1947,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 				if (renew_codes == NULL) {
 					logprintf(LIRC_ERROR, "Out of memory");
 					free(new_codes);
-					return;
+					return 0;
 				}
 				memset(&new_codes[new_codes_count / 2],
 				       0,
@@ -1979,6 +1982,7 @@ static void analyse_remote(struct ir_remote *raw_data)
 	fprint_remotes(stdout, &remote, (const char*)NULL);
 	remote.codes = NULL;
 	free(new_codes);
+	return 1;
 }
 
 /** The --analyse wrapper. */
