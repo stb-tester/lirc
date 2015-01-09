@@ -243,6 +243,7 @@ static enum init_status init(struct opts *opts, struct main_state *state)
 	}
 	ir_remote_init(opts->dynamic_codes);
 	lirc_log_get_clientlog("irrecord", logpath, sizeof(logpath));
+	(void) unlink(logpath);
 	lirc_log_set_file(logpath);
 	lirc_log_open("irrecord", 0, opts->loglevel);
 	curr_driver->open_func(opts->device);
