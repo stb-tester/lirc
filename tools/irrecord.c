@@ -8,78 +8,71 @@
  *
  */
 
-
 #include "lirc_private.h"
 #include "irrecord.h"
 
-
-// globals
-struct ir_remote remote;
-struct ir_ncode ncode;
-
-unsigned int eps = 30;
-lirc_t aeps = 100;
-
-
 /*    -------------------------- C file -------------------------------- */
-
 
 // forwards
 static lirc_t emulation_readdata(lirc_t timeout);
 
 // Constants
 static const struct driver hw_emulation = {
-	.name		= "emulation",
-	.device		= "/dev/null",
-	.features	= LIRC_CAN_REC_MODE2,
-	.send_mode	= 0,
-	.rec_mode	= LIRC_MODE_MODE2,
-	.code_length	= 0,
-	.init_func	= NULL,
-	.deinit_func	= NULL,
-	.send_func	= NULL,
-	.rec_func	= NULL,
-	.decode_func	= NULL,
-	.drvctl_func	= NULL,
-	.readdata	= emulation_readdata,
-	.open_func	= default_open,
-	.close_func	= default_close,
-	.api_version	= 2,
+	.name = "emulation",
+	.device = "/dev/null",
+	.features = LIRC_CAN_REC_MODE2,
+	.send_mode = 0,
+	.rec_mode = LIRC_MODE_MODE2,
+	.code_length = 0,
+	.init_func = NULL,
+	.deinit_func = NULL,
+	.send_func = NULL,
+	.rec_func = NULL,
+	.decode_func = NULL,
+	.drvctl_func = NULL,
+	.readdata = emulation_readdata,
+	.open_func = default_open,
+	.close_func = default_close,
+	.api_version = 2,
 	.driver_version = "0.9.2"
 };
 
 // Globals
+
 struct ir_remote remote;
-struct ir_ncode ncode;
+unsigned int eps = 30;
+lirc_t aeps = 100;
 
-unsigned int eps;
-lirc_t aeps;
-
-
+// Static data
 
 static lirc_t signals[MAX_SIGNALS];
-
-
 static struct ir_remote *emulation_data;
+static struct ir_ncode ncode;
 static struct ir_ncode *next_code = NULL;
 static struct ir_ncode *current_code = NULL;
 static int current_index = 0;
 static int current_rep = 0;
 
 static struct lengths *first_space = NULL, *first_pulse = NULL;
-static struct lengths *first_sum = NULL, *first_gap = NULL, *first_repeat_gap = NULL;
+static struct lengths *first_sum = NULL;
+static struct lengths *first_gap = NULL;
+static struct lengths *first_repeat_gap = NULL;
 static struct lengths *first_signal_length = NULL;
 static struct lengths *first_headerp = NULL, *first_headers = NULL;
-static struct lengths *first_1lead = NULL, *first_3lead = NULL, *first_trail = NULL;
+static struct lengths *first_1lead = NULL;
+static struct lengths *first_3lead = NULL;
+static struct lengths *first_trail = NULL;
 static struct lengths *first_repeatp = NULL, *first_repeats = NULL;
 
 static __u32 lengths[MAX_SIGNALS];
 static __u32 first_length, first_lengths, second_lengths;
-static unsigned int count, count_spaces, count_3repeats, count_5repeats, count_signals;
+static unsigned int count, count_spaces, count_signals;
+static unsigned int count_3repeats, count_5repeats;
 
+// Functions
 
 /** snprintf-style message formatting into state->message. */
-void btn_state_set_message(struct button_state* state, const char* fmt, ...)
+void btn_state_set_message(struct button_state *state, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -93,8 +86,7 @@ static void fprint_copyright(FILE * fout)
 	fprintf(fout, "\n"
 		"# Please take the time to finish this file as described in\n"
 		"# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/\n"
-		"# and make it available to others by sending it to \n"
-		"# <lirc@bartelmus.de>\n");
+		"# and make it available to others by sending it to \n" "# <lirc@bartelmus.de>\n");
 }
 
 
@@ -151,7 +143,7 @@ void flushhw(void)
 
 
 /** Reset the hardware. Return 1 on OK, else 0 and possibly closes driver. */
-int resethw(void )
+int resethw(void)
 {
 	int flags;
 
@@ -162,8 +154,7 @@ int resethw(void )
 			return (0);
 	}
 	flags = fcntl(curr_driver->fd, F_GETFL, 0);
-	if (flags == -1 ||
-	    fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		return (0);
@@ -172,13 +163,13 @@ int resethw(void )
 }
 
 
-void gap_state_init(struct gap_state* state)
+void gap_state_init(struct gap_state *state)
 {
-       memset(state, 0, sizeof(struct gap_state));
+	memset(state, 0, sizeof(struct gap_state));
 }
 
 
-void lengths_state_init(struct lengths_state* state)
+void lengths_state_init(struct lengths_state *state)
 {
 	count = 0;
 	count_spaces = 0;
@@ -194,7 +185,7 @@ void lengths_state_init(struct lengths_state* state)
 }
 
 
-void toggle_state_init(struct toggle_state* state)
+void toggle_state_init(struct toggle_state *state)
 {
 	memset(state, 0, sizeof(struct toggle_state));
 	state->retries = 30;
@@ -202,33 +193,12 @@ void toggle_state_init(struct toggle_state* state)
 }
 
 
-void button_state_init(struct button_state* state)
+void button_state_init(struct button_state *state)
 {
 	memset(state, 0, sizeof(struct button_state));
 	state->retval = EXIT_SUCCESS;
 }
 
-
-/** Stuff command line into the single string buff. */
-static void get_commandline(int argc, char** argv, char* buff, size_t size)
-{
-	int i;
-	int j;
-	int dest = 0;
-	if (size == 0)
-		return;
-	for (i = 1; i < argc; i += 1 ) {
-		for (j=0; argv[i][j] != '\0'; j += 1) {
-			if (dest  + 1 >= size)
-				break;
-			buff[dest++] = argv[i][j];
-		}
-		if (dest  + 1 >= size)
-			break;
-		buff[dest++] = ' ';
-	}
-	buff[--dest] = '\0';
-}
 
 static lirc_t calc_signal(struct lengths *len)
 {
@@ -275,7 +245,7 @@ void get_pre_data(struct ir_remote *remote)
 	struct ir_ncode *codes;
 	ir_code mask, last;
 	int count, i;
-	struct ir_code_node* n;
+	struct ir_code_node *n;
 
 	if (remote->bits == 0)
 		return;
@@ -393,9 +363,7 @@ void remove_pre_data(struct ir_remote *remote)
 	struct ir_ncode *codes;
 	struct ir_code_node *n;
 
-	if (remote->pre_data_bits == 0
-	    || remote->pre_p != 0
-	    || remote->pre_s != 0) {
+	if (remote->pre_data_bits == 0 || remote->pre_p != 0 || remote->pre_s != 0) {
 		remote = remote->next;
 		return;
 	}
@@ -467,7 +435,7 @@ void invert_data(struct ir_remote *remote)
 
 	/* invert codes */
 	mask = gen_mask(remote->bits);
-	for (codes = remote->codes;codes->name != NULL; codes++) {
+	for (codes = remote->codes; codes->name != NULL; codes++) {
 		codes->code ^= mask;
 		for (n = codes->next; n != NULL; n = n->next) {
 			n->code ^= mask;
@@ -488,7 +456,7 @@ void remove_trail(struct ir_remote *remote)
 	    || expect(remote, remote->pzero, remote->pone))
 		return;
 	if (!(expect(remote, remote->sone, remote->szero)
-	    && expect(remote, remote->szero, remote->sone)))
+	      && expect(remote, remote->szero, remote->sone)))
 		return;
 	if (expect(remote, remote->ptrail, remote->pone)) {
 		extra_bit = 1;
@@ -532,16 +500,12 @@ static int mywaitfordata(__u32 maxusec)
 					tv.tv_sec = maxusec / 1000000;
 					tv.tv_usec = maxusec % 1000000;
 					ret = select(curr_driver->fd + 1,
-						     &fds,
-						     NULL,
-						     NULL,
-						     &tv);
+						     &fds, NULL, NULL, &tv);
 					if (ret == 0)
 						return (0);
 				} else {
 					ret = select(curr_driver->fd + 1,
-						     &fds,
-						     NULL, NULL, NULL);
+						     &fds, NULL, NULL, NULL);
 				}
 			}
 			while (ret == -1 && errno == EINTR);
@@ -576,8 +540,8 @@ static lirc_t emulation_readdata(lirc_t timeout)
 		sum = 0;
 	} else {
 		if (current_code->name == NULL) {
-			logprintf(LIRC_WARNING, "%s: no data found",
-				  emulation_data->name);
+			logprintf(LIRC_WARNING,
+				  "%s: no data found", emulation_data->name);
 			data = 0;
 		}
 		if (current_index >= current_code->length) {
@@ -620,7 +584,6 @@ static lirc_t emulation_readdata(lirc_t timeout)
 	 */
 	return data;
 }
-
 
 
 static struct lengths *new_length(lirc_t length)
@@ -752,10 +715,8 @@ static void merge_lengths(struct lengths *first)
 				&& inner->min >= new_sum / new_count * (100 - eps))) {
 				l->sum = new_sum;
 				l->count = new_count;
-				l->upper_bound = max(l->upper_bound,
-						     inner->upper_bound);
-				l->lower_bound = min(l->lower_bound,
-						     inner->lower_bound);
+				l->upper_bound = max(l->upper_bound, inner->upper_bound);
+				l->lower_bound = min(l->lower_bound, inner->lower_bound);
 				l->min = min(l->min, inner->min);
 				l->max = max(l->max, inner->max);
 
@@ -770,10 +731,8 @@ static void merge_lengths(struct lengths *first)
 	}
 	for (l = first; l != NULL; l = l->next) {
 		logprintf(LIRC_DEBUG, "%d x %u [%u,%u]",
-		       l->count,
-		       (__u32) calc_signal(l),
-		       (__u32) l->min,
-		       (__u32) l->max);
+			  l->count, (__u32) calc_signal(l),
+			  (__u32) l->min, (__u32) l->max);
 	}
 
 }
@@ -791,8 +750,8 @@ get_max_length(struct lengths *first, unsigned int *sump)
 	sum = first->count;
 
 	if (first->count > 0) {
-		logprintf(LIRC_DEBUG, "%u x %u",
-		          first->count, (__u32) calc_signal(first));
+		logprintf(LIRC_DEBUG, "%u x %u", first->count,
+			  (__u32) calc_signal(first));
 	}
 	scan = first->next;
 	while (scan) {
@@ -800,8 +759,7 @@ get_max_length(struct lengths *first, unsigned int *sump)
 			max_length = scan;
 		}
 		sum += scan->count;
-		logprintf(LIRC_DEBUG, "%u x %u",
-			  scan->count, (__u32) calc_signal(scan));
+		logprintf(LIRC_DEBUG, "%u x %u", scan->count, (__u32) calc_signal(scan));
 		scan = scan->next;
 	}
 	if (sump != NULL)
@@ -824,9 +782,8 @@ int get_trail_length(struct ir_remote *remote, int interactive)
 		  "get_trail_length(): sum: %u, max_count %u",
 		  sum, max_count);
 	if (max_count >= sum * TH_TRAIL / 100) {
-		logprintf(LIRC_DEBUG,
-			 "Found trail pulse: %lu",
-			 (__u32) calc_signal(max_length));
+		logprintf(LIRC_DEBUG, "Found trail pulse: %lu",
+		          (__u32) calc_signal(max_length));
 		remote->ptrail = calc_signal(max_length);
 		return (1);
 	}
@@ -849,12 +806,9 @@ int get_lead_length(struct ir_remote *remote, int interactive)
 	first_lead = has_header(remote) ? first_3lead : first_1lead;
 	max_length = get_max_length(first_lead, &sum);
 	max_count = max_length->count;
-	logprintf(LIRC_DEBUG, "get_lead_length(): sum: %u, max_count %u",
-		  sum, max_count);
+	logprintf(LIRC_DEBUG, "get_lead_length(): sum: %u, max_count %u", sum, max_count);
 	if (max_count >= sum * TH_LEAD / 100) {
-		logprintf(LIRC_DEBUG,
-			 "Found lead pulse: %lu",
-			 (__u32) calc_signal(max_length));
+		logprintf(LIRC_DEBUG, "Found lead pulse: %lu", (__u32) calc_signal(max_length));
 		remote->plead = calc_signal(max_length);
 		return (1);
 	}
@@ -871,9 +825,7 @@ int get_lead_length(struct ir_remote *remote, int interactive)
 		b = swap;
 	}
 	if (abs(2 * a - b) < b * eps / 100 || abs(2 * a - b) < aeps) {
-		logprintf(LIRC_DEBUG,
-			 "Found hidden lead pulse: %lu",
-			 (__u32) a);
+		logprintf(LIRC_DEBUG, "Found hidden lead pulse: %lu", (__u32) a);
 		remote->plead = a;
 		return (1);
 	}
@@ -895,28 +847,22 @@ int get_header_length(struct ir_remote *remote, int interactive)
 		logprintf(LIRC_DEBUG, "No header data.");
 		return (1);
 	}
-	logprintf(LIRC_DEBUG, "get_header_length(): sum: %u, max_count %u",
-	          sum, max_count);
+	logprintf(LIRC_DEBUG, "get_header_length(): sum: %u, max_count %u", sum, max_count);
 
 	if (max_count >= sum * TH_HEADER / 100) {
 		max_slength = get_max_length(first_headers, &sum);
 		max_count = max_slength->count;
-		logprintf(LIRC_DEBUG,
-			  "get_header_length(): sum: %u, max_count %u",
-			  sum, max_count);
+		logprintf(LIRC_DEBUG, "get_header_length(): sum: %u, max_count %u", sum, max_count);
 		if (max_count >= sum * TH_HEADER / 100) {
 			headerp = calc_signal(max_plength);
 			headers = calc_signal(max_slength);
 
-			logprintf(LIRC_DEBUG,
-				 "Found possible header: %lu %lu",
-				 (__u32) headerp,
-				 (__u32) headers);
+			logprintf(LIRC_DEBUG, "Found possible header: %lu %lu", (__u32) headerp,
+				  (__u32) headers);
 			remote->phead = headerp;
 			remote->shead = headers;
 			if (first_lengths < second_lengths) {
-				logprintf(LIRC_DEBUG,
-					 "Header is not being repeated.");
+				logprintf(LIRC_DEBUG, "Header is not being repeated.");
 				remote->flags |= NO_HEAD_REP;
 			}
 			return (1);
@@ -933,10 +879,8 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 	lirc_t repeatp, repeats, repeat_gap;
 	struct lengths *max_plength, *max_slength;
 
-	if (!((count_3repeats > SAMPLES / 2 ? 1 : 0) ^
-	      (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
-		if (count_3repeats > SAMPLES / 2 ||
-		    count_5repeats > SAMPLES / 2) {
+	if (!((count_3repeats > SAMPLES / 2 ? 1 : 0) ^ (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
+		if (count_3repeats > SAMPLES / 2 || count_5repeats > SAMPLES / 2) {
 			logprintf(LIRC_WARNING, "Repeat inconsistency.");
 			return (0);
 		}
@@ -946,43 +890,31 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 
 	max_plength = get_max_length(first_repeatp, &sum);
 	max_count = max_plength->count;
-	logprintf(LIRC_DEBUG,
-		  "get_repeat_length(): sum: %u, max_count %u",
-		  sum, max_count);
+	logprintf(LIRC_DEBUG, "get_repeat_length(): sum: %u, max_count %u", sum, max_count);
 	if (max_count >= sum * TH_REPEAT / 100) {
 		max_slength = get_max_length(first_repeats, &sum);
 		max_count = max_slength->count;
-		logprintf(LIRC_DEBUG,
-			  "get_repeat_length(): sum: %u, max_count %u",
-			  sum, max_count);
+		logprintf(LIRC_DEBUG, "get_repeat_length(): sum: %u, max_count %u", sum, max_count);
 		if (max_count >= sum * TH_REPEAT / 100) {
-			if (count_5repeats > count_3repeats
-			    && !has_header(remote)) {
+			if (count_5repeats > count_3repeats && !has_header(remote)) {
 				logprintf(LIRC_WARNING,
-    					  "Repeat code has header,"
-				          " but no header found!");
+					  "Repeat code has header," " but no header found!");
 				return (0);
 			}
-			if (count_5repeats > count_3repeats
-			    && has_header(remote)) {
+			if (count_5repeats > count_3repeats && has_header(remote)) {
 				remote->flags |= REPEAT_HEADER;
 			}
 			repeatp = calc_signal(max_plength);
 			repeats = calc_signal(max_slength);
 
-			logprintf(LIRC_DEBUG,
-				 "Found repeat code: %lu %lu",
-				 (__u32) repeatp,
-				 (__u32) repeats);
+			logprintf(LIRC_DEBUG, "Found repeat code: %lu %lu", (__u32) repeatp,
+				  (__u32) repeats);
 			remote->prepeat = repeatp;
 			remote->srepeat = repeats;
 			if (!(remote->flags & CONST_LENGTH)) {
-				max_slength = get_max_length(first_repeat_gap,
-						 	     NULL);
+				max_slength = get_max_length(first_repeat_gap, NULL);
 				repeat_gap = calc_signal(max_slength);
-				logprintf(LIRC_DEBUG,
-					 "Found repeat gap: %lu",
-					 (__u32) repeat_gap);
+				logprintf(LIRC_DEBUG, "Found repeat gap: %lu", (__u32) repeat_gap);
 				remote->repeat_gap = repeat_gap;
 
 			}
@@ -1007,16 +939,13 @@ void get_scheme(struct ir_remote *remote, int interactive)
 			logprintf(LIRC_DEBUG, "%u: %u", i, lengths[i]);
 	}
 	logprintf(LIRC_DEBUG, "get_scheme(): sum: %u length: %u signals: %u"
-	          "first_lengths: %u second_lengths: %u\n",
-		   sum, length + 1, lengths[length],
- 		   first_lengths, second_lengths);
+		  "first_lengths: %u second_lengths: %u\n",
+		  sum, length + 1, lengths[length], first_lengths, second_lengths);
 	/* FIXME !!! this heuristic is too bad */
 	if (lengths[length] >= TH_SPACE_ENC * sum / 100) {
 		length++;
-		logprintf(LIRC_DEBUG,
-			 "Space/pulse encoded remote control found.");
-		logprintf(LIRC_DEBUG,
-			 "Signal length is %u.", length);
+		logprintf(LIRC_DEBUG, "Space/pulse encoded remote control found.");
+		logprintf(LIRC_DEBUG, "Signal length is %u.", length);
 		/* this is not yet the
 		   number of bits */
 		remote->bits = length;
@@ -1050,12 +979,10 @@ void get_scheme(struct ir_remote *remote, int interactive)
 					|| calc_signal(max2p) < TH_RC6_SIGNAL)
 				    && (calc_signal(maxs) < TH_RC6_SIGNAL
 					|| calc_signal(max2s) < TH_RC6_SIGNAL)) {
-					logprintf(LIRC_DEBUG,
-						 "RC-6 remote control found.");
+					logprintf(LIRC_DEBUG, "RC-6 remote control found.");
 					set_protocol(remote, RC6);
 				} else {
-					logprintf(LIRC_DEBUG,
-						 "RC-5 remote control found.");
+					logprintf(LIRC_DEBUG, "RC-5 remote control found.");
 					set_protocol(remote, RC5);
 				}
 				return;
@@ -1080,7 +1007,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;
 	logprintf(LIRC_DEBUG, "get_data_length(): sum: %u, max_count %u",
-	          sum, max_count);
+		  sum, max_count);
 
 	if (max_count >= sum * TH_IS_BIT / 100) {
 		unlink_length(&first_pulse, max_plength);
@@ -1091,78 +1018,65 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				max2_plength = NULL;
 		}
 		logprintf(LIRC_DEBUG, "Pulse candidates: ");
-		logprintf(LIRC_DEBUG, "%u x %u",
-		          max_plength->count,
-		          (__u32) calc_signal(max_plength));
+		logprintf(LIRC_DEBUG, "%u x %u", max_plength->count,
+			  (__u32) calc_signal(max_plength));
 		if (max2_plength)
-			logprintf(LIRC_DEBUG, ", %u x %u",
-			          max2_plength->count, (__u32)
-			          calc_signal(max2_plength));
+			logprintf(LIRC_DEBUG, ", %u x %u", max2_plength->count, (__u32)
+				  calc_signal(max2_plength));
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
 		logprintf(LIRC_DEBUG,
-			  "get_data_length(): sum: %u, max_count %u",
-			  sum, max_count);
+		     	  "get_data_length(): sum: %u, max_count %u",
+		     	  sum, max_count);
 		if (max_count >= sum * TH_IS_BIT / 100) {
 			unlink_length(&first_space, max_slength);
 
 			max2_slength = get_max_length(first_space, NULL);
 			if (max2_slength != NULL) {
-				if (max2_slength->count
-				    < max_count * TH_IS_BIT / 100)
+				if (max2_slength->count < max_count * TH_IS_BIT / 100)
 					max2_slength = NULL;
 			}
-			if (max_count >= sum * TH_IS_BIT / 100 ) {
+			if (max_count >= sum * TH_IS_BIT / 100) {
 				logprintf(LIRC_DEBUG, "Space candidates: ");
-				logprintf(LIRC_DEBUG, "%u x %u",
-				       max_slength->count,
-				       (__u32) calc_signal(max_slength));
+				logprintf(LIRC_DEBUG, "%u x %u", max_slength->count,
+					  (__u32) calc_signal(max_slength));
 				if (max2_slength)
-					logprintf(LIRC_DEBUG, ", %u x %u",
-					       max2_slength->count,
-					       (__u32)calc_signal(max2_slength));
+					logprintf(LIRC_DEBUG,
+						 "%u x %u", max2_slength->count,
+						  (__u32) calc_signal(max2_slength));
 			}
 			remote->eps = eps;
 			remote->aeps = aeps;
 			if (is_biphase(remote)) {
-				if (max2_plength == NULL
-				    || max2_slength == NULL) {
-					logprintf(LIRC_NOTICE,
-						  "Unknown encoding found.");
+				if (max2_plength == NULL || max2_slength == NULL) {
+					logprintf(LIRC_NOTICE, "Unknown encoding found.");
 					return (0);
 				}
-				logprintf(LIRC_DEBUG,
-				  	 "Signals are biphase encoded.");
+				logprintf(LIRC_DEBUG, "Signals are biphase encoded.");
 				p1 = calc_signal(max_plength);
 				p2 = calc_signal(max2_plength);
 				s1 = calc_signal(max_slength);
 				s2 = calc_signal(max2_slength);
 
-				remote->pone =
-					(min(p1, p2) + max(p1, p2) / 2) / 2;
-				remote->sone =
-					(min(s1, s2) + max(s1, s2) / 2) / 2;
+				remote->pone = (min(p1, p2) + max(p1, p2) / 2) / 2;
+				remote->sone = (min(s1, s2) + max(s1, s2) / 2) / 2;
 				remote->pzero = remote->pone;
 				remote->szero = remote->sone;
 			} else {
-				if (max2_plength == NULL
-				    && max2_slength == NULL) {
-					logprintf(LIRC_NOTICE,
-						  "No encoding found.");
+				if (max2_plength == NULL && max2_slength == NULL) {
+					logprintf(LIRC_NOTICE, "No encoding found.");
 					return (0);
 				}
 				if (max2_plength && max2_slength) {
-					logprintf(LIRC_NOTICE,
-					   	  "Unknown encoding found.");
+					logprintf(LIRC_NOTICE, "Unknown encoding found.");
 					return (0);
 				}
 				p1 = calc_signal(max_plength);
 				s1 = calc_signal(max_slength);
 				if (max2_plength) {
 					p2 = calc_signal(max2_plength);
-					logprintf(LIRC_DEBUG,
-						 "Signals are pulse encoded.");
+					logprintf(LIRC_DEBUG, "Signals are pulse encoded.");
 					remote->pone = max(p1, p2);
 					remote->sone = s1;
 					remote->pzero = min(p1, p2);
@@ -1173,8 +1087,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 					}
 				} else {
 					s2 = calc_signal(max2_slength);
-					logprintf(LIRC_DEBUG,
-						 "Signals are space encoded.");
+					logprintf(LIRC_DEBUG, "Signals are space encoded.");
 					remote->pone = p1;
 					remote->sone = max(s1, s2);
 					remote->pzero = p1;
@@ -1185,16 +1098,16 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			    && (!has_repeat(remote)
 				|| remote->flags & NO_HEAD_REP)) {
 				if (!is_biphase(remote)
-				    &&
-				    ((expect(remote, remote->phead, remote->pone)
-				      && expect(remote, remote->shead, remote->sone))
-				     || (expect(remote, remote->phead, remote->pzero)
-					 && expect(remote, remote->shead, remote->szero)))) {
+				    && ((expect(remote, remote->phead, remote->pone)
+					 && expect(remote, remote->shead, remote->sone))
+					|| (expect(remote, remote->phead, remote->pzero)
+					    && expect(remote, remote->shead, remote->szero)))) {
 					remote->phead = remote->shead = 0;
 					remote->flags &= ~NO_HEAD_REP;
 					logprintf(LIRC_DEBUG, "Removed header.");
 				}
-				if (is_biphase(remote) && expect(remote, remote->shead, remote->sone)) {
+				if (is_biphase(remote)
+				    && expect(remote, remote->shead, remote->sone)) {
 					remote->plead = remote->phead;
 					remote->phead = remote->shead = 0;
 					remote->flags &= ~NO_HEAD_REP;
@@ -1207,7 +1120,8 @@ int get_data_length(struct ir_remote *remote, int interactive)
 
 				signal_length = get_max_length(first_signal_length, NULL);
 				data_length =
-				    calc_signal(signal_length) - remote->plead - remote->phead - remote->shead +
+				    calc_signal(signal_length) - remote->plead - remote->phead -
+				    remote->shead +
 				    /* + 1/2 bit */
 				    (remote->pone + remote->sone) / 2;
 				remote->bits = data_length / (remote->pone + remote->sone);
@@ -1215,8 +1129,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 					remote->bits--;
 			} else {
 				remote->bits =
-				    (remote->bits - (has_header(remote) ? 2 : 0) + 1 -
-				     (remote->ptrail > 0 ? 2 : 0)) / 2;
+				    (remote->bits -
+				     (has_header(remote) ? 2 : 0) + 1 - (remote->ptrail >
+									 0 ? 2 : 0)) / 2;
 			}
 			logprintf(LIRC_DEBUG, "Signal length is %d", remote->bits);
 			free_lengths(&max_plength);
@@ -1230,8 +1145,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 }
 
 
-enum get_gap_status
-get_gap_length(struct gap_state *state, struct ir_remote *remote)
+enum get_gap_status get_gap_length(struct gap_state *state, struct ir_remote *remote)
 {
 	while (availabledata()) {
 		curr_driver->rec_func(NULL);
@@ -1246,15 +1160,13 @@ get_gap_length(struct gap_state *state, struct ir_remote *remote)
 	}
 	gettimeofday(&(state->end), NULL);
 	if (state->flag) {
-		state->gap = time_elapsed(&(state->last),
-					  &(state->start));
+		state->gap = time_elapsed(&(state->last), &(state->start));
 		add_length(&(state->gaps), state->gap);
 		merge_lengths(state->gaps);
 		state->maxcount = 0;
 		state->scan = state->gaps;
 		while (state->scan) {
-			state->maxcount = max(state->maxcount,
-					      state->scan->count);
+			state->maxcount = max(state->maxcount, state->scan->count);
 			if (state->scan->count > SAMPLES) {
 				remote->gap = calc_signal(state->scan);
 				free_lengths(&(state->gaps));
@@ -1275,11 +1187,11 @@ get_gap_length(struct gap_state *state, struct ir_remote *remote)
 
 
 /** Return true if a given remote needs to compute toggle_mask. */
-int needs_toggle_mask(struct ir_remote* remote)
+int needs_toggle_mask(struct ir_remote *remote)
 {
-	struct ir_ncode* codes;
+	struct ir_ncode *codes;
 
-	if (! is_rc6(remote))
+	if (!is_rc6(remote))
 		return 0;
 	if (remote->codes) {
 		codes = remote->codes;
@@ -1296,14 +1208,15 @@ int needs_toggle_mask(struct ir_remote* remote)
 }
 
 
-enum lengths_status get_lengths(struct lengths_state* state,
-			        struct ir_remote *remote,
-			        int force, int interactive)
+enum lengths_status get_lengths(struct lengths_state *state,
+				struct ir_remote *remote,
+				int force, int interactive)
 {
 	int i;
 	struct lengths *scan;
 	int maxcount = 0;
 	static int lastmaxcount = 0;
+	enum lengths_status again = STS_LEN_AGAIN;
 
 	state->data = curr_driver->readdata(10000000);
 	if (!state->data) {
@@ -1321,14 +1234,12 @@ enum lengths_status get_lengths(struct lengths_state* state,
 			state->average = state->data;
 			state->maxspace = state->data;
 		} else if (is_space(state->data)) {
-			if (state->data > MIN_GAP
-				|| state->data > 100 * state->average
-				/* this MUST be a gap */
-				|| (state->data >= 5000 && count_spaces > 10
-					&& state->data > 5 * state->average)
-				|| (state->data < 5000 && count_spaces > 10
-					&& state->data > 5 * state->maxspace / 2))
-			{
+			if (state->data > MIN_GAP || state->data > 100 * state->average
+			    /* this MUST be a gap */
+			    || (state->data >= 5000 && count_spaces > 10
+				&& state->data > 5 * state->average)
+			    || (state->data < 5000 && count_spaces > 10
+				&& state->data > 5 * state->maxspace / 2)) {
 				add_length(&first_sum, state->sum);
 				merge_lengths(first_sum);
 				add_length(&first_gap, state->data);
@@ -1345,9 +1256,9 @@ enum lengths_status get_lengths(struct lengths_state* state,
 					if (scan->count > SAMPLES) {
 						remote->gap = calc_signal(scan);
 						remote->flags |= CONST_LENGTH;
-						logprintf(LIRC_DEBUG,
-							  "Found const length: %u",
+						logprintf(LIRC_DEBUG, "Found const length: %u",
 							  (__u32) remote->gap);
+						again = STS_LEN_AGAIN_INFO;
 						break;
 					}
 					scan = scan->next;
@@ -1359,9 +1270,10 @@ enum lengths_status get_lengths(struct lengths_state* state,
 						if (scan->count > SAMPLES) {
 							remote->gap = calc_signal(scan);
 							state->mode = MODE_HAVE_GAP;
-							logprintf(LIRC_DEBUG,
-								  "Found gap: %u",
-								  (__u32) remote->gap);
+							logprintf(LIRC_DEBUG, "Found gap: %u",
+								  (__u32)
+								  remote->gap);
+							again = STS_LEN_AGAIN_INFO;
 							break;
 						}
 						scan = scan->next;
@@ -1372,11 +1284,11 @@ enum lengths_status get_lengths(struct lengths_state* state,
 					state->sum = 0;
 					state->count = 0;
 					state->remaining_gap =
-						 is_const(remote) ?
-							(remote->gap > state->data ?
-								remote->gap - state->data : 0)
-							:(has_repeat_gap(remote) ?
-								remote-> repeat_gap : remote->gap);
+					    is_const(remote) ?
+					    (remote->gap >
+					     state->data ? remote->gap - state->data : 0)
+					    : (has_repeat_gap(remote) ? remote->
+					       repeat_gap : remote->gap);
 					if (force) {
 						state->retval = 0;
 						return STS_LEN_RAW_OK;
@@ -1385,7 +1297,7 @@ enum lengths_status get_lengths(struct lengths_state* state,
 				}
 				lastmaxcount = maxcount;
 				state->keypresses = lastmaxcount;
-				return STS_LEN_AGAIN;
+				return again;
 			}
 			state->average = (state->average * count_spaces + state->data)
 			    / (count_spaces + 1);
@@ -1410,68 +1322,53 @@ enum lengths_status get_lengths(struct lengths_state* state,
 		}
 		if (is_const(remote)) {
 			state->remaining_gap =
-				remote->gap > state->sum ?
-					remote->gap - state->sum : 0;
+			    remote->gap > state->sum ? remote->gap - state->sum : 0;
 		} else {
 			state->remaining_gap = remote->gap;
 		}
 		state->sum += state->data & PULSE_MASK;
 
 		if (state->count > 2
-		    && (( state->data & PULSE_MASK) >=
-			  state->remaining_gap * (100 - eps) / 100
-			|| ( state->data & PULSE_MASK) >=
-			     state->remaining_gap - aeps)) {
+		    && ((state->data & PULSE_MASK) >=
+			state->remaining_gap * (100 - eps) / 100
+			|| (state->data & PULSE_MASK) >= state->remaining_gap - aeps)) {
 			if (is_space(state->data)) {
 				/* signal complete */
 				state->keypresses += 1;
 				if (state->count == 4) {
 					count_3repeats++;
-					add_length(&first_repeatp,
-					 	   signals[0]);
+					add_length(&first_repeatp, signals[0]);
 					merge_lengths(first_repeatp);
-					add_length(&first_repeats,
-					 	   signals[1]);
+					add_length(&first_repeats, signals[1]);
 					merge_lengths(first_repeats);
-					add_length(&first_trail,
-					 	   signals[2]);
+					add_length(&first_trail, signals[2]);
 					merge_lengths(first_trail);
-					add_length(&first_repeat_gap,
-					 	   signals[3]);
+					add_length(&first_repeat_gap, signals[3]);
 					merge_lengths(first_repeat_gap);
 				} else if (state->count == 6) {
 					count_5repeats++;
-					add_length(&first_headerp,
-					 	   signals[0]);
+					add_length(&first_headerp, signals[0]);
 					merge_lengths(first_headerp);
-					add_length(&first_headers,
-					 	   signals[1]);
+					add_length(&first_headers, signals[1]);
 					merge_lengths(first_headers);
-					add_length(&first_repeatp,
-					 	   signals[2]);
+					add_length(&first_repeatp, signals[2]);
 					merge_lengths(first_repeatp);
-					add_length(&first_repeats,
-					 	   signals[3]);
+					add_length(&first_repeats, signals[3]);
 					merge_lengths(first_repeats);
-					add_length(&first_trail,
-					 	   signals[4]);
+					add_length(&first_trail, signals[4]);
 					merge_lengths(first_trail);
-					add_length(&first_repeat_gap,
-					 	   signals[5]);
+					add_length(&first_repeat_gap, signals[5]);
 					merge_lengths(first_repeat_gap);
 				} else if (state->count > 6) {
 					count_signals++;
-					add_length(&first_1lead,
-					 	   signals[0]);
+					add_length(&first_1lead, signals[0]);
 					merge_lengths(first_1lead);
-					for (i = 2; i < state->count - 2; i++){
+					for (i = 2; i < state->count - 2; i++) {
 						if (i % 2) {
-							add_length(&first_space,
-								   signals[i]);
+							add_length(&first_space, signals[i]);
 							merge_lengths(first_space);
 						} else {
-							add_length(&first_pulse,
-								   signals[i]);
+							add_length(&first_pulse, signals[i]);
 							merge_lengths(first_pulse);
 						}
 					}
@@ -1481,7 +1378,8 @@ enum lengths_status get_lengths(struct lengths_state* state,
 					add_length(&first_signal_length, state->sum - state->data);
 					merge_lengths(first_signal_length);
 					if (state->first_signal == 1
-					    || (first_length > 2 && first_length - 2 != state->count - 2)) {
+					    || (first_length > 2
+						&& first_length - 2 != state->count - 2)) {
 						add_length(&first_3lead, signals[2]);
 						merge_lengths(first_3lead);
 						add_length(&first_headerp, signals[0]);
@@ -1493,7 +1391,8 @@ enum lengths_status get_lengths(struct lengths_state* state,
 						first_lengths++;
 						first_length = state->count - 2;
 						state->header = signals[0] + signals[1];
-					} else if (state->first_signal == 0 && first_length - 2 == state->count - 2) {
+					} else if (state->first_signal == 0
+						   && first_length - 2 == state->count - 2) {
 						lengths[state->count - 2]--;
 						lengths[state->count - 2 + 2]++;
 						second_lengths++;
@@ -1522,8 +1421,11 @@ enum lengths_status get_lengths(struct lengths_state* state,
 				}
 				return state->retval == 0 ? STS_LEN_FAIL : STS_LEN_OK;
 			}
-			if ((state->data & PULSE_MASK) <= (state->remaining_gap + state->header) * (100 + eps) / 100
-			    || (state->data & PULSE_MASK) <= (state->remaining_gap + state->header) + aeps) {
+			if ((state->data & PULSE_MASK) <=
+			    (state->remaining_gap + state->header) * (100 +
+								      eps) / 100
+			    || (state->data & PULSE_MASK) <=
+			    (state->remaining_gap + state->header) + aeps) {
 				state->first_signal = 0;
 				state->header = 0;
 			} else {
@@ -1536,7 +1438,7 @@ enum lengths_status get_lengths(struct lengths_state* state,
 
 
 enum toggle_status
-get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
+get_toggle_bit_mask(struct toggle_state *state, struct ir_remote *remote)
 {
 	struct decode_ctx_t decode_ctx;
 	int i;
@@ -1552,9 +1454,11 @@ get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 	if (state->retries <= 0) {
 		if (!state->found)
 			return STS_TGL_NOT_FOUND;
-		if (state->seq > 0)
+		if (state->seq > 0) {
 			remote->min_repeat = state->repeats / state->seq;
-       		logprintf(LIRC_DEBUG, "min_repeat=%d", remote->min_repeat);
+			logprintf(LIRC_DEBUG, "min_repeat=%d",
+				  remote->min_repeat);
+		}
 		return STS_TGL_FOUND;
 	}
 	if (!mywaitfordata(10000000))
@@ -1563,43 +1467,34 @@ get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 	if (is_rc6(remote) && remote->rc6_mask == 0) {
 		for (i = 0, mask = 1; i < remote->bits; i++, mask <<= 1) {
 			remote->rc6_mask = mask;
-			state->success = curr_driver->decode_func(remote,
-								  &decode_ctx);
+			state->success = curr_driver->decode_func(remote, &decode_ctx);
 			if (state->success) {
-				remote->min_remaining_gap =
-					decode_ctx.min_remaining_gap;
-				remote->max_remaining_gap =
-					decode_ctx.max_remaining_gap;
+				remote->min_remaining_gap = decode_ctx.min_remaining_gap;
+				remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 				break;
 			}
 		}
 		if (!state->success)
 			remote->rc6_mask = 0;
 	} else {
-		state->success =
-			curr_driver->decode_func(remote,
-						 &decode_ctx);
+		state->success = curr_driver->decode_func(remote, &decode_ctx);
 		if (state->success) {
-			remote->min_remaining_gap =
-				decode_ctx.min_remaining_gap;
-			remote->max_remaining_gap =
-				decode_ctx.max_remaining_gap;
+			remote->min_remaining_gap = decode_ctx.min_remaining_gap;
+			remote->max_remaining_gap = decode_ctx.max_remaining_gap;
 		}
 	}
 	if (state->success) {
 		if (state->flag == 0) {
 			state->flag = 1;
 			state->first = decode_ctx.code;
-		} else if (!decode_ctx.repeat_flag
-			   || decode_ctx.code != state->last) {
+		} else if (!decode_ctx.repeat_flag || decode_ctx.code != state->last) {
 			state->seq++;
 			mask = state->first ^ decode_ctx.code;
 			if (!state->found && mask) {
 				set_toggle_bit_mask(remote, mask);
 				state->found = 1;
 				if (state->seq > 0) {
-					remote->min_repeat =
-						state->repeats / state->seq;
+					remote->min_repeat = state->repeats / state->seq;
 				}
 			}
 			state->retries--;
@@ -1619,7 +1514,7 @@ get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 
 
 /** analyse non-interactive get_lengths, returns boolean ok/fail. */
-int analyse_get_lengths(struct lengths_state* lengths_state)
+int analyse_get_lengths(struct lengths_state *lengths_state)
 {
 	enum lengths_status status = STS_LEN_AGAIN;
 
@@ -1649,8 +1544,7 @@ int analyse_get_lengths(struct lengths_state* lengths_state)
 			logprintf(LIRC_ERROR, "analyse, signal too long?!");
 			return 0;
 		default:
-			logprintf(LIRC_ERROR,
-				  "Cannot read raw data (%d)", status);
+			logprintf(LIRC_ERROR, "Cannot read raw data (%d)", status);
 			return 0;
 		}
 	}
@@ -1659,7 +1553,7 @@ int analyse_get_lengths(struct lengths_state* lengths_state)
 
 
 /** Implement the analyse task, return 1 for ok, 0 for errors. */
-int analyse_remote(struct ir_remote *raw_data)
+int analyse_remote(struct ir_remote *raw_data, const struct opts* opts)
 {
 	struct ir_ncode *codes;
 	struct decode_ctx_t decode_ctx;
@@ -1673,8 +1567,7 @@ int analyse_remote(struct ir_remote *raw_data)
 
 	if (!is_raw(raw_data)) {
 		logprintf(LIRC_ERROR,
-			  "remote %s not in raw mode, ignoring",
-			  raw_data->name);
+			  "remote %s not in raw mode, ignoring", raw_data->name);
 		return 0;
 	}
 	flushhw();
@@ -1716,24 +1609,21 @@ int analyse_remote(struct ir_remote *raw_data)
 		ret = receive_decode(&remote, &decode_ctx);
 		if (!ret) {
 			logprintf(LIRC_WARNING,
-			  	  "Decoding of %s failed", codes->name);
+				  "Decoding of %s failed", codes->name);
 		} else {
 			if (new_index + 1 >= new_codes_count) {
 				struct ir_ncode *renew_codes;
 
 				new_codes_count *= 2;
-				renew_codes = realloc(new_codes,
-						      new_codes_count
-							* sizeof(*new_codes));
+				renew_codes =
+				    realloc(new_codes, new_codes_count * sizeof(*new_codes));
 				if (renew_codes == NULL) {
 					logprintf(LIRC_ERROR, "Out of memory");
 					free(new_codes);
 					return 0;
 				}
-				memset(&new_codes[new_codes_count / 2],
-				       0,
-				       new_codes_count / 2
-						* sizeof(*new_codes));
+				memset(&new_codes[new_codes_count / 2], 0,
+				       new_codes_count / 2 * sizeof(*new_codes));
 				new_codes = renew_codes;
 			}
 
@@ -1744,10 +1634,9 @@ int analyse_remote(struct ir_remote *raw_data)
 			decode_ctx.code = code;
 			if (ret && code2 != decode_ctx.code) {
 				new_codes[new_index].next =
-					malloc(sizeof(*(new_codes[new_index].next)));
+				    malloc(sizeof(*(new_codes[new_index].next)));
 				if (new_codes[new_index].next) {
-					memset(new_codes[new_index].next,
-					       0,
+					memset(new_codes[new_index].next, 0,
 					       sizeof(*(new_codes[new_index].next)));
 					new_codes[new_index].next->code = code2;
 				}
@@ -1760,20 +1649,21 @@ int analyse_remote(struct ir_remote *raw_data)
 	}
 	new_codes[new_index].name = NULL;
 	remote.codes = new_codes;
-	fprint_remotes(stdout, &remote, (const char*)NULL);
+	fprint_remotes(stdout, &remote, opts->commandline);
 	remote.codes = NULL;
 	free(new_codes);
 	return 1;
 }
 
-/** The --analyse wrapper. */
-int do_analyse(struct opts* opts, struct main_state* state)
-{
-	FILE* f;
-	struct ir_remote* r;
 
-	memcpy((void*)curr_driver, &hw_emulation, sizeof(struct driver));
-	f  = fopen(opts->filename, "r");
+/** The --analyse wrapper. */
+int do_analyse(struct opts *opts, struct main_state *state)
+{
+	FILE *f;
+	struct ir_remote *r;
+
+	memcpy((void *)curr_driver, &hw_emulation, sizeof(struct driver));
+	f = fopen(opts->filename, "r");
 	if (f == NULL) {
 		fprintf(stderr, "Cannot open file: %s\n", opts->filename);
 		return 0;
@@ -1783,29 +1673,29 @@ int do_analyse(struct opts* opts, struct main_state* state)
 		fprintf(stderr, "Cannot parse file: %s\n", opts->filename);
 		return 0;
 	}
-	for ( ; r != NULL; r = r->next) {
+	for (; r != NULL; r = r->next) {
 		if (!is_raw(r)) {
 			logprintf(LIRC_ERROR,
-				  "remote %s not in raw mode, ignoring",
-				  r->name);
+				  "remote %s not in raw mode, ignoring", r->name);
 			continue;
 		}
-		analyse_remote(r);
+		analyse_remote(r, opts);
 	}
 	return 1;
 }
 
-enum button_status record_buttons(struct button_state* btn_state,
+
+enum button_status record_buttons(struct button_state *btn_state,
 				  enum button_status last_status,
-				  struct main_state* state,
-				  const struct opts* opts)
+				  struct main_state *state,
+				  const struct opts *opts)
 {
 	ir_code code2;
 	int decode_ok;
 	__u32 timeout;
 	int retries;
-	struct ir_remote* my_remote;
-	FILE* f;
+	struct ir_remote *my_remote;
+	FILE *f;
 
 	if (btn_state->no_data) {
 		btn_state->no_data = 0;
@@ -1816,38 +1706,35 @@ enum button_status record_buttons(struct button_state* btn_state,
 		return STS_BTN_GET_NAME;
 	case STS_BTN_GET_NAME:
 		if (strchr(btn_state->buffer, ' ') != NULL) {
-			btn_state_set_message(
-				btn_state,
-				"The name must not contain any whitespace.");
+			btn_state_set_message(btn_state,
+					      "The name must not contain any whitespace.");
 			return STS_BTN_SOFT_ERROR;
 		}
 		if (strchr(btn_state->buffer, '\t') != NULL) {
 			btn_state_set_message(btn_state,
-				"The name must not contain any whitespace.");
+					      "The name must not contain any whitespace.");
 			return STS_BTN_SOFT_ERROR;
 		}
 		if (strcasecmp(btn_state->buffer, "begin") == 0) {
 			btn_state_set_message(btn_state,
-				"'%s' is not allowed as button name\n",
-				btn_state->buffer);
+					      "'%s' is not allowed as button name\n",
+					      btn_state->buffer);
 			return STS_BTN_SOFT_ERROR;
 		}
 		if (strcasecmp(btn_state->buffer, "end") == 0) {
 			btn_state_set_message(btn_state,
-				"'%s' is not allowed as button name\n",
-				btn_state->buffer);
+					      "'%s' is not allowed as button name\n",
+					      btn_state->buffer);
 			return STS_BTN_SOFT_ERROR;
 		}
 		if (strlen(btn_state->buffer) == 0) {
 			return STS_BTN_BUTTONS_DONE;
 		}
-		if (!opts->disable_namespace &&
-				!is_in_namespace(btn_state->buffer))
-		{
+		if (!opts->disable_namespace && !is_in_namespace(btn_state->buffer)) {
 			btn_state_set_message(btn_state,
-				"'%s' is not in name space"
-				" (use --disable-namespace to disable checks)\n",
-				btn_state->buffer);
+					      "'%s' is not in name space"
+					      " (use --disable-namespace to disable checks)\n",
+					      btn_state->buffer);
 			return STS_BTN_SOFT_ERROR;
 		}
 		return STS_BTN_INIT_DATA;
@@ -1863,7 +1750,7 @@ enum button_status record_buttons(struct button_state* btn_state,
 			curr_driver->init_func();
 		return opts->force ? STS_BTN_GET_RAW_DATA : STS_BTN_GET_DATA;
 	case STS_BTN_GET_DATA:
-		for(retries = RETRIES; retries > 0;) {
+		for (retries = RETRIES; retries > 0;) {
 			if (!mywaitfordata(10000000)) {
 				btn_state->no_data = 1;
 				return STS_BTN_TIMEOUT;
@@ -1873,8 +1760,7 @@ enum button_status record_buttons(struct button_state* btn_state,
 			sleep(1);
 			while (availabledata()) {
 				curr_driver->rec_func(NULL);
-				if (curr_driver->decode_func(&remote,
-							     &(state->decode_ctx))) {
+				if (curr_driver->decode_func(&remote, &(state->decode_ctx))) {
 					decode_ok = 1;
 					break;
 				}
@@ -1882,12 +1768,12 @@ enum button_status record_buttons(struct button_state* btn_state,
 			if (!decode_ok) {
 				if (retries <= 0) {
 					btn_state_set_message(btn_state,
-						"Try using the -f option.\n");
+							      "Try using the -f option.\n");
 					return STS_BTN_HARD_ERROR;
 				}
 				if (!resethw()) {
 					btn_state_set_message(btn_state,
-						"Could not reset hardware.\n");
+							      "Could not reset hardware.\n");
 					return STS_BTN_HARD_ERROR;
 				}
 				btn_state_set_message(btn_state,
@@ -1900,8 +1786,7 @@ enum button_status record_buttons(struct button_state* btn_state,
 			ncode.name = btn_state->buffer;
 			ncode.code = state->decode_ctx.code;
 			curr_driver->rec_func(NULL);
-			if (!curr_driver->decode_func(&remote,
-						      &(state->decode_ctx))) {
+			if (!curr_driver->decode_func(&remote, &(state->decode_ctx))) {
 				code2 = state->decode_ctx.code;
 				state->decode_ctx.code = ncode.code;
 				if (state->decode_ctx.code != code2) {
@@ -1937,34 +1822,32 @@ enum button_status record_buttons(struct button_state* btn_state,
 			}
 			if (btn_state->count == 0) {
 				if (!is_space(btn_state->data)
-				    || btn_state->data < remote.gap - remote.gap * remote.eps / 100)
-				{
+				    || btn_state->data < remote.gap - remote.gap * remote.eps / 100) {
 					sleep(3);
 					flushhw();
 					btn_state->count = 0;
-					btn_state_set_message(btn_state,
-							      "Something went wrong.");
+					btn_state_set_message(btn_state, "Something went wrong.");
 					return STS_BTN_SOFT_ERROR;
 				}
 			} else {
 				if (is_space(btn_state->data)
 				    && (is_const(&remote) ?
-					btn_state->data > (remote.gap > btn_state->sum ?
-							(remote.gap - btn_state->sum) * (100 - remote.eps) / 100
-							: 0)
-					: btn_state->data > remote.gap * (100 - remote.eps) / 100))
-				{
+					btn_state->data > (remote.gap >
+							   btn_state->sum ? (remote.gap -
+									     btn_state->sum) *
+							   (100 - remote.eps) / 100 : 0)
+					: btn_state->data > remote.gap * (100 - remote.eps) / 100)) {
 					logprintf(LIRC_INFO, "Got it.\n");
 					logprintf(LIRC_INFO, "Signal length is %d\n",
-					       btn_state->count - 1);
+						  btn_state->count - 1);
 					if (btn_state->count % 2) {
-						const char* const MSG_EVEN_LENGTH =
-							"Signal length is %d\n"
-							"That's weird because the signal length "
-						       	" must be odd!\n";
-						btn_state_set_message(btn_state,
-								  MSG_EVEN_LENGTH,
-								  btn_state->count - 1);
+						const char *const
+						    MSG_EVEN_LENGTH =
+						    "Signal length is %d\n"
+						    "That's weird because the signal length "
+						    " must be odd!\n";
+						btn_state_set_message(btn_state, MSG_EVEN_LENGTH,
+								      btn_state->count - 1);
 						sleep(3);
 						flushhw();
 						btn_state->count = 0;
@@ -1973,13 +1856,10 @@ enum button_status record_buttons(struct button_state* btn_state,
 					ncode.name = btn_state->buffer;
 					ncode.length = btn_state->count - 1;
 					ncode.signals = signals;
-					fprint_remote_signal(state->fout,
-							     &remote,
-							     &ncode);
+					fprint_remote_signal(state->fout, &remote, &ncode);
 					break;
 				}
-				signals[btn_state->count - 1] =
-					btn_state->data & PULSE_MASK;
+				signals[btn_state->count - 1] = btn_state->data & PULSE_MASK;
 				btn_state->sum += btn_state->data & PULSE_MASK;
 			}
 			btn_state->count++;
@@ -1997,42 +1877,37 @@ enum button_status record_buttons(struct button_state* btn_state,
 			return STS_BTN_ALL_DONE;
 		}
 		if (!resethw()) {
-			btn_state_set_message(btn_state,
-					      "Could not reset hardware.");
+			btn_state_set_message(btn_state, "Could not reset hardware.");
 			return STS_BTN_HARD_ERROR;
 		}
 
 		f = fopen(opts->filename, "r");
 		if (f == NULL) {
-			btn_state_set_message(btn_state,
-					      "Could not reopen config file");
+			btn_state_set_message(btn_state, "Could not reopen config file");
 			return STS_BTN_HARD_ERROR;
 		}
 		my_remote = read_config(f, opts->filename);
 		fclose(f);
 		if (my_remote == NULL) {
 			btn_state_set_message(btn_state,
-				"config file contains no valid remote"
-				 " control definition, this shouldn't"
-				 " ever happen!");
+					      "config file contains no valid remote"
+					      " control definition, this shouldn't"
+					      " ever happen!");
 			return STS_BTN_HARD_ERROR;
 		}
 		if (my_remote == (void *)-1) {
 			btn_state_set_message(btn_state,
-				"Reading of config file failed"
-				" this should never happen.");
+					      "Reading of config file failed"
+					      " this should never happen.");
 			return STS_BTN_HARD_ERROR;
 		}
 		if (!has_toggle_bit_mask(my_remote)) {
-			if (!opts->using_template &&
-				strcmp(curr_driver->name, "devinput") != 0)
-			{
+			if (!opts->using_template && strcmp(curr_driver->name, "devinput") != 0) {
 				remote = *(my_remote);
 				return STS_BTN_GET_TOGGLE_BITS;
 			}
 		} else {
-			set_toggle_bit_mask(my_remote,
-					    my_remote->toggle_bit_mask);
+			set_toggle_bit_mask(my_remote, my_remote->toggle_bit_mask);
 		}
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
@@ -2045,9 +1920,7 @@ enum button_status record_buttons(struct button_state* btn_state,
 	case STS_BTN_HARD_ERROR:
 		return STS_BTN_HARD_ERROR;
 	default:
-		btn_state_set_message(btn_state,
-				      "record_buttons(): bad state: %d\n",
-				      last_status);
+		btn_state_set_message(btn_state, "record_buttons(): bad state: %d\n", last_status);
 		return STS_BTN_HARD_ERROR;
 
 	}
@@ -2055,12 +1928,11 @@ enum button_status record_buttons(struct button_state* btn_state,
 
 
 /** Write the provisionary config file. */
-void config_file_setup(struct main_state* state, const struct opts* opts)
+void config_file_setup(struct main_state *state, const struct opts *opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {
-		logprintf(LIRC_ERROR, "Could not open new config file %s",
-			  opts->filename);
+		logprintf(LIRC_ERROR, "Could not open new config file %s", opts->filename);
 		logperror(LIRC_ERROR, "While opening config file for write");
 		exit(EXIT_FAILURE);
 	}
@@ -2071,12 +1943,12 @@ void config_file_setup(struct main_state* state, const struct opts* opts)
 }
 
 
+
 /** Write the final config file. */
-int config_file_finish(struct main_state* state, const struct opts* opts)
+int config_file_finish(struct main_state *state, const struct opts *opts)
 {
 	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
-		logperror(LIRC_ERROR,
-			  "While opening \"%s\" for write", opts->filename);
+		logperror(LIRC_ERROR, "While opening \"%s\" for write", opts->filename);
 		return 0;
 	}
 	fprint_copyright(state->fout);
@@ -2087,26 +1959,24 @@ int config_file_finish(struct main_state* state, const struct opts* opts)
 
 /*   -----------------------------  UI part --------------------------   */
 
+
 #define USAGE	    "Usage: irrecord [options] [config file]\n" \
 		    "	    irrecord -a <config file> \n" \
 		    "	    irrecord -l \n"
 
-
-static const char* const help =
-USAGE
-"\nOptions:\n"
-"\t -H --driver=driver\tUse given driver\n"
-"\t -d --device=device\tRead from given device\n"
-"\t -a --analyse\t\tAnalyse raw_codes config files\n"
-"\t -l --list-namespace\tList valid button names\n"
-"\t -U --plugindir=dir\tLoad drivers from dir\n"
-"\t -f --force\t\tForce raw mode\n"
-"\t -n --disable-namespace\tDisable namespace checks\n"
-"\t -Y --dynamic-codes\tEnable dynamic codes\n"
-"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
-"\t -h --help\t\tDisplay this message\n"
-"\t -v --version\t\tDisplay version\n";
-
+static const char *const help =
+    USAGE
+    "\nOptions:\n"
+    "\t -H --driver=driver\tUse given driver\n"
+    "\t -d --device=device\tRead from given device\n"
+    "\t -a --analyse\t\tAnalyse raw_codes config files\n"
+    "\t -l --list-namespace\tList valid button names\n"
+    "\t -U --plugindir=dir\tLoad drivers from dir\n"
+    "\t -f --force\t\tForce raw mode\n"
+    "\t -n --disable-namespace\tDisable namespace checks\n"
+    "\t -Y --dynamic-codes\tEnable dynamic codes\n"
+    "\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
+    "\t -h --help\t\tDisplay this message\n" "\t -v --version\t\tDisplay version\n";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -2130,73 +2000,56 @@ static const struct option long_options[] = {
 	{0, 0, 0, 0}
 };
 
+const char *const MSG_WELCOME =
+    "\nirrecord -  application for recording IR-codes" " for usage with lirc\n"
+    "Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n"
+    "\n"
+    "This program will record the signals from your remote control\n"
+    "and create a config file for lircd.\n"
+    "\n"
+    "A proper config file for lircd is maybe the most vital part of this\n"
+    "package, so you should invest some time to create a working config\n"
+    "file. Although I put a good deal of effort in this program it is often\n"
+    "not possible to automatically recognize all features of a remote\n"
+    "control. Often short-comings of the receiver hardware make it nearly\n"
+    "impossible. If you have problems to create a config file READ THE\n"
+    "DOCUMENTATION at https://sf.net/p/lirc-remotes/wiki\n"
+    "\n"
+    "If there already is a remote control of the same brand available at\n"
+    "http://sf.net/p/lirc-remotes you might want to try using such a\n"
+    "remote as a template. The config files already contains all\n"
+    "parameters of the protocol used by remotes of a certain brand and\n"
+    "knowing these parameters makes the job of this program much\n"
+    "easier. There are also template files for the most common protocols\n"
+    "available. Templates can be downloaded using irdb-get(1). You use a\n"
+    "template file by providing the path of the file as a command line\n"
+    "parameter.\n"
+    "\n"
+    "Please take the time to finish the file as described in\n"
+    "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
+    "to  <lirc@bartelmus.de> so it can be made available to others.\n";
 
-const char* const MSG_WELCOME =
-	"\nirrecord -  application for recording IR-codes" " for usage with lirc\n"
-	"Copyright (C) 1998,1999 Christoph Bartelmus" "(lirc@bartelmus.de)\n"
-	"\n"
-	"This program will record the signals from your remote control\n"
-	"and create a config file for lircd.\n"
-	"\n"
-	"A proper config file for lircd is maybe the most vital part of this\n"
-	"package, so you should invest some time to create a working config\n"
-	"file. Although I put a good deal of effort in this program it is often\n"
-	"not possible to automatically recognize all features of a remote\n"
-	"control. Often short-comings of the receiver hardware make it nearly\n"
-	"impossible. If you have problems to create a config file READ THE\n"
-	"DOCUMENTATION at https://sf.net/p/lirc-remotes/wiki\n"
-	"\n"
-	"If there already is a remote control of the same brand available at\n"
-	"http://sf.net/p/lirc-remotes you might want to try using such a\n"
-	"remote as a template. The config files already contains all\n"
-	"parameters of the protocol used by remotes of a certain brand and\n"
-	"knowing these parameters makes the job of this program much\n"
-	"easier. There are also template files for the most common protocols\n"
-	"available. Templates can be downloaded using irdb-get(1). You use a\n"
-	"template file by providing the path of the file as a command line\n"
-	"parameter.\n"
-	"\n"
-	"Please take the time to finish the file as described in\n"
-	"https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
-	"to  <lirc@bartelmus.de> so it can be made available to others.\n";
+static const char *const MSG_DEVINPUT =
+    "Usually it's not necessary to create a new config file for devinput\n"
+    "devices. A generic config file can be found at:\n"
+    "https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
+    "It can be downloaded using irdb-get(1)\n"
+    "Please try this config file before creating your own.\n";
 
-static const char* const MSG_DEVINPUT =
-	"Usually it's not necessary to create a new config file for devinput\n"
-	"devices. A generic config file can be found at:\n"
-	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
-	"It can be downloaded using irdb-get(1)\n"
-	"Please try this config file before creating your own.\n";
+static const char *const MSG_TOGGLE_BIT_INTRO =
+    "Checking for toggle bit mask.\n"
+    "Please press an arbitrary button repeatedly as fast as possible.\n"
+    "Make sure you keep pressing the SAME button and that you DON'T HOLD\n"
+    "the button down!.\n"
+    "If you can't see any dots appear, wait a bit between button presses.\n\n"
+    "Press RETURN to continue.";
 
-static const char* const MSG_TOGGLE_BIT_INTRO =
-	"Checking for toggle bit mask.\n"
-	"Please press an arbitrary button repeatedly as fast as possible.\n"
-	"Make sure you keep pressing the SAME button and that you DON'T HOLD\n"
-	"the button down!.\n"
-	"If you can't see any dots appear, wait a bit between button presses.\n\n"
-	"Press RETURN to continue.";
-
-static const char* MSG_LENGTHS_INIT =
-	"Now start pressing buttons on your remote control.\n\n"
-	"It is very important that you press many different buttons and hold them\n"
-	"down for approximately one second. Each button should generate at least one\n"
-	"dot but in no case more than ten dots of output.\n"
-	"Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n";
-
-/**  Conditionally print a printf style message. */
-static int i_printf(int interactive, char *format_str, ...)
-{
-	va_list ap;
-	int ret = 0;
-
-	if (interactive && lirc_log_is_enabled_for(LIRC_DEBUG))
-	{
-		va_start(ap, format_str);
-		ret = vfprintf(stdout, format_str, ap);
-		va_end(ap);
-	}
-	return ret;
-}
-
+static const char *MSG_LENGTHS_INIT =
+    "Now start pressing buttons on your remote control.\n\n"
+    "It is very important that you press many different buttons and hold them\n"
+    "down for approximately one second. Each button should generate at least one\n"
+    "dot but in no case more than ten dots of output.\n"
+    "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n";
 
 
 /** Set up default values for all command line options + filename. */
@@ -2204,43 +2057,63 @@ static void add_defaults(void)
 {
 	char level[4];
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
-	const char* const defaults[] = {
-		"lircd:plugindir",		PLUGINDIR,
-		"irrecord:driver",		"devinput",
-		"irrecord:device",		 LIRC_DRIVER_DEVICE,
-		"irrecord:analyse",		"False",
-		"irrecord:force",		"False",
-		"irrecord:disable-namespace",	"False",
-		"irrecord:dynamic-codes",	"False",
-		"irrecord:list_namespace",	"False",
-		"irrecord:filename",		"irrecord.conf",
-		"lircd:debug",			 level,
-		(const char*)NULL,	(const char*)NULL
+	const char *const defaults[] = {
+		"lircd:plugindir", PLUGINDIR,
+		"irrecord:driver", "devinput",
+		"irrecord:device", LIRC_DRIVER_DEVICE,
+		"irrecord:analyse", "False",
+		"irrecord:force", "False",
+		"irrecord:disable-namespace", "False",
+		"irrecord:dynamic-codes", "False",
+		"irrecord:list_namespace", "False",
+		"irrecord:filename", "irrecord.conf",
+		"lircd:debug", level,
+		(const char *)NULL, (const char *)NULL
 	};
 	options_add_defaults(defaults);
 }
 
 
+/** Stuff command line into the single string buff. */
+static void get_commandline(int argc, char **argv, char *buff, size_t size)
+{
+	int i;
+	int j;
+	int dest = 0;
+	if (size == 0)
+		return;
+	for (i = 1; i < argc; i += 1) {
+		for (j = 0; argv[i][j] != '\0'; j += 1) {
+			if (dest + 1 >= size)
+				break;
+			buff[dest++] = argv[i][j];
+		}
+		if (dest + 1 >= size)
+			break;
+		buff[dest++] = ' ';
+	}
+	buff[--dest] = '\0';
+}
+
+
 /** Parse command line, update the options dict. */
-static void parse_options(int argc, char** const argv)
+static void parse_options(int argc, char **const argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fnlO:pPtiTU:vY";
+	const char *const optstring = "had:D:H:fnlO:pPtiTU:vY";
 
 	add_defaults();
 	optind = 1;
 	while ((c = getopt_long(argc, argv, optstring, long_options, NULL))
-		!= -1 )
-	{
+	       != -1) {
 		switch (c) {
 		case 'a':
 			options_set_opt("irrecord:analyse", "True");
 			break;
 		case 'D':
-			if (string2loglevel(optarg) == LIRC_BADLEVEL){
-				fprintf(stderr,
-					"Bad debug level: %s\n", optarg);
+			if (string2loglevel(optarg) == LIRC_BADLEVEL) {
+				fprintf(stderr, "Bad debug level: %s\n", optarg);
 				exit(EXIT_FAILURE);
 			}
 			options_set_opt("lircd:debug", optarg);
@@ -2287,7 +2160,7 @@ static void parse_options(int argc, char** const argv)
 			options_set_opt("lircd:dynamic-codes", "True");
 			break;
 		case 'v':
-			printf("irrecord %s\n",  VERSION);
+			printf("irrecord %s\n", VERSION);
 			exit(EXIT_SUCCESS);
 		default:
 			fputs(USAGE, stderr);
@@ -2303,15 +2176,14 @@ static void parse_options(int argc, char** const argv)
 }
 
 
-
 /** Check options, possibly run simple ones. Returns status. */
-static enum init_status init(struct opts* opts, struct main_state* state)
+static enum init_status init(struct opts *opts, struct main_state *state)
 {
 	char filename_new[256];
 	char logpath[256];
 	int flags;
-	struct ir_remote* my_remote;
-	FILE* f;
+	struct ir_remote *my_remote;
+	FILE *f;
 
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0) {
@@ -2360,9 +2232,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		remote.codes = NULL;
 		remote.last_code = NULL;
 		remote.next = NULL;
-		if (remote.pre_p == 0
-		    && remote.pre_s == 0
-		    && remote.post_p == 0
+		if (remote.pre_p == 0 && remote.pre_s == 0 && remote.post_p == 0
 		    && remote.post_s == 0) {
 			remote.bits = bit_count(&remote);
 			remote.pre_data_bits = 0;
@@ -2370,17 +2240,15 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		}
 		if (my_remote->next != NULL) {
 			fprintf(stderr,
-			        "%s: only first remote definition in file \"%s\" used\n",
-				progname, opts->filename);
+				"%s: only first remote definition in file \"%s\" used\n", progname,
+				opts->filename);
 		}
-		snprintf(filename_new, sizeof(filename_new),
-			 "%s.conf", opts->filename);
+		snprintf(filename_new, sizeof(filename_new), "%s.conf", opts->filename);
 		opts->filename = strdup(filename_new);
 	} else {
 		if (opts->analyse) {
-			fprintf(stderr,
-			        "%s: no input file given, ignoring analyse flag\n",
-			        progname);
+			fprintf(stderr, "%s: no input file given, ignoring analyse flag\n",
+				progname);
 			opts->analyse = 0;
 		}
 	}
@@ -2395,10 +2263,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			return STS_INIT_HW_FAIL;
 		}
 	}
-	aeps = (curr_driver->resolution > aeps ?
-			curr_driver->resolution : aeps);
-	if (curr_driver->rec_mode != LIRC_MODE_MODE2
-	    && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
+	aeps = (curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
+	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		return STS_INIT_BAD_MODE;
 		fclose(state->fout);
 		unlink(opts->filename);
@@ -2407,11 +2273,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		return STS_INIT_BAD_MODE;
 	}
 	flags = fcntl(curr_driver->fd, F_GETFL, 0);
-	if (flags == -1
-	    || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		fprintf(stderr,
-			"%s: could not set O_NONBLOCK flag\n",
-			progname);
+	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
 		fclose(state->fout);
 		unlink(opts->filename);
 		if (curr_driver->deinit_func)
@@ -2421,8 +2284,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	return STS_INIT_OK;
 }
 
-static int
-get_options(int argc, char** argv, const char* filename, struct opts* options)
+
+static int get_options(int argc, char **argv, const char *filename, struct opts *options)
 {
 	options->force = 0;
 	options_load(argc, argv, NULL, parse_options);
@@ -2431,13 +2294,11 @@ get_options(int argc, char** argv, const char* filename, struct opts* options)
 	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
 	options->driver = options_getstring("irrecord:driver");
 	options->force = options_getboolean("irrecord:force");
-	options->disable_namespace =
-		options_getboolean("irrecord:disable-namespace");
+	options->disable_namespace = options_getboolean("irrecord:disable-namespace");
 	options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
 	options->get_pre = options_getboolean("irrecord:pre");
 	options->get_post = options_getboolean("irrecord:post");
-	options->list_namespace =
-		options_getboolean("irrecord:list_namespace");
+	options->list_namespace = options_getboolean("irrecord:list_namespace");
 	options->test = options_getboolean("irrecord:test");
 	options->invert = options_getboolean("irrecord:invert");
 	options->trail = options_getboolean("irrecord:trail");
@@ -2447,12 +2308,10 @@ get_options(int argc, char** argv, const char* filename, struct opts* options)
 
 
 /** View part of get_toggle_bit_mask(). */
-static void do_get_toggle_bit_mask(struct ir_remote* remote,
-				   struct main_state* state,
-				   const struct opts* opts)
+static void do_get_toggle_bit_mask(struct ir_remote *remote, struct main_state *state,
+				   const struct opts *opts)
 {
-	const char* const MISSING_MASK_MSG =
-		"But I know for sure that RC6 has a toggle bit!\n";
+	const char *const MISSING_MASK_MSG = "But I know for sure that RC6 has a toggle bit!\n";
 	enum toggle_status sts;
 	struct toggle_state tgl_state;
 
@@ -2464,35 +2323,32 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 	sts = STS_TGL_AGAIN;
 	while (1) {
 		switch (sts) {
-			case STS_TGL_TIMEOUT:
-				fprintf(stderr,
-					"Timeout (10 sec), giving up");
-				exit(EXIT_FAILURE);
-			case STS_TGL_GOT_ONE_PRESS:
-				printf(".");
-				fflush(stdout);
-				sts = STS_TGL_AGAIN;
-				continue;
-			case STS_TGL_FOUND:
-				printf("\nToggle bit mask is 0x%llx.\n",
-				       (__u64) remote->toggle_bit_mask);
-				if (is_rc6(remote)) {
-					printf("RC6 mask is 0x%llx.\n",
-					       (__u64) remote->rc6_mask);
-				}
-				fflush(stdout);
-				return;
-			case STS_TGL_NOT_FOUND:
-				printf("Cannot find any toggle mask.\n");
-				if (!is_rc6(remote))
-					break;
-				printf(MISSING_MASK_MSG);
-				unlink(opts->filename);
-				if (curr_driver->deinit_func)
-					curr_driver->deinit_func();
-				exit(EXIT_FAILURE);
-			case STS_TGL_AGAIN:
+		case STS_TGL_TIMEOUT:
+			fprintf(stderr, "Timeout (10 sec), giving up");
+			exit(EXIT_FAILURE);
+		case STS_TGL_GOT_ONE_PRESS:
+			printf(".");
+			fflush(stdout);
+			sts = STS_TGL_AGAIN;
+			continue;
+		case STS_TGL_FOUND:
+			printf("\nToggle bit mask is 0x%llx.\n", (__u64) remote->toggle_bit_mask);
+			if (is_rc6(remote)) {
+				printf("RC6 mask is 0x%llx.\n", (__u64) remote->rc6_mask);
+			}
+			fflush(stdout);
+			return;
+		case STS_TGL_NOT_FOUND:
+			printf("Cannot find any toggle mask.\n");
+			if (!is_rc6(remote))
 				break;
+			printf(MISSING_MASK_MSG);
+			unlink(opts->filename);
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
+			exit(EXIT_FAILURE);
+		case STS_TGL_AGAIN:
+			break;
 		}
 		sts = get_toggle_bit_mask(&tgl_state, remote);
 	}
@@ -2500,78 +2356,70 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 
 
 /** View part of init: run init() and handle results. Returns or exits. */
-static void do_init(struct opts* opts, struct main_state* state)
+static void do_init(struct opts *opts, struct main_state *state)
 {
 	enum init_status sts;
 
 	sts = init(opts, state);
 	switch (sts) {
-		case STS_INIT_BAD_DRIVER:
-			fprintf(stderr, "Driver `%s' not found", opts->driver);
-			fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
-			hw_print_drivers(stderr);
-			exit(EXIT_FAILURE);
-		case STS_INIT_NO_DRIVER:
-			fprintf(stderr,
-			       "irrrecord: irrecord does not make sense without hardware\n");
-			exit(EXIT_FAILURE);
-		case STS_INIT_FORCE_TMPL:
-			fprintf(stderr,
-				"%s: file \"%s\" already exists\n" "%s: you cannot use the --force option "
-				"together with a template file\n",
-				progname, opts->filename, progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_BAD_FILE:
-			fprintf(stderr,
-				"%s: file \"%s\" does not contain valid data\n",
-				progname, opts->filename);
-			exit(EXIT_FAILURE);
-		case STS_INIT_TESTED:
-			exit(0);
-		case STS_INIT_FOPEN:
-			fprintf(stderr,
-				"%s: could not open new config file %s\n",
-				progname, opts->filename);
-			perror(progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_HW_FAIL:
-			fprintf(stderr,
-				"%s: could not init hardware" " (lircd running ? --> close it, check permissions)\n",
-				progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_BAD_MODE:
-			fprintf(stderr, "%s: mode not supported\n", progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_O_NONBLOCK:
-			fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
-			exit(EXIT_FAILURE);
-		case STS_INIT_ANALYZE:
-			do_analyse(opts, state);
-			exit(EXIT_SUCCESS);
-		case STS_INIT_OK:
-			return;
+	case STS_INIT_BAD_DRIVER:
+		fprintf(stderr, "Driver `%s' not found", opts->driver);
+		fputs(" (wrong or missing -U/--plugindir?).\n", stderr);
+		hw_print_drivers(stderr);
+		exit(EXIT_FAILURE);
+	case STS_INIT_NO_DRIVER:
+		fputs("irrecord does not make sense without hardware\n", stderr);
+		exit(EXIT_FAILURE);
+	case STS_INIT_FORCE_TMPL:
+		fprintf(stderr,
+			"File \"%s\" already exists\n"
+			"You cannot use the --force option " "together with a template file\n",
+			opts->filename);
+		exit(EXIT_FAILURE);
+	case STS_INIT_BAD_FILE:
+		fprintf(stderr, "Could not open new config file %s\n", opts->filename);
+		perror(progname);
+		exit(EXIT_FAILURE);
+	case STS_INIT_TESTED:
+		exit(0);
+	case STS_INIT_FOPEN:
+		fprintf(stderr, "Could not open new config file %s\n", opts->filename);
+
+	case STS_INIT_HW_FAIL:
+		fputs("Could not init hardware"
+		      " (lircd running ? --> close it, check permissions)\n", stderr);
+		exit(EXIT_FAILURE);
+	case STS_INIT_BAD_MODE:
+		fputs("Mode not supported\n", stderr);
+		exit(EXIT_FAILURE);
+	case STS_INIT_O_NONBLOCK:
+		fputs("Could not set O_NONBLOCK flag\n", stderr);
+		exit(EXIT_FAILURE);
+	case STS_INIT_ANALYZE:
+		do_analyse(opts, state);
+		exit(EXIT_SUCCESS);
+	case STS_INIT_OK:
+		return;
 	}
 }
 
 
 /** View part: Record data for one button. */
-static enum button_status get_button_data(struct button_state* btn_state,
-			    		  struct main_state* state,
-			    		  const struct opts* opts)
+static enum button_status get_button_data(struct button_state *btn_state,
+					  struct main_state *state, const struct opts *opts)
 {
-	const char* const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
-	const char* const MSG_BAD_RETURN = "Bad return from  get_button_data";
+	const char *const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
+	const char *const MSG_BAD_RETURN = "Bad return from  get_button_data";
 	enum button_status sts = STS_BTN_INIT_DATA;
 
 	btn_state->retries = 30;
 	last_remote = NULL;
-			sts = STS_BTN_INIT_DATA;
+	sts = STS_BTN_INIT_DATA;
 	sleep(1);
 	while (btn_state->retries > 0) {
 		switch (sts) {
 		case STS_BTN_INIT_DATA:
-			printf("\nNow hold down button \"%s\".\n",
-			       btn_state->buffer);
+			printf("\nNow hold down button \"%s\".\n", btn_state->buffer);
 			fflush(stdout);
 			flushhw();
 			break;
@@ -2592,8 +2440,7 @@ static enum button_status get_button_data(struct button_state* btn_state,
 				printf("Try using the -f option.\n");
 				break;
 			}
-			printf("Please try again. (%d retries left)\n",
-			        btn_state->retries - 1);
+			printf("Please try again. (%d retries left)\n", btn_state->retries - 1);
 			sts = STS_BTN_INIT_DATA;
 			continue;
 		case STS_BTN_BUTTON_DONE:
@@ -2612,11 +2459,11 @@ static enum button_status get_button_data(struct button_state* btn_state,
 
 
 /** View part of record_buttons. */
-void do_record_buttons(struct main_state* state, const struct opts* opts)
+void do_record_buttons(struct main_state *state, const struct opts *opts)
 {
 	struct button_state btn_state;
 	enum button_status sts = STS_BTN_INIT;
-	char* s;
+	char *s;
 
 	button_state_init(&btn_state);
 	flushhw();
@@ -2624,16 +2471,12 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 		switch (sts) {
 		case STS_BTN_INIT:
 			break;
- 		case STS_BTN_GET_NAME:
+		case STS_BTN_GET_NAME:
 			printf("\nPlease enter the name for the next button"
-                               " (press <ENTER> to finish recording)\n");
-			s = fgets(btn_state.buffer,
-				  sizeof(btn_state.buffer),
-				  stdin);
+			       " (press <ENTER> to finish recording)\n");
+			s = fgets(btn_state.buffer, sizeof(btn_state.buffer), stdin);
 			if (s != btn_state.buffer) {
-				btn_state_set_message(&btn_state,
-						      "%s: fgets() failed\n",
-						      progname);
+				btn_state_set_message(&btn_state, "%s: fgets() failed\n", progname);
 				sts = STS_BTN_HARD_ERROR;
 				break;
 			}
@@ -2673,24 +2516,23 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 			fprintf(stderr, "%s\n", btn_state.message);
 			fprintf(stderr, "Giving up\n");
 			exit(EXIT_FAILURE);
-	    }
-	    sts = record_buttons(&btn_state, sts, state, opts);
+		}
+		sts = record_buttons(&btn_state, sts, state, opts);
 	}
 }
 
 
 /** View part of get_lengths. */
-static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
+static int mode2_get_lengths(const struct opts *opts, struct main_state *state)
 {
-	const char* const MSG_AGAIN =
-		 "Please keep on pressing buttons like described above.\n";
+	const char *const MSG_AGAIN = "\nPlease keep on pressing buttons like described above.";
 	enum lengths_status sts = STS_LEN_AGAIN;
 	struct lengths_state lengths_state;
 	int debug = lirc_log_is_enabled_for(LIRC_TRACE);
 	int diff;
 	int i;
 
-	if (!opts->using_template ) {
+	if (!opts->using_template) {
 		printf(MSG_LENGTHS_INIT);
 		printf("Press RETURN now to start recording.");
 		fflush(stdout);
@@ -2699,52 +2541,44 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 		sts = STS_LEN_AGAIN;
 		lengths_state_init(&lengths_state);
 		while (sts == STS_LEN_AGAIN) {
-			sts = get_lengths(&lengths_state,
-					  &remote, opts->force,
-					  debug);
+			sts = get_lengths(&lengths_state, &remote, opts->force, debug);
 			switch (sts) {
 			case STS_LEN_OK:
-				i_printf(1, "\n");
+				puts("");
 				return 1;
 			case STS_LEN_FAIL:
-				i_printf(1, "\n");
+				puts("");
 				return 0;
 			case STS_LEN_RAW_OK:
-				i_printf(1, "\n");
+				puts("");
 				set_protocol(&remote, RAW_CODES);
 				remote.eps = eps;
 				remote.aeps = aeps;
 				return 1;
 			case STS_LEN_TIMEOUT:
-				fprintf(stderr,
-					"%s: no data for 10 secs, aborting\n",
-					progname);
+				fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
 				exit(EXIT_FAILURE);
 			case STS_LEN_NO_GAP_FOUND:
-				fprintf(stderr,
-					"%s: gap not found, can't continue\n",
-					progname);
+				fprintf(stderr, "%s: gap not found, can't continue\n", progname);
 				fclose(state->fout);
 				unlink(opts->filename);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
 			case STS_LEN_TOO_LONG:
-				fprintf(stderr,
-					"%s: signal too long\n",
-					progname);
+				fprintf(stderr, "%s: signal too long\n", progname);
 				printf("Creating config file in raw mode.\n");
 				set_protocol(&remote, RAW_CODES);
 				remote.eps = eps;
 				remote.aeps = aeps;
 				break;
 			case STS_LEN_AGAIN_INFO:
-				logprintf(LIRC_DEBUG, MSG_AGAIN);
-				sts  = STS_LEN_AGAIN;
+				printf("\nGot gap (%d us) ", remote.gap);
+				puts(MSG_AGAIN);
+				sts = STS_LEN_AGAIN;
 				continue;
 			case STS_LEN_AGAIN:
-				diff = lengths_state.keypresses -
-					lengths_state.keypresses_done;
+				diff = lengths_state.keypresses - lengths_state.keypresses_done;
 				for (i = 0; i < diff; i += 1) {
 					printf(".");
 				}
@@ -2757,15 +2591,15 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 		free_all_lengths();
 	}
 	logprintf(LIRC_DEBUG, "%d %u %u %u %u %u %d %d %d %u\n",
-		  remote.bits, (__u32) remote.pone, (__u32) remote.sone, (__u32) remote.pzero,
-		  (__u32) remote.szero, (__u32) remote.ptrail, remote.flags, remote.eps,
-			remote.aeps, (__u32) remote.gap);
+		  remote.bits, (__u32) remote.pone, (__u32) remote.sone,
+		  (__u32) remote.pzero, (__u32) remote.szero,
+		  (__u32) remote.ptrail, remote.flags, remote.eps, remote.aeps, (__u32) remote.gap);
 	return sts;
 }
 
 
 /** View part of get_gap(). */
-void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
+void lirccode_get_lengths(const struct opts *opts, struct main_state *state)
 {
 	struct gap_state gap_state;
 	enum get_gap_status sts;
@@ -2786,15 +2620,14 @@ void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 			sts = STS_GAP_AGAIN;
 			continue;
 		case STS_GAP_TIMEOUT:
-			fprintf(stderr,
-				"Timeout (10 sec), giving  up.\n");
+			fprintf(stderr, "Timeout (10 sec), giving  up.\n");
 			fclose(state->fout);
 			unlink(opts->filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
 		case STS_GAP_FOUND:
-			printf("Found gap (%d us)\n", remote.gap);
+			printf("\nFound gap (%d us)\n", remote.gap);
 			return;
 		case STS_GAP_GOT_ONE_PRESS:
 			printf(".");
@@ -2835,12 +2668,12 @@ int main(int argc, char **argv)
 
 	remote.name = opts.filename;
 	switch (curr_driver->rec_mode) {
-		case LIRC_MODE_MODE2:
-			mode2_get_lengths(&opts, &state);
-			break;
-		case LIRC_MODE_LIRCCODE:
-			lirccode_get_lengths(&opts, &state);
-			break;
+	case LIRC_MODE_MODE2:
+		mode2_get_lengths(&opts, &state);
+		break;
+	case LIRC_MODE_LIRCCODE:
+		lirccode_get_lengths(&opts, &state);
+		break;
 	}
 	if (!opts.using_template && is_rc6(&remote))
 		do_get_toggle_bit_mask(&remote, &state, &opts);
