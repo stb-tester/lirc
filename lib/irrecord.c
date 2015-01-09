@@ -1934,7 +1934,7 @@ void config_file_setup(struct main_state *state, const struct opts *opts)
 	if (state->fout == NULL) {
 		logprintf(LIRC_ERROR, "Could not open new config file %s", opts->filename);
 		logperror(LIRC_ERROR, "While opening config file for write");
-		exit(EXIT_FAILURE);
+		return;
 	}
 	fprint_copyright(state->fout);
 	fprint_comment(state->fout, &remote, opts->commandline);
