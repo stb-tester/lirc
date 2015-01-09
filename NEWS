@@ -1,4 +1,6 @@
 0.9.3-devel
+  * irrecord has been split into a library and a cli interface (#36). The
+    library interface is unstable and not announced in pkg-config.
   * The mplay driver has been updated with patches which has been
     available.
   * New build dependency: xsltproc (usually coming with libxml).
