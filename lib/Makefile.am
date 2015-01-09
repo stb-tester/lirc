@@ -10,7 +10,8 @@ BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
 
-lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
+lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
+			      libirrecord.la
 
 liblirc_la_LDFLAGS          = -ldl
 liblirc_la_SOURCES          = config_file.c \
@@ -28,6 +29,8 @@ liblirc_la_SOURCES          = config_file.c \
                               serial.c \
                               transmit.c
 
+libirrecord_la_SOURCES      = irrecord.c
+
 liblirc_client_la_LDFLAGS   = -version-info 3:0:3
 liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 
@@ -40,7 +43,7 @@ liblirc_driver_la_SOURCES   = driver.h \
                               lirc_log.h \
                               receive.c \
                               receive.h \
-			      release.c \
+                              release.c \
                               serial.h \
                               serial.c \
                               transmit.c \
@@ -61,6 +64,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               input_map.h \
                               ir_remote.h \
                               ir_remote_types.h \
+                              irrecord.h \
                               lirc_client.h \
                               lirc_config.h \
                               lirc_log.h \

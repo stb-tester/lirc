@@ -135,7 +135,7 @@ enum toggle_status {
 /** Return from one pass in record_buttons(). */
 enum button_status {
 	STS_BTN_INIT,
- 	STS_BTN_GET_NAME,
+	STS_BTN_GET_NAME,
 	STS_BTN_INIT_DATA,
 	STS_BTN_GET_RAW_DATA,
 	STS_BTN_GET_DATA,
@@ -268,7 +268,7 @@ void btn_state_set_message(struct button_state* state, const char* fmt, ...);
 /** Clear the driver input buffers. */
 void flushhw(void);
 
-/** Reset the hardware. Return 1 on OK, else 0 and possibly closes driver. */
+/** Reset the hardware. Return 1 on OK, else 0 and possibly close driver. */
 int resethw(void );
 
 /** Initiate a pristine gap_state. */
@@ -289,7 +289,7 @@ enum get_gap_status get_gap_length(struct gap_state *state,
 
 /** Try to find out pre/post etc. lengths,  returning lengths_status. */
 enum lengths_status get_lengths(struct lengths_state* state,
-                                struct ir_remote *remote,
+				struct ir_remote *remote,
 				int force, int interactive);
 
 /** Free heap data allocated by get_lengths().*/
@@ -302,7 +302,7 @@ get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote);
 
 
 /** The --analyse wrapper, returns boolean ok/fail. */
-int do_analyse(struct opts* opts, struct main_state* state);
+int do_analyse(const struct opts* opts, struct main_state* state);
 
 /** Try to record one button, returning button_status. */
 enum button_status record_buttons(struct button_state* btn_state,
