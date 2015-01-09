@@ -52,6 +52,7 @@ install-data-hook:
 dist-hook: ChangeLog
 	chmod u+w $(distdir)
 	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
+	find $(distdir) -name .gitkeep -o -name .gitignore -delete
 
 uninstall-local:
 	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir

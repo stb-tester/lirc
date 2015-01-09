@@ -101,6 +101,7 @@ $(nodist_man_MANS): $(man_sources)
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
 	doxygen >doxygen-warnings.txt 2>&1
+	find api-docs -name \*.tmp -delete
 	tar czf $@ api-docs
 
 man_sources             += $(srcdir)/man-source/ircat.1 \
