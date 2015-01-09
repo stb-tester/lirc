@@ -86,6 +86,7 @@ typedef struct {
 	const char* features;
 	const char* version;
 	const char* info;
+	const char* device;
 } line_t;
 
 static const line_t* lines[MAX_PLUGINS];
@@ -126,6 +127,7 @@ static line_t* line_new(const char* path)
 	line->errors = NULL;
 	line->info = NULL;
 	line->version = NULL;
+	line->device = NULL;
 	line->features = opt_long ? "              " : "";
 	return line;
 }
@@ -212,7 +214,8 @@ static void line_print_long(const line_t* line)
 	}
 
 	printf("Plugin path:\t%s\n", line->path);
-	printf("Driver name:\t%s\n", line->path ? line->name : "-");
+	printf("Driver name:\t%s\n", line->name ? line->name : "-");
+	printf("Default device:\t%s\n", line->device ? line->device : "-");
 	printf("Load state:\t%s\n", loadstate);
 	printf("Timing info:\t%s\n", handles_timing);
 	printf("Can send:\t%s\n", can_send);
@@ -264,16 +267,21 @@ static void format_drivers(struct driver** drivers,
 			continue;
 		}
                 if ((*drivers)->name) {
-                  	strncpy(buf, (*drivers)->name, sizeof(buf));
+                  	strncpy(buf, (*drivers)->name, sizeof(buf) - 1);
 			line->name = strdup(buf);
                 }
                 if ((*drivers)->driver_version) {
-                  	strncpy(buf, (*drivers)->driver_version, sizeof(buf));
+                  	strncpy(buf,
+				(*drivers)->driver_version, sizeof(buf) - 1);
 			line->version = strdup(buf);
                 }
                 if ((*drivers)->info) {
-                  	strncpy(buf, (*drivers)->info, sizeof(buf));
+                  	strncpy(buf, (*drivers)->info, sizeof(buf) - 1);
 			line->info = strdup(buf);
+                }
+                if ((*drivers)->device) {
+                  	strncpy(buf, (*drivers)->device, sizeof(buf) - 1);
+			line->device = strdup(buf);
                 }
 		snprintf(buf, sizeof(buf), "-%c%c",
 		 	 get(CAN_ANY, 'a', *drivers),
