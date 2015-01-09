@@ -79,14 +79,14 @@ const char *const MSG_WELCOME =
     "\n"
     "Please take the time to finish the file as described in\n"
     "https://sourceforge.net/p/lirc-remotes/wiki/Checklist/ an send it\n"
-    "to  <lirc@bartelmus.de> so it can be made available to others.\n";
+    "to  <lirc@bartelmus.de> so it can be made available to others.";
 
 static const char *const MSG_DEVINPUT =
     "Usually it's not necessary to create a new config file for devinput\n"
     "devices. A generic config file can be found at:\n"
     "https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
     "It can be downloaded using irdb-get(1)\n"
-    "Please try this config file before creating your own.\n";
+    "Please try this config file before creating your own.";
 
 static const char *const MSG_TOGGLE_BIT_INTRO =
     "Checking for toggle bit mask.\n"
@@ -101,7 +101,7 @@ static const char *MSG_LENGTHS_INIT =
     "It is very important that you press many different buttons and hold them\n"
     "down for approximately one second. Each button should generate at least one\n"
     "dot but in no case more than ten dots of output.\n"
-    "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n\n";
+    "Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n";
 
 
 /** Set up default values for all command line options + filename. */
@@ -364,11 +364,11 @@ static int get_options(int argc, char **argv, const char *filename, struct opts 
 static void do_get_toggle_bit_mask(struct ir_remote *remote, struct main_state *state,
 				   const struct opts *opts)
 {
-	const char *const MISSING_MASK_MSG = "But I know for sure that RC6 has a toggle bit!\n";
+	const char *const MISSING_MASK_MSG = "But I know for sure that RC6 has a toggle bit!";
 	enum toggle_status sts;
 	struct toggle_state tgl_state;
 
-	printf(MSG_TOGGLE_BIT_INTRO);
+	fputs(MSG_TOGGLE_BIT_INTRO, stdout);
 	fflush(stdout);
 	getchar();
 	flushhw();
@@ -395,7 +395,7 @@ static void do_get_toggle_bit_mask(struct ir_remote *remote, struct main_state *
 			printf("Cannot find any toggle mask.\n");
 			if (!is_rc6(remote))
 				break;
-			printf(MISSING_MASK_MSG);
+			puts(MISSING_MASK_MSG);
 			unlink(opts->filename);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
@@ -488,7 +488,7 @@ static enum button_status get_button_data(struct button_state *btn_state,
 			return STS_BTN_ALL_DONE;
 		case STS_BTN_SOFT_ERROR:
 			printf("Something went wrong: ");
-			printf(btn_state->message);
+			fputs(btn_state->message, stdout);
 			if (btn_state->retries <= 0 && !opts->force) {
 				printf("Try using the -f option.\n");
 				break;
@@ -559,7 +559,7 @@ void do_record_buttons(struct main_state *state, const struct opts *opts)
 			do_get_toggle_bit_mask(&remote, state, opts);
 			return;
 		case STS_BTN_SOFT_ERROR:
-			printf(btn_state.message);
+			fputs(btn_state.message, stdout);
 			printf("Press RETURN to continue.\n\n");
 			getchar();
 			sts = STS_BTN_INIT;
@@ -586,7 +586,7 @@ static int mode2_get_lengths(const struct opts *opts, struct main_state *state)
 	int i;
 
 	if (!opts->using_template) {
-		printf(MSG_LENGTHS_INIT);
+		puts(MSG_LENGTHS_INIT);
 		printf("Press RETURN now to start recording.");
 		fflush(stdout);
 		getchar();
@@ -712,9 +712,9 @@ int main(int argc, char **argv)
 	}
 	do_init(&opts, &state);
 
-	printf(MSG_WELCOME);
+	puts(MSG_WELCOME);
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
-		printf(MSG_DEVINPUT);
+		puts(MSG_DEVINPUT);
 	}
 	printf("Press RETURN to continue.\n");
 	getchar();
