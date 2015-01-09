@@ -151,6 +151,7 @@ static struct driver* for_each_plugin_in_dir(const char* dirpath,
 	struct dirent* ent;
 	struct driver* result = (struct driver*) NULL;
 	char path[128];
+	char buff[128];
 
 	if ((dir = opendir(dirpath)) == NULL){
 		logprintf(LIRC_INFO, "Cannot open plugindir %s", dirpath);
@@ -159,8 +160,11 @@ static struct driver* for_each_plugin_in_dir(const char* dirpath,
 	while ((ent = readdir(dir)) != NULL) {
 		if (!ends_with_so(ent->d_name))
 			continue;
+		strncpy(buff, dirpath, sizeof(buff) - 1);
+		if (buff[strlen(buff) - 1] == '/' )
+			buff[strlen(buff) - 1] = '\0';
 		snprintf(path, sizeof(path),
-			 "%s/%s", dirpath, ent->d_name);
+			 "%s/%s", buff, ent->d_name);
 		result = plugin_guest(path, drv_guest, arg);
 		if (result != (struct driver*) NULL)
 			break;
