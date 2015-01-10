@@ -31,7 +31,7 @@ extern "C" {
 /** drvctl definitions */
 #define DRV_ERR_NOT_IMPLEMENTED		1
 
-/** Stores path in drv.device. */
+/** Stores path in drv.device if non-null. */
 int default_open(const char* path);
 
 /** For now, a placeholder. */
@@ -81,7 +81,10 @@ int drv_handle_options(const char* options);
 struct driver {
 // Old-style implicit API version 1:
 
-	/** The name of the device as text string. Set by lirc before init. */
+	/**
+	 * Name of the device (string). Set by open_func() before init(),
+	 * possibly using the hard-coded driver default value.
+	 */
 	const char* device;
 
 	/** Set by the driver after init(). */
@@ -91,26 +94,26 @@ struct driver {
 	__u32 features;
 
 	/**
- 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
-         * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
-         */
+	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
+	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
+	 */
 	__u32 send_mode;
 
 	/**
-         * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
-         * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
-         */
+	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
+	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
+	 */
 	__u32 rec_mode;
 
 	/** Length in bits of the code. */
 	const __u32 code_length;
 
-        /**
-         *  Function called to do basic driver setup.
-         *  @param device String describing what device driver should
-         *      communicate with. Often (but not always) a /dev/... path.
-         *  @return 0 if everything is fine, else positive error code.
-         */
+	 /**
+	 *  Function called to do basic driver setup.
+	 *  @param device String describing what device driver should
+	 *      communicate with. Often (but not always) a /dev/... path.
+	 *  @return 0 if everything is fine, else positive error code.
+	 */
 	int (*const open_func) (const char* device);
 
 	/**
@@ -120,9 +123,9 @@ struct driver {
 	int (*const init_func) (void);
 
 	/**
-        * Function called when transmitting/receiving stops. Zero return value
- 	*  indicates failure, all other return values success.
- 	*/
+	 * Function called when transmitting/receiving stops. Zero return value
+	 *  indicates failure, all other return values success.
+	 */
 	int (*const deinit_func) (void);
 
 	/**
@@ -149,9 +152,9 @@ struct driver {
 			   	 struct decode_ctx_t* ctx);
 
 	/**
-	* Generic driver control function with semantics as defined by driver
-	* Returns 0 on success, else a positive error code.
-	*/
+	 * Generic driver control function with semantics as defined by driver
+	 * Returns 0 on success, else a positive error code.
+	 */
 	int (*const drvctl_func)(unsigned int cmd, void* arg);
 
 	/**

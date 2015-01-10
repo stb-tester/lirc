@@ -100,8 +100,10 @@ static void parse_options(int argc, char** argv)
 		case 'H':
 			if (hw_choose_driver(optarg) != 0) {
 				fprintf(stderr,
-                                        "Driver `%s' not found.\n",
+                                        "Driver `%s' not found.",
 					optarg);
+				fputs(" (Missing -U/--plugins option?)\n",
+				      stderr);
 				fputs("Available drivers:\n", stderr);
 				hw_print_drivers(stderr);
 				exit(EXIT_FAILURE);
@@ -165,19 +167,22 @@ int main(int argc, char **argv)
 	strncpy(progname, "mode2", sizeof(progname));
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
-	if (strcmp(device, LIRCD) == 0) {
+	if (device && strcmp(device, LIRCD) == 0) {
 		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
 		return EXIT_FAILURE;
 	}
 
 	if (use_raw_access) {
+		if (device == NULL) {
+			fprintf(stderr,
+				"The --raw option requires a --device\n");
+			exit(EXIT_FAILURE);
+		}
 		fd = open(device, O_RDONLY);
 		if (fd == -1) {
-			fprintf(stderr, "%s: error opening %s\n", progname, device);
-			perror(progname);
+			perror("Error while opening device");
 			exit(EXIT_FAILURE);
 		};
-
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
@@ -204,6 +209,9 @@ int main(int argc, char **argv)
 	} else {
 		curr_driver->open_func(device);
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
+			fprintf(stderr,
+				"Cannot initiate device %s\n",
+			 	curr_driver->device);
 			return EXIT_FAILURE;
 		}
 		fd = curr_driver->fd;	/* please compiler */
@@ -221,7 +229,6 @@ int main(int argc, char **argv)
 		}
 
 	}
-
 	if (mode == LIRC_MODE_LIRCCODE) {
 		if (use_raw_access) {
 			if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {

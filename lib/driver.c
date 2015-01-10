@@ -10,6 +10,8 @@
 
 #include	<stdio.h>
 #include 	"driver.h"
+#include 	"config.h"
+#include	"lirc_log.h"
 
 /**
  * The global driver data that drivers etc are accessing.
@@ -26,8 +28,15 @@ const struct driver const* curr_driver = &drv;
 int default_open(const char* path)
 {
 	static char buff[128];
-	strncpy(buff, path, sizeof(buff));
-	drv.device = buff;
+
+	if (path == NULL) {
+		if (drv.device == NULL)
+			drv.device = LIRC_DRIVER_DEVICE;
+	} else {
+		strncpy(buff, path, sizeof(buff) - 1);
+		drv.device = buff;
+	}
+	logprintf(LIRC_INFO, "Initial device: %s", drv.device);
 	return 0;
 }
 

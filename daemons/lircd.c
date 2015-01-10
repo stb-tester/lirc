@@ -2224,7 +2224,7 @@ static void lircd_add_defaults(void)
 		"lircd:nodaemon", 	"False",
 		"lircd:permission", 	DEFAULT_PERMISSIONS,
 		"lircd:driver", 	"default",
-		"lircd:device", 	LIRC_DRIVER_DEVICE,
+		"lircd:device", 	NULL,
 		"lircd:listen", 	NULL ,
 		"lircd:connect", 	NULL,
 		"lircd:output", 	LIRCD,
@@ -2382,22 +2382,19 @@ int main(int argc, char **argv)
 		return(EXIT_FAILURE);
 	}
 	permission = oatoi(opt);
-	opt = options_getstring("lircd:device");
-	if (opt != NULL)
-		device = opt;
+	device = options_getstring("lircd:device");
 	opt = options_getstring("lircd:driver");
 	if (strcmp(opt, "help") == 0 || strcmp(opt, "?") == 0){
 		hw_print_drivers(stdout);
 		return(EXIT_SUCCESS);
 	}
-	else if (hw_choose_driver(opt) != 0) {
+	if (hw_choose_driver(opt) != 0) {
 		fprintf(stderr, "Driver `%s' not found", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		hw_print_drivers(stderr);
 		return(EXIT_FAILURE);
-	} else if (device != NULL) {
-		curr_driver->open_func(device);
 	}
+	curr_driver->open_func(device);
 	opt = options_getstring("lircd:driver-options");
 	if (opt != NULL)
 		drv_handle_options(opt);
