@@ -1,15 +1,14 @@
-
 /****************************************************************************
- ** lirc_client.c ***********************************************************
- ****************************************************************************
- *
- * lirc_client - common routines for lircd clients
- *
- * Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
- * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
- *
- * System wide LIRCRC support by Michal Svec <rebel@atrey.karlin.mff.cuni.cz>
- */
+** lirc_client.c ***********************************************************
+****************************************************************************
+*
+* lirc_client - common routines for lircd clients
+*
+* Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
+* Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
+*
+* System wide LIRCRC support by Michal Svec <rebel@atrey.karlin.mff.cuni.cz>
+*/
 
 /**
  * @file lirc_client.c
@@ -41,15 +40,15 @@
 #include "lirc_client.h"
 
 /** Timeout in lirc_read_string. */
-static const struct timeval CMD_TIMEOUT = {.tv_sec = 1, .tv_usec = 0};
+static const struct timeval CMD_TIMEOUT = { .tv_sec = 1, .tv_usec = 0 };
 
 
 // Until we have working client logging...
-#define logprintf(level,fmt,args...)  syslog(level, fmt, ## args)
-#define LIRC_WARNING  	LOG_WARNING
-#define LIRC_DEBUG    	LOG_DEBUG
-#define LIRC_NOTICE 	LOG_NOTICE
-#define LIRC_ERROR  	LOG_ERR
+#define logprintf(level, fmt, args ...)  syslog(level, fmt, ## args)
+#define LIRC_WARNING    LOG_WARNING
+#define LIRC_DEBUG      LOG_DEBUG
+#define LIRC_NOTICE     LOG_NOTICE
+#define LIRC_ERROR      LOG_ERR
 
 /* internal defines */
 #define MAX_INCLUDES 10
@@ -60,10 +59,10 @@ static const struct timeval CMD_TIMEOUT = {.tv_sec = 1, .tv_usec = 0};
 
 /* internal data structures */
 struct filestack_t {
-	FILE *file;
-	char *name;
-	int line;
-	struct filestack_t *parent;
+	FILE*			file;
+	char*			name;
+	int			line;
+	struct filestack_t*	parent;
 };
 
 
@@ -80,26 +79,25 @@ enum packet_state {
 
 
 /*
-  lircrc_config relies on this function, hence don't make it static
-  but it's not part of the official interface, so there's no guarantee
-  that it will stay available in the future
-*/
-unsigned int lirc_flags(char *string);
+ * lircrc_config relies on this function, hence don't make it static
+ * but it's not part of the official interface, so there's no guarantee
+ * that it will stay available in the future
+ */
+unsigned int lirc_flags(char* string);
 
 static int lirc_lircd;
 static int lirc_verbose = 0;
-static char *lirc_prog = NULL;
-static char *lirc_buffer = NULL;
+static char* lirc_prog = NULL;
+static char* lirc_buffer = NULL;
 
-char *prog;
+char* prog;
 
 /** Wrapper for write(2) which logs errors. */
 static inline void
-chk_write(int fd, const void *buf, size_t count, const char* msg)
+chk_write(int fd, const void* buf, size_t count, const char* msg)
 {
-	if (write(fd, buf, count) == -1) {
+	if (write(fd, buf, count) == -1)
 		perror(msg);
-	}
 }
 
 
@@ -133,16 +131,16 @@ static int fill_string(int fd, lirc_cmd_ctx* cmd)
 
 	setsockopt(fd,
 		   SOL_SOCKET,
-        	   SO_RCVTIMEO,
-		   (const void *)&CMD_TIMEOUT,
+		   SO_RCVTIMEO,
+		   (const void*)&CMD_TIMEOUT,
 		   sizeof(CMD_TIMEOUT));
 	n = read(fd, cmd->buffer + cmd->head, PACKET_SIZE - cmd->head);
 	if (n == -1) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR){
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			logprintf(LIRC_NOTICE, "fill_string: timeout\n");
 			return EAGAIN;
 		} else {
-		        cmd->head = 0;
+			cmd->head = 0;
 			return errno;
 		}
 	}
@@ -184,7 +182,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 	int done, todo;
 	const char* string = NULL;
 	const char* data;
-	char *endptr;
+	char* endptr;
 	enum packet_state state;
 	int status, n, r;
 	__u32 data_n = 0;
@@ -193,7 +191,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 	data = ctx->packet;
 	logprintf(LIRC_DEBUG, "lirc_command_run: Sending: %s", data);
 	while (todo > 0) {
-		done = write(fd, (void *)data, todo);
+		done = write(fd, (void*)data, todo);
 		if (done < 0) {
 			logprintf(LIRC_WARNING,
 				  "%s: could not send packet\n", prog);
@@ -209,26 +207,24 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 	n = 0;
 	state = P_BEGIN;
 	while (1) {
-		do {
+		do
 			r = read_string(ctx, fd, &string);
-		} while (r == EAGAIN);
-                if (strlen(string) == 0) {
+		while (r == EAGAIN);
+		if (strlen(string) == 0)
 			goto bad_packet;
-		}
 		logprintf(LIRC_DEBUG,
 			  "lirc_command_run, state: %d, input: \"%s\"\n",
 			  state, string ? string : "(Null)");
 		switch (state) {
 		case P_BEGIN:
-			if (strcasecmp(string, "BEGIN") != 0) {
+			if (strcasecmp(string, "BEGIN") != 0)
 				break;
-			}
 			state = P_MESSAGE;
 			continue;
 		case P_MESSAGE:
-			if (strncasecmp(string, ctx->packet, strlen(string)) != 0
-			    	|| strlen(string) + 1 != strlen(ctx->packet))
-			{
+			if (strncasecmp(string, ctx->packet,
+					strlen(string)) != 0
+			    || strlen(string) + 1 != strlen(ctx->packet)) {
 				state = P_BEGIN;
 				break;
 			}
@@ -242,8 +238,9 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 					  "lirc_command_run: status:END");
 				return 0;
 			} else if (strcasecmp(string, "ERROR") == 0) {
-				logprintf(LIRC_WARNING, "%s: command failed: %s",
-					prog, ctx->packet);
+				logprintf(LIRC_WARNING,
+					  "%s: command failed: %s",
+					  prog, ctx->packet);
 				status = EIO;
 			} else {
 				goto bad_packet;
@@ -254,35 +251,32 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 			if (strcasecmp(string, "END") == 0) {
 				logprintf(LIRC_NOTICE,
 					  "lirc_command_run: data:END, status:%d",
-                                          status);
+					  status);
 				return status;
 			} else if (strcasecmp(string, "DATA") == 0) {
 				state = P_N;
 				break;
 			}
-				logprintf(LIRC_DEBUG,
-					 "data: bad packet: %s\n",
-					 string);
+			logprintf(LIRC_DEBUG,
+				  "data: bad packet: %s\n",
+				  string);
 			goto bad_packet;
 		case P_N:
 			errno = 0;
-			data_n = (__u32) strtoul(string, &endptr, 0);
-			if (!*string || *endptr) {
+			data_n = (__u32)strtoul(string, &endptr, 0);
+			if (!*string || *endptr)
 				goto bad_packet;
-			}
-			if (data_n == 0) {
+			if (data_n == 0)
 				state = P_END;
-			} else {
+			else
 				state = P_DATA_N;
-			}
 			break;
 		case P_DATA_N:
 			if (n == 0) {
-				if (ctx->reply_to_stdout) {
+				if (ctx->reply_to_stdout)
 					puts("");
-				} else {
+				else
 					strcpy(ctx->reply, "");
-				}
 			}
 			if (ctx->reply_to_stdout) {
 				chk_write(0, string, strlen(string),
@@ -290,8 +284,8 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 				chk_write(0, "\n", 1, "reply (2)");
 			} else {
 				strncpy(ctx->reply,
-				        string,
-			       	 	PACKET_SIZE - strlen(ctx->reply));
+					string,
+					PACKET_SIZE - strlen(ctx->reply));
 			}
 			n++;
 			if (n == data_n)
@@ -301,7 +295,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 			if (strcasecmp(string, "END") == 0) {
 				logprintf(LIRC_NOTICE,
 					  "lirc_command_run: status:END, status:%d",
-                                          status);
+					  status);
 				return status;
 			}
 			goto bad_packet;
@@ -315,7 +309,7 @@ bad_packet:
 }
 
 
-static void lirc_printf(const char *format_str, ...)
+static void lirc_printf(const char* format_str, ...)
 {
 	va_list ap;
 
@@ -328,7 +322,7 @@ static void lirc_printf(const char *format_str, ...)
 }
 
 
-static void lirc_perror(const char *s)
+static void lirc_perror(const char* s)
 {
 	if (!lirc_verbose)
 		return;
@@ -337,13 +331,12 @@ static void lirc_perror(const char *s)
 }
 
 
-int lirc_init(const char *prog, int verbose)
+int lirc_init(const char* prog, int verbose)
 {
-	if (prog == NULL || lirc_prog != NULL){
+	if (prog == NULL || lirc_prog != NULL)
 		return -1;
-	}
-        lirc_lircd = lirc_get_local_socket(NULL, !verbose);
-	if (lirc_lircd >=  0) {
+	lirc_lircd = lirc_get_local_socket(NULL, !verbose);
+	if (lirc_lircd >= 0) {
 		lirc_verbose = verbose;
 		lirc_prog = strdup(prog);
 		if (lirc_prog == NULL) {
@@ -353,11 +346,11 @@ int lirc_init(const char *prog, int verbose)
 		return lirc_lircd;
 	} else {
 		lirc_printf("%s: could not open socket: %s\n",
-                            lirc_prog,
-                            strerror(-lirc_lircd));
-		return (-1);
+			    lirc_prog,
+			    strerror(-lirc_lircd));
+		return -1;
 	}
-	return (lirc_lircd);
+	return lirc_lircd;
 }
 
 
@@ -371,19 +364,19 @@ int lirc_deinit(void)
 		free(lirc_buffer);
 		lirc_buffer = NULL;
 	}
-	return (close(lirc_lircd));
+	return close(lirc_lircd);
 }
 
 
-static int lirc_readline(char **line, FILE * f)
+static int lirc_readline(char** line, FILE* f)
 {
-	char *newline, *ret, *enlargeline;
+	char* newline, * ret, * enlargeline;
 	int len;
 
-	newline = (char *)malloc(LIRC_READ + 1);
+	newline = (char*)malloc(LIRC_READ + 1);
 	if (newline == NULL) {
 		lirc_printf("%s: out of memory\n", lirc_prog);
-		return (-1);
+		return -1;
 	}
 	len = 0;
 	while (1) {
@@ -395,27 +388,27 @@ static int lirc_readline(char **line, FILE * f)
 				free(newline);
 				*line = NULL;
 			}
-			return (0);
+			return 0;
 		}
 		len = strlen(newline);
 		if (newline[len - 1] == '\n') {
 			newline[len - 1] = 0;
 			*line = newline;
-			return (0);
+			return 0;
 		}
 
-		enlargeline = (char *)realloc(newline, len + 1 + LIRC_READ);
+		enlargeline = (char*)realloc(newline, len + 1 + LIRC_READ);
 		if (enlargeline == NULL) {
 			free(newline);
 			lirc_printf("%s: out of memory\n", lirc_prog);
-			return (-1);
+			return -1;
 		}
 		newline = enlargeline;
 	}
 }
 
 
-static char *lirc_trim(char *s)
+static char* lirc_trim(char* s)
 {
 	int len;
 
@@ -429,14 +422,13 @@ static char *lirc_trim(char *s)
 		else
 			break;
 	}
-	return (s);
+	return s;
 }
 
 
 /* parse standard C escape sequences + \@,\A-\Z is ^@,^A-^Z */
-static char lirc_parse_escape(char **s, const char *name, int line)
+static char lirc_parse_escape(char** s, const char* name, int line)
 {
-
 	char c;
 	unsigned int i, overflow, count;
 	int digits_found, digit;
@@ -445,26 +437,26 @@ static char lirc_parse_escape(char **s, const char *name, int line)
 	(*s)++;
 	switch (c) {
 	case 'a':
-		return ('\a');
+		return '\a';
 	case 'b':
-		return ('\b');
+		return '\b';
 	case 'e':
 #if 0
-	case 'E':		/* this should become ^E */
+	case 'E':               /* this should become ^E */
 #endif
-		return (033);
+		return 033;
 	case 'f':
-		return ('\f');
+		return '\f';
 	case 'n':
-		return ('\n');
+		return '\n';
 	case 'r':
-		return ('\r');
+		return '\r';
 	case 't':
-		return ('\t');
+		return '\t';
 	case 'v':
-		return ('\v');
+		return '\v';
 	case '\n':
-		return (0);
+		return 0;
 	case 0:
 		(*s)--;
 		return 0;
@@ -490,52 +482,55 @@ static char lirc_parse_escape(char **s, const char *name, int line)
 		}
 		if (i > (1 << CHAR_BIT) - 1) {
 			i &= (1 << CHAR_BIT) - 1;
-			lirc_printf("%s: octal escape sequence out of range in %s:%d\n", lirc_prog, name, line);
+			lirc_printf(
+				"%s: octal escape sequence out of range in %s:%d\n",
+				lirc_prog, name, line);
 		}
-		return ((char)i);
+		return (char)i;
 	case 'x':
-		{
-			i = 0;
-			overflow = 0;
-			digits_found = 0;
-			for (;;) {
-				c = *(*s)++;
-				if (c >= '0' && c <= '9')
-					digit = c - '0';
-				else if (c >= 'a' && c <= 'f')
-					digit = c - 'a' + 10;
-				else if (c >= 'A' && c <= 'F')
-					digit = c - 'A' + 10;
-				else {
-					(*s)--;
-					break;
-				}
-				overflow |= i ^ (i << 4 >> 4);
-				i = (i << 4) + digit;
-				digits_found = 1;
+	{
+		i = 0;
+		overflow = 0;
+		digits_found = 0;
+		for (;; ) {
+			c = *(*s)++;
+			if (c >= '0' && c <= '9') {
+				digit = c - '0';
+			} else if (c >= 'a' && c <= 'f') {
+				digit = c - 'a' + 10;
+			} else if (c >= 'A' && c <= 'F') {
+				digit = c - 'A' + 10;
+			} else {
+				(*s)--;
+				break;
 			}
-			if (!digits_found) {
-				lirc_printf("%s: \\x used with no "
-					    "following hex digits in %s:%d\n", lirc_prog, name, line);
-			}
-			if (overflow || i > (1 << CHAR_BIT) - 1) {
-				i &= (1 << CHAR_BIT) - 1;
-				lirc_printf("%s: hex escape sequence out "
-					    "of range in %s:%d\n", lirc_prog, name, line);
-			}
-			return ((char)i);
+			overflow |= i ^ (i << 4 >> 4);
+			i = (i << 4) + digit;
+			digits_found = 1;
 		}
+		if (!digits_found)
+			lirc_printf("%s: \\x used with no "
+				    "following hex digits in %s:%d\n",
+				    lirc_prog, name, line);
+		if (overflow || i > (1 << CHAR_BIT) - 1) {
+			i &= (1 << CHAR_BIT) - 1;
+			lirc_printf("%s: hex escape sequence out "
+				    "of range in %s:%d\n", lirc_prog, name,
+				    line);
+		}
+		return (char)i;
+	}
 	default:
 		if (c >= '@' && c <= 'Z')
-			return (c - '@');
-		return (c);
+			return c - '@';
+		return c;
 	}
 }
 
 
-static void lirc_parse_string(char *s, const char *name, int line)
+static void lirc_parse_string(char* s, const char* name, int line)
 {
-	char *t;
+	char* t;
 
 	t = s;
 	while (*s != 0) {
@@ -553,48 +548,47 @@ static void lirc_parse_string(char *s, const char *name, int line)
 }
 
 
-static void lirc_parse_include(char *s, const char *name, int line)
+static void lirc_parse_include(char* s, const char* name, int line)
 {
 	char last;
 	size_t len;
 
 	len = strlen(s);
-	if (len < 2) {
+	if (len < 2)
 		return;
-	}
 	last = s[len - 1];
-	if (*s != '"' && *s != '<') {
+	if (*s != '"' && *s != '<')
 		return;
-	}
-	if (*s == '"' && last != '"') {
+	if (*s == '"' && last != '"')
 		return;
-	} else if (*s == '<' && last != '>') {
+	else if (*s == '<' && last != '>')
 		return;
-	}
 	s[len - 1] = 0;
-	memmove(s, s + 1, len - 2 + 1);	/* terminating 0 is copied */
+	memmove(s, s + 1, len - 2 + 1); /* terminating 0 is copied */
 }
 
 
-int lirc_mode(char *token, char *token2, char **mode,
-	      struct lirc_config_entry **new_config,
-	      struct lirc_config_entry **first_config,
-	      struct lirc_config_entry **last_config,
-              int (check) (char *s),
-              const char *name,
+int lirc_mode(char* token, char* token2, char** mode,
+	      struct lirc_config_entry** new_config,
+	      struct lirc_config_entry** first_config,
+	      struct lirc_config_entry** last_config,
+	      int (check) (char* s),
+	      const char* name,
 	      int line)
 {
-	struct lirc_config_entry *new_entry;
+	struct lirc_config_entry* new_entry;
 
 	new_entry = *new_config;
 	if (strcasecmp(token, "begin") == 0) {
 		if (token2 == NULL) {
 			if (new_entry == NULL) {
-				new_entry = (struct lirc_config_entry *)
-				    malloc(sizeof(struct lirc_config_entry));
+				new_entry = (struct lirc_config_entry*)
+					    malloc(sizeof(struct
+							  lirc_config_entry));
 				if (new_entry == NULL) {
-					lirc_printf("%s: out of memory\n", lirc_prog);
-					return (-1);
+					lirc_printf("%s: out of memory\n",
+						    lirc_prog);
+					return -1;
 				} else {
 					new_entry->prog = NULL;
 					new_entry->code = NULL;
@@ -612,18 +606,19 @@ int lirc_mode(char *token, char *token2, char **mode,
 					*new_config = new_entry;
 				}
 			} else {
-				lirc_printf("%s: bad file format, %s:%d\n", lirc_prog, name, line);
-				return (-1);
+				lirc_printf("%s: bad file format, %s:%d\n",
+					    lirc_prog, name, line);
+				return -1;
 			}
 		} else {
 			if (new_entry == NULL && *mode == NULL) {
 				*mode = strdup(token2);
-				if (*mode == NULL) {
-					return (-1);
-				}
+				if (*mode == NULL)
+					return -1;
 			} else {
-				lirc_printf("%s: bad file format, %s:%d\n", lirc_prog, name, line);
-				return (-1);
+				lirc_printf("%s: bad file format, %s:%d\n",
+					    lirc_prog, name, line);
+				return -1;
 			}
 		}
 	} else if (strcasecmp(token, "end") == 0) {
@@ -631,15 +626,18 @@ int lirc_mode(char *token, char *token2, char **mode,
 			if (new_entry != NULL) {
 #if 0
 				if (new_entry->prog == NULL) {
-					lirc_printf("%s: prog missing in config before line %d\n", lirc_prog, line);
+					lirc_printf(
+						"%s: prog missing in config before line %d\n", lirc_prog,
+						line);
 					lirc_freeconfigentries(new_entry);
 					*new_config = NULL;
-					return (-1);
+					return -1;
 				}
-				if (strcasecmp(new_entry->prog, lirc_prog) != 0) {
+				if (strcasecmp(new_entry->prog,
+					       lirc_prog) != 0) {
 					lirc_freeconfigentries(new_entry);
 					*new_config = NULL;
-					return (0);
+					return 0;
 				}
 #endif
 				new_entry->next_code = new_entry->code;
@@ -656,81 +654,92 @@ int lirc_mode(char *token, char *token2, char **mode,
 				if (*mode != NULL) {
 					new_entry->mode = strdup(*mode);
 					if (new_entry->mode == NULL) {
-						lirc_printf("%s: out of memory\n", lirc_prog);
-						return (-1);
+						lirc_printf(
+							"%s: out of memory\n",
+							lirc_prog);
+						return -1;
 					}
 				}
 
 				if (check != NULL &&
-				    new_entry->prog != NULL && strcasecmp(new_entry->prog, lirc_prog) == 0) {
-					struct lirc_list *list;
+				    new_entry->prog != NULL &&
+				    strcasecmp(new_entry->prog,
+					       lirc_prog) == 0) {
+					struct lirc_list* list;
 
 					list = new_entry->config;
 					while (list != NULL) {
-						if (check(list->string) == -1) {
-							return (-1);
-						}
+						if (check(list->string) == -1)
+							return -1;
 						list = list->next;
 					}
 				}
 
-				if (new_entry->rep_delay == 0 && new_entry->rep > 0) {
-					new_entry->rep_delay = new_entry->rep - 1;
-				}
+				if (new_entry->rep_delay == 0 &&
+				    new_entry->rep > 0)
+					new_entry->rep_delay = new_entry->rep -
+							       1;
 			} else {
-				lirc_printf("%s: %s:%d: 'end' without 'begin'\n", lirc_prog, name, line);
-				return (-1);
+				lirc_printf(
+					"%s: %s:%d: 'end' without 'begin'\n",
+					lirc_prog, name, line);
+				return -1;
 			}
 		} else {
 			if (*mode != NULL) {
 				if (new_entry != NULL) {
-					lirc_printf("%s: %s:%d: missing 'end' token\n", lirc_prog, name, line);
-					return (-1);
+					lirc_printf(
+						"%s: %s:%d: missing 'end' token\n",
+						lirc_prog, name, line);
+					return -1;
 				}
 				if (strcasecmp(*mode, token2) == 0) {
 					free(*mode);
 					*mode = NULL;
 				} else {
 					lirc_printf("%s: \"%s\" doesn't "
-						    "match mode \"%s\"\n", lirc_prog, token2, *mode);
-					return (-1);
+						    "match mode \"%s\"\n",
+						    lirc_prog, token2, *mode);
+					return -1;
 				}
 			} else {
-				lirc_printf("%s: %s:%d: 'end %s' without 'begin'\n", lirc_prog, name, line, token2);
-				return (-1);
+				lirc_printf(
+					"%s: %s:%d: 'end %s' without 'begin'\n",
+					lirc_prog, name, line, token2);
+				return -1;
 			}
 		}
 	} else {
-		lirc_printf("%s: unknown token \"%s\" in %s:%d ignored\n", lirc_prog, token, name, line);
+		lirc_printf("%s: unknown token \"%s\" in %s:%d ignored\n",
+			    lirc_prog, token, name, line);
 	}
-	return (0);
+	return 0;
 }
 
 
-unsigned int lirc_flags(char *string)
+unsigned int lirc_flags(char* string)
 {
-	char *s;
+	char* s;
 	unsigned int flags;
 
 	flags = none;
 	s = strtok(string, " \t|");
 	while (s) {
-		if (strcasecmp(s, "once") == 0) {
+		if (strcasecmp(s, "once") == 0)
 			flags |= once;
-		} else if (strcasecmp(s, "quit") == 0) {
+		else if (strcasecmp(s, "quit") == 0)
 			flags |= quit;
-		} else if (strcasecmp(s, "mode") == 0) {
+		else if (strcasecmp(s, "mode") == 0)
 			flags |= mode;
-		} else if (strcasecmp(s, "startup_mode") == 0) {
+		else if (strcasecmp(s, "startup_mode") == 0)
 			flags |= startup_mode;
-		} else if (strcasecmp(s, "toggle_reset") == 0) {
+		else if (strcasecmp(s, "toggle_reset") == 0)
 			flags |= toggle_reset;
-		} else {
+		else
 			lirc_printf("%s: unknown flag \"%s\"\n", lirc_prog, s);
-		}
 		s = strtok(NULL, " \t");
 	}
-	return (flags);
+	return flags;
 }
 
 
@@ -756,9 +765,8 @@ static char* get_homepath(void)
 	home = getenv("HOME");
 	home = home == NULL ? "/" : home;
 	strncpy(filename, home, MAXPATHLEN);
-	if (filename[strlen(filename) - 1] == '/') {
+	if (filename[strlen(filename) - 1] == '/')
 		filename[strlen(filename) - 1] = '\0';
-	}
 	return filename;
 }
 
@@ -779,21 +787,19 @@ static char* get_freedesktop_path()
 		strncat(path, CFG_LIRCRC, MAXPATHLEN - strlen(path));
 	} else {
 		path = get_homepath();
-		if (path == NULL) {
+		if (path == NULL)
 			return NULL;
-		}
 		strncat(path, "/.config/lircrc", MAXPATHLEN - strlen(path));
 	}
-	if (access(path, R_OK) != 0) {
+	if (access(path, R_OK) != 0)
 		path[0] = '\0';
-	}
 	return path;
 }
 
 
-static char *lirc_getfilename(const char *file, const char *current_file)
+static char* lirc_getfilename(const char* file, const char* current_file)
 {
-	char *filename;
+	char* filename;
 
 	if (file == NULL) {
 		filename = get_freedesktop_path();
@@ -802,17 +808,15 @@ static char *lirc_getfilename(const char *file, const char *current_file)
 		} else if (strlen(filename) == 0) {
 			free(filename);
 			filename = get_homepath();
-			if (filename == NULL) {
+			if (filename == NULL)
 				return NULL;
-			}
 			strcat(filename, "/" LIRCRC_USER_FILE);
 		}
 		filename = realloc(filename, strlen(filename) + 1);
 	} else if (strncmp(file, "~/", 2) == 0) {
 		filename = get_homepath();
-		if (filename == NULL) {
+		if (filename == NULL)
 			return NULL;
-		}
 		strcat(filename, file + 1);
 		filename = realloc(filename, strlen(filename) + 1);
 	} else if (file[0] == '/' || current_file == NULL) {
@@ -825,9 +829,10 @@ static char *lirc_getfilename(const char *file, const char *current_file)
 	} else {
 		/* get path from parent filename */
 		int pathlen = strlen(current_file);
+
 		while (pathlen > 0 && current_file[pathlen - 1] != '/')
 			pathlen--;
-		filename = (char *)malloc(pathlen + strlen(file) + 1);
+		filename = (char*)malloc(pathlen + strlen(file) + 1);
 		if (filename == NULL) {
 			lirc_printf("%s: out of memory\n", lirc_prog);
 			return NULL;
@@ -840,35 +845,41 @@ static char *lirc_getfilename(const char *file, const char *current_file)
 }
 
 
-static FILE *lirc_open(const char *file, const char *current_file, char **full_name)
+static FILE* lirc_open(const char*	file,
+		       const char*	current_file,
+		       char**		full_name)
 {
-	FILE *fin;
-	char *filename;
+	FILE* fin;
+	char* filename;
 
 	filename = lirc_getfilename(file, current_file);
-	if (filename == NULL) {
+	if (filename == NULL)
 		return NULL;
-	}
 
 	fin = fopen(filename, "r");
 	if (fin == NULL && (file != NULL || errno != ENOENT)) {
-		lirc_printf("%s: could not open config file %s\n", lirc_prog, filename);
+		lirc_printf("%s: could not open config file %s\n", lirc_prog,
+			    filename);
 		lirc_perror(lirc_prog);
 	} else if (fin == NULL) {
-		const char *root_file = LIRCRC_ROOT_FILE;
+		const char* root_file = LIRCRC_ROOT_FILE;
+
 		fin = fopen(root_file, "r");
 		if (fin == NULL && errno == ENOENT) {
 			int save_errno = errno;
+
 			root_file = LIRCRC_OLD_ROOT_FILE;
 			fin = fopen(root_file, "r");
 			errno = save_errno;
 		}
 		if (fin == NULL && errno != ENOENT) {
-			lirc_printf("%s: could not open config file %s\n", lirc_prog, LIRCRC_ROOT_FILE);
+			lirc_printf("%s: could not open config file %s\n",
+				    lirc_prog, LIRCRC_ROOT_FILE);
 			lirc_perror(lirc_prog);
 		} else if (fin == NULL) {
 			lirc_printf("%s: could not open config files "
-				    "%s and %s\n", lirc_prog, filename, LIRCRC_ROOT_FILE);
+				    "%s and %s\n", lirc_prog, filename,
+				    LIRCRC_ROOT_FILE);
 			lirc_perror(lirc_prog);
 		} else {
 			free(filename);
@@ -880,18 +891,18 @@ static FILE *lirc_open(const char *file, const char *current_file, char **full_n
 			}
 		}
 	}
-	if (full_name && fin != NULL) {
+	if (full_name && fin != NULL)
 		*full_name = filename;
-	} else {
+	else
 		free(filename);
-	}
 	return fin;
 }
 
 
-static struct filestack_t *stack_push(struct filestack_t *parent)
+static struct filestack_t* stack_push(struct filestack_t* parent)
 {
-	struct filestack_t *entry;
+	struct filestack_t* entry;
+
 	entry = malloc(sizeof(struct filestack_t));
 	if (entry == NULL) {
 		lirc_printf("%s: out of memory\n", lirc_prog);
@@ -905,9 +916,10 @@ static struct filestack_t *stack_push(struct filestack_t *parent)
 }
 
 
-static struct filestack_t *stack_pop(struct filestack_t *entry)
+static struct filestack_t* stack_pop(struct filestack_t* entry)
 {
-	struct filestack_t *parent = NULL;
+	struct filestack_t* parent = NULL;
+
 	if (entry) {
 		parent = entry->parent;
 		if (entry->name)
@@ -918,18 +930,17 @@ static struct filestack_t *stack_pop(struct filestack_t *entry)
 }
 
 
-static void stack_free(struct filestack_t *entry)
+static void stack_free(struct filestack_t* entry)
 {
-	while (entry) {
+	while (entry)
 		entry = stack_pop(entry);
-	}
 }
 
 
-static char *lirc_startupmode(struct lirc_config_entry *first)
+static char* lirc_startupmode(struct lirc_config_entry* first)
 {
-	struct lirc_config_entry *scan;
-	char *startupmode;
+	struct lirc_config_entry* scan;
+	char* startupmode;
 
 	startupmode = NULL;
 	scan = first;
@@ -942,7 +953,9 @@ static char *lirc_startupmode(struct lirc_config_entry *first)
 				scan->change_mode = NULL;
 				break;
 			} else {
-				lirc_printf("%s: startup_mode flags requires 'mode ='\n", lirc_prog);
+				lirc_printf(
+					"%s: startup_mode flags requires 'mode ='\n",
+					lirc_prog);
 			}
 		}
 		scan = scan->next;
@@ -952,7 +965,8 @@ static char *lirc_startupmode(struct lirc_config_entry *first)
 	if (startupmode == NULL) {
 		scan = first;
 		while (scan != NULL) {
-			if (scan->mode != NULL && strcasecmp(lirc_prog, scan->mode) == 0) {
+			if (scan->mode != NULL
+			    && strcasecmp(lirc_prog, scan->mode) == 0) {
 				startupmode = lirc_prog;
 				break;
 			}
@@ -961,23 +975,24 @@ static char *lirc_startupmode(struct lirc_config_entry *first)
 	}
 
 	if (startupmode == NULL)
-		return (NULL);
+		return NULL;
 	scan = first;
 	while (scan != NULL) {
-		if (scan->change_mode != NULL && scan->flags & once && strcasecmp(startupmode, scan->change_mode) == 0) {
+		if (scan->change_mode != NULL
+		    && scan->flags & once
+		    && strcasecmp(startupmode, scan->change_mode) == 0)
 			scan->flags |= ecno;
-		}
 		scan = scan->next;
 	}
-	return (startupmode);
+	return startupmode;
 }
 
 
-static void lirc_freeconfigentries(struct lirc_config_entry *first)
+static void lirc_freeconfigentries(struct lirc_config_entry* first)
 {
-	struct lirc_config_entry *c, *config_temp;
-	struct lirc_list *list, *list_temp;
-	struct lirc_code *code, *code_temp;
+	struct lirc_config_entry* c, * config_temp;
+	struct lirc_list* list, * list_temp;
+	struct lirc_code* code, * code_temp;
 
 	c = first;
 	while (c != NULL) {
@@ -1039,26 +1054,26 @@ parse_shebang(char* line, int depth, const char* path, char* buff, size_t size)
 }
 
 
-static int lirc_readconfig_only_internal(const char *file,
-					 struct lirc_config **config,
-					 int (check) (char *s), char **full_name)
+static int lirc_readconfig_only_internal(const char*		file,
+					 struct lirc_config**	config,
+					 int			(check)(char* s),
+					 char**			full_name)
 {
 	const char* const INCLUDED_LIRCRC_CLASS =
 		"Warning: lirc_class in included file (ignored)";
-	char *string, *eq, *token, *token2, *token3;
-	struct filestack_t *filestack, *stack_tmp;
+	char* string, * eq, * token, * token2, * token3;
+	struct filestack_t* filestack, * stack_tmp;
 	int open_files;
-	char lircrc_class[128] = {'\0'};
-	struct lirc_config_entry *new_entry, *first, *last;
-	char *mode, *remote;
+	char lircrc_class[128] = { '\0' };
+	struct lirc_config_entry* new_entry, * first, * last;
+	char* mode, * remote;
 	int ret = 0;
 	int firstline = 1;
-	char *save_full_name = NULL;
+	char* save_full_name = NULL;
 
 	filestack = stack_push(NULL);
-	if (filestack == NULL) {
+	if (filestack == NULL)
 		return -1;
-	}
 	filestack->file = lirc_open(file, NULL, &(filestack->name));
 	if (filestack->file == NULL) {
 		stack_free(filestack);
@@ -1071,7 +1086,10 @@ static int lirc_readconfig_only_internal(const char *file,
 	mode = NULL;
 	remote = LIRC_ALL;
 	while (filestack) {
-		if ((ret = lirc_readline(&string, filestack->file)) == -1 || string == NULL) {
+		if ((ret =
+			     lirc_readline(&string,
+					   filestack->file)) == -1 || string ==
+		    NULL) {
 			fclose(filestack->file);
 			if (open_files == 1 && full_name != NULL) {
 				save_full_name = filestack->name;
@@ -1107,26 +1125,33 @@ static int lirc_readconfig_only_internal(const char *file,
 						"Warning: no lircrc_class");
 				} else if (open_files == 1) {
 					strncat(lircrc_class,
-					token2,
-					sizeof(lircrc_class) - 1);
+						token2,
+						sizeof(lircrc_class) - 1);
 				} else {
 					lirc_printf(INCLUDED_LIRCRC_CLASS);
 				}
 			} else if (strcasecmp(token, "include") == 0) {
 				if (open_files >= MAX_INCLUDES) {
 					lirc_printf("%s: too many files "
-						    "included at %s:%d\n", lirc_prog, filestack->name, filestack->line);
+						    "included at %s:%d\n",
+						    lirc_prog, filestack->name,
+						    filestack->line);
 					ret = -1;
 				} else {
 					token2 = strtok(NULL, "");
 					token2 = lirc_trim(token2);
-					lirc_parse_include(token2, filestack->name, filestack->line);
+					lirc_parse_include(token2,
+							   filestack->name,
+							   filestack->line);
 					stack_tmp = stack_push(filestack);
 					if (stack_tmp == NULL) {
 						ret = -1;
 					} else {
 						stack_tmp->file =
-						    lirc_open(token2, filestack->name, &(stack_tmp->name));
+							lirc_open(token2,
+								  filestack->name,
+								  &(stack_tmp->
+								    name));
 						stack_tmp->line = 0;
 						if (stack_tmp->file) {
 							open_files++;
@@ -1139,13 +1164,19 @@ static int lirc_readconfig_only_internal(const char *file,
 				}
 			} else {
 				token2 = strtok(NULL, " \t");
-				if (token2 != NULL && (token3 = strtok(NULL, " \t")) != NULL) {
-					lirc_printf("%s: unexpected token in line %s:%d\n",
-						    lirc_prog, filestack->name, filestack->line);
+				if (token2 != NULL &&
+				    (token3 = strtok(NULL, " \t")) != NULL) {
+					lirc_printf(
+						"%s: unexpected token in line %s:%d\n",
+						lirc_prog,
+						filestack->name,
+						filestack->line);
 				} else {
 					ret = lirc_mode(token, token2, &mode,
-							&new_entry, &first, &last,
-							check, filestack->name, filestack->line);
+							&new_entry, &first,
+							&last,
+							check, filestack->name,
+							filestack->line);
 					if (ret == 0) {
 						if (remote != LIRC_ALL)
 							free(remote);
@@ -1156,7 +1187,8 @@ static int lirc_readconfig_only_internal(const char *file,
 							mode = NULL;
 						}
 						if (new_entry != NULL) {
-							lirc_freeconfigentries(new_entry);
+							lirc_freeconfigentries(
+								new_entry);
 							new_entry = NULL;
 						}
 					}
@@ -1170,12 +1202,14 @@ static int lirc_readconfig_only_internal(const char *file,
 				/* ignore comment */
 			} else if (new_entry == NULL) {
 				lirc_printf("%s: bad file format, %s:%d\n",
-					    lirc_prog, filestack->name, filestack->line);
+					    lirc_prog, filestack->name,
+					    filestack->line);
 				ret = -1;
 			} else {
 				token2 = strdup(token2);
 				if (token2 == NULL) {
-					lirc_printf("%s: out of memory\n", lirc_prog);
+					lirc_printf("%s: out of memory\n",
+						    lirc_prog);
 					ret = -1;
 				} else if (strcasecmp(token, "prog") == 0) {
 					if (new_entry->prog != NULL)
@@ -1192,17 +1226,20 @@ static int lirc_readconfig_only_internal(const char *file,
 						remote = token2;
 					}
 				} else if (strcasecmp(token, "button") == 0) {
-					struct lirc_code *code;
+					struct lirc_code* code;
 
-					code = (struct lirc_code *)
-					    malloc(sizeof(struct lirc_code));
+					code = (struct lirc_code*)
+					       malloc(sizeof(struct lirc_code));
 					if (code == NULL) {
 						free(token2);
-						lirc_printf("%s: out of memory\n", lirc_prog);
+						lirc_printf(
+							"%s: out of memory\n",
+							lirc_prog);
 						ret = -1;
 					} else {
 						code->remote = remote;
-						if (strcasecmp("*", token2) == 0) {
+						if (strcasecmp("*",
+							       token2) == 0) {
 							code->button = LIRC_ALL;
 							free(token2);
 						} else {
@@ -1210,72 +1247,92 @@ static int lirc_readconfig_only_internal(const char *file,
 						}
 						code->next = NULL;
 
-						if (new_entry->code == NULL) {
+						if (new_entry->code == NULL)
 							new_entry->code = code;
-						} else {
-							new_entry->next_code->next = code;
-						}
+						else
+							new_entry->next_code->
+							next = code;
 						new_entry->next_code = code;
 						if (remote != LIRC_ALL) {
 							remote = strdup(remote);
 							if (remote == NULL) {
-								lirc_printf("%s: out of memory\n", lirc_prog);
+								lirc_printf(
+									"%s: out of memory\n",
+									lirc_prog);
 								ret = -1;
 							}
 						}
 					}
 				} else if (strcasecmp(token, "delay") == 0) {
-					char *end;
+					char* end;
 
 					errno = ERANGE + 1;
-					new_entry->rep_delay = strtoul(token2, &end, 0);
-					if ((new_entry->rep_delay == ULONG_MAX && errno == ERANGE)
-					    || end[0] != 0 || strlen(token2) == 0) {
+					new_entry->rep_delay = strtoul(token2,
+								       &end, 0);
+					if ((new_entry->rep_delay ==
+					     ULONG_MAX && errno == ERANGE)
+					    || end[0] != 0 || strlen(token2) ==
+					    0)
 						lirc_printf("%s: \"%s\" not"
-							    " a  valid number for delay\n", lirc_prog, token2);
-					}
+							    " a  valid number for delay\n", lirc_prog,
+							    token2);
 					free(token2);
-				} else if (strcasecmp(token, "ignore_first_events") == 0) {
-					char *end;
+				} else if (strcasecmp(token,
+						      "ignore_first_events") ==
+					   0) {
+					char* end;
 
 					errno = ERANGE + 1;
-					new_entry->ign_first_events = strtoul(token2, &end, 0);
-					if ((new_entry->ign_first_events == ULONG_MAX && errno == ERANGE)
-					    || end[0] != 0 || strlen(token2) == 0) {
+					new_entry->ign_first_events = strtoul(
+						token2, &end, 0);
+					if ((new_entry->ign_first_events ==
+					     ULONG_MAX && errno == ERANGE)
+					    || end[0] != 0 || strlen(token2) ==
+					    0)
 						lirc_printf("%s: \"%s\" not"
-							    " a  valid number for ignore_first_events\n", lirc_prog, token2);
-					}
+							    " a  valid number for ignore_first_events\n",
+							    lirc_prog, token2);
 					free(token2);
 				} else if (strcasecmp(token, "repeat") == 0) {
-					char *end;
+					char* end;
 
 					errno = ERANGE + 1;
-					new_entry->rep = strtoul(token2, &end, 0);
-					if ((new_entry->rep == ULONG_MAX && errno == ERANGE)
-					    || end[0] != 0 || strlen(token2) == 0) {
+					new_entry->rep =
+						strtoul(token2, &end, 0);
+					if ((new_entry->rep == ULONG_MAX &&
+					     errno == ERANGE)
+					    || end[0] != 0 || strlen(token2) ==
+					    0)
 						lirc_printf("%s: \"%s\" not"
-							    " a  valid number for repeat\n", lirc_prog, token2);
-					}
+							    " a  valid number for repeat\n", lirc_prog,
+							    token2);
 					free(token2);
 				} else if (strcasecmp(token, "config") == 0) {
-					struct lirc_list *new_list;
+					struct lirc_list* new_list;
 
-					new_list = (struct lirc_list *)
-					    malloc(sizeof(struct lirc_list));
+					new_list = (struct lirc_list*)
+						   malloc(sizeof(struct
+								 lirc_list));
 					if (new_list == NULL) {
 						free(token2);
-						lirc_printf("%s: out of memory\n", lirc_prog);
+						lirc_printf(
+							"%s: out of memory\n",
+							lirc_prog);
 						ret = -1;
 					} else {
-						lirc_parse_string(token2, filestack->name, filestack->line);
+						lirc_parse_string(token2,
+								  filestack->name,
+								  filestack->line);
 						new_list->string = token2;
 						new_list->next = NULL;
-						if (new_entry->config == NULL) {
-							new_entry->config = new_list;
-						} else {
-							new_entry->next_config->next = new_list;
-						}
-						new_entry->next_config = new_list;
+						if (new_entry->config == NULL)
+							new_entry->config =
+								new_list;
+						else
+							new_entry->next_config->
+							next = new_list;
+						new_entry->next_config =
+							new_list;
 					}
 				} else if (strcasecmp(token, "mode") == 0) {
 					if (new_entry->change_mode != NULL)
@@ -1286,8 +1343,10 @@ static int lirc_readconfig_only_internal(const char *file,
 					free(token2);
 				} else {
 					free(token2);
-					lirc_printf("%s: unknown token \"%s\" in %s:%d ignored\n",
-						    lirc_prog, token, filestack->name, filestack->line);
+					lirc_printf(
+						"%s: unknown token \"%s\" in %s:%d ignored\n",
+						lirc_prog, token, filestack->name,
+						filestack->line);
 				}
 			}
 		}
@@ -1299,38 +1358,42 @@ static int lirc_readconfig_only_internal(const char *file,
 		free(remote);
 	if (new_entry != NULL) {
 		if (ret == 0) {
-			ret = lirc_mode("end", NULL, &mode, &new_entry, &first, &last, check, "", 0);
-			lirc_printf("%s: warning: end token missing at end of file\n", lirc_prog);
+			ret = lirc_mode("end", NULL, &mode, &new_entry, &first,
+					&last, check, "", 0);
+			lirc_printf(
+				"%s: warning: end token missing at end of file\n",
+				lirc_prog);
 		} else {
 			lirc_freeconfigentries(new_entry);
 			new_entry = NULL;
 		}
 	}
 	if (mode != NULL) {
-		if (ret == 0) {
-			lirc_printf("%s: warning: no end token found for mode \"%s\"\n", lirc_prog, mode);
-		}
+		if (ret == 0)
+			lirc_printf(
+				"%s: warning: no end token found for mode \"%s\"\n", lirc_prog,
+				mode);
 		free(mode);
 	}
 	if (ret == 0) {
-		char *startupmode;
+		char* startupmode;
 
-		*config = (struct lirc_config *)
-		    malloc(sizeof(struct lirc_config));
+		*config = (struct lirc_config*)
+			  malloc(sizeof(struct lirc_config));
 		if (*config == NULL) {
 			lirc_printf("%s: out of memory\n", lirc_prog);
 			lirc_freeconfigentries(first);
-			return (-1);
+			return -1;
 		}
 		(*config)->first = first;
 		(*config)->next = first;
 		startupmode = lirc_startupmode((*config)->first);
-		(*config)->current_mode = startupmode ? strdup(startupmode) : NULL;
-                if (lircrc_class[0] != '\0') {
+		(*config)->current_mode =
+			startupmode ? strdup(startupmode) : NULL;
+		if (lircrc_class[0] != '\0')
 			(*config)->lircrc_class = strdup(lircrc_class);
-		} else {
+		else
 			(*config)->lircrc_class = NULL;
-		}
 		(*config)->sockfd = -1;
 		if (full_name != NULL) {
 			*full_name = save_full_name;
@@ -1340,13 +1403,11 @@ static int lirc_readconfig_only_internal(const char *file,
 		*config = NULL;
 		lirc_freeconfigentries(first);
 	}
-	if (filestack) {
+	if (filestack)
 		stack_free(filestack);
-	}
-	if (save_full_name) {
+	if (save_full_name)
 		free(save_full_name);
-	}
-	return (ret);
+	return ret;
 }
 
 
@@ -1355,18 +1416,20 @@ int lirc_identify(int sockfd)
 	lirc_cmd_ctx cmd;
 	int ret;
 
-	ret = lirc_command_init(&cmd,  "IDENT %s\n", lirc_prog);
+	ret = lirc_command_init(&cmd, "IDENT %s\n", lirc_prog);
 	if (ret != 0)
 		return ret;
-	do {
+	do
 		ret = lirc_command_run(&cmd, sockfd);
-	} while (ret == EAGAIN || ret == EWOULDBLOCK);
+	while (ret == EAGAIN || ret == EWOULDBLOCK);
 	return ret == 0;
 }
 
 
 
-int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(char *s))
+int lirc_readconfig(const char* file,
+		    struct lirc_config** config,
+		    int (check)(char* s))
 {
 	struct sockaddr_un addr;
 	int sockfd = -1;
@@ -1375,21 +1438,18 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	int ret;
 
 	filename = NULL;
-	if (lirc_readconfig_only_internal(file, config, check, &filename) == -1) {
+	if (lirc_readconfig_only_internal(file, config, check, &filename) == -1)
 		return -1;
-	}
 
-	if ((*config)->lircrc_class == NULL) {
+	if ((*config)->lircrc_class == NULL)
 		goto lirc_readconfig_compat;
-	}
 
 	/* connect to lircrcd */
 
 	addr.sun_family = AF_UNIX;
 	if (lirc_getsocketname((*config)->lircrc_class,
 			       addr.sun_path,
-			       sizeof(addr.sun_path)) > sizeof(addr.sun_path))
-	{
+			       sizeof(addr.sun_path)) > sizeof(addr.sun_path)) {
 		lirc_printf("%s: WARNING: file name too long\n", lirc_prog);
 		goto lirc_readconfig_compat;
 	}
@@ -1399,15 +1459,14 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 		lirc_perror(lirc_prog);
 		goto lirc_readconfig_compat;
 	}
-	if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) != -1) {
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) != -1) {
 		(*config)->sockfd = sockfd;
 		free(filename);
 
 		/* tell daemon lirc_prog */
-		if (lirc_identify(sockfd) == LIRC_RET_SUCCESS) {
+		if (lirc_identify(sockfd) == LIRC_RET_SUCCESS)
 			/* we're connected */
 			return 0;
-		}
 		close(sockfd);
 		lirc_freeconfig(*config);
 		return -1;
@@ -1416,12 +1475,11 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 	sockfd = -1;
 
 	/* launch lircrcd */
-        snprintf(command, sizeof(command),
+	snprintf(command, sizeof(command),
 		 "lircrcd %s", (*config)->lircrc_class);
 	ret = system(command);
-	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS) {
+	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS)
 		goto lirc_readconfig_compat;
-	}
 	free(filename);
 
 	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -1430,7 +1488,7 @@ int lirc_readconfig(const char *file, struct lirc_config **config, int (check)(c
 		lirc_perror(lirc_prog);
 		goto lirc_readconfig_compat;
 	}
-	if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) != -1) {
+	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) != -1) {
 		if (lirc_identify(sockfd) == LIRC_RET_SUCCESS) {
 			(*config)->sockfd = sockfd;
 			return 0;
@@ -1449,13 +1507,15 @@ lirc_readconfig_compat:
 }
 
 
-int lirc_readconfig_only(const char *file, struct lirc_config **config, int (check) (char *s))
+int lirc_readconfig_only(const char*		file,
+			 struct lirc_config**	config,
+			 int			(check) (char* s))
 {
 	return lirc_readconfig_only_internal(file, config, check, NULL);
 }
 
 
-void lirc_freeconfig(struct lirc_config *config)
+void lirc_freeconfig(struct lirc_config* config)
 {
 	if (config != NULL) {
 		if (config->sockfd != -1) {
@@ -1471,20 +1531,18 @@ void lirc_freeconfig(struct lirc_config *config)
 }
 
 
-static void lirc_clearmode(struct lirc_config *config)
+static void lirc_clearmode(struct lirc_config* config)
 {
-	struct lirc_config_entry *scan;
+	struct lirc_config_entry* scan;
 
-	if (config->current_mode == NULL) {
+	if (config->current_mode == NULL)
 		return;
-	}
 	scan = config->first;
 	while (scan != NULL) {
-		if (scan->change_mode != NULL) {
-			if (strcasecmp(scan->change_mode, config->current_mode) == 0) {
+		if (scan->change_mode != NULL)
+			if (strcasecmp(scan->change_mode,
+				       config->current_mode) == 0)
 				scan->flags &= ~ecno;
-			}
-		}
 		scan = scan->next;
 	}
 	free(config->current_mode);
@@ -1492,34 +1550,35 @@ static void lirc_clearmode(struct lirc_config *config)
 }
 
 
-static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *scan)
+static char* lirc_execute(struct lirc_config*		config,
+			  struct lirc_config_entry*	scan)
 {
-	char *s;
+	char* s;
 	int do_once = 1;
 
-	if (scan->flags & mode) {
+	if (scan->flags & mode)
 		lirc_clearmode(config);
-	}
 	if (scan->change_mode != NULL) {
 		free(config->current_mode);
 		config->current_mode = strdup(scan->change_mode);
 		if (scan->flags & once) {
-			if (scan->flags & ecno) {
+			if (scan->flags & ecno)
 				do_once = 0;
-			} else {
+			else
 				scan->flags |= ecno;
-			}
 		}
 	}
-	if (scan->next_config != NULL &&
-	    scan->prog != NULL && (lirc_prog == NULL || strcasecmp(scan->prog, lirc_prog) == 0) && do_once == 1) {
+	if (scan->next_config != NULL
+	    && scan->prog != NULL
+	    && (lirc_prog == NULL || strcasecmp(scan->prog, lirc_prog) == 0)
+	    && do_once == 1) {
 		s = scan->next_config->string;
 		scan->next_config = scan->next_config->next;
 		if (scan->next_config == NULL)
 			scan->next_config = scan->config;
-		return (s);
+		return s;
 	}
-	return (NULL);
+	return NULL;
 }
 
 /**
@@ -1530,13 +1589,15 @@ static char *lirc_execute(struct lirc_config *config, struct lirc_config_entry *
  * @param rep is the current number of repeats that happened for that key.
  * @return 1 if the event should be generated, 0 if not.
  */
-static int rep_filter(struct lirc_config_entry *scan, int rep)
+static int rep_filter(struct lirc_config_entry* scan, int rep)
 {
 	int delay_start, rep_delay;
+
 	if (scan->ign_first_events) {
-		if (scan->rep_delay && rep == 0)	/* warn user only once */
-			lirc_printf("%s: ignoring \"delay\" because \"ignore_first_events\" is also set\n",
-			    lirc_prog);
+		if (scan->rep_delay && rep == 0)        /* warn user only once */
+			lirc_printf(
+				"%s: ignoring \"delay\" because \"ignore_first_events\" is also set\n",
+				lirc_prog);
 		rep_delay = scan->ign_first_events;
 		delay_start = 0;
 	} else {
@@ -1552,35 +1613,39 @@ static int rep_filter(struct lirc_config_entry *scan, int rep)
 	/* handle repeat */
 	if (scan->rep > 0 && rep >= rep_delay + delay_start) {
 		rep -= rep_delay + delay_start;
-		return ((rep % scan->rep) == 0);
+		return (rep % scan->rep) == 0;
 	}
 	return 0;
 }
 
-static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *button, int rep)
+static int lirc_iscode(struct lirc_config_entry*	scan,
+		       char*				remote,
+		       char*				button,
+		       int				rep)
 {
-	struct lirc_code *codes;
+	struct lirc_code* codes;
 
 	/* no remote/button specified */
-	if (scan->code == NULL) {
+	if (scan->code == NULL)
 		return rep_filter(scan, rep);
-	}
 
 	/* remote/button match? */
-	if (scan->next_code->remote == LIRC_ALL || strcasecmp(scan->next_code->remote, remote) == 0) {
-		if (scan->next_code->button == LIRC_ALL || strcasecmp(scan->next_code->button, button) == 0) {
+	if (scan->next_code->remote == LIRC_ALL
+	    || strcasecmp(scan->next_code->remote, remote) == 0) {
+		if (scan->next_code->button == LIRC_ALL
+		    || strcasecmp(scan->next_code->button, button) == 0) {
 			int iscode = 0;
 			/* button sequence? */
 			if (scan->code->next == NULL || rep == 0) {
 				scan->next_code = scan->next_code->next;
-				if (scan->code->next != NULL) {
+				if (scan->code->next != NULL)
 					iscode = 1;
-				}
 			}
 			/* sequence completed? */
 			if (scan->next_code == NULL) {
 				scan->next_code = scan->code;
-				if (scan->code->next != NULL || rep_filter(scan, rep))
+				if (scan->code->next != NULL ||
+				    rep_filter(scan, rep))
 					iscode = 2;
 			}
 			return iscode;
@@ -1588,27 +1653,30 @@ static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *butto
 	}
 
 	if (rep != 0)
-		return (0);
+		return 0;
 
 	/* handle toggle_reset */
-	if (scan->flags & toggle_reset) {
+	if (scan->flags & toggle_reset)
 		scan->next_config = scan->config;
-	}
 
 	codes = scan->code;
 	if (codes == scan->next_code)
-		return (0);
+		return 0;
 	codes = codes->next;
 	/* rebase code sequence */
 	while (codes != scan->next_code->next) {
-		struct lirc_code *prev, *next;
+		struct lirc_code* prev;
+		struct lirc_code* next;
 		int flag = 1;
 
 		prev = scan->code;
 		next = codes;
 		while (next != scan->next_code) {
-			if (prev->remote == LIRC_ALL || strcasecmp(prev->remote, next->remote) == 0) {
-				if (prev->button == LIRC_ALL || strcasecmp(prev->button, next->button) == 0) {
+			if (prev->remote == LIRC_ALL
+			    || strcasecmp(prev->remote, next->remote) == 0) {
+				if (prev->button == LIRC_ALL
+				    || strcasecmp(prev->button,
+						  next->button) == 0) {
 					prev = prev->next;
 					next = next->next;
 				} else {
@@ -1621,11 +1689,13 @@ static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *butto
 			}
 		}
 		if (flag == 1) {
-			if (prev->remote == LIRC_ALL || strcasecmp(prev->remote, remote) == 0) {
-				if (prev->button == LIRC_ALL || strcasecmp(prev->button, button) == 0) {
+			if (prev->remote == LIRC_ALL
+			    || strcasecmp(prev->remote, remote) == 0) {
+				if (prev->button == LIRC_ALL
+				    || strcasecmp(prev->button, button) == 0) {
 					if (rep == 0) {
 						scan->next_code = prev->next;
-						return (0);
+						return 0;
 					}
 				}
 			}
@@ -1633,32 +1703,36 @@ static int lirc_iscode(struct lirc_config_entry *scan, char *remote, char *butto
 		codes = codes->next;
 	}
 	scan->next_code = scan->code;
-	return (0);
+	return 0;
 }
 
 
-char *lirc_ir2char(struct lirc_config *config, char *code)
+char* lirc_ir2char(struct lirc_config* config, char* code)
 {
 	static int warning = 1;
-	char *string;
+	char* string;
 
 	if (warning) {
-		fprintf(stderr, "%s: warning: lirc_ir2char() is obsolete\n", lirc_prog);
+		fprintf(stderr, "%s: warning: lirc_ir2char() is obsolete\n",
+			lirc_prog);
 		warning = 0;
 	}
 	if (lirc_code2char(config, code, &string) == -1)
-		return (NULL);
-	return (string);
+		return NULL;
+	return string;
 }
 
 
-static int lirc_code2char_internal(struct lirc_config *config, char *code, char **string, char **prog)
+static int lirc_code2char_internal(struct lirc_config*	config,
+				   char*		code,
+				   char**		string,
+				   char**		prog)
 {
 	int rep;
-	char *backup;
-	char *remote, *button;
-	char *s = NULL;
-	struct lirc_config_entry *scan;
+	char* backup;
+	char* remote, * button;
+	char* s = NULL;
+	struct lirc_config_entry* scan;
 	int exec_level;
 	int quit_happened;
 
@@ -1666,7 +1740,7 @@ static int lirc_code2char_internal(struct lirc_config *config, char *code, char 
 	if (sscanf(code, "%*x %x %*s %*s\n", &rep) == 1) {
 		backup = strdup(code);
 		if (backup == NULL)
-			return (-1);
+			return -1;
 
 		strtok(backup, " ");
 		strtok(NULL, " ");
@@ -1675,7 +1749,7 @@ static int lirc_code2char_internal(struct lirc_config *config, char *code, char 
 
 		if (button == NULL || remote == NULL) {
 			free(backup);
-			return (0);
+			return 0;
 		}
 
 		scan = config->next;
@@ -1686,12 +1760,13 @@ static int lirc_code2char_internal(struct lirc_config *config, char *code, char 
 			    (scan->mode == NULL ||
 			     (scan->mode != NULL &&
 			      config->current_mode != NULL &&
-			      strcasecmp(scan->mode, config->current_mode) == 0)) && quit_happened == 0) {
+			      strcasecmp(scan->mode,
+					 config->current_mode) == 0)) &&
+			    quit_happened == 0) {
 				if (exec_level > 1) {
 					s = lirc_execute(config, scan);
-					if (s != NULL && prog != NULL) {
+					if (s != NULL && prog != NULL)
 						*prog = scan->prog;
-					}
 				} else {
 					s = NULL;
 				}
@@ -1710,15 +1785,15 @@ static int lirc_code2char_internal(struct lirc_config *config, char *code, char 
 		free(backup);
 		if (s != NULL) {
 			*string = s;
-			return (0);
+			return 0;
 		}
 	}
 	config->next = config->first;
-	return (0);
+	return 0;
 }
 
 
-int lirc_code2char(struct lirc_config *config, char *code, char **string)
+int lirc_code2char(struct lirc_config* config, char* code, char** string)
 {
 	lirc_cmd_ctx cmd;
 	static char static_buff[PACKET_SIZE];
@@ -1728,9 +1803,9 @@ int lirc_code2char(struct lirc_config *config, char *code, char **string)
 	if (ret != 0)
 		return -1;
 	if (config->sockfd != -1) {
-		do {
+		do
 			ret = lirc_command_run(&cmd, config->sockfd);
-		} while (ret == EAGAIN || ret == EWOULDBLOCK);
+		while (ret == EAGAIN || ret == EWOULDBLOCK);
 		if (ret == 0) {
 			strncpy(static_buff, cmd.buffer, PACKET_SIZE);
 			*string = static_buff;
@@ -1741,9 +1816,12 @@ int lirc_code2char(struct lirc_config *config, char *code, char **string)
 }
 
 
-int lirc_code2charprog(struct lirc_config *config, char *code, char **string, char **prog)
+int lirc_code2charprog(struct lirc_config*	config,
+		       char*			code,
+		       char**			string,
+		       char**			prog)
 {
-	char *backup;
+	char* backup;
 	int ret;
 
 	backup = lirc_prog;
@@ -1756,66 +1834,67 @@ int lirc_code2charprog(struct lirc_config *config, char *code, char **string, ch
 }
 
 
-char *lirc_nextir(void)
+char* lirc_nextir(void)
 {
 	static int warning = 1;
-	char *code;
+	char* code;
 	int ret;
 
 	if (warning) {
-		fprintf(stderr, "%s: warning: lirc_nextir() is obsolete\n", lirc_prog);
+		fprintf(stderr, "%s: warning: lirc_nextir() is obsolete\n",
+			lirc_prog);
 		warning = 0;
 	}
 	ret = lirc_nextcode(&code);
 	if (ret == -1)
-		return (NULL);
-	return (code);
+		return NULL;
+	return code;
 }
 
 
-int lirc_nextcode(char **code)
+int lirc_nextcode(char** code)
 {
 	static int packet_size = PACKET_SIZE;
 	static int end_len = 0;
 	ssize_t len = 0;
-	char *end, c;
+	char* end, c;
 
 	*code = NULL;
 	if (lirc_buffer == NULL) {
-		lirc_buffer = (char *)malloc(packet_size + 1);
+		lirc_buffer = (char*)malloc(packet_size + 1);
 		if (lirc_buffer == NULL) {
 			lirc_printf("%s: out of memory\n", lirc_prog);
-			return (-1);
+			return -1;
 		}
 		lirc_buffer[0] = 0;
 	}
 	while ((end = strchr(lirc_buffer, '\n')) == NULL) {
 		if (end_len >= packet_size) {
-			char *new_buffer;
+			char* new_buffer;
 
 			packet_size += PACKET_SIZE;
-			new_buffer = (char *)realloc(lirc_buffer, packet_size + 1);
-			if (new_buffer == NULL) {
-				return (-1);
-			}
+			new_buffer =
+				(char*)realloc(lirc_buffer, packet_size + 1);
+			if (new_buffer == NULL)
+				return -1;
 			lirc_buffer = new_buffer;
 		}
-		len = read(lirc_lircd, lirc_buffer + end_len, packet_size - end_len);
+		len = read(lirc_lircd, lirc_buffer + end_len,
+			   packet_size - end_len);
 		if (len <= 0) {
 			if (len == -1 && errno == EAGAIN)
-				return (0);
+				return 0;
 			else
-				return (-1);
+				return -1;
 		}
 		end_len += len;
 		lirc_buffer[end_len] = 0;
 		/* return if next code not yet available completely */
-		if ((end = strchr(lirc_buffer, '\n')) == NULL) {
-			return (0);
-		}
+		if ((end = strchr(lirc_buffer, '\n')) == NULL)
+			return 0;
 	}
 	/* copy first line to buffer (code) and move remaining chars to
-	   lirc_buffers start */
+	 * lirc_buffers start */
 	end++;
 	end_len = strlen(end);
 	c = end[0];
@@ -1824,12 +1903,12 @@ int lirc_nextcode(char **code)
 	end[0] = c;
 	memmove(lirc_buffer, end, end_len + 1);
 	if (*code == NULL)
-		return (-1);
-	return (0);
+		return -1;
+	return 0;
 }
 
 
-size_t lirc_getsocketname(const char *id, char *buf, size_t size)
+size_t lirc_getsocketname(const char* id, char* buf, size_t size)
 {
 	id = id != NULL ? id : "default";
 	snprintf(buf, size, VARRUNDIR "/%d-%s-lircrcd.socket", getuid(), id);
@@ -1838,7 +1917,7 @@ size_t lirc_getsocketname(const char *id, char *buf, size_t size)
 
 
 
-const char *lirc_getmode(struct lirc_config *config)
+const char* lirc_getmode(struct lirc_config* config)
 {
 	lirc_cmd_ctx cmd;
 	static char static_buff[PACKET_SIZE];
@@ -1846,9 +1925,9 @@ const char *lirc_getmode(struct lirc_config *config)
 
 	if (config->sockfd != -1) {
 		lirc_command_init(&cmd, "GETMODE\n");
-		do {
+		do
 			ret = lirc_command_run(&cmd, config->sockfd);
-		} while (ret == EAGAIN || ret == EWOULDBLOCK);
+		while (ret == EAGAIN || ret == EWOULDBLOCK);
 		if (ret == 0) {
 			strncpy(static_buff, cmd.reply, PACKET_SIZE);
 			return static_buff;
@@ -1859,24 +1938,22 @@ const char *lirc_getmode(struct lirc_config *config)
 }
 
 
-const char *lirc_setmode(struct lirc_config *config, const char *mode)
+const char* lirc_setmode(struct lirc_config* config, const char* mode)
 {
 	lirc_cmd_ctx cmd;
 	int r;
 	static char static_buff[PACKET_SIZE];
 
 	if (config->sockfd != -1) {
-		if (mode != NULL){
-			r = lirc_command_init(&cmd,  "SETMODE %s\n", mode);
-		} else {
-			r = lirc_command_init(&cmd,  "SETMODE\n");
-		}
-		if (r != 0) {
+		if (mode != NULL)
+			r = lirc_command_init(&cmd, "SETMODE %s\n", mode);
+		else
+			r = lirc_command_init(&cmd, "SETMODE\n");
+		if (r != 0)
 			return NULL;
-		}
-		do {
+		do
 			r = lirc_command_run(&cmd, config->sockfd);
-		} while (r == EAGAIN || r == EWOULDBLOCK);
+		while (r == EAGAIN || r == EWOULDBLOCK);
 		if (r == 0) {
 			strncpy(static_buff, cmd.reply, PACKET_SIZE);
 			return static_buff;
@@ -1896,33 +1973,31 @@ int lirc_send_one(int fd, const char* remote, const char* keysym)
 	lirc_cmd_ctx command;
 
 	r = lirc_command_init(&command, "SEND_ONCE %s %s\n", remote, keysym);
-	if (r != 0) {
+	if (r != 0)
 		return EMSGSIZE;
-	}
-        do {
-	    	r = lirc_command_run(&command, fd);
-	} while (r == EAGAIN);
+	do
+		r = lirc_command_run(&command, fd);
+	while (r == EAGAIN);
 	return r;
 }
 
 
-int lirc_simulate(int fd,
-   		  const char* remote,
-                  const char* keysym,
-                  int scancode,
-                  int repeat)
+int lirc_simulate(int		fd,
+		  const char*	remote,
+		  const char*	keysym,
+		  int		scancode,
+		  int		repeat)
 {
 	lirc_cmd_ctx cmd;
 	int r;
 
 	r = lirc_command_init(&cmd, "SIMULATE %016x %02x %s %s\n",
-                              scancode, repeat, keysym, remote);
-	if (r !=  0) {
+			      scancode, repeat, keysym, remote);
+	if (r != 0)
 		return EMSGSIZE;
-	}
-        do {
-	    r = lirc_command_run(&cmd, fd);
-	} while (r == EAGAIN);
+	do
+		r = lirc_command_run(&cmd, fd);
+	while (r == EAGAIN);
 	return r;
 }
 
@@ -1962,15 +2037,14 @@ int lirc_get_local_socket(const char* path, int quiet)
 	socket_path = socket_path ? socket_path : LIRCD;
 	if (strlen(socket_path) + 1 > sizeof(addr_un.sun_path)) {
 		/* path is longer than sockaddr_un.sun_path field (!) */
-		if (!quiet) {
+		if (!quiet)
 			fprintf(stderr, "%s: socket name is too long\n", prog);
-		}
 		return -ENAMETOOLONG;
 	}
 	addr_un.sun_family = AF_UNIX;
 	strcpy(addr_un.sun_path, socket_path);
 	return do_connect(AF_UNIX,
-			  (struct sockaddr *) &addr_un,
+			  (struct sockaddr*)&addr_un,
 			  sizeof(addr_un),
 			  quiet);
 }
@@ -1983,19 +2057,18 @@ int lirc_get_remote_socket(const char* address, int port, int quiet)
 
 	hostInfo = gethostbyname(address);
 	if (hostInfo == NULL) {
-		if (!quiet) {
+		if (!quiet)
 			fprintf(stderr, "get_remote_socket: host %s unknown\n",
-                                address);
-		}
+				address);
 		return -EADDRNOTAVAIL;
 	}
 	addr_in.sin_family = hostInfo->h_addrtype;
-	memcpy((char *) &addr_in.sin_addr.s_addr,
-	        hostInfo->h_addr_list[0],
-	        hostInfo->h_length);
+	memcpy((char*)&addr_in.sin_addr.s_addr,
+	       hostInfo->h_addr_list[0],
+	       hostInfo->h_length);
 	addr_in.sin_port = htons(port > 0 ? port : LIRC_INET_PORT);
 	return do_connect(hostInfo->h_addrtype,
-   			  (struct sockaddr *)&addr_in,
+			  (struct sockaddr*)&addr_in,
 			  sizeof(addr_in),
 			  quiet);
 	return 0;

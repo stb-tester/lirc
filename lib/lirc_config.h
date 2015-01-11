@@ -1,5 +1,3 @@
-
-
 /**
  * @file lirc_config.h
  * @brief Local configuration constants not managed by autotools.
@@ -79,7 +77,7 @@
 #define LIRC_RELEASE_SUFFIX     "_UP"
 
 /** Default directory for plugins/drivers. */
-#define PLUGINDIR		LIBDIR  "/lirc/plugins"
+#define PLUGINDIR               LIBDIR  "/lirc/plugins"
 
 /** Default options file path. */
 #define LIRC_OPTIONS_PATH       SYSCONFDIR "/lirc/lirc_options.conf"
@@ -106,4 +104,4 @@
 #define LIRC_EOF                0x08000000
 
 /** Max number of plugins. */
-#define MAX_PLUGINS		256
+#define MAX_PLUGINS             256

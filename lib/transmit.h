@@ -1,7 +1,6 @@
-
 /****************************************************************************
- ** transmit.h **************************************************************
- ****************************************************************************/
+** transmit.h **************************************************************
+****************************************************************************/
 /**
  * @file transmit.h
  * @brief Functions that prepare IR codes for transmitting
@@ -29,7 +28,7 @@
 
 #include "ir_remote.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -47,9 +46,8 @@ void send_buffer_init(void);
 int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code);
 
 /** @cond */
-int init_sim(struct ir_remote* remote,
-             struct ir_ncode* code,
-             int repeat_preset);
+int init_sim(struct ir_remote* remote, struct ir_ncode* code,
+	     int repeat_preset);
 /** @endcond */
 
 /** @return Number of items accessible in array send_buffer_data(). */
@@ -63,7 +61,7 @@ lirc_t send_buffer_sum();
 
 /** @} */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

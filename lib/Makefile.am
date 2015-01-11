@@ -3,21 +3,21 @@ ACLOCAL_AMFLAGS             = -I m4
 DISTCLEANFILES              = input_map.inc lirc/input_map.inc
 CLEANFILES                  = driver_api.dox lirc_client.dox
 EXTRA_DIST                  = input_map.inc input_map.sh \
-			      driver_api.dox  lirc_client.dox  mainpage.dox \
-			      driver_api.doxhead  lirc_client.doxhead
+                              driver_api.dox  lirc_client.dox  mainpage.dox \
+                              driver_api.doxhead  lirc_client.doxhead
 
 BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
-			      libirrecord.la
+                              libirrecord.la
 
 liblirc_la_LDFLAGS          = -ldl
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \
-			      driver.c \
+                              driver.c \
                               drv_admin.c \
                               dump_config.c \
                               input_map.c \

@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** input_map.h *************************************************************
- ****************************************************************************
- *
- * input_map.h - button namespace derived from Linux input layer
- *
- * Copyright (C) 2008 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** input_map.h *************************************************************
+****************************************************************************
+*
+* input_map.h - button namespace derived from Linux input layer
+*
+* Copyright (C) 2008 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 /**
  * @file input_map.h
@@ -18,7 +17,7 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -37,11 +36,11 @@ typedef __u16 linux_input_code;
 typedef unsigned short linux_input_code;
 #endif
 
-int get_input_code(const char* name, linux_input_code* code);
-void fprint_namespace(FILE* f);
-int is_in_namespace(const char* name);
+int get_input_code(const char *name, linux_input_code *code);
+void fprint_namespace(FILE *f);
+int is_in_namespace(const char *name);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

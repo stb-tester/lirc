@@ -1,11 +1,10 @@
-
 /****************************************************************************
- ** driver.h **************************************************************
- ****************************************************************************
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** driver.h **************************************************************
+****************************************************************************
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 /**
  * @file driver.h
@@ -24,12 +23,12 @@
 #include "include/media/lirc.h"
 #include "lirc/ir_remote_types.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 /** drvctl definitions */
-#define DRV_ERR_NOT_IMPLEMENTED		1
+#define DRV_ERR_NOT_IMPLEMENTED         1
 
 /** Stores path in drv.device if non-null. */
 int default_open(const char* path);
@@ -38,38 +37,38 @@ int default_open(const char* path);
 int default_close(void);
 
 /** Return DRVCTL_ERR_NOTIMPLEMENTED. */
-int default_drvctl(unsigned int cmd, void* arg);
+int default_drvctl(unsigned int cmd, void *arg);
 
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
-	char key[32];
-	char value[64];
+	char	key[32];
+	char	value[64];
 };
 
 /**
  * Parse an option string "key:value;key:value..." and invoke
  * drvctl DRV_SET_OPTION as appropriate.
  */
-int drv_handle_options(const char* options);
+int drv_handle_options(const char *options);
 
 
 /** Drvctl cmd:  return current state as an int in *arg. */
-#define	DRVCTL_GET_STATE		1
+#define DRVCTL_GET_STATE                1
 
 /** Drvctl cmd:  Send long space. Arg is pulselength (us, an int). */
-#define DRVCTL_SEND_SPACE		2
+#define DRVCTL_SEND_SPACE               2
 
 /** Drvctl cmd: Set driver options. Arg is   *struct option_t. */
-#define DRVCTL_SET_OPTION		3
+#define DRVCTL_SET_OPTION               3
 
 /** Last well-known command. Remaining is used in driver-specific controls.*/
-#define  DRVCTL_MAX			128
+#define  DRVCTL_MAX                     128
 
 /** drvctl error. */
-#define  DRV_ERR_NOT_IMPLEMENTED	1
+#define  DRV_ERR_NOT_IMPLEMENTED        1
 
 /** drvctl error: */
-#define  DRV_ERR_BAD_STATE		2
+#define  DRV_ERR_BAD_STATE              2
 
 /** drvctl error: */
 #define  DRV_ERR_BAD_OPTION		3
@@ -91,10 +90,10 @@ struct driver {
 	const char* device;
 
 	/** Set by the driver after init(). */
-	int fd;
+	int		fd;
 
 	/** Code for the features of the present device, valid after init(). */
-	__u32 features;
+	__u32		features;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
@@ -109,7 +108,7 @@ struct driver {
 	__u32 rec_mode;
 
 	/** Length in bits of the code. */
-	const __u32 code_length;
+	const __u32	code_length;
 
 	 /**
 	 *  Function called to do basic driver setup.
@@ -123,7 +122,7 @@ struct driver {
 	 * Function called for initializing the driver and the hardware.
 	 * Zero return value indicates failure, all other return values success.
 	 */
-	int (*const init_func) (void);
+	int(*const init_func) (void);
 
 	/**
 	 * Function called when transmitting/receiving stops. Zero return value
@@ -137,8 +136,8 @@ struct driver {
 	 * @param code Code(s) to send, a single code or the head of a
 	 *             list of codes.
 	 */
-	int (*const send_func)(struct ir_remote*  remote,
-			       struct ir_ncode*  code);
+	int(*const send_func) (struct ir_remote *remote,
+			       struct ir_ncode *code);
 
 	/**
 	 * Receive data from remote. Might close device on error conditions.
@@ -146,13 +145,13 @@ struct driver {
 	 * @return Formatted, statically allocated string with decoded
 	 *         data: "remote-name code-name code repetitions"
 	 */
-	char* (*const rec_func)(struct ir_remote* remotes);
+	char * (*const rec_func)(struct ir_remote *remotes);
 
 	/**
 	 * TODO
 	 */
-	int (*const decode_func)(struct ir_remote* remote,
-			   	 struct decode_ctx_t* ctx);
+	int(*const decode_func) (struct ir_remote *remote,
+				 struct decode_ctx_t *ctx);
 
 	/**
 	 * Generic driver control function with semantics as defined by driver
@@ -167,27 +166,26 @@ struct driver {
 	 * is set to reflect if this is a pulse or space. 0
 	 * indicates errors.
 	 */
-	 lirc_t (*const readdata)(lirc_t timeout);
+	lirc_t(*const readdata) (lirc_t timeout);
 
-	 /**
-	  * Driver name, as listed by -H help and used as argument to i
-	  * --driver.
-	  */
-	const char* name;
+	/**
+	 * Driver name, as listed by -H help and used as argument to i
+	 * --driver.
+	 */
+	const char *	name;
 
 	/**
 	 * The resolution in microseconds of the recorded durations when
 	 * reading signals.
 	 */
-	unsigned int resolution;
+	unsigned int	resolution;
 
 // API version 2 addons:
 
-	const int api_version;           /**< API version (from version 2+).*/
-	const char* driver_version;      /**< Driver version (free text). */
-	int (*const close_func)(void);   /**< Hard closing, returns 0 on OK.*/
-	const char* info;		 /**< Free text driver info. */
-
+	const int	api_version;            /**< API version (from version 2+).*/
+	const char *	driver_version;         /**< Driver version (free text). */
+	int(*const close_func) (void);          /**< Hard closing, returns 0 on OK.*/
+	const char *	info;                   /**< Free text driver info. */
 };
 
 /** @} */
@@ -198,9 +196,9 @@ extern struct driver drv;
 #endif
 
 /** Raad-only access to drv for application.*/
-extern const struct driver* curr_driver;
+extern const struct driver *curr_driver;
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

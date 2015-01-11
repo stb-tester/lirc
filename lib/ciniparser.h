@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -224,7 +224,7 @@ void ciniparser_unset(dictionary *ini, char *entry);
  * are stored as keys with NULL associated values, this is the only way
  * of querying for the presence of sections in a dictionary.
  */
-int ciniparser_find_entry(dictionary *ini, const char *entry) ;
+int ciniparser_find_entry(dictionary *ini, const char *entry);
 
 /**
  * @brief    Parse an ini file and return an allocated dictionary object
@@ -263,7 +263,7 @@ void ciniparser_freedict(dictionary *d);
  */
 int ciniparser_set(dictionary *d, const char *entry, const char *val);
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
 #endif
 

@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** serial.c ****************************************************************
- ****************************************************************************
- *
- * common routines for hardware that uses the standard serial port driver
- * @ingroup  private_api
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** serial.c ****************************************************************
+****************************************************************************
+*
+* common routines for hardware that uses the standard serial port driver
+* @ingroup  private_api
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 /**
  * @file serial.h
@@ -28,16 +27,16 @@
 #ifndef _SERIAL_H
 #define _SERIAL_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-/** 
+/**
  * Set the cfmakeraw termio options.
  *
  * @param fd File opened on a serial device.
  * @return 0 on errors, else 1.
- */ 
+ */
 int tty_reset(int fd);
 
 /**
@@ -76,7 +75,7 @@ int tty_setbaud(int fd, int baud);
  */
 int tty_setcsize(int fd, int csize);
 
-/** 
+/**
  * Create a legacy file lock for a serial device.
  *
  * @param fd File opened on a serial device.
@@ -86,13 +85,13 @@ int tty_setcsize(int fd, int csize);
 int tty_create_lock(const char* name);
 
 /**
- *  Remove all legacy locks owned by running process. 
+ *  Remove all legacy locks owned by running process.
  *
  *  @return 1 if all locks removed successfully, 0 on errors.
  */
 int tty_delete_lock(void);
 
-/** 
+/**
  * Set RTS and DTR control lines.
  *
  * @param fd File opened on a serial device.
@@ -102,7 +101,7 @@ int tty_delete_lock(void);
  */
 int tty_set(int fd, int rts, int dtr);
 
-/** 
+/**
  * Clear RTS and DTR control lines.
  *
  * @param fd File opened on a serial device.
@@ -144,7 +143,7 @@ int tty_write_echo(int fd, char byte);
 
 /** @} */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

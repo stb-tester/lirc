@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -65,11 +65,11 @@ extern "C" {
  * hash function.
  */
 typedef struct _dictionary_ {
-	int n;
-	int size;
-	char **val;
-	char **key;
-	unsigned *hash;
+	int		n;
+	int		size;
+	char **		val;
+	char **		key;
+	unsigned *	hash;
 } dictionary;
 
 /**
@@ -167,7 +167,7 @@ void dictionary_unset(dictionary *d, const char *key);
  */
 void dictionary_dump(dictionary *d, FILE *out);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

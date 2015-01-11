@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** serial.c ****************************************************************
- ****************************************************************************
- *
- * common routines for hardware that uses the standard serial port driver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** serial.c ****************************************************************
+****************************************************************************
+*
+* common routines for hardware that uses the standard serial port driver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 /**
  * @file serial.c
@@ -39,9 +38,9 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-#if defined (__linux__)
-#include <linux/serial.h>	/* for 'struct serial_struct' to set custom
-				   baudrates */
+#if defined __linux__
+#include <linux/serial.h>       /* for 'struct serial_struct' to set custom
+				 * baudrates */
 #endif
 
 #include "lirc/lirc_log.h"
@@ -53,15 +52,15 @@ int tty_reset(int fd)
 	if (tcgetattr(fd, &options) == -1) {
 		LOGPRINTF(1, "tty_reset(): tcgetattr() failed");
 		LOGPERROR(1, "tty_reset()");
-		return (0);
+		return 0;
 	}
 	cfmakeraw(&options);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		LOGPRINTF(1, "tty_reset(): tcsetattr() failed");
 		LOGPERROR(1, "tty_reset()");
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_setrtscts(int fd, int enable)
@@ -69,21 +68,20 @@ int tty_setrtscts(int fd, int enable)
 	struct termios options;
 
 	if (tcgetattr(fd, &options) == -1) {
-		LOGPRINTF(1, "%s: tcgetattr() failed", __FUNCTION__);
-		LOGPERROR(1, __FUNCTION__);
-		return (0);
+		LOGPRINTF(1, "%s: tcgetattr() failed", __func__);
+		LOGPERROR(1, __func__);
+		return 0;
 	}
-	if (enable) {
+	if (enable)
 		options.c_cflag |= CRTSCTS;
-	} else {
+	else
 		options.c_cflag &= ~CRTSCTS;
-	}
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		LOGPRINTF(1, "%s: tcsetattr() failed", __FUNCTION__);
-		LOGPERROR(1, __FUNCTION__);
-		return (0);
+		LOGPRINTF(1, "%s: tcsetattr() failed", __func__);
+		LOGPERROR(1, __func__);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_setdtr(int fd, int enable)
@@ -91,34 +89,34 @@ int tty_setdtr(int fd, int enable)
 	int cmd, sts;
 
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
-		LOGPRINTF(1, "%s: ioctl(TIOCMGET) failed", __FUNCTION__);
-		LOGPERROR(1, __FUNCTION__);
-		return (0);
+		LOGPRINTF(1, "%s: ioctl(TIOCMGET) failed", __func__);
+		LOGPERROR(1, __func__);
+		return 0;
 	}
 	if (((sts & TIOCM_DTR) == 0) && enable) {
-		LOGPRINTF(1, "%s: 0->1", __FUNCTION__);
+		LOGPRINTF(1, "%s: 0->1", __func__);
 	} else if ((!enable) && (sts & TIOCM_DTR)) {
-		LOGPRINTF(1, "%s: 1->0", __FUNCTION__);
+		LOGPRINTF(1, "%s: 1->0", __func__);
 	}
-	if (enable) {
+	if (enable)
 		cmd = TIOCMBIS;
-	} else {
+	else
 		cmd = TIOCMBIC;
-	}
 	sts = TIOCM_DTR;
 	if (ioctl(fd, cmd, &sts) < 0) {
-		LOGPRINTF(1, "%s: ioctl(TIOCMBI(S|C)) failed", __FUNCTION__);
-		LOGPERROR(1, __FUNCTION__);
-		return (0);
+		LOGPRINTF(1, "%s: ioctl(TIOCMBI(S|C)) failed", __func__);
+		LOGPERROR(1, __func__);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_setbaud(int fd, int baud)
 {
 	struct termios options;
 	int speed;
-#if defined (__linux__)
+
+#if defined __linux__
 	int use_custom_divisor = 0;
 	struct serial_struct serinfo;
 #endif
@@ -217,33 +215,33 @@ int tty_setbaud(int fd, int baud)
 		break;
 #endif
 	default:
-#if defined (__linux__)
+#if defined __linux__
 		speed = B38400;
 		use_custom_divisor = 1;
 		break;
 #else
 		LOGPRINTF(1, "tty_setbaud(): bad baud rate %d", baud);
-		return (0);
+		return 0;
 #endif
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		LOGPRINTF(1, "tty_setbaud(): tcgetattr() failed");
 		LOGPERROR(1, "tty_setbaud()");
-		return (0);
+		return 0;
 	}
 	(void)cfsetispeed(&options, speed);
 	(void)cfsetospeed(&options, speed);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		LOGPRINTF(1, "tty_setbaud(): tcsetattr() failed");
 		LOGPERROR(1, "tty_setbaud()");
-		return (0);
+		return 0;
 	}
-#if defined (__linux__)
+#if defined __linux__
 	if (use_custom_divisor) {
 		if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0) {
 			LOGPRINTF(1, "tty_setbaud(): TIOCGSERIAL failed");
 			LOGPERROR(1, "tty_setbaud()");
-			return (0);
+			return 0;
 		}
 		serinfo.flags &= ~ASYNC_SPD_MASK;
 		serinfo.flags |= ASYNC_SPD_CUST;
@@ -251,11 +249,11 @@ int tty_setbaud(int fd, int baud)
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0) {
 			LOGPRINTF(1, "tty_setbaud(): TIOCSSERIAL failed");
 			LOGPERROR(1, "tty_setbaud()");
-			return (0);
+			return 0;
 		}
 	}
 #endif
-	return (1);
+	return 1;
 }
 
 int tty_setcsize(int fd, int csize)
@@ -278,21 +276,21 @@ int tty_setcsize(int fd, int csize)
 		break;
 	default:
 		LOGPRINTF(1, "tty_setcsize(): bad csize rate %d", csize);
-		return (0);
+		return 0;
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		LOGPRINTF(1, "tty_setcsize(): tcgetattr() failed");
 		LOGPERROR(1, "tty_setcsize()");
-		return (0);
+		return 0;
 	}
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= size;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		LOGPRINTF(1, "tty_setcsize(): tcsetattr() failed");
 		LOGPERROR(1, "tty_setcsize()");
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 /**
@@ -321,14 +319,14 @@ int tty_create_lock(const char *name)
 
 	if (strlen(filename) + strlen(s) > FILENAME_MAX) {
 		logprintf(LIRC_ERROR, "invalid filename \"%s%s\"", filename, s);
-		return (0);
+		return 0;
 	}
 	strcat(filename, s);
 
 tty_create_lock_retry:
 	if ((len = snprintf(id, 10 + 1 + 1, "%10d\n", getpid())) == -1) {
 		logprintf(LIRC_ERROR, "invalid pid \"%d\"", getpid());
-		return (0);
+		return 0;
 	}
 	lock = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
 	if (lock == -1) {
@@ -348,9 +346,9 @@ tty_create_lock_retry:
 						goto tty_create_lock_retry;
 					} else {
 						logperror(LIRC_ERROR,
-                                                          "could not remove stale lockfile");
+							  "could not remove stale lockfile");
 					}
-					return (0);
+					return 0;
 				} else {
 					logprintf(LIRC_ERROR, "%s is locked by PID %d", name, otherpid);
 				}
@@ -359,35 +357,33 @@ tty_create_lock_retry:
 			}
 			close(lock);
 		}
-		return (0);
+		return 0;
 	}
 	if (write(lock, id, len) != len) {
 		logperror(LIRC_ERROR, "could not write pid to lock file");
 		close(lock);
-		if (unlink(filename) == -1) {
+		if (unlink(filename) == -1)
 			logperror(LIRC_ERROR, "could not delete file \"%s\"", filename);
-			/* FALLTHROUGH */
-		}
-		return (0);
+		/* FALLTHROUGH */
+		return 0;
 	}
 	if (close(lock) == -1) {
 		logperror(LIRC_ERROR, "could not close lock file");
-		if (unlink(filename) == -1) {
+		if (unlink(filename) == -1)
 			logperror(LIRC_ERROR, "could not delete file \"%s\"", filename);
-			/* FALLTHROUGH */
-		}
-		return (0);
+		/* FALLTHROUGH */
+		return 0;
 	}
 
 	if ((len = readlink(name, symlink, FILENAME_MAX)) == -1) {
-		if (errno != EINVAL) {	/* symlink */
+		if (errno != EINVAL) {  /* symlink */
 			logperror(LIRC_ERROR, "readlink() failed for \"%s\"", name);
 			if (unlink(filename) == -1) {
 				logperror(LIRC_ERROR,
-                                          "could not delete file \"%s\"", filename);
+					  "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
-			return (0);
+			return 0;
 		}
 	} else {
 		symlink[len] = 0;
@@ -399,49 +395,49 @@ tty_create_lock_retry:
 				logperror(LIRC_ERROR, "getcwd() failed");
 				if (unlink(filename) == -1) {
 					logperror(LIRC_ERROR,
-                                                  "could not delete file \"%s\"",
-                                                  filename);
+						  "could not delete file \"%s\"",
+						  filename);
 					/* FALLTHROUGH */
 				}
-				return (0);
+				return 0;
 			}
 
 			strcpy(dirname, name);
 			dirname[strlen(name) - strlen(last)] = 0;
 			if (chdir(dirname) == -1) {
 				logperror(LIRC_ERROR,
-                                          "chdir() to \"%s\" failed", dirname);
+					  "chdir() to \"%s\" failed", dirname);
 				if (unlink(filename) == -1) {
 					logperror(LIRC_ERROR,
-                                                  "could not delete file \"%s\"",
-                                                  filename);
+						  "could not delete file \"%s\"",
+						  filename);
 					/* FALLTHROUGH */
 				}
-				return (0);
+				return 0;
 			}
 		}
 		if (tty_create_lock(symlink) == -1) {
 			if (unlink(filename) == -1) {
 				logperror(LIRC_ERROR,
-                                          "could not delete file \"%s\"", filename);
+					  "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
-			return (0);
+			return 0;
 		}
 		if (last) {
 			if (chdir(cwd) == -1) {
 				logperror(LIRC_ERROR, "chdir() to \"%s\" failed", cwd);
 				if (unlink(filename) == -1) {
 					logperror(LIRC_ERROR,
-                                                  "could not delete file \"%s\"",
-                                                  filename);
+						  "could not delete file \"%s\"",
+						  filename);
 					/* FALLTHROUGH */
 				}
-				return (0);
+				return 0;
 			}
 		}
 	}
-	return (1);
+	return 1;
 }
 
 /**
@@ -455,7 +451,7 @@ int tty_delete_lock(void)
 	struct dirent *ep;
 	int lock;
 	int len;
-	char id[20] = {'\0'};
+	char id[20] = { '\0' };
 	char filename[FILENAME_MAX + 1];
 	long pid;
 	int retval = 1;
@@ -502,8 +498,8 @@ int tty_delete_lock(void)
 			if (pid == getpid()) {
 				if (unlink(filename) == -1) {
 					logperror(LIRC_ERROR,
-                                                  "could not delete file \"%s\"",
-                                                  filename);
+						  "could not delete file \"%s\"",
+						  filename);
 					retval = 0;
 					continue;
 				}
@@ -512,9 +508,9 @@ int tty_delete_lock(void)
 		closedir(dp);
 	} else {
 		logprintf(LIRC_ERROR, "could not open directory \"" LIRC_LOCKDIR "\"");
-		return (0);
+		return 0;
 	}
-	return (retval);
+	return retval;
 }
 
 int tty_set(int fd, int rts, int dtr)
@@ -526,9 +522,9 @@ int tty_set(int fd, int rts, int dtr)
 	if (ioctl(fd, TIOCMBIS, &mask) == -1) {
 		LOGPRINTF(1, "tty_set(): ioctl() failed");
 		LOGPERROR(1, "tty_set()");
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_clear(int fd, int rts, int dtr)
@@ -540,9 +536,9 @@ int tty_clear(int fd, int rts, int dtr)
 	if (ioctl(fd, TIOCMBIC, &mask) == -1) {
 		LOGPRINTF(1, "tty_clear(): ioctl() failed");
 		LOGPERROR(1, "tty_clear()");
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_write(int fd, char byte)
@@ -550,17 +546,17 @@ int tty_write(int fd, char byte)
 	if (write(fd, &byte, 1) != 1) {
 		LOGPRINTF(1, "tty_write(): write() failed");
 		LOGPERROR(1, "tty_write()");
-		return (-1);
+		return -1;
 	}
 	/* wait until the stop bit of Control Byte is sent
-	   (for 9600 baud rate, it takes about 100 msec */
+	 * (for 9600 baud rate, it takes about 100 msec */
 	usleep(100 * 1000);
 
 	/* we don't wait because tcdrain() does this for us */
 	/* tcdrain(fd); */
 	/* FIXME! but unfortunately this does not seem to be
-	   implemented in 2.0.x kernels ... */
-	return (1);
+	 * implemented in 2.0.x kernels ... */
+	return 1;
 }
 
 int tty_read(int fd, char *byte)
@@ -572,23 +568,23 @@ int tty_read(int fd, char *byte)
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 
-	tv.tv_sec = 1;		/* timeout after 1 sec */
+	tv.tv_sec = 1;          /* timeout after 1 sec */
 	tv.tv_usec = 0;
 	ret = select(fd + 1, &fds, NULL, NULL, &tv);
 	if (ret == 0) {
 		logprintf(LIRC_ERROR, "tty_read(): timeout");
-		return (-1);	/* received nothing, bad */
+		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
 		LOGPRINTF(1, "tty_read(): select() failed");
 		LOGPERROR(1, "tty_read()");
-		return (-1);
+		return -1;
 	}
 	if (read(fd, byte, 1) != 1) {
 		LOGPRINTF(1, "tty_read(): read() failed");
 		LOGPERROR(1, "tty_read()");
-		return (-1);
+		return -1;
 	}
-	return (1);
+	return 1;
 }
 
 int tty_write_echo(int fd, char byte)
@@ -596,14 +592,13 @@ int tty_write_echo(int fd, char byte)
 	char reply;
 
 	if (tty_write(fd, byte) == -1)
-		return (-1);
+		return -1;
 	if (tty_read(fd, &reply) == -1)
-		return (-1);
+		return -1;
 	LOGPRINTF(1, "sent: A%u D%01x reply: A%u D%01x", (((unsigned int)(unsigned char)byte) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)byte) & 0x0f, (((unsigned int)(unsigned char)reply) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)reply) & 0x0f);
-	if (byte != reply) {
+	if (byte != reply)
 		logprintf(LIRC_ERROR, "Command mismatch.");
-	}
-	return (1);
+	return 1;
 }

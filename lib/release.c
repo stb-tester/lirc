@@ -1,11 +1,10 @@
-
 /****************************************************************************
- ** release.c ***************************************************************
- ****************************************************************************
- *
- * Copyright (C) 2007 Christoph Bartelmus (lirc@bartelmus.de)
- *
- */
+** release.c ***************************************************************
+****************************************************************************
+*
+* Copyright (C) 2007 Christoph Bartelmus (lirc@bartelmus.de)
+*
+*/
 
 /**
  * @file release.c
@@ -67,7 +66,10 @@ void register_button_press(struct ir_remote *remote, struct ir_ncode *ncode, ir_
 	release_ncode = ncode;
 	release_code = code;
 	release_reps = reps;
-	release_gap = upper_limit(remote, remote->max_total_signal_length - remote->min_gap_length) + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;	/* some additional safety margin */
+	/* some additional safety margin */
+	release_gap = upper_limit(remote,
+				  remote->max_total_signal_length - remote->min_gap_length)
+				     + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
 
 	LOGPRINTF(1, "release_gap: %lu", release_gap);
 
@@ -103,16 +105,20 @@ const char *check_release_event(const char **remote_name, const char **button_na
 	if (release_remote2 != NULL) {
 		*remote_name = release_remote2->name;
 		*button_name = release_ncode2->name;
-		len =
-		    write_message(message, PACKET_SIZE + 1, release_remote2->name, release_ncode2->name, release_suffix,
-				  release_code2, 0);
+		len = write_message(message,
+				    PACKET_SIZE + 1,
+				    release_remote2->name,
+				    release_ncode2->name,
+				    release_suffix,
+				    release_code2,
+				    0);
 		release_remote2 = NULL;
 		release_ncode2 = NULL;
 		release_code2 = 0;
 
 		if (len >= PACKET_SIZE + 1) {
 			logprintf(LIRC_ERROR, "message buffer overflow");
-			return (NULL);
+			return NULL;
 		}
 
 		LOGPRINTF(3, "check");
@@ -129,9 +135,13 @@ const char *trigger_release_event(const char **remote_name, const char **button_
 		release_remote->release_detected = 1;
 		*remote_name = release_remote->name;
 		*button_name = release_ncode->name;
-		len =
-		    write_message(message, PACKET_SIZE + 1, release_remote->name, release_ncode->name, release_suffix,
-				  release_code, 0);
+		len = write_message(message,
+				    PACKET_SIZE + 1,
+				    release_remote->name,
+				    release_ncode->name,
+				    release_suffix,
+				    release_code,
+				    0);
 		timerclear(&release_time);
 		release_remote = NULL;
 		release_ncode = NULL;
@@ -139,7 +149,7 @@ const char *trigger_release_event(const char **remote_name, const char **button_
 
 		if (len >= PACKET_SIZE + 1) {
 			logprintf(LIRC_ERROR, "message buffer overflow");
-			return (NULL);
+			return NULL;
 		}
 		LOGPRINTF(3, "trigger");
 		return message;

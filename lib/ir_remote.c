@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** ir_remote.c *************************************************************
- ****************************************************************************
- *
- * ir_remote.c - sends and decodes the signals from IR remotes
- *
- * Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
- * Copyright (C) 1998 Christoph Bartelmus (lirc@bartelmus.de)
- *
- */
+** ir_remote.c *************************************************************
+****************************************************************************
+*
+* ir_remote.c - sends and decodes the signals from IR remotes
+*
+* Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
+* Copyright (C) 1998 Christoph Bartelmus (lirc@bartelmus.de)
+*
+*/
 
 /**
  * @file    ir_remote.c
@@ -37,20 +36,21 @@
 #include "lirc/lirc_log.h"
 
 /** Const data sent for EOF condition.  */
-static struct ir_ncode NCODE_EOF =
-	{"__EOF", LIRC_EOF, 1, NULL, NULL, NULL, 0};
+static struct ir_ncode NCODE_EOF = {
+	"__EOF", LIRC_EOF, 1, NULL, NULL, NULL, 0
+};
 
 /** Const packet sent for EOF condition. */
-static const char* const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
+static const char *const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
 
 /** Const dummy remote used for lirc internal decoding. */
-static struct ir_remote lirc_internal_remote = {"lirc"};
+static struct ir_remote lirc_internal_remote = { "lirc" };
 
-struct ir_remote* decoding = NULL;
+struct ir_remote *decoding = NULL;
 
-struct ir_remote* last_remote = NULL;
+struct ir_remote *last_remote = NULL;
 
-struct ir_remote* repeat_remote = NULL;
+struct ir_remote *repeat_remote = NULL;
 
 struct ir_ncode *repeat_code;
 
@@ -58,10 +58,10 @@ static int dyncodes = 0;
 
 void ir_remote_init(int use_dyncodes)
 {
-	dyncodes= use_dyncodes;
+	dyncodes = use_dyncodes;
 }
 
-static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
+static lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
 {
 	unsigned long secs, diff;
 
@@ -69,13 +69,13 @@ static  lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t g
 
 	diff = 1000000 * secs + current->tv_usec - last->tv_usec;
 
-	return ((lirc_t) (diff < gap ? gap - diff : 0));
+	return (lirc_t)(diff < gap ? gap - diff : 0);
 }
 
 static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
 {
-	return ((remote->ignore_mask | a) == (remote->ignore_mask | b)
-		|| (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask)));
+	return (remote->ignore_mask | a) == (remote->ignore_mask | b)
+	       || (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask));
 }
 
 /**
@@ -100,11 +100,10 @@ void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq
 	}
 	while (scan) {
 		if (scan->freq != 0) {
-			if (scan->freq > *max_freq) {
+			if (scan->freq > *max_freq)
 				*max_freq = scan->freq;
-			} else if (scan->freq < *min_freq) {
+			else if (scan->freq < *min_freq)
 				*min_freq = scan->freq;
-			}
 		}
 		scan = scan->next;
 	}
@@ -119,8 +118,8 @@ void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq
  * @param max_pulse_lengthp
  * @param max_space_lengthp
  */
-void get_filter_parameters(const struct ir_remote *remotes, lirc_t * max_gap_lengthp, lirc_t * min_pulse_lengthp,
-			   lirc_t * min_space_lengthp, lirc_t * max_pulse_lengthp, lirc_t * max_space_lengthp)
+void get_filter_parameters(const struct ir_remote *remotes, lirc_t *max_gap_lengthp, lirc_t *min_pulse_lengthp,
+			   lirc_t *min_space_lengthp, lirc_t *max_pulse_lengthp, lirc_t *max_space_lengthp)
 {
 	const struct ir_remote *scan = remotes;
 	lirc_t max_gap_length = 0;
@@ -129,26 +128,22 @@ void get_filter_parameters(const struct ir_remote *remotes, lirc_t * max_gap_len
 
 	while (scan) {
 		lirc_t val;
+
 		val = upper_limit(scan, scan->max_gap_length);
-		if (val > max_gap_length) {
+		if (val > max_gap_length)
 			max_gap_length = val;
-		}
 		val = lower_limit(scan, scan->min_pulse_length);
-		if (min_pulse_length == 0 || val < min_pulse_length) {
+		if (min_pulse_length == 0 || val < min_pulse_length)
 			min_pulse_length = val;
-		}
 		val = lower_limit(scan, scan->min_space_length);
-		if (min_space_length == 0 || val > min_space_length) {
+		if (min_space_length == 0 || val > min_space_length)
 			min_space_length = val;
-		}
 		val = upper_limit(scan, scan->max_pulse_length);
-		if (val > max_pulse_length) {
+		if (val > max_pulse_length)
 			max_pulse_length = val;
-		}
 		val = upper_limit(scan, scan->max_space_length);
-		if (val > max_space_length) {
+		if (val > max_space_length)
 			max_space_length = val;
-		}
 		scan = scan->next;
 	}
 	*max_gap_lengthp = max_gap_length;
@@ -164,13 +159,12 @@ void get_filter_parameters(const struct ir_remote *remotes, lirc_t * max_gap_len
  * @param remote
  * @return
  */
-const struct ir_remote *is_in_remotes(const struct ir_remote *remotes,
-                     		      const struct ir_remote *remote)
+const struct ir_remote *is_in_remotes(const struct ir_remote *	remotes,
+				      const struct ir_remote *	remote)
 {
 	while (remotes != NULL) {
-		if (remotes == remote) {
+		if (remotes == remote)
 			return remote;
-		}
 		remotes = remotes->next;
 	}
 	return NULL;
@@ -183,22 +177,20 @@ const struct ir_remote *is_in_remotes(const struct ir_remote *remotes,
  * @return
  */
 struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
-                                const char *name)
+				const char *		name)
 {
 	const struct ir_remote *all;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	all = remotes;
-	if (strcmp(name, "lirc") == 0) {
+	if (strcmp(name, "lirc") == 0)
 		return &lirc_internal_remote;
-	}
 	while (all) {
-		if (strcasecmp(all->name, name) == 0) {
-			return (struct ir_remote*) all;
-		}
+		if (strcasecmp(all->name, name) == 0)
+			return (struct ir_remote *)all;
 		all = all->next;
 	}
-	return (NULL);
+	return NULL;
 }
 
 /**
@@ -215,21 +207,20 @@ struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
  * @param post
  * @return
  */
-int map_code(const struct ir_remote* remote,
-	     struct decode_ctx_t* ctx,
-	     int pre_bits,
-	     ir_code pre,
-             int bits,
-	     ir_code code,
-             int post_bits,
-             ir_code post)
+int map_code(const struct ir_remote *	remote,
+	     struct decode_ctx_t *	ctx,
+	     int			pre_bits,
+	     ir_code			pre,
+	     int			bits,
+	     ir_code			code,
+	     int			post_bits,
+	     ir_code			post)
 
 {
 	ir_code all;
 
-	if (pre_bits + bits + post_bits != remote->pre_data_bits + remote->bits + remote->post_data_bits) {
-		return (0);
-	}
+	if (pre_bits + bits + post_bits != remote->pre_data_bits + remote->bits + remote->post_data_bits)
+		return 0;
 	all = (pre & gen_mask(pre_bits));
 	all <<= bits;
 	all |= (code & gen_mask(bits));
@@ -242,12 +233,12 @@ int map_code(const struct ir_remote* remote,
 	all >>= remote->bits;
 	ctx->pre = (all & gen_mask(remote->pre_data_bits));
 
-	LOGPRINTF(1, "pre: %llx", (__u64) (ctx->pre));
-	LOGPRINTF(1, "code: %llx", (__u64) (ctx->code));
-	LOGPRINTF(1, "post: %llx", (__u64) (ctx->post));
+	LOGPRINTF(1, "pre: %llx", (__u64)(ctx->pre));
+	LOGPRINTF(1, "code: %llx", (__u64)(ctx->code));
+	LOGPRINTF(1, "post: %llx", (__u64)(ctx->post));
 	LOGPRINTF(1, "code:                   %016llx\n", code);
 
-	return (1);
+	return 1;
 }
 
 /**
@@ -260,11 +251,11 @@ int map_code(const struct ir_remote* remote,
  * @param min_remaining_gapp
  * @param max_remaining_gapp
  */
-void map_gap(const struct ir_remote *remote,
-	     struct decode_ctx_t* ctx,
-             const struct timeval *start,
-	     const struct timeval *last,
-	     lirc_t signal_length)
+void map_gap(const struct ir_remote *	remote,
+	     struct decode_ctx_t *	ctx,
+	     const struct timeval *	start,
+	     const struct timeval *	last,
+	     lirc_t			signal_length)
 {
 	// Time gap (us) between a keypress on the remote control and
 	// the next one.
@@ -298,11 +289,10 @@ void map_gap(const struct ir_remote *remote,
 			ctx->max_remaining_gap = max_gap(remote) - signal_length;
 		} else {
 			ctx->min_remaining_gap = 0;
-			if (max_gap(remote) > signal_length) {
+			if (max_gap(remote) > signal_length)
 				ctx->max_remaining_gap = max_gap(remote) - signal_length;
-			} else {
+			else
 				ctx->max_remaining_gap = 0;
-			}
 		}
 	} else {
 		// The gap after the signal is always constant.
@@ -313,13 +303,14 @@ void map_gap(const struct ir_remote *remote,
 
 	LOGPRINTF(1, "repeat_flagp:           %d", (ctx->repeat_flag));
 	LOGPRINTF(1, "is_const(remote):       %d", is_const(remote));
-	LOGPRINTF(1, "remote->gap range:      %lu %lu", (__u32) min_gap(remote), (__u32) max_gap(remote));
-	LOGPRINTF(1, "remote->remaining_gap:  %lu %lu", (__u32) remote->min_remaining_gap,
-		  (__u32) remote->max_remaining_gap);
-	LOGPRINTF(1, "signal length:          %lu", (__u32) signal_length);
-	LOGPRINTF(1, "gap:                    %lu", (__u32) gap);
-	LOGPRINTF(1, "extim. remaining_gap:   %lu %lu", (__u32) (ctx->min_remaining_gap), (__u32)(ctx->max_remaining_gap));
-
+	LOGPRINTF(1, "remote->gap range:      %lu %lu", (__u32)min_gap(remote), (__u32)max_gap(remote));
+	LOGPRINTF(1, "remote->remaining_gap:  %lu %lu", (__u32)remote->min_remaining_gap,
+		  (__u32)remote->max_remaining_gap);
+	LOGPRINTF(1, "signal length:          %lu", (__u32)signal_length);
+	LOGPRINTF(1, "gap:                    %lu", (__u32)gap);
+	LOGPRINTF(1, "extim. remaining_gap:   %lu %lu",
+		  (__u32)(ctx->min_remaining_gap),
+		  (__u32)(ctx->max_remaining_gap));
 }
 
 /**
@@ -333,20 +324,18 @@ struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *na
 	const struct ir_ncode *all;
 
 	all = remote->codes;
-	if (strcmp(remote->name, "lirc") == 0) {
-		 return strcmp(name, "__EOF") == 0 ? &NCODE_EOF : 0;
-	}
+	if (strcmp(remote->name, "lirc") == 0)
+		return strcmp(name, "__EOF") == 0 ? &NCODE_EOF : 0;
 	while (all->name != NULL) {
-		if (strcasecmp(all->name, name) == 0) {
-			return (struct ir_ncode*) all;
-		}
+		if (strcasecmp(all->name, name) == 0)
+			return (struct ir_ncode *)all;
 		all++;
 	}
-	return (0);
+	return 0;
 }
 
 static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post,
-			  int *repeat_flag, ir_code * toggle_bit_mask_statep)
+				 int *repeat_flag, ir_code *toggle_bit_mask_statep)
 {
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
 	int found_code, have_code;
@@ -386,7 +375,7 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		if ((pre | pre_mask) != (remote->pre_data | pre_mask)) {
 			LOGPRINTF(1, "bad pre data");
 			LOGPRINTF(2, "%llx %llx", pre, remote->pre_data);
-			return (0);
+			return 0;
 		}
 		LOGPRINTF(1, "pre");
 	}
@@ -395,16 +384,15 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		if ((post | post_mask) != (remote->post_data | post_mask)) {
 			LOGPRINTF(1, "bad post data");
 			LOGPRINTF(2, "%llx %llx", post, remote->post_data);
-			return (0);
+			return 0;
 		}
 		LOGPRINTF(1, "post");
 	}
 
 	all = gen_ir_code(remote, pre, code, post);
 
-	if(*repeat_flag && has_repeat_mask(remote)) {
-	        all ^= remote->repeat_mask;
-	}
+	if (*repeat_flag && has_repeat_mask(remote))
+		all ^= remote->repeat_mask;
 
 	toggle_bit_mask_state = all & remote->toggle_bit_mask;
 
@@ -417,24 +405,22 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 			ir_code next_all;
 
 			next_all =
-			    gen_ir_code(remote, remote->pre_data, get_ir_code(codes, codes->current),
-					remote->post_data);
+				gen_ir_code(remote, remote->pre_data, get_ir_code(codes, codes->current),
+					    remote->post_data);
 			if (match_ir_code(remote, next_all, all) ||
 			    (*repeat_flag && has_repeat_mask(remote) &&
 			     match_ir_code(remote, next_all, all ^ remote->repeat_mask))) {
 				found_code = 1;
 				if (codes->next != NULL) {
-					if (codes->current == NULL) {
+					if (codes->current == NULL)
 						codes->current = codes->next;
-					} else {
+					else
 						codes->current = codes->current->next;
-					}
 				}
 				if (!have_code) {
 					found = codes;
-					if (codes->current == NULL) {
+					if (codes->current == NULL)
 						have_code = 1;
-					}
 				}
 			} else {
 				/* find longest matching sequence */
@@ -450,7 +436,7 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 						struct ir_code_node *prev, *next;
 						int flag = 1;
 
-						prev = NULL;	/* means codes->code */
+						prev = NULL;    /* means codes->code */
 						next = search;
 						while (next != codes->current) {
 							if (get_ir_code(codes, prev) != get_ir_code(codes, next)) {
@@ -462,15 +448,15 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 						}
 						if (flag == 1) {
 							next_all =
-							    gen_ir_code(remote, remote->pre_data,
-									get_ir_code(codes, prev), remote->post_data);
+								gen_ir_code(remote, remote->pre_data,
+									    get_ir_code(codes, prev),
+									    remote->post_data);
 							if (match_ir_code(remote, next_all, all)) {
 								codes->current = get_next_ir_code_node(codes, prev);
 								sequence_match = 1;
 								found_code = 1;
-								if (!have_code) {
+								if (!have_code)
 									found = codes;
-								}
 								break;
 							}
 						}
@@ -499,16 +485,19 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		} else {
 			if (found != remote->toggle_code) {
 				remote->toggle_code = NULL;
-				return (NULL);
+				return NULL;
 			}
 			remote->toggle_code = NULL;
 		}
 	}
 	*toggle_bit_mask_statep = toggle_bit_mask_state;
-	return (found);
+	return found;
 }
 
-static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_code toggle_bit_mask_state, struct decode_ctx_t* ctx)
+static __u64 set_code(struct ir_remote *remote,
+		      struct ir_ncode *found,
+		      ir_code toggle_bit_mask_state,
+		      struct decode_ctx_t *ctx)
 {
 	struct timeval current;
 	static struct ir_remote *last_decoded = NULL;
@@ -525,38 +514,37 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 									 remote->toggle_bit_mask_state));
 	if (remote->release_detected) {
 		remote->release_detected = 0;
-		if (ctx->repeat_flag) {
+		if (ctx->repeat_flag)
 			LOGPRINTF(0, "repeat indicated although release was detected before");
-		}
 		ctx->repeat_flag = 0;
 	}
 	if (remote == last_decoded &&
-	    (found == remote->last_code || (found->next != NULL && found->current != NULL)) &&
-	    ctx->repeat_flag && time_elapsed(&remote->last_send, &current) < 1000000 && (!has_toggle_bit_mask(remote)
-										    || toggle_bit_mask_state ==
-										    remote->toggle_bit_mask_state)) {
-		if (has_toggle_mask(remote)) {
-			remote->toggle_mask_state++;
-			if (remote->toggle_mask_state == 4) {
+	    (found == remote->last_code
+		|| (found->next != NULL && found->current != NULL))
+	    && ctx->repeat_flag
+	    && time_elapsed(&remote->last_send, &current) < 1000000
+	    && (!has_toggle_bit_mask(remote)
+		|| toggle_bit_mask_state == remote->toggle_bit_mask_state)) {
+			if (has_toggle_mask(remote)) {
+				remote->toggle_mask_state++;
+				if (remote->toggle_mask_state == 4) {
+					remote->reps++;
+					remote->toggle_mask_state = 2;
+				}
+			} else if (found->current == NULL) {
 				remote->reps++;
-				remote->toggle_mask_state = 2;
 			}
-		} else if (found->current == NULL) {
-			remote->reps++;
-		}
 	} else {
-		if (found->next != NULL && found->current == NULL) {
+		if (found->next != NULL && found->current == NULL)
 			remote->reps = 1;
-		} else {
+		else
 			remote->reps = 0;
-		}
 		if (has_toggle_mask(remote)) {
 			remote->toggle_mask_state = 1;
 			remote->toggle_code = found;
 		}
-		if (has_toggle_bit_mask(remote)) {
+		if (has_toggle_bit_mask(remote))
 			remote->toggle_bit_mask_state = toggle_bit_mask_state;
-		}
 	}
 	last_remote = remote;
 	last_decoded = remote;
@@ -576,14 +564,13 @@ static __u64 set_code(struct ir_remote * remote, struct ir_ncode * found, ir_cod
 		ctx->code = ctx->code << remote->post_data_bits;
 		ctx->code |= remote->post_data;
 	}
-	if (remote->flags & COMPAT_REVERSE) {
+	if (remote->flags & COMPAT_REVERSE)
 		/* actually this is wrong: pre, code and post should
-		   be rotated separately but we have to stay
-		   compatible with older software
+		 * be rotated separately but we have to stay
+		 * compatible with older software
 		 */
 		ctx->code = reverse(ctx->code, bit_count(remote));
-	}
-	return (ctx->code);
+	return ctx->code;
 }
 
 /**
@@ -604,7 +591,7 @@ int write_message(char *buffer, size_t size, const char *remote_name, const char
 	int len;
 
 	len = snprintf(buffer, size, "%016llx %02x %s%s %s\n",
-		(unsigned long long)code, reps, button_name, button_suffix, remote_name);
+		       (unsigned long long)code, reps, button_name, button_suffix, remote_name);
 
 	return len;
 }
@@ -629,9 +616,11 @@ char *decode_all(struct ir_remote *remotes)
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
 		if (curr_driver->decode_func(remote, &ctx)
-		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post, &ctx.repeat_flag, &toggle_bit_mask_state))) {
+		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post,
+					 &ctx.repeat_flag, &toggle_bit_mask_state))) {
 			int len;
 			int reps;
+
 			if (ncode == &NCODE_EOF) {
 				logprintf(LIRC_DEBUG, "decode all: returning EOF");
 				strncpy(message, PACKET_EOF, sizeof(message));
@@ -640,17 +629,14 @@ char *decode_all(struct ir_remote *remotes)
 			ctx.code = set_code(remote, ncode, toggle_bit_mask_state, &ctx);
 			if ((has_toggle_mask(remote) && remote->toggle_mask_state % 2) || ncode->current != NULL) {
 				decoding = NULL;
-				return (NULL);
+				return NULL;
 			}
 
-			for (scan = decoding; scan != NULL; scan = scan->next) {
-				for (scan_ncode = scan->codes; scan_ncode->name != NULL; scan_ncode++) {
+			for (scan = decoding; scan != NULL; scan = scan->next)
+				for (scan_ncode = scan->codes; scan_ncode->name != NULL; scan_ncode++)
 					scan_ncode->current = NULL;
-				}
-			}
-			if (is_xmp(remote)) {
+			if (is_xmp(remote))
 				remote->last_code->current = remote->last_code->next;
-			}
 			reps = remote->reps - (ncode->next ? 1 : 0);
 			if (reps > 0) {
 				if (reps <= remote->suppress_repeat) {
@@ -662,15 +648,17 @@ char *decode_all(struct ir_remote *remotes)
 			}
 			register_button_press(remote, remote->last_code, ctx.code, reps);
 
-			len =
-			    write_message(message, PACKET_SIZE + 1, remote->name, remote->last_code->name, "", ctx.code,
-					  reps);
+			len = write_message(message, PACKET_SIZE + 1,
+					    remote->name,
+					    remote->last_code->name, "",
+					    ctx.code,
+					    reps);
 			decoding = NULL;
 			if (len >= PACKET_SIZE + 1) {
 				logprintf(LIRC_ERROR, "message buffer overflow");
-				return (NULL);
+				return NULL;
 			} else {
-				return (message);
+				return message;
 			}
 		} else {
 			LOGPRINTF(1, "failed \"%s\" remote", remote->name);
@@ -681,7 +669,7 @@ char *decode_all(struct ir_remote *remotes)
 	decoding = NULL;
 	last_remote = NULL;
 	LOGPRINTF(1, "decoding failed for all remotes");
-	return (NULL);
+	return NULL;
 }
 
 /**
@@ -695,21 +683,19 @@ int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code, int delay)
 	int ret;
 
 	if (delay) {
-	/* insert pause when needed: */
+		/* insert pause when needed: */
 		if (remote->last_code != NULL) {
 			struct timeval current;
 			unsigned long usecs;
 
 			gettimeofday(&current, NULL);
-			usecs = time_left(&current, 
-                                          &remote->last_send, 
+			usecs = time_left(&current,
+					  &remote->last_send,
 					  remote->min_remaining_gap * 2);
 			if (usecs > 0) {
-				if (repeat_remote == NULL || remote != repeat_remote 
-                                        || remote->last_code != code) 
-                                {
+				if (repeat_remote == NULL || remote != repeat_remote
+				    || remote->last_code != code)
 					usleep(usecs);
-				}
 			}
 		}
 	}

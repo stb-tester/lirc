@@ -20,12 +20,12 @@
 struct driver drv;
 
 /** sscanf format to parse option_t. */
-const char*  const  OPTION_FMT  = "%32s%64s";
+const char *const OPTION_FMT = "%32s%64s";
 
 /** Read-only access to drv for client code. */
-const struct driver const* curr_driver = &drv;
+const struct driver const *curr_driver = &drv;
 
-int default_open(const char* path)
+int default_open(const char *path)
 {
 	static char buff[128];
 
@@ -45,16 +45,16 @@ int default_close()
 	return 0;
 }
 
-int default_drvctl(unsigned int fd, void* arg)
+int default_drvctl(unsigned int fd, void *arg)
 {
 	return DRV_ERR_NOT_IMPLEMENTED;
 }
 
 
-int drv_handle_options(const char* options)
+int drv_handle_options(const char *options)
 {
-	char* s;
-	char* token;
+	char *s;
+	char *token;
 	struct option_t option;
 	int found;
 	char* colon;
@@ -62,8 +62,8 @@ int drv_handle_options(const char* options)
 
 	s = alloca(strlen(options) + 1);
 	strcpy(s, options);
-	for (token = strtok(s, "|"); token != NULL; token = strtok(NULL, "|")){
-		colon=strstr(token, ":");
+	for (token = strtok(s, "|"); token != NULL; token = strtok(NULL, "|")) {
+		colon = strstr(token, ":");
 		if (colon == NULL)
 			return DRV_ERR_BAD_OPTION;
 		*colon = ' ';
@@ -78,5 +78,3 @@ int drv_handle_options(const char* options)
 	}
 	return 0;
 }
-
-
