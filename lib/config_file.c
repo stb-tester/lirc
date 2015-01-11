@@ -75,7 +75,8 @@ void **init_void_array(struct void_array *ar, size_t chunk_size, size_t item_siz
 	ar->chunk_size = chunk_size;
 	ar->item_size = item_size;
 	ar->nr_items = 0;
-	if (!(ar->ptr = calloc(chunk_size, ar->item_size))) {
+	ar->ptr = calloc(chunk_size, ar->item_size);
+	if (!ar->ptr) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return NULL;
@@ -114,7 +115,10 @@ int add_void_array(struct void_array *ar, void *dataptr)
 	if ((ar->nr_items % ar->chunk_size) == (ar->chunk_size) - 1) {
 		/* I hope this works with the right alignment,
 		 * if not we're screwed */
-		if (!(ptr = realloc(ar->ptr, ar->item_size * ((ar->nr_items) + (ar->chunk_size + 1))))) {
+		ptr = realloc(ar->ptr,
+			      ar->item_size *
+				  (ar->nr_items + ar->chunk_size + 1));
+		if (!ptr) {
 			logprintf(LIRC_ERROR, "out of memory");
 			parse_error = 1;
 			return 0;
@@ -136,7 +140,8 @@ void *s_malloc(size_t size)
 {
 	void *ptr;
 
-	if ((ptr = malloc(size)) == NULL) {
+	ptr = malloc(size);
+	if (ptr == NULL) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return NULL;
@@ -149,7 +154,8 @@ char *s_strdup(char *string)
 {
 	char *ptr;
 
-	if (!(ptr = strdup(string))) {
+	ptr = strdup(string);
+	if (!ptr ) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
 		return NULL;
@@ -1053,7 +1059,8 @@ read_config_recursive(FILE *f, const char *name, int depth)
 							if (!add_void_array(&raw_codes, &raw_code))
 								break;
 						}
-						if (!(raw_code.name = s_strdup(val)))
+						raw_code.name = s_strdup(val);
+						if (!raw_code.name)
 							break;
 						raw_code.code++;
 						init_void_array(&signals, 50, sizeof(lirc_t));

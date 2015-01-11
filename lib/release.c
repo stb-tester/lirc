@@ -161,7 +161,7 @@ const char *release_map_remotes(struct ir_remote *old, struct ir_remote *new, co
 				const char **button_name)
 {
 	struct ir_remote *remote;
-	struct ir_ncode *ncode;
+	struct ir_ncode *ncode = NULL;
 
 	if (release_remote2 != NULL) {
 		/* should not happen */
@@ -169,8 +169,10 @@ const char *release_map_remotes(struct ir_remote *old, struct ir_remote *new, co
 		release_remote2 = NULL;
 	}
 	if (release_remote && is_in_remotes(old, release_remote)) {
-		if ((remote = get_ir_remote(new, release_remote->name))
-		    && (ncode = get_code_by_name(remote, release_ncode->name))) {
+		remote = get_ir_remote(new, release_remote->name);
+		if (remote)
+			ncode = get_code_by_name(remote, release_ncode->name);
+		if (remote && ncode) {
 			release_remote = remote;
 			release_ncode = ncode;
 		} else {

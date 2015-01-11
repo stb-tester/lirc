@@ -180,12 +180,13 @@ struct driver {
 	 */
 	unsigned int	resolution;
 
-// API version 2 addons:
+/* API version 2 addons: */
 
 	const int	api_version;            /**< API version (from version 2+).*/
-	const char *	driver_version;         /**< Driver version (free text). */
-	int(*const close_func) (void);          /**< Hard closing, returns 0 on OK.*/
-	const char *	info;                   /**< Free text driver info. */
+	const char	*driver_version;        /**< Driver version (free text). */
+	const char	*info;                  /**< Free text driver info. */
+	int (*const close_func) (void);         /**< Hard closing, returns 0 on OK.*/
+
 };
 
 /** @} */

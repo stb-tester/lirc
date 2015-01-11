@@ -1090,10 +1090,8 @@ static int lirc_readconfig_only_internal(const char*		file,
 	mode = NULL;
 	remote = LIRC_ALL;
 	while (filestack) {
-		if ((ret =
-			     lirc_readline(&string,
-					   filestack->file)) == -1 || string ==
-		    NULL) {
+		ret = lirc_readline(&string, filestack->file);
+		if (ret == -1 || string == NULL) {
 			fclose(filestack->file);
 			if (open_files == 1 && full_name != NULL) {
 				save_full_name = filestack->name;
@@ -1168,13 +1166,11 @@ static int lirc_readconfig_only_internal(const char*		file,
 				}
 			} else {
 				token2 = strtok(NULL, " \t");
-				if (token2 != NULL &&
-				    (token3 = strtok(NULL, " \t")) != NULL) {
-					lirc_printf(
-						"%s: unexpected token in line %s:%d\n",
-						lirc_prog,
-						filestack->name,
-						filestack->line);
+				if (token2)
+					token3 = strtok(NULL, " \t");
+				if (token2 != NULL && token3  != NULL) {
+					lirc_printf("%s: unexpected token in line %s:%d\n",
+						    lirc_prog, filestack->name, filestack->line);
 				} else {
 					ret = lirc_mode(token, token2, &mode,
 							&new_entry, &first,
@@ -1896,7 +1892,8 @@ int lirc_nextcode(char** code)
 		end_len += len;
 		lirc_buffer[end_len] = 0;
 		/* return if next code not yet available completely */
-		if ((end = strchr(lirc_buffer, '\n')) == NULL)
+		end = strchr(lirc_buffer, '\n');
+		if (end == NULL)
 			return 0;
 	}
 	/* copy first line to buffer (code) and move remaining chars to

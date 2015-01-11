@@ -1946,7 +1946,8 @@ void config_file_setup(struct main_state *state, const struct opts *opts)
 /** Write the final config file. */
 int config_file_finish(struct main_state *state, const struct opts *opts)
 {
-	if ((state->fout = fopen(opts->filename, "w")) == NULL) {
+	state->fout = fopen(opts->filename, "w");
+	if (state->fout == NULL) {
 		logperror(LIRC_ERROR, "While opening \"%s\" for write", opts->filename);
 		return 0;
 	}

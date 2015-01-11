@@ -1045,11 +1045,11 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 		rec_buffer.is_biphase = is_biphase(remote) ? 1 : 0;
 
 		/* we should get a long space first */
-		if (!(sync = sync_rec_buffer(remote))) {
+		sync = sync_rec_buffer(remote);
+		if (!sync) {
 			LOGPRINTF(1, "failed on sync");
 			return 0;
 		}
-
 		LOGPRINTF(1, "sync");
 
 		if (has_repeat(remote) && last_remote == remote) {

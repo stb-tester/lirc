@@ -325,7 +325,8 @@ int tty_create_lock(const char *name)
 	strcat(filename, s);
 
 tty_create_lock_retry:
-	if ((len = snprintf(id, 10 + 1 + 1, "%10d\n", getpid())) == -1) {
+	len = snprintf(id, 10 + 1 + 1, "%10d\n", getpid());
+	if (len == -1) {
 		logprintf(LIRC_ERROR, "invalid pid \"%d\"", getpid());
 		return 0;
 	}
@@ -375,7 +376,8 @@ tty_create_lock_retry:
 		return 0;
 	}
 
-	if ((len = readlink(name, symlink, FILENAME_MAX)) == -1) {
+	len = readlink(name, symlink, FILENAME_MAX);
+	if (len == -1) {
 		if (errno != EINVAL) {  /* symlink */
 			logperror(LIRC_ERROR, "readlink() failed for \"%s\"", name);
 			if (unlink(filename) == -1) {
