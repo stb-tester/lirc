@@ -366,7 +366,7 @@ int init_sim(struct ir_remote *remote, struct ir_ncode *code, int repeat_preset)
 /** @endcond */
 
 
-int send_buffer_length()
+int send_buffer_length(void)
 {
 	return send_buffer.wptr;
 }
@@ -377,7 +377,7 @@ const lirc_t *send_buffer_data()
 	return send_buffer.data;
 }
 
-lirc_t send_buffer_sum()
+lirc_t send_buffer_sum(void)
 {
 	return send_buffer.sum;
 }

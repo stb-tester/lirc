@@ -65,7 +65,7 @@ static const char* prio2text(int prio)
 }
 
 
-int lirc_log_use_syslog()
+int lirc_log_use_syslog(void)
 {
 	return use_syslog;
 }
@@ -116,7 +116,7 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 }
 
 
-int lirc_log_close()
+int lirc_log_close(void)
 {
 	if (use_syslog) {
 		closelog();

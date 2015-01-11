@@ -34,16 +34,16 @@ extern "C" {
  * outputted messages, but generates more messages than DEBUG.
  */
 typedef enum {
-	LIRC_TRACE2 = 10,
-	LIRC_TRACE1 = 9,
-	LIRC_TRACE = 8,
-	LIRC_DEBUG = LOG_DEBUG,
-	LIRC_INFO = LOG_INFO,
-	LIRC_NOTICE = LOG_NOTICE,
-	LIRC_WARNING = LOG_WARNING,
-	LIRC_ERROR = LOG_ERR,
-	LIRC_NOLOG = 0,
-	LIRC_BADLEVEL = -1
+	LIRC_TRACE2 	= 10,
+	LIRC_TRACE1 	= 9,
+	LIRC_TRACE 	= 8,
+	LIRC_DEBUG 	= LOG_DEBUG,
+	LIRC_INFO 	= LOG_INFO,
+	LIRC_NOTICE 	= LOG_NOTICE,
+	LIRC_WARNING 	= LOG_WARNING,
+	LIRC_ERROR 	= LOG_ERR,
+	LIRC_NOLOG 	= 0,
+	LIRC_BADLEVEL 	= -1
 } loglevel_t;
 
 /** Max loglevel (for validation). */
@@ -102,7 +102,7 @@ loglevel_t lirc_log_defaultlevel(void);
 #define lirc_log_is_enabled_for(level) (level <= loglevel)
 
 /** Check if log is set up to use syslog or not. */
-int lirc_log_use_syslog();
+int lirc_log_use_syslog(void);
 
 /**
  * Write a message to log.
@@ -128,7 +128,7 @@ int lirc_log_reopen(void);
 int lirc_log_open(const char* progname, int _nodaemon, loglevel_t level);
 
 /** Close the log previosly opened with lirc_log_open(). */
-int lirc_log_close();
+int lirc_log_close(void);
 
 /**
  * Set logfile. Either a regular path or the string 'syslog'; the latter

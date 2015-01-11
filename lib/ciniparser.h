@@ -263,7 +263,7 @@ void ciniparser_freedict(dictionary *d);
  */
 int ciniparser_set(dictionary *d, const char *entry, const char *val);
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

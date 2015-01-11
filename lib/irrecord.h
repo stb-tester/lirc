@@ -49,7 +49,7 @@
 #define min(a, b) (a > b ? b : a)
 #define max(a, b) (a > b ? a : b)
 
-#define BUTTON       80 + 1
+#define BUTTON       (80 + 1)
 #define RETRIES        10
 
 /* the longest signal I've seen up to now was 48-bit signal with header */

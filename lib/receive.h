@@ -55,7 +55,7 @@ static inline lirc_t receive_timeout(lirc_t usec)
 int waitfordata(__u32 maxusec);
 
 /** Clear internal buffer to pristine state. */
-void rec_buffer_init();
+void rec_buffer_init(void);
 
 /**
  * Flush the internal fifo and store a single code read

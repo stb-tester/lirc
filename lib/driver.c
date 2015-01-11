@@ -40,7 +40,7 @@ int default_open(const char *path)
 	return 0;
 }
 
-int default_close()
+int default_close(void)
 {
 	return 0;
 }

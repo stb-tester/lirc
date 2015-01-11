@@ -238,8 +238,6 @@ void ciniparser_dump(dictionary *d, FILE *f)
 		else
 			fprintf(f, "[%s]=UNDEF\n", d->key[i]);
 	}
-
-	return;
 }
 
 void ciniparser_dump_ini(dictionary *d, FILE *f)
@@ -282,8 +280,6 @@ void ciniparser_dump_ini(dictionary *d, FILE *f)
 		}
 	}
 	fprintf(f, "\n");
-
-	return;
 }
 
 const char *ciniparser_getstring(dictionary *d, const char *key, char *def)

@@ -51,13 +51,13 @@ int init_sim(struct ir_remote* remote, struct ir_ncode* code,
 /** @endcond */
 
 /** @return Number of items accessible in array send_buffer_data(). */
-int send_buffer_length();
+int send_buffer_length(void);
 
 /** @return Pointer to timing data in microseconds for pulses/spaces. */
-const lirc_t* send_buffer_data();
+const lirc_t* send_buffer_data(void);
 
 /** @return Total length of buffer in microseconds. */
-lirc_t send_buffer_sum();
+lirc_t send_buffer_sum(void);
 
 /** @} */
 
