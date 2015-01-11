@@ -101,52 +101,49 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 			  rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK));
 		rec_buffer.sum += rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK);
 		return rec_buffer.data[rec_buffer.rptr++];
-	} else {
-		if (rec_buffer.wptr < RBUF_SIZE) {
-			lirc_t data = 0;
-			unsigned long elapsed = 0;
+	}
+	if (rec_buffer.wptr < RBUF_SIZE) {
+		lirc_t data = 0;
+		unsigned long elapsed = 0;
 
-			if (timerisset(&rec_buffer.last_signal_time)) {
-				struct timeval current;
+		if (timerisset(&rec_buffer.last_signal_time)) {
+			struct timeval current;
 
-				gettimeofday(&current, NULL);
-				elapsed = time_elapsed(&rec_buffer.last_signal_time, &current);
-			}
-			if (elapsed < maxusec)
-				data = readdata(maxusec - elapsed);
-			if (!data) {
-				LOGPRINTF(3, "timeout: %u", maxusec);
-				return 0;
-			}
-			if (data & LIRC_EOF) {
-				logprintf(LIRC_DEBUG, "Receive: returning EOF");
-				return data;
-			}
-			if (LIRC_IS_TIMEOUT(data)) {
-				LOGPRINTF(1, "timeout received: %lu", (__u32)LIRC_VALUE(data));
-				if (LIRC_VALUE(data) < maxusec)
-					return get_next_rec_buffer_internal(maxusec - LIRC_VALUE(data));
-				return 0;
-			}
-
-			rec_buffer.data[rec_buffer.wptr] = data;
-			if (rec_buffer.input_log != NULL)
-				log_input(data);
-			if (rec_buffer.data[rec_buffer.wptr] == 0)
-				return 0;
-			rec_buffer.sum += rec_buffer.data[rec_buffer.rptr]
-					  & (PULSE_MASK);
-			rec_buffer.wptr++;
-			rec_buffer.rptr++;
-			LOGPRINTF(3, "+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (__u32)
-				  rec_buffer.data[rec_buffer.rptr - 1]
-				  & (PULSE_MASK));
-			return rec_buffer.data[rec_buffer.rptr - 1];
-		} else {
-			rec_buffer.too_long = 1;
+			gettimeofday(&current, NULL);
+			elapsed = time_elapsed(&rec_buffer.last_signal_time, &current);
+		}
+		if (elapsed < maxusec)
+			data = readdata(maxusec - elapsed);
+		if (!data) {
+			LOGPRINTF(3, "timeout: %u", maxusec);
 			return 0;
 		}
+		if (data & LIRC_EOF) {
+			logprintf(LIRC_DEBUG, "Receive: returning EOF");
+			return data;
+		}
+		if (LIRC_IS_TIMEOUT(data)) {
+			LOGPRINTF(1, "timeout received: %lu", (__u32)LIRC_VALUE(data));
+			if (LIRC_VALUE(data) < maxusec)
+				return get_next_rec_buffer_internal(maxusec - LIRC_VALUE(data));
+			return 0;
+		}
+
+		rec_buffer.data[rec_buffer.wptr] = data;
+		if (rec_buffer.input_log != NULL)
+			log_input(data);
+		if (rec_buffer.data[rec_buffer.wptr] == 0)
+			return 0;
+		rec_buffer.sum += rec_buffer.data[rec_buffer.rptr]
+				  & (PULSE_MASK);
+		rec_buffer.wptr++;
+		rec_buffer.rptr++;
+		LOGPRINTF(3, "+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (__u32)
+			  rec_buffer.data[rec_buffer.rptr - 1]
+			  & (PULSE_MASK));
+		return rec_buffer.data[rec_buffer.rptr - 1];
 	}
+	rec_buffer.too_long = 1;
 	return 0;
 }
 
@@ -1085,11 +1082,10 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 							    rec_buffer.sum : 0) : (has_repeat_gap(remote) ? remote->
 										   repeat_gap : max_gap(remote));
 				return 1;
-			} else {
-				LOGPRINTF(1, "no repeat");
-				rec_buffer_rewind();
-				sync_rec_buffer(remote);
 			}
+			LOGPRINTF(1, "no repeat");
+			rec_buffer_rewind();
+			sync_rec_buffer(remote);
 		}
 
 		if (has_header(remote)) {

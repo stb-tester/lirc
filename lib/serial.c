@@ -350,9 +350,8 @@ tty_create_lock_retry:
 							  "could not remove stale lockfile");
 					}
 					return 0;
-				} else {
-					logprintf(LIRC_ERROR, "%s is locked by PID %d", name, otherpid);
 				}
+				logprintf(LIRC_ERROR, "%s is locked by PID %d", name, otherpid);
 			} else {
 				logprintf(LIRC_ERROR, "invalid lockfile %s encountered", filename);
 			}

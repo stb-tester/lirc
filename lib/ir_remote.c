@@ -646,9 +646,8 @@ char *decode_all(struct ir_remote *remotes)
 				if (reps <= remote->suppress_repeat) {
 					decoding = NULL;
 					return NULL;
-				} else {
-					reps -= remote->suppress_repeat;
 				}
+				reps -= remote->suppress_repeat;
 			}
 			register_button_press(remote, remote->last_code, ctx.code, reps);
 

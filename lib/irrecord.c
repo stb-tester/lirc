@@ -620,18 +620,17 @@ void unlink_length(struct lengths **first, struct lengths *remove)
 		*first = remove->next;
 		remove->next = NULL;
 		return;
-	} else {
-		scan = (*first)->next;
-		last = *first;
-		while (scan) {
-			if (scan == remove) {
-				last->next = remove->next;
-				remove->next = NULL;
-				return;
-			}
-			last = scan;
-			scan = scan->next;
+	}
+	scan = (*first)->next;
+	last = *first;
+	while (scan) {
+		if (scan == remove) {
+			last->next = remove->next;
+			remove->next = NULL;
+			return;
 		}
+		last = scan;
+		scan = scan->next;
 	}
 	logprintf(LIRC_ERROR, "unlink_length(): report this bug!");
 }
@@ -942,6 +941,10 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 void get_scheme(struct ir_remote *remote, int interactive)
 {
 	unsigned int i, length = 0, sum = 0;
+	struct lengths  *maxp;
+	struct lengths  *max2p;
+	struct lengths  *maxs;
+	struct lengths  *max2s;
 
 	for (i = 1; i < MAX_SIGNALS; i++) {
 		if (lengths[i] > lengths[length])
@@ -952,57 +955,51 @@ void get_scheme(struct ir_remote *remote, int interactive)
 	}
 	logprintf(LIRC_DEBUG, "get_scheme(): sum: %u length: %u signals: %u"
 		  " first_lengths: %u second_lengths: %u\n",
-		  sum, length + 1, lengths[length], first_lengths, second_lengths);
+		  sum, length + 1, lengths[length],
+		  first_lengths, second_lengths);
 	/* FIXME !!! this heuristic is too bad */
 	if (lengths[length] >= TH_SPACE_ENC * sum / 100) {
 		length++;
-		logprintf(LIRC_DEBUG, "Space/pulse encoded remote control found.");
+		logprintf(LIRC_DEBUG,
+			  "Space/pulse encoded remote control found.");
 		logprintf(LIRC_DEBUG, "Signal length is %u.", length);
-		/* this is not yet the
-		 * number of bits */
+		/* this is not yet the number of bits */
 		remote->bits = length;
 		set_protocol(remote, SPACE_ENC);
 		return;
+	}
+	maxp = get_max_length(first_pulse, NULL);
+	unlink_length(&first_pulse, maxp);
+	if (first_pulse == NULL) {
+		first_pulse = maxp;
+	}
+	max2p = get_max_length(first_pulse, NULL);
+	maxp->next = first_pulse;
+	first_pulse = maxp;
+
+	maxs = get_max_length(first_space, NULL);
+	unlink_length(&first_space, maxs);
+	if (first_space == NULL) {
+		first_space = maxs;
 	} else {
-		struct lengths  *maxp;
-		struct lengths  *max2p;
-		struct lengths  *maxs;
-		struct lengths  *max2s;
+		max2s = get_max_length(first_space, NULL);
+		maxs->next = first_space;
+		first_space = maxs;
 
-		maxp = get_max_length(first_pulse, NULL);
-		unlink_length(&first_pulse, maxp);
-		if (first_pulse == NULL) {
-			first_pulse = maxp;
+		maxs = get_max_length(first_space, NULL);
+
+		if (length > 20
+		    && (calc_signal(maxp) < TH_RC6_SIGNAL
+			|| calc_signal(max2p) < TH_RC6_SIGNAL)
+		    && (calc_signal(maxs) < TH_RC6_SIGNAL
+			|| calc_signal(max2s) < TH_RC6_SIGNAL)) {
+			logprintf(LIRC_DEBUG, "RC-6 remote control found.");
+			set_protocol(remote, RC6);
 		} else {
-			max2p = get_max_length(first_pulse, NULL);
-			maxp->next = first_pulse;
-			first_pulse = maxp;
-
-			maxs = get_max_length(first_space, NULL);
-			unlink_length(&first_space, maxs);
-			if (first_space == NULL) {
-				first_space = maxs;
-			} else {
-				max2s = get_max_length(first_space, NULL);
-				maxs->next = first_space;
-				first_space = maxs;
-
-				maxs = get_max_length(first_space, NULL);
-
-				if (length > 20
-				    && (calc_signal(maxp) < TH_RC6_SIGNAL
-					|| calc_signal(max2p) < TH_RC6_SIGNAL)
-				    && (calc_signal(maxs) < TH_RC6_SIGNAL
-					|| calc_signal(max2s) < TH_RC6_SIGNAL)) {
-					logprintf(LIRC_DEBUG, "RC-6 remote control found.");
-					set_protocol(remote, RC6);
-				} else {
-					logprintf(LIRC_DEBUG, "RC-5 remote control found.");
-					set_protocol(remote, RC5);
-				}
-				return;
-			}
+			logprintf(LIRC_DEBUG, "RC-5 remote control found.");
+			set_protocol(remote, RC5);
 		}
+		return;
 	}
 	length++;
 	logprintf(LIRC_DEBUG, "Suspicious data length: %u.", length);
@@ -1037,8 +1034,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 		logprintf(LIRC_DEBUG, "%u x %u", max_plength->count,
 			  (__u32)calc_signal(max_plength));
 		if (max2_plength)
-			logprintf(LIRC_DEBUG, ", %u x %u", max2_plength->count, (__u32)
-				  calc_signal(max2_plength));
+			logprintf(LIRC_DEBUG, ", %u x %u",
+				  max2_plength->count,
+				  (__u32) calc_signal(max2_plength));
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
@@ -1065,7 +1063,8 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			remote->aeps = aeps;
 			if (is_biphase(remote)) {
 				if (max2_plength == NULL || max2_slength == NULL) {
-					logprintf(LIRC_NOTICE, "Unknown encoding found.");
+					logprintf(LIRC_NOTICE,
+						  "Unknown encoding found.");
 					return 0;
 				}
 				logprintf(LIRC_DEBUG, "Signals are biphase encoded.");
@@ -1079,19 +1078,23 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				remote->pzero = remote->pone;
 				remote->szero = remote->sone;
 			} else {
-				if (max2_plength == NULL && max2_slength == NULL) {
-					logprintf(LIRC_NOTICE, "No encoding found.");
-					return 0;
+				if (max2_plength == NULL
+				    && max2_slength == NULL) {
+						logprintf(LIRC_NOTICE,
+							  "No encoding found");
+						return 0;
 				}
 				if (max2_plength && max2_slength) {
-					logprintf(LIRC_NOTICE, "Unknown encoding found.");
+					logprintf(LIRC_NOTICE,
+						  "Unknown encoding found.");
 					return 0;
 				}
 				p1 = calc_signal(max_plength);
 				s1 = calc_signal(max_slength);
 				if (max2_plength) {
 					p2 = calc_signal(max2_plength);
-					logprintf(LIRC_DEBUG, "Signals are pulse encoded.");
+					logprintf(LIRC_DEBUG,
+						  "Signals are pulse encoded.");
 					remote->pone = max(p1, p2);
 					remote->sone = s1;
 					remote->pzero = min(p1, p2);
@@ -1319,10 +1322,9 @@ enum lengths_status get_lengths(struct lengths_state *state,
 		if (state->count > SAMPLES * MAX_SIGNALS * 2) {
 			state->retval = 0;
 			return STS_LEN_NO_GAP_FOUND;
-		} else {
-			state->keypresses = lastmaxcount;
-			return STS_LEN_AGAIN;
 		}
+		state->keypresses = lastmaxcount;
+		return STS_LEN_AGAIN;
 	} else if (state->mode == MODE_HAVE_GAP) {
 		if (state->count <= MAX_SIGNALS) {
 			signals[state->count - 1] = state->data & PULSE_MASK;
@@ -1505,9 +1507,8 @@ get_toggle_bit_mask(struct toggle_state *state, struct ir_remote *remote)
 			state->retries--;
 			state->last = decode_ctx.code;
 			return STS_TGL_GOT_ONE_PRESS;
-		} else {
-			state->repeats++;
 		}
+		state->repeats++;
 		state->last = decode_ctx.code;
 	} else {
 		state->retries--;

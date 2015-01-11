@@ -139,10 +139,9 @@ static int fill_string(int fd, lirc_cmd_ctx* cmd)
 		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
 			logprintf(LIRC_NOTICE, "fill_string: timeout\n");
 			return EAGAIN;
-		} else {
-			cmd->head = 0;
-			return errno;
 		}
+		cmd->head = 0;
+		return errno;
 	}
 	cmd->head += n;
 	return 0;
@@ -299,7 +298,6 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 				return status;
 			}
 			goto bad_packet;
-			break;
 		}
 	}
 bad_packet:
@@ -344,13 +342,11 @@ int lirc_init(const char* prog, int verbose)
 			return -1;
 		}
 		return lirc_lircd;
-	} else {
-		lirc_printf("%s: could not open socket: %s\n",
-			    lirc_prog,
-			    strerror(-lirc_lircd));
-		return -1;
 	}
-	return lirc_lircd;
+	lirc_printf("%s: could not open socket: %s\n",
+		    lirc_prog,
+		    strerror(-lirc_lircd));
+	return -1;
 }
 
 
@@ -591,22 +587,20 @@ int lirc_mode(char* token, char* token2, char** mode,
 					lirc_printf("%s: out of memory\n",
 						    lirc_prog);
 					return -1;
-				} else {
-					new_entry->prog = NULL;
-					new_entry->code = NULL;
-					new_entry->rep_delay = 0;
-					new_entry->ign_first_events = 0;
-					new_entry->rep = 0;
-					new_entry->config = NULL;
-					new_entry->change_mode = NULL;
-					new_entry->flags = none;
-					new_entry->mode = NULL;
-					new_entry->next_config = NULL;
-					new_entry->next_code = NULL;
-					new_entry->next = NULL;
-
-					*new_config = new_entry;
 				}
+				new_entry->prog = NULL;
+				new_entry->code = NULL;
+				new_entry->rep_delay = 0;
+				new_entry->ign_first_events = 0;
+				new_entry->rep = 0;
+				new_entry->config = NULL;
+				new_entry->change_mode = NULL;
+				new_entry->flags = none;
+				new_entry->mode = NULL;
+				new_entry->next_config = NULL;
+				new_entry->next_code = NULL;
+				new_entry->next = NULL;
+				*new_config = new_entry;
 			} else {
 				lirc_printf("%s: bad file format, %s:%d\n",
 					    lirc_prog, name, line);
@@ -954,11 +948,8 @@ static char* lirc_startupmode(struct lirc_config_entry* first)
 				/* Remove the startup mode or it confuses lirc mode system */
 				scan->change_mode = NULL;
 				break;
-			} else {
-				lirc_printf(
-					"%s: startup_mode flags requires 'mode ='\n",
-					lirc_prog);
 			}
+			lirc_printf("%s: startup_mode flags requires 'mode ='\n", lirc_prog);
 		}
 		scan = scan->next;
 	}
@@ -1974,11 +1965,10 @@ const char* lirc_setmode(struct lirc_config* config, const char* mode)
 			return static_buff;
 		}
 		return NULL;
-	} else {
-		free(config->current_mode);
-		config->current_mode = mode ? strdup(mode) : NULL;
-		return config->current_mode;
 	}
+	free(config->current_mode);
+	config->current_mode = mode ? strdup(mode) : NULL;
+	return config->current_mode;
 }
 
 

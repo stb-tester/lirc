@@ -778,10 +778,9 @@ read_included(const char *name, int depth, char *val, struct ir_remote *top_rem)
 			  childName, line);
 		logprintf(LIRC_ERROR, "ignoring this child file for now.");
 		return NULL;
-	} else {
-		rem = read_config_recursive(childFile, childName, depth + 1);
-		top_rem = ir_remotes_append(top_rem, rem);
 	}
+	rem = read_config_recursive(childFile, childName, depth + 1);
+	top_rem = ir_remotes_append(top_rem, rem);
 	fclose(childFile);
 	return top_rem;
 }
