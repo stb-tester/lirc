@@ -19,8 +19,6 @@
 #include "lirc_private.h"
 #include "lirc_client.h"
 
-extern struct ir_remote* repeat_remote;
-
 
 static const char* const USAGE =
 	"Send key symbols durations to fixed file 'simsend.out'.\n\n"

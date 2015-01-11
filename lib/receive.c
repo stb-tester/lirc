@@ -25,13 +25,11 @@
 #include "lirc/driver.h"
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"
+#include "lirc/ir_remote.h"
 
 #define RBUF_SIZE 512
 
 #define REC_SYNC 8
-
-extern struct driver hw;
-extern struct ir_remote *last_remote;
 
 /**
  * Structure for the receiving buffer.
