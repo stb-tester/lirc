@@ -57,16 +57,19 @@ static struct ir_ncode *current_code = NULL;
 static int current_index = 0;
 static int current_rep = 0;
 
-static struct lengths *first_space = NULL, *first_pulse = NULL;
+static struct lengths  *first_space = NULL;
+static struct lengths  *first_pulse = NULL;
 static struct lengths *first_sum = NULL;
 static struct lengths *first_gap = NULL;
 static struct lengths *first_repeat_gap = NULL;
 static struct lengths *first_signal_length = NULL;
-static struct lengths *first_headerp = NULL, *first_headers = NULL;
+static struct lengths  *first_headerp = NULL;
+static struct lengths  *first_headers = NULL;
 static struct lengths *first_1lead = NULL;
 static struct lengths *first_3lead = NULL;
 static struct lengths *first_trail = NULL;
-static struct lengths *first_repeatp = NULL, *first_repeats = NULL;
+static struct lengths  *first_repeatp = NULL;
+static struct lengths  *first_repeats = NULL;
 
 static __u32 lengths[MAX_SIGNALS];
 static __u32 first_length, first_lengths, second_lengths;
@@ -610,7 +613,8 @@ static struct lengths *new_length(lirc_t length)
 
 void unlink_length(struct lengths **first, struct lengths *remove)
 {
-	struct lengths *last, *scan;
+	struct lengths  *last;
+	struct lengths  *scan;
 
 	if (remove == *first) {
 		*first = remove->next;
@@ -635,7 +639,8 @@ void unlink_length(struct lengths **first, struct lengths *remove)
 
 int add_length(struct lengths **first, lirc_t length)
 {
-	struct lengths *l, *last;
+	struct lengths  *l;
+	struct lengths  *last;
 
 	if (*first == NULL) {
 		*first = new_length(length);
@@ -664,7 +669,8 @@ int add_length(struct lengths **first, lirc_t length)
 
 void free_lengths(struct lengths **firstp)
 {
-	struct lengths *first, *next;
+	struct lengths  *first;
+	struct lengths  *next;
 
 	first = *firstp;
 	if (first == NULL)
@@ -698,7 +704,9 @@ void free_all_lengths(void)
 
 static void merge_lengths(struct lengths *first)
 {
-	struct lengths *l, *inner, *last;
+	struct lengths  *l;
+	struct lengths  *inner;
+	struct lengths  *last;
 	__u32 new_sum;
 	int new_count;
 
@@ -746,7 +754,8 @@ static struct lengths *
 get_max_length(struct lengths *first, unsigned int *sump)
 {
 	unsigned int sum;
-	struct lengths *scan, *max_length;
+	struct lengths  *scan;
+	struct lengths  *max_length;
 
 	if (first == NULL)
 		return NULL;
@@ -797,7 +806,9 @@ int get_trail_length(struct ir_remote *remote, int interactive)
 int get_lead_length(struct ir_remote *remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
-	struct lengths *first_lead, *max_length, *max2_length;
+	struct lengths  *first_lead;
+	struct lengths  *max_length;
+	struct lengths  *max2_length;
 	lirc_t a, b, swap;
 
 	if (!is_biphase(remote) || has_header(remote))
@@ -840,7 +851,8 @@ int get_header_length(struct ir_remote *remote, int interactive)
 {
 	unsigned int sum, max_count;
 	lirc_t headerp, headers;
-	struct lengths *max_plength, *max_slength;
+	struct lengths  *max_plength;
+	struct lengths  *max_slength;
 
 	if (first_headerp != NULL) {
 		max_plength = get_max_length(first_headerp, &sum);
@@ -879,7 +891,8 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
 	lirc_t repeatp, repeats, repeat_gap;
-	struct lengths *max_plength, *max_slength;
+	struct lengths  *max_plength;
+	struct lengths  *max_slength;
 
 	if (!((count_3repeats > SAMPLES / 2 ? 1 : 0) ^ (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
 		if (count_3repeats > SAMPLES / 2 || count_5repeats > SAMPLES / 2) {
@@ -951,7 +964,10 @@ void get_scheme(struct ir_remote *remote, int interactive)
 		set_protocol(remote, SPACE_ENC);
 		return;
 	} else {
-		struct lengths *maxp, *max2p, *maxs, *max2s;
+		struct lengths  *maxp;
+		struct lengths  *max2p;
+		struct lengths  *maxs;
+		struct lengths  *max2s;
 
 		maxp = get_max_length(first_pulse, NULL);
 		unlink_length(&first_pulse, maxp);
@@ -1000,8 +1016,10 @@ int get_data_length(struct ir_remote *remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
 	lirc_t p1, p2, s1, s2;
-	struct lengths *max_plength, *max_slength;
-	struct lengths *max2_plength, *max2_slength;
+	struct lengths  *max_plength;
+	struct lengths  *max_slength;
+	struct lengths  *max2_plength;
+	struct lengths  *max2_slength;
 
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;

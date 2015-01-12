@@ -339,7 +339,8 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 {
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
 	int found_code, have_code;
-	struct ir_ncode *codes, *found;
+	struct ir_ncode  *codes;
+	struct ir_ncode  *found;
 
 	pre_mask = code_mask = post_mask = 0;
 
@@ -352,7 +353,9 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		post_mask |= remote->ignore_mask & gen_mask(remote->post_data_bits);
 	}
 	if (has_toggle_mask(remote) && remote->toggle_mask_state % 2) {
-		ir_code *affected, mask, mask_bit;
+		ir_code  *affected;
+		ir_code  mask;
+		ir_code  mask_bit;
 		int bit, current_bit;
 
 		affected = &post;
@@ -433,7 +436,8 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 					int sequence_match = 0;
 
 					while (search != codes->current->next) {
-						struct ir_code_node *prev, *next;
+						struct ir_code_node  *prev;
+						struct ir_code_node  *next;
 						int flag = 1;
 
 						prev = NULL;    /* means codes->code */

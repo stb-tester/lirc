@@ -303,7 +303,8 @@ int parseFlags(char *val)
 {
 	const struct flaglist *flaglptr;
 	int flags = 0;
-	char *flag, *help;
+	char  *flag;
+	char  *help;
 
 	flag = help = val;
 	while (flag != NULL) {
@@ -616,7 +617,12 @@ static int remote_bits_cmp(struct ir_remote *r1, struct ir_remote *r2)
  */
 static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 {
-	struct ir_remote *top, *rem, *next, *prev, *scan, *r;
+	struct ir_remote  *top;
+	struct ir_remote  *rem;
+	struct ir_remote  *next;
+	struct ir_remote  *prev;
+	struct ir_remote  *scan;
+	struct ir_remote  *r;
 
 	for (r = remotes; r != NULL && r != (void *)-1; r = r->next)
 		if (r->manual_sort)
@@ -816,9 +822,13 @@ static struct ir_remote *read_all_included(const char *		name,
 static struct ir_remote *
 read_config_recursive(FILE *f, const char *name, int depth)
 {
-	char buf[LINE_LEN + 1], *key, *val, *val2;
+	char buf[LINE_LEN + 1];
+	char *key;
+	char *val;
+	char *val2;
 	int len, argc;
-	struct ir_remote *top_rem = NULL, *rem = NULL;
+	struct ir_remote  *top_rem = NULL;
+	struct ir_remote  *rem = NULL;
 	struct void_array codes_list, raw_codes, signals;
 	struct ir_ncode raw_code = { NULL, 0, 0, NULL };
 	struct ir_ncode name_code = { NULL, 0, 0, NULL };
@@ -1289,7 +1299,8 @@ void free_config(struct ir_remote *remotes)
 		if (remotes->codes != NULL) {
 			codes = remotes->codes;
 			while (codes->name != NULL) {
-				struct ir_code_node *node, *next_node;
+				struct ir_code_node  *node;
+				struct ir_code_node  *next_node;
 
 				free(codes->name);
 				if (codes->signals != NULL)

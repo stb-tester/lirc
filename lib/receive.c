@@ -1108,7 +1108,8 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 	}
 
 	if (is_raw(remote)) {
-		struct ir_ncode *codes, *found;
+		struct ir_ncode  *codes;
+		struct ir_ncode  *found;
 		int i;
 
 		if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE)
