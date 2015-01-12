@@ -50,7 +50,7 @@ typedef uint64_t __u64;
 
 #define CLICK_DELAY 50000       /* usecs */
 #define WHITE_SPACE " \t"
-#define ALL ((char *)(-1))
+#define ALL ((char*)(-1))
 #define CIRCLE 10
 
 #define BUTTONS 3               /* 3 buttons supported */
@@ -80,7 +80,7 @@ static const struct option lircmd_options[] = {
 	{ 0,		  0,		     0,	   0   }
 };
 
-static const char *const help =
+static const char* const help =
 	"Usage: lircmd [options] [config-file]\n"
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n"
@@ -113,7 +113,7 @@ enum directive { move_n, move_ne, move_e, move_se,
 		 mouse_activate, mouse_toggle_activate, ignore };
 
 struct config_mouse {
-	char *		string;
+	char*		string;
 	enum directive	d;
 	int		x, y, z, down, up, toggle;
 };
@@ -148,9 +148,9 @@ struct config_mouse config_table[] = {
 enum protocol { mouse_systems, imps_2, im_serial };
 
 struct trans_mouse {
-	struct trans_mouse *	tm_next;
-	char *			tm_remote;
-	char *			tm_button;
+	struct trans_mouse*	tm_next;
+	char*			tm_remote;
+	char*			tm_button;
 	enum directive		tm_directive;
 } *tm_first = NULL;
 
@@ -172,18 +172,18 @@ struct state_mouse new_ms, ms = {
 };
 
 
-const char *configfile = NULL;
+const char* configfile = NULL;
 
 int lircd = -1;
 int lircm = -1;
 
 sig_atomic_t hup = 0;
 
-struct trans_mouse *read_config(FILE *fd);
+struct trans_mouse* read_config(FILE* fd);
 
-void freetm(struct trans_mouse *tm_all)
+void freetm(struct trans_mouse* tm_all)
 {
-	struct trans_mouse *tm;
+	struct trans_mouse* tm;
 
 	while (tm_all != NULL) {
 		if (tm_all->tm_remote != ALL && tm_all->tm_remote != NULL)
@@ -227,8 +227,8 @@ void sighup(int sig)
 
 void dohup(void)
 {
-	FILE *fd;
-	struct trans_mouse *tm_list;
+	FILE* fd;
+	struct trans_mouse* tm_list;
 
 	fd = fopen(configfile, "r");
 	if (fd == NULL) {
@@ -237,7 +237,7 @@ void dohup(void)
 	}
 	tm_list = read_config(fd);
 	fclose(fd);
-	if (tm_list == (void *)-1) {
+	if (tm_list == (void*)-1) {
 		syslog(LOG_WARNING, "reading of config file failed");
 	} else {
 		freetm(tm_first);
@@ -258,7 +258,7 @@ void daemonize(void)
 }
 
 
-int setup_uinputfd(const char *name)
+int setup_uinputfd(const char* name)
 {
 #if defined(__linux__)
 	int fd;
@@ -500,9 +500,9 @@ void deactivate(void)
 	mouse_circle(CIRCLE, -1, 1);
 }
 
-void mouse_conv(int rep, char *button, char *remote)
+void mouse_conv(int rep, char* button, char* remote)
 {
-	struct trans_mouse *tm;
+	struct trans_mouse* tm;
 	int found = 0;
 
 	tm = tm_first;
@@ -578,24 +578,23 @@ void mouse_conv(int rep, char *button, char *remote)
 		found = 1;
 		tm = tm->tm_next;
 	}
-	if (found == 0) {
+	if (found == 0)
 		if (ms.active == 1 && ms.always_active == 0 && ms.toggle_active == 0)
 			deactivate();
-	}
 }
 
-struct trans_mouse *read_config(FILE *fd)
+struct trans_mouse* read_config(FILE* fd)
 {
 	char buffer[PACKET_SIZE];
-	char  *directives;
-	char  *remote;
-	char  *button;
+	char* directives;
+	char* remote;
+	char* button;
 	enum directive d;
 	int len;
 	int line;
-	struct trans_mouse  *tm_new;
-	struct trans_mouse  *tm_list;
-	struct trans_mouse  *tm_last = NULL;
+	struct trans_mouse* tm_new;
+	struct trans_mouse* tm_list;
+	struct trans_mouse* tm_last = NULL;
 
 	tm_list = NULL;
 	new_ms = ms;
@@ -608,7 +607,7 @@ struct trans_mouse *read_config(FILE *fd)
 		if (len == PACKET_SIZE - 1 && buffer[len - 1] != '\n') {
 			syslog(LOG_ERR, "line %d too long in config file", line);
 			freetm(tm_list);
-			return (void *)-1;
+			return (void*)-1;
 		}
 		if (len > 0) {
 			len--;
@@ -631,7 +630,7 @@ struct trans_mouse *read_config(FILE *fd)
 			continue;
 
 		if (strcasecmp("PROTOCOL", directives) == 0) {
-			char *name;
+			char* name;
 
 			name = strtok(NULL, WHITE_SPACE);
 			if (name != NULL) {
@@ -652,7 +651,7 @@ struct trans_mouse *read_config(FILE *fd)
 		}
 
 		if (strcasecmp("ACCELERATOR", directives) == 0) {
-			char *number;
+			char* number;
 
 			number = strtok(NULL, WHITE_SPACE);
 			if (number != NULL)
@@ -721,7 +720,7 @@ struct trans_mouse *read_config(FILE *fd)
 			if (tm_new != NULL)
 				free(tm_new);
 			free(tm_list);
-			return (void *)-1;
+			return (void*)-1;
 		}
 		tm_new->tm_next = NULL;
 		tm_new->tm_remote = remote;
@@ -746,25 +745,25 @@ static void lircmd_add_defaults(void)
 
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 
-	const char *const defaults[] = {
+	const char* const defaults[] = {
 		"lircmd:nodaemon",   "False",
 		"lircmd:uinput",     "False",
 		"lircmd:configfile", LIRCMDCFGFILE,
 		"lircmd:debug",	     level,
-		(const char *)NULL,  (const char *)NULL
+		(const char*)NULL,   (const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
 
 
-static void lircmd_parse_options(int argc, char **const argv)
+static void lircmd_parse_options(int argc, char** const argv)
 {
 	int c;
 
 #       if defined(__linux__)
-	const char *const optstring = "hvnuO";
+	const char* const optstring = "hvnuO";
 #       else
-	const char *const optstring = "hvnO";
+	const char* const optstring = "hvnO";
 #       endif
 
 	lircmd_add_defaults();
@@ -810,7 +809,7 @@ void loop(void)
 	int rep, ret;
 	char button[PACKET_SIZE + 1];
 	char remote[PACKET_SIZE + 1];
-	char *end;
+	char* end;
 	int end_len = 0;
 	sigset_t block;
 
@@ -847,16 +846,16 @@ void loop(void)
 	}
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	FILE *fd;
+	FILE* fd;
 	struct sigaction act;
 	struct sockaddr_un addr;
 	sigset_t block;
 	int nodaemon = 0;
-	const char *filename;
+	const char* filename;
 	loglevel_t loglevel;
-	const char *level;
+	const char* level;
 
 	options_load(argc, argv, NULL, lircmd_parse_options);
 	useuinput = options_getboolean("lircmd:uinput");
@@ -878,7 +877,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	;
-	if (connect(lircd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+	if (connect(lircd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		fprintf(stderr, "%s: could not connect to socket: %s\n",
 			progname, addr.sun_path);
 		perror(progname);
@@ -933,7 +932,7 @@ int main(int argc, char **argv)
 	configfile = filename;
 	tm_first = read_config(fd);
 	fclose(fd);
-	if (tm_first == (void *)-1) {
+	if (tm_first == (void*)-1) {
 		fprintf(stderr, "%s: reading of config file failed\n", progname);
 		exit(EXIT_FAILURE);
 	} else {

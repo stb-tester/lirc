@@ -86,7 +86,7 @@
 #define WHITE_SPACE " \t"
 
 struct peer_connection {
-	char *		host;
+	char*		host;
 	unsigned short	port;
 	struct timeval	reconnect;
 	int		connection_failure;
@@ -94,7 +94,7 @@ struct peer_connection {
 };
 
 
-static const char *const help =
+static const char* const help =
 	"Usage: lircd [options] <config-file>\n"
 	"\t -h --help\t\t\tDisplay this message\n"
 	"\t -v --version\t\t\tDisplay version\n"
@@ -153,20 +153,20 @@ static const struct option lircd_options[] = {
 
 /* Forwards referenced in directive definition below. */
 
-static int list(int fd, char *message, char *arguments);
-static int set_transmitters(int fd, char *message, char *arguments);
-static int set_inputlog(int fd, char *message, char *arguments);
-static int simulate(int fd, char *message, char *arguments);
-static int send_once(int fd, char *message, char *arguments);
-static int drv_option(int fd, char *message, char *arguments);
-static int send_start(int fd, char *message, char *arguments);
-static int send_stop(int fd, char *message, char *arguments);
-static int send_core(int fd, char *message, char *arguments, int once);
-static int version(int fd, char *message, char *arguments);
+static int list(int fd, char* message, char* arguments);
+static int set_transmitters(int fd, char* message, char* arguments);
+static int set_inputlog(int fd, char* message, char* arguments);
+static int simulate(int fd, char* message, char* arguments);
+static int send_once(int fd, char* message, char* arguments);
+static int drv_option(int fd, char* message, char* arguments);
+static int send_start(int fd, char* message, char* arguments);
+static int send_stop(int fd, char* message, char* arguments);
+static int send_core(int fd, char* message, char* arguments, int once);
+static int version(int fd, char* message, char* arguments);
 
 struct protocol_directive {
-	char *name;
-	int (*function)(int fd, char *message, char *arguments);
+	char*	name;
+	int	(*function)(int fd, char* message, char* arguments);
 };
 
 
@@ -183,20 +183,20 @@ struct protocol_directive {
 #endif
 
 
-extern struct ir_remote *decoding;
-extern char *logfile;
+extern struct ir_remote* decoding;
+extern char* logfile;
 
-static struct ir_remote *remotes;
-static struct ir_remote *free_remotes = NULL;
+static struct ir_remote* remotes;
+static struct ir_remote* free_remotes = NULL;
 
 static int repeat_fd = -1;
-static char *repeat_message = NULL;
+static char* repeat_message = NULL;
 static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 
-static const char *configfile = NULL;
-static FILE *pidf;
-static const char *pidfile = PIDFILE;
-static const char *lircdfile = LIRCD;
+static const char* configfile = NULL;
+static FILE* pidf;
+static const char* pidfile = PIDFILE;
+static const char* lircdfile = LIRCD;
 
 static const struct protocol_directive const directives[] = {
 	{ "LIST",	      list	       },
@@ -236,7 +236,7 @@ static const char* const protocol_string[] = {
 #define HOSTNAME_LEN 128
 static const char hostname[HOSTNAME_LEN + 1];
 
-extern FILE *lf;
+extern FILE* lf;
 
 /* substract one for lirc, sockfd, sockinet, logfile, pidfile, uinput */
 #define MAX_PEERS       ((FD_SETSIZE - 6) / 2)
@@ -261,7 +261,7 @@ static int listen_tcpip = 0;
 static unsigned short int port = LIRC_INET_PORT;
 static struct in_addr address;
 
-static struct peer_connection *peers[MAX_PEERS];
+static struct peer_connection* peers[MAX_PEERS];
 static int peern = 0;
 
 static int daemonized = 0;
@@ -296,10 +296,10 @@ int max(int a, int b)
 #define isodigit(c) ((c) >= '0' && (c) <= '7')
 
 /* Return a positive integer containing the value of the ASCII
- * octal number S.  If S is not an octal number, return -1.  */
+* octal number S.  If S is not an octal number, return -1.  */
 
 static int oatoi(s)
-char *s;
+char* s;
 {
 	register int i;
 
@@ -314,7 +314,7 @@ char *s;
 
 /* A safer write(), since sockets might not write all but only some of the
  * bytes requested */
-int write_socket(int fd, const char *buf, int len)
+int write_socket(int fd, const char* buf, int len)
 {
 	int done, todo = len;
 
@@ -334,7 +334,7 @@ int write_socket(int fd, const char *buf, int len)
 	return len;
 }
 
-int write_socket_len(int fd, const char *buf)
+int write_socket_len(int fd, const char* buf)
 {
 	int len;
 
@@ -344,7 +344,7 @@ int write_socket_len(int fd, const char *buf)
 	return 1;
 }
 
-int read_timeout(int fd, char *buf, int len, int timeout)
+int read_timeout(int fd, char* buf, int len, int timeout)
 {
 	fd_set fds;
 	struct timeval tv;
@@ -507,7 +507,7 @@ static int setup_hardware(void)
 		    || (curr_driver->features & LIRC_CAN_SET_REC_FILTER)) {
 			(void)curr_driver->drvctl_func(LIRC_SETUP_START, NULL);
 			ret = setup_frequency() && setup_timeout()
-				&& setup_filter();
+			      && setup_filter();
 			(void)curr_driver->drvctl_func(LIRC_SETUP_END, NULL);
 		}
 	}
@@ -517,9 +517,9 @@ static int setup_hardware(void)
 
 void config(void)
 {
-	FILE *fd;
-	struct ir_remote *config_remotes;
-	const char *filename = configfile;
+	FILE* fd;
+	struct ir_remote* config_remotes;
+	const char* filename = configfile;
 
 	if (filename == NULL)
 		filename = LIRCDCFGFILE;
@@ -548,7 +548,7 @@ void config(void)
 	configfile = filename;
 	config_remotes = read_config(fd, configfile);
 	fclose(fd);
-	if (config_remotes == (void *)-1) {
+	if (config_remotes == (void*)-1) {
 		logprintf(LIRC_ERROR, "reading of config file failed");
 	} else {
 		LOGPRINTF(1, "config file read");
@@ -697,7 +697,7 @@ void dosighup(int sig)
 	}
 }
 
-int setup_uinputfd(const char *name)
+int setup_uinputfd(const char* name)
 {
 #if defined(__linux__)
 	int fd;
@@ -744,14 +744,14 @@ void nolinger(int sock)
 	static struct linger linger = { 0, 0 };
 	int lsize = sizeof(struct linger);
 
-	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *)&linger, lsize);
+	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void*)&linger, lsize);
 }
 
 
 void drop_privileges(void)
 {
-	const char *user;
-	struct passwd *pw;
+	const char* user;
+	struct passwd* pw;
 	int r;
 
 	if (getuid() != 0)
@@ -783,7 +783,7 @@ void add_client(int sock)
 	int flags;
 
 	clilen = sizeof(client_addr);
-	fd = accept(sock, (struct sockaddr *)&client_addr, &clilen);
+	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
 		logprintf(LIRC_ERROR, "accept() failed for new client");
 		logperror(LIRC_ERROR, NULL);
@@ -807,7 +807,7 @@ void add_client(int sock)
 	} else if (client_addr.sa_family == AF_INET) {
 		cli_type[clin] = CT_REMOTE;
 		logprintf(LIRC_NOTICE, "accepted new client from %s",
-			  inet_ntoa(((struct sockaddr_in *)&client_addr)->sin_addr));
+			  inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
 	} else {
 		cli_type[clin] = 0;     /* what? */
 	}
@@ -816,11 +816,11 @@ void add_client(int sock)
 		if (curr_driver->init_func) {
 			if (!curr_driver->init_func())
 				logprintf(LIRC_WARNING, "Failed to initialize hardware");
-				/* Don't exit here, otherwise lirc
-				 * bails out, and lircd exits, making
-				 * it impossible to connect to when we
-				 * have a device actually plugged
-				 * in. */
+			/* Don't exit here, otherwise lirc
+			 * bails out, and lircd exits, making
+			 * it impossible to connect to when we
+			 * have a device actually plugged
+			 * in. */
 			else
 				setup_hardware();
 		}
@@ -828,11 +828,10 @@ void add_client(int sock)
 	clin++;
 }
 
-
-int add_peer_connection(const char *server)
+int add_peer_connection(const char* server)
 {
-	char *sep;
-	struct servent *service;
+	char* sep;
+	struct servent* service;
 
 	if (peern < MAX_PEERS) {
 		peers[peern] = malloc(sizeof(struct peer_connection));
@@ -849,7 +848,7 @@ int add_peer_connection(const char *server)
 					peers[peern]->port = ntohs(service->s_port);
 				} else {
 					long p;
-					char *endptr;
+					char* endptr;
 
 					p = strtol(sep, &endptr, 10);
 					if (!*sep || *endptr || p < 1 || p > USHRT_MAX) {
@@ -880,7 +879,7 @@ int add_peer_connection(const char *server)
 void connect_to_peers(void)
 {
 	int i;
-	struct hostent *host;
+	struct hostent* host;
 	struct sockaddr_in addr;
 	struct timeval now;
 	int enable = 1;
@@ -906,9 +905,9 @@ void connect_to_peers(void)
 			(void)setsockopt(peers[i]->socket, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
 
 			addr.sin_family = host->h_addrtype;
-			addr.sin_addr = *((struct in_addr *)host->h_addr);
+			addr.sin_addr = *((struct in_addr*)host->h_addr);
 			addr.sin_port = htons(peers[i]->port);
-			if (connect(peers[i]->socket, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+			if (connect(peers[i]->socket, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 				logprintf(LIRC_ERROR, "failure connecting to %s", peers[i]->host);
 				logperror(LIRC_ERROR, NULL);
 				peers[i]->connection_failure++;
@@ -924,11 +923,11 @@ void connect_to_peers(void)
 	}
 }
 
-int get_peer_message(struct peer_connection *peer)
+int get_peer_message(struct peer_connection* peer)
 {
 	int length;
 	char buffer[PACKET_SIZE + 1];
-	char *end;
+	char* end;
 	int i;
 
 	length = read_timeout(peer->socket, buffer, PACKET_SIZE, 0);
@@ -980,7 +979,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	fd = open(pidfile, O_RDWR | O_CREAT, 0644);
 	if (fd > 0)
 		pidf = fdopen(fd, "r+");
-	if (fd  == -1 || pidf == NULL) {
+	if (fd == -1 || pidf == NULL) {
 		fprintf(stderr, "%s: can't open or create %s\n", progname, pidfile);
 		perror(progname);
 		exit(EXIT_FAILURE);
@@ -1049,7 +1048,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 
 		serv_addr.sun_family = AF_UNIX;
 		strcpy(serv_addr.sun_path, lircdfile);
-		if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
+		if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
 			fprintf(stderr, "%s: could not assign address to socket\n", progname);
 			perror(progname);
 			goto start_server_failed1;
@@ -1085,7 +1084,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		serv_addr_in.sin_addr = address;
 		serv_addr_in.sin_port = htons(port);
 
-		if (bind(sockinet, (struct sockaddr *)&serv_addr_in, sizeof(serv_addr_in)) == -1) {
+		if (bind(sockinet, (struct sockaddr*)&serv_addr_in, sizeof(serv_addr_in)) == -1) {
 			fprintf(stderr, "%s: could not assign address to socket\n", progname);
 			perror(progname);
 			goto start_server_failed2;
@@ -1126,7 +1125,7 @@ void daemonize(void)
 }
 
 
-int send_success(int fd, char *message)
+int send_success(int fd, char* message)
 {
 	logprintf(LIRC_DEBUG, "Sending success");
 	if (!
@@ -1137,14 +1136,14 @@ int send_success(int fd, char *message)
 }
 
 
-int send_error(int fd, char *message, char *format_str, ...)
+int send_error(int fd, char* message, char* format_str, ...)
 {
 	logprintf(LIRC_DEBUG, "Sending error");
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
-	char  *s1;
-	char  *s2;
+	char* s1;
+	char* s2;
 
 	va_start(ap, format_str);
 	vsprintf(buffer, format_str, ap);
@@ -1232,13 +1231,13 @@ void dosigalrm(int sig)
 }
 
 
-int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, struct ir_ncode **code, int *reps,
-	     int n, int *err)
+int parse_rc(int fd, char* message, char* arguments, struct ir_remote** remote, struct ir_ncode** code, int* reps,
+	     int n, int* err)
 {
-	char  *name = NULL;
-	char  *command = NULL;
-	char  *repeats;
-	char  *end_ptr = NULL;
+	char* name = NULL;
+	char* command = NULL;
+	char* repeats;
+	char* end_ptr = NULL;
 
 	*remote = NULL;
 	*code = NULL;
@@ -1283,10 +1282,10 @@ arg_check:
 }
 
 
-int send_remote_list(int fd, char *message)
+int send_remote_list(int fd, char* message)
 {
 	char buffer[PACKET_SIZE + 1];
-	struct ir_remote *all;
+	struct ir_remote* all;
 	int n, len;
 
 	n = 0;
@@ -1320,9 +1319,9 @@ int send_remote_list(int fd, char *message)
 	return write_socket_len(fd, protocol_string[P_END]);
 }
 
-int send_remote(int fd, char *message, struct ir_remote *remote)
+int send_remote(int fd, char* message, struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	char buffer[PACKET_SIZE + 1];
 	int n, len;
 
@@ -1357,7 +1356,7 @@ int send_remote(int fd, char *message, struct ir_remote *remote)
 	return write_socket_len(fd, protocol_string[P_END]);
 }
 
-int send_name(int fd, char *message, struct ir_ncode *code)
+int send_name(int fd, char* message, struct ir_ncode* code)
 {
 	char buffer[PACKET_SIZE + 1];
 	int len;
@@ -1374,10 +1373,10 @@ int send_name(int fd, char *message, struct ir_ncode *code)
 	return write_socket_len(fd, protocol_string[P_END]);
 }
 
-static int list(int fd, char *message, char *arguments)
+static int list(int fd, char* message, char* arguments)
 {
-	struct ir_remote *remote;
-	struct ir_ncode *code;
+	struct ir_remote* remote;
+	struct ir_ncode* code;
 	int err;
 
 	if (parse_rc(fd, message, arguments, &remote, &code, NULL, 0, &err) == 0)
@@ -1392,10 +1391,10 @@ static int list(int fd, char *message, char *arguments)
 	return send_name(fd, message, code);
 }
 
-static int set_transmitters(int fd, char *message, char *arguments)
+static int set_transmitters(int fd, char* message, char* arguments)
 {
-	char  *next_arg = NULL;
-	char  *end_ptr;
+	char* next_arg = NULL;
+	char* end_ptr;
 	__u32 next_tx_int = 0;
 	__u32 next_tx_hex = 0;
 	__u32 channels = 0;
@@ -1436,7 +1435,7 @@ string_error:
 }
 
 
-void broadcast_message(const char *message)
+void broadcast_message(const char* message)
 {
 	int len, i;
 
@@ -1452,12 +1451,12 @@ void broadcast_message(const char *message)
 }
 
 
-static int simulate(int fd, char *message, char *arguments)
+static int simulate(int fd, char* message, char* arguments)
 {
 	int i;
-	char  *sim;
-	char  *s;
-	char  *space;
+	char* sim;
+	char* s;
+	char* space;
 
 	logprintf(LIRC_DEBUG, "simulate: enter");
 
@@ -1500,20 +1499,20 @@ simulate_invalid_event:
 	return send_error(fd, message, "invalid event\n");
 }
 
-static int send_once(int fd, char *message, char *arguments)
+static int send_once(int fd, char* message, char* arguments)
 {
 	return send_core(fd, message, arguments, 1);
 }
 
-static int send_start(int fd, char *message, char *arguments)
+static int send_start(int fd, char* message, char* arguments)
 {
 	return send_core(fd, message, arguments, 0);
 }
 
-static int send_core(int fd, char *message, char *arguments, int once)
+static int send_core(int fd, char* message, char* arguments, int once)
 {
-	struct ir_remote *remote;
-	struct ir_ncode *code;
+	struct ir_remote* remote;
+	struct ir_ncode* code;
 	struct itimerval repeat_timer;
 	int reps;
 	int err;
@@ -1576,10 +1575,10 @@ static int send_core(int fd, char *message, char *arguments, int once)
 	}
 }
 
-static int send_stop(int fd, char *message, char *arguments)
+static int send_stop(int fd, char* message, char* arguments)
 {
-	struct ir_remote *remote;
-	struct ir_ncode *code;
+	struct ir_remote* remote;
+	struct ir_ncode* code;
 	struct itimerval repeat_timer;
 	int err;
 
@@ -1621,7 +1620,7 @@ static int send_stop(int fd, char *message, char *arguments)
 }
 
 
-static int version(int fd, char *message, char *arguments)
+static int version(int fd, char* message, char* arguments)
 {
 	char buffer[PACKET_SIZE + 1];
 
@@ -1637,7 +1636,7 @@ static int version(int fd, char *message, char *arguments)
 }
 
 
-static int drv_option(int fd, char *message, char *arguments)
+static int drv_option(int fd, char* message, char* arguments)
 {
 	struct option_t option;
 	int r;
@@ -1648,7 +1647,7 @@ static int drv_option(int fd, char *message, char *arguments)
 				  "Illegal argument (protocol error): %s",
 				  arguments);
 	}
-	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void *)&option);
+	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*)&option);
 	if (r != 0) {
 		logprintf(LIRC_WARNING, "Cannot set driver option");
 		return send_error(fd, message,
@@ -1658,10 +1657,10 @@ static int drv_option(int fd, char *message, char *arguments)
 }
 
 
-static int set_inputlog(int fd, char *message, char *arguments)
+static int set_inputlog(int fd, char* message, char* arguments)
 {
 	char buff[128];
-	FILE *f;
+	FILE* f;
 	int r;
 
 	r = sscanf(arguments, "%128s", buff);
@@ -1691,9 +1690,9 @@ int get_command(int fd)
 {
 	int length;
 	char buffer[PACKET_SIZE + 1], backup[PACKET_SIZE + 1];
-	char *end;
+	char* end;
 	int packet_length, i;
-	char *directive;
+	char* directive;
 
 	length = read_timeout(fd, buffer, PACKET_SIZE, 0);
 	packet_length = 0;
@@ -1758,11 +1757,11 @@ skip:
 	return 1;
 }
 
-void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release)
+void input_message(const char* message, const char* remote_name, const char* button_name, int reps, int release)
 {
-	const char *release_message;
-	const char *release_remote_name;
-	const char *release_button_name;
+	const char* release_message;
+	const char* release_remote_name;
+	const char* release_button_name;
 
 	release_message = check_release_event(&release_remote_name, &release_button_name);
 	if (release_message)
@@ -1811,12 +1810,12 @@ void input_message(const char *message, const char *remote_name, const char *but
 
 void free_old_remotes(void)
 {
-	struct ir_remote  *scan_remotes;
-	struct ir_remote  *found;
-	struct ir_ncode *code;
-	const char *release_event;
-	const char *release_remote_name;
-	const char *release_button_name;
+	struct ir_remote* scan_remotes;
+	struct ir_remote* found;
+	struct ir_ncode* code;
+	const char* release_event;
+	const char* release_remote_name;
+	const char* release_button_name;
 
 	if (decoding == free_remotes)
 		return;
@@ -1908,7 +1907,7 @@ static int mywaitfordata(long maxusec)
 			/* handle signals */
 			if (term)
 				dosigterm(termsig);
-				/* never reached */
+			/* never reached */
 			if (hup) {
 				dosighup(SIGHUP);
 				hup = 0;
@@ -1975,7 +1974,7 @@ static int mywaitfordata(long maxusec)
 
 				if (timercmp(&tv, &timeout, >)
 				    || (!reconnect && !timerisset(&tv)))
-						tv = timeout;
+					tv = timeout;
 			}
 			get_release_time(&release_time);
 			if (timerisset(&release_time)) {
@@ -1987,9 +1986,9 @@ static int mywaitfordata(long maxusec)
 
 					timersub(&release_time, &now, &gap);
 					if (!(timerisset(&tv)
-					    || reconnect)
+					      || reconnect)
 					    || timercmp(&tv, &gap, >))
-							tv = gap;
+						tv = gap;
 				}
 			}
 #ifdef SIM_REC
@@ -2009,18 +2008,19 @@ static int mywaitfordata(long maxusec)
 			}
 			gettimeofday(&now, NULL);
 			if (timerisset(&release_time) && timercmp(&now, &release_time, >)) {
-				const char *release_message;
-				const char *release_remote_name;
-				const char *release_button_name;
+				const char* release_message;
+				const char* release_remote_name;
+				const char* release_button_name;
 
 				release_message =
 					trigger_release_event(&release_remote_name,
 							      &release_button_name);
-				if (release_message)
+				if (release_message) {
 					input_message(release_message,
 						      release_remote_name,
 						      release_button_name,
 						      0, 1);
+				}
 			}
 			if (free_remotes != NULL)
 				free_old_remotes();
@@ -2030,7 +2030,6 @@ static int mywaitfordata(long maxusec)
 				if (time_elapsed(&start, &now) >= maxusec)
 					return 0;
 				maxusec -= time_elapsed(&start, &now);
-
 			}
 			if (reconnect)
 				connect_to_peers();
@@ -2076,16 +2075,16 @@ static int mywaitfordata(long maxusec)
 		if (use_hw() && curr_driver->rec_mode != 0
 		    && curr_driver->fd != -1
 		    && FD_ISSET(curr_driver->fd, &fds)) {
-				register_input();
-				/* we will read later */
-				return 1;
+			register_input();
+			/* we will read later */
+			return 1;
 		}
 	}
 }
 
 void loop(void)
 {
-	char *message;
+	char* message;
 
 	logprintf(LIRC_NOTICE, "lircd(%s) ready, using %s", curr_driver->name, lircdfile);
 	while (1) {
@@ -2095,8 +2094,8 @@ void loop(void)
 		message = curr_driver->rec_func(remotes);
 
 		if (message != NULL) {
-			const char *remote_name;
-			const char *button_name;
+			const char* remote_name;
+			const char* button_name;
 			int reps;
 
 			if (curr_driver->drvctl_func && (curr_driver->features & LIRC_CAN_NOTIFY_DECODE))
@@ -2110,15 +2109,15 @@ void loop(void)
 }
 
 
-static int opt2host_port(const char *		optarg,
-			 struct in_addr *	address,
-			 unsigned short *	port,
-			 char *			errmsg)
+static int opt2host_port(const char*		optarg,
+			 struct in_addr*	address,
+			 unsigned short*	port,
+			 char*			errmsg)
 {
 	long p;
-	char *endptr;
-	char *sep = strchr(optarg, ':');
-	const char *port_str = sep ? sep + 1 : optarg;
+	char* endptr;
+	char* sep = strchr(optarg, ':');
+	const char* port_str = sep ? sep + 1 : optarg;
 
 	p = strtol(port_str, &endptr, 10);
 	if (!*optarg || *endptr || p < 1 || p > USHRT_MAX) {
@@ -2150,14 +2149,14 @@ static void lircd_add_defaults(void)
 		"lircd:permission",	DEFAULT_PERMISSIONS,
 		"lircd:driver",		"default",
 		"lircd:device",		NULL,
-		"lircd:listen",		NULL ,
+		"lircd:listen",		NULL,
 		"lircd:connect",	NULL,
 		"lircd:output",		LIRCD,
 		"lircd:pidfile",	PIDFILE,
 		"lircd:logfile",	"syslog",
-		"lircd:debug", 		level,
+		"lircd:debug",		level,
 		"lircd:release",	NULL,
-		"lircd:allow-simulate", "False",
+		"lircd:allow-simulate",	"False",
 		"lircd:dynamic-codes",	"False",
 		"lircd:plugindir",	PLUGINDIR,
 		"lircd:uinput",		"False",
@@ -2166,7 +2165,7 @@ static void lircd_add_defaults(void)
 		"lircd:driver-options",	"",
 		"lircd:effective-user",	"",
 
-		(const char *)NULL,	(const char *)NULL
+		(const char*)NULL,	(const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
@@ -2192,7 +2191,7 @@ int parse_peer_connections(const char* opt)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char *optstring = "A:e:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
+	const char* optstring = "A:e:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 				"u"
 #       endif
@@ -2295,13 +2294,13 @@ static void lircd_parse_options(int argc, char** const argv)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	struct sigaction act;
 	mode_t permission;
-	const char *device = NULL;
+	const char* device = NULL;
 	char errmsg[128];
-	const char *opt;
+	const char* opt;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
@@ -2328,13 +2327,13 @@ int main(int argc, char **argv)
 	opt = options_getstring("lircd:driver");
 	if (strcmp(opt, "help") == 0 || strcmp(opt, "?") == 0) {
 		hw_print_drivers(stdout);
-		return(EXIT_SUCCESS);
+		return EXIT_SUCCESS;
 	}
 	if (hw_choose_driver(opt) != 0) {
 		fprintf(stderr, "Driver `%s' not found", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		hw_print_drivers(stderr);
-		return(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	curr_driver->open_func(device);
 	opt = options_getstring("lircd:driver-options");
@@ -2415,8 +2414,8 @@ int main(int argc, char **argv)
 
 #if defined(SIM_SEND)
 	{
-		struct ir_remote *r;
-		struct ir_ncode *c;
+		struct ir_remote* r;
+		struct ir_ncode* c;
 
 		if (curr_driver->init_func)
 			if (!curr_driver->init_func())

@@ -38,34 +38,34 @@
 #define WHITE_SPACE " \t"
 
 struct config_info {
-	char *			config_string;
-	struct config_info *	next;
+	char*			config_string;
+	struct config_info*	next;
 };
 
 struct event_info {
-	char *			code;
-	struct config_info *	first;
-	struct event_info *	next;
+	char*			code;
+	struct config_info*	first;
+	struct event_info*	next;
 };
 
 struct client_data {
 	int			fd;
-	char *			ident_string;
-	struct event_info *	first_event;
-	char *			pending_code;
+	char*			ident_string;
+	struct event_info*	first_event;
+	char*			pending_code;
 };
 
 struct protocol_directive {
-	char *name;
-	int (*function)(int fd, char *message, char *arguments);
+	char*	name;
+	int	(*function)(int fd, char* message, char* arguments);
 };
 
-static int code_func(int fd, char *message, char *arguments);
-static int ident_func(int fd, char *message, char *arguments);
-static int getmode_func(int fd, char *message, char *arguments);
-static int setmode_func(int fd, char *message, char *arguments);
-static int send_result(int fd, char *message, const char *result);
-static int send_success(int fd, char *message);
+static int code_func(int fd, char* message, char* arguments);
+static int ident_func(int fd, char* message, char* arguments);
+static int getmode_func(int fd, char* message, char* arguments);
+static int setmode_func(int fd, char* message, char* arguments);
+static int send_result(int fd, char* message, const char* result);
+static int send_success(int fd, char* message);
 
 struct protocol_directive directives[] = {
 	{ "CODE",    code_func	  },
@@ -88,7 +88,7 @@ enum protocol_string_num {
 	P_SIGHUP
 };
 
-char *protocol_string[] = {
+char* protocol_string[] = {
 	"BEGIN\n",
 	"DATA\n",
 	"END\n",
@@ -105,9 +105,9 @@ static struct client_data clis[MAX_CLIENTS];
 
 static int daemonized = 0;
 
-static struct lirc_config *config;
+static struct lirc_config* config;
 
-static int send_error(int fd, char *message, char *format_str, ...);
+static int send_error(int fd, char* message, char* format_str, ...);
 static int handle_input(void);
 
 static inline int max(int a, int b)
@@ -131,10 +131,10 @@ static int get_client_index(int fd)
 #define isodigit(c) ((c) >= '0' && (c) <= '7')
 
 /* Return a positive integer containing the value of the ASCII
- * octal number S.  If S is not an octal number, return -1.  */
+* octal number S.  If S is not an octal number, return -1.  */
 
 static int oatoi(s)
-char *s;
+char* s;
 {
 	register int i;
 
@@ -149,7 +149,7 @@ char *s;
 
 /* A safer write(), since sockets might not write all but only some of the
  * bytes requested */
-inline int write_socket(int fd, char *buf, int len)
+inline int write_socket(int fd, char* buf, int len)
 {
 	int done, todo = len;
 
@@ -163,7 +163,7 @@ inline int write_socket(int fd, char *buf, int len)
 	return len;
 }
 
-inline int write_socket_len(int fd, char *buf)
+inline int write_socket_len(int fd, char* buf)
 {
 	int len;
 
@@ -173,7 +173,7 @@ inline int write_socket_len(int fd, char *buf)
 	return 1;
 }
 
-inline int read_timeout(int fd, char *buf, int len, int timeout)
+inline int read_timeout(int fd, char* buf, int len, int timeout)
 {
 	fd_set fds;
 	struct timeval tv;
@@ -229,12 +229,12 @@ static void nolinger(int sock)
 	static struct linger linger = { 0, 0 };
 	int lsize = sizeof(struct linger);
 
-	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *)&linger, lsize);
+	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void*)&linger, lsize);
 }
 
-static void free_config_info(struct config_info *ci)
+static void free_config_info(struct config_info* ci)
 {
-	struct config_info *next;
+	struct config_info* next;
 
 	while (ci != NULL) {
 		if (ci->config_string != NULL)
@@ -246,9 +246,9 @@ static void free_config_info(struct config_info *ci)
 	}
 }
 
-static void free_event_info(struct event_info *ei)
+static void free_event_info(struct event_info* ei)
 {
-	struct event_info *next;
+	struct event_info* next;
 
 	while (ei != NULL) {
 		if (ei->code != NULL)
@@ -287,7 +287,7 @@ void add_client(int sock)
 	int flags;
 
 	clilen = sizeof(client_addr);
-	fd = accept(sock, (struct sockaddr *)&client_addr, &clilen);
+	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
 		logprintf(LIRC_ERROR, "accept() failed for new client");
 		logperror(LIRC_ERROR, "");
@@ -313,7 +313,7 @@ void add_client(int sock)
 	clin++;
 }
 
-static int opensocket(const char *socket_id, const char *socketname, mode_t permission, struct sockaddr_un *addr)
+static int opensocket(const char* socket_id, const char* socketname, mode_t permission, struct sockaddr_un* addr)
 {
 	int sockfd;
 	struct stat s;
@@ -362,7 +362,7 @@ static int opensocket(const char *socket_id, const char *socketname, mode_t perm
 	}
 
 	addr->sun_family = AF_UNIX;
-	if (bind(sockfd, (struct sockaddr *)addr, sizeof(*addr)) == -1) {
+	if (bind(sockfd, (struct sockaddr*)addr, sizeof(*addr)) == -1) {
 		fprintf(stderr, "%s: could not assign address to socket\n", progname);
 		perror(progname);
 		goto opensocket_failed;
@@ -387,11 +387,11 @@ opensocket_failed:
 	return -1;
 }
 
-static int code_func(int fd, char *message, char *arguments)
+static int code_func(int fd, char* message, char* arguments)
 {
 	int index;
-	struct event_info *ei;
-	struct config_info *ci;
+	struct event_info* ei;
+	struct config_info* ci;
 	int ret;
 
 	if (arguments == NULL)
@@ -432,7 +432,7 @@ static int code_func(int fd, char *message, char *arguments)
 	return 1;
 }
 
-static int ident_func(int fd, char *message, char *arguments)
+static int ident_func(int fd, char* message, char* arguments)
 {
 	int index;
 
@@ -450,7 +450,7 @@ static int ident_func(int fd, char *message, char *arguments)
 	return send_success(fd, message);
 }
 
-static int getmode_func(int fd, char *message, char *arguments)
+static int getmode_func(int fd, char* message, char* arguments)
 {
 	if (arguments != NULL)
 		return send_error(fd, message, "protocol error\n");
@@ -460,9 +460,9 @@ static int getmode_func(int fd, char *message, char *arguments)
 	return send_success(fd, message);
 }
 
-static int setmode_func(int fd, char *message, char *arguments)
+static int setmode_func(int fd, char* message, char* arguments)
 {
-	const char *mode = NULL;
+	const char* mode = NULL;
 
 	LOGPRINTF(2, arguments != NULL ? "SETMODE %s" : "SETMODE", arguments);
 	mode = lirc_setmode(config, arguments);
@@ -471,9 +471,9 @@ static int setmode_func(int fd, char *message, char *arguments)
 	return arguments == NULL ? send_success(fd, message) : send_error(fd, message, "out of memory\n");
 }
 
-static int send_result(int fd, char *message, const char *result)
+static int send_result(int fd, char* message, const char* result)
 {
-	char *count = "1\n";
+	char* count = "1\n";
 	char buffer[strlen(result) + 1 + 1];
 
 	sprintf(buffer, "%s\n", result);
@@ -488,7 +488,7 @@ static int send_result(int fd, char *message, const char *result)
 	return 1;
 }
 
-static int send_success(int fd, char *message)
+static int send_success(int fd, char* message)
 {
 	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
 	      write_socket_len(fd, message) &&
@@ -497,13 +497,13 @@ static int send_success(int fd, char *message)
 	return 1;
 }
 
-static int send_error(int fd, char *message, char *format_str, ...)
+static int send_error(int fd, char* message, char* format_str, ...)
 {
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
-	char  *s1;
-	char  *s2;
+	char* s1;
+	char* s2;
 
 	va_start(ap, format_str);
 	vsprintf(buffer, format_str, ap);
@@ -543,9 +543,9 @@ static int get_command(int fd)
 {
 	int length;
 	char buffer[PACKET_SIZE + 1], backup[PACKET_SIZE + 1];
-	char *end;
+	char* end;
 	int packet_length, i;
-	char *directive;
+	char* directive;
 
 	length = read_timeout(fd, buffer, PACKET_SIZE, 0);
 	packet_length = 0;
@@ -664,11 +664,11 @@ static void loop(int sockfd, int lircdfd)
 	}
 }
 
-static int schedule(int index, char *config_string)
+static int schedule(int index, char* config_string)
 {
-	struct event_info *e;
-	struct config_info  *c;
-	struct config_info  *n;
+	struct event_info* e;
+	struct config_info* c;
+	struct config_info* n;
 
 	LOGPRINTF(2, "schedule(%s): -%s-", clis[index].ident_string, config_string);
 
@@ -702,12 +702,12 @@ static int schedule(int index, char *config_string)
 
 static int handle_input(void)
 {
-	char *code;
-	char *config_string;
-	char *prog;
+	char* code;
+	char* config_string;
+	char* prog;
 	int ret;
-	struct event_info  *e;
-	struct event_info  *n;
+	struct event_info* e;
+	struct event_info* n;
 	int i;
 
 	LOGPRINTF(1, "input from lircd");
@@ -748,16 +748,15 @@ static int handle_input(void)
 
 		LOGPRINTF(3, "%s: -%s-", prog, config_string);
 		for (i = 0; i < clin; i++) {
-			if (strcmp(prog, clis[i].ident_string) == 0) {
+			if (strcmp(prog, clis[i].ident_string) == 0)
 				if (!schedule(i, config_string))
 					return 0;
-			}
 		}
 	}
 	for (i = 0; i < clin; i++) {
 		if (clis[i].pending_code != NULL) {
 			char message[strlen(clis[i].pending_code) + 1];
-			char *backup;
+			char* backup;
 
 			LOGPRINTF(3, "pending_code(%s): -%s-", clis[i].ident_string, clis[i].pending_code);
 			backup = clis[i].pending_code;
@@ -773,10 +772,10 @@ static int handle_input(void)
 	return 1;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	char *configfile;
-	const char *socketfile = NULL;
+	char* configfile;
+	const char* socketfile = NULL;
 	mode_t permission = S_IRUSR | S_IWUSR;
 	int socket;
 	int lircdfd;
