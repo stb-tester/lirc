@@ -24,36 +24,36 @@ bin_PROGRAMS            = irw irpty irexec ircat mode2 irsend lirc-lsremotes \
                           irtestcase irsimsend irsimreceive irrecord @x_progs@
 
 ## Simple programs
-irw_SOURCES             = irw.c
-irpty_SOURCES           = irpty.c
+irw_SOURCES             = irw.cpp
+irpty_SOURCES           = irpty.cpp
 irpty_LDADD             = @forkpty@ -lpthread $(LIRC_LIBS)
-irexec_SOURCES          = irexec.c
+irexec_SOURCES          = irexec.cpp
 irexec_LDADD            = @daemon@ $(LIRC_LIBS)
-ircat_SOURCES           = ircat.c
+ircat_SOURCES           = ircat.cpp
 ircat_LDADD             = $(LIRC_LIBS)
-irrecord_SOURCES        = irrecord-ui.c
+irrecord_SOURCES        = irrecord-ui.cpp
 irrecord_LDADD          = $(LIRC_LIBS)  ../lib/libirrecord.la
-irsimsend_SOURCES       = irsimsend.c
+irsimsend_SOURCES       = irsimsend.cpp
 irsimsend_LDADD         = $(LIRC_LIBS)
-irsimreceive_SOURCES    = irsimreceive.c
+irsimreceive_SOURCES    = irsimreceive.cpp
 irsimreceive_LDADD      = $(LIRC_LIBS)
-mode2_SOURCES           = mode2.c
+mode2_SOURCES           = mode2.cpp
 mode2_LDADD             = $(LIRC_LIBS)
-irtestcase_SOURCES      = irtestcase.c
+irtestcase_SOURCES      = irtestcase.cpp
 irtestcase_LDADD        = $(LIRC_LIBS)
-irsend_SOURCES          = irsend.c
+irsend_SOURCES          = irsend.cpp
 irsend_LDADD            = $(LIRC_LIBS)
-lirc_lsplugins_SOURCES  = lirc-lsplugins.c
+lirc_lsplugins_SOURCES  = lirc-lsplugins.cpp
 lirc_lsplugins_LDADD    = $(LIRC_LIBS)
-lirc_lsremotes_SOURCES  = lirc-lsremotes.c
+lirc_lsremotes_SOURCES  = lirc-lsremotes.cpp
 lirc_lsremotes_LDADD    = $(LIRC_LIBS)
 
 
 ## X programs
-irxevent_SOURCES        = irxevent.c
+irxevent_SOURCES        = irxevent.cpp
 irxevent_LDADD          = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
-xmode2_SOURCES          = xmode2.c
+xmode2_SOURCES          = xmode2.cpp
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 

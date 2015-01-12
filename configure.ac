@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
 AC_INIT([lirc], [0.9.3-devel])
-AC_CONFIG_SRCDIR([daemons/lircd.c])
+AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE
@@ -14,6 +14,7 @@ CFLAGS="${CFLAGS--O2 -g -Wall}"
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
