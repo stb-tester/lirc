@@ -183,8 +183,6 @@ struct protocol_directive {
 #endif
 
 
-extern struct ir_remote* decoding;
-
 static struct ir_remote* remotes;
 static struct ir_remote* free_remotes = NULL;
 
@@ -1802,7 +1800,7 @@ void free_old_remotes(void)
 	const char* release_remote_name;
 	const char* release_button_name;
 
-	if (decoding == free_remotes)
+	if (get_decoding() == free_remotes)
 		return;
 
 	release_event = release_map_remotes(free_remotes, remotes, &release_remote_name, &release_button_name);
@@ -1871,7 +1869,7 @@ void free_old_remotes(void)
 			}
 		}
 	}
-	if (found == NULL && decoding != free_remotes) {
+	if (found == NULL && get_decoding() != free_remotes) {
 		free_config(free_remotes);
 		free_remotes = NULL;
 	} else {
