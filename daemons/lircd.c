@@ -122,7 +122,6 @@ static const char *const help =
 	"\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
 
 
-
 static const struct option lircd_options[] = {
 	{ "help",	    no_argument,       NULL, 'h' },
 	{ "version",	    no_argument,       NULL, 'v' },
@@ -152,57 +151,24 @@ static const struct option lircd_options[] = {
 };
 
 
-void sigterm(int sig);
-void dosigterm(int sig);
-void sighup(int sig);
-void dosighup(int sig);
-int setup_uinput(const char *name);
-void config(void);
-void nolinger(int sock);
-void remove_client(int fd);
-void add_client(int);
-int add_peer_connection(const char *server);
-void connect_to_peers(void);
-int get_peer_message(struct peer_connection *peer);
-void start_server(mode_t permission, int nodaemon, loglevel_t loglevel);
+/* Forwards referenced in directive definition below. */
 
-
-void daemonize(void);
-void sigalrm(int sig);
-void dosigalrm(int sig);
-int parse_rc(int fd,
-	     char *message, char *arguments,
-	     struct ir_remote **remote,
-	     struct ir_ncode **code,
-	     int *reps, int n, int *err);
-int send_success(int fd, char *message);
-int send_error(int fd, char *message, char *format_str, ...);
-int send_remote_list(int fd, char *message);
-int send_remote(int fd, char *message, struct ir_remote *remote);
-int send_name(int fd, char *message, struct ir_ncode *code);
-int list(int fd, char *message, char *arguments);
-int set_transmitters(int fd, char *message, char *arguments);
-int set_inputlog(int fd, char *message, char *arguments);
-int simulate(int fd, char *message, char *arguments);
-int send_once(int fd, char *message, char *arguments);
-int drv_option(int fd, char *message, char *arguments);
-int send_start(int fd, char *message, char *arguments);
-int send_stop(int fd, char *message, char *arguments);
-int send_core(int fd, char *message, char *arguments, int once);
-int version(int fd, char *message, char *arguments);
-int get_pid(int fd, char *message, char *arguments);
-int get_command(int fd);
-void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release);
-void broadcast_message(const char *message);
-static int mywaitfordata(long maxusec);
-void loop(void);
+static int list(int fd, char *message, char *arguments);
+static int set_transmitters(int fd, char *message, char *arguments);
+static int set_inputlog(int fd, char *message, char *arguments);
+static int simulate(int fd, char *message, char *arguments);
+static int send_once(int fd, char *message, char *arguments);
+static int drv_option(int fd, char *message, char *arguments);
+static int send_start(int fd, char *message, char *arguments);
+static int send_stop(int fd, char *message, char *arguments);
+static int send_core(int fd, char *message, char *arguments, int once);
+static int version(int fd, char *message, char *arguments);
 
 struct protocol_directive {
 	char *name;
 	int (*function)(int fd, char *message, char *arguments);
 };
 
-/* ////////////////////////////////// end lircd.h ///////////////////// */
 
 #ifndef timersub
 #define timersub(a, b, result)                                            \
@@ -217,20 +183,17 @@ struct protocol_directive {
 #endif
 
 
+extern struct ir_remote *decoding;
+extern char *logfile;
+
 static struct ir_remote *remotes;
 static struct ir_remote *free_remotes = NULL;
-
-extern struct ir_remote *decoding;
 
 static int repeat_fd = -1;
 static char *repeat_message = NULL;
 static __u32 repeat_max = REPEAT_MAX_DEFAULT;
 
-extern struct driver hw;
-
 static const char *configfile = NULL;
-extern char *logfile;
-extern const char *syslogident;
 static FILE *pidf;
 static const char *pidfile = PIDFILE;
 static const char *lircdfile = LIRCD;
@@ -423,6 +386,213 @@ int read_timeout(int fd, char *buf, int len, int timeout)
 	return n;
 }
 
+
+static int setup_frequency(void)
+{
+	__u32 freq;
+
+	if (!(curr_driver->features & LIRC_CAN_SET_REC_CARRIER))
+		return 1;
+	if (setup_min_freq == 0 || setup_max_freq == 0) {
+		setup_min_freq = DEFAULT_FREQ;
+		setup_max_freq = DEFAULT_FREQ;
+	}
+	if (curr_driver->features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
+		if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
+			logprintf(LIRC_ERROR, "could not set receive carrier");
+			logperror(LIRC_ERROR, __func__);
+			return 0;
+		}
+		freq = setup_max_freq;
+	} else {
+		freq = (setup_min_freq + setup_max_freq) / 2;
+	}
+	if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
+		logprintf(LIRC_ERROR, "could not set receive carrier");
+		logperror(LIRC_ERROR, __func__);
+		return 0;
+	}
+	return 1;
+}
+
+
+static int setup_timeout(void)
+{
+	lirc_t val, min_timeout, max_timeout;
+	__u32 enable = 1;
+
+	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
+		return 1;
+
+	if (setup_max_space == 0)
+		return 1;
+	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
+	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1)
+		return 0;
+	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
+		/* may help to detect end of signal faster */
+		val = setup_max_gap;
+	} else {
+		/* keep timeout to a minimum */
+		val = setup_max_space + 1;
+		if (val < min_timeout)
+			val = min_timeout;
+		else if (val > max_timeout)
+			/* maximum timeout smaller than maximum possible
+			 * space, hmm */
+			val = max_timeout;
+	}
+
+	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
+		logprintf(LIRC_ERROR, "could not set timeout");
+		logperror(LIRC_ERROR, __func__);
+		return 0;
+	}
+	curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
+	return 1;
+}
+
+
+static int setup_filter(void)
+{
+	int ret1, ret2;
+	lirc_t min_pulse_supported, max_pulse_supported;
+	lirc_t min_space_supported, max_space_supported;
+
+	if (!(curr_driver->features & LIRC_CAN_SET_REC_FILTER))
+		return 1;
+	if (curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_PULSE,
+				     &min_pulse_supported) == -1 ||
+	    curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
+	    || curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
+	    || curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
+		logprintf(LIRC_ERROR, "could not get filter range");
+		logperror(LIRC_ERROR, __func__);
+	}
+
+	if (setup_min_pulse > max_pulse_supported)
+		setup_min_pulse = max_pulse_supported;
+	else if (setup_min_pulse < min_pulse_supported)
+		setup_min_pulse = 0;    /* disable filtering */
+
+	if (setup_min_space > max_space_supported)
+		setup_min_space = max_space_supported;
+	else if (setup_min_space < min_space_supported)
+		setup_min_space = 0;    /* disable filtering */
+
+	ret1 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
+	ret2 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
+	if (ret1 == -1 || ret2 == -1) {
+		if (curr_driver->
+		    drvctl_func(LIRC_SET_REC_FILTER,
+				setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
+			logprintf(LIRC_ERROR, "could not set filter");
+			logperror(LIRC_ERROR, __func__);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+
+
+
+static int setup_hardware(void)
+{
+	int ret = 1;
+
+	if (curr_driver->fd != -1 && curr_driver->drvctl_func) {
+		if ((curr_driver->features & LIRC_CAN_SET_REC_CARRIER)
+		    || (curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT)
+		    || (curr_driver->features & LIRC_CAN_SET_REC_FILTER)) {
+			(void)curr_driver->drvctl_func(LIRC_SETUP_START, NULL);
+			ret = setup_frequency() && setup_timeout()
+				&& setup_filter();
+			(void)curr_driver->drvctl_func(LIRC_SETUP_END, NULL);
+		}
+	}
+	return ret;
+}
+
+
+void config(void)
+{
+	FILE *fd;
+	struct ir_remote *config_remotes;
+	const char *filename = configfile;
+
+	if (filename == NULL)
+		filename = LIRCDCFGFILE;
+
+	if (free_remotes != NULL) {
+		logprintf(LIRC_ERROR, "cannot read config file");
+		logprintf(LIRC_ERROR, "old config is still in use");
+		return;
+	}
+	fd = fopen(filename, "r");
+	if (fd == NULL && errno == ENOENT && configfile == NULL) {
+		/* try old lircd.conf location */
+		int save_errno = errno;
+
+		fd = fopen(LIRCDOLDCFGFILE, "r");
+		if (fd != NULL)
+			filename = LIRCDOLDCFGFILE;
+		else
+			errno = save_errno;
+	}
+	if (fd == NULL) {
+		logprintf(LIRC_ERROR, "could not open config file '%s'", filename);
+		logperror(LIRC_ERROR, NULL);
+		return;
+	}
+	configfile = filename;
+	config_remotes = read_config(fd, configfile);
+	fclose(fd);
+	if (config_remotes == (void *)-1) {
+		logprintf(LIRC_ERROR, "reading of config file failed");
+	} else {
+		LOGPRINTF(1, "config file read");
+		if (config_remotes == NULL) {
+			logprintf(LIRC_WARNING,
+				  "config file %s contains no valid remote control definition",
+				  filename);
+		}
+		/* I cannot free the data structure
+		 * as they could still be in use */
+		free_remotes = remotes;
+		remotes = config_remotes;
+
+		get_frequency_range(remotes, &setup_min_freq, &setup_max_freq);
+		get_filter_parameters(remotes, &setup_max_gap, &setup_min_pulse, &setup_min_space, &setup_max_pulse,
+				      &setup_max_space);
+
+		setup_hardware();
+	}
+}
+
+
+void remove_client(int fd)
+{
+	int i;
+
+	for (i = 0; i < clin; i++) {
+		if (clis[i] == fd) {
+			shutdown(clis[i], 2);
+			close(clis[i]);
+			logprintf(LIRC_INFO, "removed client");
+
+			clin--;
+			if (!use_hw() && curr_driver->deinit_func)
+				curr_driver->deinit_func();
+			for (; i < clin; i++)
+				clis[i] = clis[i + 1];
+			return;
+		}
+	}
+	LOGPRINTF(1, "internal error in remove_client: no such fd");
+}
+
+
 void sigterm(int sig)
 {
 	/* all signals are blocked now */
@@ -569,210 +739,12 @@ setup_error:
 	return -1;
 }
 
-static int setup_frequency(void)
-{
-	__u32 freq;
-
-	if (!(curr_driver->features & LIRC_CAN_SET_REC_CARRIER))
-		return 1;
-	if (setup_min_freq == 0 || setup_max_freq == 0) {
-		setup_min_freq = DEFAULT_FREQ;
-		setup_max_freq = DEFAULT_FREQ;
-	}
-	if (curr_driver->features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
-		if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
-			logprintf(LIRC_ERROR, "could not set receive carrier");
-			logperror(LIRC_ERROR, __func__);
-			return 0;
-		}
-		freq = setup_max_freq;
-	} else {
-		freq = (setup_min_freq + setup_max_freq) / 2;
-	}
-	if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
-		logprintf(LIRC_ERROR, "could not set receive carrier");
-		logperror(LIRC_ERROR, __func__);
-		return 0;
-	}
-	return 1;
-}
-
-static int setup_timeout(void)
-{
-	lirc_t val, min_timeout, max_timeout;
-	__u32 enable = 1;
-
-	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
-		return 1;
-
-	if (setup_max_space == 0)
-		return 1;
-	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1)
-		return 0;
-	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
-		/* may help to detect end of signal faster */
-		val = setup_max_gap;
-	} else {
-		/* keep timeout to a minimum */
-		val = setup_max_space + 1;
-		if (val < min_timeout)
-			val = min_timeout;
-		else if (val > max_timeout)
-			/* maximum timeout smaller than maximum possible
-			 * space, hmm */
-			val = max_timeout;
-	}
-
-	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
-		logprintf(LIRC_ERROR, "could not set timeout");
-		logperror(LIRC_ERROR, __func__);
-		return 0;
-	}
-	curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
-	return 1;
-}
-
-static int setup_filter(void)
-{
-	int ret1, ret2;
-	lirc_t min_pulse_supported, max_pulse_supported;
-	lirc_t min_space_supported, max_space_supported;
-
-	if (!(curr_driver->features & LIRC_CAN_SET_REC_FILTER))
-		return 1;
-	if (curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_PULSE,
-				     &min_pulse_supported) == -1 ||
-	    curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
-		logprintf(LIRC_ERROR, "could not get filter range");
-		logperror(LIRC_ERROR, __func__);
-	}
-
-	if (setup_min_pulse > max_pulse_supported)
-		setup_min_pulse = max_pulse_supported;
-	else if (setup_min_pulse < min_pulse_supported)
-		setup_min_pulse = 0;    /* disable filtering */
-
-	if (setup_min_space > max_space_supported)
-		setup_min_space = max_space_supported;
-	else if (setup_min_space < min_space_supported)
-		setup_min_space = 0;    /* disable filtering */
-
-	ret1 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
-	ret2 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
-	if (ret1 == -1 || ret2 == -1) {
-		if (curr_driver->
-		    drvctl_func(LIRC_SET_REC_FILTER,
-				setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
-			logprintf(LIRC_ERROR, "could not set filter");
-			logperror(LIRC_ERROR, __func__);
-			return 0;
-		}
-	}
-	return 1;
-}
-
-static int setup_hardware(void)
-{
-	int ret = 1;
-
-	if (curr_driver->fd != -1 && curr_driver->drvctl_func) {
-		if ((curr_driver->features & LIRC_CAN_SET_REC_CARRIER)
-		    || (curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT)
-		    || (curr_driver->features & LIRC_CAN_SET_REC_FILTER)) {
-			(void)curr_driver->drvctl_func(LIRC_SETUP_START, NULL);
-			ret = setup_frequency() && setup_timeout()
-				&& setup_filter();
-			(void)curr_driver->drvctl_func(LIRC_SETUP_END, NULL);
-		}
-	}
-	return ret;
-}
-
-void config(void)
-{
-	FILE *fd;
-	struct ir_remote *config_remotes;
-	const char *filename = configfile;
-
-	if (filename == NULL)
-		filename = LIRCDCFGFILE;
-
-	if (free_remotes != NULL) {
-		logprintf(LIRC_ERROR, "cannot read config file");
-		logprintf(LIRC_ERROR, "old config is still in use");
-		return;
-	}
-	fd = fopen(filename, "r");
-	if (fd == NULL && errno == ENOENT && configfile == NULL) {
-		/* try old lircd.conf location */
-		int save_errno = errno;
-
-		fd = fopen(LIRCDOLDCFGFILE, "r");
-		if (fd != NULL)
-			filename = LIRCDOLDCFGFILE;
-		else
-			errno = save_errno;
-	}
-	if (fd == NULL) {
-		logprintf(LIRC_ERROR, "could not open config file '%s'", filename);
-		logperror(LIRC_ERROR, NULL);
-		return;
-	}
-	configfile = filename;
-	config_remotes = read_config(fd, configfile);
-	fclose(fd);
-	if (config_remotes == (void *)-1) {
-		logprintf(LIRC_ERROR, "reading of config file failed");
-	} else {
-		LOGPRINTF(1, "config file read");
-		if (config_remotes == NULL) {
-			logprintf(LIRC_WARNING,
-				  "config file %s contains no valid remote control definition",
-				  filename);
-		}
-		/* I cannot free the data structure
-		 * as they could still be in use */
-		free_remotes = remotes;
-		remotes = config_remotes;
-
-		get_frequency_range(remotes, &setup_min_freq, &setup_max_freq);
-		get_filter_parameters(remotes, &setup_max_gap, &setup_min_pulse, &setup_min_space, &setup_max_pulse,
-				      &setup_max_space);
-
-		setup_hardware();
-	}
-}
-
 void nolinger(int sock)
 {
 	static struct linger linger = { 0, 0 };
 	int lsize = sizeof(struct linger);
 
 	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *)&linger, lsize);
-}
-
-void remove_client(int fd)
-{
-	int i;
-
-	for (i = 0; i < clin; i++) {
-		if (clis[i] == fd) {
-			shutdown(clis[i], 2);
-			close(clis[i]);
-			logprintf(LIRC_INFO, "removed client");
-
-			clin--;
-			if (!use_hw() && curr_driver->deinit_func)
-				curr_driver->deinit_func();
-			for (; i < clin; i++)
-				clis[i] = clis[i + 1];
-			return;
-		}
-	}
-	LOGPRINTF(1, "internal error in remove_client: no such fd");
 }
 
 
@@ -1154,10 +1126,63 @@ void daemonize(void)
 }
 
 
+int send_success(int fd, char *message)
+{
+	logprintf(LIRC_DEBUG, "Sending success");
+	if (!
+	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
+	     && write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_END])))
+		return 0;
+	return 1;
+}
+
+
+int send_error(int fd, char *message, char *format_str, ...)
+{
+	logprintf(LIRC_DEBUG, "Sending error");
+	char lines[4], buffer[PACKET_SIZE + 1];
+	int i, n, len;
+	va_list ap;
+	char *s1, *s2;
+
+	va_start(ap, format_str);
+	vsprintf(buffer, format_str, ap);
+	va_end(ap);
+
+	s1 = strrchr(message, '\n');
+	s2 = strrchr(buffer, '\n');
+	if (s1 != NULL)
+		s1[0] = 0;
+	if (s2 != NULL)
+		s2[0] = 0;
+	logprintf(LIRC_ERROR, "error processing command: %s", message);
+	logprintf(LIRC_ERROR, "%s", buffer);
+	if (s1 != NULL)
+		s1[0] = '\n';
+	if (s2 != NULL)
+		s2[0] = '\n';
+
+	n = 0;
+	len = strlen(buffer);
+	for (i = 0; i < len; i++)
+		if (buffer[i] == '\n')
+			n++;
+	sprintf(lines, "%d\n", n);
+
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
+	      write_socket_len(fd, message) && write_socket_len(fd, protocol_string[P_ERROR])
+	      && write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, lines)
+	      && write_socket_len(fd, buffer) && write_socket_len(fd, protocol_string[P_END])))
+		return 0;
+	return 1;
+}
+
+
 void sigalrm(int sig)
 {
 	alrm = 1;
 }
+
 
 void dosigalrm(int sig)
 {
@@ -1204,6 +1229,7 @@ void dosigalrm(int sig)
 	if (!use_hw() && curr_driver->deinit_func)
 		curr_driver->deinit_func();
 }
+
 
 int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, struct ir_ncode **code, int *reps,
 	     int n, int *err)
@@ -1252,55 +1278,6 @@ arg_check:
 	return 1;
 }
 
-int send_success(int fd, char *message)
-{
-	logprintf(LIRC_DEBUG, "Sending success");
-	if (!
-	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
-	     && write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_END])))
-		return 0;
-	return 1;
-}
-
-int send_error(int fd, char *message, char *format_str, ...)
-{
-	logprintf(LIRC_DEBUG, "Sending error");
-	char lines[4], buffer[PACKET_SIZE + 1];
-	int i, n, len;
-	va_list ap;
-	char *s1, *s2;
-
-	va_start(ap, format_str);
-	vsprintf(buffer, format_str, ap);
-	va_end(ap);
-
-	s1 = strrchr(message, '\n');
-	s2 = strrchr(buffer, '\n');
-	if (s1 != NULL)
-		s1[0] = 0;
-	if (s2 != NULL)
-		s2[0] = 0;
-	logprintf(LIRC_ERROR, "error processing command: %s", message);
-	logprintf(LIRC_ERROR, "%s", buffer);
-	if (s1 != NULL)
-		s1[0] = '\n';
-	if (s2 != NULL)
-		s2[0] = '\n';
-
-	n = 0;
-	len = strlen(buffer);
-	for (i = 0; i < len; i++)
-		if (buffer[i] == '\n')
-			n++;
-	sprintf(lines, "%d\n", n);
-
-	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
-	      write_socket_len(fd, message) && write_socket_len(fd, protocol_string[P_ERROR])
-	      && write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, lines)
-	      && write_socket_len(fd, buffer) && write_socket_len(fd, protocol_string[P_END])))
-		return 0;
-	return 1;
-}
 
 int send_remote_list(int fd, char *message)
 {
@@ -1393,7 +1370,7 @@ int send_name(int fd, char *message, struct ir_ncode *code)
 	return write_socket_len(fd, protocol_string[P_END]);
 }
 
-int list(int fd, char *message, char *arguments)
+static int list(int fd, char *message, char *arguments)
 {
 	struct ir_remote *remote;
 	struct ir_ncode *code;
@@ -1411,7 +1388,7 @@ int list(int fd, char *message, char *arguments)
 	return send_name(fd, message, code);
 }
 
-int set_transmitters(int fd, char *message, char *arguments)
+static int set_transmitters(int fd, char *message, char *arguments)
 {
 	char *next_arg = NULL, *end_ptr;
 	__u32 next_tx_int = 0;
@@ -1453,7 +1430,24 @@ string_error:
 	return send_error(fd, message, "no arguments given\n");
 }
 
-int simulate(int fd, char *message, char *arguments)
+
+void broadcast_message(const char *message)
+{
+	int len, i;
+
+	len = strlen(message);
+
+	for (i = 0; i < clin; i++) {
+		LOGPRINTF(1, "writing to client %d: %s", i, message);
+		if (write_socket(clis[i], message, len) < len) {
+			remove_client(clis[i]);
+			i--;
+		}
+	}
+}
+
+
+static int simulate(int fd, char *message, char *arguments)
 {
 	int i;
 	char *sim, *s, *space;
@@ -1499,17 +1493,17 @@ simulate_invalid_event:
 	return send_error(fd, message, "invalid event\n");
 }
 
-int send_once(int fd, char *message, char *arguments)
+static int send_once(int fd, char *message, char *arguments)
 {
 	return send_core(fd, message, arguments, 1);
 }
 
-int send_start(int fd, char *message, char *arguments)
+static int send_start(int fd, char *message, char *arguments)
 {
 	return send_core(fd, message, arguments, 0);
 }
 
-int send_core(int fd, char *message, char *arguments, int once)
+static int send_core(int fd, char *message, char *arguments, int once)
 {
 	struct ir_remote *remote;
 	struct ir_ncode *code;
@@ -1575,7 +1569,7 @@ int send_core(int fd, char *message, char *arguments, int once)
 	}
 }
 
-int send_stop(int fd, char *message, char *arguments)
+static int send_stop(int fd, char *message, char *arguments)
 {
 	struct ir_remote *remote;
 	struct ir_ncode *code;
@@ -1619,7 +1613,8 @@ int send_stop(int fd, char *message, char *arguments)
 	}
 }
 
-int version(int fd, char *message, char *arguments)
+
+static int version(int fd, char *message, char *arguments)
 {
 	char buffer[PACKET_SIZE + 1];
 
@@ -1635,7 +1630,7 @@ int version(int fd, char *message, char *arguments)
 }
 
 
-int drv_option(int fd, char *message, char *arguments)
+static int drv_option(int fd, char *message, char *arguments)
 {
 	struct option_t option;
 	int r;
@@ -1656,7 +1651,7 @@ int drv_option(int fd, char *message, char *arguments)
 }
 
 
-int set_inputlog(int fd, char *message, char *arguments)
+static int set_inputlog(int fd, char *message, char *arguments)
 {
 	char buff[128];
 	FILE *f;
@@ -1756,6 +1751,57 @@ skip:
 	return 1;
 }
 
+void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release)
+{
+	const char *release_message;
+	const char *release_remote_name;
+	const char *release_button_name;
+
+	release_message = check_release_event(&release_remote_name, &release_button_name);
+	if (release_message)
+		input_message(release_message, release_remote_name, release_button_name, 0, 1);
+
+	if (!release || userelease)
+		broadcast_message(message);
+
+#ifdef __linux__
+	if (uinputfd == -1 || reps >= 2)
+		return;
+
+	linux_input_code input_code;
+
+	if (get_input_code(button_name, &input_code) != -1) {
+		struct input_event event;
+
+		memset(&event, 0, sizeof(event));
+		event.type = EV_KEY;
+		event.code = input_code;
+		event.value = release ? 0 : (reps > 0 ? 2 : 1);
+		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
+			logprintf(LIRC_ERROR, "writing to uinput failed");
+			logperror(LIRC_ERROR, NULL);
+		}
+
+		/* Need to write sync event */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_SYN;
+		event.code = SYN_REPORT;
+		event.value = 0;
+		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
+			logprintf(LIRC_ERROR, "writing EV_SYN to uinput failed");
+			logperror(LIRC_ERROR, NULL);
+		}
+	} else {
+		logprintf(LIRC_DEBUG,
+			  "Dropping non-standard symbol %s in uinput mode",
+			  button_name == NULL ? "Null" : button_name);
+	}
+#endif
+}
+
+
+
+
 void free_old_remotes(void)
 {
 	struct ir_remote *scan_remotes, *found;
@@ -1838,70 +1884,6 @@ void free_old_remotes(void)
 		free_remotes = NULL;
 	} else {
 		LOGPRINTF(1, "free_remotes still in use");
-	}
-}
-
-void input_message(const char *message, const char *remote_name, const char *button_name, int reps, int release)
-{
-	const char *release_message;
-	const char *release_remote_name;
-	const char *release_button_name;
-
-	release_message = check_release_event(&release_remote_name, &release_button_name);
-	if (release_message)
-		input_message(release_message, release_remote_name, release_button_name, 0, 1);
-
-	if (!release || userelease)
-		broadcast_message(message);
-
-#ifdef __linux__
-	if (uinputfd == -1 || reps >= 2)
-		return;
-
-	linux_input_code input_code;
-
-	if (get_input_code(button_name, &input_code) != -1) {
-		struct input_event event;
-
-		memset(&event, 0, sizeof(event));
-		event.type = EV_KEY;
-		event.code = input_code;
-		event.value = release ? 0 : (reps > 0 ? 2 : 1);
-		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logprintf(LIRC_ERROR, "writing to uinput failed");
-			logperror(LIRC_ERROR, NULL);
-		}
-
-		/* Need to write sync event */
-		memset(&event, 0, sizeof(event));
-		event.type = EV_SYN;
-		event.code = SYN_REPORT;
-		event.value = 0;
-		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logprintf(LIRC_ERROR, "writing EV_SYN to uinput failed");
-			logperror(LIRC_ERROR, NULL);
-		}
-	} else {
-		logprintf(LIRC_DEBUG,
-			  "Dropping non-standard symbol %s in uinput mode",
-			  button_name == NULL ? "Null" : button_name);
-	}
-#endif
-}
-
-
-void broadcast_message(const char *message)
-{
-	int len, i;
-
-	len = strlen(message);
-
-	for (i = 0; i < clin; i++) {
-		LOGPRINTF(1, "writing to client %d: %s", i, message);
-		if (write_socket(clis[i], message, len) < len) {
-			remove_client(clis[i]);
-			i--;
-		}
 	}
 }
 
