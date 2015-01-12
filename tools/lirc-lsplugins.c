@@ -70,9 +70,9 @@ const struct option options[] = {
 
 
 #define CAN_SEND  \
-	LIRC_CAN_SEND_RAW | LIRC_CAN_SEND_PULSE | LIRC_CAN_SEND_MODE2
+	(LIRC_CAN_SEND_RAW | LIRC_CAN_SEND_PULSE | LIRC_CAN_SEND_MODE2)
 #define CAN_ANY  \
-	LIRC_CAN_REC_RAW | LIRC_CAN_REC_PULSE | LIRC_CAN_REC_MODE2
+	(LIRC_CAN_REC_RAW | LIRC_CAN_REC_PULSE | LIRC_CAN_REC_MODE2)
 
 
 typedef struct {
@@ -351,7 +351,7 @@ struct driver *format_plugin(const char *path, drv_guest_func f, void *arg)
 }
 
 
-static void print_header()
+static void print_header(void)
 {
 	line_t line = { "Plugin", "# Driver ", "Flags" };
 

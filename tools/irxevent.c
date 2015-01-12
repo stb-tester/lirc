@@ -123,7 +123,7 @@ static Window root;
 static XEvent xev;
 static Window subw;
 
-static Time fake_timestamp()
+static Time fake_timestamp(void)
 /*seems that xfree86 computes the timestamps like this     */
 /*strange but it relies on the *1000-32bit-wrap-around     */
 /*if anybody knows exactly how to do it, please contact me */
@@ -374,8 +374,6 @@ static void make_button(int button, int x, int y, XButtonEvent *xev)
 	xev->state = 0;
 	xev->button = button;
 	xev->same_screen = True;
-
-	return;
 }
 
 static void make_key(char *keyname, int x, int y, XKeyEvent *xev)
@@ -448,7 +446,6 @@ static void make_key(char *keyname, int x, int y, XKeyEvent *xev)
 	xev->keycode = kc;
 	logprintf(LIRC_DEBUG, "state 0x%x, keycode 0x%x\n", xev->state, xev->keycode);
 	free(part2);
-	return;
 }
 
 static void sendfocus(Window w, int in_out)
@@ -462,8 +459,6 @@ static void sendfocus(Window w, int in_out)
 	focev.detail = NotifyPointer;
 	XSendEvent(dpy, w, True, FocusChangeMask, (XEvent *)&focev);
 	XSync(dpy, True);
-
-	return;
 }
 
 static void sendpointer_enter_or_leave(Window w, int in_out)
@@ -487,7 +482,6 @@ static void sendpointer_enter_or_leave(Window w, int in_out)
 	crossev.state = 0;
 	XSendEvent(dpy, w, True, EnterWindowMask | LeaveWindowMask, (XEvent *)&crossev);
 	XSync(dpy, True);
-	return;
 }
 
 static void sendkey(char *keyname, int x, int y, Window w, Window s)
@@ -509,7 +503,6 @@ static void sendkey(char *keyname, int x, int y, Window w, Window s)
 		sendfocus(s, FocusOut);
 	XSendEvent(dpy, w, True, KeyReleaseMask, &xev);
 	XSync(dpy, True);
-	return;
 }
 
 static void sendbutton(int button, int x, int y, Window w, Window s)
@@ -530,8 +523,6 @@ static void sendbutton(int button, int x, int y, Window w, Window s)
 	sendpointer_enter_or_leave(s, LeaveNotify);
 	sendpointer_enter_or_leave(w, LeaveNotify);
 	XSync(dpy, True);
-
-	return;
 }
 
 int errorHandler(Display *di, XErrorEvent *ev)

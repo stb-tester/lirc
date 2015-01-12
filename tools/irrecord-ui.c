@@ -16,7 +16,7 @@
 
 #define USAGE       "Usage: irrecord [options] [config file]\n" \
 	"	    irrecord -a <config file>\n" \
-	"	    irrecord -l \n"
+	"	    irrecord -l\n"
 
 static const char* const help =
 	USAGE

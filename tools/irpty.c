@@ -34,10 +34,10 @@
 #include <unistd.h>
 
 #ifdef HAVE_FORKPTY
-#if defined (__APPLE__) || defined (__NetBSD__)
+#if defined __APPLE__ || defined __NetBSD__
 #include <util.h>
 #else
-#if defined (__FreeBSD__)
+#if defined __FreeBSD__
 #include <libutil.h>
 #else
 #include <pty.h>
@@ -69,7 +69,6 @@ void die(char *fmt, ...)
 static void sig_term(int sig)
 {
 	sigcaught = 1;
-	return;
 }
 
 static void copy_loop(int ptym, int ignoreeof)
@@ -139,7 +138,6 @@ static void copy_loop(int ptym, int ignoreeof)
 		kill(child, SIGTERM);
 	lirc_freeconfig(lconfig);
 	lirc_deinit();
-	return;
 }
 
 static struct termios save_termios;
