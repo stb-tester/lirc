@@ -162,7 +162,7 @@ void nolinger(int sock);
 void remove_client(int fd);
 void add_client(int);
 int add_peer_connection(const char *server);
-void connect_to_peers();
+void connect_to_peers(void);
 int get_peer_message(struct peer_connection *peer);
 void start_server(mode_t permission, int nodaemon, loglevel_t loglevel);
 
@@ -315,7 +315,7 @@ static lirc_t setup_min_pulse = 0, setup_min_space = 0;
 static lirc_t setup_max_pulse = 0, setup_max_space = 0;
 
 /* Use already opened hardware? */
-int use_hw()
+int use_hw(void)
 {
 	return clin > 0 || (useuinput && uinputfd != -1) || repeat_remote != NULL;
 }
@@ -569,7 +569,7 @@ setup_error:
 	return -1;
 }
 
-static int setup_frequency()
+static int setup_frequency(void)
 {
 	__u32 freq;
 
@@ -597,9 +597,10 @@ static int setup_frequency()
 	return 1;
 }
 
-static int setup_timeout()
+static int setup_timeout(void)
 {
 	lirc_t val, min_timeout, max_timeout;
+	__u32 enable = 1;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
 		return 1;
@@ -627,15 +628,12 @@ static int setup_timeout()
 		logprintf(LIRC_ERROR, "could not set timeout");
 		logperror(LIRC_ERROR, __func__);
 		return 0;
-	} else {
-		__u32 enable = 1;
-
-		curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
 	}
+	curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
 	return 1;
 }
 
-static int setup_filter()
+static int setup_filter(void)
 {
 	int ret1, ret2;
 	lirc_t min_pulse_supported, max_pulse_supported;
@@ -676,7 +674,7 @@ static int setup_filter()
 	return 1;
 }
 
-static int setup_hardware()
+static int setup_hardware(void)
 {
 	int ret = 1;
 
@@ -778,7 +776,7 @@ void remove_client(int fd)
 }
 
 
-void drop_privileges()
+void drop_privileges(void)
 {
 	const char *user;
 	struct passwd *pw;
@@ -902,13 +900,12 @@ int add_peer_connection(const char *server)
 		peers[peern]->socket = -1;
 		peern++;
 		return 1;
-	} else {
-		fprintf(stderr, "%s: too many client connections\n", progname);
 	}
+	fprintf(stderr, "%s: too many client connections\n", progname);
 	return 0;
 }
 
-void connect_to_peers()
+void connect_to_peers(void)
 {
 	int i;
 	struct hostent *host;
@@ -1008,7 +1005,10 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	lirc_log_open("lircd", nodaemon, loglevel);
 
 	/* create pid lockfile in /var/run */
-	if ((fd = open(pidfile, O_RDWR | O_CREAT, 0644)) == -1 || (pidf = fdopen(fd, "r+")) == NULL) {
+	fd = open(pidfile, O_RDWR | O_CREAT, 0644);
+	if (fd > 0)
+		pidf = fdopen(fd, "r+");
+	if (fd  == -1 || pidf == NULL) {
 		fprintf(stderr, "%s: can't open or create %s\n", progname, pidfile);
 		perror(progname);
 		exit(EXIT_FAILURE);
@@ -1756,7 +1756,7 @@ skip:
 	return 1;
 }
 
-void free_old_remotes()
+void free_old_remotes(void)
 {
 	struct ir_remote *scan_remotes, *found;
 	struct ir_ncode *code;
@@ -2039,8 +2039,7 @@ static int mywaitfordata(long maxusec)
 					return 0;
 				if (time_elapsed(&start, &now) >= maxusec)
 					return 0;
-				else
-					maxusec -= time_elapsed(&start, &now);
+				maxusec -= time_elapsed(&start, &now);
 
 			}
 			if (reconnect)
@@ -2094,7 +2093,7 @@ static int mywaitfordata(long maxusec)
 	}
 }
 
-void loop()
+void loop(void)
 {
 	char *message;
 

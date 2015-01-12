@@ -486,13 +486,13 @@ void mouse_circle(int r, int dirx, int diry)
 	}
 }
 
-void activate()
+void activate(void)
 {
 	ms.active = 1;
 	mouse_circle(CIRCLE, 1, 1);
 }
 
-void deactivate()
+void deactivate(void)
 {
 	/* all buttons up */
 	mouse_button(0, BUTTON1 | BUTTON2 | BUTTON3, 0);
@@ -799,7 +799,7 @@ static void lircmd_parse_options(int argc, char **const argv)
 }
 
 
-void loop()
+void loop(void)
 {
 	ssize_t len = 0;
 	char buffer[PACKET_SIZE + 1];

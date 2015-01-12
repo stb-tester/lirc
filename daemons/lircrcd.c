@@ -108,7 +108,7 @@ static int daemonized = 0;
 static struct lirc_config *config;
 
 static int send_error(int fd, char *message, char *format_str, ...);
-static int handle_input();
+static int handle_input(void);
 
 static inline int max(int a, int b)
 {
@@ -416,12 +416,11 @@ static int code_func(int fd, char *message, char *arguments)
 				free(ci->config_string);
 				free(ci);
 				return ret;
-			} else {
-				clis[index].first_event = ei->next;
-				free(ei->code);
-				free(ei);
-				return send_success(fd, message);
 			}
+			clis[index].first_event = ei->next;
+			free(ei->code);
+			free(ei);
+			return send_success(fd, message);
 		} else {
 			return send_success(fd, message);
 		}
@@ -466,7 +465,8 @@ static int setmode_func(int fd, char *message, char *arguments)
 	const char *mode = NULL;
 
 	LOGPRINTF(2, arguments != NULL ? "SETMODE %s" : "SETMODE", arguments);
-	if ((mode = lirc_setmode(config, arguments)))
+	mode = lirc_setmode(config, arguments);
+	if (mode)
 		return send_result(fd, message, mode);
 	return arguments == NULL ? send_success(fd, message) : send_error(fd, message, "out of memory\n");
 }
@@ -698,7 +698,7 @@ static int schedule(int index, char *config_string)
 	return 1;
 }
 
-static int handle_input()
+static int handle_input(void)
 {
 	char *code;
 	char *config_string;
