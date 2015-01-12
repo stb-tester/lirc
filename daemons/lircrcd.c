@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** lircrcd.c ***************************************************************
- ****************************************************************************
- *
- * lircrcd - daemon that manages current mode for all applications
- *
- * Copyright (C) 2004 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** lircrcd.c ***************************************************************
+****************************************************************************
+*
+* lircrcd - daemon that manages current mode for all applications
+*
+* Copyright (C) 2004 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -39,26 +38,26 @@
 #define WHITE_SPACE " \t"
 
 struct config_info {
-	char *config_string;
-	struct config_info *next;
+	char *			config_string;
+	struct config_info *	next;
 };
 
 struct event_info {
-	char *code;
-	struct config_info *first;
-	struct event_info *next;
+	char *			code;
+	struct config_info *	first;
+	struct event_info *	next;
 };
 
 struct client_data {
-	int fd;
-	char *ident_string;
-	struct event_info *first_event;
-	char *pending_code;
+	int			fd;
+	char *			ident_string;
+	struct event_info *	first_event;
+	char *			pending_code;
 };
 
 struct protocol_directive {
 	char *name;
-	int (*function) (int fd, char *message, char *arguments);
+	int (*function)(int fd, char *message, char *arguments);
 };
 
 static int code_func(int fd, char *message, char *arguments);
@@ -69,14 +68,14 @@ static int send_result(int fd, char *message, const char *result);
 static int send_success(int fd, char *message);
 
 struct protocol_directive directives[] = {
-	{"CODE", code_func},
-	{"IDENT", ident_func},
-	{"GETMODE", getmode_func},
-	{"SETMODE", setmode_func},
-	{NULL, NULL}
+	{ "CODE",    code_func	  },
+	{ "IDENT",   ident_func	  },
+	{ "GETMODE", getmode_func },
+	{ "SETMODE", setmode_func },
+	{ NULL,	     NULL	  }
 	/*
-	   {"DEBUG",debug},
-	   {"DEBUG_LEVEL",debug_level},
+	 * {"DEBUG",debug},
+	 * {"DEBUG_LEVEL",debug_level},
 	 */
 };
 
@@ -113,18 +112,16 @@ static int handle_input();
 
 static inline int max(int a, int b)
 {
-	return (a > b ? a : b);
+	return a > b ? a : b;
 }
 
 static int get_client_index(int fd)
 {
 	int i;
 
-	for (i = 0; i < clin; i++) {
-		if (fd == clis[i].fd) {
+	for (i = 0; i < clin; i++)
+		if (fd == clis[i].fd)
 			return i;
-		}
-	}
 	/* shouldn't ever happen */
 	return -1;
 }
@@ -134,7 +131,7 @@ static int get_client_index(int fd)
 #define isodigit(c) ((c) >= '0' && (c) <= '7')
 
 /* Return a positive integer containing the value of the ASCII
-   octal number S.  If S is not an octal number, return -1.  */
+ * octal number S.  If S is not an octal number, return -1.  */
 
 static int oatoi(s)
 char *s;
@@ -151,8 +148,7 @@ char *s;
 }
 
 /* A safer write(), since sockets might not write all but only some of the
-   bytes requested */
-
+ * bytes requested */
 inline int write_socket(int fd, char *buf, int len)
 {
 	int done, todo = len;
@@ -160,11 +156,11 @@ inline int write_socket(int fd, char *buf, int len)
 	while (todo) {
 		done = write(fd, buf, todo);
 		if (done <= 0)
-			return (done);
+			return done;
 		buf += done;
 		todo -= done;
 	}
-	return (len);
+	return len;
 }
 
 inline int write_socket_len(int fd, char *buf)
@@ -173,8 +169,8 @@ inline int write_socket_len(int fd, char *buf)
 
 	len = strlen(buf);
 	if (write_socket(fd, buf, len) < len)
-		return (0);
-	return (1);
+		return 0;
+	return 1;
 }
 
 inline int read_timeout(int fd, char *buf, int len, int timeout)
@@ -189,34 +185,34 @@ inline int read_timeout(int fd, char *buf, int len, int timeout)
 	tv.tv_usec = 0;
 
 	/* CAVEAT: (from libc documentation)
-	   Any signal will cause `select' to return immediately.  So if your
-	   program uses signals, you can't rely on `select' to keep waiting
-	   for the full time specified.  If you want to be sure of waiting
-	   for a particular amount of time, you must check for `EINTR' and
-	   repeat the `select' with a newly calculated timeout based on the
-	   current time.  See the example below.
-
-	   Obviously the timeout is not recalculated in the example because
-	   this is done automatically on Linux systems...
+	 * Any signal will cause `select' to return immediately.  So if your
+	 * program uses signals, you can't rely on `select' to keep waiting
+	 * for the full time specified.  If you want to be sure of waiting
+	 * for a particular amount of time, you must check for `EINTR' and
+	 * repeat the `select' with a newly calculated timeout based on the
+	 * current time.  See the example below.
+	 *
+	 * Obviously the timeout is not recalculated in the example because
+	 * this is done automatically on Linux systems...
 	 */
 
-	do {
+	do
 		ret = select(fd + 1, &fds, NULL, NULL, &tv);
-	}
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
 		logprintf(LIRC_ERROR, "select() failed");
 		logperror(LIRC_ERROR, "");
-		return (-1);
-	} else if (ret == 0)
-		return (0);	/* timeout */
+		return -1;
+	} else if (ret == 0) {
+		return 0;       /* timeout */
+	}
 	n = read(fd, buf, len);
 	if (n == -1) {
 		logprintf(LIRC_ERROR, "read() failed");
 		logperror(LIRC_ERROR, "");
-		return (-1);
+		return -1;
 	}
-	return (n);
+	return n;
 }
 
 static void sigterm(int sig)
@@ -232,6 +228,7 @@ static void nolinger(int sock)
 {
 	static struct linger linger = { 0, 0 };
 	int lsize = sizeof(struct linger);
+
 	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void *)&linger, lsize);
 }
 
@@ -278,9 +275,8 @@ static void remove_client(int i)
 	LOGPRINTF(1, "removed client");
 
 	clin--;
-	for (; i < clin; i++) {
+	for (; i < clin; i++)
 		clis[i] = clis[i + 1];
-	}
 }
 
 void add_client(int sock)
@@ -296,7 +292,8 @@ void add_client(int sock)
 		logprintf(LIRC_ERROR, "accept() failed for new client");
 		logperror(LIRC_ERROR, "");
 		return;
-	};
+	}
+	;
 
 	if (fd >= FD_SETSIZE || clin >= MAX_CLIENTS) {
 		logprintf(LIRC_ERROR, "connection rejected");
@@ -306,9 +303,8 @@ void add_client(int sock)
 	}
 	nolinger(fd);
 	flags = fcntl(fd, F_GETFL, 0);
-	if (flags != -1) {
+	if (flags != -1)
 		fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-	}
 	LOGPRINTF(1, "accepted new client");
 	clis[clin].fd = fd;
 	clis[clin].ident_string = NULL;
@@ -332,9 +328,8 @@ static int opensocket(const char *socket_id, const char *socketname, mode_t perm
 		fprintf(stderr, "%s: filename too long", progname);
 		return -1;
 	}
-	if (socketname != NULL) {
+	if (socketname != NULL)
 		strcpy(addr->sun_path, socketname);
-	}
 
 	/* create socket */
 	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -345,9 +340,9 @@ static int opensocket(const char *socket_id, const char *socketname, mode_t perm
 	}
 
 	/*
-	   get owner, permissions, etc.
-	   so new socket can be the same since we
-	   have to delete the old socket.
+	 * get owner, permissions, etc.
+	 * so new socket can be the same since we
+	 * have to delete the old socket.
 	 */
 	ret = stat(addr->sun_path, &s);
 	if (ret == -1 && errno != ENOENT) {
@@ -399,16 +394,13 @@ static int code_func(int fd, char *message, char *arguments)
 	struct config_info *ci;
 	int ret;
 
-	if (arguments == NULL) {
+	if (arguments == NULL)
 		return send_error(fd, message, "protocol error\n");
-	}
 	index = get_client_index(fd);
-	if (index == -1) {
+	if (index == -1)
 		return send_error(fd, message, "identify yourself first!\n");
-	}
-	if (clis[index].pending_code != NULL) {
+	if (clis[index].pending_code != NULL)
 		return send_error(fd, message, "protocol error\n");
-	}
 
 	LOGPRINTF(3, "%s asking for code -%s-", clis[index].ident_string, arguments);
 
@@ -416,7 +408,6 @@ static int code_func(int fd, char *message, char *arguments)
 	if (ei != NULL) {
 		LOGPRINTF(3, "compare: -%s- -%s-", ei->code, arguments);
 		if (strcmp(ei->code, arguments) == 0) {
-
 			ci = ei->first;
 			if (ci != NULL) {
 				LOGPRINTF(3, "result: -%s-", ci->config_string);
@@ -437,9 +428,8 @@ static int code_func(int fd, char *message, char *arguments)
 	}
 
 	clis[index].pending_code = strdup(arguments);
-	if (clis[index].pending_code == NULL) {
+	if (clis[index].pending_code == NULL)
 		return send_error(fd, message, "out of memory\n");
-	}
 	return 1;
 }
 
@@ -447,33 +437,28 @@ static int ident_func(int fd, char *message, char *arguments)
 {
 	int index;
 
-	if (arguments == NULL) {
+	if (arguments == NULL)
 		return send_error(fd, message, "protocol error\n");
-	}
 	LOGPRINTF(2, "IDENT %s", arguments);
 	index = get_client_index(fd);
-	if (clis[index].ident_string != NULL) {
+	if (clis[index].ident_string != NULL)
 		return send_error(fd, message, "protocol error\n");
-	}
 	clis[index].ident_string = strdup(arguments);
-	if (clis[index].ident_string == NULL) {
+	if (clis[index].ident_string == NULL)
 		return send_error(fd, message, "out of memory\n");
-	}
 
 	LOGPRINTF(1, "%s connected", clis[index].ident_string);
-	return (send_success(fd, message));
+	return send_success(fd, message);
 }
 
 static int getmode_func(int fd, char *message, char *arguments)
 {
-	if (arguments != NULL) {
+	if (arguments != NULL)
 		return send_error(fd, message, "protocol error\n");
-	}
 	LOGPRINTF(2, "GETMODE");
-	if (lirc_getmode(config)) {
+	if (lirc_getmode(config))
 		return send_result(fd, message, lirc_getmode(config));
-	}
-	return (send_success(fd, message));
+	return send_success(fd, message);
 }
 
 static int setmode_func(int fd, char *message, char *arguments)
@@ -481,9 +466,8 @@ static int setmode_func(int fd, char *message, char *arguments)
 	const char *mode = NULL;
 
 	LOGPRINTF(2, arguments != NULL ? "SETMODE %s" : "SETMODE", arguments);
-	if ((mode = lirc_setmode(config, arguments))) {
+	if ((mode = lirc_setmode(config, arguments)))
 		return send_result(fd, message, mode);
-	}
 	return arguments == NULL ? send_success(fd, message) : send_error(fd, message, "out of memory\n");
 }
 
@@ -500,8 +484,8 @@ static int send_result(int fd, char *message, const char *result)
 	      write_socket_len(fd, protocol_string[P_DATA]) &&
 	      write_socket_len(fd, count) &&
 	      write_socket_len(fd, buffer) && write_socket_len(fd, protocol_string[P_END])))
-		return (0);
-	return (1);
+		return 0;
+	return 1;
 }
 
 static int send_success(int fd, char *message)
@@ -509,8 +493,8 @@ static int send_success(int fd, char *message)
 	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
 	      write_socket_len(fd, message) &&
 	      write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_END])))
-		return (0);
-	return (1);
+		return 0;
+	return 1;
 }
 
 static int send_error(int fd, char *message, char *format_str, ...)
@@ -550,8 +534,8 @@ static int send_error(int fd, char *message, char *format_str, ...)
 	      write_socket_len(fd, protocol_string[P_DATA]) &&
 	      write_socket_len(fd, lines) &&
 	      write_socket_len(fd, buffer) && write_socket_len(fd, protocol_string[P_END])))
-		return (0);
-	return (1);
+		return 0;
+	return 1;
 }
 
 static int get_command(int fd)
@@ -570,7 +554,7 @@ static int get_command(int fd)
 		if (end == NULL) {
 			logprintf(LIRC_ERROR, "bad send packet: \"%s\"", buffer);
 			/* remove clients that behave badly */
-			return (0);
+			return 0;
 		}
 		end[0] = 0;
 		LOGPRINTF(1, "received command: \"%s\"", buffer);
@@ -581,19 +565,19 @@ static int get_command(int fd)
 		directive = strtok(buffer, WHITE_SPACE);
 		if (directive == NULL) {
 			if (!send_error(fd, backup, "bad send packet\n"))
-				return (0);
+				return 0;
 			goto skip;
 		}
 		for (i = 0; directives[i].name != NULL; i++) {
 			if (strcasecmp(directive, directives[i].name) == 0) {
 				if (!directives[i].function(fd, backup, strtok(NULL, "")))
-					return (0);
+					return 0;
 				goto skip;
 			}
 		}
 
 		if (!send_error(fd, backup, "unknown directive: \"%s\"\n", directive))
-			return (0);
+			return 0;
 skip:
 		if (length > packet_length) {
 			int new_length;
@@ -602,11 +586,10 @@ skip:
 			if (strchr(buffer, '\n') == NULL) {
 				new_length = read_timeout(fd, buffer + length -
 							  packet_length, PACKET_SIZE - (length - packet_length), 5);
-				if (new_length > 0) {
+				if (new_length > 0)
 					length = length - packet_length + new_length;
-				} else {
+				else
 					length = new_length;
-				}
 			} else {
 				length -= packet_length;
 			}
@@ -614,10 +597,9 @@ skip:
 		}
 	}
 
-	if (length == 0) {	/* EOF: connection closed by client */
-		return (0);
-	}
-	return (1);
+	if (length == 0)        /* EOF: connection closed by client */
+		return 0;
+	return 1;
 }
 
 static void loop(int sockfd, int lircdfd)
@@ -651,8 +633,7 @@ static void loop(int sockfd, int lircdfd)
 				raise(SIGTERM);
 				continue;
 			}
-		}
-		while (ret == -1 && errno == EINTR);
+		} while (ret == -1 && errno == EINTR);
 
 		for (i = 0; i < clin; i++) {
 			if (FD_ISSET(clis[i].fd, &fds)) {
@@ -673,9 +654,8 @@ static void loop(int sockfd, int lircdfd)
 		}
 		if (FD_ISSET(lircdfd, &fds)) {
 			if (!handle_input()) {
-				while (clin > 0) {
+				while (clin > 0)
 					remove_client(0);
-				}
 				logprintf(LIRC_ERROR, "connection lost");
 				return;
 			}
@@ -687,6 +667,7 @@ static int schedule(int index, char *config_string)
 {
 	struct event_info *e;
 	struct config_info *c, *n;
+
 	LOGPRINTF(2, "schedule(%s): -%s-", clis[index].ident_string, config_string);
 
 	e = clis[index].first_event;
@@ -699,9 +680,8 @@ static int schedule(int index, char *config_string)
 
 	n = malloc(sizeof(*c));
 
-	if (n == NULL) {
+	if (n == NULL)
 		return 0;
-	}
 
 	n->config_string = strdup(config_string);
 
@@ -711,11 +691,10 @@ static int schedule(int index, char *config_string)
 	}
 	n->next = NULL;
 
-	if (c == NULL) {
+	if (c == NULL)
 		e->first = n;
-	} else {
+	else
 		c->next = n;
-	}
 	return 1;
 }
 
@@ -729,16 +708,14 @@ static int handle_input()
 	int i;
 
 	LOGPRINTF(1, "input from lircd");
-	if (lirc_nextcode(&code) != 0) {
+	if (lirc_nextcode(&code) != 0)
 		return 0;
-	}
 
 	for (i = 0; i < clin; i++) {
 		n = malloc(sizeof(*n));
 
-		if (n == NULL) {
+		if (n == NULL)
 			return 0;
-		}
 
 		n->code = strdup(code);
 
@@ -757,11 +734,10 @@ static int handle_input()
 		while (e && e->next)
 			e = e->next;
 
-		if (e == NULL) {
+		if (e == NULL)
 			clis[i].first_event = n;
-		} else {
+		else
 			e->next = n;
-		}
 	}
 	LOGPRINTF(3, "input from lircd: \"%s\"", code);
 	while ((ret = lirc_code2charprog(config, code, &config_string, &prog)) == 0 && config_string != NULL) {
@@ -770,9 +746,8 @@ static int handle_input()
 		LOGPRINTF(3, "%s: -%s-", prog, config_string);
 		for (i = 0; i < clin; i++) {
 			if (strcmp(prog, clis[i].ident_string) == 0) {
-				if (!schedule(i, config_string)) {
+				if (!schedule(i, config_string))
 					return 0;
-				}
 			}
 		}
 	}
@@ -810,11 +785,11 @@ int main(int argc, char **argv)
 	while (1) {
 		int c;
 		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"permission", required_argument, NULL, 'p'},
-			{"output", required_argument, NULL, 'o'},
-			{0, 0, 0, 0}
+			{ "help",	no_argument,	   NULL, 'h' },
+			{ "version",	no_argument,	   NULL, 'v' },
+			{ "permission", required_argument, NULL, 'p' },
+			{ "output",	required_argument, NULL, 'o' },
+			{ 0,		0,		   0,	 0   }
 		};
 		c = getopt_long(argc, argv, "hvp:o:", long_options, NULL);
 		if (c == -1)
@@ -826,14 +801,14 @@ int main(int argc, char **argv)
 			printf("\t -v --version\t\t\tdisplay version\n");
 			printf("\t -p --permission=mode\t\tfile permissions for socket\n");
 			printf("\t -o --output=socket\t\toutput socket filename\n");
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'p':
 			if (oatoi(optarg) == -1) {
 				fprintf(stderr, "%s: invalid mode\n", progname);
-				return (EXIT_FAILURE);
+				return EXIT_FAILURE;
 			}
 			permission = oatoi(optarg);
 			break;
@@ -842,7 +817,7 @@ int main(int argc, char **argv)
 			break;
 		default:
 			printf("Usage: %s [options] config-file\n", progname);
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 	if (optind == argc - 1) {
@@ -853,9 +828,8 @@ int main(int argc, char **argv)
 	}
 
 	lircdfd = lirc_init("lircrcd", 0);
-	if (lircdfd == -1) {
+	if (lircdfd == -1)
 		return EXIT_FAILURE;
-	}
 
 	/* read config file */
 	if (lirc_readconfig_only(configfile, &config, NULL) != 0) {
@@ -895,7 +869,7 @@ int main(int argc, char **argv)
 
 	act.sa_handler = sigterm;
 	sigfillset(&act.sa_mask);
-	act.sa_flags = SA_RESTART;	/* don't fiddle with EINTR */
+	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 	sigaction(SIGTERM, &act, NULL);
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGHUP, &act, NULL);

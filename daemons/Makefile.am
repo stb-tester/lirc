@@ -10,7 +10,7 @@ CLEANFILES              = *~
 
 varrundir               = $(localstatedir)/run
 
-bin_PROGRAMS		= lircrcd
+bin_PROGRAMS            = lircrcd
 
 lircrcd_SOURCES         = lircrcd.c
 lircrcd_LDADD           = ../lib/liblirc_client.la

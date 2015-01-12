@@ -1,16 +1,15 @@
-
 /****************************************************************************
- ** lircmd.c ****************************************************************
- ****************************************************************************
- *
- * lircmd - LIRC Mouse Daemon
- *
- * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
- *
- * Wheel support based on lirc-imps2 by
- * Ryan Gammon <rggammon@engmail.uwaterloo.ca>
- *
- */
+** lircmd.c ****************************************************************
+****************************************************************************
+*
+* lircmd - LIRC Mouse Daemon
+*
+* Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
+*
+* Wheel support based on lirc-imps2 by
+* Ryan Gammon <rggammon@engmail.uwaterloo.ca>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -36,25 +35,25 @@
 #include <linux/uinput.h>
 #else
 #include <stdint.h>
-typedef int8_t   __s8;
-typedef uint8_t  __u8;
-typedef int16_t  __s16;
+typedef int8_t __s8;
+typedef uint8_t __u8;
+typedef int16_t __s16;
 typedef uint16_t __u16;
-typedef int32_t  __s32;
+typedef int32_t __s32;
 typedef uint32_t __u32;
-typedef int64_t  __s64;
+typedef int64_t __s64;
 typedef uint64_t __u64;
 #endif
 
 #include "lirc_options.h"
 #include "lirc_log.h"
 
-#define CLICK_DELAY 50000	/* usecs */
+#define CLICK_DELAY 50000       /* usecs */
 #define WHITE_SPACE " \t"
-#define ALL ((char *) (-1))
+#define ALL ((char *)(-1))
 #define CIRCLE 10
 
-#define BUTTONS 3		/* 3 buttons supported */
+#define BUTTONS 3               /* 3 buttons supported */
 
 /* buttons chosen to match MouseSystem protocol*/
 #define BUTTON1 0x04
@@ -71,17 +70,17 @@ loglevel_t loglevel = 0;
 
 
 static const struct option lircmd_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"nodaemon", no_argument, NULL, 'n'},
-	{"options-file", required_argument, NULL, 'O'},
+	{ "help",	  no_argument,	     NULL, 'h' },
+	{ "version",	  no_argument,	     NULL, 'v' },
+	{ "nodaemon",	  no_argument,	     NULL, 'n' },
+	{ "options-file", required_argument, NULL, 'O' },
 #       if defined(__linux__)
-	{"uinput", no_argument, NULL, 'u'},
+	{ "uinput",	  no_argument,	     NULL, 'u' },
 #       endif
-	{0, 0, 0, 0}
+	{ 0,		  0,		     0,	   0   }
 };
 
-static const char* const help = 
+static const char *const help =
 	"Usage: lircmd [options] [config-file]\n"
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n"
@@ -97,80 +96,79 @@ int map_buttons(int b)
 {
 	switch (b) {
 	case BUTTON1:
-		return (MAP_BUTTON1);
+		return MAP_BUTTON1;
 	case BUTTON2:
-		return (MAP_BUTTON2);
+		return MAP_BUTTON2;
 	default:
-		return (MAP_BUTTON3);
+		return MAP_BUTTON3;
 	}
 }
 
 enum directive { move_n, move_ne, move_e, move_se,
-	move_s, move_sw, move_w, move_nw,
-	move_in, move_out,
-	button1_down, button1_up, button1_toggle, button1_click,
-	button2_down, button2_up, button2_toggle, button2_click,
-	button3_down, button3_up, button3_toggle, button3_click,
-	mouse_activate, mouse_toggle_activate, ignore
-};
+		 move_s, move_sw, move_w, move_nw,
+		 move_in, move_out,
+		 button1_down, button1_up, button1_toggle, button1_click,
+		 button2_down, button2_up, button2_toggle, button2_click,
+		 button3_down, button3_up, button3_toggle, button3_click,
+		 mouse_activate, mouse_toggle_activate, ignore };
 
 struct config_mouse {
-	char *string;
-	enum directive d;
-	int x, y, z, down, up, toggle;
+	char *		string;
+	enum directive	d;
+	int		x, y, z, down, up, toggle;
 };
 
 struct config_mouse config_table[] = {
-	{"MOVE_N", move_n, 0, 1, 0, 0, 0, 0},
-	{"MOVE_NE", move_ne, 1, 1, 0, 0, 0, 0},
-	{"MOVE_E", move_e, 1, 0, 0, 0, 0, 0},
-	{"MOVE_SE", move_se, 1, -1, 0, 0, 0, 0},
-	{"MOVE_S", move_s, 0, -1, 0, 0, 0, 0},
-	{"MOVE_SW", move_sw, -1, -1, 0, 0, 0, 0},
-	{"MOVE_W", move_w, -1, 0, 0, 0, 0, 0},
-	{"MOVE_NW", move_nw, -1, 1, 0, 0, 0, 0},
-	{"MOVE_IN", move_in, 0, 0, -1, 0, 0, 0},
-	{"MOVE_OUT", move_out, 0, 0, 1, 0, 0, 0},
-	{"BUTTON1_DOWN", button1_down, 0, 0, 0, BUTTON1, 0, 0},
-	{"BUTTON1_UP", button1_up, 0, 0, 0, 0, BUTTON1, 0},
-	{"BUTTON1_TOGGLE", button1_toggle, 0, 0, 0, BUTTON1, BUTTON1, 1},
-	{"BUTTON1_CLICK", button1_click, 0, 0, 0, BUTTON1, BUTTON1, 0},
-	{"BUTTON2_DOWN", button2_down, 0, 0, 0, BUTTON2, 0, 0},
-	{"BUTTON2_UP", button2_up, 0, 0, 0, 0, BUTTON2, 0},
-	{"BUTTON2_TOGGLE", button2_toggle, 0, 0, 0, BUTTON2, BUTTON2, 1},
-	{"BUTTON2_CLICK", button2_click, 0, 0, 0, BUTTON2, BUTTON2, 0},
-	{"BUTTON3_DOWN", button3_down, 0, 0, 0, BUTTON3, 0, 0},
-	{"BUTTON3_UP", button3_up, 0, 0, 0, 0, BUTTON3, 0},
-	{"BUTTON3_TOGGLE", button3_toggle, 0, 0, 0, BUTTON3, BUTTON3, 1},
-	{"BUTTON3_CLICK", button3_click, 0, 0, 0, BUTTON3, BUTTON3, 0},
-	{"IGNORE", ignore, 0, 0, 0, 0, 0, 0},
-	{NULL, ignore, 0, 0, 0, 0, 0, 0}
+	{ "MOVE_N",	    move_n,	    0,	1,  0,	0,	 0,	  0 },
+	{ "MOVE_NE",	    move_ne,	    1,	1,  0,	0,	 0,	  0 },
+	{ "MOVE_E",	    move_e,	    1,	0,  0,	0,	 0,	  0 },
+	{ "MOVE_SE",	    move_se,	    1,	-1, 0,	0,	 0,	  0 },
+	{ "MOVE_S",	    move_s,	    0,	-1, 0,	0,	 0,	  0 },
+	{ "MOVE_SW",	    move_sw,	    -1, -1, 0,	0,	 0,	  0 },
+	{ "MOVE_W",	    move_w,	    -1, 0,  0,	0,	 0,	  0 },
+	{ "MOVE_NW",	    move_nw,	    -1, 1,  0,	0,	 0,	  0 },
+	{ "MOVE_IN",	    move_in,	    0,	0,  -1, 0,	 0,	  0 },
+	{ "MOVE_OUT",	    move_out,	    0,	0,  1,	0,	 0,	  0 },
+	{ "BUTTON1_DOWN",   button1_down,   0,	0,  0,	BUTTON1, 0,	  0 },
+	{ "BUTTON1_UP",	    button1_up,	    0,	0,  0,	0,	 BUTTON1, 0 },
+	{ "BUTTON1_TOGGLE", button1_toggle, 0,	0,  0,	BUTTON1, BUTTON1, 1 },
+	{ "BUTTON1_CLICK",  button1_click,  0,	0,  0,	BUTTON1, BUTTON1, 0 },
+	{ "BUTTON2_DOWN",   button2_down,   0,	0,  0,	BUTTON2, 0,	  0 },
+	{ "BUTTON2_UP",	    button2_up,	    0,	0,  0,	0,	 BUTTON2, 0 },
+	{ "BUTTON2_TOGGLE", button2_toggle, 0,	0,  0,	BUTTON2, BUTTON2, 1 },
+	{ "BUTTON2_CLICK",  button2_click,  0,	0,  0,	BUTTON2, BUTTON2, 0 },
+	{ "BUTTON3_DOWN",   button3_down,   0,	0,  0,	BUTTON3, 0,	  0 },
+	{ "BUTTON3_UP",	    button3_up,	    0,	0,  0,	0,	 BUTTON3, 0 },
+	{ "BUTTON3_TOGGLE", button3_toggle, 0,	0,  0,	BUTTON3, BUTTON3, 1 },
+	{ "BUTTON3_CLICK",  button3_click,  0,	0,  0,	BUTTON3, BUTTON3, 0 },
+	{ "IGNORE",	    ignore,	    0,	0,  0,	0,	 0,	  0 },
+	{ NULL,		    ignore,	    0,	0,  0,	0,	 0,	  0 }
 };
 
 enum protocol { mouse_systems, imps_2, im_serial };
 
 struct trans_mouse {
-	struct trans_mouse *tm_next;
-	char *tm_remote;
-	char *tm_button;
-	enum directive tm_directive;
+	struct trans_mouse *	tm_next;
+	char *			tm_remote;
+	char *			tm_button;
+	enum directive		tm_directive;
 } *tm_first = NULL;
 
 enum state_button { button_up, button_down };
 enum state_axis { axis_none, axis_up, axis_down };
 
 struct state_mouse {
-	int protocol;
-	int always_active, toggle_active, active;
-	int acc_start, acc_max, acc_fak;	/* defaults, acc_fak == acc_factor */
-	enum state_button buttons[BUTTONS];
+	int			protocol;
+	int			always_active, toggle_active, active;
+	int			acc_start, acc_max, acc_fak; /* defaults, acc_fak == acc_factor */
+	enum state_button	buttons[BUTTONS];
 };
 
 struct state_mouse new_ms, ms = {
 	mouse_systems,
-	1, 0, 0,
-	2, 20, 2,
-	{button_up, button_up, button_up}
+	1,	      0,	  0,
+	2,	      20,	  2,
+	{ button_up,  button_up,  button_up }
 };
 
 
@@ -181,7 +179,7 @@ int lircm = -1;
 
 sig_atomic_t hup = 0;
 
-struct trans_mouse *read_config(FILE * fd);
+struct trans_mouse *read_config(FILE *fd);
 
 void freetm(struct trans_mouse *tm_all)
 {
@@ -282,26 +280,22 @@ int setup_uinputfd(const char *name)
 	memset(&dev, 0, sizeof(dev));
 	strncpy(dev.name, name, sizeof(dev.name));
 	dev.name[sizeof(dev.name) - 1] = 0;
-	if (write(fd, &dev, sizeof(dev)) != sizeof(dev)) {
+	if (write(fd, &dev, sizeof(dev)) != sizeof(dev))
 		goto setup_error;
-	}
 
 	/* Configure support for the left, right and middle mouse buttons. */
 	if ((ioctl(fd, UI_SET_EVBIT, EV_KEY) != 0) || (ioctl(fd, UI_SET_KEYBIT, BTN_LEFT) != 0)
-	    || (ioctl(fd, UI_SET_KEYBIT, BTN_MIDDLE) != 0) || (ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT) != 0)) {
+	    || (ioctl(fd, UI_SET_KEYBIT, BTN_MIDDLE) != 0) || (ioctl(fd, UI_SET_KEYBIT, BTN_RIGHT) != 0))
 		goto setup_error;
-	}
 
 	/* Configure support for the relative mouse location and scroll wheel */
 	if ((ioctl(fd, UI_SET_EVBIT, EV_REL) != 0) || (ioctl(fd, UI_SET_RELBIT, REL_X) != 0)
-	    || (ioctl(fd, UI_SET_RELBIT, REL_Y) != 0) || (ioctl(fd, UI_SET_RELBIT, REL_WHEEL) != 0)) {
+	    || (ioctl(fd, UI_SET_RELBIT, REL_Y) != 0) || (ioctl(fd, UI_SET_RELBIT, REL_WHEEL) != 0))
 		goto setup_error;
-	}
 
 	/* Register the device with the input subsystem. */
-	if (ioctl(fd, UI_DEV_CREATE) != 0) {
+	if (ioctl(fd, UI_DEV_CREATE) != 0)
 		goto setup_error;
-	}
 	return fd;
 
 setup_error:
@@ -345,11 +339,10 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 	char buffer[5];
 
 	if (rep >= ms.acc_start) {
-		if (rep * ms.acc_fak >= ms.acc_max) {
+		if (rep * ms.acc_fak >= ms.acc_max)
 			f = ms.acc_max;
-		} else {
+		else
 			f = rep * ms.acc_fak;
-		}
 	}
 
 	buttons |= buttp;
@@ -362,38 +355,35 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx;
 		buffer[2] = dy;
 		buffer[3] = buffer[4] = 0;
-		for (i = 0; i < f; i++) {
+		for (i = 0; i < f; i++)
 			chk_write(lircm, buffer, 5);
-		}
 		break;
 	case imps_2:
 		buffer[0] = ((buttons & BUTTON1) ? 0x01 : 0x00)
-		    | ((buttons & BUTTON3) ? 0x02 : 0x00)
-		    | ((buttons & BUTTON2) ? 0x04 : 0x00)
-		    | 0x08 | (dx < 0 ? 0x10 : 0x00)
-		    | (dy < 0 ? 0x20 : 0x00);
+			    | ((buttons & BUTTON3) ? 0x02 : 0x00)
+			    | ((buttons & BUTTON2) ? 0x04 : 0x00)
+			    | 0x08 | (dx < 0 ? 0x10 : 0x00)
+			    | (dy < 0 ? 0x20 : 0x00);
 		buffer[1] = dx + (dx >= 0 ? 0 : 256);
 		buffer[2] = dy + (dy >= 0 ? 0 : 256);
 		buffer[3] = dz;
-		for (i = 0; i < f; i++) {
+		for (i = 0; i < f; i++)
 			chk_write(lircm, buffer, 4);
-		}
 		break;
 	case im_serial:
 		dy = -dy;
 		buffer[0] = ((buttons & BUTTON1) ? 0x20 : 0x00)
-		    | ((buttons & BUTTON3) ? 0x10 : 0x00)
-		    | 0x40 | ((dx & 0xC0) >> 6)
-		    | ((dy & 0xC0) >> 4);
+			    | ((buttons & BUTTON3) ? 0x10 : 0x00)
+			    | 0x40 | ((dx & 0xC0) >> 6)
+			    | ((dy & 0xC0) >> 4);
 		buffer[1] = dx & ~0xC0;
 		buffer[2] = dy & ~0xC0;
 		buffer[3] = ((dz < 0) ? 0x0f : 0x00)
-		    | ((dz > 0) ? 0x01 : 0x00)
-		    | ((buttons & BUTTON2) ? 0x10 : 0x00);
+			    | ((dz > 0) ? 0x01 : 0x00)
+			    | ((buttons & BUTTON2) ? 0x10 : 0x00);
 
-		for (i = 0; i < f; i++) {
+		for (i = 0; i < f; i++)
 			chk_write(lircm, buffer, 4);
-		}
 		break;
 	}
 
@@ -463,10 +453,9 @@ void mouse_button(int down, int up, int rep)
 }
 
 /*
-  You don't understand this funktion?
-  Never mind, I don't understand it, too.
-*/
-
+ * You don't understand this funktion?
+ * Never mind, I don't understand it, too.
+ */
 void mouse_circle(int r, int dirx, int diry)
 {
 	int i, d, incX, incY, x, y;
@@ -531,9 +520,8 @@ void mouse_conv(int rep, char *button, char *remote)
 			}
 		}
 		if (tm->tm_directive == mouse_activate) {
-			if (ms.active == 0 && ms.always_active == 0) {
+			if (ms.active == 0 && ms.always_active == 0)
 				activate();
-			}
 		} else if (tm->tm_directive == mouse_toggle_activate && rep == 0) {
 			if (ms.always_active == 0) {
 				if (ms.active == 0) {
@@ -547,6 +535,7 @@ void mouse_conv(int rep, char *button, char *remote)
 
 		if (tm->tm_directive != ignore && (ms.active || ms.always_active)) {
 			int i;
+
 			for (i = 0; config_table[i].string != NULL; i++) {
 				if (tm->tm_directive == config_table[i].d) {
 					int x, y, z, up, down, toggle;
@@ -558,22 +547,21 @@ void mouse_conv(int rep, char *button, char *remote)
 					up = config_table[i].up;
 					toggle = config_table[i].toggle;
 
-					if (x || y || z) {
+					if (x || y || z)
 						mouse_move(x, y, z, rep);
-					}
 					if (toggle) {
 						/*
-						   assert(down==up);
-						   assert(up==BUTTON1
-						   || up==BUTTON2
-						   || up==BUTTON3);
+						 * assert(down==up);
+						 * assert(up==BUTTON1
+						 || up==BUTTON2
+						 || up==BUTTON3);
 						 */
 						if (ms.buttons[map_buttons(up)] == button_up)
 							mouse_button(down, 0, rep);
 						else
 							mouse_button(0, up, rep);
 					} else {
-						if (down && up) {	/* click */
+						if (down && up) {       /* click */
 							mouse_button(down, 0, rep);
 #ifdef CLICK_DELAY
 							usleep(CLICK_DELAY);
@@ -586,19 +574,17 @@ void mouse_conv(int rep, char *button, char *remote)
 					break;
 				}
 			}
-
 		}
 		found = 1;
 		tm = tm->tm_next;
 	}
 	if (found == 0) {
-		if (ms.active == 1 && ms.always_active == 0 && ms.toggle_active == 0) {
+		if (ms.active == 1 && ms.always_active == 0 && ms.toggle_active == 0)
 			deactivate();
-		}
 	}
 }
 
-struct trans_mouse *read_config(FILE * fd)
+struct trans_mouse *read_config(FILE *fd)
 {
 	char buffer[PACKET_SIZE];
 	char *directives, *remote, *button;
@@ -618,7 +604,7 @@ struct trans_mouse *read_config(FILE * fd)
 		if (len == PACKET_SIZE - 1 && buffer[len - 1] != '\n') {
 			syslog(LOG_ERR, "line %d too long in config file", line);
 			freetm(tm_list);
-			return ((void *)-1);
+			return (void *)-1;
 		}
 		if (len > 0) {
 			len--;
@@ -645,15 +631,14 @@ struct trans_mouse *read_config(FILE * fd)
 
 			name = strtok(NULL, WHITE_SPACE);
 			if (name != NULL) {
-				if (strcasecmp("MouseSystems", name) == 0) {
+				if (strcasecmp("MouseSystems", name) == 0)
 					new_ms.protocol = mouse_systems;
-				} else if (strcasecmp("IMPS/2", name) == 0) {
+				else if (strcasecmp("IMPS/2", name) == 0)
 					new_ms.protocol = imps_2;
-				} else if (strcasecmp("IntelliMouse", name) == 0) {
+				else if (strcasecmp("IntelliMouse", name) == 0)
 					new_ms.protocol = im_serial;
-				} else {
+				else
 					syslog(LOG_WARNING, "unknown protocol %s", name);
-				}
 			}
 			if (name == NULL || strtok(NULL, WHITE_SPACE) != NULL) {
 				syslog(LOG_WARNING, "invalid line %d in config file ignored", line);
@@ -700,7 +685,7 @@ struct trans_mouse *read_config(FILE * fd)
 		} else {
 			int i;
 
-			d = mouse_activate;	/* make compiler happy */
+			d = mouse_activate;     /* make compiler happy */
 			for (i = 0; config_table[i].string != NULL; i++) {
 				if (strcasecmp(config_table[i].string, directives) == 0) {
 					d = config_table[i].d;
@@ -732,7 +717,7 @@ struct trans_mouse *read_config(FILE * fd)
 			if (tm_new != NULL)
 				free(tm_new);
 			free(tm_list);
-			return ((void *)-1);
+			return (void *)-1;
 		}
 		tm_new->tm_next = NULL;
 		tm_new->tm_remote = remote;
@@ -746,7 +731,7 @@ struct trans_mouse *read_config(FILE * fd)
 			tm_last = tm_new;
 		}
 	}
-	return (tm_list);
+	return tm_list;
 }
 
 
@@ -754,40 +739,40 @@ struct trans_mouse *read_config(FILE * fd)
 static void lircmd_add_defaults(void)
 {
 	char level[4];
+
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 
-	const char* const defaults[] = {
-		"lircmd:nodaemon", 	"False",
-		"lircmd:uinput", 	"False",
-		"lircmd:configfile",    LIRCMDCFGFILE,
-		"lircmd:debug",		level,
-		(const char*)NULL, 	(const char*)NULL
+	const char *const defaults[] = {
+		"lircmd:nodaemon",   "False",
+		"lircmd:uinput",     "False",
+		"lircmd:configfile", LIRCMDCFGFILE,
+		"lircmd:debug",	     level,
+		(const char *)NULL,  (const char *)NULL
 	};
 	options_add_defaults(defaults);
 }
 
 
-static void lircmd_parse_options(int argc,  char** const argv)
+static void lircmd_parse_options(int argc, char **const argv)
 {
 	int c;
 
 #       if defined(__linux__)
-	const char* const optstring =  "hvnuO";
+	const char *const optstring = "hvnuO";
 #       else
-	const char* const optstring = "hvnO";
+	const char *const optstring = "hvnO";
 #       endif
 
 	lircmd_add_defaults();
 	optind = 1;
 	while ((c = getopt_long(argc, argv, optstring, lircmd_options, NULL))
-		!= -1 )
-	{
+	       != -1) {
 		switch (c) {
 		case 'h':
 			puts(help);
 			exit(EXIT_SUCCESS);
 		case 'v':
-			printf("lircmd %s\n",  VERSION);
+			printf("lircmd %s\n", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
 			break;
@@ -834,7 +819,6 @@ void loop()
 			hup = 0;
 		}
 		if (strchr(buffer, '\n') == NULL) {
-
 			sigprocmask(SIG_UNBLOCK, &block, NULL);
 			len = read(lircd, buffer + end_len, PACKET_SIZE - end_len);
 			sigprocmask(SIG_BLOCK, &block, NULL);
@@ -854,11 +838,9 @@ void loop()
 		end++;
 		end_len = strlen(end);
 		memmove(buffer, end, end_len + 1);
-		if (ret == 3) {
+		if (ret == 3)
 			mouse_conv(rep, button, remote);
-		}
 	}
-
 }
 
 int main(int argc, char **argv)
@@ -870,7 +852,7 @@ int main(int argc, char **argv)
 	int nodaemon = 0;
 	const char *filename;
 	loglevel_t loglevel;
-	const char* level;
+	const char *level;
 
 	options_load(argc, argv, NULL, lircmd_parse_options);
 	useuinput = options_getboolean("lircmd:uinput");
@@ -879,8 +861,8 @@ int main(int argc, char **argv)
 	level = options_getstring("lircmd:debug");
 	loglevel = string2loglevel(level);
 	lirc_log_open("lircmd",
-		       nodaemon,
-		       loglevel == LIRC_BADLEVEL? LIRC_DEBUG : loglevel);
+		      nodaemon,
+		      loglevel == LIRC_BADLEVEL ? LIRC_DEBUG : loglevel);
 
 	/* connect to lircd */
 	addr.sun_family = AF_UNIX;
@@ -890,13 +872,15 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s: could not open socket\n", progname);
 		perror(progname);
 		exit(EXIT_FAILURE);
-	};
+	}
+	;
 	if (connect(lircd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
 		fprintf(stderr, "%s: could not connect to socket: %s\n",
 			progname, addr.sun_path);
 		perror(progname);
 		exit(EXIT_FAILURE);
-	};
+	}
+	;
 
 	/* either create uinput device or fifo device */
 	uinputfd = -1;
@@ -932,6 +916,7 @@ int main(int argc, char **argv)
 	fd = fopen(filename, "r");
 	if (fd == NULL && errno == ENOENT && configfile == NULL) {
 		int save_errno = errno;
+
 		filename = LIRCMDOLDCFGFILE;
 		fd = fopen(filename, "r");
 		errno = save_errno;
@@ -957,7 +942,7 @@ int main(int argc, char **argv)
 
 	act.sa_handler = sigterm;
 	sigfillset(&act.sa_mask);
-	act.sa_flags = SA_RESTART;	/* don't fiddle with EINTR */
+	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 	sigaction(SIGTERM, &act, NULL);
 	sigaction(SIGINT, &act, NULL);
 
@@ -968,11 +953,11 @@ int main(int argc, char **argv)
 
 	act.sa_handler = sighup;
 	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;	/* need EINTR in loop() */
+	act.sa_flags = 0;       /* need EINTR in loop() */
 	sigaction(SIGHUP, &act, NULL);
 
 	loop();
 
 	/* never reached */
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
