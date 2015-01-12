@@ -1,11 +1,10 @@
-
 /****************************************************************************
- ** irtestcase.c ************************************************************
- ****************************************************************************
- *
- * irtestcase - Log synced streams of raw durations, codes and app strings.
- *
- */
+** irtestcase.c ************************************************************
+****************************************************************************
+*
+* irtestcase - Log synced streams of raw durations, codes and app strings.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -26,49 +25,49 @@
 #include "lirc_client.h"
 #include "lirc_private.h"
 
-static const char* const USAGE =
-"Synopsis:\n"
-"irtestcase [-p prog -l lircrc] [-t testdata] <socket>\n"
-"irtestcase [ħ | -v]\n\n"
-"<socket> is the socket connecting to lircd. Defaults to a hardcoded \n"
-"default value, usually /var/run/lirc/lircd. Respects LIRC_SOCKET_PATH in\n"
-"environment.\n\n"
-"Options:\n"
-"   -l  lircrc  Log also translated symbols using lircrc type config file.\n"
-"   -p  prog    Program name used to match entries in lircrc.\n"
-"   -t  path    Use testdata from path.\n"
-"   -v  version Print version.\n"
-"   -h  help    Print this message.\n";
+static const char *const USAGE =
+	"Synopsis:\n"
+	"irtestcase [-p prog -l lircrc] [-t testdata] <socket>\n"
+	"irtestcase [ħ | -v]\n\n"
+	"<socket> is the socket connecting to lircd. Defaults to a hardcoded\n"
+	"default value, usually /var/run/lirc/lircd. Respects LIRC_SOCKET_PATH in\n"
+	"environment.\n\n"
+	"Options:\n"
+	"   -l  lircrc  Log also translated symbols using lircrc type config file.\n"
+	"   -p  prog    Program name used to match entries in lircrc.\n"
+	"   -t  path    Use testdata from path.\n"
+	"   -v  version Print version.\n"
+	"   -h  help    Print this message.\n";
 
 static struct option opts[] = {
-	{"prog", required_argument, NULL, 'p'},
-	{"lircrc", required_argument, NULL, 'l'},
-	{"testdata", required_argument, NULL, 't'},
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{0, 0, 0, 0}
+	{ "prog",     required_argument, NULL, 'p' },
+	{ "lircrc",   required_argument, NULL, 'l' },
+	{ "testdata", required_argument, NULL, 't' },
+	{ "help",     no_argument,	 NULL, 'h' },
+	{ "version",  no_argument,	 NULL, 'v' },
+	{ 0,	      0,		 0,    0   }
 };
 
-#define LOGDIR 		"/tmp/irtestcase"
-#define DEVICE_LOG	LOGDIR 	"/durations.log"
-#define CODE_LOG 	LOGDIR 	"/codes.log"
-#define APP_LOG  	LOGDIR 	"/app_strings.log"
+#define LOGDIR          "/tmp/irtestcase"
+#define DEVICE_LOG      LOGDIR  "/durations.log"
+#define CODE_LOG        LOGDIR  "/codes.log"
+#define APP_LOG         LOGDIR  "/app_strings.log"
 
-#define DEFAULT_PROG  	"no_such_prog"
+#define DEFAULT_PROG    "no_such_prog"
 
 /** Delay (us) before sending testdata so we are listening when it comes.*/
 static const int TESTDATA_DELAY = 1000000;
 
-static const char* opt_testdata = NULL;
-static const char* opt_lircrc = NULL;
-static const char* opt_prog = DEFAULT_PROG;
+static const char *opt_testdata = NULL;
+static const char *opt_lircrc = NULL;
+static const char *opt_prog = DEFAULT_PROG;
 
-static FILE* app_log = NULL;
-static FILE* code_log = NULL;
+static FILE *app_log = NULL;
+static FILE *code_log = NULL;
 
 
 /** Configure lircd to log received data from driver in path. */
-static void set_devicelog(int fd, const char* path)
+static void set_devicelog(int fd, const char *path)
 {
 	int r;
 	lirc_cmd_ctx command;
@@ -84,7 +83,7 @@ static void set_devicelog(int fd, const char* path)
 
 
 /** Configure lircd (file driver) to read testdata from path. */
-static void set_testinput(int fd, const char* path)
+static void set_testinput(int fd, const char *path)
 {
 	int r;
 	lirc_cmd_ctx command;
@@ -127,7 +126,7 @@ static void init_testdir(void)
 
 
 /** Get next code from lircd. */
-static int nextcode(int fd, char* buff, ssize_t size)
+static int nextcode(int fd, char *buff, ssize_t size)
 {
 	int i;
 
@@ -135,20 +134,20 @@ static int nextcode(int fd, char* buff, ssize_t size)
 	if (i == -1) {
 		perror("read");
 		exit(errno);
-	};
+	}
+	;
 	if (strstr(buff, "__EOF") != NULL) {
 		puts("Exit on EOF");
 		exit(0);
 	}
-	if (i >= 0) {
+	if (i >= 0)
 		buff[i] = '\0';
-	}
 	return i > 0 ? 1 : 0;
 }
 
 
 /**  Send testdata after delay. This is fork(), so nothing comes back. */
-static void send_later(int fd, const char* path)
+static void send_later(int fd, const char *path)
 {
 	int r;
 
@@ -170,9 +169,9 @@ static void send_later(int fd, const char* path)
 static int irtestcase(int fd_io, int fd_cmd)
 {
 	int r;
-	struct lirc_config* config;
+	struct lirc_config *config;
 	char code[64];
-	char* c;
+	char *c;
 
 	if (opt_lircrc != NULL) {
 		if (lirc_readconfig_only(opt_lircrc, &config, NULL) != 0) {
@@ -182,11 +181,10 @@ static int irtestcase(int fd_io, int fd_cmd)
 	}
 	while (nextcode(fd_io, code, sizeof(code)) == 1) {
 		fputs(code, stdout);
-		if (strstr(code, "__EOF") != NULL) {
+		if (strstr(code, "__EOF") != NULL)
 			exit(0);
-		}
 		fputs(code, code_log);
-		if (opt_lircrc != NULL){
+		if (opt_lircrc != NULL) {
 			r = lirc_code2char(config, code, &c);
 			while (r == 0 && c != NULL) {
 				printf("    %s\n", c);
@@ -206,7 +204,7 @@ int main(int argc, char *argv[])
 {
 	int fd_io;
 	int fd_cmd;
-	char* socketpath;
+	char *socketpath;
 	char path[128];
 	int c;
 
@@ -223,28 +221,28 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			puts(USAGE);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'v':
 			printf("%s\n", "irtestcase " VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
 			fputs("Try `irtestcase --help'.\n", stderr);
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 	if (argc > optind + 1) {
 		fputs("irtestcase: Too many arguments (max one).\n", stderr);
 		fputs("Try `irtestcase --help'.\n", stderr);
-		return (EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	if (strcmp(opt_prog, DEFAULT_PROG) != 0 && opt_lircrc == NULL) {
 		fputs("--prog requires --lircrc/-l. Giving up.\n", stderr);
-		return (EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	if (opt_lircrc != NULL && strcmp(opt_prog, DEFAULT_PROG) == 0) {
 		fputs("--lircrc requires --prog/-p. Giving up.\n", stderr);
-		return (EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	init_testdir();
@@ -254,9 +252,8 @@ int main(int argc, char *argv[])
 		exit(3);
 	}
 	set_devicelog(fd_cmd, DEVICE_LOG);
-	if (opt_testdata != NULL) {
+	if (opt_testdata != NULL)
 		send_later(fd_cmd, opt_testdata);
-	}
 
 	lirc_log_get_clientlog("irtestcase", path, sizeof(path));
 	lirc_log_set_file(path);

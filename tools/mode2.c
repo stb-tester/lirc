@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** mode2.c *****************************************************************
- ****************************************************************************
- *
- * mode2 - shows the pulse/space length of a remote button
- *
- * Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
- * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** mode2.c *****************************************************************
+****************************************************************************
+*
+* mode2 - shows the pulse/space length of a remote button
+*
+* Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
+* Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -35,7 +34,7 @@
 
 #include "lirc_private.h"
 
-static char *opt_device = NULL;
+static char* opt_device = NULL;
 static int opt_dmode = 0;
 static int t_div = 500;
 static unsigned int opt_gap = 10000;
@@ -43,33 +42,34 @@ static int opt_raw_access = 0;
 
 
 static const char* const help =
-"Usage: mode2 [options]\n"
-"\t -d --device=device\tread from given device\n"
-"\t -H --driver=driver\tuse given driver\n"
-"\t -U --plugindir=path\tLoad plugins from path.\n"
-"\t -k --keep-root\t\tkeep root privileges\n"
-"\t -m --mode\t\tenable column display mode\n"
-"\t -r --raw\t\taccess device directly\n"
-"\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
-"\t -s --scope=time\tenable 'scope like display with time us per char.\n"
-"\t -h --help\t\tdisplay usage summary\n"
-"\t -v --version\t\tdisplay version\n"
-"\t -A --driver-options=key:value[|key:value...]\n"
-"\t\t\t\tSet driver options\n";
+	"Usage: mode2 [options]\n"
+	"\t -d --device=device\tread from given device\n"
+	"\t -H --driver=driver\tuse given driver\n"
+	"\t -U --plugindir=path\tLoad plugins from path.\n"
+	"\t -k --keep-root\t\tkeep root privileges\n"
+	"\t -m --mode\t\tenable column display mode\n"
+	"\t -r --raw\t\taccess device directly\n"
+	"\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
+	"\t -s --scope=time\t'scope like display with time us per char.\n"
+	"\t -h --help\t\tdisplay usage summary\n"
+	"\t -v --version\t\tdisplay version\n"
+	"\t -A --driver-options=key:value[|key:value...]\n"
+	"\t\t\t\tSet driver options\n";
+
 
 static const struct option options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"device", required_argument, NULL, 'd'},
-	{"driver", required_argument, NULL, 'H'},
-	{"keep-root", no_argument, NULL, 'k'},
-	{"mode", no_argument, NULL, 'm'},
-	{"raw", no_argument, NULL, 'r'},
-	{"gap", required_argument, NULL, 'g'},
-	{"scope", required_argument, NULL, 's'},
-	{"plugindir", required_argument, NULL, 'U'},
+	{"help",           no_argument,       NULL, 'h'},
+	{"version",        no_argument,       NULL, 'v'},
+	{"device",         required_argument, NULL, 'd'},
+	{"driver",         required_argument, NULL, 'H'},
+	{"keep-root",      no_argument,       NULL, 'k'},
+	{"mode",           no_argument,       NULL, 'm'},
+	{"raw",            no_argument,       NULL, 'r'},
+	{"gap",            required_argument, NULL, 'g'},
+	{"scope",          required_argument, NULL, 's'},
+	{"plugindir",      required_argument, NULL, 'U'},
 	{"driver-options", required_argument, NULL, 'A'},
-	{0, 0, 0, 0}
+	{0,	           0,		      0,    0  }
 };
 
 const char* const MSG_NO_GETMODE =
@@ -84,16 +84,17 @@ const char* const MSG_NO_GETMODE =
 static void add_defaults(void)
 {
 	char level[4];
+
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 
 	const char* const defaults[] = {
-		"mode2:driver", 	"default",
-		"mode2:lircdfile", 	LIRCD,
-		"lircd:logfile", 	"syslog",
-		"lircd:debug", 		level,
-		"lircd:plugindir", 	PLUGINDIR,
-		"lircd:configfile",  	LIRCDCFGFILE,
-		(const char*)NULL, 	(const char*)NULL
+		"mode2:driver",	    "default",
+		"mode2:lircdfile",  LIRCD,
+		"lircd:logfile",    "syslog",
+		"lircd:debug",	    level,
+		"lircd:plugindir",  PLUGINDIR,
+		"lircd:configfile", LIRCDCFGFILE,
+		(const char*)NULL,  (const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
@@ -102,13 +103,12 @@ static void add_defaults(void)
 static void parse_options(int argc, char** argv)
 {
 	int c;
-	static const char* const optstring= "hvd:H:mkrg:s:U:A:";
+	static const char* const optstring = "hvd:H:mkrg:s:U:A:";
 	char driver[64];
 
 	strcpy(driver, "default");
 	add_defaults();
-	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
-	{
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
 			puts(help);
@@ -153,7 +153,7 @@ static void parse_options(int argc, char** argv)
 		fputs("Too many arguments\n", stderr);
 		exit(EXIT_FAILURE);
 	}
-	if (opt_raw_access && opt_device == NULL ) {
+	if (opt_raw_access && opt_device == NULL) {
 		fprintf(stderr, "The --raw option requires a --device\n");
 		exit(EXIT_FAILURE);
 	}
@@ -186,6 +186,7 @@ static void drop_root(void)
 int open_device(int opt_raw_access, const char* device)
 {
 	struct stat s;
+
 	__u32 mode;
 	int fd;
 	const char* opt;
@@ -195,14 +196,15 @@ int open_device(int opt_raw_access, const char* device)
 		if (fd == -1) {
 			perror("Error while opening device");
 			exit(EXIT_FAILURE);
-		};
+		}
+		;
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
 			fprintf(stderr, "%s is not a character device\n",
 				device);
 			fputs("Use the -d option to specify device\n",
-			       stderr);
+			      stderr);
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
@@ -222,17 +224,17 @@ int open_device(int opt_raw_access, const char* device)
 			}
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			fprintf(stderr, "Cannot initiate device %s\n",
-			 	curr_driver->device);
+				curr_driver->device);
 			exit(EXIT_FAILURE);
 		}
 		printf("Using device: %s\n", curr_driver->device);
-		fd = curr_driver->fd;	/* please compiler */
+		fd = curr_driver->fd;   /* please compiler */
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
 				puts("Please use the --raw option to access "
-				       "the device directly instead through\n"
-				       "the abstraction layer");
+				     "the device directly instead through\n"
+				     "the abstraction layer");
 				exit(EXIT_FAILURE);
 			} else if (mode != LIRC_MODE_LIRCCODE) {
 				puts("Internal error: bad receive mode");
@@ -300,26 +302,24 @@ void print_mode2_data(unsigned int data)
 	switch (opt_dmode) {
 	case 0:
 		printf("%s %u\n", (
-		       data & PULSE_BIT) ? "pulse" : "space",
-		       (__u32) (data & PULSE_MASK));
+			       data & PULSE_BIT) ? "pulse" : "space",
+		       (__u32)(data & PULSE_MASK));
 		break;
 	case 1: {
 		/* print output like irrecord raw config file data */
-		printf(" %8u", (__u32) data & PULSE_MASK);
+		printf(" %8u", (__u32)data & PULSE_MASK);
 		++bitno;
 		if (data & PULSE_BIT) {
-			if ((bitno & 1) == 0) {
+			if ((bitno & 1) == 0)
 				/* not in expected order */
 				fputs("-pulse", stdout);
-			}
 		} else {
-			if (bitno & 1) {
+			if (bitno & 1)
 				/* not in expected order */
 				fputs("-space", stdout);
-			}
 			if (((data & PULSE_MASK) > opt_gap) || (bitno >= 6)) {
 				/* real long space or more
-				   than 6 codes, start new line */
+				 * than 6 codes, start new line */
 				puts("");
 				if ((data & PULSE_MASK) > opt_gap)
 					puts("");
@@ -329,13 +329,14 @@ void print_mode2_data(unsigned int data)
 		break;
 	}
 	case 2:
-		if ((data & PULSE_MASK) > opt_gap)
+		if ((data & PULSE_MASK) > opt_gap) {
 			fputs("_\n\n_", stdout);
-		else
+		} else {
 			printf("%.*s",
-			       ((data & PULSE_MASK) + t_div/2) / t_div,
+			       ((data & PULSE_MASK) + t_div / 2) / t_div,
 			       (data & PULSE_BIT) ?
-					"------------" : "____________");
+			       "------------" : "____________");
+		}
 		break;
 	}
 	fflush(stdout);
@@ -348,15 +349,14 @@ void print_lirccode_data(char* buffer, size_t count)
 	size_t i;
 
 	fputs("code: 0x", stdout);
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count; i++)
 		printf("%02x", (unsigned char)buffer[i]);
-	}
 	puts("");
 	fflush(stdout);
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	int fd;
 	char buffer[sizeof(ir_code)];
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 		if (opt_raw_access || mode != LIRC_MODE_MODE2) {
 			result = read(fd,
 				      (mode == LIRC_MODE_MODE2 ?
-						(void *)&data : buffer),
+				       (void*)&data : buffer),
 				      count);
 			if (result != count) {
 				fputs("read() failed\n", stderr);
@@ -405,5 +405,5 @@ int main(int argc, char **argv)
 			print_mode2_data(data);
 		}
 	}
-	return (EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }

@@ -1,72 +1,71 @@
-
 /****************************************************************************
- ** irxevent.c **************************************************************
- ****************************************************************************
- *
- * irxevent  - infra-red xevent sender
- *
- * Heinrich Langos  <heinrich@null.net>
- * small modifications by Christoph Bartelmus <lirc@bartelmus.de>
- *
- * irxevent is based on irexec (Copyright (C) 1998 Trent Piepho)
- * and irx.c (no copyright notice found)
- *
- *  =======
- *  HISTORY
- *  =======
- *
- * 0.1
- *     -Initial Release
- *
- * 0.2
- *     -no more XWarpPointer... sending Buttonclicks to off-screen
- *      applications works becaus i also fake the EnterNotify and LeaveNotify
- *     -support for keysymbols rather than characters... so you can use
- *      Up or Insert or Control_L ... maybe you could play xquake than :*)
- *
- * 0.3
- *     -bugfix for looking for subwindows of non existing windows
- *     -finaly a README file
- *
- * 0.3a (done by Christoph Bartelmus)
- *     -read from a shared .lircrc file
- *     -changes to comments
- *     (chris, was that all you changed?)
- *
- * 0.4
- *     -fake_timestamp() to solve gqmpeg problems
- *     -Shift Control and other mod-keys may work. (can't check it right now)
- *      try ctrl-c or shift-Page_up or whatever ...
- *      modifiers: shift, caps, ctrl, alt, meta, numlock, mod3, mod4, scrlock
- *     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys.
- *     -updated irxevent.README
- *
- * 0.4.1
- *     -started to make smaller version steps :-)
- *     -Use "CurrentWindow" as window name to send events to the window
- *      that -you guessed it- currently has the focus.
- *
- * 0.4.2
- *     -fixed a stupid string bug in key sending.
- *     -updated irxevent.README to be up to date with the .lircrc format.
- *
- * 0.4.3
- *     -changed DEBUG functions to actually produce some output :)
- *
- * 0.5.0
- *     -fixed finding subwindows recursively
- *     -added xy_Key (though xterm and xemacs still don't like me)
- *     -added compilation patch from Ben Hochstedler
- *      <benh@eeyore.moneng.mei.com> for compiling on systems
- * 	without strsep() (like some solaris)
- *
- *
- * see http://www.wh9.tu-dresden.de/~heinrich/lirc/irxevent/irxevent.keys
- * for a the key names. (this one is for you Pablo :-) )
- *
- * for more information see the irxevent.README file
- *
- */
+** irxevent.c **************************************************************
+****************************************************************************
+*
+* irxevent  - infra-red xevent sender
+*
+* Heinrich Langos  <heinrich@null.net>
+* small modifications by Christoph Bartelmus <lirc@bartelmus.de>
+*
+* irxevent is based on irexec (Copyright (C) 1998 Trent Piepho)
+* and irx.c (no copyright notice found)
+*
+*  =======
+*  HISTORY
+*  =======
+*
+* 0.1
+*     -Initial Release
+*
+* 0.2
+*     -no more XWarpPointer... sending Buttonclicks to off-screen
+*      applications works becaus i also fake the EnterNotify and LeaveNotify
+*     -support for keysymbols rather than characters... so you can use
+*      Up or Insert or Control_L ... maybe you could play xquake than :*)
+*
+* 0.3
+*     -bugfix for looking for subwindows of non existing windows
+*     -finaly a README file
+*
+* 0.3a (done by Christoph Bartelmus)
+*     -read from a shared .lircrc file
+*     -changes to comments
+*     (chris, was that all you changed?)
+*
+* 0.4
+*     -fake_timestamp() to solve gqmpeg problems
+*     -Shift Control and other mod-keys may work. (can't check it right now)
+*      try ctrl-c or shift-Page_up or whatever ...
+*      modifiers: shift, caps, ctrl, alt, meta, numlock, mod3, mod4, scrlock
+*     -size of 'char *keyname' changed from 64 to 128 to allow all mod-keys.
+*     -updated irxevent.README
+*
+* 0.4.1
+*     -started to make smaller version steps :-)
+*     -Use "CurrentWindow" as window name to send events to the window
+*      that -you guessed it- currently has the focus.
+*
+* 0.4.2
+*     -fixed a stupid string bug in key sending.
+*     -updated irxevent.README to be up to date with the .lircrc format.
+*
+* 0.4.3
+*     -changed DEBUG functions to actually produce some output :)
+*
+* 0.5.0
+*     -fixed finding subwindows recursively
+*     -added xy_Key (though xterm and xemacs still don't like me)
+*     -added compilation patch from Ben Hochstedler
+*      <benh@eeyore.moneng.mei.com> for compiling on systems
+*       without strsep() (like some solaris)
+*
+*
+* see http://www.wh9.tu-dresden.de/~heinrich/lirc/irxevent/irxevent.keys
+* for a the key names. (this one is for you Pablo :-) )
+*
+* for more information see the irxevent.README file
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -96,19 +95,22 @@ static int bDaemon = 0;
 static int bInError = 0;
 
 struct keymodlist_t {
-	char *name;
-	Mask mask;
+	char *	name;
+	Mask	mask;
 };
 static struct keymodlist_t keymodlist[] = {
-	{"SHIFT", ShiftMask},
-	{"CAPS", LockMask},
-	{"CTRL", ControlMask},
-	{"ALT", Mod1Mask}, {"META", Mod1Mask},
-	{"NUMLOCK", Mod2Mask},
-	{"MOD3", Mod3Mask},	/* I don't have a clue what key maps to this. */
-	{"MOD4", Mod4Mask},	/* I don't have a clue what key maps to this. */
-	{"MOD5", Mod5Mask}, {"ALTGR", Mod5Mask}, {"SCRLOCK", Mod5Mask},
-	{NULL, 0},
+	{ "SHIFT",   ShiftMask	 },
+	{ "CAPS",    LockMask	 },
+	{ "CTRL",    ControlMask },
+	{ "ALT",     Mod1Mask	 },
+	{ "META",    Mod1Mask    },
+	{ "NUMLOCK", Mod2Mask	 },
+	{ "MOD3",    Mod3Mask	 },     /* I don't have a clue what key maps to this. */
+	{ "MOD4",    Mod4Mask	 },     /* I don't have a clue what key maps to this. */
+	{ "MOD5",    Mod5Mask	 },
+	{ "ALTGR",   Mod5Mask    },
+	{ "SCRLOCK", Mod5Mask    },
+	{ NULL,	     0		 },
 };
 
 static const char *key_delimiter = "-";
@@ -122,18 +124,19 @@ static XEvent xev;
 static Window subw;
 
 static Time fake_timestamp()
-     /*seems that xfree86 computes the timestamps like this     */
-     /*strange but it relies on the *1000-32bit-wrap-around     */
-     /*if anybody knows exactly how to do it, please contact me */
+/*seems that xfree86 computes the timestamps like this     */
+/*strange but it relies on the *1000-32bit-wrap-around     */
+/*if anybody knows exactly how to do it, please contact me */
 {
 	int tint;
 	struct timeval tv;
-	struct timezone tz;	/* is not used since ages */
+	struct timezone tz;     /* is not used since ages */
+
 	gettimeofday(&tv, &tz);
 	tint = (int)tv.tv_sec * 1000;
 	tint = tint / 1000 * 1000;
 	tint = tint + tv.tv_usec / 1000;
-	return (Time) tint;
+	return (Time)tint;
 }
 
 static Window find_window(Window top, char *name)
@@ -143,61 +146,76 @@ static Window find_window(Window top, char *name)
 	Window *children, foo;
 	int revert_to_return;
 	unsigned int nc;
+
 	if (!strcmp(active_window_name, name)) {
 		XGetInputFocus(dpy, &foo, &revert_to_return);
-		return (foo);
+		return foo;
 	} else if (!strcmp(root_window_name, name)) {
-		return (root);
+		return root;
 	}
 	/* First the base case */
 	if (XFetchName(dpy, top, &wname)) {
 		if (!strncmp(wname, name, strlen(name))) {
 			XFree(wname);
-			logprintf(LIRC_DEBUG, "found it by wname 0x%x \n", top);
-			return (top);	/* found it! */
-		};
+			logprintf(LIRC_DEBUG,
+				  "found it by wname 0x%x\n", top);
+			return top;     /* found it! */
+		}
+		;
 		XFree(wname);
-	};
+	}
+	;
 
 	if (XGetIconName(dpy, top, &iname)) {
 		if (!strncmp(iname, name, strlen(name))) {
 			XFree(iname);
-			logprintf(LIRC_DEBUG, "found it by iname 0x%x \n", top);
-			return (top);	/* found it! */
-		};
+			logprintf(LIRC_DEBUG,
+				  "found it by iname 0x%x\n", top);
+			return top;     /* found it! */
+		}
+		;
 		XFree(iname);
-	};
+	}
+	;
 
 	if (XGetClassHint(dpy, top, &xch)) {
 		if (!strcmp(xch.res_class, name)) {
 			XFree(xch.res_name);
 			XFree(xch.res_class);
-			logprintf(LIRC_DEBUG, "res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
-			return (top);	/* found it! */
-		};
+			logprintf(LIRC_DEBUG,
+				  "res_class '%s' res_name '%s' 0x%x\n",
+				  xch.res_class, xch.res_name, top);
+			return top;     /* found it! */
+		}
+		;
 		if (!strcmp(xch.res_name, name)) {
 			XFree(xch.res_name);
 			XFree(xch.res_class);
-			logprintf(LIRC_DEBUG, "res_class '%s' res_name '%s' 0x%x \n", xch.res_class, xch.res_name, top);
-			return (top);	/* found it! */
-		};
+			logprintf(LIRC_DEBUG,
+				  "res_class '%s' res_name '%s' 0x%x\n",
+				  xch.res_class, xch.res_name, top);
+			return top;     /* found it! */
+		}
+		;
 		XFree(xch.res_name);
 		XFree(xch.res_class);
-	};
+	}
+	;
 
-	if (!XQueryTree(dpy, top, &foo, &foo, &children, &nc) || children == NULL) {
-		return (0);	/* no more windows here */
-	};
+	if (!XQueryTree(dpy, top, &foo, &foo, &children, &nc) || children == NULL)
+		return 0;       /* no more windows here */
+	;
 
 	/* check all the sub windows */
 	for (; nc > 0; nc--) {
 		top = find_window(children[nc - 1], name);
 		if (top)
-			break;	/* we found it somewhere */
-	};
+			break;  /* we found it somewhere */
+	}
+	;
 	if (children != NULL)
 		XFree(children);
-	return (top);
+	return top;
 }
 
 static Window find_sub_sub_window(Window top, int *x, int *y)
@@ -208,39 +226,48 @@ static Window find_sub_sub_window(Window top, int *x, int *y)
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
 	base = top;
-	if (!base) {
+	if (!base)
 		return base;
-	};
-	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL) {
-		return (base);	/* no more windows here */
-	};
+	;
+	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL)
+		return base;    /* no more windows here */
+	;
 	logprintf(LIRC_DEBUG, "found subwindows %d\n", nc);
 
 	/* check if we hit a sub window and find the smallest one */
 	for (; nc > 0; nc--) {
-		if (XGetGeometry(dpy, children[nc - 1], &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
-			if ((rel_x <= *x) && (*x <= rel_x + width) && (rel_y <= *y) && (*y <= rel_y + height)) {
-				logprintf(LIRC_DEBUG, "found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
-					    rel_y, width, height);
+		if (XGetGeometry(dpy, children[nc - 1],
+		    &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
+			if ((rel_x <= *x)
+			    && (*x <= rel_x + width)
+			    && (rel_y <= *y) && (*y <= rel_y + height)) {
+				logprintf(LIRC_DEBUG,
+					  "found a subwindow 0x%x +%d +%d  %d x %d\n",
+					  children[nc - 1], rel_x,
+					  rel_y, width, height);
 				if ((width * height) < targetsize) {
 					target = children[nc - 1];
 					targetsize = width * height;
 					new_x = *x - rel_x;
 					new_y = *y - rel_y;
 					/*bull's eye ... */
-					target = find_sub_sub_window(target, &new_x, &new_y);
+					target = find_sub_sub_window(target,
+								     &new_x,
+								     &new_y);
 				}
 			}
 		}
-	};
+	}
+	;
 	if (children != NULL)
 		XFree(children);
 	if (target) {
 		*x = new_x;
 		*y = new_y;
 		return target;
-	} else
+	} else {
 		return base;
+	}
 }
 
 static Window find_sub_window(Window top, char *name, int *x, int *y)
@@ -251,20 +278,25 @@ static Window find_sub_window(Window top, char *name, int *x, int *y)
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
 	base = find_window(top, name);
-	if (!base) {
+	if (!base)
 		return base;
-	};
-	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL) {
-		return (base);	/* no more windows here */
-	};
+	;
+	if (!XQueryTree(dpy, base, &foo, &foo, &children, &nc) || children == NULL)
+		return base;    /* no more windows here */
+	;
 	logprintf(LIRC_DEBUG, "found subwindows %d\n", nc);
 
 	/* check if we hit a sub window and find the smallest one */
 	for (; nc > 0; nc--) {
-		if (XGetGeometry(dpy, children[nc - 1], &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
-			if ((rel_x <= *x) && (*x <= rel_x + width) && (rel_y <= *y) && (*y <= rel_y + height)) {
-				logprintf(LIRC_DEBUG, "found a subwindow 0x%x +%d +%d  %d x %d   \n", children[nc - 1], rel_x,
-					    rel_y, width, height);
+		if (XGetGeometry(dpy, children[nc - 1],
+				 &foo, &rel_x, &rel_y,
+				 &width, &height, &border, &depth)) {
+			if ((rel_x <= *x) && (*x <= rel_x + width)
+			    && (rel_y <= *y) && (*y <= rel_y + height)) {
+				logprintf(LIRC_DEBUG,
+					  "found a subwindow 0x%x +%d +%d  %d x %d\n",
+					  children[nc - 1], rel_x,
+					  rel_y, width, height);
 				if ((width * height) < targetsize) {
 					target = children[nc - 1];
 					targetsize = width * height;
@@ -275,15 +307,17 @@ static Window find_sub_window(Window top, char *name, int *x, int *y)
 				}
 			}
 		}
-	};
+	}
+	;
 	if (children != NULL)
 		XFree(children);
 	if (target) {
 		*x = new_x;
 		*y = new_y;
 		return target;
-	} else
+	} else {
 		return base;
+	}
 }
 
 static Window find_window_focused(Window top, char *name)
@@ -293,7 +327,7 @@ static Window find_window_focused(Window top, char *name)
 	unsigned int n;
 
 	/* return the currently focused window if it is a direct match or a
-	   subwindow of the named window */
+	 * subwindow of the named window */
 
 	if ((w = find_window(top, name))) {
 		XGetInputFocus(dpy, &cur, &tmp);
@@ -301,23 +335,23 @@ static Window find_window_focused(Window top, char *name)
 
 		if (w == cur) {
 			/* window matched */
-			return (cur);
+			return cur;
 		} else if (XQueryTree(dpy, w, &foo, &foo, &children, &n) && children != NULL) {
 			/* check all the sub windows of named window */
 			for (; n > 0; n--) {
 				if (children[n - 1] == cur) {
 					XFree(children);
-					return (cur);
+					return cur;
 				}
 			}
 			XFree(children);
 		}
 	}
 
-	return (0);
+	return 0;
 }
 
-static void make_button(int button, int x, int y, XButtonEvent * xev)
+static void make_button(int button, int x, int y, XButtonEvent *xev)
 {
 	xev->type = ButtonPress;
 	xev->display = dpy;
@@ -335,7 +369,7 @@ static void make_button(int button, int x, int y, XButtonEvent * xev)
 	return;
 }
 
-static void make_key(char *keyname, int x, int y, XKeyEvent * xev)
+static void make_key(char *keyname, int x, int y, XKeyEvent *xev)
 {
 	char *part, *part2, *sep_part;
 	struct keymodlist_t *kmlptr;
@@ -363,18 +397,18 @@ static void make_key(char *keyname, int x, int y, XKeyEvent * xev)
 #endif
 	{
 		part2 = strncpy(part2, part, 128);
-		//      logprintf(LIRC_DEBUG, "-   %s \n",part);
+		//      logprintf(LIRC_DEBUG, "-   %s\n",part);
 		kmlptr = keymodlist;
 		while (kmlptr->name) {
-			//      logprintf(LIRC_DEBUG, "--  %s %s \n", kmlptr->name, part);
+			//      logprintf(LIRC_DEBUG, "--  %s %s\n", kmlptr->name, part);
 			if (!strcasecmp(kmlptr->name, part))
 				xev->state |= kmlptr->mask;
 			kmlptr++;
 		}
-		//      logprintf(LIRC_DEBUG, "--- %s \n",part);
+		//      logprintf(LIRC_DEBUG, "--- %s\n",part);
 	}
-	//  logprintf(LIRC_DEBUG, "*** %s \n",part);
-	//  logprintf(LIRC_DEBUG, "*** %s \n",part2);
+	//  logprintf(LIRC_DEBUG, "*** %s\n",part);
+	//  logprintf(LIRC_DEBUG, "*** %s\n",part2);
 
 	/*
 	 * New code 14-June-2005 by Warren Melnick, C.A.C. Media
@@ -392,7 +426,7 @@ static void make_key(char *keyname, int x, int y, XKeyEvent * xev)
 		logprintf(LIRC_DEBUG, "KeySym String: %s, KeySym: %ld KeyCode: %d\n", part2, ks, kc);
 	} else if (strncmp(part2, "KeyCode:", 8) == 0) {
 		sep_part = part2 + 8;
-		kc = (KeyCode) strtoul(sep_part, NULL, 0);
+		kc = (KeyCode)strtoul(sep_part, NULL, 0);
 		logprintf(LIRC_DEBUG, "KeyCode String: %s, KeyCode: %d\n", part2, kc);
 	}
 	if ((ks == 0) && (kc == 0)) {
@@ -415,7 +449,7 @@ static void sendfocus(Window w, int in_out)
 	focev.window = w;
 	focev.mode = NotifyNormal;
 	focev.detail = NotifyPointer;
-	XSendEvent(dpy, w, True, FocusChangeMask, (XEvent *) & focev);
+	XSendEvent(dpy, w, True, FocusChangeMask, (XEvent *)&focev);
 	XSync(dpy, True);
 
 	return;
@@ -424,6 +458,7 @@ static void sendfocus(Window w, int in_out)
 static void sendpointer_enter_or_leave(Window w, int in_out)
 {
 	XCrossingEvent crossev;
+
 	crossev.type = in_out;
 	crossev.display = dpy;
 	crossev.window = w;
@@ -439,14 +474,14 @@ static void sendpointer_enter_or_leave(Window w, int in_out)
 	crossev.same_screen = True;
 	crossev.focus = True;
 	crossev.state = 0;
-	XSendEvent(dpy, w, True, EnterWindowMask | LeaveWindowMask, (XEvent *) & crossev);
+	XSendEvent(dpy, w, True, EnterWindowMask | LeaveWindowMask, (XEvent *)&crossev);
 	XSync(dpy, True);
 	return;
 }
 
 static void sendkey(char *keyname, int x, int y, Window w, Window s)
 {
-	make_key(keyname, x, y, (XKeyEvent *) & xev);
+	make_key(keyname, x, y, (XKeyEvent *)&xev);
 	xev.xkey.window = w;
 	xev.xkey.subwindow = s;
 
@@ -468,7 +503,7 @@ static void sendkey(char *keyname, int x, int y, Window w, Window s)
 
 static void sendbutton(int button, int x, int y, Window w, Window s)
 {
-	make_button(button, x, y, (XButtonEvent *) & xev);
+	make_button(button, x, y, (XButtonEvent *)&xev);
 	xev.xbutton.window = w;
 	xev.xbutton.subwindow = s;
 	sendpointer_enter_or_leave(w, EnterNotify);
@@ -488,12 +523,13 @@ static void sendbutton(int button, int x, int y, Window w, Window s)
 	return;
 }
 
-int errorHandler(Display * di, XErrorEvent * ev)
+int errorHandler(Display *di, XErrorEvent *ev)
 {
 	char buff[512];
+
 	buff[0] = 0;
 	if (bInError || ev == NULL || di == NULL)
-		return 1;	// only 1 msg per key
+		return 1;       // only 1 msg per key
 	XGetErrorText(di, ev->error_code, buff, sizeof(buff) - 1);
 	if (buff[0]) {
 		if (!bDaemon)
@@ -511,7 +547,7 @@ int check(char *s)
 	buffer = malloc(strlen(s) + 1);
 	if (buffer == NULL) {
 		fprintf(stderr, "%s: out of memory\n", prog);
-		return (-1);
+		return -1;
 	}
 
 	if (2 != sscanf(s, "Key %s Focus %s %s", buffer, buffer, buffer) &&
@@ -528,17 +564,17 @@ int check(char *s)
 	    4 != sscanf(s, "xy_Key %d %d %s %s", &d, &d, buffer, buffer)) {
 		fprintf(stderr, "%s: bad config string \"%s\"\n", prog, s);
 		free(buffer);
-		return (-1);
+		return -1;
 	}
 	free(buffer);
-	return (0);
+	return 0;
 }
 
 static struct option long_options[] = {
-	{"daemon", no_argument, NULL, 'd'},
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'V'},
-	{0, 0, 0, 0}
+	{ "daemon",  no_argument, NULL, 'd' },
+	{ "help",    no_argument, NULL, 'h' },
+	{ "version", no_argument, NULL, 'V' },
+	{ 0,	     0,		  0,	0   }
 };
 
 int main(int argc, char *argv[])
@@ -561,14 +597,14 @@ int main(int argc, char *argv[])
 			       "       -d --daemon     fork and run in background\n"
 			       "       -h --help       display usage summary\n"
 			       "       -V --version    display version\n", prog);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'V':
 			printf("%s %s\n", prog, VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
 			fprintf(stderr, "Try `%s --help' for more information.\n", prog);
-			return (EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -577,7 +613,7 @@ int main(int argc, char *argv[])
 	} else if (argc > optind + 1) {
 		fprintf(stderr, "%s: incorrect number of arguments.\n", prog);
 		fprintf(stderr, "Try `%s --help' for more information.\n", prog);
-		return (EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 
 	dpy = XOpenDisplay(NULL);
@@ -609,8 +645,10 @@ int main(int argc, char *argv[])
 			if (ir == NULL)
 				continue;
 			while ((ret = lirc_code2char(config, ir, &c)) == 0 && c != NULL) {
-				logprintf(LIRC_DEBUG, "Received code: %s Sending event: \n", ir);
-				bInError = 0;	// reset error state, want to see error msg
+				logprintf(LIRC_DEBUG,
+					  "Received code: %s Sending:\n",
+					  ir);
+				bInError = 0;   // reset error state, want to see error msg
 
 				*windowname = 0;
 				if (2 == sscanf(c, "Key %s Focus WindowID %i", keyname, &WindowID) ||
@@ -629,7 +667,7 @@ int main(int argc, char *argv[])
 						WindowID = find_window_focused(root, windowname);
 						if (!WindowID) {
 							logprintf(LIRC_DEBUG, "target window '%s' doesn't have focus\n",
-								    windowname);
+								  windowname);
 							continue;
 						}
 						logprintf(LIRC_DEBUG, "focused:  %s\n", windowname);
@@ -639,8 +677,9 @@ int main(int argc, char *argv[])
 
 						XGetInputFocus(dpy, &cur, &tmp);
 						if (WindowID != cur) {
-							logprintf(LIRC_DEBUG, "target window '0x%x' doesn't have focus\n",
-								    WindowID);
+							logprintf(LIRC_DEBUG,
+								  "target window '0x%x' doesn't have focus\n",
+								  WindowID);
 							continue;
 						}
 						logprintf(LIRC_DEBUG, "focused:  0x%x\n", WindowID);
@@ -666,14 +705,14 @@ int main(int argc, char *argv[])
 				}
 
 				switch (c[0]) {
-				case 'K':	// Key
+				case 'K':       // Key
 					logprintf(LIRC_DEBUG, "keyname: %s \t WindowID: 0x%x\n", keyname, WindowID);
 					logprintf(LIRC_DEBUG, "%s\n", c);
-					sendkey(keyname, 1, 1, (Window) WindowID, 0);
+					sendkey(keyname, 1, 1, (Window)WindowID, 0);
 					break;
 
-				case 'B':	// Button
-				case 'x':	// xy_Key
+				case 'B':       // Button
+				case 'x':       // xy_Key
 					subw = find_sub_window(root, windowname, &pointer_x, &pointer_y);
 					if (subw) {
 						if (WindowID == subw)
@@ -691,7 +730,6 @@ int main(int argc, char *argv[])
 						}
 					}
 					break;
-
 				}
 			}
 			free(ir);

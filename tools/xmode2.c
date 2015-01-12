@@ -1,39 +1,38 @@
-
 /****************************************************************************
- ** xmode2.c ****************************************************************
- ****************************************************************************
- *
- * xmode2 - shows the ir waveform of an IR signal
- *
- * patched together on Feb. 18th 1999 by
- * Heinrich Langos <heinrich@mad.scientist.com>
- *
- * This program is based on the smode2.c file by Sinkovics Zoltan
- * <sinko@szarvas.hu> which is a part of the LIRC distribution. It is
- * just a conversion from svga to X with some basic support for resizing.
- * I copied most of this comment.
- *
- * This program is based on the mode2.c file which is a part of the
- * LIRC distribution. The main purpose of this program is to check
- * operation of LIRC receiver hardware, and to see the IR waveform of
- * the remote controller without an expensive oscilloscope. The time
- * division is variable from 1 ms/div to extremely high values (integer
- * type) but there is no point increasing this value above 20 ms/div,
- * because one pulse is about 1 ms. I think this kind of presentation
- * is much more exciting than the simple pulse&space output showed by
- * mode2.
- *
- * Usage: xmode2 [-t (ms/div)] , default division is 5 ms/div
- *
- *
- * compile: gcc -o xmode2 xmode2.c -L/usr/X11R6/lib -lX11
- *
- * version 0.01  Feb 18 1999
- *   initial release
- *
- * version 0.02  Aug 24 1999
- *   using select() to make the whole thing more responsive
- * */
+** xmode2.c ****************************************************************
+****************************************************************************
+*
+* xmode2 - shows the ir waveform of an IR signal
+*
+* patched together on Feb. 18th 1999 by
+* Heinrich Langos <heinrich@mad.scientist.com>
+*
+* This program is based on the smode2.c file by Sinkovics Zoltan
+* <sinko@szarvas.hu> which is a part of the LIRC distribution. It is
+* just a conversion from svga to X with some basic support for resizing.
+* I copied most of this comment.
+*
+* This program is based on the mode2.c file which is a part of the
+* LIRC distribution. The main purpose of this program is to check
+* operation of LIRC receiver hardware, and to see the IR waveform of
+* the remote controller without an expensive oscilloscope. The time
+* division is variable from 1 ms/div to extremely high values (integer
+* type) but there is no point increasing this value above 20 ms/div,
+* because one pulse is about 1 ms. I think this kind of presentation
+* is much more exciting than the simple pulse&space output showed by
+* mode2.
+*
+* Usage: xmode2 [-t (ms/div)] , default division is 5 ms/div
+*
+*
+* compile: gcc -o xmode2 xmode2.c -L/usr/X11R6/lib -lX11
+*
+* version 0.01  Feb 18 1999
+*   initial release
+*
+* version 0.02  Aug 24 1999
+*   using select() to make the whole thing more responsive
+* */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -68,16 +67,16 @@ const char* const MSG_BAD_DRIVER =
 	"This program does not work for this driver and hardware.\n"
 	"(the driver is not a LIRC_MODE2 type driver)";
 
-Display *d1;
+Display* d1;
 Window w0, w1;			/*w0 = root */
 char w1_wname[] = "xmode2";
 char w1_iname[] = "xmode2";
-char font1_name[]= "-misc-fixed-*-r-*-*-12-*-*-*-*-*-iso8859-1";
+char font1_name[] = "-misc-fixed-*-r-*-*-12-*-*-*-*-*-iso8859-1";
 
 int w1_x = 0, w1_y = 0;
 unsigned int w1_w = 640, w1_h = 480, w1_border = 0;
 
-XFontStruct *f1_str;
+XFontStruct* f1_str;
 XColor xc1, xc2;
 Colormap cm1;
 XGCValues gcval1;
@@ -95,14 +94,14 @@ static struct stat s;
 static int use_stdin = 0;
 static int use_raw_access = 0;
 
-static char *device = "";
-static char *geometry = NULL;
+static char* device = "";
+static char* geometry = NULL;
 
 static struct option options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"device", required_argument, NULL, 'd'},
-	{"driver", required_argument, NULL, 'H'},
+	{"help",      no_argument,	 NULL, 'h'},
+	{"version",   no_argument,	 NULL, 'v'},
+	{"device",    required_argument, NULL, 'd'},
+	{"driver",    required_argument, NULL, 'H'},
 	{"keep-root", required_argument, NULL, 'k'},
 	{"geometry", required_argument, NULL, 'g'},
 	{"timediv", required_argument, NULL, 't'},
@@ -113,42 +112,43 @@ static struct option options[] = {
 	{0, 0, 0, 0}
 };
 
-static const char* const help =
-"\nUsage: xmode2 [options]\n"
-"\nOptions:\n"
-"    -d --device=device\t\tread from given device\n"
-"    -H --driver=driver\t\tuse given driver\n"
-"    -U --plugindir=dir\t\tLoad drivers from given dir\n"
-"    -g --geometry=geometry\twindow geometry\n"
-"    -t --timediv=value\t\tms per unit\n"
-"    -m --mode\t\t\tenable alternative display mode\n"
-"    -k --keep-root\t\tkeep root privileges\n"
-"    -r --raw\t\t\taccess device directly\n"
-"    -h --help\t\t\tdisplay usage summary\n"
-"    -v --version\t\tdisplay version\n"
-"    -A --driver-options=key:value[|key:value...]\n"
-"\t\t\t\tSet driver options\n"
-"The window responds to the following keys:\n"
-"    .1, .2, .5, 1, 2 & 5 set the timebase (ms)\n"
-"    m to toggle the display mode\n"
-"    q to quit\n";
 
+static const char* const help =
+	"\nUsage: xmode2 [options]\n"
+	"\nOptions:\n"
+	"    -d --device=device\t\tread from given device\n"
+	"    -H --driver=driver\t\tuse given driver\n"
+	"    -U --plugindir=dir\t\tLoad drivers from given dir\n"
+	"    -g --geometry=geometry\twindow geometry\n"
+	"    -t --timediv=value\t\tms per unit\n"
+	"    -m --mode\t\t\tenable alternative display mode\n"
+	"    -k --keep-root\t\tkeep root privileges\n"
+	"    -r --raw\t\t\taccess device directly\n"
+	"    -h --help\t\t\tdisplay usage summary\n"
+	"    -v --version\t\tdisplay version\n"
+	"    -A --driver-options=key:value[|key:value...]\n"
+	"\t\t\t\tSet driver options\n"
+	"The window responds to the following keys:\n"
+	"    .1, .2, .5, 1, 2 & 5 set the timebase (ms)\n"
+	"    m to toggle the display mode\n"
+	"    q to quit\n";
 
 
 static void add_defaults(void)
 {
-        char level[4];
-        snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	char level[4];
+
+	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const defaults[] = {
-		"lircd:plugindir",            PLUGINDIR,
-		"lircd:debug",                level,
-		"xmode2:driver",              "devinput",
-		"xmode2:analyse",             "False",
-		"xmode2:force",               "False",
-		"xmode2:disable-namespace",   "False",
-		"xmode2:dynamic-codes",       "False",
-		"xmode2:list_namespace",      "False",
-		(const char*)NULL,      (const char*)NULL
+		"lircd:plugindir",	    PLUGINDIR,
+		"lircd:debug",		    level,
+		"xmode2:driver",	    "devinput",
+		"xmode2:analyse",	    "False",
+		"xmode2:force",		    "False",
+		"xmode2:disable-namespace", "False",
+		"xmode2:dynamic-codes",	    "False",
+		"xmode2:list_namespace",    "False",
+		(const char*)NULL,	    (const char*)NULL
 	};
 	options_add_defaults(defaults);
 }
@@ -157,6 +157,7 @@ static void add_defaults(void)
 static void parse_options(int argc, char** const argv)
 {
 	int c;
+
 	add_defaults();
 	char driver[64];
 	const char* const optstring =  "U:hvd:H:g:t:mrA:";
@@ -164,21 +165,22 @@ static void parse_options(int argc, char** const argv)
 	strcpy(driver, "default");
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
-		case 'h':puts(help);
-			exit (EXIT_SUCCESS);
+		case 'h':
+			puts(help);
+			exit(EXIT_SUCCESS);
 		case 'H':
 			strncpy(driver, optarg, sizeof(driver) - 1);
 			break;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
-			exit (EXIT_SUCCESS);
+			exit(EXIT_SUCCESS);
 		case 'd':
 			device = optarg;
 			break;
 		case 'g':
 			geometry = optarg;
 			break;
-		case 't':	/* timediv */
+		case 't':       /* timediv */
 			div_ = strtol(optarg, NULL, 10);
 			break;
 		case 'k':
@@ -198,12 +200,12 @@ static void parse_options(int argc, char** const argv)
 			break;
 		default:
 			printf("Usage: %s [options]\n", progname);
-			exit (EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 	}
 	if (optind < argc) {
 		fprintf(stderr, "%s: too many arguments\n", progname);
-		exit (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 	if (hw_choose_driver(driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found", driver);
@@ -214,7 +216,7 @@ static void parse_options(int argc, char** const argv)
 }
 
 
-void initscreen(char *geometry)
+void initscreen(char* geometry)
 {
 	d1 = XOpenDisplay(0);
 	if (d1 == NULL) {
@@ -222,9 +224,8 @@ void initscreen(char *geometry)
 		exit(0);
 	}
 
-	if (geometry != NULL) {
+	if (geometry != NULL)
 		XParseGeometry(geometry, &w1_x, &w1_y, &w1_w, &w1_h);
-	}
 
 	/*Aufbau der XWindowsAttribStr */
 	w0 = DefaultRootWindow(d1);
@@ -266,16 +267,17 @@ void drawGrid(int div)
 	char textbuffer[80];
 	int x;
 
-    XClearWindow(d1, w1);
-    for(x = 0; x < w1_w; x += 10)
-        XDrawLine(d1, w1, gc1,  x, 0,  x, w1_h);
+	XClearWindow(d1, w1);
+	for (x = 0; x < w1_w; x += 10)
+		XDrawLine(d1, w1, gc1,  x, 0,  x, w1_h);
 
-    sprintf(textbuffer, "%5.3f ms/div", div/100.0);
-    XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
-    XFlush(d1);
+	sprintf(textbuffer, "%5.3f ms/div", div/100.0);
+	XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
+	XFlush(d1);
 }
 
-int main(int argc, char **argv)
+
+int main(int argc, char** argv)
 {
 	fd_set rfds;
 	int xfd, maxfd;
@@ -305,7 +307,8 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%s: error opening %s\n", progname, device);
 			perror(progname);
 			exit(EXIT_FAILURE);
-		};
+		}
+		;
 
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
@@ -317,9 +320,11 @@ int main(int argc, char **argv)
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
 			puts("This program is only intended for receivers supporting the pulse/space layer.");
 			puts("Note that this is no error, but this program "
-			       "simply makes no sense for your\n" "receiver.");
+			     "simply makes no sense for your\n"
+			     "receiver.");
 			puts("In order to test your setup run lircd with "
-			       "the --nodaemon option and \n" "then check if the remote works with the irw tool.");
+			     "the --nodaemon option and\n"
+			     "then check if the remote works with the irw tool.");
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
@@ -332,13 +337,13 @@ int main(int argc, char **argv)
 				"Cannot set driver (%s) options (%s)\n",
 				curr_driver->name, opt);
 				return EXIT_FAILURE;
-                       }
+			}
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
 			fputs("Cannot initialize hardware\n", stderr);
 			exit(EXIT_FAILURE);
 		}
 
-		fd = curr_driver->fd;	/* please compiler */
+		fd = curr_driver->fd;   /* please compiler */
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
@@ -348,7 +353,6 @@ int main(int argc, char **argv)
 			}
 			exit(EXIT_FAILURE);
 		}
-
 	}
 
 	new_user = drop_sudo_root(setuid);
@@ -370,7 +374,10 @@ int main(int argc, char **argv)
 			XNextEvent(d1, &event_return1);
 			switch (event_return1.type) {
 			case KeyPress:
-				if (1 == XLookupString(&event_return1.xkey, textbuffer, sizeof(textbuffer), NULL, NULL)) {
+				if (1 == XLookupString(&event_return1.xkey,
+						       textbuffer,
+						       sizeof(textbuffer),
+						       NULL, NULL)) {
 					switch (textbuffer[0]) {
 					case 'q':
 					closescreen();
@@ -407,7 +414,11 @@ int main(int argc, char **argv)
 						}
 						y1 += 25;
 						sprintf(textbuffer, "%5.3f ms/div", div_ / 100.0);
-						XDrawString(d1, w1, gc2, w1_w - 100, y1, textbuffer, strlen(textbuffer));
+						XDrawString(d1, w1, gc2,
+							    w1_w - 100,
+							    y1,
+							    textbuffer,
+							    strlen(textbuffer));
 						y1 += 5;
 						x1 = 0;
 					}
@@ -420,9 +431,8 @@ int main(int argc, char **argv)
 					break;
 				case ConfigureNotify:
 					if (w1_w == event_return1.xconfigure.width &&
-					    w1_h == event_return1.xconfigure.height) {
+					    w1_h == event_return1.xconfigure.height)
 						continue;
-					}
 
 					w1_w = event_return1.xconfigure.width;
 					w1_h = event_return1.xconfigure.height;
@@ -433,7 +443,7 @@ int main(int argc, char **argv)
 				drawGrid(div_);
 				break;
 			default:
-				;
+				break;
 			}
 		}
 
@@ -448,13 +458,12 @@ int main(int argc, char **argv)
 				static int space = 1;
 				unsigned long scan;
 
-				if (space) {
+				if (space)
 					result = fscanf(stdin, "space %ld\n", &scan);
-				} else {
+				else
 					result = fscanf(stdin, "pulse %ld\n", &scan);
-				}
 				if (result == 1) {
-					data = (lirc_t) scan;
+					data = (lirc_t)scan;
 					if (!space)
 						data |= PULSE_BIT;
 				} else {
@@ -469,25 +478,23 @@ int main(int argc, char **argv)
 				if (data == 0) {
 					fprintf(stderr, "readdata() failed\n");
 					result = 0;
-				}
-				else {
+				} else {
 					result = 1;
-	            }
+				}
 			}
 			if (result != 0) {
 #ifdef DEBUG
 				if (data & PULSE_BIT)
-					printf("%.8x\t",data);
+					printf("%.8x\t", data);
 				else
-					printf("%.8x\n",data);
+					printf("%.8x\n", data);
 #endif
 				dx = (data & PULSE_MASK) / (div_);
 				if (dx > 400) {
-					if (!dmode) {
+					if (!dmode)
 						y1 += 15;
-					} else {
+					else
 						y1++;
-					}
 					x1 = 0;
 				} else {
 					if (x1 == 0) {

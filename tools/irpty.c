@@ -1,16 +1,15 @@
-
 /****************************************************************************
- ** irpty.c *****************************************************************
- ****************************************************************************
- *
- * irpty  - pseudo tty driver
- *          Connects to lircd via socket to receive infra-red codes
- *          and converts them to key strokes
- *
- * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
- * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** irpty.c *****************************************************************
+****************************************************************************
+*
+* irpty  - pseudo tty driver
+*          Connects to lircd via socket to receive infra-red codes
+*          and converts them to key strokes
+*
+* Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
+* Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -48,7 +47,7 @@
 
 #include "lirc_client.h"
 
-#define	BUFFSIZE 512
+#define BUFFSIZE 512
 
 const char *progname = "irpty";
 
@@ -84,6 +83,7 @@ static void copy_loop(int ptym, int ignoreeof)
 		die("fork error");
 	} else if (!child) {
 		fd_set fds;
+
 		while (1) {
 			FD_ZERO(&fds);
 			FD_SET(lsock, &fds);
@@ -106,10 +106,9 @@ static void copy_loop(int ptym, int ignoreeof)
 				while ((ret = lirc_nextcode(&ir)) == 0) {
 					if (ir == NULL)
 						break;
-					while ((ret = lirc_code2char(lconfig, ir, &irchars)) == 0 && irchars != NULL) {
+					while ((ret = lirc_code2char(lconfig, ir, &irchars)) == 0 && irchars != NULL)
 						if (write(ptym, irchars, strlen(irchars)) != strlen(irchars))
 							die("writen error to master pty");
-					}
 					free(ir);
 					if (ret == -1)
 						break;
@@ -127,7 +126,7 @@ static void copy_loop(int ptym, int ignoreeof)
 
 	act.sa_handler = sig_term;
 	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;	/* we need EINTR */
+	act.sa_flags = 0;       /* we need EINTR */
 	sigaction(SIGTERM, &act, NULL);
 
 	while (1) {
@@ -154,7 +153,7 @@ int tty_raw(int fd)
 	struct termios buf;
 
 	if (tcgetattr(fd, &save_termios) < 0)
-		return (-1);
+		return -1;
 
 	buf = save_termios;
 	buf.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
@@ -166,20 +165,20 @@ int tty_raw(int fd)
 	buf.c_cc[VTIME] = 0;
 
 	if (tcsetattr(fd, TCSAFLUSH, &buf) < 0)
-		return (-1);
+		return -1;
 	ttystate = RAW;
 	ttysavefd = fd;
-	return (0);
+	return 0;
 }
 
 int tty_reset(int fd)
 {
 	if (ttystate != CBREAK && ttystate != RAW)
-		return (0);
+		return 0;
 	if (tcsetattr(fd, TCSAFLUSH, &save_termios) < 0)
-		return (-1);
+		return -1;
 	ttystate = RESET;
-	return (0);
+	return 0;
 }
 
 void tty_atexit(void)
@@ -191,7 +190,7 @@ void tty_atexit(void)
 #ifdef HAVE_FORKPTY
 
 #define pty_fork(ptrfdm, slave_name, slave_termios, slave_winsize) \
-		forkpty(ptrfdm, slave_name, slave_termios, slave_winsize)
+	forkpty(ptrfdm, slave_name, slave_termios, slave_winsize)
 
 #else
 /* Open the next free pty */
@@ -209,12 +208,13 @@ int pty_open(char *pty_name)
 
 			if ((fd = open(pty_name, O_RDWR)) >= 0) {
 				pty_name[5] = 't';
-				return (fd);
-			} else if (errno == ENOENT)
-				return (-1);
+				return fd;
+			} else if (errno == ENOENT) {
+				return -1;
+			}
 		}
 	}
-	return (-1);
+	return -1;
 }
 
 int tty_open(int fdm, char *tty_name)
@@ -228,18 +228,18 @@ int tty_open(int fdm, char *tty_name)
 		gid = -1;
 
 	/*
-	   chown(tty_name, getuid(), gid);
-	   chmod(tty_name, S_IRUSR | S_IWUSR | S_IWGRP);
+	 * chown(tty_name, getuid(), gid);
+	 * chmod(tty_name, S_IRUSR | S_IWUSR | S_IWGRP);
 	 */
 
 	if ((fds = open(tty_name, O_RDWR)) < 0) {
 		close(fdm);
-		return (-1);
+		return -1;
 	}
-	return (fds);
+	return fds;
 }
 
-pid_t pty_fork(int *ptrfdm, char *slave_name, struct termios * slave_termios, struct winsize * slave_winsize)
+pid_t pty_fork(int *ptrfdm, char *slave_name, struct termios *slave_termios, struct winsize *slave_winsize)
 {
 	int fdm, fds;
 	pid_t pid;
@@ -259,14 +259,12 @@ pid_t pty_fork(int *ptrfdm, char *slave_name, struct termios * slave_termios, st
 			die("can't open slave pty %s\n", pts_name);
 		close(fdm);
 
-		if (slave_termios) {
+		if (slave_termios)
 			if (tcsetattr(fds, TCSANOW, slave_termios) < 0)
 				die("tcsetattr error on slave pty");
-		}
-		if (slave_winsize) {
+		if (slave_winsize)
 			if (ioctl(fds, TIOCSWINSZ, slave_winsize) < 0)
 				die("TIOCSWINSZ error on slave pty");
-		}
 		if (dup2(fds, STDIN_FILENO) != STDIN_FILENO)
 			die("dup2 error to stdin");
 		if (dup2(fds, STDOUT_FILENO) != STDOUT_FILENO)
@@ -275,10 +273,10 @@ pid_t pty_fork(int *ptrfdm, char *slave_name, struct termios * slave_termios, st
 			die("dup2 error to stderr");
 		if (fds > STDERR_FILENO)
 			close(fds);
-		return (0);
+		return 0;
 	}
 	*ptrfdm = fdm;
-	return (pid);
+	return pid;
 }
 #endif
 
@@ -295,14 +293,14 @@ static void set_noecho(int fd)
 }
 
 static struct option long_options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'V'},
-	{"socket", required_argument, NULL, 's'},
-	{"no-echo", no_argument, NULL, 'e'},
-	{"ignore-eof", no_argument, NULL, 'i'},
-	{"non-interactive", no_argument, NULL, 'n'},
-	{"verbose", no_argument, NULL, 'v'},
-	{0, 0, 0, 0}
+	{ "help",	     no_argument,	NULL, 'h' },
+	{ "version",	     no_argument,	NULL, 'V' },
+	{ "socket",	     required_argument, NULL, 's' },
+	{ "no-echo",	     no_argument,	NULL, 'e' },
+	{ "ignore-eof",	     no_argument,	NULL, 'i' },
+	{ "non-interactive", no_argument,	NULL, 'n' },
+	{ "verbose",	     no_argument,	NULL, 'v' },
+	{ 0,		     0,			0,    0	  }
 };
 
 int main(int argc, char *argv[])
@@ -331,10 +329,10 @@ int main(int argc, char *argv[])
 			printf("\t -i --ignore-eof \tignore EOF\n");
 			printf("\t -n --non-interactive \tforce non-interactive mode\n");
 			printf("\t -v --verbose \t\tverbose mode\n");
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 		case 'V':
 			printf("%s %s\n", progname, VERSION);
-			return (EXIT_SUCCESS);
+			return EXIT_SUCCESS;
 
 		case 'e':
 			noecho = 1;
@@ -364,9 +362,8 @@ int main(int argc, char *argv[])
 	if ((lsock = lirc_init("irpty", 1)) == -1)
 		exit(EXIT_FAILURE);
 	flags = fcntl(lsock, F_GETFL, 0);
-	if (flags != -1) {
+	if (flags != -1)
 		fcntl(lsock, F_SETFL, flags | FASYNC | O_NONBLOCK);
-	}
 
 	if (lirc_readconfig(config, &lconfig, NULL) != 0)
 		exit(EXIT_FAILURE);
@@ -377,14 +374,15 @@ int main(int argc, char *argv[])
 		if (ioctl(STDIN_FILENO, TIOCGWINSZ, (char *)&size) < 0)
 			die("TIOCGWINSZ error\n");
 		pid = pty_fork(&fdm, slave_name, &orig_termios, &size);
-	} else
+	} else {
 		pid = pty_fork(&fdm, slave_name, NULL, NULL);
+	}
 
-	if (pid < 0)
+	if (pid < 0) {
 		die("fork error\n");
-	else if (!pid) {	/* child */
+	} else if (!pid) {                              /* child */
 		if (noecho)
-			set_noecho(STDIN_FILENO);	/* stdin is slave pty */
+			set_noecho(STDIN_FILENO);       /* stdin is slave pty */
 		if (execvp(argv[optind], &argv[optind]) < 0)
 			die("can't execute: %s\n", argv[optind]);
 	}
@@ -394,9 +392,9 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "config file = %s\n", config);
 	}
 	if (interactive) {
-		if (tty_raw(STDIN_FILENO) < 0)	/* user's tty to raw mode */
+		if (tty_raw(STDIN_FILENO) < 0)  /* user's tty to raw mode */
 			die("tty_raw error");
-		if (atexit(tty_atexit) < 0)	/* reset user's tty on exit */
+		if (atexit(tty_atexit) < 0)     /* reset user's tty on exit */
 			die("atexit error");
 	}
 	copy_loop(fdm, ignoreeof);

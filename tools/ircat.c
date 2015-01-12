@@ -1,34 +1,34 @@
 /****************************************************************************
- ** ircat.c *****************************************************************
- ****************************************************************************
- *
- * ircat - prints config strings to standard output, can be used to
- * provide remote control input to scripts
- *
- * The first agrument to the program is the program name, as it
- * appears in the prog entries in .lircrc.
- *
- * For example if .lircrc contains:
- *
- * begin
- * 	prog = myprog
- * 	button = tv_p+
- * 	config = next_file
- * end
- *
- * then
- *
- * $ ircat myprog
- *
- * will print "next_file" (followed by newline) every time the
- * button tv_p+ is pressed.
- *
- *
- * Copyright (C) 2002 Bjorn Bringert <bjorn@bringert.net>
- *
- * Based on irexec.c
- *
- */
+** ircat.c *****************************************************************
+****************************************************************************
+*
+* ircat - prints config strings to standard output, can be used to
+* provide remote control input to scripts
+*
+* The first agrument to the program is the program name, as it
+* appears in the prog entries in .lircrc.
+*
+* For example if .lircrc contains:
+*
+* begin
+*       prog = myprog
+*       button = tv_p+
+*       config = next_file
+* end
+*
+* then
+*
+* $ ircat myprog
+*
+* will print "next_file" (followed by newline) every time the
+* button tv_p+ is pressed.
+*
+*
+* Copyright (C) 2002 Bjorn Bringert <bjorn@bringert.net>
+*
+* Based on irexec.c
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -44,7 +44,7 @@
 #include "lirc_client.h"
 
 #define PROG_NAME "ircat"
-#define PROG_VERSION PROG_NAME  VERSION
+#define PROG_VERSION PROG_NAME VERSION
 
 void print_usage(char *prog_name)
 {
@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
 	while (1) {
 		int c;
 		static struct option long_options[] = {
-			{"config", required_argument, NULL, 'c'},
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{0, 0, 0, 0}
+			{ "config",  required_argument, NULL, 'c' },
+			{ "help",    no_argument,	NULL, 'h' },
+			{ "version", no_argument,	NULL, 'v' },
+			{ 0,	     0,			0,    0	  }
 		};
 		c = getopt_long(argc, argv, "chv", long_options, NULL);
 		if (c == -1)

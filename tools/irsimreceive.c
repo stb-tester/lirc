@@ -1,11 +1,10 @@
-
 /****************************************************************************
- ** irsimreceive.c **********************************************************
- ****************************************************************************
- *
- * irsimreceive.c -Receive data from file and decode.
- *
- */
+** irsimreceive.c **********************************************************
+****************************************************************************
+*
+* irsimreceive.c -Receive data from file and decode.
+*
+*/
 
 #include <config.h>
 
@@ -16,24 +15,24 @@
 #include "lirc_client.h"
 
 
-static const char* const USAGE =
+static const char *const USAGE =
 	"Usage: irsimreceive [options]  <configfile>  <datafile>\n\n"
 	"<configfile> is a lircd.conf type configuration.\n"
 	"<datafile> is a list of pulse/space durations.\n\n"
-        "Options:\n"
-        "    -U, --plugindir <path>:     Load drivers from <path>.\n"
-        "    -v, --version               Print version.\n"
+	"Options:\n"
+	"    -U, --plugindir <path>:     Load drivers from <path>.\n"
+	"    -v, --version               Print version.\n"
 	"    -h, --help                  Print this message.\n";
 
 static struct option options[] = {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'v'},
-	{"pluginpath", required_argument, NULL, 'U'},
-	{0, 0, 0, 0}
+	{ "help",	no_argument,	   NULL, 'h' },
+	{ "version",	no_argument,	   NULL, 'v' },
+	{ "pluginpath", required_argument, NULL, 'U' },
+	{ 0,		0,		   0,	 0   }
 };
 
 
-static void setup(const char* path)
+static void setup(const char *path)
 {
 	struct option_t option;
 	int r;
@@ -44,7 +43,7 @@ static void setup(const char* path)
 	}
 	if (hw_choose_driver("file") == -1) {
 		fputs("Cannot load file driver (bad plugin path?)\n",
-                      stderr);
+		      stderr);
 		exit(EXIT_FAILURE);
 	}
 	r = curr_driver->open_func("dummy.out");
@@ -59,7 +58,7 @@ static void setup(const char* path)
 	}
 	strcpy(option.key, "set-infile");
 	strncpy(option.value, path, sizeof(option.value));
-	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
+	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void *)&option);
 	if (r != 0) {
 		fputs("Cannot set driver infile.\n", stderr);
 		exit(EXIT_FAILURE);
@@ -67,11 +66,11 @@ static void setup(const char* path)
 }
 
 
-struct ir_remote* read_lircd_conf(const char* configfile)
+struct ir_remote *read_lircd_conf(const char *configfile)
 {
 	FILE *f;
 
-	struct ir_remote* remotes;
+	struct ir_remote *remotes;
 	const char *filename = configfile;
 
 	filename = configfile == NULL ? LIRCDCFGFILE : configfile;
@@ -97,7 +96,7 @@ struct ir_remote* read_lircd_conf(const char* configfile)
 }
 
 
-void printcode(char* s)
+void printcode(char *s)
 {
 	int len;
 
@@ -105,17 +104,16 @@ void printcode(char* s)
 		puts("None");
 	} else {
 		len = strlen(s);
-                if (strlen(s) > 2 && s[len -1] == '\n') {
+		if (strlen(s) > 2 && s[len - 1] == '\n')
 			s[len - 1] = '\0';
-		}
 		printf("%s\n", s);
 	}
 }
 
 
-int simreceive(struct ir_remote* remotes)
+int simreceive(struct ir_remote *remotes)
 {
-	char* code = NULL;
+	char *code = NULL;
 	int at_eof;
 
 	do {
@@ -133,7 +131,7 @@ int simreceive(struct ir_remote* remotes)
 int main(int argc, char *argv[])
 {
 	long c;
-	struct ir_remote* remotes;
+	struct ir_remote *remotes;
 	char path[128];
 
 	while ((c = getopt_long(argc, argv, "hvc:U:", options, NULL))
@@ -151,7 +149,7 @@ int main(int argc, char *argv[])
 		case '?':
 			fprintf(stderr, "unrecognized option: -%c\n", optopt);
 			fputs("Try `irsimsend -h' for more information.\n",
-                              stderr);
+			      stderr);
 			return EXIT_FAILURE;
 		}
 	}
@@ -162,7 +160,7 @@ int main(int argc, char *argv[])
 	lirc_log_get_clientlog("irsimreceive", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irsimreceive", 1, LIRC_ERROR);
-        setup(argv[optind + 1]);
-        remotes = read_lircd_conf(argv[optind]);
+	setup(argv[optind + 1]);
+	remotes = read_lircd_conf(argv[optind]);
 	return simreceive(remotes);
 }
