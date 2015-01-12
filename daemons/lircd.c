@@ -184,7 +184,6 @@ struct protocol_directive {
 
 
 extern struct ir_remote* decoding;
-extern char* logfile;
 
 static struct ir_remote* remotes;
 static struct ir_remote* free_remotes = NULL;
@@ -232,11 +231,6 @@ static const char* const protocol_string[] = {
 	"SUCCESS\n",
 	"SIGHUP\n"
 };
-
-#define HOSTNAME_LEN 128
-static const char hostname[HOSTNAME_LEN + 1];
-
-extern FILE* lf;
 
 /* substract one for lirc, sockfd, sockinet, logfile, pidfile, uinput */
 #define MAX_PEERS       ((FD_SETSIZE - 6) / 2)
@@ -654,26 +648,12 @@ void sighup(int sig)
 
 void dosighup(int sig)
 {
-	struct stat s;
 	int i;
 
 	/* reopen logfile first */
-
-	if (!lirc_log_use_syslog()) {
-		logprintf(LIRC_INFO, "closing logfile");
-		if (-1 == fstat(fileno(lf), &s))
-			dosigterm(SIGTERM);     /* shouldn't ever happen */
-		lirc_log_close();
-		lirc_log_open("lircd", nodaemon, loglevel_opt);
-		lf = fopen(logfile, "a");
-		if (lf == NULL)
-			/* can't print any error messagees */
-			dosigterm(SIGTERM);
-		logprintf(LIRC_INFO, "reopened logfile");
-		if (-1 == fchmod(fileno(lf), s.st_mode)) {
-			logprintf(LIRC_WARNING, "could not set file permissions");
-			logperror(LIRC_WARNING, NULL);
-		}
+	if (lirc_log_reopen() != 0) {
+		/* can't print any error messagees */
+		dosigterm(SIGTERM);
 	}
 
 	config();
