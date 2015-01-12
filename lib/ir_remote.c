@@ -619,52 +619,73 @@ char* decode_all(struct ir_remote* remotes)
 	decoding = remote = remotes;
 	while (remote) {
 		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
-		if (curr_driver->decode_func(remote, &ctx)
-		    && (ncode = get_code(remote, ctx.pre, ctx.code, ctx.post,
-					 &ctx.repeat_flag, &toggle_bit_mask_state))) {
-			int len;
-			int reps;
+		if (curr_driver->decode_func(remote, &ctx)) {
+			ncode = get_code(remote,
+					 ctx.pre, ctx.code, ctx.post,
+					 &ctx.repeat_flag,
+					 &toggle_bit_mask_state);
+			if (ncode) {
+				int len;
+				int reps;
 
-			if (ncode == &NCODE_EOF) {
-				logprintf(LIRC_DEBUG, "decode all: returning EOF");
-				strncpy(message, PACKET_EOF, sizeof(message));
-				return message;
-			}
-			ctx.code = set_code(remote, ncode, toggle_bit_mask_state, &ctx);
-			if ((has_toggle_mask(remote) && remote->toggle_mask_state % 2) || ncode->current != NULL) {
-				decoding = NULL;
-				return NULL;
-			}
-
-			for (scan = decoding; scan != NULL; scan = scan->next)
-				for (scan_ncode = scan->codes; scan_ncode->name != NULL; scan_ncode++)
-					scan_ncode->current = NULL;
-			if (is_xmp(remote))
-				remote->last_code->current = remote->last_code->next;
-			reps = remote->reps - (ncode->next ? 1 : 0);
-			if (reps > 0) {
-				if (reps <= remote->suppress_repeat) {
-					decoding = NULL;
-					return NULL;
+				if (ncode == &NCODE_EOF) {
+					logprintf(LIRC_DEBUG,
+						  "decode all: returning EOF");
+					strncpy(message,
+						PACKET_EOF, sizeof(message));
+					return message;
 				}
-				reps -= remote->suppress_repeat;
-			}
-			register_button_press(remote, remote->last_code, ctx.code, reps);
+				ctx.code = set_code(remote,
+						    ncode,
+						    toggle_bit_mask_state,
+						    &ctx);
+				if ((has_toggle_mask(remote)
+				    && remote->toggle_mask_state % 2)
+				    || ncode->current != NULL) {
+						decoding = NULL;
+						return NULL;
+				}
 
-			len = write_message(message, PACKET_SIZE + 1,
-					    remote->name,
-					    remote->last_code->name, "",
-					    ctx.code,
-					    reps);
-			decoding = NULL;
-			if (len >= PACKET_SIZE + 1) {
-				logprintf(LIRC_ERROR, "message buffer overflow");
-				return NULL;
+				for (scan = decoding;
+				     scan != NULL;
+				     scan = scan->next)
+					for (scan_ncode = scan->codes;
+					     scan_ncode->name != NULL;
+					     scan_ncode++)
+						scan_ncode->current = NULL;
+				if (is_xmp(remote))
+					remote->last_code->current =
+						remote->last_code->next;
+				reps = remote->reps - (ncode->next ? 1 : 0);
+				if (reps > 0) {
+					if (reps <= remote->suppress_repeat) {
+						decoding = NULL;
+						return NULL;
+					}
+					reps -= remote->suppress_repeat;
+				}
+				register_button_press(remote,
+						      remote->last_code,
+						      ctx.code,
+						      reps);
+				len = write_message(message, PACKET_SIZE + 1,
+						    remote->name,
+						    remote->last_code->name,
+						    "",
+						    ctx.code,
+						    reps);
+				decoding = NULL;
+				if (len >= PACKET_SIZE + 1) {
+					logprintf(LIRC_ERROR,
+						  "message buffer overflow");
+					return NULL;
+				} else {
+					return message;
+				}
 			} else {
-				return message;
+				LOGPRINTF(1, "failed \"%s\" remote",
+					  remote->name);
 			}
-		} else {
-			LOGPRINTF(1, "failed \"%s\" remote", remote->name);
 		}
 		remote->toggle_mask_state = 0;
 		remote = remote->next;
@@ -712,3 +733,9 @@ int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay)
 
 	return ret;
 }
+
+const struct ir_remote* get_decoding(void)
+{
+	return (const struct ir_remote*) &decoding;
+}
+

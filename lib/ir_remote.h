@@ -496,6 +496,9 @@ int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay);
  */
 void ir_remote_init(int use_dyncodes);
 
+/** Return pointer to currently decoded remote. */
+const struct ir_remote* get_decoding(void);
+
 /** @} */
 
 #endif
