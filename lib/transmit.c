@@ -30,7 +30,7 @@
  * Struct for the global sending buffer.
  */
 static struct sbuf {
-	lirc_t *data;
+	lirc_t* data;
 
 	lirc_t	_data[WBUF_SIZE]; /**< Actual sending data. */
 	int	wptr;
@@ -42,8 +42,8 @@ static struct sbuf {
 } send_buffer;
 
 
-static void send_signals(lirc_t *signals, int n);
-static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int sim, int repeat_preset);
+static void send_signals(lirc_t* signals, int n);
+static int init_send_or_sim(struct ir_remote* remote, struct ir_ncode* code, int sim, int repeat_preset);
 
 /*
  * sending stuff
@@ -163,7 +163,7 @@ static void sync_send_buffer(void)
 		send_buffer.wptr--;
 }
 
-static void send_header(struct ir_remote *remote)
+static void send_header(struct ir_remote* remote)
 {
 	if (has_header(remote)) {
 		send_pulse(remote->phead);
@@ -171,7 +171,7 @@ static void send_header(struct ir_remote *remote)
 	}
 }
 
-static void send_foot(struct ir_remote *remote)
+static void send_foot(struct ir_remote* remote)
 {
 	if (has_foot(remote)) {
 		send_space(remote->sfoot);
@@ -179,19 +179,19 @@ static void send_foot(struct ir_remote *remote)
 	}
 }
 
-static void send_lead(struct ir_remote *remote)
+static void send_lead(struct ir_remote* remote)
 {
 	if (remote->plead != 0)
 		send_pulse(remote->plead);
 }
 
-static void send_trail(struct ir_remote *remote)
+static void send_trail(struct ir_remote* remote)
 {
 	if (remote->ptrail != 0)
 		send_pulse(remote->ptrail);
 }
 
-static void send_data(struct ir_remote *remote, ir_code data, int bits, int done)
+static void send_data(struct ir_remote* remote, ir_code data, int bits, int done)
 {
 	int i;
 	int all_bits = bit_count(remote);
@@ -291,7 +291,7 @@ static void send_data(struct ir_remote *remote, ir_code data, int bits, int done
 	}
 }
 
-static void send_pre(struct ir_remote *remote)
+static void send_pre(struct ir_remote* remote)
 {
 	if (has_pre(remote)) {
 		send_data(remote, remote->pre_data, remote->pre_data_bits, 0);
@@ -302,7 +302,7 @@ static void send_pre(struct ir_remote *remote)
 	}
 }
 
-static void send_post(struct ir_remote *remote)
+static void send_post(struct ir_remote* remote)
 {
 	if (has_post(remote)) {
 		if (remote->post_p > 0 && remote->post_s > 0) {
@@ -313,7 +313,7 @@ static void send_post(struct ir_remote *remote)
 	}
 }
 
-static void send_repeat(struct ir_remote *remote)
+static void send_repeat(struct ir_remote* remote)
 {
 	send_lead(remote);
 	send_pulse(remote->prepeat);
@@ -321,7 +321,7 @@ static void send_repeat(struct ir_remote *remote)
 	send_trail(remote);
 }
 
-static void send_code(struct ir_remote *remote, ir_code code, int repeat)
+static void send_code(struct ir_remote* remote, ir_code code, int repeat)
 {
 	if (!repeat || !(remote->flags & NO_HEAD_REP))
 		send_header(remote);
@@ -337,7 +337,7 @@ static void send_code(struct ir_remote *remote, ir_code code, int repeat)
 		send_buffer.sum -= remote->phead + remote->shead;
 }
 
-static void send_signals(lirc_t *signals, int n)
+static void send_signals(lirc_t* signals, int n)
 {
 	int i;
 
@@ -351,7 +351,7 @@ static void send_signals(lirc_t *signals, int n)
  * @param code ir_ncode to send.
  * @return Success of operation.
  */
-int send_buffer_put(struct ir_remote *remote, struct ir_ncode *code)
+int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code)
 {
 	return init_send_or_sim(remote, code, 0, 0);
 }
@@ -359,7 +359,7 @@ int send_buffer_put(struct ir_remote *remote, struct ir_ncode *code)
 /** Do not document this function
  * @cond
  */
-int init_sim(struct ir_remote *remote, struct ir_ncode *code, int repeat_preset)
+int init_sim(struct ir_remote* remote, struct ir_ncode* code, int repeat_preset)
 {
 	return init_send_or_sim(remote, code, 1, repeat_preset);
 }
@@ -372,7 +372,7 @@ int send_buffer_length(void)
 }
 
 
-const lirc_t *send_buffer_data()
+const lirc_t* send_buffer_data()
 {
 	return send_buffer.data;
 }
@@ -382,7 +382,7 @@ lirc_t send_buffer_sum(void)
 	return send_buffer.sum;
 }
 
-static int init_send_or_sim(struct ir_remote *remote, struct ir_ncode *code, int sim, int repeat_preset)
+static int init_send_or_sim(struct ir_remote* remote, struct ir_ncode* code, int sim, int repeat_preset)
 {
 	int i, repeat = repeat_preset;
 
@@ -486,7 +486,7 @@ init_send_loop:
 	if ((remote->repeat_countdown > 0 || code->transmit_state != NULL)
 	    && remote->min_remaining_gap < LIRCD_EXACT_GAP_THRESHOLD) {
 		if (send_buffer.data != send_buffer._data) {
-			lirc_t *signals;
+			lirc_t* signals;
 			int n;
 
 			LOGPRINTF(1, "unrolling raw signal optimisation");

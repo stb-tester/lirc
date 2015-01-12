@@ -35,10 +35,10 @@ extern "C" {
  * @param name Normally the path for the open file f.
  * @return Pointer to dynamically allocated ir_remote or NULL on errors,
  */
-struct ir_remote *read_config(FILE *f, const char *name);
+struct ir_remote* read_config(FILE* f, const char* name);
 
 /** Free() an ir_remote instance obtained using read_config(). */
-void free_config(struct ir_remote *remotes);
+void free_config(struct ir_remote* remotes);
 
 /** @} */
 

@@ -20,7 +20,7 @@
 #include "lirc/input_map.h"
 
 struct {
-	char *			name;
+	char*			name;
 	linux_input_code	code;
 } input_map[] = {
 #include "lirc/input_map.inc"
@@ -29,7 +29,7 @@ struct {
 	}
 };
 
-int get_input_code(const char *name, linux_input_code *code)
+int get_input_code(const char* name, linux_input_code* code)
 {
 	int i;
 
@@ -42,7 +42,7 @@ int get_input_code(const char *name, linux_input_code *code)
 	return -1;
 }
 
-void fprint_namespace(FILE *f)
+void fprint_namespace(FILE* f)
 {
 	int i;
 
@@ -50,7 +50,7 @@ void fprint_namespace(FILE *f)
 		fprintf(stdout, "%s\n", input_map[i].name);
 }
 
-int is_in_namespace(const char *name)
+int is_in_namespace(const char* name)
 {
 	linux_input_code dummy;
 

@@ -37,7 +37,7 @@ int default_open(const char* path);
 int default_close(void);
 
 /** Return DRVCTL_ERR_NOTIMPLEMENTED. */
-int default_drvctl(unsigned int cmd, void *arg);
+int default_drvctl(unsigned int cmd, void* arg);
 
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
@@ -49,7 +49,7 @@ struct option_t {
  * Parse an option string "key:value;key:value..." and invoke
  * drvctl DRV_SET_OPTION as appropriate.
  */
-int drv_handle_options(const char *options);
+int drv_handle_options(const char* options);
 
 
 /** Drvctl cmd:  return current state as an int in *arg. */
@@ -99,13 +99,13 @@ struct driver {
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32 send_mode;
+	__u32		send_mode;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32 rec_mode;
+	__u32		rec_mode;
 
 	/** Length in bits of the code. */
 	const __u32	code_length;
@@ -122,7 +122,7 @@ struct driver {
 	 * Function called for initializing the driver and the hardware.
 	 * Zero return value indicates failure, all other return values success.
 	 */
-	int(*const init_func) (void);
+	int (*const init_func)(void);
 
 	/**
 	 * Function called when transmitting/receiving stops. Zero return value
@@ -136,8 +136,8 @@ struct driver {
 	 * @param code Code(s) to send, a single code or the head of a
 	 *             list of codes.
 	 */
-	int(*const send_func) (struct ir_remote *remote,
-			       struct ir_ncode *code);
+	int (*const send_func)(struct ir_remote* remote,
+			       struct ir_ncode* code);
 
 	/**
 	 * Receive data from remote. Might close device on error conditions.
@@ -145,13 +145,13 @@ struct driver {
 	 * @return Formatted, statically allocated string with decoded
 	 *         data: "remote-name code-name code repetitions"
 	 */
-	char * (*const rec_func)(struct ir_remote *remotes);
+	char* (*const rec_func)(struct ir_remote* remotes);
 
 	/**
 	 * TODO
 	 */
-	int(*const decode_func) (struct ir_remote *remote,
-				 struct decode_ctx_t *ctx);
+	int (*const decode_func)(struct ir_remote* remote,
+				 struct decode_ctx_t* ctx);
 
 	/**
 	 * Generic driver control function with semantics as defined by driver
@@ -166,13 +166,13 @@ struct driver {
 	 * is set to reflect if this is a pulse or space. 0
 	 * indicates errors.
 	 */
-	lirc_t(*const readdata) (lirc_t timeout);
+	lirc_t (*const readdata)(lirc_t timeout);
 
 	/**
 	 * Driver name, as listed by -H help and used as argument to i
 	 * --driver.
 	 */
-	const char *	name;
+	const char*	name;
 
 	/**
 	 * The resolution in microseconds of the recorded durations when
@@ -183,10 +183,10 @@ struct driver {
 /* API version 2 addons: */
 
 	const int	api_version;            /**< API version (from version 2+).*/
-	const char	*driver_version;        /**< Driver version (free text). */
-	const char	*info;                  /**< Free text driver info. */
-	int (*const close_func) (void);         /**< Hard closing, returns 0 on OK.*/
+	const char*	driver_version;         /**< Driver version (free text). */
+	const char*	info;                   /**< Free text driver info. */
 
+	int (*const close_func)(void);          /**< Hard closing, returns 0 on OK.*/
 };
 
 /** @} */
@@ -197,7 +197,7 @@ extern struct driver drv;
 #endif
 
 /** Raad-only access to drv for application.*/
-extern const struct driver *curr_driver;
+extern const struct driver* curr_driver;
 
 #ifdef __cplusplus
 }

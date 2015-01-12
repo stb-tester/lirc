@@ -58,7 +58,7 @@ void options_add_defaults(const char* const defaults[]);
 void options_load(int argc,
 		  char** const argv,
 		  const char* options_file,
-		  void (* options_load)(int, char** const));
+		  void (*options_load)(int, char** const));
 
 
 /* Reset options to pristine state. */

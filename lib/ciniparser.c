@@ -36,7 +36,7 @@
 #include <ciniparser.h>
 
 #define ASCIILINESZ      (1024)
-#define INI_INVALID_KEY  ((char *)NULL)
+#define INI_INVALID_KEY  ((char*)NULL)
 
 /**
  * This enum stores the status for each parsed line (internal use only).
@@ -61,7 +61,7 @@ typedef enum _line_status_ {
  * or modify the returned string! Since the returned string is statically
  * allocated, it will be modified at each function call (not re-entrant).
  */
-static char *strlwc(const char *s)
+static char* strlwc(const char* s)
 {
 	static char l[ASCIILINESZ + 1];
 	int i;
@@ -87,7 +87,7 @@ static char *strlwc(const char *s)
  * is statically allocated, it will be modified at each function call
  * (not re-entrant).
  */
-static char *strstrip(const char *s)
+static char* strstrip(const char* s)
 {
 	static char l[ASCIILINESZ + 1];
 	unsigned int i, numspc;
@@ -118,8 +118,8 @@ static char *strstrip(const char *s)
  * @return line_status value
  */
 static
-line_status ciniparser_line(char *input_line, char *section,
-			    char *key, char *value)
+line_status ciniparser_line(char* input_line, char* section,
+			    char* key, char* value)
 {
 	line_status sta;
 	char line[ASCIILINESZ + 1];
@@ -175,7 +175,7 @@ line_status ciniparser_line(char *input_line, char *section,
 
 /* The remaining public functions are documented in ciniparser.h */
 
-int ciniparser_getnsec(dictionary *d)
+int ciniparser_getnsec(dictionary* d)
 {
 	int i;
 	int nsec;
@@ -194,7 +194,7 @@ int ciniparser_getnsec(dictionary *d)
 	return nsec;
 }
 
-const char *ciniparser_getsecname(dictionary *d, int n)
+const char* ciniparser_getsecname(dictionary* d, int n)
 {
 	int i;
 	int foundsec;
@@ -220,10 +220,10 @@ const char *ciniparser_getsecname(dictionary *d, int n)
 	if (foundsec == n)
 		return d->key[i];
 
-	return (char *)NULL;
+	return (char*)NULL;
 }
 
-void ciniparser_dump(dictionary *d, FILE *f)
+void ciniparser_dump(dictionary* d, FILE* f)
 {
 	int i;
 
@@ -240,12 +240,12 @@ void ciniparser_dump(dictionary *d, FILE *f)
 	}
 }
 
-void ciniparser_dump_ini(dictionary *d, FILE *f)
+void ciniparser_dump_ini(dictionary* d, FILE* f)
 {
 	int i, j;
 	char keym[ASCIILINESZ + 1];
 	int nsec;
-	const char *secname;
+	const char* secname;
 	int seclen;
 
 	if (d == NULL || f == NULL)
@@ -282,10 +282,10 @@ void ciniparser_dump_ini(dictionary *d, FILE *f)
 	fprintf(f, "\n");
 }
 
-const char *ciniparser_getstring(dictionary *d, const char *key, char *def)
+const char* ciniparser_getstring(dictionary* d, const char* key, char* def)
 {
-	char *lc_key;
-	const char *sval;
+	char* lc_key;
+	const char* sval;
 
 	if (d == NULL || key == NULL)
 		return def;
@@ -296,9 +296,9 @@ const char *ciniparser_getstring(dictionary *d, const char *key, char *def)
 	return sval;
 }
 
-int ciniparser_getint(dictionary *d, const char *key, int notfound)
+int ciniparser_getint(dictionary* d, const char* key, int notfound)
 {
-	const char *str;
+	const char* str;
 
 	str = ciniparser_getstring(d, key, INI_INVALID_KEY);
 
@@ -308,9 +308,9 @@ int ciniparser_getint(dictionary *d, const char *key, int notfound)
 	return (int)strtol(str, NULL, 10);
 }
 
-double ciniparser_getdouble(dictionary *d, const char *key, double notfound)
+double ciniparser_getdouble(dictionary* d, const char* key, double notfound)
 {
-	const char *str;
+	const char* str;
 
 	str = ciniparser_getstring(d, key, INI_INVALID_KEY);
 
@@ -320,9 +320,9 @@ double ciniparser_getdouble(dictionary *d, const char *key, double notfound)
 	return atof(str);
 }
 
-int ciniparser_getboolean(dictionary *d, const char *key, int notfound)
+int ciniparser_getboolean(dictionary* d, const char* key, int notfound)
 {
-	const char *c;
+	const char* c;
 	int ret;
 
 	c = ciniparser_getstring(d, key, INI_INVALID_KEY);
@@ -344,7 +344,7 @@ int ciniparser_getboolean(dictionary *d, const char *key, int notfound)
 	return ret;
 }
 
-int ciniparser_find_entry(dictionary *ini, const char *entry)
+int ciniparser_find_entry(dictionary* ini, const char* entry)
 {
 	int found = 0;
 
@@ -354,26 +354,26 @@ int ciniparser_find_entry(dictionary *ini, const char *entry)
 	return found;
 }
 
-int ciniparser_set(dictionary *d, const char *entry, const char *val)
+int ciniparser_set(dictionary* d, const char* entry, const char* val)
 {
 	return dictionary_set(d, strlwc(entry), val);
 }
 
-void ciniparser_unset(dictionary *ini, char *entry)
+void ciniparser_unset(dictionary* ini, char* entry)
 {
 	dictionary_unset(ini, strlwc(entry));
 }
 
-dictionary *ciniparser_load(const char *ininame)
+dictionary* ciniparser_load(const char* ininame)
 {
-	FILE *in;
+	FILE* in;
 	char line[ASCIILINESZ + 1];
 	char section[ASCIILINESZ + 1];
 	char key[ASCIILINESZ + 1];
 	char tmp[ASCIILINESZ + 1];
 	char val[ASCIILINESZ + 1];
 	int last = 0, len, lineno = 0, errs = 0;
-	dictionary *dict;
+	dictionary* dict;
 
 	in = fopen(ininame, "r");
 	if (in == NULL) {
@@ -464,7 +464,7 @@ dictionary *ciniparser_load(const char *ininame)
 	return dict;
 }
 
-void ciniparser_freedict(dictionary *d)
+void ciniparser_freedict(dictionary* d)
 {
 	dictionary_del(d);
 }

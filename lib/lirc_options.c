@@ -26,16 +26,16 @@
 #include "lirc_options.h"
 #include "lirc_log.h"
 
-dictionary *lirc_options = NULL;
+dictionary* lirc_options = NULL;
 
 /* Environment variable which if set enables some debug output. */
-static const char *const LIRC_DEBUG_OPTIONS = "LIRC_DEBUG_OPTIONS";
+static const char* const LIRC_DEBUG_OPTIONS = "LIRC_DEBUG_OPTIONS";
 
 static int depth = 0;
 
 static int options_debug = -1;
 
-loglevel_t options_set_loglevel(const char *optarg)
+loglevel_t options_set_loglevel(const char* optarg)
 {
 	char s[4];
 	loglevel_t level;
@@ -49,7 +49,7 @@ loglevel_t options_set_loglevel(const char *optarg)
 }
 
 
-void options_set_opt(const char *key, const char *value)
+void options_set_opt(const char* key, const char* value)
 {
 	if (dictionary_set(lirc_options, key, value) != 0)
 		logprintf(LIRC_WARNING,
@@ -57,19 +57,19 @@ void options_set_opt(const char *key, const char *value)
 }
 
 
-const char *options_getstring(const char *const key)
+const char* options_getstring(const char* const key)
 {
 	return ciniparser_getstring(lirc_options, key, 0);
 }
 
 
-int options_getint(const char *const key)
+int options_getint(const char* const key)
 {
 	return ciniparser_getint(lirc_options, key, 0);
 }
 
 
-int  options_getboolean(const char *const key)
+int  options_getboolean(const char* const key)
 {
 	return ciniparser_getboolean(lirc_options, key, 0);
 }
@@ -80,10 +80,10 @@ static const struct option o_option[] = {
 };
 
 
-static char *parse_O_arg(int argc, char **argv)
+static char* parse_O_arg(int argc, char** argv)
 {
 	int c;
-	char *path = NULL;
+	char* path = NULL;
 
 	opterr = 0;
 	optind = 1;
@@ -105,13 +105,13 @@ static char *parse_O_arg(int argc, char **argv)
 }
 
 
-void options_load(int argc, char **const argv,
-		  const char *path_arg,
-		  void (*parse_options)(int, char **const))
+void options_load(int argc, char** const argv,
+		  const char* path_arg,
+		  void (* parse_options)(int, char** const))
 {
 	char buff[128];
 	char buff2[128];
-	const char *path = path_arg;
+	const char* path = path_arg;
 
 	if (depth > 1) {
 		logprintf(LIRC_WARNING,
@@ -155,17 +155,17 @@ void options_load(int argc, char **const argv,
 }
 
 
-void options_add_defaults(const char *const defaults[])
+void options_add_defaults(const char* const defaults[])
 {
 	int i;
-	const char *key;
-	const char *value;
+	const char* key;
+	const char* value;
 
 	for (i = 0; defaults[i] != NULL; i += 2) {
 		key = defaults[i];
 		value = defaults[i + 1];
 		if (ciniparser_getstring(lirc_options, key, NULL) == NULL)
-			options_set_opt((char *)key, (char *)value);
+			options_set_opt((char*)key, (char*)value);
 	}
 }
 

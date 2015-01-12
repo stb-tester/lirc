@@ -22,10 +22,12 @@ extern "C" {
 
 void register_input(void);
 
-void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode,
+void register_button_press(struct ir_remote* remote,
+			   struct ir_ncode* ncode,
 			   ir_code code, int reps);
 
-void get_release_data(const char** remote_name, const char** button_name,
+void get_release_data(const char** remote_name,
+		      const char** button_name,
 		      int* reps);
 
 void set_release_suffix(const char* s);

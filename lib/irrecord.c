@@ -50,26 +50,26 @@ lirc_t aeps = 100;
 // Static data
 
 static lirc_t signals[MAX_SIGNALS];
-static struct ir_remote *emulation_data;
+static struct ir_remote* emulation_data;
 static struct ir_ncode ncode;
-static struct ir_ncode *next_code = NULL;
-static struct ir_ncode *current_code = NULL;
+static struct ir_ncode* next_code = NULL;
+static struct ir_ncode* current_code = NULL;
 static int current_index = 0;
 static int current_rep = 0;
 
-static struct lengths  *first_space = NULL;
-static struct lengths  *first_pulse = NULL;
-static struct lengths *first_sum = NULL;
-static struct lengths *first_gap = NULL;
-static struct lengths *first_repeat_gap = NULL;
-static struct lengths *first_signal_length = NULL;
-static struct lengths  *first_headerp = NULL;
-static struct lengths  *first_headers = NULL;
-static struct lengths *first_1lead = NULL;
-static struct lengths *first_3lead = NULL;
-static struct lengths *first_trail = NULL;
-static struct lengths  *first_repeatp = NULL;
-static struct lengths  *first_repeats = NULL;
+static struct lengths* first_space = NULL;
+static struct lengths* first_pulse = NULL;
+static struct lengths* first_sum = NULL;
+static struct lengths* first_gap = NULL;
+static struct lengths* first_repeat_gap = NULL;
+static struct lengths* first_signal_length = NULL;
+static struct lengths* first_headerp = NULL;
+static struct lengths* first_headers = NULL;
+static struct lengths* first_1lead = NULL;
+static struct lengths* first_3lead = NULL;
+static struct lengths* first_trail = NULL;
+static struct lengths* first_repeatp = NULL;
+static struct lengths* first_repeats = NULL;
 
 static __u32 lengths[MAX_SIGNALS];
 static __u32 first_length, first_lengths, second_lengths;
@@ -79,7 +79,7 @@ static unsigned int count_3repeats, count_5repeats;
 // Functions
 
 /** snprintf-style message formatting into state->message. */
-void btn_state_set_message(struct button_state *state, const char *fmt, ...)
+void btn_state_set_message(struct button_state* state, const char* fmt, ...)
 {
 	va_list ap;
 
@@ -89,7 +89,7 @@ void btn_state_set_message(struct button_state *state, const char *fmt, ...)
 }
 
 
-static void fprint_copyright(FILE *fout)
+static void fprint_copyright(FILE* fout)
 {
 	fprintf(fout, "\n"
 		"# Please take the time to finish this file as described in\n"
@@ -184,13 +184,13 @@ int resethw(void)
 }
 
 
-void gap_state_init(struct gap_state *state)
+void gap_state_init(struct gap_state* state)
 {
 	memset(state, 0, sizeof(struct gap_state));
 }
 
 
-void lengths_state_init(struct lengths_state *state)
+void lengths_state_init(struct lengths_state* state)
 {
 	count = 0;
 	count_spaces = 0;
@@ -206,7 +206,7 @@ void lengths_state_init(struct lengths_state *state)
 }
 
 
-void toggle_state_init(struct toggle_state *state)
+void toggle_state_init(struct toggle_state* state)
 {
 	memset(state, 0, sizeof(struct toggle_state));
 	state->retries = 30;
@@ -214,23 +214,23 @@ void toggle_state_init(struct toggle_state *state)
 }
 
 
-void button_state_init(struct button_state *state)
+void button_state_init(struct button_state* state)
 {
 	memset(state, 0, sizeof(struct button_state));
 	state->retval = EXIT_SUCCESS;
 }
 
 
-static lirc_t calc_signal(struct lengths *len)
+static lirc_t calc_signal(struct lengths* len)
 {
 	return (lirc_t)(len->sum / len->count);
 }
 
 
-static void set_toggle_bit_mask(struct ir_remote *remote, ir_code xor)
+static void set_toggle_bit_mask(struct ir_remote* remote, ir_code xor)
 {
 	ir_code mask;
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	int bits;
 
 	if (!remote->codes)
@@ -261,12 +261,12 @@ static void set_toggle_bit_mask(struct ir_remote *remote, ir_code xor)
 }
 
 
-void get_pre_data(struct ir_remote *remote)
+void get_pre_data(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	ir_code mask, last;
 	int count, i;
-	struct ir_code_node *n;
+	struct ir_code_node* n;
 
 	if (remote->bits == 0)
 		return;
@@ -319,12 +319,12 @@ void get_pre_data(struct ir_remote *remote)
 }
 
 
-void get_post_data(struct ir_remote *remote)
+void get_post_data(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	ir_code mask, last;
 	int count, i;
-	struct ir_code_node *n;
+	struct ir_code_node* n;
 
 	if (remote->bits == 0)
 		return;
@@ -375,10 +375,10 @@ void get_post_data(struct ir_remote *remote)
 }
 
 
-void remove_pre_data(struct ir_remote *remote)
+void remove_pre_data(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
-	struct ir_code_node *n;
+	struct ir_ncode* codes;
+	struct ir_code_node* n;
 
 	if (remote->pre_data_bits == 0 || remote->pre_p != 0 || remote->pre_s != 0) {
 		remote = remote->next;
@@ -395,10 +395,10 @@ void remove_pre_data(struct ir_remote *remote)
 }
 
 
-void remove_post_data(struct ir_remote *remote)
+void remove_post_data(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
-	struct ir_code_node *n;
+	struct ir_ncode* codes;
+	struct ir_code_node* n;
 
 	if (remote->post_data_bits == 0) {
 		remote = remote->next;
@@ -418,12 +418,12 @@ void remove_post_data(struct ir_remote *remote)
 }
 
 
-void invert_data(struct ir_remote *remote)
+void invert_data(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	ir_code mask;
 	lirc_t p, s;
-	struct ir_code_node *n;
+	struct ir_code_node* n;
 
 	/* swap one, zero */
 	p = remote->pone;
@@ -459,7 +459,7 @@ void invert_data(struct ir_remote *remote)
 }
 
 
-void remove_trail(struct ir_remote *remote)
+void remove_trail(struct ir_remote* remote)
 {
 	int extra_bit;
 
@@ -487,9 +487,9 @@ void remove_trail(struct ir_remote *remote)
 }
 
 
-void for_each_remote(struct ir_remote *remotes, remote_func func)
+void for_each_remote(struct ir_remote* remotes, remote_func func)
 {
-	struct ir_remote *remote;
+	struct ir_remote* remote;
 
 	remote = remotes;
 	while (remote != NULL) {
@@ -594,9 +594,9 @@ static lirc_t emulation_readdata(lirc_t timeout)
 }
 
 
-static struct lengths *new_length(lirc_t length)
+static struct lengths* new_length(lirc_t length)
 {
-	struct lengths *l;
+	struct lengths* l;
 
 	l = malloc(sizeof(struct lengths));
 	if (l == NULL)
@@ -611,10 +611,10 @@ static struct lengths *new_length(lirc_t length)
 }
 
 
-void unlink_length(struct lengths **first, struct lengths *remove)
+void unlink_length(struct lengths** first, struct lengths* remove)
 {
-	struct lengths  *last;
-	struct lengths  *scan;
+	struct lengths* last;
+	struct lengths* scan;
 
 	if (remove == *first) {
 		*first = remove->next;
@@ -636,10 +636,10 @@ void unlink_length(struct lengths **first, struct lengths *remove)
 }
 
 
-int add_length(struct lengths **first, lirc_t length)
+int add_length(struct lengths** first, lirc_t length)
 {
-	struct lengths  *l;
-	struct lengths  *last;
+	struct lengths* l;
+	struct lengths* last;
 
 	if (*first == NULL) {
 		*first = new_length(length);
@@ -666,10 +666,10 @@ int add_length(struct lengths **first, lirc_t length)
 }
 
 
-void free_lengths(struct lengths **firstp)
+void free_lengths(struct lengths** firstp)
 {
-	struct lengths  *first;
-	struct lengths  *next;
+	struct lengths* first;
+	struct lengths* next;
 
 	first = *firstp;
 	if (first == NULL)
@@ -701,11 +701,11 @@ void free_all_lengths(void)
 }
 
 
-static void merge_lengths(struct lengths *first)
+static void merge_lengths(struct lengths* first)
 {
-	struct lengths  *l;
-	struct lengths  *inner;
-	struct lengths  *last;
+	struct lengths* l;
+	struct lengths* inner;
+	struct lengths* last;
 	__u32 new_sum;
 	int new_count;
 
@@ -749,12 +749,12 @@ static void merge_lengths(struct lengths *first)
 }
 
 
-static struct lengths *
-get_max_length(struct lengths *first, unsigned int *sump)
+static struct lengths*
+get_max_length(struct lengths* first, unsigned int* sump)
 {
 	unsigned int sum;
-	struct lengths  *scan;
-	struct lengths  *max_length;
+	struct lengths* scan;
+	struct lengths* max_length;
 
 	if (first == NULL)
 		return NULL;
@@ -778,10 +778,10 @@ get_max_length(struct lengths *first, unsigned int *sump)
 }
 
 
-int get_trail_length(struct ir_remote *remote, int interactive)
+int get_trail_length(struct ir_remote* remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
-	struct lengths *max_length;
+	struct lengths* max_length;
 
 	if (is_biphase(remote))
 		return 1;
@@ -802,12 +802,12 @@ int get_trail_length(struct ir_remote *remote, int interactive)
 }
 
 
-int get_lead_length(struct ir_remote *remote, int interactive)
+int get_lead_length(struct ir_remote* remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
-	struct lengths  *first_lead;
-	struct lengths  *max_length;
-	struct lengths  *max2_length;
+	struct lengths* first_lead;
+	struct lengths* max_length;
+	struct lengths* max2_length;
 	lirc_t a, b, swap;
 
 	if (!is_biphase(remote) || has_header(remote))
@@ -846,12 +846,12 @@ int get_lead_length(struct ir_remote *remote, int interactive)
 }
 
 
-int get_header_length(struct ir_remote *remote, int interactive)
+int get_header_length(struct ir_remote* remote, int interactive)
 {
 	unsigned int sum, max_count;
 	lirc_t headerp, headers;
-	struct lengths  *max_plength;
-	struct lengths  *max_slength;
+	struct lengths* max_plength;
+	struct lengths* max_slength;
 
 	if (first_headerp != NULL) {
 		max_plength = get_max_length(first_headerp, &sum);
@@ -886,12 +886,12 @@ int get_header_length(struct ir_remote *remote, int interactive)
 }
 
 
-int get_repeat_length(struct ir_remote *remote, int interactive)
+int get_repeat_length(struct ir_remote* remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
 	lirc_t repeatp, repeats, repeat_gap;
-	struct lengths  *max_plength;
-	struct lengths  *max_slength;
+	struct lengths* max_plength;
+	struct lengths* max_slength;
 
 	if (!((count_3repeats > SAMPLES / 2 ? 1 : 0) ^ (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
 		if (count_3repeats > SAMPLES / 2 || count_5repeats > SAMPLES / 2) {
@@ -938,13 +938,13 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 }
 
 
-void get_scheme(struct ir_remote *remote, int interactive)
+void get_scheme(struct ir_remote* remote, int interactive)
 {
 	unsigned int i, length = 0, sum = 0;
-	struct lengths  *maxp;
-	struct lengths  *max2p;
-	struct lengths  *maxs;
-	struct lengths  *max2s;
+	struct lengths* maxp;
+	struct lengths* max2p;
+	struct lengths* maxs;
+	struct lengths* max2s;
 
 	for (i = 1; i < MAX_SIGNALS; i++) {
 		if (lengths[i] > lengths[length])
@@ -970,9 +970,8 @@ void get_scheme(struct ir_remote *remote, int interactive)
 	}
 	maxp = get_max_length(first_pulse, NULL);
 	unlink_length(&first_pulse, maxp);
-	if (first_pulse == NULL) {
+	if (first_pulse == NULL)
 		first_pulse = maxp;
-	}
 	max2p = get_max_length(first_pulse, NULL);
 	maxp->next = first_pulse;
 	first_pulse = maxp;
@@ -1009,14 +1008,14 @@ void get_scheme(struct ir_remote *remote, int interactive)
 }
 
 
-int get_data_length(struct ir_remote *remote, int interactive)
+int get_data_length(struct ir_remote* remote, int interactive)
 {
 	unsigned int sum = 0, max_count;
 	lirc_t p1, p2, s1, s2;
-	struct lengths  *max_plength;
-	struct lengths  *max_slength;
-	struct lengths  *max2_plength;
-	struct lengths  *max2_slength;
+	struct lengths* max_plength;
+	struct lengths* max_slength;
+	struct lengths* max2_plength;
+	struct lengths* max2_slength;
 
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;
@@ -1036,7 +1035,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 		if (max2_plength)
 			logprintf(LIRC_DEBUG, ", %u x %u",
 				  max2_plength->count,
-				  (__u32) calc_signal(max2_plength));
+				  (__u32)calc_signal(max2_plength));
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
@@ -1080,9 +1079,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			} else {
 				if (max2_plength == NULL
 				    && max2_slength == NULL) {
-						logprintf(LIRC_NOTICE,
-							  "No encoding found");
-						return 0;
+					logprintf(LIRC_NOTICE,
+						  "No encoding found");
+					return 0;
 				}
 				if (max2_plength && max2_slength) {
 					logprintf(LIRC_NOTICE,
@@ -1132,14 +1131,14 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				}
 			}
 			if (is_biphase(remote)) {
-				struct lengths *signal_length;
+				struct lengths* signal_length;
 				lirc_t data_length;
 
 				signal_length = get_max_length(first_signal_length, NULL);
 				data_length =
 					calc_signal(signal_length) - remote->plead - remote->phead -
 					remote->shead +
-					/* + 1/2 bit */
+				        /* + 1/2 bit */
 					(remote->pone + remote->sone) / 2;
 				remote->bits = data_length / (remote->pone + remote->sone);
 				if (is_rc6(remote))
@@ -1162,7 +1161,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 }
 
 
-enum get_gap_status get_gap_length(struct gap_state *state, struct ir_remote *remote)
+enum get_gap_status get_gap_length(struct gap_state* state, struct ir_remote* remote)
 {
 	while (availabledata())
 		curr_driver->rec_func(NULL);
@@ -1202,9 +1201,9 @@ enum get_gap_status get_gap_length(struct gap_state *state, struct ir_remote *re
 
 
 /** Return true if a given remote needs to compute toggle_mask. */
-int needs_toggle_mask(struct ir_remote *remote)
+int needs_toggle_mask(struct ir_remote* remote)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 
 	if (!is_rc6(remote))
 		return 0;
@@ -1222,12 +1221,12 @@ int needs_toggle_mask(struct ir_remote *remote)
 }
 
 
-enum lengths_status get_lengths(struct lengths_state *state,
-				struct ir_remote *remote,
+enum lengths_status get_lengths(struct lengths_state* state,
+				struct ir_remote* remote,
 				int force, int interactive)
 {
 	int i;
-	struct lengths *scan;
+	struct lengths* scan;
 	int maxcount = 0;
 	static int lastmaxcount = 0;
 	enum lengths_status again = STS_LEN_AGAIN;
@@ -1447,7 +1446,7 @@ enum lengths_status get_lengths(struct lengths_state *state,
 
 
 enum toggle_status
-get_toggle_bit_mask(struct toggle_state *state, struct ir_remote *remote)
+get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 {
 	struct decode_ctx_t decode_ctx;
 	int i;
@@ -1520,7 +1519,7 @@ get_toggle_bit_mask(struct toggle_state *state, struct ir_remote *remote)
 
 
 /** analyse non-interactive get_lengths, returns boolean ok/fail. */
-int analyse_get_lengths(struct lengths_state *lengths_state)
+int analyse_get_lengths(struct lengths_state* lengths_state)
 {
 	enum lengths_status status = STS_LEN_AGAIN;
 
@@ -1559,14 +1558,14 @@ int analyse_get_lengths(struct lengths_state *lengths_state)
 
 
 /** Implement the analyse task, return 1 for ok, 0 for errors. */
-int analyse_remote(struct ir_remote *raw_data, const struct opts *opts)
+int analyse_remote(struct ir_remote* raw_data, const struct opts* opts)
 {
-	struct ir_ncode *codes;
+	struct ir_ncode* codes;
 	struct decode_ctx_t decode_ctx;
 	struct lengths_state lengths_state;
 	int code;
 	int code2;
-	struct ir_ncode *new_codes;
+	struct ir_ncode* new_codes;
 	size_t new_codes_count = 100;
 	int new_index = 0;
 	int ret;
@@ -1617,7 +1616,7 @@ int analyse_remote(struct ir_remote *raw_data, const struct opts *opts)
 				  "Decoding of %s failed", codes->name);
 		} else {
 			if (new_index + 1 >= new_codes_count) {
-				struct ir_ncode *renew_codes;
+				struct ir_ncode* renew_codes;
 
 				new_codes_count *= 2;
 				renew_codes =
@@ -1662,12 +1661,12 @@ int analyse_remote(struct ir_remote *raw_data, const struct opts *opts)
 
 
 /** The --analyse wrapper. */
-int do_analyse(const struct opts *opts, struct main_state *state)
+int do_analyse(const struct opts* opts, struct main_state* state)
 {
-	FILE *f;
-	struct ir_remote *r;
+	FILE* f;
+	struct ir_remote* r;
 
-	memcpy((void *)curr_driver, &hw_emulation, sizeof(struct driver));
+	memcpy((void*)curr_driver, &hw_emulation, sizeof(struct driver));
 	f = fopen(opts->filename, "r");
 	if (f == NULL) {
 		fprintf(stderr, "Cannot open file: %s\n", opts->filename);
@@ -1690,17 +1689,17 @@ int do_analyse(const struct opts *opts, struct main_state *state)
 }
 
 
-enum button_status record_buttons(struct button_state * btn_state,
+enum button_status record_buttons(struct button_state*	btn_state,
 				  enum button_status	last_status,
-				  struct main_state *	state,
-				  const struct opts *	opts)
+				  struct main_state*	state,
+				  const struct opts*	opts)
 {
 	ir_code code2;
 	int decode_ok;
 	__u32 timeout;
 	int retries;
-	struct ir_remote *my_remote;
-	FILE *f;
+	struct ir_remote* my_remote;
+	FILE* f;
 
 	if (btn_state->no_data) {
 		btn_state->no_data = 0;
@@ -1842,7 +1841,7 @@ enum button_status record_buttons(struct button_state * btn_state,
 					logprintf(LIRC_INFO, "Signal length is %d\n",
 						  btn_state->count - 1);
 					if (btn_state->count % 2) {
-						const char *const
+						const char* const
 						MSG_EVEN_LENGTH =
 							"Signal length is %d\n"
 							"That's weird because the signal length "
@@ -1895,7 +1894,7 @@ enum button_status record_buttons(struct button_state * btn_state,
 					      " ever happen!");
 			return STS_BTN_HARD_ERROR;
 		}
-		if (my_remote == (void *)-1) {
+		if (my_remote == (void*)-1) {
 			btn_state_set_message(btn_state,
 					      "Reading of config file failed"
 					      " this should never happen.");
@@ -1927,7 +1926,7 @@ enum button_status record_buttons(struct button_state * btn_state,
 
 
 /** Write the provisionary config file. */
-void config_file_setup(struct main_state *state, const struct opts *opts)
+void config_file_setup(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {
@@ -1944,7 +1943,7 @@ void config_file_setup(struct main_state *state, const struct opts *opts)
 
 
 /** Write the final config file. */
-int config_file_finish(struct main_state *state, const struct opts *opts)
+int config_file_finish(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {

@@ -35,13 +35,13 @@
 #include "lirc/config_flags.h"
 #include "lirc/ir_remote_types.h"
 
-void fprint_comment(FILE *f, const struct ir_remote *rem, const char *commandline)
+void fprint_comment(FILE* f, const struct ir_remote* rem, const char* commandline)
 {
 	time_t timet;
-	struct tm *tmp;
+	struct tm* tmp;
 	char cmd[128];
 	char uname[64];
-	FILE *p;
+	FILE* p;
 
 	p = popen("uname -r", "r");
 	if (p < 0) {
@@ -79,7 +79,7 @@ void fprint_comment(FILE *f, const struct ir_remote *rem, const char *commandlin
 		VERSION, curr_driver->name, asctime(tmp), cmd, uname, rem->name);
 }
 
-void fprint_flags(FILE *f, int flags)
+void fprint_flags(FILE* f, int flags)
 {
 	int i;
 	int begin = 0;
@@ -99,7 +99,7 @@ void fprint_flags(FILE *f, int flags)
 		fprintf(f, "\n");
 }
 
-void fprint_remotes(FILE *f, const struct ir_remote *all, const char *commandline)
+void fprint_remotes(FILE* f, const struct ir_remote* all, const char* commandline)
 {
 	while (all) {
 		fprint_remote(f, all, commandline);
@@ -108,7 +108,7 @@ void fprint_remotes(FILE *f, const struct ir_remote *all, const char *commandlin
 	}
 }
 
-void fprint_remote_gap(FILE *f, const struct ir_remote *rem)
+void fprint_remote_gap(FILE* f, const struct ir_remote* rem)
 {
 	if (rem->gap2 != 0)
 		fprintf(f, "  gap          %u %u\n", (__u32)rem->gap, (__u32)rem->gap2);
@@ -116,7 +116,7 @@ void fprint_remote_gap(FILE *f, const struct ir_remote *rem)
 		fprintf(f, "  gap          %u\n", (__u32)rem->gap);
 }
 
-void fprint_remote_head(FILE *f, const struct ir_remote *rem)
+void fprint_remote_head(FILE* f, const struct ir_remote* rem)
 {
 	fprintf(f, "begin remote\n\n");
 	fprintf(f, "  name  %s\n", rem->name);
@@ -200,12 +200,12 @@ void fprint_remote_head(FILE *f, const struct ir_remote *rem)
 	fprintf(f, "\n");
 }
 
-void fprint_remote_foot(FILE *f, const struct ir_remote *rem)
+void fprint_remote_foot(FILE* f, const struct ir_remote* rem)
 {
 	fprintf(f, "end remote\n");
 }
 
-void fprint_remote_signal_head(FILE *f, const struct ir_remote *rem)
+void fprint_remote_signal_head(FILE* f, const struct ir_remote* rem)
 {
 	if (!is_raw(rem))
 		fprintf(f, "      begin codes\n");
@@ -213,7 +213,7 @@ void fprint_remote_signal_head(FILE *f, const struct ir_remote *rem)
 		fprintf(f, "      begin raw_codes\n\n");
 }
 
-void fprint_remote_signal_foot(FILE *f, const struct ir_remote *rem)
+void fprint_remote_signal_foot(FILE* f, const struct ir_remote* rem)
 {
 	if (!is_raw(rem))
 		fprintf(f, "      end codes\n\n");
@@ -221,13 +221,13 @@ void fprint_remote_signal_foot(FILE *f, const struct ir_remote *rem)
 		fprintf(f, "      end raw_codes\n\n");
 }
 
-void fprint_remote_signal(FILE *f, const struct ir_remote *rem, const struct ir_ncode *codes)
+void fprint_remote_signal(FILE* f, const struct ir_remote* rem, const struct ir_ncode* codes)
 {
 	int i, j;
 
 	if (!is_raw(rem)) {
 		char format[30];
-		const struct ir_code_node *loop;
+		const struct ir_code_node* loop;
 
 		sprintf(format, "          %%-24s 0x%%0%dllX", (rem->bits + 3) / 4);
 		fprintf(f, format, codes->name, codes->code);
@@ -260,9 +260,9 @@ void fprint_remote_signal(FILE *f, const struct ir_remote *rem, const struct ir_
 	}
 }
 
-void fprint_remote_signals(FILE *f, const struct ir_remote *rem)
+void fprint_remote_signals(FILE* f, const struct ir_remote* rem)
 {
-	const struct ir_ncode *codes;
+	const struct ir_ncode* codes;
 
 	fprint_remote_signal_head(f, rem);
 	codes = rem->codes;
@@ -273,7 +273,7 @@ void fprint_remote_signals(FILE *f, const struct ir_remote *rem)
 	fprint_remote_signal_foot(f, rem);
 }
 
-void fprint_remote(FILE *f, const struct ir_remote *rem, const char *commandline)
+void fprint_remote(FILE* f, const struct ir_remote* rem, const char* commandline)
 {
 	fprint_comment(f, rem, commandline);
 	fprint_remote_head(f, rem);

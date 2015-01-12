@@ -28,16 +28,16 @@
 #include "lirc/lirc_log.h"
 
 static struct timeval release_time;
-static struct ir_remote *release_remote;
-static struct ir_ncode *release_ncode;
+static struct ir_remote* release_remote;
+static struct ir_ncode* release_ncode;
 static ir_code release_code;
 static int release_reps;
 static lirc_t release_gap;
 
-static struct ir_remote *release_remote2;
-static struct ir_ncode *release_ncode2;
+static struct ir_remote* release_remote2;
+static struct ir_ncode* release_ncode2;
 static ir_code release_code2;
-static const char *release_suffix = LIRC_RELEASE_SUFFIX;
+static const char* release_suffix = LIRC_RELEASE_SUFFIX;
 static char message[PACKET_SIZE + 1];
 
 void register_input(void)
@@ -54,7 +54,7 @@ void register_input(void)
 	timeradd(&release_time, &gap, &release_time);
 }
 
-void register_button_press(struct ir_remote *remote, struct ir_ncode *ncode, ir_code code, int reps)
+void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode, ir_code code, int reps)
 {
 	if (reps == 0 && release_remote != NULL) {
 		release_remote2 = release_remote;
@@ -69,14 +69,14 @@ void register_button_press(struct ir_remote *remote, struct ir_ncode *ncode, ir_
 	/* some additional safety margin */
 	release_gap = upper_limit(remote,
 				  remote->max_total_signal_length - remote->min_gap_length)
-				     + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
+		      + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
 
 	LOGPRINTF(1, "release_gap: %lu", release_gap);
 
 	register_input();
 }
 
-void get_release_data(const char **remote_name, const char **button_name, int *reps)
+void get_release_data(const char** remote_name, const char** button_name, int* reps)
 {
 	if (release_remote != NULL) {
 		*remote_name = release_remote->name;
@@ -88,17 +88,17 @@ void get_release_data(const char **remote_name, const char **button_name, int *r
 	}
 }
 
-void set_release_suffix(const char *s)
+void set_release_suffix(const char* s)
 {
 	release_suffix = s;
 }
 
-void get_release_time(struct timeval *tv)
+void get_release_time(struct timeval* tv)
 {
 	*tv = release_time;
 }
 
-const char *check_release_event(const char **remote_name, const char **button_name)
+const char* check_release_event(const char** remote_name, const char** button_name)
 {
 	int len = 0;
 
@@ -127,7 +127,7 @@ const char *check_release_event(const char **remote_name, const char **button_na
 	return NULL;
 }
 
-const char *trigger_release_event(const char **remote_name, const char **button_name)
+const char* trigger_release_event(const char** remote_name, const char** button_name)
 {
 	int len = 0;
 
@@ -157,11 +157,11 @@ const char *trigger_release_event(const char **remote_name, const char **button_
 	return NULL;
 }
 
-const char *release_map_remotes(struct ir_remote *old, struct ir_remote *new, const char **remote_name,
-				const char **button_name)
+const char* release_map_remotes(struct ir_remote* old, struct ir_remote* new, const char** remote_name,
+				const char** button_name)
 {
-	struct ir_remote *remote;
-	struct ir_ncode *ncode = NULL;
+	struct ir_remote* remote;
+	struct ir_ncode* ncode = NULL;
 
 	if (release_remote2 != NULL) {
 		/* should not happen */

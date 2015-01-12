@@ -41,18 +41,18 @@ static struct ir_ncode NCODE_EOF = {
 };
 
 /** Const packet sent for EOF condition. */
-static const char *const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
+static const char* const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
 
 /** Const dummy remote used for lirc internal decoding. */
 static struct ir_remote lirc_internal_remote = { "lirc" };
 
-struct ir_remote *decoding = NULL;
+struct ir_remote* decoding = NULL;
 
-struct ir_remote *last_remote = NULL;
+struct ir_remote* last_remote = NULL;
 
-struct ir_remote *repeat_remote = NULL;
+struct ir_remote* repeat_remote = NULL;
 
-struct ir_ncode *repeat_code;
+struct ir_ncode* repeat_code;
 
 static int dyncodes = 0;
 
@@ -61,7 +61,7 @@ void ir_remote_init(int use_dyncodes)
 	dyncodes = use_dyncodes;
 }
 
-static lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t gap)
+static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t gap)
 {
 	unsigned long secs, diff;
 
@@ -72,7 +72,7 @@ static lirc_t time_left(struct timeval *current, struct timeval *last, lirc_t ga
 	return (lirc_t)(diff < gap ? gap - diff : 0);
 }
 
-static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
+static int match_ir_code(struct ir_remote* remote, ir_code a, ir_code b)
 {
 	return (remote->ignore_mask | a) == (remote->ignore_mask | b)
 	       || (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask));
@@ -84,9 +84,9 @@ static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
  * @param min_freq
  * @param max_freq
  */
-void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq, unsigned int *max_freq)
+void get_frequency_range(const struct ir_remote* remotes, unsigned int* min_freq, unsigned int* max_freq)
 {
-	const struct ir_remote *scan;
+	const struct ir_remote* scan;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	scan = remotes;
@@ -118,10 +118,10 @@ void get_frequency_range(const struct ir_remote *remotes, unsigned int *min_freq
  * @param max_pulse_lengthp
  * @param max_space_lengthp
  */
-void get_filter_parameters(const struct ir_remote *remotes, lirc_t *max_gap_lengthp, lirc_t *min_pulse_lengthp,
-			   lirc_t *min_space_lengthp, lirc_t *max_pulse_lengthp, lirc_t *max_space_lengthp)
+void get_filter_parameters(const struct ir_remote* remotes, lirc_t* max_gap_lengthp, lirc_t* min_pulse_lengthp,
+			   lirc_t* min_space_lengthp, lirc_t* max_pulse_lengthp, lirc_t* max_space_lengthp)
 {
-	const struct ir_remote *scan = remotes;
+	const struct ir_remote* scan = remotes;
 	lirc_t max_gap_length = 0;
 	lirc_t min_pulse_length = 0, min_space_length = 0;
 	lirc_t max_pulse_length = 0, max_space_length = 0;
@@ -159,8 +159,8 @@ void get_filter_parameters(const struct ir_remote *remotes, lirc_t *max_gap_leng
  * @param remote
  * @return
  */
-const struct ir_remote *is_in_remotes(const struct ir_remote *	remotes,
-				      const struct ir_remote *	remote)
+const struct ir_remote* is_in_remotes(const struct ir_remote*	remotes,
+				      const struct ir_remote*	remote)
 {
 	while (remotes != NULL) {
 		if (remotes == remote)
@@ -176,10 +176,10 @@ const struct ir_remote *is_in_remotes(const struct ir_remote *	remotes,
  * @param name
  * @return
  */
-struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
-				const char *		name)
+struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
+				const char*		name)
 {
-	const struct ir_remote *all;
+	const struct ir_remote* all;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
 	all = remotes;
@@ -187,7 +187,7 @@ struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
 		return &lirc_internal_remote;
 	while (all) {
 		if (strcasecmp(all->name, name) == 0)
-			return (struct ir_remote *)all;
+			return (struct ir_remote*)all;
 		all = all->next;
 	}
 	return NULL;
@@ -207,8 +207,8 @@ struct ir_remote *get_ir_remote(const struct ir_remote *remotes,
  * @param post
  * @return
  */
-int map_code(const struct ir_remote *	remote,
-	     struct decode_ctx_t *	ctx,
+int map_code(const struct ir_remote*	remote,
+	     struct decode_ctx_t*	ctx,
 	     int			pre_bits,
 	     ir_code			pre,
 	     int			bits,
@@ -251,10 +251,10 @@ int map_code(const struct ir_remote *	remote,
  * @param min_remaining_gapp
  * @param max_remaining_gapp
  */
-void map_gap(const struct ir_remote *	remote,
-	     struct decode_ctx_t *	ctx,
-	     const struct timeval *	start,
-	     const struct timeval *	last,
+void map_gap(const struct ir_remote*	remote,
+	     struct decode_ctx_t*	ctx,
+	     const struct timeval*	start,
+	     const struct timeval*	last,
 	     lirc_t			signal_length)
 {
 	// Time gap (us) between a keypress on the remote control and
@@ -319,28 +319,28 @@ void map_gap(const struct ir_remote *	remote,
  * @param name
  * @return
  */
-struct ir_ncode *get_code_by_name(const struct ir_remote *remote, const char *name)
+struct ir_ncode* get_code_by_name(const struct ir_remote* remote, const char* name)
 {
-	const struct ir_ncode *all;
+	const struct ir_ncode* all;
 
 	all = remote->codes;
 	if (strcmp(remote->name, "lirc") == 0)
 		return strcmp(name, "__EOF") == 0 ? &NCODE_EOF : 0;
 	while (all->name != NULL) {
 		if (strcasecmp(all->name, name) == 0)
-			return (struct ir_ncode *)all;
+			return (struct ir_ncode*)all;
 		all++;
 	}
 	return 0;
 }
 
-static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post,
-				 int *repeat_flag, ir_code *toggle_bit_mask_statep)
+static struct ir_ncode* get_code(struct ir_remote* remote, ir_code pre, ir_code code, ir_code post,
+				 int* repeat_flag, ir_code* toggle_bit_mask_statep)
 {
 	ir_code pre_mask, code_mask, post_mask, toggle_bit_mask_state, all;
 	int found_code, have_code;
-	struct ir_ncode  *codes;
-	struct ir_ncode  *found;
+	struct ir_ncode* codes;
+	struct ir_ncode* found;
 
 	pre_mask = code_mask = post_mask = 0;
 
@@ -353,9 +353,9 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 		post_mask |= remote->ignore_mask & gen_mask(remote->post_data_bits);
 	}
 	if (has_toggle_mask(remote) && remote->toggle_mask_state % 2) {
-		ir_code  *affected;
-		ir_code  mask;
-		ir_code  mask_bit;
+		ir_code* affected;
+		ir_code mask;
+		ir_code mask_bit;
 		int bit, current_bit;
 
 		affected = &post;
@@ -427,7 +427,7 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 				}
 			} else {
 				/* find longest matching sequence */
-				struct ir_code_node *search;
+				struct ir_code_node* search;
 
 				search = codes->next;
 				if (search == NULL || (codes->next != NULL && codes->current == NULL)) {
@@ -436,8 +436,8 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 					int sequence_match = 0;
 
 					while (search != codes->current->next) {
-						struct ir_code_node  *prev;
-						struct ir_code_node  *next;
+						struct ir_code_node* prev;
+						struct ir_code_node* next;
 						int flag = 1;
 
 						prev = NULL;    /* means codes->code */
@@ -498,13 +498,13 @@ static struct ir_ncode *get_code(struct ir_remote *remote, ir_code pre, ir_code 
 	return found;
 }
 
-static __u64 set_code(struct ir_remote *remote,
-		      struct ir_ncode *found,
-		      ir_code toggle_bit_mask_state,
-		      struct decode_ctx_t *ctx)
+static __u64 set_code(struct ir_remote*		remote,
+		      struct ir_ncode*		found,
+		      ir_code			toggle_bit_mask_state,
+		      struct decode_ctx_t*	ctx)
 {
 	struct timeval current;
-	static struct ir_remote *last_decoded = NULL;
+	static struct ir_remote* last_decoded = NULL;
 
 	LOGPRINTF(1, "found: %s", found->name);
 
@@ -524,20 +524,20 @@ static __u64 set_code(struct ir_remote *remote,
 	}
 	if (remote == last_decoded &&
 	    (found == remote->last_code
-		|| (found->next != NULL && found->current != NULL))
+	     || (found->next != NULL && found->current != NULL))
 	    && ctx->repeat_flag
 	    && time_elapsed(&remote->last_send, &current) < 1000000
 	    && (!has_toggle_bit_mask(remote)
 		|| toggle_bit_mask_state == remote->toggle_bit_mask_state)) {
-			if (has_toggle_mask(remote)) {
-				remote->toggle_mask_state++;
-				if (remote->toggle_mask_state == 4) {
-					remote->reps++;
-					remote->toggle_mask_state = 2;
-				}
-			} else if (found->current == NULL) {
+		if (has_toggle_mask(remote)) {
+			remote->toggle_mask_state++;
+			if (remote->toggle_mask_state == 4) {
 				remote->reps++;
+				remote->toggle_mask_state = 2;
 			}
+		} else if (found->current == NULL) {
+			remote->reps++;
+		}
 	} else {
 		if (found->next != NULL && found->current == NULL)
 			remote->reps = 1;
@@ -589,8 +589,8 @@ static __u64 set_code(struct ir_remote *remote,
  * @param reps
  * @return
  */
-int write_message(char *buffer, size_t size, const char *remote_name, const char *button_name,
-		  const char *button_suffix, ir_code code, int reps)
+int write_message(char* buffer, size_t size, const char* remote_name, const char* button_name,
+		  const char* button_suffix, ir_code code, int reps)
 {
 	int len;
 
@@ -605,14 +605,14 @@ int write_message(char *buffer, size_t size, const char *remote_name, const char
  * @param remotes
  * @return
  */
-char *decode_all(struct ir_remote *remotes)
+char* decode_all(struct ir_remote* remotes)
 {
-	struct ir_remote *remote;
+	struct ir_remote* remote;
 	static char message[PACKET_SIZE + 1];
-	struct ir_ncode *ncode;
+	struct ir_ncode* ncode;
 	ir_code toggle_bit_mask_state;
-	struct ir_remote *scan;
-	struct ir_ncode *scan_ncode;
+	struct ir_remote* scan;
+	struct ir_ncode* scan_ncode;
 	struct decode_ctx_t ctx;
 
 	/* use remotes carefully, it may be changed on SIGHUP */
@@ -681,7 +681,7 @@ char *decode_all(struct ir_remote *remotes)
  * @param code IR code to be transmitted
  * @return nonzero if success
  */
-int send_ir_ncode(struct ir_remote *remote, struct ir_ncode *code, int delay)
+int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay)
 {
 	int ret;
 

@@ -36,9 +36,9 @@ typedef __u16 linux_input_code;
 typedef unsigned short linux_input_code;
 #endif
 
-int get_input_code(const char *name, linux_input_code *code);
-void fprint_namespace(FILE *f);
-int is_in_namespace(const char *name);
+int get_input_code(const char* name, linux_input_code* code);
+void fprint_namespace(FILE* f);
+int is_in_namespace(const char* name);
 
 #ifdef __cplusplus
 }

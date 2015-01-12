@@ -318,7 +318,8 @@ static inline lirc_t max_gap(const struct ir_remote* remote)
 
 /* check if delta is inside exdelta +/- exdelta*eps/100 */
 
-static inline int expect(const struct ir_remote* remote, lirc_t delta,
+static inline int expect(const struct ir_remote* remote,
+			 lirc_t delta,
 			 lirc_t exdelta)
 {
 	int aeps = curr_driver->resolution > remote->aeps ?
@@ -456,6 +457,7 @@ struct ir_ncode* get_code_by_name(const struct ir_remote*	remote,
 int write_message(char* buffer, size_t size, const char* remote_name,
 		  const char* button_name, const char* button_suffix,
 		  ir_code code, int reps);
+
 /**
  * Tries to decode current signal trying all known remotes. This is
  * non-blocking, failures could be retried later when more data is

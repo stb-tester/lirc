@@ -281,7 +281,9 @@ int lirc_readconfig_only(const char* file,
 			 struct lirc_config** config,
 			 int (check) (char* s));
 
-int lirc_code2charprog(struct lirc_config* config, char* code, char** string,
+int lirc_code2charprog(struct lirc_config* config,
+		       char* code,
+		       char** string,
 		       char** prog);
 
 /**

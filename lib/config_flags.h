@@ -11,7 +11,7 @@
 
 /** Description of flag to print. */
 struct flaglist {
-	char *	name;                   /**< Name of flag. */
+	char*	name;                   /**< Name of flag. */
 	int	flag;                   /**< Flag bitmask.*/
 };
 

@@ -366,9 +366,9 @@ int lirc_deinit(void)
 
 static int lirc_readline(char** line, FILE* f)
 {
-	char  *newline;
-	char  *ret;
-	char  *enlargeline;
+	char* newline;
+	char* ret;
+	char* enlargeline;
 	int len;
 
 	newline = (char*)malloc(LIRC_READ + 1);
@@ -581,8 +581,7 @@ int lirc_mode(char* token, char* token2, char** mode,
 		if (token2 == NULL) {
 			if (new_entry == NULL) {
 				new_entry = (struct lirc_config_entry*)
-					    malloc(sizeof(struct
-							  lirc_config_entry));
+					    malloc(sizeof(struct lirc_config_entry));
 				if (new_entry == NULL) {
 					lirc_printf("%s: out of memory\n",
 						    lirc_prog);
@@ -983,12 +982,12 @@ static char* lirc_startupmode(struct lirc_config_entry* first)
 
 static void lirc_freeconfigentries(struct lirc_config_entry* first)
 {
-	struct lirc_config_entry  *c;
-	struct lirc_config_entry  *config_temp;
-	struct lirc_list  *list;
-	struct lirc_list  *list_temp;
-	struct lirc_code  *code;
-	struct lirc_code  *code_temp;
+	struct lirc_config_entry* c;
+	struct lirc_config_entry* config_temp;
+	struct lirc_list* list;
+	struct lirc_list* list_temp;
+	struct lirc_code* code;
+	struct lirc_code* code_temp;
 
 	c = first;
 	while (c != NULL) {
@@ -1057,20 +1056,20 @@ static int lirc_readconfig_only_internal(const char*		file,
 {
 	const char* const INCLUDED_LIRCRC_CLASS =
 		"Warning: lirc_class in included file (ignored)";
-	char  *string;
-	char  *eq;
-	char  *token;
-	char  *token2;
-	char  *token3;
-	struct filestack_t  *filestack;
-	struct filestack_t  *stack_tmp;
+	char* string;
+	char* eq;
+	char* token;
+	char* token2;
+	char* token3;
+	struct filestack_t* filestack;
+	struct filestack_t* stack_tmp;
 	int open_files;
 	char lircrc_class[128] = { '\0' };
-	struct lirc_config_entry  *new_entry;
-	struct lirc_config_entry  *first;
-	struct lirc_config_entry  *last;
-	char  *mode;
-	char  *remote;
+	struct lirc_config_entry* new_entry;
+	struct lirc_config_entry* first;
+	struct lirc_config_entry* last;
+	char* mode;
+	char* remote;
 	int ret = 0;
 	int firstline = 1;
 	char* save_full_name = NULL;
@@ -1168,7 +1167,7 @@ static int lirc_readconfig_only_internal(const char*		file,
 				token2 = strtok(NULL, " \t");
 				if (token2)
 					token3 = strtok(NULL, " \t");
-				if (token2 != NULL && token3  != NULL) {
+				if (token2 != NULL && token3 != NULL) {
 					lirc_printf("%s: unexpected token in line %s:%d\n",
 						    lirc_prog, filestack->name, filestack->line);
 				} else {
@@ -1277,9 +1276,7 @@ static int lirc_readconfig_only_internal(const char*		file,
 							    " a  valid number for delay\n", lirc_prog,
 							    token2);
 					free(token2);
-				} else if (strcasecmp(token,
-						      "ignore_first_events") ==
-					   0) {
+				} else if (strcasecmp(token, "ignore_first_events") == 0) {
 					char* end;
 
 					errno = ERANGE + 1;
@@ -1311,8 +1308,7 @@ static int lirc_readconfig_only_internal(const char*		file,
 					struct lirc_list* new_list;
 
 					new_list = (struct lirc_list*)
-						   malloc(sizeof(struct
-								 lirc_list));
+						   malloc(sizeof(struct lirc_list));
 					if (new_list == NULL) {
 						free(token2);
 						lirc_printf(
@@ -1665,8 +1661,8 @@ static int lirc_iscode(struct lirc_config_entry*	scan,
 	codes = codes->next;
 	/* rebase code sequence */
 	while (codes != scan->next_code->next) {
-		struct lirc_code  *prev;
-		struct lirc_code  *next;
+		struct lirc_code* prev;
+		struct lirc_code* next;
 		int flag = 1;
 
 		prev = scan->code;
@@ -1729,11 +1725,11 @@ static int lirc_code2char_internal(struct lirc_config*	config,
 				   char**		prog)
 {
 	int rep;
-	char *backup;
-	char  *remote;
-	char  *button;
-	char *s = NULL;
-	struct lirc_config_entry *scan;
+	char* backup;
+	char* remote;
+	char* button;
+	char* s = NULL;
+	struct lirc_config_entry* scan;
 	int exec_level;
 	int quit_happened;
 
@@ -1858,8 +1854,8 @@ int lirc_nextcode(char** code)
 	static int packet_size = PACKET_SIZE;
 	static int end_len = 0;
 	ssize_t len = 0;
-	char  *end;
-	char  c;
+	char* end;
+	char c;
 
 	*code = NULL;
 	if (lirc_buffer == NULL) {

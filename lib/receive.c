@@ -46,7 +46,7 @@ struct rbuf {
 	lirc_t		sum;
 	struct timeval	last_signal_time;
 	int		at_eof;
-	FILE *		input_log;
+	FILE*		input_log;
 };
 
 
@@ -189,7 +189,7 @@ int waitfordata(__u32 maxusec)
 }
 
 
-void rec_buffer_set_logfile(FILE *f)
+void rec_buffer_set_logfile(FILE* f)
 {
 	if (rec_buffer.input_log != NULL)
 		fclose(rec_buffer.input_log);
@@ -313,7 +313,7 @@ static lirc_t get_next_space(lirc_t maxusec)
 	return data;
 }
 
-static int sync_pending_pulse(struct ir_remote *remote)
+static int sync_pending_pulse(struct ir_remote* remote)
 {
 	if (rec_buffer.pendingp > 0) {
 		lirc_t deltap;
@@ -328,7 +328,7 @@ static int sync_pending_pulse(struct ir_remote *remote)
 	return 1;
 }
 
-static int sync_pending_space(struct ir_remote *remote)
+static int sync_pending_space(struct ir_remote* remote)
 {
 	if (rec_buffer.pendings > 0) {
 		lirc_t deltas;
@@ -343,7 +343,7 @@ static int sync_pending_space(struct ir_remote *remote)
 	return 1;
 }
 
-static int expectpulse(struct ir_remote *remote, int exdelta)
+static int expectpulse(struct ir_remote* remote, int exdelta)
 {
 	lirc_t deltap;
 	int retval;
@@ -368,7 +368,7 @@ static int expectpulse(struct ir_remote *remote, int exdelta)
 	return retval;
 }
 
-static int expectspace(struct ir_remote *remote, int exdelta)
+static int expectspace(struct ir_remote* remote, int exdelta)
 {
 	lirc_t deltas;
 	int retval;
@@ -393,7 +393,7 @@ static int expectspace(struct ir_remote *remote, int exdelta)
 	return retval;
 }
 
-static int expectone(struct ir_remote *remote, int bit)
+static int expectone(struct ir_remote* remote, int bit)
 {
 	if (is_biphase(remote)) {
 		int all_bits = bit_count(remote);
@@ -439,7 +439,7 @@ static int expectone(struct ir_remote *remote, int bit)
 	return 1;
 }
 
-static int expectzero(struct ir_remote *remote, int bit)
+static int expectzero(struct ir_remote* remote, int bit)
 {
 	if (is_biphase(remote)) {
 		int all_bits = bit_count(remote);
@@ -485,7 +485,7 @@ static int expectzero(struct ir_remote *remote, int bit)
 	return 1;
 }
 
-static lirc_t sync_rec_buffer(struct ir_remote *remote)
+static lirc_t sync_rec_buffer(struct ir_remote* remote)
 {
 	int count;
 	lirc_t deltas, deltap;
@@ -505,7 +505,7 @@ static lirc_t sync_rec_buffer(struct ir_remote *remote)
 				return 0;
 			count++;
 			if (count > REC_SYNC)   /* no sync found,
-						 * let's try a diffrent remote */
+				                 * let's try a diffrent remote */
 				return 0;
 		}
 		if (has_toggle_mask(remote)) {
@@ -519,7 +519,7 @@ static lirc_t sync_rec_buffer(struct ir_remote *remote)
 	return deltas;
 }
 
-static int get_header(struct ir_remote *remote)
+static int get_header(struct ir_remote* remote)
 {
 	if (is_rcmm(remote)) {
 		lirc_t deltap, deltas, sum;
@@ -574,7 +574,7 @@ static int get_header(struct ir_remote *remote)
 	return 1;
 }
 
-static int get_foot(struct ir_remote *remote)
+static int get_foot(struct ir_remote* remote)
 {
 	if (!expectspace(remote, remote->sfoot))
 		return 0;
@@ -583,7 +583,7 @@ static int get_foot(struct ir_remote *remote)
 	return 1;
 }
 
-static int get_lead(struct ir_remote *remote)
+static int get_lead(struct ir_remote* remote)
 {
 	if (remote->plead == 0)
 		return 1;
@@ -593,7 +593,7 @@ static int get_lead(struct ir_remote *remote)
 	return 1;
 }
 
-static int get_trail(struct ir_remote *remote)
+static int get_trail(struct ir_remote* remote)
 {
 	if (remote->ptrail != 0)
 		if (!expectpulse(remote, remote->ptrail))
@@ -604,7 +604,7 @@ static int get_trail(struct ir_remote *remote)
 	return 1;
 }
 
-static int get_gap(struct ir_remote *remote, lirc_t gap)
+static int get_gap(struct ir_remote* remote, lirc_t gap)
 {
 	lirc_t data;
 
@@ -624,7 +624,7 @@ static int get_gap(struct ir_remote *remote, lirc_t gap)
 	return 1;
 }
 
-static int get_repeat(struct ir_remote *remote)
+static int get_repeat(struct ir_remote* remote)
 {
 	if (!get_lead(remote))
 		return 0;
@@ -644,14 +644,14 @@ static int get_repeat(struct ir_remote *remote)
 		    (remote,
 		    is_const(remote) ? (min_gap(remote) >
 					rec_buffer.sum ?
-					    min_gap(remote) - rec_buffer.sum : 0) :
-					    (has_repeat_gap(remote) ? remote->repeat_gap : min_gap(remote))
+					min_gap(remote) - rec_buffer.sum : 0) :
+		    (has_repeat_gap(remote) ? remote->repeat_gap : min_gap(remote))
 		    ))
 		return 0;
 	return 1;
 }
 
-static ir_code get_data(struct ir_remote *remote, int bits, int done)
+static ir_code get_data(struct ir_remote* remote, int bits, int done)
 {
 	ir_code code;
 	int i;
@@ -663,7 +663,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 
 		if (bits % 2 || done % 2) {
 			logprintf(LIRC_ERROR, "invalid bit number.");
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		}
 		if (!sync_pending_space(remote))
 			return 0;
@@ -673,7 +673,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			if (deltap == 0 || deltas == 0) {
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			sum = deltap + deltas;
 			LOGPRINTF(3, "rcmm: sum %ld", (__u32)sum);
@@ -691,7 +691,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 				LOGPRINTF(2, "11");
 			} else {
 				LOGPRINTF(2, "no match for %d+%d=%d", deltap, deltas, sum);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 		}
 		return code;
@@ -701,16 +701,16 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 
 		if (bits % 2 || done % 2) {
 			logprintf(LIRC_ERROR, "invalid bit number.");
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		}
 		if (!sync_pending_pulse(remote))
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		for (laststate = state = -1, i = 0; i < bits; ) {
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			deltap = get_next_pulse(remote->pzero + remote->pone + remote->ptwo + remote->pthree);
 			if (deltas == 0 || deltap == 0) {
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			sum = deltas + deltap;
 			LOGPRINTF(3, "grundig: sum %ld", (__u32)sum);
@@ -728,7 +728,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 				LOGPRINTF(2, "6T");
 			} else {
 				LOGPRINTF(2, "no match for %d+%d=%d", deltas, deltap, sum);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			if (state == 3) {       /* 6T */
 				i += 2;
@@ -754,7 +754,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 				/* 1st bit */
 			} else {
 				logprintf(LIRC_ERROR, "invalid state %d:%d", laststate, state);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			laststate = state;
 		}
@@ -800,7 +800,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			}
 			if (delta == 0) {
 				LOGPRINTF(1, "failed before bit %d", received + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			pending = (space ? rec_buffer.pendings : rec_buffer.pendingp);
 			if (expect(remote, delta, pending)) {
@@ -809,7 +809,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 				delta -= pending;
 			} else {
 				LOGPRINTF(1, "failed before bit %d", received + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			if (pending > 0) {
 				if (stop_bit) {
@@ -844,7 +844,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 					if ((remote->parity == IR_PARITY_EVEN && parity)
 					    || (remote->parity == IR_PARITY_ODD && !parity)) {
 						LOGPRINTF(1, "parity error after %d bits", received + 1);
-						return (ir_code) -1;
+						return (ir_code) - 1;
 					}
 					parity = 0;
 
@@ -856,7 +856,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 
 					if (space && delta == 0) {
 						LOGPRINTF(1, "failed at stop bit after %d bits", received + 1);
-						return (ir_code) -1;
+						return (ir_code) - 1;
 					}
 					LOGPRINTF(3, "awaiting stop bit");
 					set_pending_space(stop);
@@ -865,7 +865,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			} else {
 				if (delta == origdelta) {
 					LOGPRINTF(1, "framing error after %d bits", received + 1);
-					return (ir_code) -1;
+					return (ir_code) - 1;
 				}
 				delta = 0;
 			}
@@ -889,7 +889,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			deltas = get_next_space(remote->szero + remote->sone + remote->stwo + remote->sthree);
 			if (deltap == 0 || deltas == 0) {
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			if (lastbit == 1) {
 				pzero = remote->pone;
@@ -921,7 +921,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 				}
 			}
 			logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		}
 		return code;
 	} else if (is_xmp(remote)) {
@@ -930,7 +930,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 
 		if (bits % 4 || done % 4) {
 			logprintf(LIRC_ERROR, "invalid bit number.");
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		}
 		if (!sync_pending_space(remote))
 			return 0;
@@ -940,7 +940,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			deltas = get_next_space(remote->szero + 16 * remote->sone);
 			if (deltap == 0 || deltas == 0) {
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			sum = deltap + deltas;
 
@@ -948,7 +948,7 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			n = (sum + remote->sone / 2) / remote->sone;
 			if (n >= 16) {
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
-				return (ir_code) -1;
+				return (ir_code) - 1;
 			}
 			LOGPRINTF(1, "%d: %lx", i, n);
 			code |= n;
@@ -978,50 +978,50 @@ static ir_code get_data(struct ir_remote *remote, int bits, int done)
 			code |= 0;
 		} else {
 			LOGPRINTF(1, "failed on bit %d", done + i + 1);
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		}
 	}
 	return code;
 }
 
-static ir_code get_pre(struct ir_remote *remote)
+static ir_code get_pre(struct ir_remote* remote)
 {
 	ir_code pre;
 
 	pre = get_data(remote, remote->pre_data_bits, 0);
 
-	if (pre == (ir_code) -1) {
+	if (pre == (ir_code) - 1) {
 		LOGPRINTF(1, "failed on pre_data");
-		return (ir_code) -1;
+		return (ir_code) - 1;
 	}
 	if (remote->pre_p > 0 && remote->pre_s > 0) {
 		if (!expectpulse(remote, remote->pre_p))
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		set_pending_space(remote->pre_s);
 	}
 	return pre;
 }
 
-static ir_code get_post(struct ir_remote *remote)
+static ir_code get_post(struct ir_remote* remote)
 {
 	ir_code post;
 
 	if (remote->post_p > 0 && remote->post_s > 0) {
 		if (!expectpulse(remote, remote->post_p))
-			return (ir_code) -1;
+			return (ir_code) - 1;
 		set_pending_space(remote->post_s);
 	}
 
 	post = get_data(remote, remote->post_data_bits, remote->pre_data_bits + remote->bits);
 
-	if (post == (ir_code) -1) {
+	if (post == (ir_code) - 1) {
 		LOGPRINTF(1, "failed on post_data");
-		return (ir_code) -1;
+		return (ir_code) - 1;
 	}
 	return post;
 }
 
-int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
+int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	lirc_t sync;
 	int header;
@@ -1102,8 +1102,8 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 	}
 
 	if (is_raw(remote)) {
-		struct ir_ncode  *codes;
-		struct ir_ncode  *found;
+		struct ir_ncode* codes;
+		struct ir_ncode* found;
 		int i;
 
 		if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE)
@@ -1131,8 +1131,8 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 			if (found != NULL) {
 				if (!get_gap
 					    (remote, is_const(remote) ?
-						min_gap(remote) - rec_buffer.sum :
-						min_gap(remote)))
+					    min_gap(remote) - rec_buffer.sum :
+					    min_gap(remote)))
 					found = NULL;
 			}
 		}
@@ -1147,7 +1147,7 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 			LOGPRINTF(1, "decoded: %llx", decoded);
 			if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE
 			    && curr_driver->code_length != bit_count(remote))
-					return 0;
+				return 0;
 
 			ctx->post = decoded & gen_mask(remote->post_data_bits);
 			decoded >>= remote->post_data_bits;
@@ -1171,7 +1171,7 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 
 			if (has_pre(remote)) {
 				ctx->pre = get_pre(remote);
-				if (ctx->pre == (ir_code) -1) {
+				if (ctx->pre == (ir_code) - 1) {
 					LOGPRINTF(1, "failed on pre");
 					return 0;
 				}
@@ -1179,7 +1179,7 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 			}
 
 			ctx->code = get_data(remote, remote->bits, remote->pre_data_bits);
-			if (ctx->code == (ir_code) -1) {
+			if (ctx->code == (ir_code) - 1) {
 				LOGPRINTF(1, "failed on code");
 				return 0;
 			}
@@ -1187,7 +1187,7 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 
 			if (has_post(remote)) {
 				ctx->post = get_post(remote);
-				if (ctx->post == (ir_code) -1) {
+				if (ctx->post == (ir_code) - 1) {
 					LOGPRINTF(1, "failed on post");
 					return 0;
 				}
@@ -1210,9 +1210,9 @@ int receive_decode(struct ir_remote *remote, struct decode_ctx_t *ctx)
 					return 0;
 			} else if (is_const(remote)) {
 				if (!get_gap(remote, min_gap(remote) > rec_buffer.sum ?
-					min_gap(remote) - rec_buffer.sum :
-					0))
-						return 0;
+					     min_gap(remote) - rec_buffer.sum :
+					     0))
+					return 0;
 			} else {
 				if (!get_gap(remote, min_gap(remote)))
 					return 0;

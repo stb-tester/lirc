@@ -46,7 +46,8 @@ void send_buffer_init(void);
 int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code);
 
 /** @cond */
-int init_sim(struct ir_remote* remote, struct ir_ncode* code,
+int init_sim(struct ir_remote* remote,
+	     struct ir_ncode* code,
 	     int repeat_preset);
 /** @endcond */
 

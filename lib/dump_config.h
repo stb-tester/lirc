@@ -31,7 +31,9 @@ extern "C" {
 
 #include "ir_remote.h"
 
-void fprint_comment(FILE* f, const struct ir_remote* rem, const char* commandline);
+void fprint_comment(FILE* f,
+		    const struct ir_remote* rem,
+		    const char* commandline);
 
 void fprint_flags(FILE* f, int flags);
 

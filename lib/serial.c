@@ -40,7 +40,7 @@
 
 #if defined __linux__
 #include <linux/serial.h>       /* for 'struct serial_struct' to set custom
-				 * baudrates */
+                                 * baudrates */
 #endif
 
 #include "lirc/lirc_log.h"
@@ -299,13 +299,13 @@ int tty_setcsize(int fd, int csize)
  * @return non-zero if successful
  * @see  http://www.pathname.com/fhs/2.2/fhs-5.9.html
  */
-int tty_create_lock(const char *name)
+int tty_create_lock(const char* name)
 {
 	char filename[FILENAME_MAX + 1];
 	char symlink[FILENAME_MAX + 1];
 	char cwd[FILENAME_MAX + 1];
-	const char  *last;
-	const char  *s;
+	const char* last;
+	const char* s;
 	char id[10 + 1 + 1];
 	int lock;
 	int len;
@@ -449,8 +449,8 @@ tty_create_lock_retry:
  */
 int tty_delete_lock(void)
 {
-	DIR *dp;
-	struct dirent *ep;
+	DIR* dp;
+	struct dirent* ep;
 	int lock;
 	int len;
 	char id[20] = { '\0' };
@@ -561,7 +561,7 @@ int tty_write(int fd, char byte)
 	return 1;
 }
 
-int tty_read(int fd, char *byte)
+int tty_read(int fd, char* byte)
 {
 	fd_set fds;
 	int ret;
