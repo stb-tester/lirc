@@ -101,3 +101,8 @@ install-data-hook:
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)$(pkgdatadir)/configs \
 	    $(DESTDIR)$(pkgpythondir)/configs
+
+checkfiles:
+	../git-tools/checkfiles $(SOURCES)
+
+

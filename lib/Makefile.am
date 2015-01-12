@@ -102,4 +102,6 @@ input_map.inc: lirc/input_map.inc
 lirc/input_map.inc:
 	$(srcdir)/input_map.sh >./input_map.inc
 
+checkfiles:
+	../git-tools/checkfiles $(SOURCES) $(HEADERS)
 

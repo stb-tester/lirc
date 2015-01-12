@@ -2,16 +2,32 @@
 
 So, you are considering contributing to lirc? You are most welcome! Some points:
 
-## Code layout
+## Code layout and git hooks
 
-We use the kernel coding standards, as described in [1]. Many lines in the code
-are actually too long according to these, but stick to the rules for new code.
-Using 'indent -linux' gives a good starting point w r t formatting.
+We use the kernel coding standards, as described in [1], with some exceptions
+and notes:
+  - Many lines in the code are actually too long according to these, but stick
+    to the rules (< 80 chars) for new code.
+  - For various reasons pointer types are written with the star attached to
+    the type, not the variable. I. e., we use char* s instead of char *s.
+    While this is a good practise it requires us to have all pointer
+    declarations on separate lines.
+  - The format-files script uses uncrustify and the uncrustify.cfg file to
+    re-format sources according to these rules with reasonable results.
+  - The checkfiles scripts is a wrapper for checkfiles.pl. This is from the
+    kernel, with some minor patches for lirc. Notably it allows code with
+    warnings to be checked in.
 
 In the git-tools directory there is a pre-commit hook aimed to be installed in
-.git/hooks/pre-commit (a symlink works fine). This handles most of the boring
-tabs and trailing whitespace problems on checkin. Here is also a
-fix-whitespace script which can be used to filter a range of commits.
+.git/hooks/pre-commit (a symlink works fine):
+
+    cd .git/hooks
+    ln -s ../../git-tools/pre-commit .
+
+This will invoke the checkfile script before committing to avoid problems. Use
+git commit --no-verify should you want to avoid these checks.
+
+The git hook also does some other updates. Use it!
 
 ## Git branches
 
