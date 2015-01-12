@@ -587,11 +587,15 @@ void mouse_conv(int rep, char *button, char *remote)
 struct trans_mouse *read_config(FILE *fd)
 {
 	char buffer[PACKET_SIZE];
-	char *directives, *remote, *button;
+	char  *directives;
+	char  *remote;
+	char  *button;
 	enum directive d;
 	int len;
 	int line;
-	struct trans_mouse *tm_new, *tm_list, *tm_last = NULL;
+	struct trans_mouse  *tm_new;
+	struct trans_mouse  *tm_list;
+	struct trans_mouse  *tm_last = NULL;
 
 	tm_list = NULL;
 	new_ms = ms;

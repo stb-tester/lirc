@@ -1143,7 +1143,8 @@ int send_error(int fd, char *message, char *format_str, ...)
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
-	char *s1, *s2;
+	char  *s1;
+	char  *s2;
 
 	va_start(ap, format_str);
 	vsprintf(buffer, format_str, ap);
@@ -1234,7 +1235,10 @@ void dosigalrm(int sig)
 int parse_rc(int fd, char *message, char *arguments, struct ir_remote **remote, struct ir_ncode **code, int *reps,
 	     int n, int *err)
 {
-	char *name = NULL, *command = NULL, *repeats, *end_ptr = NULL;
+	char  *name = NULL;
+	char  *command = NULL;
+	char  *repeats;
+	char  *end_ptr = NULL;
 
 	*remote = NULL;
 	*code = NULL;
@@ -1390,7 +1394,8 @@ static int list(int fd, char *message, char *arguments)
 
 static int set_transmitters(int fd, char *message, char *arguments)
 {
-	char *next_arg = NULL, *end_ptr;
+	char  *next_arg = NULL;
+	char  *end_ptr;
 	__u32 next_tx_int = 0;
 	__u32 next_tx_hex = 0;
 	__u32 channels = 0;
@@ -1450,7 +1455,9 @@ void broadcast_message(const char *message)
 static int simulate(int fd, char *message, char *arguments)
 {
 	int i;
-	char *sim, *s, *space;
+	char  *sim;
+	char  *s;
+	char  *space;
 
 	logprintf(LIRC_DEBUG, "simulate: enter");
 
@@ -1804,7 +1811,8 @@ void input_message(const char *message, const char *remote_name, const char *but
 
 void free_old_remotes(void)
 {
-	struct ir_remote *scan_remotes, *found;
+	struct ir_remote  *scan_remotes;
+	struct ir_remote  *found;
 	struct ir_ncode *code;
 	const char *release_event;
 	const char *release_remote_name;

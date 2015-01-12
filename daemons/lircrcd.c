@@ -502,7 +502,8 @@ static int send_error(int fd, char *message, char *format_str, ...)
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
-	char *s1, *s2;
+	char  *s1;
+	char  *s2;
 
 	va_start(ap, format_str);
 	vsprintf(buffer, format_str, ap);
@@ -666,7 +667,8 @@ static void loop(int sockfd, int lircdfd)
 static int schedule(int index, char *config_string)
 {
 	struct event_info *e;
-	struct config_info *c, *n;
+	struct config_info  *c;
+	struct config_info  *n;
 
 	LOGPRINTF(2, "schedule(%s): -%s-", clis[index].ident_string, config_string);
 
@@ -704,7 +706,8 @@ static int handle_input(void)
 	char *config_string;
 	char *prog;
 	int ret;
-	struct event_info *e, *n;
+	struct event_info  *e;
+	struct event_info  *n;
 	int i;
 
 	LOGPRINTF(1, "input from lircd");
