@@ -197,7 +197,8 @@ void tty_atexit(void)
 
 int pty_open(char *pty_name)
 {
-	char *ptr1, *ptr2;
+	char  *ptr1;
+	char  *ptr2;
 	int fd;
 
 	strcpy(pty_name, "/dev/ptyp0");
@@ -307,7 +308,8 @@ int main(int argc, char *argv[])
 {
 	int fdm, c, ignoreeof, interactive, noecho, verbose;
 	pid_t pid;
-	char *config, slave_name[20];
+	char  *config;
+	char  slave_name[20];
 	struct termios orig_termios;
 	struct winsize size;
 	int flags;

@@ -141,9 +141,11 @@ static Time fake_timestamp()
 
 static Window find_window(Window top, char *name)
 {
-	char *wname, *iname;
+	char  *wname;
+	char  *iname;
 	XClassHint xch;
-	Window *children, foo;
+	Window  *children;
+	Window  foo;
 	int revert_to_return;
 	unsigned int nc;
 
@@ -221,7 +223,9 @@ static Window find_window(Window top, char *name)
 static Window find_sub_sub_window(Window top, int *x, int *y)
 {
 	Window base;
-	Window *children, foo, target = 0;
+	Window  *children;
+	Window  foo;
+	Window  target = 0;
 	int rel_x, rel_y, new_x = 1, new_y = 1;
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
@@ -273,7 +277,9 @@ static Window find_sub_sub_window(Window top, int *x, int *y)
 static Window find_sub_window(Window top, char *name, int *x, int *y)
 {
 	Window base;
-	Window *children, foo, target = 0;
+	Window  *children;
+	Window  foo;
+	Window  target = 0;
 	int rel_x, rel_y, new_x = 1, new_y = 1;
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
@@ -323,7 +329,10 @@ static Window find_sub_window(Window top, char *name, int *x, int *y)
 static Window find_window_focused(Window top, char *name)
 {
 	int tmp;
-	Window w, cur, *children, foo;
+	Window w;
+	Window cur;
+	Window *children;
+	Window foo;
 	unsigned int n;
 
 	/* return the currently focused window if it is a direct match or a
@@ -371,7 +380,9 @@ static void make_button(int button, int x, int y, XButtonEvent *xev)
 
 static void make_key(char *keyname, int x, int y, XKeyEvent *xev)
 {
-	char *part, *part2, *sep_part;
+	char  *part;
+	char  *part2;
+	char  *sep_part;
 	struct keymodlist_t *kmlptr;
 	KeySym ks;
 	KeyCode kc;
