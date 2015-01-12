@@ -95,7 +95,7 @@ static int bDaemon = 0;
 static int bInError = 0;
 
 struct keymodlist_t {
-	char *	name;
+	char*	name;
 	Mask	mask;
 };
 static struct keymodlist_t keymodlist[] = {
@@ -103,22 +103,22 @@ static struct keymodlist_t keymodlist[] = {
 	{ "CAPS",    LockMask	 },
 	{ "CTRL",    ControlMask },
 	{ "ALT",     Mod1Mask	 },
-	{ "META",    Mod1Mask    },
+	{ "META",    Mod1Mask	 },
 	{ "NUMLOCK", Mod2Mask	 },
 	{ "MOD3",    Mod3Mask	 },     /* I don't have a clue what key maps to this. */
 	{ "MOD4",    Mod4Mask	 },     /* I don't have a clue what key maps to this. */
 	{ "MOD5",    Mod5Mask	 },
-	{ "ALTGR",   Mod5Mask    },
-	{ "SCRLOCK", Mod5Mask    },
+	{ "ALTGR",   Mod5Mask	 },
+	{ "SCRLOCK", Mod5Mask	 },
 	{ NULL,	     0		 },
 };
 
-static const char *key_delimiter = "-";
-static const char *active_window_name = "CurrentWindow";
-static const char *root_window_name = "RootWindow";
+static const char* key_delimiter = "-";
+static const char* active_window_name = "CurrentWindow";
+static const char* root_window_name = "RootWindow";
 
-static const char *prog = "irxevent";
-static Display *dpy;
+static const char* prog = "irxevent";
+static Display* dpy;
 static Window root;
 static XEvent xev;
 static Window subw;
@@ -139,13 +139,13 @@ static Time fake_timestamp(void)
 	return (Time)tint;
 }
 
-static Window find_window(Window top, char *name)
+static Window find_window(Window top, char* name)
 {
-	char  *wname;
-	char  *iname;
+	char* wname;
+	char* iname;
 	XClassHint xch;
-	Window  *children;
-	Window  foo;
+	Window* children;
+	Window foo;
 	int revert_to_return;
 	unsigned int nc;
 
@@ -220,12 +220,12 @@ static Window find_window(Window top, char *name)
 	return top;
 }
 
-static Window find_sub_sub_window(Window top, int *x, int *y)
+static Window find_sub_sub_window(Window top, int* x, int* y)
 {
 	Window base;
-	Window  *children;
-	Window  foo;
-	Window  target = 0;
+	Window* children;
+	Window foo;
+	Window target = 0;
 	int rel_x, rel_y, new_x = 1, new_y = 1;
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
@@ -241,7 +241,7 @@ static Window find_sub_sub_window(Window top, int *x, int *y)
 	/* check if we hit a sub window and find the smallest one */
 	for (; nc > 0; nc--) {
 		if (XGetGeometry(dpy, children[nc - 1],
-		    &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
+				 &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
 			if ((rel_x <= *x)
 			    && (*x <= rel_x + width)
 			    && (rel_y <= *y) && (*y <= rel_y + height)) {
@@ -274,12 +274,12 @@ static Window find_sub_sub_window(Window top, int *x, int *y)
 	}
 }
 
-static Window find_sub_window(Window top, char *name, int *x, int *y)
+static Window find_sub_window(Window top, char* name, int* x, int* y)
 {
 	Window base;
-	Window  *children;
-	Window  foo;
-	Window  target = 0;
+	Window* children;
+	Window foo;
+	Window target = 0;
 	int rel_x, rel_y, new_x = 1, new_y = 1;
 	unsigned int nc, width, height, border, depth, targetsize = 1000000;
 
@@ -326,12 +326,12 @@ static Window find_sub_window(Window top, char *name, int *x, int *y)
 	}
 }
 
-static Window find_window_focused(Window top, char *name)
+static Window find_window_focused(Window top, char* name)
 {
 	int tmp;
 	Window w;
 	Window cur;
-	Window *children;
+	Window* children;
 	Window foo;
 	unsigned int n;
 
@@ -360,7 +360,7 @@ static Window find_window_focused(Window top, char *name)
 	return 0;
 }
 
-static void make_button(int button, int x, int y, XButtonEvent *xev)
+static void make_button(int button, int x, int y, XButtonEvent* xev)
 {
 	xev->type = ButtonPress;
 	xev->display = dpy;
@@ -376,12 +376,12 @@ static void make_button(int button, int x, int y, XButtonEvent *xev)
 	xev->same_screen = True;
 }
 
-static void make_key(char *keyname, int x, int y, XKeyEvent *xev)
+static void make_key(char* keyname, int x, int y, XKeyEvent* xev)
 {
-	char  *part;
-	char  *part2;
-	char  *sep_part;
-	struct keymodlist_t *kmlptr;
+	char* part;
+	char* part2;
+	char* sep_part;
+	struct keymodlist_t* kmlptr;
 	KeySym ks;
 	KeyCode kc;
 
@@ -457,7 +457,7 @@ static void sendfocus(Window w, int in_out)
 	focev.window = w;
 	focev.mode = NotifyNormal;
 	focev.detail = NotifyPointer;
-	XSendEvent(dpy, w, True, FocusChangeMask, (XEvent *)&focev);
+	XSendEvent(dpy, w, True, FocusChangeMask, (XEvent*)&focev);
 	XSync(dpy, True);
 }
 
@@ -480,13 +480,13 @@ static void sendpointer_enter_or_leave(Window w, int in_out)
 	crossev.same_screen = True;
 	crossev.focus = True;
 	crossev.state = 0;
-	XSendEvent(dpy, w, True, EnterWindowMask | LeaveWindowMask, (XEvent *)&crossev);
+	XSendEvent(dpy, w, True, EnterWindowMask | LeaveWindowMask, (XEvent*)&crossev);
 	XSync(dpy, True);
 }
 
-static void sendkey(char *keyname, int x, int y, Window w, Window s)
+static void sendkey(char* keyname, int x, int y, Window w, Window s)
 {
-	make_key(keyname, x, y, (XKeyEvent *)&xev);
+	make_key(keyname, x, y, (XKeyEvent*)&xev);
 	xev.xkey.window = w;
 	xev.xkey.subwindow = s;
 
@@ -507,7 +507,7 @@ static void sendkey(char *keyname, int x, int y, Window w, Window s)
 
 static void sendbutton(int button, int x, int y, Window w, Window s)
 {
-	make_button(button, x, y, (XButtonEvent *)&xev);
+	make_button(button, x, y, (XButtonEvent*)&xev);
 	xev.xbutton.window = w;
 	xev.xbutton.subwindow = s;
 	sendpointer_enter_or_leave(w, EnterNotify);
@@ -525,7 +525,7 @@ static void sendbutton(int button, int x, int y, Window w, Window s)
 	XSync(dpy, True);
 }
 
-int errorHandler(Display *di, XErrorEvent *ev)
+int errorHandler(Display* di, XErrorEvent* ev)
 {
 	char buff[512];
 
@@ -541,10 +541,10 @@ int errorHandler(Display *di, XErrorEvent *ev)
 	return 1;
 }
 
-int check(char *s)
+int check(char* s)
 {
 	int d;
-	char *buffer;
+	char* buffer;
 
 	buffer = malloc(strlen(s) + 1);
 	if (buffer == NULL) {
@@ -579,13 +579,13 @@ static struct option long_options[] = {
 	{ 0,	     0,		  0,	0   }
 };
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	char keyname[128];
 	int pointer_button, pointer_x, pointer_y;
 	char windowname[64];
-	struct lirc_config *config;
-	char *config_file = NULL;
+	struct lirc_config* config;
+	char* config_file = NULL;
 	int c;
 	int WindowID;
 
@@ -632,8 +632,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	if (lirc_readconfig(config_file, &config, check) == 0) {
-		char *ir;
-		char *c;
+		char* ir;
+		char* c;
 		int ret;
 
 		if (bDaemon) {

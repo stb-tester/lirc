@@ -25,7 +25,7 @@
 #include "lirc_client.h"
 #include "lirc_private.h"
 
-static const char *const USAGE =
+static const char* const USAGE =
 	"Synopsis:\n"
 	"irtestcase [-p prog -l lircrc] [-t testdata] <socket>\n"
 	"irtestcase [ħ | -v]\n\n"
@@ -58,16 +58,16 @@ static struct option opts[] = {
 /** Delay (us) before sending testdata so we are listening when it comes.*/
 static const int TESTDATA_DELAY = 1000000;
 
-static const char *opt_testdata = NULL;
-static const char *opt_lircrc = NULL;
-static const char *opt_prog = DEFAULT_PROG;
+static const char* opt_testdata = NULL;
+static const char* opt_lircrc = NULL;
+static const char* opt_prog = DEFAULT_PROG;
 
-static FILE *app_log = NULL;
-static FILE *code_log = NULL;
+static FILE* app_log = NULL;
+static FILE* code_log = NULL;
 
 
 /** Configure lircd to log received data from driver in path. */
-static void set_devicelog(int fd, const char *path)
+static void set_devicelog(int fd, const char* path)
 {
 	int r;
 	lirc_cmd_ctx command;
@@ -83,7 +83,7 @@ static void set_devicelog(int fd, const char *path)
 
 
 /** Configure lircd (file driver) to read testdata from path. */
-static void set_testinput(int fd, const char *path)
+static void set_testinput(int fd, const char* path)
 {
 	int r;
 	lirc_cmd_ctx command;
@@ -126,7 +126,7 @@ static void init_testdir(void)
 
 
 /** Get next code from lircd. */
-static int nextcode(int fd, char *buff, ssize_t size)
+static int nextcode(int fd, char* buff, ssize_t size)
 {
 	int i;
 
@@ -147,7 +147,7 @@ static int nextcode(int fd, char *buff, ssize_t size)
 
 
 /**  Send testdata after delay. This is fork(), so nothing comes back. */
-static void send_later(int fd, const char *path)
+static void send_later(int fd, const char* path)
 {
 	int r;
 
@@ -169,9 +169,9 @@ static void send_later(int fd, const char *path)
 static int irtestcase(int fd_io, int fd_cmd)
 {
 	int r;
-	struct lirc_config *config;
+	struct lirc_config* config;
 	char code[64];
-	char *c;
+	char* c;
 
 	if (opt_lircrc != NULL) {
 		if (lirc_readconfig_only(opt_lircrc, &config, NULL) != 0) {
@@ -200,11 +200,11 @@ static int irtestcase(int fd_io, int fd_cmd)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	int fd_io;
 	int fd_cmd;
-	char *socketpath;
+	char* socketpath;
 	char path[128];
 	int c;
 

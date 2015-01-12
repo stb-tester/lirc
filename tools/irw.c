@@ -33,13 +33,13 @@ static struct option long_options[] = {
 	{ 0,	     0,		  0,	0   }
 };
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	int fd, i;
 	char buf[128];
 	struct sockaddr_un addr;
 	int c;
-	char *progname;
+	char* progname;
 
 	progname = "irw " VERSION;
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		exit(errno);
 	}
 	;
-	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		perror("connect");
 		exit(errno);
 	}

@@ -49,13 +49,13 @@
 
 #define BUFFSIZE 512
 
-const char *progname = "irpty";
+const char* progname = "irpty";
 
-struct lirc_config *lconfig;
+struct lirc_config* lconfig;
 
 static int lsock, sigcaught;
 
-void die(char *fmt, ...)
+void die(char* fmt, ...)
 {
 	va_list args;
 
@@ -98,8 +98,8 @@ static void copy_loop(int ptym, int ignoreeof)
 					die("writen error to master pty");
 			}
 			if (FD_ISSET(lsock, &fds)) {
-				char *ir;
-				char *irchars;
+				char* ir;
+				char* irchars;
 				int ret;
 
 				while ((ret = lirc_nextcode(&ir)) == 0) {
@@ -193,10 +193,10 @@ void tty_atexit(void)
 #else
 /* Open the next free pty */
 
-int pty_open(char *pty_name)
+int pty_open(char* pty_name)
 {
-	char  *ptr1;
-	char  *ptr2;
+	char* ptr1;
+	char* ptr2;
 	int fd;
 
 	strcpy(pty_name, "/dev/ptyp0");
@@ -216,9 +216,9 @@ int pty_open(char *pty_name)
 	return -1;
 }
 
-int tty_open(int fdm, char *tty_name)
+int tty_open(int fdm, char* tty_name)
 {
-	struct group *grptr;
+	struct group* grptr;
 	int gid, fds;
 
 	if ((grptr = getgrnam("tty")) != NULL)
@@ -238,7 +238,7 @@ int tty_open(int fdm, char *tty_name)
 	return fds;
 }
 
-pid_t pty_fork(int *ptrfdm, char *slave_name, struct termios *slave_termios, struct winsize *slave_winsize)
+pid_t pty_fork(int* ptrfdm, char* slave_name, struct termios* slave_termios, struct winsize* slave_winsize)
 {
 	int fdm, fds;
 	pid_t pid;
@@ -302,12 +302,12 @@ static struct option long_options[] = {
 	{ 0,		     0,			0,    0	  }
 };
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	int fdm, c, ignoreeof, interactive, noecho, verbose;
 	pid_t pid;
-	char  *config;
-	char  slave_name[20];
+	char* config;
+	char slave_name[20];
 	struct termios orig_termios;
 	struct winsize size;
 	int flags;
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
 	if (interactive) {
 		if (tcgetattr(STDIN_FILENO, &orig_termios) < 0)
 			die("tcgetattr error on stdin\n");
-		if (ioctl(STDIN_FILENO, TIOCGWINSZ, (char *)&size) < 0)
+		if (ioctl(STDIN_FILENO, TIOCGWINSZ, (char*)&size) < 0)
 			die("TIOCGWINSZ error\n");
 		pid = pty_fork(&fdm, slave_name, &orig_termios, &size);
 	} else {

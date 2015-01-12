@@ -31,7 +31,7 @@
 #include "lirc_log.h"
 #include "lirc_client.h"
 
-static const char *const help =
+static const char* const help =
 	"\nSynopsis:\n"
 	"    irsend [options] SEND_ONCE remote code [code...]\n"
 	"    irsend [options] SEND_START remote code\n"
@@ -46,9 +46,9 @@ static const char *const help =
 	"    -a --address=host[:port]\tconnect to lircd at this address\n"
 	"    -# --count=n\t\tsend command n times\n";
 
-char *prog;
+char* prog;
 
-int send_packet(lirc_cmd_ctx *ctx, int fd)
+int send_packet(lirc_cmd_ctx* ctx, int fd)
 {
 	int r;
 
@@ -61,7 +61,7 @@ int send_packet(lirc_cmd_ctx *ctx, int fd)
 	return r == 0 ? 0 : -1;
 }
 
-void reformat_simarg(char *code, char buffer[])
+void reformat_simarg(char* code, char buffer[])
 {
 	unsigned int scancode;
 	unsigned int repeat;
@@ -84,13 +84,13 @@ void reformat_simarg(char *code, char buffer[])
 
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	char *directive;
-	char *remote;
-	char *code;
-	char *lircd = NULL;
-	char *address = NULL;
+	char* directive;
+	char* remote;
+	char* code;
+	char* lircd = NULL;
+	char* address = NULL;
 	unsigned short port = LIRC_INET_PORT;
 	unsigned long count = 1;
 	int fd;
@@ -125,8 +125,8 @@ int main(int argc, char **argv)
 			break;
 		case 'a':
 		{
-			char *p;
-			char *end;
+			char* p;
+			char* end;
 			unsigned long val;
 
 			address = strdup(optarg);
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 		}
 		case '#':
 		{
-			char *end;
+			char* end;
 
 			count = strtoul(optarg, &end, 10);
 			if (!*optarg || *end) {

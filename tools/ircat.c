@@ -46,7 +46,7 @@
 #define PROG_NAME "ircat"
 #define PROG_VERSION (PROG_NAME VERSION)
 
-void print_usage(char *prog_name)
+void print_usage(char* prog_name)
 {
 	printf("Usage: %s [options] <prog>\n", prog_name);
 	printf("\t -h --help\t\tdisplay usage summary\n");
@@ -54,10 +54,10 @@ void print_usage(char *prog_name)
 	printf("\t -c --config=<file>\tset config file\n");
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	struct lirc_config *config;
-	char *config_file = NULL;
+	struct lirc_config* config;
+	char* config_file = NULL;
 
 	while (1) {
 		int c;
@@ -95,8 +95,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	if (lirc_readconfig(config_file, &config, NULL) == 0) {
-		char *code;
-		char *c;
+		char* code;
+		char* c;
 		int ret;
 
 		while (lirc_nextcode(&code) == 0) {

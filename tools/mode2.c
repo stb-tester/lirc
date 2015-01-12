@@ -40,7 +40,6 @@ static int t_div = 500;
 static unsigned int opt_gap = 10000;
 static int opt_raw_access = 0;
 
-
 static const char* const help =
 	"Usage: mode2 [options]\n"
 	"\t -d --device=device\tread from given device\n"

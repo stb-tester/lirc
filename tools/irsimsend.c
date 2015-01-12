@@ -19,7 +19,7 @@
 #include "lirc_client.h"
 
 
-static const char *const USAGE =
+static const char* const USAGE =
 	"Send key symbols durations to fixed file 'simsend.out'.\n\n"
 	"Synopsis:\n"
 	"    irsimsend [-U path] [-s time] [-c count] <file>\n"
@@ -48,18 +48,18 @@ static struct option options[] = {
 	{ 0,		 0,		    0,	  0   }
 };
 
-static const char *const OUTFILE = "simsend.out";
+static const char* const OUTFILE = "simsend.out";
 
 static int opt_count = 1;
 static int opt_startspace = -1;
-static const char *opt_keysym = NULL;
-static const char *opt_listfile = NULL;
+static const char* opt_keysym = NULL;
+static const char* opt_listfile = NULL;
 
 
-static struct ir_remote *setup(const char *path)
+static struct ir_remote* setup(const char* path)
 {
-	struct ir_remote *remote;
-	FILE *f;
+	struct ir_remote* remote;
+	FILE* f;
 
 	if (hw_choose_driver("file") == -1) {
 		fputs("Cannot load file driver (bad plugin path?)\n",
@@ -99,7 +99,7 @@ static void send_space(int duration)
 }
 
 
-static void send_code(struct ir_remote *remote, struct ir_ncode *code)
+static void send_code(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int i;
 	static char last_code[32] = { '\0' };
@@ -123,9 +123,9 @@ static void send_code(struct ir_remote *remote, struct ir_ncode *code)
 }
 
 
-static int simsend_remote(struct ir_remote *remote)
+static int simsend_remote(struct ir_remote* remote)
 {
-	struct ir_ncode *code;
+	struct ir_ncode* code;
 
 	for (code = remote->codes; code->name != NULL; code++) {
 		printf("%s\n", code->name);
@@ -135,9 +135,9 @@ static int simsend_remote(struct ir_remote *remote)
 }
 
 
-static int simsend_keysym(struct ir_remote *remote, const char *keysym)
+static int simsend_keysym(struct ir_remote* remote, const char* keysym)
 {
-	struct ir_ncode *code;
+	struct ir_ncode* code;
 
 	code = get_code_by_name(remote, keysym);
 	if (code != NULL) {
@@ -151,13 +151,13 @@ static int simsend_keysym(struct ir_remote *remote, const char *keysym)
 }
 
 
-static int simsend_list(struct ir_remote *remote)
+static int simsend_list(struct ir_remote* remote)
 {
 	char line[256];
 	char keysym[32];
-	struct ir_ncode *code;
-	FILE *f;
-	char *s;
+	struct ir_ncode* code;
+	FILE* f;
+	char* s;
 	int r;
 
 	f = fopen(opt_listfile, "r");
@@ -183,7 +183,7 @@ static int simsend_list(struct ir_remote *remote)
 	return 0;
 }
 
-int parse_uint_arg(const char *optind, const char *errmsg)
+int parse_uint_arg(const char* optind, const char* errmsg)
 {
 	long c;
 
@@ -196,10 +196,10 @@ int parse_uint_arg(const char *optind, const char *errmsg)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	long c;
-	struct ir_remote *remote;
+	struct ir_remote* remote;
 	char path[128];
 
 	while ((c = getopt_long(argc, argv, "c:hk:l:s:U:v", options, NULL))

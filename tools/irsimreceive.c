@@ -15,7 +15,7 @@
 #include "lirc_client.h"
 
 
-static const char *const USAGE =
+static const char* const USAGE =
 	"Usage: irsimreceive [options]  <configfile>  <datafile>\n\n"
 	"<configfile> is a lircd.conf type configuration.\n"
 	"<datafile> is a list of pulse/space durations.\n\n"
@@ -32,7 +32,7 @@ static struct option options[] = {
 };
 
 
-static void setup(const char *path)
+static void setup(const char* path)
 {
 	struct option_t option;
 	int r;
@@ -58,7 +58,7 @@ static void setup(const char *path)
 	}
 	strcpy(option.key, "set-infile");
 	strncpy(option.value, path, sizeof(option.value));
-	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void *)&option);
+	r = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*)&option);
 	if (r != 0) {
 		fputs("Cannot set driver infile.\n", stderr);
 		exit(EXIT_FAILURE);
@@ -66,12 +66,12 @@ static void setup(const char *path)
 }
 
 
-struct ir_remote *read_lircd_conf(const char *configfile)
+struct ir_remote* read_lircd_conf(const char* configfile)
 {
-	FILE *f;
+	FILE* f;
 
-	struct ir_remote *remotes;
-	const char *filename = configfile;
+	struct ir_remote* remotes;
+	const char* filename = configfile;
 
 	filename = configfile == NULL ? LIRCDCFGFILE : configfile;
 	f = fopen(filename, "r");
@@ -82,7 +82,7 @@ struct ir_remote *read_lircd_conf(const char *configfile)
 	}
 	remotes = read_config(f, configfile);
 	fclose(f);
-	if (remotes == (void *)-1) {
+	if (remotes == (void*)-1) {
 		logprintf(LIRC_ERROR, "reading of config file failed");
 		exit(EXIT_FAILURE);
 	} else {
@@ -96,7 +96,7 @@ struct ir_remote *read_lircd_conf(const char *configfile)
 }
 
 
-void printcode(char *s)
+void printcode(char* s)
 {
 	int len;
 
@@ -111,9 +111,9 @@ void printcode(char *s)
 }
 
 
-int simreceive(struct ir_remote *remotes)
+int simreceive(struct ir_remote* remotes)
 {
-	char *code = NULL;
+	char* code = NULL;
 	int at_eof;
 
 	do {
@@ -128,10 +128,10 @@ int simreceive(struct ir_remote *remotes)
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	long c;
-	struct ir_remote *remotes;
+	struct ir_remote* remotes;
 	char path[128];
 
 	while ((c = getopt_long(argc, argv, "hvc:U:", options, NULL))

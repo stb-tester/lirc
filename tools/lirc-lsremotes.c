@@ -26,10 +26,10 @@
 static int opt_silent = 0;
 static int opt_dump = 0;
 
-static const char *current_dir = NULL;
+static const char* current_dir = NULL;
 
 
-static const char *const USAGE =
+static const char* const USAGE =
 	"List remotes from a copy of the remotes database.\n"
 	"Synopsis:\n"
 	"    lirc-lsremotes <path> [remote]\n"
@@ -52,12 +52,12 @@ static struct option options[] = {
 };
 
 /** Given lircd.conf path, write lircmd path or "no_lircmd" in buff. */
-void get_lircmd(const char *path, char *buff, ssize_t size)
+void get_lircmd(const char* path, char* buff, ssize_t size)
 {
 	char pattern[256];
-	char *base;
-	char *dir;
-	char *ext;
+	char* base;
+	char* dir;
+	char* ext;
 
 	strncpy(buff, path, size - 1);
 	ext = strstr(buff, ".lircd.conf");
@@ -77,11 +77,11 @@ void get_lircmd(const char *path, char *buff, ssize_t size)
 
 
 /** Given lircd.conf path, write photo path or "no_photo" in buff. */
-void get_photo(const char *path, char *buff, ssize_t size)
+void get_photo(const char* path, char* buff, ssize_t size)
 {
 	glob_t globbuf;
 	int r;
-	char *ext;
+	char* ext;
 
 	strncpy(buff, path, size);
 	ext = strstr(buff, ".lircd.conf");
@@ -102,16 +102,16 @@ void get_photo(const char *path, char *buff, ssize_t size)
 
 
 /** Print a line for each remote definition in lircd.conf file on path. */
-void print_remotes(const char *path)
+void print_remotes(const char* path)
 {
 	char my_path[256];
 	char photo[256];
 	char lircmd[256];
-	struct ir_remote *r;
-	FILE *f;
-	const char *dir;
-	const char *base;
-	const char *timing;
+	struct ir_remote* r;
+	FILE* f;
+	const char* dir;
+	const char* base;
+	const char* timing;
 
 	strncpy(my_path, path, sizeof(my_path));
 	base = basename(my_path);
@@ -126,7 +126,7 @@ void print_remotes(const char *path)
 	r = read_config(f, path);
 	if (opt_silent)
 		return;
-	while (r != NULL && r != (void *)-1) {
+	while (r != NULL && r != (void*)-1) {
 		timing = r->pzero != 0 || r->pzero != 0 || is_raw(r) ?
 			 "timing" : "no_timing";
 		strncpy(photo, path, sizeof(photo));
@@ -151,7 +151,7 @@ void print_remotes(const char *path)
 }
 
 
-int isdir(const struct dirent *ent)
+int isdir(const struct dirent* ent)
 {
 	struct stat statbuf;
 	char buff[256];
@@ -164,9 +164,9 @@ int isdir(const struct dirent *ent)
 
 
 /** Return true if argument defines a lircd.conf file. */
-int isfile(const struct dirent *ent)
+int isfile(const struct dirent* ent)
 {
-	char *dot = strrchr(ent->d_name, '.');
+	char* dot = strrchr(ent->d_name, '.');
 
 	if (dot != NULL) {
 		if (strcasecmp(dot + 1, "jpg") == 0)
@@ -181,17 +181,17 @@ int isfile(const struct dirent *ent)
 			return 0;
 	}
 	if (fnmatch("*lircrc*", ent->d_name, 0) == 0)
-			return 0;
+		return 0;
 	return !isdir(ent);
 }
 
 
 /** List all remotes found in files in dir. */
-void listdir(const char *dirname)
+void listdir(const char* dirname)
 {
 	char dirpath[256];
 	char filepath[256];
-	struct dirent **namelist;
+	struct dirent** namelist;
 	int size;
 	int i;
 
@@ -210,9 +210,9 @@ void listdir(const char *dirname)
 }
 
 
-int lsremotes(const char *dirpath, const char *remote)
+int lsremotes(const char* dirpath, const char* remote)
 {
-	struct dirent **namelist;
+	struct dirent** namelist;
 	int size;
 	int i;
 	struct stat statbuf;
@@ -233,10 +233,10 @@ int lsremotes(const char *dirpath, const char *remote)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	const char *configs;
-	const char *dirpath;
+	const char* configs;
+	const char* dirpath;
 	char path[128];
 	int c;
 
