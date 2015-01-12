@@ -261,7 +261,7 @@ enum protocol_string_num {
 	P_SIGHUP
 };
 
-static const char *protocol_string[] = {
+static const char* const protocol_string[] = {
 	"BEGIN\n",
 	"DATA\n",
 	"END\n",
