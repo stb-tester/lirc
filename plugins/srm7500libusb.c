@@ -160,7 +160,8 @@ static usb_device_id usb_remote_id_table[] = {
 };
 
 static struct usb_dev_handle *dev_handle = NULL;
-static struct usb_endpoint_descriptor *dev_ep_in = NULL, *dev_ep_out = NULL;
+static struct usb_endpoint_descriptor  *dev_ep_in = NULL;
+static struct usb_endpoint_descriptor  *dev_ep_out = NULL;
 static pid_t child = -1;
 static ir_code code;
 static int repeat_flag = 0;
@@ -185,7 +186,9 @@ static int srm7500_init()
 	int got_macShortAddress = 0;
 	int got_macPANId = 0;
 	int got_remoteShortAddress = 0;
-	const char *op_start, *op_end, *string_end;
+	const char  *op_start;
+	const char  *op_end;
+	const char  *string_end;
 
 	logprintf(LIRC_INFO, "initializing driver");
 

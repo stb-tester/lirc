@@ -246,7 +246,8 @@ char *to_byte_string(unsigned char *b, int n)
 {
 	static char *buf = NULL;
 	static int buflen = 0;
-	int i, reqlen = 3 * n + 1;
+	int i;
+	int reqlen = 3 * n + 1;
 	char t[10];
 
 	if (buf == NULL || reqlen > buflen) {

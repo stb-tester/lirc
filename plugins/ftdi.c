@@ -223,7 +223,8 @@ static int hwftdi_init()
 	 * more complicated than what some of the other drivers do. */
 	p = device_config = strdup(drv.device);
 	while (p) {
-		char *comma, *value;
+		char  *comma;
+		char  *value;
 
 		comma = strchr(p, ',');
 		if (comma != NULL) {

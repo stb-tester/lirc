@@ -94,7 +94,8 @@ static usb_device_id usb_remote_id_table[] = {
 };
 
 static struct usb_dev_handle *dev_handle = NULL;
-struct usb_endpoint_descriptor *dev_ep_in = NULL, *dev_ep_out = NULL;
+struct usb_endpoint_descriptor  *dev_ep_in = NULL;
+struct usb_endpoint_descriptor  *dev_ep_out = NULL;
 static pid_t child = -1;
 
 /* init strings -- from lirc_atiusb */

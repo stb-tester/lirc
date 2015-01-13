@@ -1356,7 +1356,8 @@ static void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int fr
 	new_tx_signal->raw_signal_frequency = frequency;
 	new_tx_signal->next = NULL;
 
-	lirc_t *oldsignal, *newsignal;
+	lirc_t  *oldsignal;
+	lirc_t  *newsignal;
 	int x, pulse_now = 1;
 	int projected_signal_length;
 	short aPCAFOM = 0;
