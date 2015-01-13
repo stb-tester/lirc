@@ -1498,7 +1498,6 @@ lirc_readconfig_compat:
 	/* compat fallback */
 	if (sockfd != -1)
 		close(sockfd);
-	free(filename);
 	return 0;
 }
 
