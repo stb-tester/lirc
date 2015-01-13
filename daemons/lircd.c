@@ -1286,7 +1286,6 @@ int send_remote_list(int fd, char* message)
 	if (n == 0)
 		return write_socket_len(fd, protocol_string[P_END]);
 	sprintf(buffer, "%d\n", n);
-	len = strlen(buffer);
 	if (!(write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, buffer)))
 		return 0;
 
@@ -2098,8 +2097,8 @@ static int opt2host_port(const char*		optarg_arg,
 			 char*			errmsg)
 {
 	char optarg[strlen(optarg_arg) + 1];
-	strncpy(optarg, optarg_arg, strlen(optarg_arg));
 
+	strncpy(optarg, optarg_arg, strlen(optarg_arg));
 	long p;
 	char* endptr;
 	char* sep = strchr(optarg, ':');
