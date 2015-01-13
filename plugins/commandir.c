@@ -315,7 +315,7 @@ static void update_tx_available(struct commandir_device* pcd);
 static int commandir_read(void);
 
 /** CommandIR III Specific **/
-static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues);
+static void  commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues);
 static void raise_event(unsigned int eventid);
 
 #define MAX_FIRMWARE_PACKET 64
@@ -818,7 +818,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 		int send_status = 0, tries = 20;
 		static char get_version[] = { 2, GET_VERSION };
 
-		send_status = 4;        /* just to start the while() */
+		send_status = 4;	// FIXME: dead code.
 		while (tries--) {
 			usleep(USB_TIMEOUT_US); // wait a moment
 
@@ -1019,7 +1019,7 @@ static void set_detected(unsigned int bus_num, int devnum)
 		}
 		last_detected_commandir->next = newdc;
 	}
-	last_detected_commandir = newdc;
+	last_detected_commandir = newdc;  // FIXME: dead assigment?!
 }
 
 static void hardware_setorder(void)
@@ -1476,9 +1476,7 @@ static int get_hardware_tx_bitmask(struct commandir_device* pcd)
 static void shutdown_usb(int arg)
 {
 	// Check for queued signals before shutdown
-	struct commandir_device* a;
-
-	a = first_commandir_device;
+	struct commandir_device *a;
 
 	if ((haveInited == 0) && (shutdown_pending == 0)) {
 		// Shutdown before init?  Let's wait for an incoming event first
@@ -1678,8 +1676,8 @@ static int commandir_read(void)
 				if (read_received < 7)
 					break;
 
-				if (pcd->flush_buffer == 0)
-					conv_retval = commandir3_convert_RX(commandir_data_buffer, read_retval - 1);
+				commandir3_convert_RX(commandir_data_buffer, read_retval - 1);
+
 			}
 			break;
 
@@ -1775,7 +1773,10 @@ static int commandir_read(void)
 
 				if ((commandir_data_buffer[1] > 0) && (rx_device == pcd)) {
 					conv_retval = cmdir_convert_RX(commandir_data_buffer);
-					read_received += commandir_data_buffer[1];
+					if (conv_retval > 0)
+						read_received += commandir_data_buffer[1];
+					else
+						logprintf(LIRC_NOTICE, "Read error");
 
 					if (commandir_data_buffer[1] < 20)
 						break;
@@ -2137,7 +2138,7 @@ done:
 	return bytes_w;
 }
 
-static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
+static void commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 {
 	static unsigned char incomingBuffer[MAX_INCOMING_BUFFER + 30];
 	static unsigned char switchByte = 0;
@@ -2294,7 +2295,6 @@ static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 			}
 		}
 	}
-	return 0;
 }
 
 // CommandIR II RX Conversion
