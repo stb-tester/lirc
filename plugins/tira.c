@@ -495,7 +495,11 @@ int ira_setup(void)
 			usleep(200000);
 			memset(response, 0, sizeof(response));
 			i = read(drv.fd, response, sizeof(response) - 1);
-			logprintf(LIRC_INFO, "Ira %s detected", response);
+			if (i > 0)
+				logprintf(LIRC_INFO, "Ira %s detected", response);
+			else
+				logprintf(LIRC_WARNING,
+					  "Cannot read firmware response");
 		} else {
 			logprintf(LIRC_INFO, "Ira-1 detected");
 		}
@@ -780,7 +784,7 @@ static int tira_send(struct ir_remote* remote, struct ir_ncode* code)
 	} else {
 		usleep(200000);
 		i = read(drv.fd, wrtbuf, 3);
-		if (strncmp((char*)wrtbuf, "OIX", 3) == 0)
+		if (i == 3 && strncmp((char *)wrtbuf, "OIX", 3) == 0)
 			retval = 1;
 		else
 			logprintf(LIRC_ERROR, "no response from device");
