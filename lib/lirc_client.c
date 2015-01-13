@@ -209,7 +209,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 		do
 			r = read_string(ctx, fd, &string);
 		while (r == EAGAIN);
-		if (strlen(string) == 0)
+		if (!string || strlen(string) == 0)
 			goto bad_packet;
 		logprintf(LIRC_DEBUG,
 			  "lirc_command_run, state: %d, input: \"%s\"\n",
@@ -771,7 +771,7 @@ static char* get_homepath(void)
  *  MAXPATHLEN long buffer. Returns NULL on malloc() failure and ""
  *  if the file does not exist.
  */
-static char* get_freedesktop_path()
+static char* get_freedesktop_path(void)
 {
 	char* path;
 
@@ -1125,7 +1125,7 @@ static int lirc_readconfig_only_internal(const char*		file,
 					lirc_printf(
 						"Warning: no lircrc_class");
 				} else if (open_files == 1) {
-					strncat(lircrc_class,
+					strncpy(lircrc_class,
 						token2,
 						sizeof(lircrc_class) - 1);
 				} else {
