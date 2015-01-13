@@ -278,7 +278,11 @@ static int iguana_send(struct ir_remote* remote, struct ir_ncode* code)
 					igsignals[x] |= IG_PULSE_BIT;
 			}
 
-			/* construct a request and send it to the daemon */
+			/* construct a request and send it to the daemon
+			 * TRICKY: IguanaFreePacket free()'s both the
+			 * igsignals  chunk and the request packet, but
+			 * iguanaCreateRequest does not malloc that chunk.
+			 */
 			request = iguanaCreateRequest(IG_DEV_SEND, sizeof(uint32_t) * length, igsignals);
 			if (iguanaWriteRequest(request, sendConn)) {
 				/* response will only come back after the device has
