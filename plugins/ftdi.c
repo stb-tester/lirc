@@ -90,8 +90,8 @@ static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 
 	for (i = 0; i < n; i++) {
 		int curstate = (buf[i] & (1 << input_pin)) != 0;
-		rxctr++;
 
+		rxctr++;
 		if (curstate == laststate)
 			continue;
 
@@ -111,7 +111,7 @@ static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 			usecs |= PULSE_BIT;
 
 		/* Send the sample */
-		chk_write(pipe_rxir_w, &usecs, sizeof usecs);
+		chk_write(pipe_rxir_w, &usecs, sizeof(usecs));
 
 		/* Remember last state */
 		laststate = curstate;
@@ -162,7 +162,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 			unsigned char buf[RXBUFSZ > TXBUFSZ ? RXBUFSZ : TXBUFSZ];
 
 			/* transmit IR */
-			ret = read(fd_main2tx, buf, sizeof buf);
+			ret = read(fd_main2tx, buf, sizeof(buf));
 			if (ret > 0) {
 				/* select correct transmit baudrate */
 				if (ftdi_set_baudrate(&ftdic, tx_baud_rate) < 0) {
@@ -202,7 +202,7 @@ retry:
 	}
 }
 
-static int hwftdi_init()
+static int hwftdi_init(void)
 {
 	int flags;
 	int pipe_rx2main[2] = { -1, -1 };
@@ -387,8 +387,8 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 	if (!waitfordata((long)timeout))
 		return 0;
 
-	n = read(drv.fd, &res, sizeof res);
-	if (n != sizeof res)
+	n = read(drv.fd, &res, sizeof(res));
+	if (n != sizeof(res))
 		res = 0;
 
 	return res;

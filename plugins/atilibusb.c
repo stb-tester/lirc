@@ -36,8 +36,8 @@
 #define CODE_BYTES 5
 #define USB_TIMEOUT (1000 * 60)
 
-static int ati_init();
-static int ati_deinit();
+static int ati_init(void);
+static int ati_deinit(void);
 static char* ati_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
@@ -104,7 +104,7 @@ static char init2[] = { 0x80, 0x01, 0x00, 0x20, 0x14, 0x20, 0x20, 0x20 };
 /****/
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int ati_init()
+static int ati_init(void)
 {
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
@@ -179,7 +179,7 @@ fail:
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int ati_deinit()
+static int ati_deinit(void)
 {
 	int err = 0;
 

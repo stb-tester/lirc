@@ -84,14 +84,14 @@ static struct {
 	 * and record.c thinks there is a time gap between data (and drops
 	 * the repeat count).
 	 */
-	100000,		  -1,NULL, 1, 0 /*Use left channel by default */
+	100000,	-1, NULL, 1, 0 /*Use left channel by default */
 };
 
 /* Return the absolute difference between two unsigned 8-bit samples */
 #define U8_ABSDIFF(s1, s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
 
 /* Forward declarations */
-int audio_alsa_deinit(void);
+static int audio_alsa_deinit(void);
 static void alsa_sig_io(snd_async_handler_t* h);
 
 static int alsa_error(const char* errstr, int errcode)
@@ -104,7 +104,7 @@ static int alsa_error(const char* errstr, int errcode)
 	return 0;
 }
 
-static int alsa_set_hwparams()
+static int alsa_set_hwparams(void)
 {
 	snd_pcm_hw_params_t* hwp;
 	snd_pcm_sw_params_t* swp;
@@ -141,16 +141,22 @@ static int alsa_set_hwparams()
 		return -1;
 
 	snd_pcm_sw_params_current(alsa_hw.handle, swp);
-	if (alsa_error
-		    ("sw_params_set_start_threshold", snd_pcm_sw_params_set_start_threshold(alsa_hw.handle, swp, period_size))
-	    || alsa_error("sw_params_set_avail_min", snd_pcm_sw_params_set_avail_min(alsa_hw.handle, swp, period_size))
-	    || alsa_error("sw_params", snd_pcm_sw_params(alsa_hw.handle, swp)))
+	if (alsa_error("sw_params_set_start_threshold",
+			snd_pcm_sw_params_set_start_threshold(alsa_hw.handle,
+							      swp,
+							      period_size))
+	    || alsa_error("sw_params_set_avail_min",
+			  snd_pcm_sw_params_set_avail_min(alsa_hw.handle,
+							  swp,
+							  period_size))
+	    || alsa_error("sw_params", snd_pcm_sw_params(alsa_hw.handle,
+							 swp)))
 		return -1;
 
 	return 0;
 }
 
-int audio_alsa_init()
+int audio_alsa_init(void)
 {
 	int fd, err;
 	char* pcm_rate;
@@ -240,12 +246,14 @@ error:          unlink(tmp_name);
 	}
 
 	/* Set up the I/O signal handler */
-	if (alsa_error
-		    ("async_add_handler", snd_async_add_pcm_handler(&alsa_hw.sighandler, alsa_hw.handle, alsa_sig_io, NULL)))
+	if (alsa_error("async_add_handler",
+			 snd_async_add_pcm_handler(&alsa_hw.sighandler,
+						   alsa_hw.handle,
+						   alsa_sig_io, NULL)))
 		goto error;
 
 	/* Set sampling parameters */
-	if (alsa_set_hwparams(alsa_hw.handle))
+	if (alsa_set_hwparams())
 		goto error;
 
 	LOGPRINTF(1, "hw_audio_alsa: Using device '%s', sampling rate %dHz\n", tmp_name, alsa_hw.rate);
@@ -364,7 +372,8 @@ var_reset:                      /* Reset variables */
 	}
 
 	/* Read all available data */
-	if ((count = snd_pcm_avail_update(alsa_hw.handle)) > 0) {
+	count = snd_pcm_avail_update(alsa_hw.handle);
+	if (count > 0) {
 		if (count > (READ_BUFFER_SIZE / (bytes_per_sample * alsa_hw.num_channels)))
 			count = READ_BUFFER_SIZE / (bytes_per_sample * alsa_hw.num_channels);
 		count = snd_pcm_readi(alsa_hw.handle, buff, count);
@@ -375,6 +384,7 @@ var_reset:                      /* Reset variables */
 			/* cs == current sample */
 			unsigned char cs, as, sl, sz, xz;
 			short stmp;
+
 			if (bytes_per_sample == 2) {
 				stmp = buff[i * bytes_per_sample * alsa_hw.num_channels +
 					    bytes_per_sample * alsa_hw.channel];

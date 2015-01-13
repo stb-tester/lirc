@@ -41,7 +41,7 @@ extern "C" {
  * @file    dictionary.h
  * @author  N. Devillard
  * @date    Sep 2007
- * @version $Revision: 1.12 $
+ * @version Revision: 1.12
  * @brief   Implements a dictionary for string variables.
  * @ingroup private_api
  *

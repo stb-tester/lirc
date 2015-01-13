@@ -44,11 +44,11 @@ static ir_code pre, code;
 static int serial_input;
 
 //Forwards:
-int mouseremote_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int mouseremote_init(void);
-int mouseremote_ps2_init(void);
-int mouseremote_deinit(void);
-char* mouseremote_rec(struct ir_remote* remotes);
+static int mouseremote_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int mouseremote_init(void);
+static int mouseremote_ps2_init(void);
+static int mouseremote_deinit(void);
+static char* mouseremote_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_mouseremote = {
@@ -117,7 +117,8 @@ int mouseremote_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_init()");
 		tty_delete_lock();
@@ -150,7 +151,8 @@ int mouseremote_ps2_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_ps2_init()");
 		tty_delete_lock();
@@ -183,11 +185,13 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	gettimeofday(&start, NULL);
 	while (i < 3) {
 		int val;
+
 		if (!waitfordata(TIMEOUT)) {
 			LOGPRINTF(0, "timeout reading byte %d", i);
 			return NULL;
 		}
-		if ((val = read(drv.fd, &b[i], 1)) != 1) {
+		val = read(drv.fd, &b[i], 1);
+		if (val != 1) {
 			logprintf(LIRC_ERROR, "reading of byte %d (%d) failed", i, val);
 			logperror(LIRC_ERROR, NULL);
 			return NULL;

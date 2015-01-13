@@ -40,10 +40,10 @@ lirc_t gap, signal_length;
 ir_code pre, code;
 
 //Forwards:
-int creative_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int creative_init(void);
-int creative_deinit(void);
-char* creative_rec(struct ir_remote* remotes);
+static int creative_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int creative_init(void);
+static int creative_deinit(void);
+static char* creative_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_creative = {
@@ -88,7 +88,8 @@ int creative_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "creative_init()");
 		tty_delete_lock();

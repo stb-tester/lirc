@@ -40,10 +40,10 @@ static ir_code pre, code;
 static int repeat_counter, pressed_key;
 
 //Forwards:
-int pcmak_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int pcmak_init(void);
-int pcmak_deinit(void);
-char* pcmak_rec(struct ir_remote* remotes);
+static int pcmak_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int pcmak_init(void);
+static int pcmak_deinit(void);
+static char* pcmak_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_pcmak = {
@@ -88,7 +88,8 @@ int pcmak_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "pcmak_init()");
 		tty_delete_lock();
@@ -141,13 +142,13 @@ char* pcmak_rec(struct ir_remote* remotes)
 			repeat_counter = 0;
 		} else {
 			/* Range of allowed button codes */
-			if (    /* PCMAK codes */
+			if (/* PCMAK codes */
 				(b >= 0x01 && b <= 0x2B) ||
-			        /* codes with shift button */
+				/* codes with shift button */
 				(b >= 0x41 && b <= 0x6B) ||
-			        /* MINIMAK/MINIMAK LASER codes */
+				/* MINIMAK/MINIMAK LASER codes */
 				(b >= 0x2F && b <= 0x31) ||
-			        /* MINIMAK codes with shift */
+				/* MINIMAK codes with shift */
 				b == 0x5F || b == 0x79 || b == 0x75) {
 				if (repeat_counter < 1) {
 					repeat_counter++;

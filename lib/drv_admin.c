@@ -131,7 +131,7 @@ visit_plugin(const char* path, drv_guest_func func, void* arg)
 					  "No driver name in %s", path);
 				continue;
 			}
-			result = (* func)(* drivers, arg);
+			result = (*func)(*drivers, arg);
 			if (result != (struct driver*)NULL)
 				break;
 		}
@@ -152,7 +152,8 @@ static struct driver* for_each_plugin_in_dir(const char*	dirpath,
 	char path[128];
 	char buff[128];
 
-	if ((dir = opendir(dirpath)) == NULL) {
+	dir = opendir(dirpath);
+	if (dir == NULL) {
 		logprintf(LIRC_INFO, "Cannot open plugindir %s", dirpath);
 		return (struct driver*)NULL;
 	}

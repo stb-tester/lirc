@@ -138,11 +138,11 @@
 #define MPLAY_GRAY_TO_BIN(g) ((g) ^ ((g) >> 1))
 
 //Forwards:
-extern int mplayfamily_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-extern int mplay_init(void);
-extern int mplay2_init(void);
-extern int mplayfamily_deinit(void);
-extern char* mplayfamily_rec(struct ir_remote* remotes);
+static int mplayfamily_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int mplay_init(void);
+static int mplay2_init(void);
+static int mplayfamily_deinit(void);
+static char* mplayfamily_rec(struct ir_remote* remotes);
 
 
 /**
@@ -577,7 +577,8 @@ static void* mplayfamily_listen(void* arg)
 	LOGPRINTF(3, "mplay sensor %u", sensor);
 
 	/* Create periodic timer for polling loop */
-	if ((fd = timerfd_create(CLOCK_MONOTONIC, 0)) < 0) {
+	fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	if (fd < 0) {
 		logperror(LOG_ERR, "mplay listener could not create timer");
 		return NULL;
 	}
@@ -655,7 +656,7 @@ poll_exit:
  *
  * The first alternative using the listener thread consumes more CPU resources.
  */
-static int mplayfamily_init(int (* init_receiver)(void), int baud)
+static int mplayfamily_init(int (*init_receiver)(void), int baud)
 {
 	char device[128];
 	char* separator;
@@ -812,14 +813,13 @@ char* mplayfamily_rec_handle_repetition(struct ir_remote*	remotes,
 		LOGPRINTF(2, "current_time: %li sec %li usec",
 			  current_time->tv_sec, current_time->tv_usec);
 		return decode_all(remotes);
-	} else {
-		LOGPRINTF(2, "Received invalid repetition code (timeout)");
-		/* Too much time between repetitions, the receiver has probably
-		 * missed a valide key code. We ignore the repetition. */
-		mplayfamily_local_data.timeout_repetition_flag = 1;
-		mplayfamily_local_data.repeat_flag = 0;
-		return NULL;
 	}
+	LOGPRINTF(2, "Received invalid repetition code (timeout)");
+	/* Too much time between repetitions, the receiver has probably
+	 * missed a valide key code. We ignore the repetition. */
+	mplayfamily_local_data.timeout_repetition_flag = 1;
+	mplayfamily_local_data.repeat_flag = 0;
+	return NULL;
 }
 
 /**
@@ -896,18 +896,15 @@ char* mplayfamily_rec(struct ir_remote* remotes)
 		LOGPRINTF(1, "Reading error in mplayfamily_rec()");
 		mplayfamily_deinit();
 		return NULL;
-	} else {
-		/* We have received a code */
-		if (rc_code == MPLAY_CODE_REPEAT) {
-			/* This is a repetition code */
-			return mplayfamily_rec_handle_repetition(remotes,
-								 &current_time);
-		} else {
-			/* This is a new code */
-			return mplayfamily_rec_handle_new(remotes,
-							  &current_time, rc_code);
-		}
 	}
+	/* We have received a code */
+	if (rc_code == MPLAY_CODE_REPEAT) {
+		/* This is a repetition code */
+		return mplayfamily_rec_handle_repetition(remotes,
+							 &current_time);
+	}
+	/* This is a new code */
+	return mplayfamily_rec_handle_new(remotes, &current_time, rc_code);
 }
 
 /**

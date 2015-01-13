@@ -48,10 +48,10 @@ struct timeval start, end, last;
 ir_code code;
 
 //Forwards:
-int ea65_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int ea65_init(void);
-int ea65_release(void);
-char* ea65_receive(struct ir_remote* remote);
+static int ea65_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int ea65_init(void);
+static int ea65_release(void);
+static char* ea65_receive(struct ir_remote* remote);
 
 
 const struct driver hw_ea65 = {

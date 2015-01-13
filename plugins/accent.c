@@ -103,11 +103,11 @@ static lirc_t signal_length;
 static ir_code code, last_code = 0;
 
 // Forwards
-int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int accent_open_serial_port(const char* device);
-int accent_init(void);
-int accent_deinit(void);
-char* accent_rec(struct ir_remote* remotes);
+static int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int accent_open_serial_port(const char* device);
+static int accent_init(void);
+static int accent_deinit(void);
+static char* accent_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_accent = {
@@ -181,7 +181,8 @@ int accent_init(void)
 		logprintf(LIRC_ERROR, "Could not create the lock file");
 		return 0;
 	}
-	if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
+	drv.fd = accent_open_serial_port(drv.device);
+	if (drv.fd  < 0) {
 		logprintf(LIRC_ERROR, "Could not open the serial port");
 		accent_deinit();
 		return 0;
@@ -240,9 +241,8 @@ char* accent_rec(struct ir_remote* remotes)
 		if (read(drv.fd, &b[i], 1) == -1) {
 			logperror(LIRC_ERROR, "read() failed at byte %d", i);
 			return NULL;
-		} else {
-			LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
 		}
+		LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
 	}                       // End for
 
 	// Timestamp of key press end.
@@ -261,11 +261,10 @@ char* accent_rec(struct ir_remote* remotes)
 			tcflush(drv.fd, TCIFLUSH);
 			m = decode_all(remotes);
 			return m;
-		} else {
-			LOGPRINTF(1, "Previos code not set, invalid repeat key");
-			last_code = 0;
-			return NULL;
 		}
+		LOGPRINTF(1, "Previos code not set, invalid repeat key");
+		last_code = 0;
+		return NULL;
 	}
 	// Sequence too short?
 	if (i < ACCENT_MEANING_BYTES) {
@@ -323,7 +322,8 @@ char* accent_rec(struct ir_remote* remotes)
 			// All the received bytes are zeroes, without gaps.
 			logprintf(LIRC_WARNING, "Receiver jam! Reopening the serial port");
 			close(drv.fd);
-			if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
+			drv.fd = accent_open_serial_port(drv.device);
+			if (drv.fd < 0) {
 				logprintf(LIRC_ERROR, "Could not reopen the serial port");
 				raise(SIGTERM);
 			}
@@ -351,7 +351,8 @@ int accent_open_serial_port(const char* device)
 	logprintf(LIRC_DEBUG, "Entering accent_open_serial_port(), device = %s", device);
 
 	// Open the serial device.
-	if ((fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC)) < 0) {
+	fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC);
+	if (fd  < 0) {
 		logperror(LIRC_ERROR, "Could not open the serial port");
 		return -1;
 	}

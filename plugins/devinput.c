@@ -44,8 +44,8 @@
 #define LONG(x) ((x) / BITS_PER_LONG)
 #define test_bit(bit, array)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 
-static int devinput_init();
-static int devinput_init_fwd();
+static int devinput_init(void);
+static int devinput_init_fwd(void);
 static int devinput_deinit(void);
 static int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static char* devinput_rec(struct ir_remote* remotes);
@@ -150,7 +150,8 @@ static int set_rc_protocol(const char* device)
 
 	if (strrchr(device, '/') != NULL)
 		device = strrchr(device, '/') + 1;
-	if ((dir = opendir("/sys/class/rc")) == NULL) {
+	dir = opendir("/sys/class/rc");
+	if (dir == NULL) {
 		logprintf(LIRC_NOTICE, "Cannot open /sys/class/rc\n");
 		return -1;
 	}
@@ -260,6 +261,7 @@ static int do_match(const char* text, const char* wild)
 	while (*wild) {
 		if (*wild == '*') {
 			const char* next = text;
+
 			wild++;
 			while (*next) {
 				if (do_match(next, wild))
@@ -314,6 +316,7 @@ static int locate_dev(const char* pattern, enum locate_type type)
 
 	while ((obj = readdir(dir))) {
 		int fd;
+
 		if (obj->d_name[0] == '.' && (obj->d_name[1] == 0 || (obj->d_name[1] == '.' && obj->d_name[2] == 0)))
 			continue;       /* skip "." and ".." */
 		sprintf(devname, "/dev/input/%s", obj->d_name);
@@ -322,8 +325,8 @@ static int locate_dev(const char* pattern, enum locate_type type)
 			continue;
 		if (ioctl(fd, request, ioname) >= 0) {
 			int ret;
-			close(fd);
 
+			close(fd);
 			ioname[sizeof(ioname) - 1] = 0;
 			//ret = !do_match (ioname, pattern);
 			ret = fnmatch(pattern, ioname, 0);
@@ -340,7 +343,7 @@ static int locate_dev(const char* pattern, enum locate_type type)
 	return 1;
 }
 
-int devinput_init()
+int devinput_init(void)
 {
 	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
 
@@ -356,7 +359,8 @@ int devinput_init()
 		}
 	}
 
-	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+	drv.fd = open(drv.device, O_RDONLY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
@@ -374,7 +378,7 @@ int devinput_init()
 	return 1;
 }
 
-int devinput_init_fwd()
+int devinput_init_fwd(void)
 {
 	if (!devinput_init())
 		return 0;
@@ -442,8 +446,8 @@ char* devinput_rec(struct ir_remote* remotes)
 	last = end;
 	gettimeofday(&start, NULL);
 
-	rd = read(drv.fd, &event, sizeof event);
-	if (rd != sizeof event) {
+	rd = read(drv.fd, &event, sizeof(event));
+	if (rd != sizeof(event)) {
 		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 		if (rd <= 0 && errno != EINTR)
 			devinput_deinit();

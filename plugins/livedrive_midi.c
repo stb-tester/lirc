@@ -42,7 +42,8 @@ char* livedrive_rec_midi(struct ir_remote* remotes)
 
 	for (i = 0; i < sizeof(midi); i++) {
 		chk_read(drv.fd, &buf, sizeof(buf));
-		if (midi.dev == NONREMOTE && i == 4)    /* skip 2 missing filler bytes for audigy2 non-infrared messages */
+		/* skip 2 missing filler bytes for audigy2 non-infrared messages */
+		if (midi.dev == NONREMOTE && i == 4)
 			i += 2;
 		*(bytep + i) = buf;
 	}

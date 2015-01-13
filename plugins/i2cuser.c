@@ -131,12 +131,12 @@ static int open_i2c_device(void)
 			continue;
 
 		/* Kernels 2.6.22 and later had the name here: */
-		snprintf(s, sizeof s, "%s/%s/name", adapter_dir, de->d_name);
+		snprintf(s, sizeof(s), "%s/%s/name", adapter_dir, de->d_name);
 
 		f = fopen(s, "r");
 		if (f == NULL) {
 			/* ... and kernels prior to 2.6.22 have it here: */
-			snprintf(s, sizeof s, "%s/%s/device/name", adapter_dir, de->d_name);
+			snprintf(s, sizeof(s), "%s/%s/device/name", adapter_dir, de->d_name);
 
 			f = fopen(s, "r");
 		}
@@ -144,8 +144,8 @@ static int open_i2c_device(void)
 			logprintf(LIRC_ERROR, "Cannot open i2c name file %s", s);
 			return -1;
 		}
-		memset(s, 0, sizeof s);
-		if (fread(s, 1, sizeof s, f) != sizeof(s)) {
+		memset(s, 0, sizeof(s));
+		if (fread(s, 1, sizeof(s), f) != sizeof(s)) {
 			if (ferror(f))
 				logprintf(LIRC_WARNING,
 					  "Error reading i2c device");
@@ -168,7 +168,7 @@ static int open_i2c_device(void)
 		return -1;
 	}
 
-	snprintf(device_name, sizeof device_name, "/dev/i2c-%d", found);
+	snprintf(device_name, sizeof(device_name), "/dev/i2c-%d", found);
 	logprintf(LIRC_INFO, "Using i2c device %s", device_name);
 	drv.device = device_name;
 	return open(device_name, O_RDWR);
@@ -255,13 +255,13 @@ static void i2cuser_read_loop(int out_fd)
 		do {
 			/* Poll 20 times per second. */
 			struct timespec ts = { 0, 50000000 };
-			nanosleep(&ts, NULL);
 
-			rc = read(i2c_fd, &buf, sizeof buf);
+			nanosleep(&ts, NULL);
+			rc = read(i2c_fd, &buf, sizeof(buf));
 			if (rc < 0 && errno != EREMOTEIO) {
 				logprintf(LIRC_ERROR, "Error reading from i2c device: %s", strerror(errno));
 				goto fail;
-			} else if (rc != sizeof buf) {
+			} else if (rc != sizeof(buf)) {
 				continue;
 			}
 		} while ((buf[0] & 0x80) == 0);

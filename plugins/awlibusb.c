@@ -60,8 +60,8 @@ static struct timeval time_last = { 0 };
 #endif
 static char device_path[PATH_MAX + 1] = {0};
 
-static int awlibusb_init();
-static int awlibusb_deinit();
+static int awlibusb_init(void);
+static int awlibusb_deinit(void);
 static char* awlibusb_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
@@ -131,7 +131,7 @@ static pid_t child = -1;
 /****/
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int awlibusb_init()
+static int awlibusb_init(void)
 {
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
@@ -201,7 +201,7 @@ fail:
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int awlibusb_deinit()
+static int awlibusb_deinit(void)
 {
 	int err = 0;
 

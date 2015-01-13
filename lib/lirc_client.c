@@ -784,7 +784,7 @@ static char* get_freedesktop_path(void)
 		path = get_homepath();
 		if (path == NULL)
 			return NULL;
-		strncat(path, "/.config/lircrc", MAXPATHLEN - strlen(path) -1);
+		strncat(path, "/.config/lircrc", MAXPATHLEN - strlen(path) - 1);
 	}
 	if (access(path, R_OK) != 0)
 		path[0] = '\0';

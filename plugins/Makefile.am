@@ -140,3 +140,6 @@ dist-hook:
 
 
 include pluginlist.am
+
+checkfiles:
+	../git-tools/checkfiles $(SOURCES)

@@ -45,15 +45,15 @@
 #define SCSI_TUR_CMD_LEN       6
 #define SCSI_SEN_CMD_LEN       10
 
-int creative_infracd_init(void);
-int creative_infracd_deinit(void);
-int creative_infracd_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-char* creative_infracd_rec(struct ir_remote* remotes);
+static int creative_infracd_init(void);
+static int creative_infracd_deinit(void);
+static int creative_infracd_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static char* creative_infracd_rec(struct ir_remote* remotes);
 
 /* private stuff */
 #define MASK_COMMAND_PRESENT 0x00f00000
 
-int test_device_command(int fd);
+static int test_device_command(int fd);
 
 
 const struct driver hw_creative_infracd = {
@@ -102,10 +102,9 @@ int is_my_device(int fd, const char* name)
 	if ((ioctl(fd, SG_GET_VERSION_NUM, &k) < 0) || (k < 30000)) {
 		LOGPRINTF(1, "%s isn't sg device version > 3", name);
 		return 0;
-	} else {
-		usleep(10);
-		LOGPRINTF(1, "%s is valid sg device - checking what it is", name);
 	}
+	usleep(10);
+	LOGPRINTF(1, "%s is valid sg device - checking what it is", name);
 
 	/* Prepare INQUIRY command */
 	memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
@@ -122,9 +121,8 @@ int is_my_device(int fd, const char* name)
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
 		logprintf(LIRC_ERROR, "INQUIRY SG_IO ioctl error");
 		return 0;
-	} else {
-		usleep(10);
 	}
+	usleep(10);
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
 		logprintf(LIRC_ERROR, "INQUIRY: SCSI status=0x%x host_status=0x%x driver_status=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
@@ -202,7 +200,7 @@ int creative_infracd_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-int init_device()
+int init_device(void)
 {
 	char c;
 	int fd;
@@ -241,7 +239,8 @@ int creative_infracd_init(void)
 
 	LOGPRINTF(1, "Creative iNFRA driver: begin search for device");
 
-	if ((fd = init_device())) {
+	fd = init_device();
+	if (fd) {
 		/*
 		 * lircd making "select" for device we open. However,
 		 * /dev/sg<x> does not behave like /dev/ttyS<x>, i.e. it

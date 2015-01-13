@@ -28,12 +28,12 @@ enum {
 	RPT_YES = 1,
 };
 
-static int zotac_init();
-static int zotac_deinit();
+static int zotac_init(void);
+static int zotac_deinit(void);
 static char* zotac_rec(struct ir_remote* remotes);
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-static void* zotac_repeat();
-static int zotac_getcode();
+static void* zotac_repeat(void);
+static int zotac_getcode(void);
 
 /** Max number of repetitions */
 const unsigned max_repeat_count = 500;
@@ -100,7 +100,7 @@ static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int zotac_getcode()
+static int zotac_getcode(void)
 {
 	ssize_t rd;
 	struct hiddev_usage_ref uref;
@@ -160,11 +160,10 @@ static int zotac_getcode()
 					probe_code |= 0x10000000;
 				LOGPRINTF(3, "Main code 1: %x\n", probe_code);
 				return 1;
-			} else {
-				LOGPRINTF(3, "rel button\n");
-				probe_code = release_code;
-				return 2;
 			}
+			LOGPRINTF(3, "rel button\n");
+			probe_code = release_code;
+			return 2;
 		}
 		break;
 
@@ -184,6 +183,7 @@ static int zotac_getcode()
 			rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 
 			unsigned int i, j;
+
 			while (rd >= 0) {
 				for (i = 0; i < rinfo.num_fields; i++) {
 					finfo.report_type = rinfo.report_type;
@@ -197,7 +197,9 @@ static int zotac_getcode()
 						ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 						if (uref.value != 0) {
-							LOGPRINTF(3, "field: %d, idx: %d, usage: %x   value: %x\n", i, j, uref.usage_code, uref.value);
+							LOGPRINTF(3,
+								  "field: %d, idx: %d, usage: %x   value: %x\n", i, j,
+								  uref.usage_code, uref.value);
 							probe_code = uref.usage_code;
 							return 1;
 						}
@@ -229,6 +231,7 @@ static int zotac_getcode()
 		rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 
 		unsigned int i, j;
+
 		while (rd >= 0) {
 			for (i = 0; i < rinfo.num_fields; i++) {
 				finfo.report_type = rinfo.report_type;
@@ -256,14 +259,16 @@ static int zotac_getcode()
 	return 0;
 }
 
-static int zotac_init()
+static int zotac_init(void)
 {
 	logprintf(LIRC_INFO, "zotac initializing '%s'", drv.device);
-	if ((fd_hidraw = open(drv.device, O_RDONLY)) < 0) {
+	fd_hidraw = open(drv.device, O_RDONLY);
+	if (fd_hidraw < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 	int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
+
 	if (ioctl(fd_hidraw, HIDIOCSFLAG, &flags))
 		return 0;
 	drv.fd = fd_hidraw;
@@ -284,7 +289,7 @@ static int zotac_init()
 	return 1;
 }
 
-static int zotac_deinit()
+static int zotac_deinit(void)
 {
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
@@ -311,7 +316,7 @@ static int zotac_deinit()
  *	Runtime that reads device, forwards codes to main thread
  *	and simulates repetitions.
  */
-static void* zotac_repeat()
+static void* zotac_repeat(void)
 {
 	int repeat_count = 0;
 	unsigned current_code;
@@ -338,7 +343,7 @@ static void* zotac_repeat()
 
 			if (ret < 0) {
 				// Error
-				logprintf(LIRC_ERROR, "(%s) Could not read %s", __FUNCTION__, drv.device);
+				logprintf(LIRC_ERROR, "(%s) Could not read %s", __func__, drv.device);
 				goto exit_loop;
 			}
 			if (ret == 1) {
@@ -360,7 +365,7 @@ static void* zotac_repeat()
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR, "(%s) too many repetitions", __FUNCTION__);
+				logprintf(LIRC_ERROR, "(%s) too many repetitions", __func__);
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -370,7 +375,7 @@ static void* zotac_repeat()
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR, "(%s) select() failed", __FUNCTION__);
+			logprintf(LIRC_ERROR, "(%s) select() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
@@ -399,7 +404,7 @@ static char* zotac_rec(struct ir_remote* remotes)
 
 	if (rd == -1) {
 		// Error
-		logprintf(LIRC_ERROR, "(%s) could not read pipe", __FUNCTION__);
+		logprintf(LIRC_ERROR, "(%s) could not read pipe", __func__);
 		zotac_deinit();
 		return 0;
 	}

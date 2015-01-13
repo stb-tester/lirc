@@ -40,10 +40,10 @@ static lirc_t signal_length;
 static ir_code pre, code;
 
 //Forwards:
-int mp3anywhere_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int mp3anywhere_init(void);
-int mp3anywhere_deinit(void);
-char* mp3anywhere_rec(struct ir_remote* remotes);
+static int mp3anywhere_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int mp3anywhere_init(void);
+static int mp3anywhere_deinit(void);
+static char* mp3anywhere_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_mp3anywhere = {
@@ -88,7 +88,8 @@ int mp3anywhere_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mp3anywhere_init()");
 		tty_delete_lock();

@@ -35,10 +35,14 @@ static lirc_t signal_length;
 static ir_code code;
 
 // Forwards:
-int caraca_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_code* postp, int* repeat_flagp, lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
-int caraca_init(void);
-int caraca_deinit(void);
-char* caraca_rec(struct ir_remote* remotes);
+static int caraca_decode(struct ir_remote* remote,
+			 ir_code* prep, ir_code* codep,
+			 ir_code* postp, int* repeat_flagp,
+			 lirc_t* min_remaining_gapp,
+			 lirc_t* max_remaining_gapp);
+static int caraca_init(void);
+static int caraca_deinit(void);
+static char* caraca_rec(struct ir_remote* remotes);
 
 
 
@@ -86,14 +90,15 @@ int caraca_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_co
 
 	*min_remaining_gapp = 0;
 	*max_remaining_gapp = 0;
-	LOGPRINTF(1, "code: %llx", (__u64) * codep);
+	LOGPRINTF(1, "code: %llx", (__u64) *codep);
 	return 1;
 }
 
 int caraca_init(void)
 {
 	signal_length = drv.code_length * 1000000 / 1200;
-	if ((drv.fd = caraca_open(PACKAGE)) < 0) {
+	drv.fd = caraca_open(PACKAGE);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open lirc");
 		logperror(LIRC_ERROR, "caraca_init()");
 		return 0;
@@ -125,7 +130,10 @@ char* caraca_rec(struct ir_remote* remotes)
 	gettimeofday(&end, NULL);
 
 	LOGPRINTF(1, "caraca_rec: %s", msg);
-	sscanf(msg, "%d.%d:%d", &node, &t, &ir);
+	i = sscanf(msg, "%d.%d:%d", &node, &t, &ir);
+	if (i != 3)
+		logprintf(LIRC_WARNING,
+			  "caraca: Cannot decode input message (!)");
 
 	/* transmit the node address as first byte, so we have
 	 * different codes for every transmitting node (for every room

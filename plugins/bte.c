@@ -56,10 +56,10 @@ lirc_t gap, signal_length;
 ir_code pre, code;
 
 // Forwards:
-int bte_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int bte_init(void);
-int bte_deinit(void);
-char* bte_rec(struct ir_remote* remotes);
+static int bte_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int bte_init(void);
+static int bte_deinit(void);
+static char* bte_rec(struct ir_remote* remotes);
 
 
 #define BTE_CAN_SEND 0
@@ -107,11 +107,11 @@ static int filter_cancel = 0;
 static char prev_cmd[PACKET_SIZE + 1];
 static int io_failed = 0;
 
-int bte_connect(void);
+static int bte_connect(void);
 
 int bte_sendcmd(char* str, int next_state)
 {
-	if (io_failed && !bte_connect())        // try to reestablish connection
+	if (io_failed && !bte_connect())        /* try to reestablish connection */
 		return 0;
 
 	pending = next_state;
@@ -139,7 +139,8 @@ int bte_connect(void)
 
 	do {                    //try block
 		errno = 0;
-		if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) == -1) {
+		drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
+		if (drv.fd == -1) {
 			LOGPRINTF(1, "could not open %s", drv.device);
 			LOGPERROR(1, "bte_connect");
 			break;
@@ -167,18 +168,17 @@ int bte_connect(void)
 		logprintf(LIRC_ERROR, "bte_connect: connection established");
 		io_failed = 0;
 
-		if (bte_sendcmd("E?", BTE_INIT))        // Ask for echo state just to syncronise
-
+		if (bte_sendcmd("E?", BTE_INIT))  /* Ask for echo state just to syncronise */
 			return 1;
-		else
-			LOGPRINTF(1, "bte_connect: device did not respond");
+		LOGPRINTF(1, "bte_connect: device did not respond");
 	} while (0);
 
 	//try block failed
 	io_failed = 1;
 	if (drv.fd >= 0)
 		close(drv.fd);
-	if ((drv.fd = open("/dev/zero", O_RDONLY)) == -1) {
+	drv.fd = open("/dev/zero", O_RDONLY);
+	if (drv.fd == -1) {
 		logprintf(LIRC_ERROR, "could not open /dev/zero/");
 		logperror(LIRC_ERROR, "bte_init()");
 	}
@@ -210,7 +210,7 @@ int bte_deinit(void)
 	return 1;
 }
 
-char* bte_readline()
+char* bte_readline(void)
 {
 	static char msg[PACKET_SIZE + 1];
 	char c;
@@ -219,10 +219,11 @@ char* bte_readline()
 
 	LOGPRINTF(6, "bte_readline called");
 
-	if (io_failed && !bte_connect())        // try to reestablish connection
+	if (io_failed && !bte_connect())   /* try to reestablish connection */
 		return NULL;
 
-	if ((ok = read(drv.fd, &c, 1)) <= 0) {
+	ok = read(drv.fd, &c, 1);
+	if (ok <= 0) {
 		io_failed = 1;
 		logprintf(LIRC_ERROR, "bte_readline: read failed - %d: %s", errno, strerror(errno));
 		return NULL;
@@ -243,7 +244,7 @@ char* bte_readline()
 	return NULL;
 }
 
-char* bte_automaton()
+char* bte_automaton(void)
 {
 	char* msg;
 	int key = 0;
@@ -256,7 +257,8 @@ char* bte_automaton()
 	code = 0;
 
 	while (1) {
-		if ((msg = bte_readline()) == NULL)     // read failed
+		msg = bte_readline();
+		if (msg == NULL)      /* Read failed. */
 			return NULL;
 		if (pending != BTE_INIT)
 			break;
@@ -264,11 +266,11 @@ char* bte_automaton()
 		if (strncmp(msg, "E: ", 3) == 0)
 			pending = BTE_SET_ECHO;
 	}
-	if (strcmp(msg, "ERROR") == 0) { // "ERROR" received
+	if (strcmp(msg, "ERROR") == 0) {  /* "ERROR" received */
 		pending = 0;
 		logprintf(LIRC_ERROR, "bte_automaton: 'ERROR' received! Previous command: %s", prev_cmd);
 		return NULL;
-	} else if (strcmp(msg, "OK") == 0) {    // Check for next cmd to send
+	} else if (strcmp(msg, "OK") == 0) {    /* Check for next cmd to send */
 		switch (pending) {
 		case BTE_SET_ECHO:
 			bte_sendcmd("E1", BTE_CHARSET);
@@ -293,22 +295,22 @@ char* bte_automaton()
 			sleep(30);
 			break;
 		}
-	} else if (strcmp(msg, "*EAAI") == 0) { // Accessory menu activated
+	} else if (strcmp(msg, "*EAAI") == 0) { /* Accessory menu activated */
 		// send empty command, trigger creating input dialog
 		bte_sendcmd("", BTE_CREATE_DIALOG);
-	} else if (strcmp(msg, "*EAII: 0") == 0) {      // Input dialog rejected ("NO" pressed)
+	} else if (strcmp(msg, "*EAII: 0") == 0) {      /* Input dialog rejected ("NO" pressed) */
 		// issued even if "*EAID=13,2,xxxx"
 		// stop events forwarding & re-create dialog
 		bte_sendcmd("+CMER=0,0,0,0,0", BTE_CREATE_DIALOG);
-	} else if (strcmp(msg, "*EAII") == 0) { // Input dialog aborted
+	} else if (strcmp(msg, "*EAII") == 0) { /* Input dialog aborted */
 		// accesory menu left
 		// stop events forwarding, no further actions
 		// bte_sendcmd("+CMER=0,0,0,0,0", 0);
 		bte_sendcmd("+CMER=0,0,0,0,0", BTE_JUMP_ASIDE);
-	} else if (strncmp(msg, "+CKEV:", 6) == 0) {    // Key-code event
-		i = 7;                                  // parse key-code string
+	} else if (strncmp(msg, "+CKEV:", 6) == 0) {    /* Key-code event */
+		i = 7;                                  /* parse key-code string */
 		code = key = msg[i++];
-		if (msg[i] != ',') {                    // 2 char code?
+		if (msg[i] != ',') {                    /* 2 char code? */
 			key0 = key;
 			key = msg[i++];
 			code = code << 8 | key;
@@ -329,12 +331,12 @@ char* bte_automaton()
 					LOGPRINTF(1, "bte_automaton: 'e' filtered");
 					break;
 				}
-				if (memo_mode) { // MEMO mode exited
+				if (memo_mode) { /* MEMO mode exited */
 					memo_mode = 0;
 					LOGPRINTF(1, "bte_automaton: MEMO mode exited");
 				}
 				break;
-			case 'G':       // MEMO mode entered
+			case 'G':       /* MEMO mode entered */
 				memo_mode = 1;
 				LOGPRINTF(1, "bte_automaton: MEMO key");
 				break;

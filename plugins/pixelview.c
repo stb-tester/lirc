@@ -35,10 +35,10 @@ static lirc_t signal_length;
 static ir_code pre, code;
 
 //forwards:
-int pixelview_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int pixelview_init(void);
-int pixelview_deinit(void);
-char* pixelview_rec(struct ir_remote* remotes);
+static int pixelview_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int pixelview_init(void);
+static int pixelview_deinit(void);
+static char* pixelview_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_pixelview = {
@@ -90,7 +90,8 @@ int pixelview_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "pixelview_init()");
 		tty_delete_lock();

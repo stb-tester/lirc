@@ -59,10 +59,10 @@ static ir_code code;
 #define CODE_LENGTH 48
 
 //Forwards:
-int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int usbx_init(void);
-int usbx_deinit(void);
-char* usbx_rec(struct ir_remote* remotes);
+static int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int usbx_init(void);
+static int usbx_deinit(void);
+static char* usbx_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_usbx = {
@@ -111,7 +111,8 @@ int usbx_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files for '%s'", drv.device);
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		tty_delete_lock();
 		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 		return 0;

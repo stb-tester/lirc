@@ -28,13 +28,12 @@
 
 
 //Forwards:
-int default_init(void);
-int default_config(struct ir_remote* remotes);
-int default_deinit(void);
-int default_send(struct ir_remote* remote, struct ir_ncode* code);
-char* default_rec(struct ir_remote* remotes);
-int default_ioctl(unsigned int cmd, void* arg);
-lirc_t default_readdata(lirc_t timeout);
+static int default_init(void);
+static int default_deinit(void);
+static int default_send(struct ir_remote* remote, struct ir_ncode* code);
+static char* default_rec(struct ir_remote* remotes);
+static int default_ioctl(unsigned int cmd, void* arg);
+static lirc_t default_readdata(lirc_t timeout);
 
 
 static const const struct driver hw_simsend = {
@@ -128,7 +127,7 @@ int default_readdata(lirc_t timeout)
 /*
  * interface functions
  */
-int default_init()
+int default_init(void)
 {
 	drv.fd = STDOUT_FILENO;
 	drv.features = LIRC_CAN_SEND_PULSE;
@@ -172,9 +171,8 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 		logprintf(LIRC_ERROR, "write failed");
 		logperror(LIRC_ERROR, NULL);
 		return 0;
-	} else {
-		printf("space %u\n", (__u32)remote->min_remaining_gap);
 	}
+	printf("space %u\n", (__u32)remote->min_remaining_gap);
 	return 1;
 }
 

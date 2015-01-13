@@ -107,7 +107,7 @@ static char* parse_O_arg(int argc, char** argv)
 
 void options_load(int argc, char** const argv,
 		  const char* path_arg,
-		  void (* parse_options)(int, char** const))
+		  void (*parse_options)(int, char** const))
 {
 	char buff[128];
 	char buff2[128];

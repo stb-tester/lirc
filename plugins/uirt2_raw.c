@@ -123,10 +123,9 @@ static int queue_put(lirc_t data)
 		rec_buf[rec_wptr] = data;
 		rec_wptr = next;
 		return 0;
-	} else {
-		logprintf(LIRC_ERROR, "uirt2_raw: queue full");
-		return -1;
 	}
+	logprintf(LIRC_ERROR, "uirt2_raw: queue full");
+	return -1;
 }
 
 static int queue_get(lirc_t* pdata)
@@ -137,18 +136,17 @@ static int queue_get(lirc_t* pdata)
 		LOGPRINTF(3, "queue_get: %d", *pdata);
 
 		return 0;
-	} else {
-		logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
-		return -1;
 	}
+	logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
+	return -1;
 }
 
-static int queue_is_empty()
+static int queue_is_empty(void)
 {
 	return rec_wptr == rec_rptr;
 }
 
-static void queue_clear()
+static void queue_clear(void)
 {
 	rec_rptr = 0;
 	rec_wptr = 0;
@@ -198,7 +196,8 @@ static int uirt2_raw_init(void)
 		return 0;
 	}
 
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
@@ -235,7 +234,8 @@ static int uirt2_raw_init(void)
 		return 0;
 	}
 
-	if ((dev = uirt2_init(drv.fd)) == NULL) {
+	dev = uirt2_init(drv.fd);
+	if (dev == NULL) {
 		logprintf(LIRC_ERROR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
 		close(drv.fd);
 		tty_delete_lock();
@@ -294,19 +294,17 @@ static char* uirt2_raw_rec(struct ir_remote* remotes)
 
 	if (remotes) {
 		char* res;
+
 		res = decode_all(remotes);
-
 		return res;
-	} else {
-		lirc_t data;
-
-		queue_clear();
-		data = uirt2_read_raw(dev, 1);
-		if (data)
-			queue_put(data);
-
-		return NULL;
 	}
+	lirc_t data;
+
+	queue_clear();
+	data = uirt2_read_raw(dev, 1);
+	if (data)
+		queue_put(data);
+	return NULL;
 }
 
 static int uirt2_send(struct ir_remote* remote, struct ir_ncode* code)
@@ -375,6 +373,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 
 	for (i = 0, dest = 2; i < length; i++) {
 		int val = buf[i] / UIRT2_UNIT;
+
 		while (val > 0) {
 			if (val > UCHAR_MAX) {
 				tmp[dest++] = UCHAR_MAX - 1;

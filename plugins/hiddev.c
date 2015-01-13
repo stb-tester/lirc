@@ -30,14 +30,14 @@
 
 #define TIMEOUT 20000
 
-static int hiddev_init();
+static int hiddev_init(void);
 static int hiddev_deinit(void);
 static int hiddev_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static char* hiddev_rec(struct ir_remote* remotes);
-static int sb0540_init();
+static int sb0540_init(void);
 static char* sb0540_rec(struct ir_remote* remotes);
 static char* macmini_rec(struct ir_remote* remotes);
-static int samsung_init();
+static int samsung_init(void);
 static char* samsung_rec(struct ir_remote* remotes);
 static char* sonyir_rec(struct ir_remote* remotes);
 
@@ -209,7 +209,7 @@ const struct driver hw_sonyir = {
 
 static int old_main_code = 0;
 
-const static int mousegrid[9][9] = { { 0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 0x17, 0x17 },
+static const int mousegrid[9][9] = { { 0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 0x17, 0x17 },
 				     { 0x05, 0x0d, 0x11, 0x12, 0x12, 0x12, 0x16, 0x17, 0x17 },
 				     { 0x05, 0x09, 0x0e, 0x12, 0x12, 0x12, 0x13, 0x13, 0x13 },
 				     { 0x06, 0x0a, 0x0a, 0x0e, 0x0e, 0x12, 0x13, 0x13, 0x13 },
@@ -219,11 +219,12 @@ const static int mousegrid[9][9] = { { 0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16,
 				     { 0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f, 0x0f },
 				     { 0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f } };
 
-int hiddev_init()
+int hiddev_init(void)
 {
 	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
 
-	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+	drv.fd = open(drv.device, O_RDONLY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
@@ -284,8 +285,8 @@ char* hiddev_rec(struct ir_remote* remotes)
 
 	last = end;
 	gettimeofday(&start, NULL);
-	rd = read(drv.fd, &event, sizeof event);
-	if (rd != sizeof event) {
+	rd = read(drv.fd, &event, sizeof(event));
+	if (rd != sizeof(event)) {
 		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 		logperror(LIRC_ERROR, NULL);
 		hiddev_deinit();
@@ -319,8 +320,8 @@ char* hiddev_rec(struct ir_remote* remotes)
 			logprintf(LIRC_ERROR, "timeout reading next event");
 			return NULL;
 		}
-		rd = read(drv.fd, &event, sizeof event);
-		if (rd != sizeof event) {
+		rd = read(drv.fd, &event, sizeof(event));
+		if (rd != sizeof(event)) {
 			logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 			return 0;
 		}
@@ -331,6 +332,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 
 	if (event.hid == 0x10046) {
 		struct timeval now;
+
 		repeat_state = (main_code & dvico_repeat_mask) ? RPT_YES : RPT_NO;
 		main_code = (main_code & ~dvico_repeat_mask);
 
@@ -381,8 +383,8 @@ char* hiddev_rec(struct ir_remote* remotes)
 				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
 				return NULL;
 			}
-			rd = read(drv.fd, &asus_events[i], sizeof event);
-			if (rd != sizeof event) {
+			rd = read(drv.fd, &asus_events[i], sizeof(event));
+			if (rd != sizeof(event)) {
 				logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
 				return 0;
 			}
@@ -456,13 +458,14 @@ char* hiddev_rec(struct ir_remote* remotes)
  */
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
-int sb0540_init()
+int sb0540_init(void)
 {
 	int rv = hiddev_init();
 
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
+
 		if (ioctl(drv.fd, HIDIOCSFLAG, &flags))
 			return 0;
 	}
@@ -601,13 +604,14 @@ char* macmini_rec(struct ir_remote* remotes)
  */
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
-int samsung_init()
+int samsung_init(void)
 {
 	int rv = hiddev_init();
 
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
+
 		if (ioctl(drv.fd, HIDIOCSFLAG, &flags))
 			return 0;
 	}
@@ -715,8 +719,8 @@ char* samsung_rec(struct ir_remote* remotes)
 			 * this hiddev stuff here.
 			 */
 			int maxbit, i;
-			LOGPRINTF(3, "Samsung usage (proprietary)\n");
 
+			LOGPRINTF(3, "Samsung usage (proprietary)\n");
 			/* According to tests, at most one of the
 			 * 48 key bits can be set.
 			 * Due to the required kernel patch, the

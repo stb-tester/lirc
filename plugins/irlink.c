@@ -46,12 +46,10 @@
 #include "lirc/serial.h"
 
 //Forwards:
-int irlink_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_code* postp, int* repeat_flagp, lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp);
-
-int irlink_init(void);
-int irlink_deinit(void);
-char* irlink_rec(struct ir_remote* remotes);
-lirc_t irlink_readdata(lirc_t timeout);
+static int irlink_init(void);
+static int irlink_deinit(void);
+static char* irlink_rec(struct ir_remote* remotes);
+static lirc_t irlink_readdata(lirc_t timeout);
 
 
 const struct driver hw_irlink = {
@@ -120,7 +118,8 @@ static int irlink_open(const char* portName)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return -1;
 	}
-	if ((port = open(portName, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
+	port = open(portName, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (port < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		tty_delete_lock();
 		return -1;
@@ -153,6 +152,7 @@ static void irlink_read_flush(const int port)
 		fd_set fds;
 		struct timeval tm;
 		lirc_t data = 0;
+
 		FD_ZERO(&fds);
 		FD_SET(port, &fds);
 		tm.tv_sec = 0;
@@ -175,6 +175,7 @@ static int irlink_detect(const int port)
 	irlink_read_flush(port);
 	if (irlink_write(port, detect_cmd, sizeof(detect_cmd)) == sizeof(detect_cmd)) {
 		unsigned char detect_response = 0;
+
 		if (waitfordata(500000)
 		    && irlink_read(port, &detect_response, sizeof(detect_response)) == sizeof(detect_response)) {
 			if (detect_response == IRLINK_DETECT_CMD)
@@ -199,6 +200,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 
 	gettimeofday(&start_time, NULL);
 	lirc_t time_delta = 0;
+
 	for (;; ) {
 		if (last_code != 0) {
 			data = last_code;
@@ -214,6 +216,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 		if (irlink_read(drv.fd, &rd_value, sizeof(rd_value)) == sizeof(rd_value)) {
 			if (IS_IRLINK_LONG_PULSE(rd_value) || IS_IRLINK_LONG_PAUSE(rd_value)) {
 				struct timeval diff_time = { 0 };
+
 				is_long_pulse = IS_IRLINK_LONG_PULSE(rd_value);
 				is_long_pause = IS_IRLINK_LONG_PAUSE(rd_value);
 				gettimeofday(&last_time, NULL);
@@ -222,9 +225,11 @@ lirc_t irlink_readdata(lirc_t timeout)
 				continue;
 			} else {
 				lirc_t* code_ptr = &data;
+
 				if (is_long_pulse != 0 || is_long_pause != 0) {
 					struct timeval curr_time;
 					struct timeval diff_time;
+
 					gettimeofday(&curr_time, NULL);
 					timersub(&curr_time, &last_time, &diff_time);
 
@@ -275,10 +280,9 @@ int irlink_init(void)
 	} else {
 		if (irlink_detect(drv.fd) == 0) {
 			return 1;
-		} else {
-			logprintf(LIRC_ERROR, "Failed to detect IRLink on '%s' device", drv.device);
-			irlink_deinit();
 		}
+		logprintf(LIRC_ERROR, "Failed to detect IRLink on '%s' device", drv.device);
+		irlink_deinit();
 	}
 	return 0;
 }

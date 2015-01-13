@@ -96,7 +96,8 @@ static int uirt2_init(void)
 		logprintf(LIRC_ERROR, "uirt2: could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "uirt2: could not open %s", drv.device);
 		logperror(LIRC_ERROR, "uirt2: ");
 		tty_delete_lock();

@@ -28,7 +28,7 @@
  * @file dictionary.c
  * @author N. Devillard
  * @date Sep 2007
- * @version $Revision: 1.27 $
+ * @version Revision: 1.27
  * @brief Implements a dictionary for string variables.
  *
  * This module implements a simple dictionary object, i.e. a list
@@ -94,7 +94,8 @@ dictionary* dictionary_new(int size)
 	dictionary* d;
 
 	/* If no size was specified, allocate space for DICTMINSZ */
-	if (size < DICTMINSZ) size = DICTMINSZ;
+	if (size < DICTMINSZ)
+		size = DICTMINSZ;
 
 	if (!(d = (dictionary*)calloc(1, sizeof(dictionary))))
 		return NULL;

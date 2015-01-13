@@ -73,9 +73,9 @@ static PaStream* stream;
 static char ptyName[256];
 static int master;
 static int sendPipe[2];         /* signals are written from audio_send
-                                 * and read from the callback */
+				 * and read from the callback */
 static int completedPipe[2];    /* a byte is written here when the
-                                 * callback has processed all signals */
+				 * callback has processed all signals */
 static int outputLatency;
 static int inDevicesPrinted = 0;
 static int outDevicesPrinted = 0;
@@ -140,10 +140,10 @@ static int recordCallback(const void* inputBuffer, void* outputBuffer, unsigned 
 					time = data->lastCount * 1000000 / data->samplerate;
 					if (data->lastSign == data->pulseSign)
 						addCode(time);
-						/* printf("Pause: %d us, %d \n", time, data->lastCount); */
+						/* printf("Pause: %d us, %d\n", time, data->lastCount); */
 					else
 						addCode(time | PULSE_BIT);
-						/* printf("Pulse: %d us, %d \n", time, data->lastCount); */
+						/* printf("Pulse: %d us, %d\n", time, data->lastCount); */
 					data->lastCount = 0;
 				} else if (*myPtr < data->lastFrames[0] && data->lastSign >= 0) {
 					/* printf("CHANGE -- "); */
@@ -151,10 +151,10 @@ static int recordCallback(const void* inputBuffer, void* outputBuffer, unsigned 
 
 					time = data->lastCount * 1000000 / data->samplerate;
 					if (data->lastSign == data->pulseSign)
-						/* printf("Pause: %d us, %d \n", time, data->lastCount); */
+						/* printf("Pause: %d us, %d\n", time, data->lastCount); */
 						addCode(time);
 					else
-						/* printf("Pulse: %d us, %d \n", time, data->lastCount); */
+						/* printf("Pulse: %d us, %d\n", time, data->lastCount); */
 						addCode(time | PULSE_BIT);
 					data->lastCount = 0;
 				}
@@ -200,6 +200,7 @@ static int recordCallback(const void* inputBuffer, void* outputBuffer, unsigned 
 				 * signals */
 				if (!data->signaledDone) {
 					char done = 0;
+
 					data->signaledDone = 1;
 					chk_write(completedPipe[1],
 						  &done,
@@ -293,7 +294,8 @@ int audio_send(struct ir_remote* remote, struct ir_ncode* code)
 	fcntl(completedPipe[0], F_SETFL, flags | O_NONBLOCK);
 
 	/* remove any unwanted completed bytes */
-	while (read(completedPipe[0], &completed, sizeof(completed)) == 1) ;
+	while (read(completedPipe[0], &completed, sizeof(completed)) == 1)
+		;
 
 	/* set completed pipe to blocking */
 	fcntl(completedPipe[0], F_SETFL, flags & ~O_NONBLOCK);
@@ -365,13 +367,13 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 			       double latency)
 {
 	char* direction = input ? "input" : "output";
-	int chosendevice = -1;
-	int i;
-	int nrdevices = Pa_GetDeviceCount();
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
 	const char* devicetype = "custom";
 	const char* latencytype = "custom";
+	int nrdevices = Pa_GetDeviceCount();
+	int chosendevice = -1;
+	int i;
 
 	for (i = 0; i < nrdevices; i++) {
 		deviceinfo = Pa_GetDeviceInfo(i);
@@ -435,7 +437,7 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
  */
 static paTestData data;
 
-int audio_init()
+int audio_init(void)
 {
 	PaStreamParameters inputParameters;
 	PaStreamParameters outputParameters;

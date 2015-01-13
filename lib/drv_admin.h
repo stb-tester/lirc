@@ -29,7 +29,7 @@ extern "C" {
  * iteration should continue, else a struct hardware* pointer.
  *
  */
-typedef struct driver* (* drv_guest_func)(struct driver*, void*);
+typedef struct driver* (*drv_guest_func)(struct driver*, void*);
 
 /**
  * Argument to for_each_plugin. Called with a path to the so-file,

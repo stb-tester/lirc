@@ -39,8 +39,8 @@
 #include <sys/ioctl.h>
 
 #if defined __linux__
-#include <linux/serial.h>       /* for 'struct serial_struct' to set custom
-                                 * baudrates */
+#include <linux/serial.h>	/* for 'struct serial_struct' to set custom
+				 * baudrates */
 #endif
 
 #include "lirc/lirc_log.h"

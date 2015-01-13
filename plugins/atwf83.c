@@ -22,11 +22,11 @@ enum {
 	RPT_YES = 1,
 };
 
-static int atwf83_init();
-static int atwf83_deinit();
+static int atwf83_init(void);
+static int atwf83_deinit(void);
 static char* atwf83_rec(struct ir_remote* remotes);
 static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-static void* atwf83_repeat();
+static void* atwf83_repeat(void*);
 
 /** Max number of repetitions */
 const unsigned max_repeat_count = 500;
@@ -91,10 +91,11 @@ static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int atwf83_init()
+static int atwf83_init(void)
 {
 	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
-	if ((fd_hidraw = open(drv.device, O_RDONLY)) < 0) {
+	fd_hidraw = open(drv.device, O_RDONLY);
+	if (fd_hidraw < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
@@ -116,7 +117,7 @@ static int atwf83_init()
 	return 1;
 }
 
-static int atwf83_deinit()
+static int atwf83_deinit(void)
 {
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
@@ -143,7 +144,7 @@ static int atwf83_deinit()
  *	Runtime that reads device, forwards codes to main thread
  *	and simulates repetitions.
  */
-static void* atwf83_repeat()
+static void* atwf83_repeat(void* arg)
 {
 	int repeat_count = 0;
 	unsigned ev[2];
@@ -170,7 +171,9 @@ static void* atwf83_repeat()
 
 			if (rd == -1) {
 				// Error
-				logprintf(LIRC_ERROR, "(%s) Could not read %s", __FUNCTION__, drv.device);
+				logprintf(LIRC_ERROR,
+					  "(%s) Could not read %s",
+					   __func__, drv.device);
 				goto exit_loop;
 			}
 			if ((rd == 8 && ev[0] != 0) || (rd == 6 && ev[0] > 2)) {
@@ -190,7 +193,8 @@ static void* atwf83_repeat()
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR, "(%s) too many repetitions", __FUNCTION__);
+				logprintf(LIRC_ERROR, "(%s) too many repetitions", __func__);
+
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -200,7 +204,8 @@ static void* atwf83_repeat()
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR, "(%s) select() failed", __FUNCTION__);
+			logprintf(LIRC_ERROR,
+				  "(%s) select() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
@@ -229,7 +234,7 @@ static char* atwf83_rec(struct ir_remote* remotes)
 
 	if (rd == -1) {
 		// Error
-		logprintf(LIRC_ERROR, "(%s) could not read pipe", __FUNCTION__);
+		logprintf(LIRC_ERROR, "(%s) could not read pipe", __func__);
 		atwf83_deinit();
 		return 0;
 	}

@@ -41,10 +41,10 @@ struct timeval current, last;
 int do_repeat;
 
 //Forwards:
-int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int silitek_init(void);
-int silitek_deinit(void);
-char* silitek_rec(struct ir_remote* remotes);
+static int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int silitek_init(void);
+static int silitek_deinit(void);
+static char* silitek_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_silitek = {
@@ -104,7 +104,8 @@ int silitek_init(void)
 		return 0;
 	}
 
-	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "silitek_init()");
 		tty_delete_lock();

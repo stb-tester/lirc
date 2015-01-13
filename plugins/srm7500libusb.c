@@ -110,16 +110,16 @@ typedef struct {
 #define USB_TIMEOUT (1000 * 10)
 #define CONTROL_BUFFERSIZE 128
 
-static int srm7500_init();
-static int srm7500_deinit();
+static int srm7500_init(void);
+static int srm7500_deinit(void);
 static char* srm7500_rec(struct ir_remote* remotes);
 static int srm7500_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
 static int find_device_endpoints(struct usb_device* dev);
-static int srm7500_initialize_usbdongle();
-static int srm7500_initialize_802154_stack();
-static int srm7500_deinitialize_usbdongle();
+static int srm7500_initialize_usbdongle(void);
+static int srm7500_initialize_802154_stack(void);
+static int srm7500_deinitialize_usbdongle(void);
 static int philipsrf_input(philipsrf_incoming_t* buffer_in);
 static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
@@ -179,7 +179,7 @@ static int requested_usb_device_number = -1;
 static int srm7500_terminate = 0;
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int srm7500_init()
+static int srm7500_init(void)
 {
 	int pipe_fd[2] = { -1, -1 };
 	int got_macShortAddress = 0;
@@ -202,6 +202,7 @@ static int srm7500_init()
 	string_end = strchr(drv.device, 0);
 	while (op_start < string_end) {
 		int result;
+
 		op_end = strchrnul(op_start, ',');
 		if (!strncmp(op_start, "macShortAddress=", 16)) {
 			result = sscanf(op_start + 16, "%hhx:%hhx", macShortAddress, macShortAddress + 1);
@@ -245,10 +246,11 @@ static int srm7500_init()
 			macBeaconPayloadGiven = 1;
 		} else if (!strncmp(op_start, "usb=", 4)) {
 			result = sscanf(op_start + 4, "%i:%i", &requested_usb_bus_number, &requested_usb_device_number);
-			if (result == 2)
+			if (result == 2) {
 				LOGPRINTF(1, "got usb %i:%i", requested_usb_bus_number, requested_usb_device_number);
-			else
+			} else {
 				logprintf(LIRC_ERROR, "error parsing option usb");
+			}
 		} else {
 			char erroroptionstring[op_end - op_start + 1];
 
@@ -347,7 +349,7 @@ static void srm7500_sigterm(int sig)
 	srm7500_terminate = 1;
 }
 
-static int srm7500_initialize_usbdongle()
+static int srm7500_initialize_usbdongle(void)
 {
 	struct usb_device* usb_dev;
 	int res;
@@ -408,7 +410,7 @@ static int srm7500_initialize_usbdongle()
 	return 1;
 }
 
-static int srm7500_deinitialize_usbdongle()
+static int srm7500_deinitialize_usbdongle(void)
 {
 	int result = 1;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
@@ -433,7 +435,7 @@ static int srm7500_deinitialize_usbdongle()
 	return result;
 }
 
-static int srm7500_initialize_802154_stack()
+static int srm7500_initialize_802154_stack(void)
 {
 	philipsrf_outgoing_t packet_buffer_out;
 	philipsrf_incoming_t packet_buffer_in;
@@ -524,9 +526,9 @@ static int srm7500_initialize_802154_stack()
 	/* beacon data:
 	 * contents: ASCII PHILIPS + hostname */
 	u_int8_t beacon_length = 0;
-	beacon_length = (u_int8_t)strnlen((char*)macBeaconPayload, 64);
 
 	/* beacon data length */
+	beacon_length = (u_int8_t)strnlen((char*)macBeaconPayload, 64);
 	packet_buffer_out.length = 3;
 	packet_buffer_out.type = MLME_SET_request;
 	packet_buffer_out.data[0] = PIB_ATTR_macBeaconPayload_Length;
@@ -603,7 +605,7 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int srm7500_deinit()
+static int srm7500_deinit(void)
 {
 	int result = 1;
 
@@ -697,11 +699,10 @@ static struct usb_device* find_usb_device(void)
 		}
 		if (is_device_ok(dev)) {
 			return dev;
-		} else {
-			logprintf(LIRC_ERROR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
-				  requested_usb_bus_number, requested_usb_device_number, dev->descriptor.idVendor,
-				  dev->descriptor.idProduct);
 		}
+		logprintf(LIRC_ERROR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
+			  requested_usb_bus_number, requested_usb_device_number, dev->descriptor.idVendor,
+			  dev->descriptor.idProduct);
 	} else {
 		for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
 			for (dev = usb_bus->devices; dev; dev = dev->next)
@@ -759,10 +760,10 @@ static int usb_read_loop(int fd)
 		int inret;
 		int i;
 		int is_ok;
+
 		inret = philipsrf_input(&packet_buffer_in);
 		if (srm7500_terminate)
 			break;
-
 		if (inret == -ETIMEDOUT)
 			continue;
 
@@ -822,6 +823,7 @@ static int usb_read_loop(int fd)
 			inret = philipsrf_input(&packet_buffer_in);
 			if ((packet_buffer_in.type == MLME_COMM_STATUS_indication)
 			    && (packet_buffer_in.data[packet_buffer_in.length - 2] == 0)) {
+					/* Empty body(!). */
 			}
 			break;
 		case MLME_ORPHAN_indication:
@@ -891,6 +893,7 @@ static int usb_read_loop(int fd)
 				packet_buffer_in.zig.msduLength);
 			if ((packet_buffer_in.zig.data[0] == 0x00) && (packet_buffer_in.zig.msduLength == 4)) {
 				int bytes_w, pos;
+
 				for (pos = 1; pos < packet_buffer_in.zig.msduLength; pos += bytes_w) {
 					bytes_w =
 						write(fd, packet_buffer_in.zig.data + pos,

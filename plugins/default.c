@@ -44,13 +44,13 @@ static __u32 supported_rec_modes[] = {
 };
 
 //Forwards:
-int default_init(void);
-int default_config(struct ir_remote* remotes);
-int default_deinit(void);
-int default_send(struct ir_remote* remote, struct ir_ncode* code);
-char* default_rec(struct ir_remote* remotes);
-int default_ioctl(unsigned int cmd, void* arg);
-lirc_t default_readdata(lirc_t timeout);
+static int default_init(void);
+static int default_config(struct ir_remote* remotes);
+static int default_deinit(void);
+static int default_send(struct ir_remote* remote, struct ir_ncode* code);
+static char* default_rec(struct ir_remote* remotes);
+static int default_ioctl(unsigned int cmd, void* arg);
+static lirc_t default_readdata(lirc_t timeout);
 
 
 
@@ -123,7 +123,7 @@ int default_readdata(lirc_t timeout)
 /*
  * interface functions
  */
-int default_init()
+int default_init(void)
 {
 	struct stat s;
 	int i;
@@ -141,6 +141,7 @@ int default_init()
 	/* file could be unix socket, fifo and native lirc device */
 	if (S_ISSOCK(s.st_mode)) {
 		struct sockaddr_un addr;
+
 		addr.sun_family = AF_UNIX;
 		strncpy(addr.sun_path, drv.device, sizeof(addr.sun_path) - 1);
 
@@ -165,8 +166,8 @@ int default_init()
 		drv.send_mode = LIRC_MODE_PULSE;
 		return 1;
 	}
-
-	if ((drv.fd = open(drv.device, O_RDWR)) < 0) {
+	drv.fd = open(drv.device, O_RDWR);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "default_init()");
 		return 0;
@@ -194,15 +195,15 @@ int default_init()
 		}
 		default_deinit();
 		return 0;
-	} else {
-		if (!(LIRC_CAN_SEND(drv.features) || LIRC_CAN_REC(drv.features)))
-			LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
-		if (LIRC_CAN_SEND(drv.features) && LIRC_CAN_REC(drv.features))
-			LOGPRINTF(1, "driver supports both sending and receiving");
-		else if (LIRC_CAN_SEND(drv.features))
-			LOGPRINTF(1, "driver supports sending");
-		else if (LIRC_CAN_REC(drv.features))
-			LOGPRINTF(1, "driver supports receiving");
+	}
+	if (!(LIRC_CAN_SEND(drv.features) || LIRC_CAN_REC(drv.features)))
+		LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
+	if (LIRC_CAN_SEND(drv.features) && LIRC_CAN_REC(drv.features)) {
+		LOGPRINTF(1, "driver supports both sending and receiving");
+	} else if (LIRC_CAN_SEND(drv.features)) {
+		LOGPRINTF(1, "driver supports sending");
+	} else if (LIRC_CAN_REC(drv.features)) {
+		LOGPRINTF(1, "driver supports receiving");
 	}
 
 	/* set send/receive method */

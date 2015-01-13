@@ -43,10 +43,9 @@ void* slinke_malloc(size_t size)
 	if (ptr == NULL) {
 		logprintf(LIRC_ERROR, "slinke_malloc: out of memory");
 		return NULL;
-	} else {
-		memset(ptr, 0, size);
-		return ptr;
-	}                       /* if */
+	}
+	memset(ptr, 0, size);
+	return ptr;
 }                               /* slinke_malloc */
 
 void* slinke_realloc(void* optr, size_t size)

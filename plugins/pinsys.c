@@ -60,13 +60,13 @@ static lirc_t signal_length;
 static ir_code code;
 
 //Forwards:
-int is_it_is_it_huh(int port);
-int autodetect(void);
+static int is_it_is_it_huh(int port);
+static int autodetect(void);
 
-int pinsys_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int pinsys_init(void);
-int pinsys_deinit(void);
-char* pinsys_rec(struct ir_remote* remotes);
+static int pinsys_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int pinsys_init(void);
+static int pinsys_deinit(void);
+static char* pinsys_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_pinsys = {
@@ -179,7 +179,8 @@ int pinsys_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		int detected;
 		/* last character gets overwritten */
 		static char auto_lirc_device[] = "/dev/ttyS_";
@@ -197,16 +198,17 @@ int pinsys_init(void)
 			logprintf(LIRC_ERROR, "no device found on /dev/ttyS[0-3]");
 			tty_delete_lock();
 			return 0;
-		} else {        /* detected */
-			auto_lirc_device[9] = '0' + detected;
-			drv.device = auto_lirc_device;
-			if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
-				/* unlikely, but hey. */
-				logprintf(LIRC_ERROR, "couldn't open autodetected device \"%s\"", drv.device);
-				logperror(LIRC_ERROR, "pinsys_init()");
-				tty_delete_lock();
-				return 0;
-			}
+		}
+		/* Detected. */
+		auto_lirc_device[9] = '0' + detected;
+		drv.device = auto_lirc_device;
+		drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+		if (drv.fd  < 0) {
+			/* unlikely, but hey. */
+			logprintf(LIRC_ERROR, "couldn't open autodetected device \"%s\"", drv.device);
+			logperror(LIRC_ERROR, "pinsys_init()");
+			tty_delete_lock();
+			return 0;
 		}
 	}
 	if (!tty_reset(drv.fd)) {

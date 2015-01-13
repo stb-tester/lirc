@@ -130,12 +130,14 @@ int udp_init()
 	logprintf(LIRC_NOTICE, "using UDP port: %d, resolution: %d", port, drv.resolution);
 
 	/* drv.fd needs to point somewhere when we have extra data */
-	if ((zerofd = open("/dev/zero", O_RDONLY)) < 0) {
+	zerofd = open("/dev/zero", O_RDONLY);
+	if (zerofd < 0) {
 		logprintf(LIRC_ERROR, "can't open /dev/zero: %s", strerror(errno));
 		return 0;
 	}
 
-	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0) {
 		logprintf(LIRC_ERROR, "error creating socket: %s", strerror(errno));
 		close(zerofd);
 		return 0;
@@ -208,7 +210,8 @@ lirc_t udp_readdata(lirc_t timeout)
 	if ((bufptr + 2) > buflen) {
 		if (!waitfordata(timeout))
 			return 0;
-		if ((buflen = recv(sockfd, &buffer, sizeof(buffer), 0)) < 0) {
+		buflen = recv(sockfd, &buffer, sizeof(buffer), 0);
+		if (buflen < 0) {
 			logprintf(LIRC_INFO, "Error reading from UDP socket");
 			return 0;
 		}

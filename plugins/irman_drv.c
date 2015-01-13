@@ -39,10 +39,10 @@ ir_code code;
 #define CODE_LENGTH 64
 
 //Forwards:
-int irman_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int irman_init(void);
-int irman_deinit(void);
-char* irman_rec(struct ir_remote* remotes);
+static int irman_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int irman_init(void);
+static int irman_deinit(void);
+static char* irman_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_irman = {
@@ -85,7 +85,8 @@ int irman_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = ir_init((char*)drv.device)) < 0) {
+	drv.fd = ir_init((char*)drv.device);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "irman_init()");
 		tty_delete_lock();
@@ -113,12 +114,13 @@ char* irman_rec(struct ir_remote* remotes)
 	codestring = ir_get_code();
 	gettimeofday(&end, NULL);
 	if (codestring == NULL) {
-		if (errno == IR_EDUPCODE)
+		if (errno == IR_EDUPCODE) {
 			LOGPRINTF(1, "received \"%s\" (dup)", text ? text : "(null - bug)");
-		else if (errno == IR_EDISABLED)
+		} else if (errno == IR_EDISABLED) {
 			LOGPRINTF(1, "irman not initialised (this is a bug)");
-		else
+		} else {
 			LOGPRINTF(1, "error reading code: \"%s\"", ir_strerror(errno));
+		}
 		if (errno == IR_EDUPCODE)
 			return decode_all(remotes);
 		return NULL;

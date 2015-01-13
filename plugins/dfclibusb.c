@@ -87,7 +87,7 @@ static pid_t child = -1;
 /****/
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int dfc_init()
+static int dfc_init(void)
 {
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
@@ -147,7 +147,7 @@ fail:
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int dfc_deinit()
+static int dfc_deinit(void)
 {
 	int err = 0;
 
@@ -235,7 +235,8 @@ static void usb_read_loop(int fd)
 
 		/* read from the USB device */
 		bytes_r =
-			usb_control_msg(dev_handle, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 3, 0, 0, &buf[0],
+			usb_control_msg(dev_handle,
+					USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 3, 0, 0, &buf[0],
 					sizeof(buf), USB_TIMEOUT);
 
 		if (bytes_r < 0) {
@@ -254,7 +255,8 @@ static void usb_read_loop(int fd)
 					for (pos = 0; pos < ptr; pos += bytes_w) {
 						bytes_w = write(fd, rcv_code + pos, ptr - pos);
 						if (bytes_w < 0) {
-							logprintf(LIRC_ERROR, "can't write to pipe: %s", strerror(errno));
+							logprintf(LIRC_ERROR,
+								  "can't write to pipe: %s", strerror(errno));
 							err = 1;
 							goto done;
 						}

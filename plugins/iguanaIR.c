@@ -77,9 +77,9 @@ static void recv_loop(int fd, int notify)
 					uint32_t* code;
 					unsigned int length, x, y = 0;
 					lirc_t buffer[8];       /* we read 8 bytes max at a time
-					                         * from the device, i.e. packet
-					                         * can only contain 8
-					                         * signals. */
+								 * from the device, i.e. packet
+								 * can only contain 8
+								 * signals. */
 
 					/* pull the data off the packet */
 					code = (uint32_t*)iguanaRemoveData(response, &length);
@@ -135,7 +135,7 @@ static void recv_loop(int fd, int notify)
 	close(fd);
 }
 
-static int iguana_init()
+static int iguana_init(void)
 {
 	int recv_pipe[2], retval = 0;
 
@@ -163,6 +163,7 @@ static int iguana_init()
 				_exit(0);
 			} else {
 				int dummy;
+
 				close(recv_pipe[1]);
 				close(notify[1]);
 				/* make sure child has set its signal handler to avoid race with iguana_deinit() */
@@ -192,7 +193,7 @@ static pid_t dowaitpid(pid_t pid, int* stat_loc, int options)
 	return retval;
 }
 
-static int iguana_deinit()
+static int iguana_deinit(void)
 {
 	/* close the connection to the iguana daemon */
 	if (sendConn != -1) {

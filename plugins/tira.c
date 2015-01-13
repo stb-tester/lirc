@@ -52,13 +52,13 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
-int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int tira_init(void);
-int tira_deinit(void);
-char* tira_rec(struct ir_remote* remotes);
-char* tira_rec_mode2(struct ir_remote* remotes);
+static int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int tira_init(void);
+static int tira_deinit(void);
+static char* tira_rec(struct ir_remote* remotes);
+static char* tira_rec_mode2(struct ir_remote* remotes);
 static int tira_send(struct ir_remote* remote, struct ir_ncode* code);
-lirc_t tira_readdata(lirc_t timeout);
+static lirc_t tira_readdata(lirc_t timeout);
 
 const char failwrite[] = "failed writing to device";
 const char strreconly[] = "receive";
@@ -190,6 +190,7 @@ int child_process(int pipe_w, int oldprotocol)
 	fd_set read_set;
 	struct timeval tv, trailtime, currtime;
 	__u32 eusec;
+
 	tv.tv_sec = 0;
 	tv.tv_usec = 1000;
 	FD_ZERO(&read_set);
@@ -358,7 +359,8 @@ int tira_setup(void)
 	int ptr;
 
 	/* Clear the port of any random data */
-	while (read(drv.fd, &ptr, 1) >= 0) ;
+	while (read(drv.fd, &ptr, 1) >= 0)
+		;
 
 	/* Start off with the IP command. This was initially used to
 	 * switch to timing mode on the Tira-1. The Tira-2 also
@@ -541,7 +543,8 @@ int tira_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		tty_delete_lock();
 		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 		return 0;
@@ -691,8 +694,8 @@ static int tira_send(struct ir_remote* remote, struct ir_ncode* code)
 
 	/* Create burst space array for tira */
 	int bsa[12];
-	memset(&bsa, 0, sizeof(bsa));
 
+	memset(&bsa, 0, sizeof(bsa));
 	for (i = 0; i < length; i++) {
 		idx = -1;
 		tmp = signals[i] / 8;
@@ -742,10 +745,10 @@ static int tira_send(struct ir_remote* remote, struct ir_ncode* code)
 	}
 
 	unsigned char* wrtbuf;
+
 	wrtbuf = malloc(length + 28);
 	if (wrtbuf == NULL)
 		return retval;
-
 	wrtbuf[0] = 'I';
 	wrtbuf[1] = 'X';
 	wrtbuf[2] = freq;

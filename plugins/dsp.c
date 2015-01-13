@@ -86,13 +86,14 @@ lirc_t dsp_readdata(lirc_t timeout)
 /*
  * interface functions
  */
-int dsp_init()
+int dsp_init(void)
 {
 	int speed = SAMPLE, fmt = AFMT_S16_LE;
 
 	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
 	rec_buffer_init();
-	if ((drv.fd = open(drv.device, O_RDONLY)) < 0) {
+	drv.fd = open(drv.device, O_RDONLY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;

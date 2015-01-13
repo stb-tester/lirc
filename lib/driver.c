@@ -9,8 +9,8 @@
  */
 
 #include	<stdio.h>
-#include 	"driver.h"
-#include 	"config.h"
+#include	"driver.h"
+#include	"config.h"
 #include	"lirc_log.h"
 
 /**

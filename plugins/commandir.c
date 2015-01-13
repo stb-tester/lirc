@@ -1,4 +1,4 @@
-/* CommandIR transceivers driver 2.0 CVS $Revision: 5.8 $
+/* CommandIR transceivers driver 2.0 CVS Revision: 5.8
  * Supporting CommandIR II and CommandIR Mini (and multiple of both)
  * April-June 2008, Matthew Bodkin
  * Feb-Aug 2010, Added Support for CommandIR III
@@ -276,7 +276,7 @@ struct commandirIII_status {
 static void hardware_disconnect(struct commandir_device* a);
 
 /*** Parent Thread Functions ***/
-static int commandir_init();
+static int commandir_init(void);
 static int commandir_send(struct ir_remote* remote, struct ir_ncode* code);
 static char* commandir_rec(struct ir_remote* remotes);
 static int commandir_ioctl(unsigned int cmd, void* arg);
@@ -285,16 +285,16 @@ static int commandir_deinit(void);
 static int commandir_receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 
 /*** USB Thread Functions ***/
-static void commandir_child_init();
+static void commandir_child_init(void);
 static int do_we_know_device(unsigned int bus_num, int devnum);
 static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct usb_device* dev);
-static void hardware_scan();
-static void hardware_setorder();
+static void hardware_scan(void);
+static void hardware_setorder(void);
 static void hardware_disconnect(struct commandir_device* a);
-static void software_disconnects();
+static void software_disconnects(void);
 static void set_detected(unsigned int bus_num, int devnum);
-static void commandir_read_loop();
-static void shutdown_usb();
+static void commandir_read_loop(void);
+static void shutdown_usb(int);
 
 /*** Processing Functions ***/
 static void add_to_tx_pipeline(unsigned char* buffer, int bytes, unsigned int frequency);
@@ -312,7 +312,7 @@ static void set_all_next_tx_mask(int* ar_new_tx_mask, int new_tx_len, __u32 bitm
 static void set_new_signal_bitmasks(struct commandir_device* pcd, struct tx_signal* ptx);
 
 static void update_tx_available(struct commandir_device* pcd);
-static int commandir_read();
+static int commandir_read(void);
 
 /** CommandIR III Specific **/
 static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues);
@@ -425,7 +425,7 @@ static int pipe_tochild[2] = { -1, -1 };
 
 static int tochild_read = -1, tochild_write = -1;
 static int current_transmitter_mask = 0xff;
-static char unsigned commandir_data_buffer[512];
+static unsigned char commandir_data_buffer[512];
 static int last_mc_time = -1;
 static int commandir_rx_num = 0;
 
@@ -438,18 +438,20 @@ static int commandir_receive_decode(struct ir_remote* remote, struct decode_ctx_
 
 	if (i > 0) {
 		static char rx_char[3] = { 3, 0, RXDECODE_HEADER_LIRC };
+
 		chk_write(tochild_write, rx_char, 3);
 	}
 
 	return i;
 }
 
-static int commandir_init()
+static int commandir_init(void)
 {
 	long fd_flags;
 
 	if (haveInited) {
 		static char init_char[3] = { 3, 0, INIT_HEADER_LIRC };
+
 		chk_write(tochild_write, init_char, 3);
 		return 1;
 	}
@@ -491,9 +493,8 @@ static int commandir_init()
 		commandir_child_init();
 		commandir_read_loop();
 		return 0;
-	} else {
-		signal(SIGTERM, SIG_IGN);
 	}
+	signal(SIGTERM, SIG_IGN);
 	haveInited = 1;
 
 	logprintf(LIRC_ERROR, "CommandIR driver initialized");
@@ -506,12 +507,13 @@ static int commandir_deinit(void)
 	* connected so in the future we can still monitor in the client */
 	if (USB_KEEP_WARM && (!strncmp(progname, "lircd", 5))) {
 		static char deinit_char[3] = { 3, 0, DEINIT_HEADER_LIRC };
+
 		chk_write(tochild_write, deinit_char, 3);
 		logprintf(LIRC_ERROR, "LIRC_deinit but keeping warm");
 	} else {
 		if (tochild_read >= 0) {
 			if (close(tochild_read) < 0) {
-				logprintf(LIRC_ERROR, "Error closing pipe2");;
+				logprintf(LIRC_ERROR, "Error closing pipe2");
 			}
 			tochild_read = tochild_write = -1;
 		}
@@ -661,7 +663,7 @@ static int insert_fast_zeros = 0;       // changed from 2, Aug 4/2010
 
 // Interface Functions:
 
-static void commandir_child_init()
+static void commandir_child_init(void)
 {
 	//unsigned int emitter_set_test[4];
 	//emitter_set_test[0] = 2;	//     0101
@@ -815,8 +817,8 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 
 		int send_status = 0, tries = 20;
 		static char get_version[] = { 2, GET_VERSION };
-		send_status = 4;        // just to start the while()
 
+		send_status = 4;        /* just to start the while() */
 		while (tries--) {
 			usleep(USB_TIMEOUT_US); // wait a moment
 
@@ -849,9 +851,8 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 					logprintf(LIRC_ERROR, "Hardware revision is %d.%d.", commandir_data_buffer[1],
 						  commandir_data_buffer[2]);
 					break;
-				} else {
-					continue;
 				}
+				continue;
 			}
 		}
 		break;
@@ -884,10 +885,9 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 		usb_close(new_commandir->cmdir_udev);
 		free(new_commandir);
 		return FALSE;
-	} else {
-		new_commandir->lastSendSignalID = 0;
-		new_commandir->commandir_last_signal_id = 0;
 	}
+	new_commandir->lastSendSignalID = 0;
+	new_commandir->commandir_last_signal_id = 0;
 
 	new_commandir->next_enabled_emitters_list = malloc(sizeof(int) * new_commandir->num_transmitters);
 	for (x = 0; x < new_commandir->num_transmitters; x++) {
@@ -919,7 +919,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 }
 
 // Scan for hardware changes
-static void hardware_scan()
+static void hardware_scan(void)
 {
 	struct usb_bus* bus = 0;
 	struct usb_device* dev = 0;
@@ -965,12 +965,13 @@ static void hardware_scan()
 	/* Check if any we currently know about have been removed
 	 * (Usually, we get a read/write error first)
 	 */
-
 	struct commandir_device* a;
+
 	for (a = first_commandir_device; a; a = a->next_commandir_device) {
 		// Did we detect this?
 		int found = 0;
 		struct detected_commandir* check_detected_commandir;
+
 		for (check_detected_commandir = detected_commandirs; check_detected_commandir;
 		     check_detected_commandir = check_detected_commandir->next) {
 			if ((a->busnum == check_detected_commandir->busnum)
@@ -1011,15 +1012,17 @@ static void set_detected(unsigned int bus_num, int devnum)
 	if (detected_commandirs == NULL) {
 		detected_commandirs = newdc;
 	} else {
-		for (last_detected_commandir = detected_commandirs; last_detected_commandir->next;
+		for (last_detected_commandir = detected_commandirs;
+		     last_detected_commandir->next;
 		     last_detected_commandir = last_detected_commandir->next) {
+			/* Empty body. */
 		}
 		last_detected_commandir->next = newdc;
 	}
 	last_detected_commandir = newdc;
 }
 
-static void hardware_setorder()
+static void hardware_setorder(void)
 {
 	// This has been rewritten to use linked lists.
 	// Each object has a busnum and devnum; we sort those to preserve order
@@ -1045,8 +1048,8 @@ static void hardware_setorder()
 	for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 		// Add pcd to the ptx tree, in the right spot.
 		struct commandir_tx_order* new_ptx;
-		new_ptx = malloc(sizeof(struct commandir_tx_order));
 
+		new_ptx = malloc(sizeof(struct commandir_tx_order));
 		new_ptx->the_commandir_device = pcd;
 		new_ptx->next = NULL;
 
@@ -1054,8 +1057,8 @@ static void hardware_setorder()
 			ordered_commandir_devices = new_ptx;
 			continue;
 		}
-
 		int this_pcd_value = pcd->busnum * 128 + pcd->devnum;
+
 		ptx = ordered_commandir_devices;
 		last_ptx = NULL;
 
@@ -1103,6 +1106,7 @@ static void hardware_setorder()
 
 	int CommandIR_Num = 0;
 	int emitters = 1;
+
 	if (first_commandir_device && first_commandir_device->next_commandir_device) {
 		logprintf(LIRC_INFO, "Re-ordered Multiple CommandIRs:");
 		for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
@@ -1124,7 +1128,7 @@ static void hardware_disconnect(struct commandir_device* a)
 	a->cmdir_udev = NULL;
 }
 
-static void software_disconnects()
+static void software_disconnects(void)
 {
 	struct commandir_device* previous_dev = NULL;
 	struct commandir_device* next_dev;
@@ -1200,7 +1204,7 @@ static void software_disconnects()
 }
 
 /*** Reading and Writing Functions ***/
-static void commandir_read_loop()
+static void commandir_read_loop(void)
 {
 	// Read from CommandIR, Write to pipe
 	static unsigned char rx_decode_led[7] = { 7, PROC_SET, 0x40, 0, 0, 4, 2 };
@@ -1240,8 +1244,8 @@ static void commandir_read_loop()
 					for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 						if (pcd->hw_type == HW_COMMANDIR_2) {
 							if (pcd->cmdir_udev > 0) {
-								(void)usb_bulk_write(pcd->cmdir_udev, 2,        // endpoint2
-										     (char*)deinit_led, 7,      // bytes
+								(void)usb_bulk_write(pcd->cmdir_udev, 2, /* endpoint2*/
+										     (char*)deinit_led, 7,   /* bytes */
 										     USB_TIMEOUT_MS);
 							}
 							rx_hold = 1;    // Put a hold on RX, but queue events
@@ -1253,8 +1257,8 @@ static void commandir_read_loop()
 					for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
 						if (pcd->hw_type == HW_COMMANDIR_2) {
 							if (pcd->cmdir_udev > 0) {
-								(void)usb_bulk_write(pcd->cmdir_udev, 2,        // endpoint2
-										     (char*)init_led, 7,        // bytes
+								(void)usb_bulk_write(pcd->cmdir_udev, 2, /* endpoint2*/
+										     (char*)init_led, 7,   /* bytes */
 										     USB_TIMEOUT_MS);
 							}
 							rx_hold = 0;    // Resume RX after queue events
@@ -1306,7 +1310,7 @@ static void commandir_read_loop()
 		} else {
 			// shutdown check moved down here to ensure the read loop is done once
 			if (shutdown_pending > 0)
-				shutdown_usb();
+				shutdown_usb(0);
 		}
 
 		repeats = 5;    // Up to 5 immediate repeats if we have alot to receive
@@ -1381,6 +1385,7 @@ static void add_to_tx_pipeline(unsigned char* buffer, int bytes, unsigned int fr
 		if (pcd->num_next_enabled_emitters) {
 			// Make a local copy
 			struct tx_signal* copy_new_signal;
+
 			copy_new_signal = malloc(sizeof(struct tx_signal));
 			memcpy(copy_new_signal, new_tx_signal, sizeof(struct tx_signal));
 
@@ -1409,7 +1414,6 @@ static void add_to_tx_pipeline(unsigned char* buffer, int bytes, unsigned int fr
 			}
 		}
 	}
-	return;
 }
 
 static int get_hardware_tx_bitmask(struct commandir_device* pcd)
@@ -1469,7 +1473,7 @@ static int get_hardware_tx_bitmask(struct commandir_device* pcd)
 }
 
 // Shutdown everything and terminate
-static void shutdown_usb()
+static void shutdown_usb(int arg)
 {
 	// Check for queued signals before shutdown
 	struct commandir_device* a;
@@ -1519,6 +1523,7 @@ static int check_irsend_commandir(unsigned char* command)
 	if (commandir_code > 0xef) {
 		// It's a settransmitters command; convert channel number to bitmask
 		__u32 channel = 0x01 << (commandir_code & 0x0f);
+
 		set_convert_int_bitmask_to_list_of_enabled_bits(&channel, sizeof(__u32));
 		return commandir_code;
 	}
@@ -1588,7 +1593,7 @@ static int check_irsend_commandir(unsigned char* command)
 
 			if (((ledhigh + ledlow) > 0) && ledprog > -1) {
 				static unsigned char lightchange[7] = { 7,
-									PROC_SET,0,  0, 0, 0, 3 };
+									PROC_SET, 0,  0, 0, 0, 3 };
 				lightchange[2] = ledhigh;
 				lightchange[3] = ledlow;
 				lightchange[4] = ledprog;
@@ -1617,7 +1622,7 @@ static void lirc_pipe_write(lirc_t* one_item)
 		logprintf(LIRC_ERROR, "Can't write to LIRC pipe! %d", child_pipe_write);
 }
 
-static int commandir_read()
+static int commandir_read(void)
 {
 	/***  Which CommandIRs do we have to read from?  Poll RX CommandIRs
 	 * regularly, but non-receiving CommandIRs should be more periodically
@@ -1735,7 +1740,8 @@ static int commandir_read()
 					if (rx_hold == 0) {
 						zeroterminated = 1;
 						conv_retval =
-							commandir2_convert_RX((unsigned short*)&commandir_data_buffer[2],
+							commandir2_convert_RX((unsigned short*)
+										   &commandir_data_buffer[2],
 									      commandir_data_buffer[1]);
 						read_received = conv_retval;
 					}
@@ -1873,9 +1879,11 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 
 		int sendNextSignalsCounter = 0;
 		int packetCounter;
+
 		packetCounter = sizeof(struct commandir_3_tx_signal);
 		short tx_value;
 		char pulse_toggle = 1;
+
 		while (sendNextSignalsCounter < (pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t))) {
 			while ((packetCounter < (pcd->endpoint_max[2] - 1))
 			       && (sendNextSignalsCounter < (pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t)))) {
@@ -1924,6 +1932,7 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 		packlets_to_send = pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t);
 
 		int attempts;
+
 		for (attempts = 0; attempts < 10; attempts++) {
 			// Force CommandIR II packet sizes to 64 byte max
 			if ((packlets_to_send * 3 + 7) > 64)
@@ -1984,6 +1993,7 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 		cmdir_char[1] = pcd->next_tx_signal->raw_signal_tx_bitmask;
 
 		unsigned int hibyte, lobyte;
+
 		sent = 0;
 		which_signal = 0;
 		while (sent < (pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t) * 2)) {
@@ -1992,7 +2002,7 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 			if (tosend > (MAX_HW_MINI_PACKET - 2))
 				tosend = MAX_HW_MINI_PACKET - 2;
 
-			for (i = 0; i < (tosend / 2); i++) {    // 2 bytes per CommandIR pkt
+			for (i = 0; i < (tosend / 2); i++) {    /* 2 bytes per CommandIR pkt */
 				mod_signal_length = signals[which_signal++] >> 3;
 				hibyte = mod_signal_length / 256;
 				lobyte = mod_signal_length % 256;
@@ -2156,11 +2166,11 @@ static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 
 		if (numNewValues != (expectingBytes + 5))
 			logprintf(LIRC_ERROR, "USB received: %d, expectingBytes: %d. Hex data (headers: %d %d %d):\t",
-				  numNewValues, expectingBytes, rxBuffer[0], rxBuffer[1], rxBuffer[2]);
+				numNewValues, expectingBytes, rxBuffer[0], rxBuffer[1], rxBuffer[2]);
 		for (i = 5; i < expectingBytes + 5; i++) {
-/*			if(numNewValues != (expectingBytes + 5))
- *                              printf("%02x@%d\t", rxBuffer[i], incomingBuffer_Write);
- */
+			/* if(numNewValues != (expectingBytes + 5))
+			 * printf("%02x@%d\t", rxBuffer[i], incomingBuffer_Write);
+			 */
 			incomingBuffer[incomingBuffer_Write++] = rxBuffer[i];
 			if (incomingBuffer_Write >= MAX_INCOMING_BUFFER)
 				incomingBuffer_Write = 0;
@@ -2206,8 +2216,8 @@ static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 
 			if (currentSize >= (mySize + 1)) {
 				if (incomingBuffer_Read + mySize >= MAX_INCOMING_BUFFER)
-					memcpy(&incomingBuffer[MAX_INCOMING_BUFFER], &incomingBuffer[0], mySize + 1);   // +1 to compensate for header
-
+					/* +1 to compensate for header */
+					memcpy(&incomingBuffer[MAX_INCOMING_BUFFER], &incomingBuffer[0], mySize + 1);
 				switchByte = incomingBuffer[incomingBuffer_Read++];
 				if (incomingBuffer_Read >= MAX_INCOMING_BUFFER)
 					incomingBuffer_Read -= MAX_INCOMING_BUFFER;
@@ -2226,7 +2236,8 @@ static int commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 					buffer_write =
 						a_usb_rx_pulse->t0_count * (1000000 /
 									    (1 /
-									     (((float)(currentPCA_Frequency)) / 48000000)));
+									     (((float)(currentPCA_Frequency)) /
+										48000000)));
 					buffer_write |= PULSE_BIT;
 					lirc_pipe_write(&buffer_write);
 					break;

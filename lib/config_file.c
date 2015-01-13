@@ -102,7 +102,7 @@ const struct flaglist all_flags[] = {
 	{ "NO_HEAD_REP",   NO_HEAD_REP	 },
 	{ "NO_FOOT_REP",   NO_FOOT_REP	 },
 	{ "CONST_LENGTH",  CONST_LENGTH	 }, /* remember to adapt warning
-	                                     * message when changing this */
+					     * message when changing this */
 	{ "REPEAT_HEADER", REPEAT_HEADER },
 	{ NULL,		   0		 },
 };
@@ -170,7 +170,7 @@ ir_code s_strtocode(const char* val)
 
 	errno = 0;
 	code = strtoull(val, &endptr, 0);
-	if ((code == (__u64) - 1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
+	if ((code == (__u64) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (__u64) number", val);
 		parse_error = 1;
@@ -680,7 +680,7 @@ static const char* lirc_parse_include(char* s)
 		return NULL;
 	*last = 0;
 	memmove(s, s + 1, len - 2 + 1); /* terminating 0 is copied, and
-	                                 * maybe more, but we don't care */
+					 * maybe more, but we don't care */
 	return s;
 }
 

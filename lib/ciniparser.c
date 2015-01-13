@@ -136,10 +136,11 @@ line_status ciniparser_line(char* input_line, char* section,
 		sta = LINE_COMMENT;
 	} else if (line[0] == '[' && line[len - 1] == ']') {
 		/* Section name */
-		sscanf(line, "[%[^]]", section);
-		strcpy(section, strstrip(section));
-		strcpy(section, strlwc(section));
-		sta = LINE_SECTION;
+		if (sscanf(line, "[%[^]]", section) == 1) {
+			strcpy(section, strstrip(section));
+			strcpy(section, strlwc(section));
+			sta = LINE_SECTION;
+		}
 	} else if (sscanf(line, "%[^=] = \"%[^\"]\"", key, value) == 2
 		   || sscanf(line, "%[^=] = '%[^\']'", key, value) == 2
 		   || sscanf(line, "%[^=] = %[^;#]", key, value) == 2) {

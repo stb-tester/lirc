@@ -109,8 +109,10 @@ const struct driver hw_usbirtoy = {
 };
 
 
-const struct driver* hardwares[] =
-{ &hw_usbirtoy, (const struct driver*)NULL };
+const struct driver* hardwares[] = {
+	&hw_usbirtoy,
+	(const struct driver*)NULL
+};
 
 
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
@@ -265,8 +267,8 @@ static int irtoy_getversion(irtoy_t* dev)
 		logprintf(LIRC_ERROR,
 			  "irtoy_getversion: couldn't read version");
 		logprintf(LIRC_ERROR,
-			  "please make sure you are using firmware v20 " \
-			  "or higher");
+			  "please make sure you are using firmware v20" \
+			  " or higher");
 		return 0;
 	}
 
@@ -278,8 +280,8 @@ static int irtoy_getversion(irtoy_t* dev)
 		logprintf(LIRC_ERROR,
 			  "irtoy_getversion: invalid response %02X", buf[0]);
 		logprintf(LIRC_ERROR,
-			  "please make sure you are using firmware v20 " \
-			  "or higher");
+			  "please make sure you are using firmware v20" \
+			  " or higher");
 		return 0;
 	}
 
@@ -382,7 +384,8 @@ static int init_device(void)
 		logprintf(LIRC_ERROR, "irtoy: could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "irtoy: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
@@ -411,7 +414,8 @@ static int init_device(void)
 		tty_delete_lock();
 		return 0;
 	}
-	if ((dev = irtoy_hw_init(drv.fd)) == NULL) {
+	dev = irtoy_hw_init(drv.fd);
+	if (dev == NULL) {
 		logprintf(LIRC_ERROR,
 			  "irtoy: No USB Irtoy device found at %s",
 			  drv.device);

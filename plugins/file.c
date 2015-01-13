@@ -108,7 +108,7 @@ static int decode_func(struct ir_remote* remote, struct decode_ctx_t* ctx)
 static lirc_t readdata(lirc_t timeout)
 {
 	char line[64];
-	char what [16];
+	char what[16];
 	int count;
 	int data;
 	const char* const close_msg =

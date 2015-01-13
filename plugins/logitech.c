@@ -39,10 +39,10 @@ static lirc_t signal_length;
 static ir_code pre, code;
 
 //Forwards
-int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int logitech_init(void);
-int logitech_deinit(void);
-char* logitech_rec(struct ir_remote* remotes);
+static int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int logitech_init(void);
+static int logitech_deinit(void);
+static char* logitech_rec(struct ir_remote* remotes);
 
 struct driver hw_logitech = {
 	.name		= "logitech",
@@ -86,7 +86,8 @@ int logitech_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "logitech_init()");
 		tty_delete_lock();
