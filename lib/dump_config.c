@@ -255,7 +255,6 @@ void fprint_remote_signal(FILE* f, const struct ir_remote* rem, const struct ir_
 			fprintf(f, "\n");
 		} else {
 			fprintf(f, "\n\n");
-			j = 0;
 		}
 	}
 }
