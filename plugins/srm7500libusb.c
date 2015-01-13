@@ -820,7 +820,7 @@ static int usb_read_loop(int fd)
 			/* SecurityLevel,KeyIdMode */
 			packet_buffer_out.data[11] = 0;
 			philipsrf_output(packet_buffer_out);
-			inret = philipsrf_input(&packet_buffer_in);
+			inret = philipsrf_input(&packet_buffer_in); // FIXME: never read.
 			if ((packet_buffer_in.type == MLME_COMM_STATUS_indication)
 			    && (packet_buffer_in.data[packet_buffer_in.length - 2] == 0)) {
 					/* Empty body(!). */
