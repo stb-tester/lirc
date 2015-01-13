@@ -681,6 +681,7 @@ int main(int argc, char *argv[])
 						logprintf(LIRC_DEBUG, "%s\n", c);
 						switch (c[0]) {
 						case 'B':
+							/* FIXME: pointer_button potentially uninititalzed. */
 							sendbutton(pointer_button, pointer_x, pointer_y, WindowID,
 								   subw);
 							break;
