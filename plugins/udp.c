@@ -57,8 +57,8 @@
 
 #include "lirc_driver.h"
 
-static int zerofd;		/* /dev/zero */
-static int sockfd;		/* the socket */
+static int zerofd;              /* /dev/zero */
+static int sockfd;              /* the socket */
 
 
 /**
@@ -145,7 +145,7 @@ int udp_init()
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(port);
 
-	if (bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
 		logprintf(LIRC_ERROR, "can't bind socket to port %d: %s", port, strerror(errno));
 		close(sockfd);
 		close(zerofd);
@@ -156,7 +156,7 @@ int udp_init()
 
 	drv.fd = sockfd;
 
-	return (1);
+	return 1;
 }
 
 /**
@@ -169,7 +169,7 @@ int udp_deinit(void)
 	close(sockfd);
 	close(zerofd);
 	drv.fd = -1;
-	return (1);
+	return 1;
 }
 
 /**
@@ -177,11 +177,11 @@ int udp_deinit(void)
  *
  * The UDP driver just calls the standard functions.
  */
-char *udp_rec(struct ir_remote *remotes)
+char* udp_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
-		return (NULL);
-	return (decode_all(remotes));
+		return NULL;
+	return decode_all(remotes);
 }
 
 /**
@@ -286,7 +286,7 @@ lirc_t udp_readdata(lirc_t timeout)
 	if ((bufptr + 2) <= buflen)
 		drv.fd = zerofd;
 
-	return (data);
+	return data;
 }
 
 const struct driver hw_udp = {

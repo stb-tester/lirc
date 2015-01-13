@@ -1,19 +1,19 @@
 /****************************************************************************
- ** hw_hiddev.c *************************************************************
- ****************************************************************************
- *
- * receive keycodes input via /dev/usb/hiddev...
- *
- * Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
- * Copyright (C) 2004 Chris Pascoe <c.pascoe@itee.uq.edu.au>
- * Copyright (C) 2005 William Uther <william.uther@nicta.com.au>
- * Copyright (C) 2007 Brice DUBOST <ml@braice.net>
- * Copyright (C) 2007 Benjamin Drung <benjamin.drung@gmail.com>
- * Copyright (C) 2007 Stephen Williams <stephen.gw@gmail.com>
- *
- * Distribute under GPL version 2 or later.
- *
- */
+** hw_hiddev.c *************************************************************
+****************************************************************************
+*
+* receive keycodes input via /dev/usb/hiddev...
+*
+* Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
+* Copyright (C) 2004 Chris Pascoe <c.pascoe@itee.uq.edu.au>
+* Copyright (C) 2005 William Uther <william.uther@nicta.com.au>
+* Copyright (C) 2007 Brice DUBOST <ml@braice.net>
+* Copyright (C) 2007 Benjamin Drung <benjamin.drung@gmail.com>
+* Copyright (C) 2007 Stephen Williams <stephen.gw@gmail.com>
+*
+* Distribute under GPL version 2 or later.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -32,32 +32,32 @@
 
 static int hiddev_init();
 static int hiddev_deinit(void);
-static int hiddev_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-static char *hiddev_rec(struct ir_remote *remotes);
+static int hiddev_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static char* hiddev_rec(struct ir_remote* remotes);
 static int sb0540_init();
-static char *sb0540_rec(struct ir_remote *remotes);
-static char *macmini_rec(struct ir_remote *remotes);
+static char* sb0540_rec(struct ir_remote* remotes);
+static char* macmini_rec(struct ir_remote* remotes);
 static int samsung_init();
-static char *samsung_rec(struct ir_remote *remotes);
-static char *sonyir_rec(struct ir_remote *remotes);
+static char* samsung_rec(struct ir_remote* remotes);
+static char* sonyir_rec(struct ir_remote* remotes);
 
 const struct driver hw_dvico = {
-	.name		=	"dvico",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	64,
-	.init_func	=	hiddev_init,
-	.deinit_func	=	hiddev_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	hiddev_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.info		=	"No info available"
+	.name		= "dvico",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 64,
+	.init_func	= hiddev_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= hiddev_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.info		= "No info available"
 };
 
 static int dvico_repeat_mask = 0x8000;
@@ -80,145 +80,144 @@ static int repeat_state = RPT_UNKNOWN;
 
 /* Remotec Mediamaster specific */
 const struct driver hw_bw6130 = {
-	.name		=	"bw6130",
-	.device		=	"/dev/usb/hid/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	64,
-	.init_func	=	hiddev_init,
-	.deinit_func	=	hiddev_deinit,
-	.send_func	=	NULL,
-	.rec_func	=	hiddev_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL
+	.name		= "bw6130",
+	.device		= "/dev/usb/hid/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 64,
+	.init_func	= hiddev_init,
+	.deinit_func	= hiddev_deinit,
+	.send_func	= NULL,
+	.rec_func	= hiddev_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL
 };
 
 const struct driver hw_asusdh = {
-	.name		=	"asusdh",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	64,
-	.init_func	=	hiddev_init,
-	.deinit_func	=	hiddev_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	hiddev_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "asusdh",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 64,
+	.init_func	= hiddev_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= hiddev_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Creative USB IR Receiver (SB0540) */
 const struct driver hw_sb0540 = {
-	.name		=	"sb0540",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	sb0540_init,
-	.deinit_func	=	hiddev_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	sb0540_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.name		= "sb0540",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= sb0540_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= sb0540_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2"
 };
 #endif
 
 /* Apple Mac mini USB IR Receiver */
 const struct driver hw_macmini = {
-	.name		=	"macmini",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	hiddev_init,
-	.deinit_func	=	hiddev_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	macmini_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "macmini",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= hiddev_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= macmini_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Samsung USB IR Receiver */
 const struct driver hw_samsung = {
-	.name		=	"samsung",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	samsung_init,
-	.deinit_func	=	hiddev_deinit,
-        .open_func      =       default_open,
-        .close_func     =       default_close,
-	.send_func	=	NULL,
-	.rec_func	=	samsung_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2"
+	.name		= "samsung",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= samsung_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= samsung_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2"
 };
 #endif
 
 /* Sony IR Receiver */
 const struct driver hw_sonyir = {
-	.name		=	"sonyir",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	hiddev_init,
-	.deinit_func	=	hiddev_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	sonyir_rec,
-	.decode_func	=	hiddev_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "sonyir",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= hiddev_init,
+	.deinit_func	= hiddev_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= sonyir_rec,
+	.decode_func	= hiddev_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 
 static int old_main_code = 0;
 
-const static int mousegrid[9][9] = { {0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 0x17, 0x17},
-{0x05, 0x0d, 0x11, 0x12, 0x12, 0x12, 0x16, 0x17, 0x17},
-{0x05, 0x09, 0x0e, 0x12, 0x12, 0x12, 0x13, 0x13, 0x13},
-{0x06, 0x0a, 0x0a, 0x0e, 0x0e, 0x12, 0x13, 0x13, 0x13},
-{0x06, 0x0a, 0x0a, 0x0e, 0x0e, 0x0f, 0x13, 0x13, 0x13},
-{0x06, 0x0a, 0x0a, 0x0a, 0x0f, 0x0f, 0x0f, 0x0f, 0x13},
-{0x06, 0x06, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f, 0x0f},
-{0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f, 0x0f},
-{0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f}
-};
+const static int mousegrid[9][9] = { { 0x00, 0x15, 0x15, 0x16, 0x16, 0x16, 0x16, 0x17, 0x17 },
+				     { 0x05, 0x0d, 0x11, 0x12, 0x12, 0x12, 0x16, 0x17, 0x17 },
+				     { 0x05, 0x09, 0x0e, 0x12, 0x12, 0x12, 0x13, 0x13, 0x13 },
+				     { 0x06, 0x0a, 0x0a, 0x0e, 0x0e, 0x12, 0x13, 0x13, 0x13 },
+				     { 0x06, 0x0a, 0x0a, 0x0e, 0x0e, 0x0f, 0x13, 0x13, 0x13 },
+				     { 0x06, 0x0a, 0x0a, 0x0a, 0x0f, 0x0f, 0x0f, 0x0f, 0x13 },
+				     { 0x06, 0x06, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f, 0x0f },
+				     { 0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f, 0x0f },
+				     { 0x07, 0x07, 0x0b, 0x0b, 0x0b, 0x0b, 0x0f, 0x0f, 0x0f } };
 
 int hiddev_init()
 {
@@ -242,13 +241,12 @@ int hiddev_deinit(void)
 	return 1;
 }
 
-int hiddev_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int hiddev_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "hiddev_decode");
 
-	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0))
+		return 0;
 
 	LOGPRINTF(1, "lirc code: 0x%X", ctx->code);
 
@@ -268,7 +266,7 @@ int hiddev_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-char *hiddev_rec(struct ir_remote *remotes)
+char* hiddev_rec(struct ir_remote* remotes)
 {
 	struct hiddev_event event;
 	struct hiddev_event asus_events[8];
@@ -319,7 +317,7 @@ char *hiddev_rec(struct ir_remote *remotes)
 		LOGPRINTF(1, "This is another type Dvico - sends two codes");
 		if (!waitfordata(TIMEOUT)) {
 			logprintf(LIRC_ERROR, "timeout reading next event");
-			return (NULL);
+			return NULL;
 		}
 		rd = read(drv.fd, &event, sizeof event);
 		if (rd != sizeof event) {
@@ -348,9 +346,8 @@ char *hiddev_rec(struct ir_remote *remotes)
 		/* spurious.                                               */
 
 		if (repeat_state == RPT_YES) {
-			if (time_elapsed(&time_of_last_code, &now) > 500000) {
+			if (time_elapsed(&time_of_last_code, &now) > 500000)
 				return NULL;
-			}
 		}
 		time_of_last_code = now;
 
@@ -358,8 +355,8 @@ char *hiddev_rec(struct ir_remote *remotes)
 		return decode_all(remotes);
 #if 0
 		/* the following code could be used to recreate the
-		   real codes of the remote control (currently
-		   verified for the MCE remote only) */
+		 * real codes of the remote control (currently
+		 * verified for the MCE remote only) */
 		ir_code pre, main;
 
 		pre_code_length = 16;
@@ -375,7 +372,6 @@ char *hiddev_rec(struct ir_remote *remotes)
 		return decode_all(remotes);
 #endif
 	}
-
 	/* Asus DH remote specific code */
 	else if (event.hid == 0xFF000000) {
 		LOGPRINTF(1, "This is an asus P5 DH remote, we read the other events");
@@ -383,7 +379,7 @@ char *hiddev_rec(struct ir_remote *remotes)
 		for (i = 1; i < 8; i++) {
 			if (!waitfordata(TIMEOUT)) {
 				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
-				return (NULL);
+				return NULL;
 			}
 			rd = read(drv.fd, &asus_events[i], sizeof event);
 			if (rd != sizeof event) {
@@ -391,20 +387,18 @@ char *hiddev_rec(struct ir_remote *remotes)
 				return 0;
 			}
 		}
-		for (i = 0; i < 8; i++) {
+		for (i = 0; i < 8; i++)
 			LOGPRINTF(1, "Event number %d hid 0x%X  value 0x%X", i, asus_events[i].hid,
 				  asus_events[i].value);
-		}
 		pre_code = asus_events[1].hid;
 		main_code = asus_events[1].value;
-		if (main_code) {
+		if (main_code)
 			return decode_all(remotes);
-		}
 	}
 
 	/* Remotec Mediamaster specific code */
 	/* Y-Coordinate,
-	   second event field after button code (wheel_count==2) */
+	 * second event field after button code (wheel_count==2) */
 	if (wheel_count == 2) {
 		y_movement = event.value & 0x0000000F;
 		y_direction = (event.value & 0x000000F0) >> 2;
@@ -419,14 +413,14 @@ char *hiddev_rec(struct ir_remote *remotes)
 		main_code = mousegrid[x_movement][y_movement];
 		main_code |= x_direction;
 		main_code |= y_direction;
-		main_code |= 0x00000080;	//just to make it unique
+		main_code |= 0x00000080;        //just to make it unique
 
 		wheel_count = 0;
-		pre_code = 0xFFA10003;	//so it gets recognized
+		pre_code = 0xFFA10003;  //so it gets recognized
 		return decode_all(remotes);
 	}
 	/* X-Coordinate,
-	   first event field after button code (wheel_count==1) */
+	 * first event field after button code (wheel_count==1) */
 	else if (wheel_count == 1) {
 		x_movement = event.value;
 
@@ -438,7 +432,7 @@ char *hiddev_rec(struct ir_remote *remotes)
 		if (old_main_code == main_code)
 			repeat_state = RPT_YES;
 		old_main_code = main_code;
-		if (main_code == 0x40) {	/* the mousedial has been touched */
+		if (main_code == 0x40) {        /* the mousedial has been touched */
 			wheel_count = 1;
 			return 0;
 		}
@@ -469,15 +463,14 @@ int sb0540_init()
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
-		if (ioctl(drv.fd, HIDIOCSFLAG, &flags)) {
+		if (ioctl(drv.fd, HIDIOCSFLAG, &flags))
 			return 0;
-		}
 	}
 
 	return rv;
 }
 
-char *sb0540_rec(struct ir_remote *remotes)
+char* sb0540_rec(struct ir_remote* remotes)
 {
 	/*
 	 * at this point, each read from opened file/device should return
@@ -518,11 +511,11 @@ char *sb0540_rec(struct ir_remote *remotes)
 		 */
 
 		/* this got guessed by getting the device report
-		   descriptor (function devinfo in source) */
-		uref.field_index = 0;	/* which field of report */
+		 * descriptor (function devinfo in source) */
+		uref.field_index = 0;   /* which field of report */
 		/* this got guessed by taking all values from device
-		   and checking which ones are changing ;) */
-		uref.usage_index = 3;	/* which usage entry of field */
+		 * and checking which ones are changing ;) */
+		uref.usage_index = 3;   /* which usage entry of field */
 
 		/* fetch the usage code for given indexes */
 		ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
@@ -552,8 +545,7 @@ char *sb0540_rec(struct ir_remote *remotes)
  * Apple Mac mini USB IR Receiver specific code.
  *
  */
-
-char *macmini_rec(struct ir_remote *remotes)
+char* macmini_rec(struct ir_remote* remotes)
 {
 	static struct timeval time_of_last_code;
 	struct hiddev_event ev[4];
@@ -567,7 +559,7 @@ char *macmini_rec(struct ir_remote *remotes)
 	for (i = 0; i < 4; i++) {
 		if (i > 0 && !waitfordata(TIMEOUT)) {
 			logprintf(LIRC_ERROR, "timeout reading byte %d", i);
-			return (NULL);
+			return NULL;
 		}
 		rd = read(drv.fd, &ev[i], sizeof(ev[i]));
 		if (rd != sizeof(ev[i])) {
@@ -585,12 +577,11 @@ char *macmini_rec(struct ir_remote *remotes)
 	repeat_state = RPT_UNKNOWN;
 	if (main_code == 0) {
 		/* some variants seem to send 0 to indicate repeats */
-		if (time_elapsed(&time_of_last_code, &end) > 500000) {
+		if (time_elapsed(&time_of_last_code, &end) > 500000)
 			/* but some send 0 if they receive codes from
-			   a different remote, so only send repeats if
-			   close to the original code */
+			 * a different remote, so only send repeats if
+			 * close to the original code */
 			return NULL;
-		}
 		main_code = old_main_code;
 		repeat_state = RPT_YES;
 	}
@@ -617,15 +608,14 @@ int samsung_init()
 	if (rv == 1) {
 		/* we want to get info on each report received from device */
 		int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
-		if (ioctl(drv.fd, HIDIOCSFLAG, &flags)) {
+		if (ioctl(drv.fd, HIDIOCSFLAG, &flags))
 			return 0;
-		}
 	}
 
 	return rv;
 }
 
-char *samsung_rec(struct ir_remote *remotes)
+char* samsung_rec(struct ir_remote* remotes)
 {
 	/*
 	 * at this point, each read from opened file/device should return
@@ -668,123 +658,121 @@ char *samsung_rec(struct ir_remote *remotes)
 			  uref.value);
 
 		switch (uref.report_id) {
-		case 1:	/* USB standard keyboard usage page */
-			{
-				/* This page reports cursor keys */
-				LOGPRINTF(3, "Keyboard (standard)\n");
+		case 1: /* USB standard keyboard usage page */
+		{
+			/* This page reports cursor keys */
+			LOGPRINTF(3, "Keyboard (standard)\n");
 
-				/* populate required field number */
-				uref.field_index = 1;
-				uref.usage_index = 0;
+			/* populate required field number */
+			uref.field_index = 1;
+			uref.usage_index = 0;
 
-				/* fetch the usage code for given indexes */
-				ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
-				/* fetch the value from report */
-				ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
-				/* now we have the key */
+			/* fetch the usage code for given indexes */
+			ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+			/* fetch the value from report */
+			ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+			/* now we have the key */
 
-				main_code = (uref.usage_code & 0xffff0000)
+			main_code = (uref.usage_code & 0xffff0000)
 				    | uref.value;
 
-				LOGPRINTF(3, "Main code: %x\n", main_code);
-				return decode_all(remotes);
-			}
-			break;
+			LOGPRINTF(3, "Main code: %x\n", main_code);
+			return decode_all(remotes);
+		}
+		break;
 
-		case 3:	/* USB generic desktop usage page */
-			{
-				/* This page reports power key
-				 * (via SystemControl SLEEP)
-				 */
-				LOGPRINTF(3, "Generic desktop (standard)\n");
+		case 3: /* USB generic desktop usage page */
+		{
+			/* This page reports power key
+			 * (via SystemControl SLEEP)
+			 */
+			LOGPRINTF(3, "Generic desktop (standard)\n");
 
-				/* populate required field number */
+			/* populate required field number */
+			uref.field_index = 0;
+			uref.usage_index = 1;           /* or 7 */
+
+			/* fetch the usage code for given indexes */
+			ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
+			/* fetch the value from report */
+			ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
+			/* now we have the key */
+
+			main_code = (uref.usage_code & 0xffff0000)
+				    | uref.value;
+
+			LOGPRINTF(3, "Main code: %x\n", main_code);
+			return decode_all(remotes);
+		}
+		break;
+
+		case 4: /* Samsung proprietary usage page */
+		{
+			/* This page reports all other keys.
+			 * It is the only page with keys we cannot
+			 * receive via HID input layer directly.
+			 * This is why we need to implement all of
+			 * this hiddev stuff here.
+			 */
+			int maxbit, i;
+			LOGPRINTF(3, "Samsung usage (proprietary)\n");
+
+			/* According to tests, at most one of the
+			 * 48 key bits can be set.
+			 * Due to the required kernel patch, the
+			 * 48 bits are received in the report as
+			 * 6 usages a 8 bit.
+			 * We want to avoid using a 64 bit value
+			 * if max. one bit is set anyway.
+			 * Therefore, we use the (highest) set bit
+			 * as final key value.
+			 *
+			 * Now fetch each usage and
+			 * combine to single value.
+			 */
+			for (i = 0, maxbit = 1; i < 6; i++, maxbit += 8) {
+				unsigned int tmpval = 0;
+
 				uref.field_index = 0;
-				uref.usage_index = 1;	/* or 7 */
+				uref.usage_index = i;
 
 				/* fetch the usage code for given indexes */
 				ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
 				/* fetch the value from report */
 				ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
-				/* now we have the key */
+				/* now we have the key byte */
+				tmpval = uref.value & 0xff;             /* 8 bit */
 
-				main_code = (uref.usage_code & 0xffff0000)
-				    | uref.value;
+				if (i == 0)
+					/* fetch usage code from first usage
+					 * (should be 0xffcc)
+					 */
+					main_code = (uref.usage_code & 0xffff0000);
 
-				LOGPRINTF(3, "Main code: %x\n", main_code);
-				return decode_all(remotes);
-			}
-			break;
-
-		case 4:	/* Samsung proprietary usage page */
-			{
-				/* This page reports all other keys.
-				 * It is the only page with keys we cannot
-				 * receive via HID input layer directly.
-				 * This is why we need to implement all of
-				 * this hiddev stuff here.
-				 */
-				int maxbit, i;
-				LOGPRINTF(3, "Samsung usage (proprietary)\n");
-
-				/* According to tests, at most one of the
-				 * 48 key bits can be set.
-				 * Due to the required kernel patch, the
-				 * 48 bits are received in the report as
-				 * 6 usages a 8 bit.
-				 * We want to avoid using a 64 bit value
-				 * if max. one bit is set anyway.
-				 * Therefore, we use the (highest) set bit
-				 * as final key value.
-				 *
-				 * Now fetch each usage and
-				 * combine to single value.
-				 */
-				for (i = 0, maxbit = 1; i < 6; i++, maxbit += 8) {
-					unsigned int tmpval = 0;
-
-					uref.field_index = 0;
-					uref.usage_index = i;
-
-					/* fetch the usage code for given indexes */
-					ioctl(drv.fd, HIDIOCGUCODE, &uref, sizeof(uref));
-					/* fetch the value from report */
-					ioctl(drv.fd, HIDIOCGUSAGE, &uref, sizeof(uref));
-					/* now we have the key byte */
-					tmpval = uref.value & 0xff;	/* 8 bit */
-
-					if (i == 0) {
-						/* fetch usage code from first usage
-						 * (should be 0xffcc)
-						 */
-						main_code = (uref.usage_code & 0xffff0000);
+				/* find index of highest bit with binary search */
+				if (tmpval > 0) {
+					if (tmpval & 0xf0) {
+						maxbit += 4;
+						tmpval >>= 4;
 					}
-
-					/* find index of highest bit with binary search */
-					if (tmpval > 0) {
-						if (tmpval & 0xf0) {
-							maxbit += 4;
-							tmpval >>= 4;
-						}
-						if (tmpval & 0x0c) {
-							maxbit += 2;
-							tmpval >>= 2;
-						}
-						if (tmpval & 0x02) {
-							maxbit += 1;
-						}
-						main_code |= maxbit;
-						/* We found a/the pressed key, so break out */
-						break;
+					if (tmpval & 0x0c) {
+						maxbit += 2;
+						tmpval >>= 2;
 					}
+					if (tmpval & 0x02)
+						maxbit += 1;
+					main_code |= maxbit;
+					/* We found a/the pressed key, so break out */
+					break;
 				}
-
-				LOGPRINTF(3, "Main code: %x\n", main_code);
-
-				/* decode combined key value */
-				return decode_all(remotes);
 			}
-			break;
+
+			LOGPRINTF(3, "Main code: %x\n", main_code);
+
+			/* decode combined key value */
+			return decode_all(remotes);
+		}
+		break;
 
 		default:
 			/* Unknown/unsupported report id.
@@ -816,7 +804,7 @@ char *samsung_rec(struct ir_remote *remotes)
  * #define USB_DEVICE_ID_SONY_IR_RECEIVER   0x00d4
  *
  */
-char *sonyir_rec(struct ir_remote *remotes)
+char* sonyir_rec(struct ir_remote* remotes)
 {
 	struct hiddev_event ev;
 	int rd;
@@ -832,18 +820,16 @@ char *sonyir_rec(struct ir_remote *remotes)
 	rd = read(drv.fd, msg, 16);
 
 	// Require 6-character report, usage 0x1
-	if ((rd != 6) || (msg[0] != 0x1)) {
+	if ((rd != 6) || (msg[0] != 0x1))
 		return 0;
-	}
 
 	// Ignore release message
-	if ((msg[2] & 0x80) == 0x80) {
+	if ((msg[2] & 0x80) == 0x80)
 		//repeat_state = RPT_NO;
 		return 0;
-	}
 
 	// Construct event
-	ev.value = (msg[3] << 16) | (msg[4] << 8) | ((msg[2]&0x7f) << 0);
+	ev.value = (msg[3] << 16) | (msg[4] << 8) | ((msg[2] & 0x7f) << 0);
 
 	pre_code_length = 0;
 	pre_code = 0;
@@ -854,12 +840,12 @@ char *sonyir_rec(struct ir_remote *remotes)
 }
 
 const struct driver* hardwares[] = { &hw_dvico,
-				       &hw_bw6130,
-				       &hw_asusdh,
-				       &hw_macmini,
-				       &hw_sonyir,
+				     &hw_bw6130,
+				     &hw_asusdh,
+				     &hw_macmini,
+				     &hw_sonyir,
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
-				       &hw_sb0540,
-				       &hw_samsung,
+				     &hw_sb0540,
+				     &hw_samsung,
 #endif
-				       (const struct driver*)NULL };
+				     (const struct driver*)NULL };

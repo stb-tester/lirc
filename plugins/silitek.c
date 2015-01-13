@@ -1,14 +1,14 @@
 /****************************************************************************
- ** hw_silitek.c ***********************************************************
- ****************************************************************************
- *
- * routines for Silitek receiver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *	        modified for silitek receiver by Krister Wicksell
- *	        <krister.wicksell@spray.se>
- * */
+** hw_silitek.c ***********************************************************
+****************************************************************************
+*
+* routines for Silitek receiver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*       modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
+*	        modified for silitek receiver by Krister Wicksell
+*	        <krister.wicksell@spray.se>
+* */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -41,54 +41,51 @@ struct timeval current, last;
 int do_repeat;
 
 //Forwards:
-int silitek_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int silitek_init(void);
 int silitek_deinit(void);
-char *silitek_rec(struct ir_remote *remotes);
+char* silitek_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_silitek = {
-	.name		=	"silitek",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	24,
-	.init_func	=	silitek_init,
-	.deinit_func	=	silitek_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	silitek_rec,
-	.decode_func	=	silitek_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "silitek",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 24,
+	.init_func	= silitek_init,
+	.deinit_func	= silitek_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= silitek_rec,
+	.decode_func	= silitek_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_silitek, (const struct driver*)NULL };
 
 
-int silitek_read(int fd, unsigned char *data, long timeout)
+int silitek_read(int fd, unsigned char* data, long timeout)
 {
-	if (!waitfordata(timeout)) {
-		return (0);
-	}
+	if (!waitfordata(timeout))
+		return 0;
 
-	if (!read(fd, data, 1)) {
-		return (0);
-	}
+	if (!read(fd, data, 1))
+		return 0;
 
-	return (1);
+	return 1;
 }
 
-int silitek_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 0, 0, 24, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 0, 0, 24, code, 0, 0))
+		return 0;
 
 	map_gap(remote, ctx, &current, &last, 0);
 
@@ -97,83 +94,82 @@ int silitek_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 
 	LOGPRINTF(1, "repeat_flagp:           %d", ctx->repeat_flag);
 
-	return (1);
+	return 1;
 }
 
 int silitek_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 
 	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "silitek_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset %s", drv.device);
 		silitek_deinit();
-		return (0);
+		return 0;
 	}
 
 	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LIRC_ERROR, "could not set baud rate on %s", drv.device);
 		silitek_deinit();
-		return (0);
+		return 0;
 	}
 
-	return (1);
+	return 1;
 }
 
 int silitek_deinit(void)
 {
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
-char *silitek_rec(struct ir_remote *remotes)
+char* silitek_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int mouse_x;
 	int mouse_y;
-	char sign = 0x00;	/* store sign of mouse direction. */
-	char pos = 0x00;	/* store mouse direction. */
+	char sign = 0x00;       /* store sign of mouse direction. */
+	char pos = 0x00;        /* store mouse direction. */
 
 	do_repeat = 1;
 
 	if (!silitek_read(drv.fd, &b[0], TIMEOUT)) {
 		logprintf(LIRC_ERROR, "reading of byte 0 failed");
 		logperror(LIRC_ERROR, NULL);
-		return (NULL);
+		return NULL;
 	}
 
-	if ((b[0] != 0x3f) &&	/* button down */
-	    (b[0] != 0x31) &&	/* button still down */
-	    (b[0] != 0x2a) &&	/* button up */
-	    (b[0] != 0x7c) &&	/* mouse event */
-	    (b[0] != 0x7f) &&	/* mouse event, l+r-mouse button down */
-	    (b[0] != 0xfd) &&	/* mouse event, r-mouse button down */
-	    (b[0] != 0xfe)) {	/* mouse event, l-mouse button down */
-		return (NULL);
-	}
+	if ((b[0] != 0x3f) &&   /* button down */
+	    (b[0] != 0x31) &&   /* button still down */
+	    (b[0] != 0x2a) &&   /* button up */
+	    (b[0] != 0x7c) &&   /* mouse event */
+	    (b[0] != 0x7f) &&   /* mouse event, l+r-mouse button down */
+	    (b[0] != 0xfd) &&   /* mouse event, r-mouse button down */
+	    (b[0] != 0xfe))     /* mouse event, l-mouse button down */
+		return NULL;
 
 	last = current;
 
 	if (!silitek_read(drv.fd, &b[1], TIMEOUT)) {
 		logprintf(LIRC_ERROR, "reading of byte 1 failed");
 		logperror(LIRC_ERROR, NULL);
-		return (NULL);
+		return NULL;
 	}
 
 	if (!silitek_read(drv.fd, &b[2], TIMEOUT)) {
 		logprintf(LIRC_ERROR, "reading of byte 2 failed");
 		logperror(LIRC_ERROR, NULL);
-		return (NULL);
+		return NULL;
 	}
 
 	/* mouse event ? */
@@ -182,15 +178,15 @@ char *silitek_rec(struct ir_remote *remotes)
 		if ((b[1] == 0x80) && (b[2] == 0x80)) {
 			switch (b[0]) {
 			case 0xfd:
-				b[1] = 0xa0;	/* r-mouse button */
+				b[1] = 0xa0;    /* r-mouse button */
 				b[2] = 0xbb;
 				break;
 			case 0xfe:
-				b[1] = 0x0a;	/* l-mouse button */
+				b[1] = 0x0a;    /* l-mouse button */
 				b[2] = 0xbb;
 				break;
 			case 0x7f:
-				b[1] = 0xaa;	/* l+r-mouse button */
+				b[1] = 0xaa;    /* l+r-mouse button */
 				b[2] = 0xbb;
 				break;
 			}
@@ -228,24 +224,22 @@ char *silitek_rec(struct ir_remote *remotes)
 			b[2] = pos;
 
 			/* if only a small mouse movement don't set
-			   repeat flag gets better control in lircmd
-			   this way */
-			if ((mouse_x < 4) && (mouse_y < 4)) {
+			 * repeat flag gets better control in lircmd
+			 * this way */
+			if ((mouse_x < 4) && (mouse_y < 4))
 				do_repeat = 0;
-			}
 		}
-		b[0] = 0xaa;	/* set to indicate mouse event */
+		b[0] = 0xaa;    /* set to indicate mouse event */
 	} else {
-		if (b[0] != 0x2a) {
-			b[0] = 0xbb;	/* set to indicate button down event */
-		} else {
-			b[0] = 0xcc;	/* set to indicate button up event */
-		}
+		if (b[0] != 0x2a)
+			b[0] = 0xbb;    /* set to indicate button down event */
+		else
+			b[0] = 0xcc;    /* set to indicate button up event */
 	}
 
-	code = ((ir_code) b[0] << 16) + ((ir_code) b[1] << 8) + (ir_code) b[2];
+	code = ((ir_code)b[0] << 16) + ((ir_code)b[1] << 8) + (ir_code)b[2];
 	gettimeofday(&current, NULL);
 
 	m = decode_all(remotes);
-	return (m);
+	return m;
 }

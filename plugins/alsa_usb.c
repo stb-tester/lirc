@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** hw_alsa_usb.c ***********************************************************
- ****************************************************************************
- *
- * routines for Sound Blaster USB audio devices accessed via ALSA hwdep
- *
- * Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
- *
- */
+** hw_alsa_usb.c ***********************************************************
+****************************************************************************
+*
+* routines for Sound Blaster USB audio devices accessed via ALSA hwdep
+*
+* Copyright (c) 2005 Clemens Ladisch <clemens@ladisch.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
@@ -20,48 +19,48 @@
 
 static int init(void);
 static int deinit(void);
-static int decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-static char *rec(struct ir_remote *remotes);
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static char* rec(struct ir_remote* remotes);
 
 static ir_code code, last_code;
-static snd_hwdep_t *hwdep;
+static snd_hwdep_t* hwdep;
 static struct timeval last_time;
 static int repeat_flag;
 
 const struct driver hw_alsa_usb = {
-	.name		=	"alsa_usb",
-	.device		=	"",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	8,
-	.init_func	=	init,
-	.deinit_func	=	deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	rec,
-	.decode_func	=	decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "alsa_usb",
+	.device		= "",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 8,
+	.init_func	= init,
+	.deinit_func	= deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= rec,
+	.decode_func	= decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_alsa_usb, (const struct driver*)NULL };
 
 
-static const char *search_device(void)
+static const char* search_device(void)
 {
 	int card, err;
-	snd_hwdep_info_t *info;
+	snd_hwdep_info_t* info;
 
 	snd_hwdep_info_alloca(&info);
 	card = -1;
 	while (snd_card_next(&card) >= 0 && card >= 0) {
 		char ctl_name[20];
-		snd_ctl_t *ctl;
+		snd_ctl_t* ctl;
 		int device;
 
 		sprintf(ctl_name, "hw:CARD=%d", card);
@@ -87,8 +86,8 @@ static const char *search_device(void)
 
 static int init(void)
 {
-	const char *device;
-	snd_hwdep_info_t *info;
+	const char* device;
+	snd_hwdep_info_t* info;
 	struct pollfd pollfd;
 	int err;
 
@@ -139,7 +138,7 @@ static int deinit(void)
 	return 1;
 }
 
-static char *rec(struct ir_remote *remotes)
+static char* rec(struct ir_remote* remotes)
 {
 	unsigned char rc_code;
 	ssize_t size;
@@ -150,21 +149,20 @@ static char *rec(struct ir_remote *remotes)
 		return NULL;
 	gettimeofday(&current, NULL);
 	last_code = code;
-	code = (ir_code) rc_code;
+	code = (ir_code)rc_code;
 	/* delay for repeating buttons is up to 320 ms */
 	repeat_flag = code == last_code && current.tv_sec - last_time.tv_sec <= 2
-	    && time_elapsed(&last_time, &current) <= 350000;
+		      && time_elapsed(&last_time, &current) <= 350000;
 	last_time = current;
-	LOGPRINTF(1, "code: %llx", (__u64) code);
+	LOGPRINTF(1, "code: %llx", (__u64)code);
 	LOGPRINTF(1, "repeat_flag: %d", repeat_flag);
 	return decode_all(remotes);
 }
 
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 0, 0, 8, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 0, 0, 8, code, 0, 0))
+		return 0;
 	ctx->repeat_flag = repeat_flag;
 	ctx->min_remaining_gap = 0;
 	ctx->max_remaining_gap = 0;

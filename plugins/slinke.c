@@ -1,21 +1,20 @@
-
 /****************************************************************************
- ** hw_slinke.c ***********************************************************
- ****************************************************************************
- *
- * routines for Slinke receiver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *  modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *  modified for Slink-e receiver Max Spring <mspring@employees.org>
- *
- *  07/01/2000 0.0 Early first cut:
- *  - Slink-e must be configured for 19200,8N1.
- *  - Only receiving is implemented so far, no sending of IR codes.
- *  - Existing remote control definition files may not work with Slink-e.
- *
- *  07/02/2000 0.1 Made memory allocations safer; Freeing allocations.
- */
+** hw_slinke.c ***********************************************************
+****************************************************************************
+*
+* routines for Slinke receiver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*  modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
+*  modified for Slink-e receiver Max Spring <mspring@employees.org>
+*
+*  07/01/2000 0.0 Early first cut:
+*  - Slink-e must be configured for 19200,8N1.
+*  - Only receiving is implemented so far, no sending of IR codes.
+*  - Existing remote control definition files may not work with Slink-e.
+*
+*  07/02/2000 0.1 Made memory allocations safer; Freeing allocations.
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -37,29 +36,31 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
-void *slinke_malloc(size_t size)
+void* slinke_malloc(size_t size)
 {
-	void *ptr = malloc(size);
+	void* ptr = malloc(size);
+
 	if (ptr == NULL) {
 		logprintf(LIRC_ERROR, "slinke_malloc: out of memory");
 		return NULL;
 	} else {
 		memset(ptr, 0, size);
 		return ptr;
-	}			/* if */
-}				/* slinke_malloc */
+	}                       /* if */
+}                               /* slinke_malloc */
 
-void *slinke_realloc(void *optr, size_t size)
+void* slinke_realloc(void* optr, size_t size)
 {
-	void *nptr;
+	void* nptr;
+
 	nptr = realloc(optr, size);
 	if (nptr == NULL) {
 		logprintf(LIRC_ERROR, "realloc: out of memory");
 		return NULL;
 	} else {
 		return nptr;
-	}			/* if */
-}				/* slinke_realloc */
+	}                       /* if */
+}                               /* slinke_realloc */
 
 #define TIMEOUT 200000
 
@@ -67,18 +68,18 @@ void *slinke_realloc(void *optr, size_t size)
 #define QUEUE_BUF_INIT_SIZE 32
 #define QUEUE_BUF_MAX_SIZE 4096
 struct port_queue_rec {
-	unsigned char port_id, msg_id;
-	int length, bufsize;
-	unsigned char *buf;
+	unsigned char	port_id, msg_id;
+	int		length, bufsize;
+	unsigned char*	buf;
 };
 static struct port_queue_rec queue[MAX_PORT_COUNT];
 
 /* values read from Slink-e*/
 
 struct slinke_settings_rec {
-	int sample_period;	/* number of 1/5 microseconds */
-	int timeout_samples;	/* number of sample periods */
-	char *version;
+	int	sample_period;          /* number of 1/5 microseconds */
+	int	timeout_samples;        /* number of sample periods */
+	char*	version;
 };
 static struct slinke_settings_rec slinke_settings = { 0, 0, NULL };
 
@@ -87,32 +88,32 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 
 //Forwards:
-int slinke_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int slinke_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int slinke_init(void);
 int slinke_deinit(void);
-char *slinke_rec(struct ir_remote *remotes);
+char* slinke_rec(struct ir_remote* remotes);
 lirc_t slinke_readdata(lirc_t timetout);
 
 
 const struct driver hw_slinke = {
-	.name		=	"slinke",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_MODE2,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	slinke_init,
-	.deinit_func	=	slinke_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	slinke_rec,
-	.decode_func	=	slinke_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	slinke_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "slinke",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_MODE2,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= slinke_init,
+	.deinit_func	= slinke_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= slinke_rec,
+	.decode_func	= slinke_decode,
+	.drvctl_func	= NULL,
+	.readdata	= slinke_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };
@@ -202,14 +203,14 @@ const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };
 #define RX_STATE_PSM     2
 #define RX_STATE_PSM_PAR 3
 
-#define	PORT_SL0                0
-#define	PORT_SL1                1
-#define	PORT_SL2                2
-#define	PORT_SL3                3
-#define	PORT_IR0                4
-#define	PORT_PAR                5
-#define	PORT_SER                6
-#define	PORT_SYS                7
+#define PORT_SL0                0
+#define PORT_SL1                1
+#define PORT_SL2                2
+#define PORT_SL3                3
+#define PORT_IR0                4
+#define PORT_PAR                5
+#define PORT_SER                6
+#define PORT_SYS                7
 
 #define MSG_ID_UNKNOWN                             0
 #define MSG_ID_PORT_RECEIVE                        1
@@ -242,9 +243,9 @@ const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };
 #define MSG_ID_SEEPROM_WRITE_ERROR                 28
 
 /*****************************************************************************/
-char *to_byte_string(unsigned char *b, int n)
+char* to_byte_string(unsigned char* b, int n)
 {
-	static char *buf = NULL;
+	static char* buf = NULL;
 	static int buflen = 0;
 	int i;
 	int reqlen = 3 * n + 1;
@@ -252,7 +253,7 @@ char *to_byte_string(unsigned char *b, int n)
 
 	if (buf == NULL || reqlen > buflen) {
 		buflen = reqlen;
-		buf = (char *)slinke_realloc(buf, buflen);
+		buf = (char*)slinke_realloc(buf, buflen);
 		if (buf == NULL)
 			return "";
 	}
@@ -261,23 +262,23 @@ char *to_byte_string(unsigned char *b, int n)
 	for (i = 1; i < n; i++) {
 		sprintf(t, ":%02x", b[i]);
 		strcat(buf, t);
-	}			/* for */
+	}                       /* for */
 	return buf;
-}				/* to_byte_string */
+}                               /* to_byte_string */
 
 static int signal_to_int(lirc_t signal)
 {
 	return ((signal & PULSE_BIT) == 0)
-	    ? (signal & PULSE_MASK)
-	    : -(signal & PULSE_MASK);
-}				/* signal_to_int */
+	       ? (signal & PULSE_MASK)
+	       : -(signal & PULSE_MASK);
+}                               /* signal_to_int */
 
 /*****************************************************************************/
-static void tx_bytes(unsigned char *b, int n)
+static void tx_bytes(unsigned char* b, int n)
 {
 	LOGPRINTF(3, "sending %s", to_byte_string(b, n));
 	chk_write(drv.fd, b, n);
-}				/* tx_bytes */
+}                               /* tx_bytes */
 
 static void enable_port(unsigned char port)
 {
@@ -287,7 +288,7 @@ static void enable_port(unsigned char port)
 	d[1] = CMD_ENABLE;
 
 	tx_bytes(d, sizeof(d));
-}				/* enable_port */
+}                               /* enable_port */
 
 static void set_IR_receive_ports(unsigned char ports)
 {
@@ -298,7 +299,7 @@ static void set_IR_receive_ports(unsigned char ports)
 	d[2] = ports;
 
 	tx_bytes(d, sizeof(d));
-}				/* set_IR_receive_ports */
+}                               /* set_IR_receive_ports */
 
 static void set_sample_period(unsigned period)
 {
@@ -310,7 +311,7 @@ static void set_sample_period(unsigned period)
 	d[3] = (unsigned char)(period & 0xff);
 
 	tx_bytes(d, sizeof(d));
-}				/* set_sample_period */
+}                               /* set_sample_period */
 
 static void set_IR_timeout_period(unsigned samples)
 {
@@ -322,7 +323,7 @@ static void set_IR_timeout_period(unsigned samples)
 	d[3] = (unsigned char)(samples & 0xff);
 
 	tx_bytes(d, sizeof(d));
-}				/* set_IR_timeout_period */
+}                               /* set_IR_timeout_period */
 
 static void get_version()
 {
@@ -332,7 +333,7 @@ static void get_version()
 	d[1] = CMD_GETVERSION;
 
 	tx_bytes(d, sizeof(d));
-}				/* get_version */
+}                               /* get_version */
 
 /*****************************************************************************/
 int slinke_init(void)
@@ -344,26 +345,26 @@ int slinke_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	/* if */
 	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "slinke_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 	/* if */
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset tty");
 		slinke_deinit();
-		return (0);
+		return 0;
 	}
 	/* if */
 	if (!tty_setbaud(drv.fd, 19200)) {
 		logprintf(LIRC_ERROR, "could not set baud rate");
 		slinke_deinit();
-		return (0);
+		return 0;
 	}
 	/* if */
 	get_version();
@@ -376,20 +377,20 @@ int slinke_init(void)
 		queue[i].port_id = (unsigned char)i;
 		queue[i].length = 0;
 		queue[i].bufsize = QUEUE_BUF_INIT_SIZE;
-		queue[i].buf = (unsigned char *)slinke_malloc(QUEUE_BUF_INIT_SIZE);
+		queue[i].buf = (unsigned char*)slinke_malloc(QUEUE_BUF_INIT_SIZE);
 		if (queue[i].buf == NULL) {
 			logprintf(LIRC_ERROR, "could not create port queue buffer");
 			slinke_deinit();
-			return (0);
-		}		/* if */
-	}			/* for */
+			return 0;
+		}               /* if */
+	}                       /* for */
 
-	return (1);
-}				/* slinke_init */
+	return 1;
+}                               /* slinke_init */
 
 /*****************************************************************************/
 static int signal_queue_rd_idx, signal_queue_bufsize, signal_queue_length = 0;
-static lirc_t *signal_queue_buf = NULL;
+static lirc_t* signal_queue_buf = NULL;
 
 /*****************************************************************************/
 int slinke_deinit(void)
@@ -409,30 +410,30 @@ int slinke_deinit(void)
 		slinke_settings.version = NULL;
 	}
 
-	for (i = 0; i < MAX_PORT_COUNT; i++) {
+	for (i = 0; i < MAX_PORT_COUNT; i++)
 		if (queue[i].buf != NULL)
 			free(queue[i].buf);
-	}			/* for */
+	/* for */
 
-	return (1);
-}				/* slinke_deinit */
+	return 1;
+}                               /* slinke_deinit */
 
 /*****************************************************************************/
-char *msgIdReprs[] = {
-	"unknown", "port receive", "port disabled", "port enabled",
-	"transmission timeout", "illegal command", "receive error",
-	"sampling period equals", "carrier period equals", "timeout period equals",
-	"minimum message length equals", "transmit ports equal",
-	"receive ports equal", "last receive port equals",
-	"receive port polarities equal", "ir routing table equals",
-	"invalid sample period", "handshaking mode equals",
-	"configuration direction equals", "baud rate equals",
+char* msgIdReprs[] = {
+	"unknown",			       "port receive",			     "port disabled",	      "port enabled",
+	"transmission timeout",		       "illegal command",		     "receive error",
+	"sampling period equals",	       "carrier period equals",		     "timeout period equals",
+	"minimum message length equals",       "transmit ports equal",
+	"receive ports equal",		       "last receive port equals",
+	"receive port polarities equal",       "ir routing table equals",
+	"invalid sample period",	       "handshaking mode equals",
+	"configuration direction equals",      "baud rate equals",
 	"serial port receive buffer overflow", "serial port receive buffer overrun",
-	"serial port receive framing error", "baud rate illegal", "version equals",
-	"defaults loaded", "defaults saved", "serial number equals",
+	"serial port receive framing error",   "baud rate illegal",		     "version equals",
+	"defaults loaded",		       "defaults saved",		     "serial number equals",
 	"seeprom write error",
 };
-char *slinkePorts[] = { "SL0", "SL1", "SL2", "SL3", "IR0", "PAR", "SER", "SYS" };
+char* slinkePorts[] = { "SL0", "SL1", "SL2", "SL3", "IR0", "PAR", "SER", "SYS" };
 
 /*****************************************************************************/
 lirc_t slinke_readdata(int timeout)
@@ -441,30 +442,30 @@ lirc_t slinke_readdata(int timeout)
 
 	if (signal_queue_buf == NULL)
 		return 0;
-	if (signal_queue_rd_idx < signal_queue_length) {
+	if (signal_queue_rd_idx < signal_queue_length)
 		result = signal_queue_buf[signal_queue_rd_idx++];
-	} else {
+	else
 		result = 0;
-	}			/* if */
+	/* if */
 
 	LOGPRINTF(3, "readdata: %d @ %d", signal_to_int(result), signal_queue_rd_idx);
 	return result;
-}				/* readdata */
+}                               /* readdata */
 
 static void reset_signal_queue()
 {
 	if (signal_queue_buf == NULL) {
 		signal_queue_bufsize = 32;
-		signal_queue_buf = (lirc_t *) slinke_malloc(signal_queue_bufsize * sizeof(lirc_t));
+		signal_queue_buf = (lirc_t*)slinke_malloc(signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
 			logprintf(LIRC_ERROR, "could not create signal queue buffer");
 			return;
-		}		/* if */
-	}			/* if */
-	signal_queue_buf[0] = PULSE_MASK;	/* sync space */
+		}                               /* if */
+	}                                       /* if */
+	signal_queue_buf[0] = PULSE_MASK;       /* sync space */
 	signal_queue_length = 1;
 	signal_queue_rd_idx = 0;
-}				/* reset_signal_queue */
+}                               /* reset_signal_queue */
 
 static void app_signal(int is_pulse, int period_len)
 {
@@ -473,7 +474,7 @@ static void app_signal(int is_pulse, int period_len)
 	if (signal_queue_buf == NULL)
 		return;
 	signal = (slinke_settings.sample_period > 0)
-	    ? (period_len * slinke_settings.sample_period) / 5 : period_len;
+		 ? (period_len * slinke_settings.sample_period) / 5 : period_len;
 	if (signal > PULSE_MASK)
 		signal = PULSE_MASK;
 	if (is_pulse)
@@ -481,14 +482,14 @@ static void app_signal(int is_pulse, int period_len)
 
 	if (signal_queue_length >= signal_queue_bufsize) {
 		signal_queue_bufsize *= 2;
-		signal_queue_buf = (lirc_t *) slinke_realloc(signal_queue_buf, signal_queue_bufsize * sizeof(lirc_t));
+		signal_queue_buf = (lirc_t*)slinke_realloc(signal_queue_buf, signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
 			logprintf(LIRC_ERROR, "could not enlarge signal queue buffer");
 			return;
-		}		/* if */
-	}			/* if */
+		}               /* if */
+	}                       /* if */
 	signal_queue_buf[signal_queue_length++] = signal;
-}				/* app_signal */
+}                               /* app_signal */
 
 static void end_of_signals()
 {
@@ -496,15 +497,15 @@ static void end_of_signals()
 		return;
 	if (signal_queue_length > 0) {
 		int last_signal_idx = signal_queue_length - 1;
-		if (is_space(signal_queue_buf[last_signal_idx])) {
+		if (is_space(signal_queue_buf[last_signal_idx]))
 			signal_queue_buf[last_signal_idx] = PULSE_MASK;
-		} else {
-			app_signal( /*is_pulse= */ 0, PULSE_MASK);	/* end sync space */
-		}		/* if */
-	}			/* if */
-}				/* end_of_signals */
+		else
+			app_signal(/*is_pulse= */ 0, PULSE_MASK);       /* end sync space */
+		/* if */
+	}                                                               /* if */
+}                                                                       /* end_of_signals */
 
-static char *signal_queue_to_string()
+static char* signal_queue_to_string()
 {
 	static char buf[10 * QUEUE_BUF_MAX_SIZE];
 	char s[30];
@@ -518,134 +519,133 @@ static char *signal_queue_to_string()
 		if (strlen(buf) + strlen(s) + 2 >= sizeof(buf))
 			break;
 		strcat(buf, s);
-	}			/* for */
+	}                       /* for */
 	strcat(buf, "}");
 	return buf;
-}				/* signal_queue_to_string */
+}                               /* signal_queue_to_string */
 
 /*****************************************************************************/
-static char *process_rx_bytes(struct port_queue_rec *q, struct ir_remote *remotes)
+static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remotes)
 {
-	char *resp = NULL;
-	unsigned char *buf = q->buf;
+	char* resp = NULL;
+	unsigned char* buf = q->buf;
 	int len = q->length;
 
 	LOGPRINTF(2, "port #%d: %s", q->port_id, to_byte_string(buf, len));
 	LOGPRINTF(2, "%s (0x%02x %s) len = %d", slinkePorts[q->port_id], q->msg_id, msgIdReprs[q->msg_id], len);
 
 	switch (q->msg_id) {
-	case MSG_ID_PORT_RECEIVE:{
-			int i;
-			int curr_period_len = 0;
-			int curr_period_is_pulse = 1;
-			reset_signal_queue();
-			for (i = 0; i < len; i++) {
-				int len = buf[i] & 0x7f;
-				int is_pulse = ((buf[i] & 0x80) != 0);
-				if (is_pulse == curr_period_is_pulse) {
-					curr_period_len += len;
-				} else {
-					app_signal(curr_period_is_pulse, curr_period_len);
-					curr_period_len = len;
-					curr_period_is_pulse = is_pulse;
-				}	/* if */
-			}	/* for */
-			if (curr_period_len > 0)
+	case MSG_ID_PORT_RECEIVE: {
+		int i;
+		int curr_period_len = 0;
+		int curr_period_is_pulse = 1;
+		reset_signal_queue();
+		for (i = 0; i < len; i++) {
+			int len = buf[i] & 0x7f;
+			int is_pulse = ((buf[i] & 0x80) != 0);
+			if (is_pulse == curr_period_is_pulse) {
+				curr_period_len += len;
+			} else {
 				app_signal(curr_period_is_pulse, curr_period_len);
-			end_of_signals();
+				curr_period_len = len;
+				curr_period_is_pulse = is_pulse;
+			}       /* if */
+		}               /* for */
+		if (curr_period_len > 0)
+			app_signal(curr_period_is_pulse, curr_period_len);
+		end_of_signals();
 
-			LOGPRINTF(2, "%d signals: %s", signal_queue_length, signal_queue_to_string());
+		LOGPRINTF(2, "%d signals: %s", signal_queue_length, signal_queue_to_string());
 
-			resp = decode_all(remotes);
-		}
-		break;
-	case MSG_ID_SAMPLING_PERIOD_EQUALS:{
-			if (len == 2) {
-				slinke_settings.sample_period = (buf[0] << 8) | (buf[1]);
-				logprintf(LIRC_INFO, "sample period %d * 1/5 usec", slinke_settings.sample_period);
-			}	/* if */
-		}
-		break;
-	case MSG_ID_TIMEOUT_PERIOD_EQUALS:{
-			if (len == 2) {
-				slinke_settings.timeout_samples = (buf[0] << 8) | (buf[1]);
-				logprintf(LIRC_INFO, "timeout %d samples", slinke_settings.timeout_samples);
-			}	/* if */
-		}
-		break;
-	case MSG_ID_VERSION_EQUALS:{
-			if (len == 1) {
-				char s[10];
-				sprintf(s, "%d.%d", (unsigned)((buf[0] >> 4) & 0xf)
-					, (unsigned)(buf[0] & 0xf));
-				if (slinke_settings.version != NULL)
-					free(slinke_settings.version);
-				slinke_settings.version = strdup(s);
-				if (slinke_settings.version == NULL) {
-					logprintf(LIRC_ERROR, "could not allocate version string");
-				} else {
-					logprintf(LIRC_INFO, "Slink-e version %s", slinke_settings.version);
-				}	/* if */
-			}	/* if */
-		}
-		break;
-	}			/* switch */
+		resp = decode_all(remotes);
+	}
+	break;
+	case MSG_ID_SAMPLING_PERIOD_EQUALS: {
+		if (len == 2) {
+			slinke_settings.sample_period = (buf[0] << 8) | (buf[1]);
+			logprintf(LIRC_INFO, "sample period %d * 1/5 usec", slinke_settings.sample_period);
+		}               /* if */
+	}
+	break;
+	case MSG_ID_TIMEOUT_PERIOD_EQUALS: {
+		if (len == 2) {
+			slinke_settings.timeout_samples = (buf[0] << 8) | (buf[1]);
+			logprintf(LIRC_INFO, "timeout %d samples", slinke_settings.timeout_samples);
+		}               /* if */
+	}
+	break;
+	case MSG_ID_VERSION_EQUALS: {
+		if (len == 1) {
+			char s[10];
+			sprintf(s, "%d.%d", (unsigned)((buf[0] >> 4) & 0xf)
+				, (unsigned)(buf[0] & 0xf));
+			if (slinke_settings.version != NULL)
+				free(slinke_settings.version);
+			slinke_settings.version = strdup(s);
+			if (slinke_settings.version == NULL)
+				logprintf(LIRC_ERROR, "could not allocate version string");
+			else
+				logprintf(LIRC_INFO, "Slink-e version %s", slinke_settings.version);
+			/* if */
+		}               /* if */
+	}
+	break;
+	}                       /* switch */
 
 	q->length = 0;
 	return resp;
-}				/* process_rx_bytes */
+}                               /* process_rx_bytes */
 
 /*****************************************************************************/
-static void enqueue_byte(struct port_queue_rec *q, unsigned char b)
+static void enqueue_byte(struct port_queue_rec* q, unsigned char b)
 {
 	if (q->buf == NULL)
 		return;
 	if (q->length > q->bufsize) {
 		if (q->bufsize >= QUEUE_BUF_MAX_SIZE) {
-			if (q->bufsize == QUEUE_BUF_MAX_SIZE) {
+			if (q->bufsize == QUEUE_BUF_MAX_SIZE)
 				LOGPRINTF(1, "maximum port queue buffer size reached");
-			}	/* if */
+			/* if */
 			return;
 		}
 		/* if */
 		q->bufsize *= 2;
-		q->buf = (unsigned char *)slinke_realloc(q->buf, q->bufsize);
+		q->buf = (unsigned char*)slinke_realloc(q->buf, q->bufsize);
 		if (q->buf == NULL) {
 			logprintf(LIRC_ERROR, "could not enlarge port queue buffer");
 			return;
-		}		/* if */
-	}			/* if */
+		}               /* if */
+	}                       /* if */
 	q->buf[q->length++] = b;
-}				/* enqueue_byte */
+}                               /* enqueue_byte */
 
 /*****************************************************************************/
-static char *accept_rx_byte(unsigned char rch, struct ir_remote *remotes)
+static char* accept_rx_byte(unsigned char rch, struct ir_remote* remotes)
 {
 	static int state = RX_STATE_IDLE;
 	static int msg_len;
 	static unsigned char port_id = 0;
-	static struct port_queue_rec *curr_queue;
-	char *resp = NULL;
+	static struct port_queue_rec* curr_queue;
+	char* resp = NULL;
 
 	LOGPRINTF(3, "accept_rx_byte %02x", rch);
 	switch (state) {
-
 	case RX_STATE_IDLE:
 		port_id = (rch >> 5) & 7;
 		msg_len = rch & 0x1f;
 		curr_queue = &(queue[port_id]);
 		switch (msg_len) {
-		case 0x00:	/* PRE - port receive end */
+		case 0x00:      /* PRE - port receive end */
 			resp = process_rx_bytes(curr_queue, remotes);
 			break;
-		case 0x1F:	/* PSM - port special message */
+		case 0x1F:      /* PSM - port special message */
 			state = RX_STATE_PSM;
 			return NULL;
 		default:
 			curr_queue->msg_id = MSG_ID_PORT_RECEIVE;
 			state = RX_STATE_RECEIVE;
 			return NULL;
-		}		/* switch */
+		}               /* switch */
 		break;
 
 	case RX_STATE_PSM:
@@ -708,27 +708,27 @@ static char *accept_rx_byte(unsigned char rch, struct ir_remote *remotes)
 				} else {
 					curr_queue->msg_id = MSG_ID_TIMEOUT_PERIOD_EQUALS;
 					msg_len = 2;
-				}	/* if */
+				}       /* if */
 				break;
 			case 0x0e:
 				curr_queue->msg_id = MSG_ID_MINIMUM_MESSAGE_LENGTH_EQUALS;
 				break;
 			case 0x08:
-				if (port_id == PORT_IR0) {
+				if (port_id == PORT_IR0)
 					curr_queue->msg_id = MSG_ID_MINIMUM_MESSAGE_LENGTH_EQUALS;
-				} else {
+				else
 					curr_queue->msg_id = MSG_ID_BAUD_RATE_EQUALS;
-				}	/* if */
+				/* if */
 				break;
 			case 0x01:
 				curr_queue->msg_id = MSG_ID_LAST_RECEIVE_PORT_EQUALS;
 				break;
 			case 0x0b:
-				if (port_id == PORT_SYS) {
+				if (port_id == PORT_SYS)
 					curr_queue->msg_id = MSG_ID_VERSION_EQUALS;
-				} else {
+				else
 					curr_queue->msg_id = MSG_ID_RECEIVE_PORT_POLARITIES_EQUAL;
-				}	/* if */
+				/* if */
 				break;
 			case 0x0a:
 				curr_queue->msg_id = MSG_ID_IR_ROUTING_TABLE_EQUALS;
@@ -740,9 +740,9 @@ static char *accept_rx_byte(unsigned char rch, struct ir_remote *remotes)
 			case 0x12:
 				curr_queue->msg_id = MSG_ID_CONFIGURATION_DIRECTION_EQUALS;
 				break;
-			}	/* switch */
+			}       /* switch */
 			return NULL;
-		}		/* switch */
+		}               /* switch */
 
 		resp = process_rx_bytes(curr_queue, remotes);
 		break;
@@ -762,29 +762,29 @@ static char *accept_rx_byte(unsigned char rch, struct ir_remote *remotes)
 
 	default:
 		return NULL;
-	}			/* switch */
+	}                       /* switch */
 
 	state = RX_STATE_IDLE;
 	return resp;
-}				/* accept_rx_byte */
+}                               /* accept_rx_byte */
 
 /*****************************************************************************/
-char *slinke_rec(struct ir_remote *remotes)
+char* slinke_rec(struct ir_remote* remotes)
 {
-	char *resp = NULL;
+	char* resp = NULL;
 	int byteNo = 0;
 	unsigned char rch;
 
 	do {
 		if (!waitfordata(TIMEOUT)) {
 			LOGPRINTF(0, "timeout reading byte %d", byteNo);
-			return (NULL);
+			return NULL;
 		}
 		/* if */
 		if (read(drv.fd, &rch, 1) != 1) {
 			LOGPRINTF(0, "reading of byte %d failed", byteNo);
-			return (NULL);
-		}		/* if */
+			return NULL;
+		}               /* if */
 		byteNo++;
 
 		LOGPRINTF(4, "byte %d: %02x", byteNo, rch);
@@ -793,14 +793,14 @@ char *slinke_rec(struct ir_remote *remotes)
 	last = end;
 
 	return resp;
-}				/* slinke_rec */
+}                               /* slinke_rec */
 
 /*****************************************************************************/
 
-int slinke_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int slinke_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	rec_buffer_rewind();
 	rec_buffer_reset_wptr();
 	signal_queue_rd_idx = 0;
 	return receive_decode(remote, ctx);
-}				/* slinke_decode */
+}                               /* slinke_decode */

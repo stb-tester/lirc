@@ -1,59 +1,59 @@
 /****************************************************************************
- ** hw_accent.c *************************************************************
- ****************************************************************************
- *
- * LIRC driver for Kanam/Accent serial port remote control.
- *
- * The Kanam/Accent is a remote control with an IR receiver
- * connecting to the serial port. The receiver communicate with the
- * host system at 1200 8N1, so the standard serial driver provided
- * by the Linux kernel is used.
- *
- * For each keypress on the remote control, a sequence of 13 or 14
- * bytes is transmitted. We can consider just the first 8 bytes as
- * significative. Each sequence begins with the three bytes: 0x90
- * 0x46 0x42. If a key is held-down, a sequence of zeroes is
- * transmitted. The gap between two different full codes is about
- * 188500 microseconds. The gap between each zero on a key-hold is
- * about 56000 microseconds.
- *
- * Sometimes the receiver jams, especially on very short key press.
- * In this case a uninterrupted stream of zeroes is transmitted,
- * without the gap of 56000 us. The stream is interrupted if
- * another key is pressed on the remote or if the driver closes and
- * reopen the serial port.
- *
- * Unfortunately the LIRC source code is not well documented, so I
- * hope to have guessed well the workflow of lircd. Please, contact
- * me if the comments in this source code are not accurate or
- * clear.
- *
- * Author:	Niccolo Rigacci <niccolo@rigacci.org>
- *
- * Version:	1.1	2007-02-12
- *
- * Original routines from hw_pixelview.c and hw_pinsys.c.
- * First working code for this remote from Leandro Dardini.
- *
- * Christoph Bartelmus <lirc@bartelmus.de>
- * Bart Alewijnse <scarfboy@yahoo.com>
- * Leandro Dardini <ldardini@tiscali.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
- *
- */
+** hw_accent.c *************************************************************
+****************************************************************************
+*
+* LIRC driver for Kanam/Accent serial port remote control.
+*
+* The Kanam/Accent is a remote control with an IR receiver
+* connecting to the serial port. The receiver communicate with the
+* host system at 1200 8N1, so the standard serial driver provided
+* by the Linux kernel is used.
+*
+* For each keypress on the remote control, a sequence of 13 or 14
+* bytes is transmitted. We can consider just the first 8 bytes as
+* significative. Each sequence begins with the three bytes: 0x90
+* 0x46 0x42. If a key is held-down, a sequence of zeroes is
+* transmitted. The gap between two different full codes is about
+* 188500 microseconds. The gap between each zero on a key-hold is
+* about 56000 microseconds.
+*
+* Sometimes the receiver jams, especially on very short key press.
+* In this case a uninterrupted stream of zeroes is transmitted,
+* without the gap of 56000 us. The stream is interrupted if
+* another key is pressed on the remote or if the driver closes and
+* reopen the serial port.
+*
+* Unfortunately the LIRC source code is not well documented, so I
+* hope to have guessed well the workflow of lircd. Please, contact
+* me if the comments in this source code are not accurate or
+* clear.
+*
+* Author:	Niccolo Rigacci <niccolo@rigacci.org>
+*
+* Version:	1.1	2007-02-12
+*
+* Original routines from hw_pixelview.c and hw_pinsys.c.
+* First working code for this remote from Leandro Dardini.
+*
+* Christoph Bartelmus <lirc@bartelmus.de>
+* Bart Alewijnse <scarfboy@yahoo.com>
+* Leandro Dardini <ldardini@tiscali.it>
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+*
+*/
 
 
 #ifdef HAVE_CONFIG_H
@@ -103,36 +103,36 @@ static lirc_t signal_length;
 static ir_code code, last_code = 0;
 
 // Forwards
-int accent_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-int accent_open_serial_port(const char *device);
+int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+int accent_open_serial_port(const char* device);
 int accent_init(void);
 int accent_deinit(void);
-char *accent_rec(struct ir_remote *remotes);
+char* accent_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_accent = {
-	.name		=	"accent",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	ACCENT_CODE_LENGTH,
-	.init_func	=	accent_init,
-	.deinit_func	=	accent_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	accent_rec,
-	.decode_func 	=	accent_decode,
-	.drvctl_func	= 	NULL,
-	.readdata	= 	NULL,
-	.resolution	= 	300,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "accent",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= ACCENT_CODE_LENGTH,
+	.init_func	= accent_init,
+	.deinit_func	= accent_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= accent_rec,
+	.decode_func	= accent_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.resolution	= 300,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
-const struct driver* hardwares[] = { &hw_accent, (const struct driver*) NULL};
+const struct driver* hardwares[] = { &hw_accent, (const struct driver*)NULL };
 
 
 //-------------------------------------------------------------------------
@@ -148,20 +148,19 @@ const struct driver* hardwares[] = { &hw_accent, (const struct driver*) NULL};
 //      repeat_flagp    True if the keypress is a repeated keypress
 //      remaining_gapp  Extimated time gap remaining before next code?
 //-------------------------------------------------------------------------
-int accent_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "Entering accent_decode(), code = %016llx\n", code);
 
 	LOGPRINTF(1, "accent_decode() is calling map_code()");
-	if (!map_code(remote, ctx, 0, 0, ACCENT_CODE_LENGTH, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 0, 0, ACCENT_CODE_LENGTH, code, 0, 0))
+		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
 	LOGPRINTF(1, "Exiting accent_decode()");
 
-	return (1);
+	return 1;
 }
 
 //-------------------------------------------------------------------------
@@ -172,7 +171,6 @@ int accent_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 //-------------------------------------------------------------------------
 int accent_init(void)
 {
-
 	LOGPRINTF(1, "Entering accent_init()");
 
 	// Calculate the time length of a remote signal (in microseconds):
@@ -181,14 +179,14 @@ int accent_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "Could not create the lock file");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = accent_open_serial_port(drv.device)) < 0) {
 		logprintf(LIRC_ERROR, "Could not open the serial port");
 		accent_deinit();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 //-------------------------------------------------------------------------
@@ -199,7 +197,7 @@ int accent_deinit(void)
 	LOGPRINTF(1, "Entering accent_deinit()");
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
 //-------------------------------------------------------------------------
@@ -207,9 +205,9 @@ int accent_deinit(void)
 // This function is called by the LIRC daemon when I/O is pending
 // from a registered client, e.g. irw.
 //-------------------------------------------------------------------------
-char *accent_rec(struct ir_remote *remotes)
+char* accent_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i, j;
 
 	LOGPRINTF(1, "Entering accent_rec()");
@@ -241,11 +239,11 @@ char *accent_rec(struct ir_remote *remotes)
 		// Some data available to read.
 		if (read(drv.fd, &b[i], 1) == -1) {
 			logperror(LIRC_ERROR, "read() failed at byte %d", i);
-			return (NULL);
+			return NULL;
 		} else {
 			LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
 		}
-	}			// End for
+	}                       // End for
 
 	// Timestamp of key press end.
 	gettimeofday(&end, NULL);
@@ -262,18 +260,18 @@ char *accent_rec(struct ir_remote *remotes)
 			code = last_code;
 			tcflush(drv.fd, TCIFLUSH);
 			m = decode_all(remotes);
-			return (m);
+			return m;
 		} else {
 			LOGPRINTF(1, "Previos code not set, invalid repeat key");
 			last_code = 0;
-			return (NULL);
+			return NULL;
 		}
 	}
 	// Sequence too short?
 	if (i < ACCENT_MEANING_BYTES) {
 		logprintf(LIRC_NOTICE, "Invalid sequence: too short");
 		last_code = 0;
-		return (NULL);
+		return NULL;
 	}
 	// A valid code begins with bytes 0x90 0x46 0x42
 	// and it is long not more than ACCENT_MEANING_BYTES.
@@ -311,17 +309,16 @@ char *accent_rec(struct ir_remote *remotes)
 		last_code = code;
 		tcflush(drv.fd, TCIFLUSH);
 		m = decode_all(remotes);
-		return (m);
+		return m;
 	}
 	// Sometimes the receiver goes crazy, it starts to send to the
 	// serial line a sequence of zeroes with no pauses at all.
 	// This jam terminates only if the user press a new button on
 	// the remote or if we close and re-open the serial port.
 	if (i == ACCENT_MAX_READ_BYTES) {
-		for (j = 0; j < ACCENT_MAX_READ_BYTES; j++) {
+		for (j = 0; j < ACCENT_MAX_READ_BYTES; j++)
 			if (b[j] != 0)
 				break;
-		}
 		if (j == ACCENT_MAX_READ_BYTES) {
 			// All the received bytes are zeroes, without gaps.
 			logprintf(LIRC_WARNING, "Receiver jam! Reopening the serial port");
@@ -331,23 +328,22 @@ char *accent_rec(struct ir_remote *remotes)
 				raise(SIGTERM);
 			}
 			last_code = 0;
-			return (NULL);
+			return NULL;
 		}
 	}
 	// Should never reach this point.
 	logprintf(LIRC_NOTICE, "Received an invalid sequence");
-	for (j = 0; j < i; j++) {
+	for (j = 0; j < i; j++)
 		LOGPRINTF(1, " b[%d] = %02x", j, b[j]);
-	}
 	last_code = 0;
-	return (NULL);
+	return NULL;
 }
 
 //-------------------------------------------------------------------------
 // Open the serial line and set the discipline (do the low level work).
 // Return the file descriptor or -1 on error.
 //-------------------------------------------------------------------------
-int accent_open_serial_port(const char *device)
+int accent_open_serial_port(const char* device)
 {
 	int fd;
 	struct termios options;
@@ -357,13 +353,13 @@ int accent_open_serial_port(const char *device)
 	// Open the serial device.
 	if ((fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC)) < 0) {
 		logperror(LIRC_ERROR, "Could not open the serial port");
-		return (-1);
+		return -1;
 	}
 	// Get the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
 		logprintf(LIRC_ERROR, "Could not get serial port attributes");
 		logperror(LIRC_ERROR, "tcgetattr() failed");
-		return (-1);
+		return -1;
 	}
 	// Set the line in raw mode (no control chars, etc.)
 	cfmakeraw(&options);
@@ -372,13 +368,13 @@ int accent_open_serial_port(const char *device)
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
 		logprintf(LIRC_ERROR, "Could not set serial port with cfmakeraw()");
 		logperror(LIRC_ERROR, "tcsetattr() failed");
-		return (-1);
+		return -1;
 	}
 	// Gets the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
 		logprintf(LIRC_ERROR, "Could not get serial port attributes");
 		logperror(LIRC_ERROR, "tcgetattr() failed");
-		return (-1);
+		return -1;
 	}
 	// Set input and output baud rate to 1200.
 	cfsetispeed(&options, ACCENT_BAUD_RATE_CONST);
@@ -396,14 +392,14 @@ int accent_open_serial_port(const char *device)
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
 		logprintf(LIRC_ERROR, "Could not set serial port line discipline");
 		logperror(LIRC_ERROR, "tcsetattr() failed");
-		return (-1);
+		return -1;
 	}
 	// Discards data received but not read.
 	if (tcflush(fd, TCIFLUSH) < 0) {
 		logprintf(LIRC_ERROR, "Could not flush input buffer");
 		logperror(LIRC_ERROR, "tcflush() failed");
-		return (-1);
+		return -1;
 	}
 
-	return (fd);
+	return fd;
 }

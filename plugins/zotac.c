@@ -1,14 +1,14 @@
 /****************************************************************************
- ** hw_zotac.c *************************************************************
- ****************************************************************************
- *
- * Lirc driver for Zotac remote
- *
- * Copyright (C) 2010 Rainer Hochecker
- *
- * Distribute under GPL version 2 or later.
- *
- */
+** hw_zotac.c *************************************************************
+****************************************************************************
+*
+* Lirc driver for Zotac remote
+*
+* Copyright (C) 2010 Rainer Hochecker
+*
+* Distribute under GPL version 2 or later.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -30,9 +30,9 @@ enum {
 
 static int zotac_init();
 static int zotac_deinit();
-static char *zotac_rec(struct ir_remote *remotes);
-static int zotac_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-static void *zotac_repeat();
+static char* zotac_rec(struct ir_remote* remotes);
+static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static void* zotac_repeat();
 static int zotac_getcode();
 
 /** Max number of repetitions */
@@ -40,7 +40,7 @@ const unsigned max_repeat_count = 500;
 /** Code that triggers key release */
 const unsigned release_code = 0x00000000;
 /** Code that triggers device remove  */
-const unsigned remove_code =0x00FFFFFF;
+const unsigned remove_code = 0x00FFFFFF;
 /** Time to wait before first repetition */
 const unsigned repeat_time1_us = 500000;
 /** Time to wait between two repetitions */
@@ -63,36 +63,35 @@ static int probe_code = 0;
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
 /* Zotac USB iR Receiver */
 const struct driver hw_zotac = {
-	.name		=	"zotac",
-	.device		=	"/dev/usb/hiddev0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	zotac_init,
-	.deinit_func	=	zotac_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	zotac_rec,
-	.decode_func	=	zotac_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "zotac",
+	.device		= "/dev/usb/hiddev0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= zotac_init,
+	.deinit_func	= zotac_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= zotac_rec,
+	.decode_func	= zotac_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 #endif
 
-const struct driver* hardwares[] = {&hw_zotac, (const struct driver*) NULL };
+const struct driver* hardwares[] = { &hw_zotac, (const struct driver*)NULL };
 
-static int zotac_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "zotac_decode");
 
-	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
-	}
 
 	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
@@ -101,8 +100,8 @@ static int zotac_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int zotac_getcode() {
-
+static int zotac_getcode()
+{
 	ssize_t rd;
 	struct hiddev_usage_ref uref;
 	struct hiddev_report_info rinfo;
@@ -127,90 +126,89 @@ static int zotac_getcode() {
 		 */
 
 		switch (uref.report_id) {
-		case 1:	/* USB standard keyboard usage page */
-			{
-				/* This page reports cursor keys */
-				LOGPRINTF(3, "Keyboard (standard)\n");
+		case 1: /* USB standard keyboard usage page */
+		{
+			/* This page reports cursor keys */
+			LOGPRINTF(3, "Keyboard (standard)\n");
 
-				/* check for special codes */
-				uref.field_index = 0;
-				uref.usage_index = 1;
-				/* fetch the usage code for given indexes */
-				ioctl(fd_hidraw, HIDIOCGUCODE, &uref, sizeof(uref));
-				/* fetch the value from report */
-				ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
+			/* check for special codes */
+			uref.field_index = 0;
+			uref.usage_index = 1;
+			/* fetch the usage code for given indexes */
+			ioctl(fd_hidraw, HIDIOCGUCODE, &uref, sizeof(uref));
+			/* fetch the value from report */
+			ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
 
-				if (uref.value)
-					shift = 1;
+			if (uref.value)
+				shift = 1;
 
-				/* populate required field number */
-				uref.field_index = 1;
-				uref.usage_index = 0;
-				/* fetch the usage code for given indexes */
-				ioctl(fd_hidraw, HIDIOCGUCODE, &uref, sizeof(uref));
-				/* fetch the value from report */
-				ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
-				/* now we have the key */
+			/* populate required field number */
+			uref.field_index = 1;
+			uref.usage_index = 0;
+			/* fetch the usage code for given indexes */
+			ioctl(fd_hidraw, HIDIOCGUCODE, &uref, sizeof(uref));
+			/* fetch the value from report */
+			ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
+			/* now we have the key */
 
-				LOGPRINTF(3, "usage: %x   value: %x   shift: %d\n",uref.usage_code, uref.value, shift);
+			LOGPRINTF(3, "usage: %x   value: %x   shift: %d\n", uref.usage_code, uref.value, shift);
 
-				/* now we have the key */
-				if (uref.value) {
-					probe_code = (uref.usage_code | uref.value);
-					if (shift)
-						probe_code |= 0x10000000;
-					LOGPRINTF(3, "Main code 1: %x\n", probe_code);
-					return 1;
-				}
-				else {
-					LOGPRINTF(3, "rel button\n");
-					probe_code = release_code;
-					return 2;
-				}
+			/* now we have the key */
+			if (uref.value) {
+				probe_code = (uref.usage_code | uref.value);
+				if (shift)
+					probe_code |= 0x10000000;
+				LOGPRINTF(3, "Main code 1: %x\n", probe_code);
+				return 1;
+			} else {
+				LOGPRINTF(3, "rel button\n");
+				probe_code = release_code;
+				return 2;
 			}
-			break;
+		}
+		break;
 
 		case 2:
-		case 3:	/* USB generic desktop usage page */
+		case 3: /* USB generic desktop usage page */
 		case 4:
-			{
-				/* This page reports power key
-				 * (via SystemControl SLEEP)
-				 */
-				LOGPRINTF(3, "Generic desktop (standard)\n");
+		{
+			/* This page reports power key
+			 * (via SystemControl SLEEP)
+			 */
+			LOGPRINTF(3, "Generic desktop (standard)\n");
 
 
-				/* traverse report descriptor */
-				rinfo.report_type = HID_REPORT_TYPE_INPUT;
-				rinfo.report_id = HID_REPORT_ID_FIRST;
-				rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
+			/* traverse report descriptor */
+			rinfo.report_type = HID_REPORT_TYPE_INPUT;
+			rinfo.report_id = HID_REPORT_ID_FIRST;
+			rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 
-				unsigned int i,j;
-				while (rd >= 0) {
-					for (i = 0; i < rinfo.num_fields; i++) {
-						finfo.report_type = rinfo.report_type;
+			unsigned int i, j;
+			while (rd >= 0) {
+				for (i = 0; i < rinfo.num_fields; i++) {
+					finfo.report_type = rinfo.report_type;
 					finfo.report_id = rinfo.report_id;
 					finfo.field_index = i;
 					ioctl(fd_hidraw, HIDIOCGFIELDINFO, &finfo);
 					for (j = 0; j < finfo.maxusage; j++) {
 						uref.field_index = i;
-					    uref.usage_index = j;
-					    ioctl(fd_hidraw, HIDIOCGUCODE, &uref);
-					    ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
+						uref.usage_index = j;
+						ioctl(fd_hidraw, HIDIOCGUCODE, &uref);
+						ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
-					    if (uref.value != 0) {
-						LOGPRINTF(3, "field: %d, idx: %d, usage: %x   value: %x\n",i, j, uref.usage_code, uref.value);
-						probe_code = uref.usage_code;
-						return 1;
-					    }
+						if (uref.value != 0) {
+							LOGPRINTF(3, "field: %d, idx: %d, usage: %x   value: %x\n", i, j, uref.usage_code, uref.value);
+							probe_code = uref.usage_code;
+							return 1;
+						}
 					}
-					}
-					rinfo.report_id |= HID_REPORT_ID_NEXT;
-					rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 				}
-				return 2;
+				rinfo.report_id |= HID_REPORT_ID_NEXT;
+				rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 			}
-			break;
+			return 2;
+		}
+		break;
 		default:
 			/* Unknown/unsupported report id.
 			 * Should not happen because remaining reports
@@ -219,42 +217,41 @@ static int zotac_getcode() {
 			logprintf(LIRC_ERROR, "Unexpected report id %d", uref.report_id);
 			break;
 		}
-	}
-	else {
-			/* This page reports power key
-			 * (via SystemControl SLEEP)
-			 */
-			LOGPRINTF(3, "Same Event ...\n");
+	} else {
+		/* This page reports power key
+		 * (via SystemControl SLEEP)
+		 */
+		LOGPRINTF(3, "Same Event ...\n");
 
-			/* traverse report descriptor */
-			rinfo.report_type = HID_REPORT_TYPE_INPUT;
-			rinfo.report_id = HID_REPORT_ID_FIRST;
-			rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
+		/* traverse report descriptor */
+		rinfo.report_type = HID_REPORT_TYPE_INPUT;
+		rinfo.report_id = HID_REPORT_ID_FIRST;
+		rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 
-			unsigned int i,j;
-			while (rd >= 0) {
-				for (i = 0; i < rinfo.num_fields; i++) {
-					finfo.report_type = rinfo.report_type;
-				    finfo.report_id = rinfo.report_id;
-				    finfo.field_index = i;
-				    ioctl(fd_hidraw, HIDIOCGFIELDINFO, &finfo);
-				    for (j = 0; j < finfo.maxusage; j++) {
+		unsigned int i, j;
+		while (rd >= 0) {
+			for (i = 0; i < rinfo.num_fields; i++) {
+				finfo.report_type = rinfo.report_type;
+				finfo.report_id = rinfo.report_id;
+				finfo.field_index = i;
+				ioctl(fd_hidraw, HIDIOCGFIELDINFO, &finfo);
+				for (j = 0; j < finfo.maxusage; j++) {
 					uref.field_index = i;
 					uref.usage_index = j;
 					ioctl(fd_hidraw, HIDIOCGUCODE, &uref);
 					ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 					if (uref.value != 0) {
-						LOGPRINTF(3, "usage: %x   value: %x\n",uref.usage_code, uref.value);
+						LOGPRINTF(3, "usage: %x   value: %x\n", uref.usage_code, uref.value);
 						//probe_code = uref.usage_code;
 						return 0;
-						}
 					}
 				}
-				rinfo.report_id |= HID_REPORT_ID_NEXT;
-				rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
 			}
-			return 2;
+			rinfo.report_id |= HID_REPORT_ID_NEXT;
+			rd = ioctl(fd_hidraw, HIDIOCGREPORTINFO, &rinfo);
+		}
+		return 2;
 	}
 	return 0;
 }
@@ -267,13 +264,12 @@ static int zotac_init()
 		return 0;
 	}
 	int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
-	if (ioctl(fd_hidraw, HIDIOCSFLAG, &flags)) {
+	if (ioctl(fd_hidraw, HIDIOCSFLAG, &flags))
 		return 0;
-	}
 	drv.fd = fd_hidraw;
 
 	/* Create pipe so that events sent by the repeat thread will
-	   trigger main thread */
+	 * trigger main thread */
 	if (pipe(fd_pipe) != 0) {
 		logperror(LIRC_ERROR, "couldn't open pipe");
 		close(fd_hidraw);
@@ -315,7 +311,7 @@ static int zotac_deinit()
  *	Runtime that reads device, forwards codes to main thread
  *	and simulates repetitions.
  */
-static void *zotac_repeat()
+static void* zotac_repeat()
 {
 	int repeat_count = 0;
 	unsigned current_code;
@@ -330,11 +326,10 @@ static void *zotac_repeat()
 		// Initialize set to monitor device's events
 		FD_ZERO(&files);
 		FD_SET(fd_hidraw, &files);
-		if (pressed) {
+		if (pressed)
 			sel = select(FD_SETSIZE, &files, NULL, NULL, &delay);
-		} else {
+		else
 			sel = select(FD_SETSIZE, &files, NULL, NULL, NULL);
-		}
 
 		switch (sel) {
 		case 1:
@@ -365,7 +360,7 @@ static void *zotac_repeat()
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR,"(%s) too many repetitions", __FUNCTION__);
+				logprintf(LIRC_ERROR, "(%s) too many repetitions", __FUNCTION__);
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -390,14 +385,14 @@ exit_loop:
 }
 
 /*
-*  Aureal Technology ATWF@83 cheap remote
-*  specific code.
-*/
-
-static char *zotac_rec(struct ir_remote *remotes)
+ *  Aureal Technology ATWF@83 cheap remote
+ *  specific code.
+ */
+static char* zotac_rec(struct ir_remote* remotes)
 {
 	unsigned ev;
 	int rd;
+
 	last = end;
 	gettimeofday(&start, NULL);
 	rd = read(drv.fd, &ev, sizeof(ev));

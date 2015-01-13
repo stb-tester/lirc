@@ -1,14 +1,14 @@
 /****************************************************************************
- ** hw_devinput.c ***********************************************************
- ****************************************************************************
- *
- * receive keycodes input via /dev/input/...
- *
- * Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
- *
- * Distribute under GPL version 2 or later.
- *
- */
+** hw_devinput.c ***********************************************************
+****************************************************************************
+*
+* receive keycodes input via /dev/input/...
+*
+* Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
+*
+* Distribute under GPL version 2 or later.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -38,17 +38,17 @@
 #define BITS_PER_LONG (sizeof(long) * CHAR_BIT)
 /* NBITS was defined in linux/uinput.h */
 #undef NBITS
-#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
-#define OFF(x)  ((x)%BITS_PER_LONG)
-#define BIT(x)  (1UL<<OFF(x))
-#define LONG(x) ((x)/BITS_PER_LONG)
-#define test_bit(bit, array)	((array[LONG(bit)] >> OFF(bit)) & 1)
+#define NBITS(x) ((((x) - 1) / BITS_PER_LONG) + 1)
+#define OFF(x)  ((x) % BITS_PER_LONG)
+#define BIT(x)  (1UL << OFF(x))
+#define LONG(x) ((x) / BITS_PER_LONG)
+#define test_bit(bit, array)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 
 static int devinput_init();
 static int devinput_init_fwd();
 static int devinput_deinit(void);
-static int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-static char *devinput_rec(struct ir_remote *remotes);
+static int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static char* devinput_rec(struct ir_remote* remotes);
 
 enum locate_type {
 	locate_by_name,
@@ -56,24 +56,24 @@ enum locate_type {
 };
 
 const struct driver hw_devinput = {
-	.name		=	"devinput",
-	.device		=	"/dev/input/event0",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	64,
-	.init_func	=	devinput_init_fwd,
-	.deinit_func	=	devinput_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	devinput_rec,
-	.decode_func	=	devinput_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "devinput",
+	.device		= "/dev/input/event0",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 64,
+	.init_func	= devinput_init_fwd,
+	.deinit_func	= devinput_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= devinput_rec,
+	.decode_func	= devinput_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 
@@ -97,7 +97,7 @@ static int is_rc(const char* s)
 {
 	if (s == NULL)
 		return -1;
-	return (s[0] == 'r' && s[1] == 'c' && s[2] >='0' && s[2] <= '9');
+	return s[0] == 'r' && s[1] == 'c' && s[2] >= '0' && s[2] <= '9';
 }
 
 
@@ -117,7 +117,7 @@ static int visit_rc(const char* rc_dir, const char* device)
 	int fd;
 
 	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
-	if (access(path, F_OK) != 0){
+	if (access(path, F_OK) != 0) {
 		logprintf(LIRC_NOTICE, "Cannot open rc directory: %s", path);
 		return -1;
 	}
@@ -128,11 +128,11 @@ static int visit_rc(const char* rc_dir, const char* device)
 	}
 	snprintf(path, sizeof(path), "/sys/class/rc/%s/protocols", rc_dir);
 	fd = open(path, O_WRONLY);
-	if ( fd < 0 ){
+	if (fd < 0) {
 		logprintf(LIRC_DEBUG, "Cannot open protocol file: %s", path);
 		return -1;
 	}
- 	chk_write(fd, "lirc\n" , 5);
+	chk_write(fd, "lirc\n", 5);
 	logprintf(LIRC_NOTICE, "'lirc' written to protocols file %s", path);
 	close(fd);
 	return 0;
@@ -150,7 +150,7 @@ static int set_rc_protocol(const char* device)
 
 	if (strrchr(device, '/') != NULL)
 		device = strrchr(device, '/') + 1;
-	if ((dir = opendir("/sys/class/rc")) == NULL){
+	if ((dir = opendir("/sys/class/rc")) == NULL) {
 		logprintf(LIRC_NOTICE, "Cannot open /sys/class/rc\n");
 		return -1;
 	}
@@ -165,7 +165,7 @@ static int set_rc_protocol(const char* device)
 }
 
 
-static int setup_uinputfd(const char *name, int source)
+static int setup_uinputfd(const char* name, int source)
 {
 	int fd;
 	int key;
@@ -173,13 +173,11 @@ static int setup_uinputfd(const char *name, int source)
 	long events[NBITS(EV_MAX)];
 	long bits[NBITS(KEY_MAX)];
 
-	if (ioctl(source, EVIOCGBIT(0, EV_MAX), events) == -1) {
+	if (ioctl(source, EVIOCGBIT(0, EV_MAX), events) == -1)
 		return -1;
-	}
-	if (!test_bit(EV_REL, events) && !test_bit(EV_ABS, events)) {
+	if (!test_bit(EV_REL, events) && !test_bit(EV_ABS, events))
 		/* no move events, don't forward anything */
 		return -1;
-	}
 	fd = open("/dev/input/uinput", O_RDWR);
 	if (fd == -1) {
 		fd = open("/dev/uinput", O_RDWR);
@@ -202,62 +200,51 @@ static int setup_uinputfd(const char *name, int source)
 	strncat(dev.name, name, sizeof(dev.name) - strlen(dev.name));
 	dev.name[sizeof(dev.name) - 1] = 0;
 
-	if (write(fd, &dev, sizeof(dev)) != sizeof(dev)) {
+	if (write(fd, &dev, sizeof(dev)) != sizeof(dev))
 		goto setup_error;
-	}
 
 	if (test_bit(EV_KEY, events)) {
-		if (ioctl(source, EVIOCGBIT(EV_KEY, KEY_MAX), bits) == -1) {
+		if (ioctl(source, EVIOCGBIT(EV_KEY, KEY_MAX), bits) == -1)
 			goto setup_error;
-		}
 
-		if (ioctl(fd, UI_SET_EVBIT, EV_KEY) == -1) {
+		if (ioctl(fd, UI_SET_EVBIT, EV_KEY) == -1)
 			goto setup_error;
-		}
 
 		/* only forward mouse button events */
 		for (key = BTN_MISC; key <= BTN_GEAR_UP; key++) {
 			if (test_bit(key, bits)) {
-				if (ioctl(fd, UI_SET_KEYBIT, key) == -1) {
+				if (ioctl(fd, UI_SET_KEYBIT, key) == -1)
 					goto setup_error;
-				}
 			}
 		}
 	}
 	if (test_bit(EV_REL, events)) {
-		if (ioctl(source, EVIOCGBIT(EV_REL, REL_MAX), bits) == -1) {
+		if (ioctl(source, EVIOCGBIT(EV_REL, REL_MAX), bits) == -1)
 			goto setup_error;
-		}
-		if (ioctl(fd, UI_SET_EVBIT, EV_REL) == -1) {
+		if (ioctl(fd, UI_SET_EVBIT, EV_REL) == -1)
 			goto setup_error;
-		}
 		for (key = 0; key <= REL_MAX; key++) {
 			if (test_bit(key, bits)) {
-				if (ioctl(fd, UI_SET_RELBIT, key) == -1) {
+				if (ioctl(fd, UI_SET_RELBIT, key) == -1)
 					goto setup_error;
-				}
 			}
 		}
 	}
 	if (test_bit(EV_ABS, events)) {
-		if (ioctl(source, EVIOCGBIT(EV_ABS, ABS_MAX), bits) == -1) {
+		if (ioctl(source, EVIOCGBIT(EV_ABS, ABS_MAX), bits) == -1)
 			goto setup_error;
-		}
-		if (ioctl(fd, UI_SET_EVBIT, EV_ABS) == -1) {
+		if (ioctl(fd, UI_SET_EVBIT, EV_ABS) == -1)
 			goto setup_error;
-		}
 		for (key = 0; key <= ABS_MAX; key++) {
 			if (test_bit(key, bits)) {
-				if (ioctl(fd, UI_SET_ABSBIT, key) == -1) {
+				if (ioctl(fd, UI_SET_ABSBIT, key) == -1)
 					goto setup_error;
-				}
 			}
 		}
 	}
 
-	if (ioctl(fd, UI_DEV_CREATE) == -1) {
+	if (ioctl(fd, UI_DEV_CREATE) == -1)
 		goto setup_error;
-	}
 	return fd;
 
 setup_error:
@@ -268,16 +255,15 @@ setup_error:
 
 #if 0
 /* using fnmatch */
-static int do_match(const char *text, const char *wild)
+static int do_match(const char* text, const char* wild)
 {
 	while (*wild) {
 		if (*wild == '*') {
-			const char *next = text;
+			const char* next = text;
 			wild++;
 			while (*next) {
-				if (do_match(next, wild)) {
+				if (do_match(next, wild))
 					return 1;
-				}
 				next++;
 			}
 			return *wild ? 0 : 1;
@@ -286,12 +272,10 @@ static int do_match(const char *text, const char *wild)
 			if (!*text++)
 				return 0;
 		} else if (*wild == '\\') {
-			if (!wild[1]) {
+			if (!wild[1])
 				return 0;
-			}
-			if (wild[1] != *text++) {
+			if (wild[1] != *text++)
 				return 0;
-			}
 			wild += 2;
 		} else if (*wild++ != *text++) {
 			return 0;
@@ -301,18 +285,17 @@ static int do_match(const char *text, const char *wild)
 }
 #endif
 
-static int locate_dev(const char *pattern, enum locate_type type)
+static int locate_dev(const char* pattern, enum locate_type type)
 {
 	static char devname[FILENAME_MAX];
 	char ioname[255];
-	DIR *dir;
-	struct dirent *obj;
+	DIR* dir;
+	struct dirent* obj;
 	int request;
 
 	dir = opendir("/dev/input");
-	if (!dir) {
+	if (!dir)
 		return 1;
-	}
 
 	devname[0] = 0;
 	switch (type) {
@@ -331,14 +314,12 @@ static int locate_dev(const char *pattern, enum locate_type type)
 
 	while ((obj = readdir(dir))) {
 		int fd;
-		if (obj->d_name[0] == '.' && (obj->d_name[1] == 0 || (obj->d_name[1] == '.' && obj->d_name[2] == 0))) {
-			continue;	/* skip "." and ".." */
-		}
+		if (obj->d_name[0] == '.' && (obj->d_name[1] == 0 || (obj->d_name[1] == '.' && obj->d_name[2] == 0)))
+			continue;       /* skip "." and ".." */
 		sprintf(devname, "/dev/input/%s", obj->d_name);
 		fd = open(devname, O_RDONLY);
-		if (!fd) {
+		if (!fd)
 			continue;
-		}
 		if (ioctl(fd, request, ioname) >= 0) {
 			int ret;
 			close(fd);
@@ -379,10 +360,10 @@ int devinput_init()
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
-	if (set_rc_protocol(drv.device) != 0) {
+	if (set_rc_protocol(drv.device) != 0)
 		logprintf(LIRC_INFO, "Cannot configure the rc device for %s",
 			  drv.device);
-	}
+
 #ifdef EVIOCGRAB
 	exclusive = 1;
 	if (ioctl(drv.fd, EVIOCGRAB, 1) == -1) {
@@ -398,9 +379,8 @@ int devinput_init_fwd()
 	if (!devinput_init())
 		return 0;
 
-	if (exclusive) {
+	if (exclusive)
 		uinputfd = setup_uinputfd("(lircd bypass)", drv.fd);
-	}
 
 	return 1;
 }
@@ -418,16 +398,15 @@ int devinput_deinit(void)
 	return 1;
 }
 
-int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "devinput_decode");
 
 	if (!map_code(remote, ctx, 0, 0, hw_devinput.code_length, code, 0, 0)) {
 		static int print_warning = 1;
 
-		if (!map_code(remote, ctx, 0, 0, 32, code_compat, 0, 0)) {
-			return (0);
-		}
+		if (!map_code(remote, ctx, 0, 0, 32, code_compat, 0, 0))
+			return 0;
 		if (print_warning) {
 			print_warning = 0;
 			logprintf(LIRC_WARNING, "you are using an obsolete devinput config file");
@@ -452,7 +431,7 @@ int devinput_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-char *devinput_rec(struct ir_remote *remotes)
+char* devinput_rec(struct ir_remote* remotes)
 {
 	struct input_event event;
 	int rd;
@@ -466,9 +445,8 @@ char *devinput_rec(struct ir_remote *remotes)
 	rd = read(drv.fd, &event, sizeof event);
 	if (rd != sizeof event) {
 		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
-		if (rd <= 0 && errno != EINTR) {
+		if (rd <= 0 && errno != EINTR)
 			devinput_deinit();
-		}
 		return 0;
 	}
 
@@ -477,30 +455,27 @@ char *devinput_rec(struct ir_remote *remotes)
 
 	value = (unsigned)event.value;
 #ifdef EV_SW
-	if (value == 2 && (event.type == EV_KEY || event.type == EV_SW)) {
+	if (value == 2 && (event.type == EV_KEY || event.type == EV_SW))
 		value = 1;
-	}
 	code_compat = ((event.type == EV_KEY || event.type == EV_SW) && event.value != 0) ? 0x80000000 : 0;
 #else
-	if (value == 2 && event.type == EV_KEY) {
+	if (value == 2 && event.type == EV_KEY)
 		value = 1;
-	}
 	code_compat = ((event.type == EV_KEY) && event.value != 0) ? 0x80000000 : 0;
 #endif
 	code_compat |= ((event.type & 0x7fff) << 16);
 	code_compat |= event.code;
 
 	if (event.type == EV_KEY) {
-		if (event.value == 2) {
+		if (event.value == 2)
 			repeat_state = RPT_YES;
-		} else {
+		else
 			repeat_state = RPT_NO;
-		}
 	} else {
 		repeat_state = RPT_UNKNOWN;
 	}
 
-	code = ((ir_code) (unsigned)event.type) << 48 | ((ir_code) (unsigned)event.code) << 32 | value;
+	code = ((ir_code)(unsigned)event.type) << 48 | ((ir_code)(unsigned)event.code) << 32 | value;
 
 	LOGPRINTF(1, "code %.8llx", code);
 
@@ -509,9 +484,8 @@ char *devinput_rec(struct ir_remote *remotes)
 		    || (event.type == EV_KEY && event.code >= BTN_MISC && event.code <= BTN_GEAR_UP)
 		    || event.type == EV_SYN) {
 			LOGPRINTF(1, "forwarding: %04x %04x", event.type, event.code);
-			if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
+			if (write(uinputfd, &event, sizeof(event)) != sizeof(event))
 				logperror(LIRC_ERROR, "writing to uinput failed");
-			}
 			return NULL;
 		}
 	}

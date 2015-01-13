@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** hw_logitech.c ***********************************************************
- ****************************************************************************
- *
- * routines for Logitech receiver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *
- */
+** hw_logitech.c ***********************************************************
+****************************************************************************
+*
+* routines for Logitech receiver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*       modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -43,27 +42,27 @@ static ir_code pre, code;
 int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int logitech_init(void);
 int logitech_deinit(void);
-char *logitech_rec(struct ir_remote *remotes);
+char* logitech_rec(struct ir_remote* remotes);
 
 struct driver hw_logitech = {
-	.name		=	"logitech",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	16,
-	.init_func	=	logitech_init,
-	.deinit_func	=	logitech_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	logitech_rec,
-	.decode_func	=	logitech_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "logitech",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 16,
+	.init_func	= logitech_init,
+	.deinit_func	= logitech_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= logitech_rec,
+	.decode_func	= logitech_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
@@ -71,13 +70,12 @@ const struct driver* hardwares[] = { &hw_logitech, (struct driver*)NULL };
 
 int logitech_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 8, pre, 8, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 8, pre, 8, code, 0, 0))
+		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
-	return (1);
+	return 1;
 }
 
 int logitech_init(void)
@@ -86,39 +84,40 @@ int logitech_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "logitech_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset tty");
 		logitech_deinit();
-		return (0);
+		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LIRC_ERROR, "could not set baud rate");
 		logitech_deinit();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int logitech_deinit(void)
 {
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
-char *logitech_rec(struct ir_remote *remotes)
+char* logitech_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i = 0;
 	int repeat, mouse_event;
+
 	b[i] = 0x00;
 
 	last = end;
@@ -132,13 +131,13 @@ char *logitech_rec(struct ir_remote *remotes)
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
 				LOGPRINTF(0, "timeout reading byte %d", i);
-				return (NULL);
+				return NULL;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
 			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
 			logperror(LIRC_ERROR, NULL);
-			return (NULL);
+			return NULL;
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
 		if (b[i] >= 0x40 && b[i] <= 0x6F) {
@@ -156,11 +155,11 @@ char *logitech_rec(struct ir_remote *remotes)
 	else
 		repeat = 1;
 	if (!repeat)
-		pre = (ir_code) b[1];
+		pre = (ir_code)b[1];
 	else
 		pre = 0xA0;
-	code = (ir_code) b[2];
+	code = (ir_code)b[2];
 
 	m = decode_all(remotes);
-	return (m);
+	return m;
 }

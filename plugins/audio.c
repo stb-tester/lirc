@@ -1,19 +1,18 @@
-
 /****************************************************************************
- ** hw_audio.c **************************************************************
- ****************************************************************************
- *
- * routines for using a IR receiver in microphone input using portaudio library
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * Copyright (C) 2001, 2002 Pavel Machek <pavel@ucw.cz>
- * Copyright (C) 2002 Matthias Ringwald <ringwald@inf.ethz.ch>
- *
- * Distribute under GPL version 2 or later.
- *
- * Using ... hardware ...
- *
- */
+** hw_audio.c **************************************************************
+****************************************************************************
+*
+* routines for using a IR receiver in microphone input using portaudio library
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+* Copyright (C) 2001, 2002 Pavel Machek <pavel@ucw.cz>
+* Copyright (C) 2002 Matthias Ringwald <ringwald@inf.ethz.ch>
+*
+* Distribute under GPL version 2 or later.
+*
+* Using ... hardware ...
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -37,7 +36,7 @@
 
 #include "lirc_driver.h"
 
-static int ptyfd;		/* the pty */
+static int ptyfd;               /* the pty */
 
 /* PortAudio Includes */
 #include <portaudio.h>
@@ -51,32 +50,32 @@ static int ptyfd;		/* the pty */
 typedef unsigned char SAMPLE;
 
 typedef struct {
-	int lastFrames[3];
-	int lastSign;
-	int pulseSign;
-	unsigned int lastCount;
-	lirc_t carrierFreq;
+	int		lastFrames[3];
+	int		lastSign;
+	int		pulseSign;
+	unsigned int	lastCount;
+	lirc_t		carrierFreq;
 	/* position the sine generator is in */
-	double carrierPos;
+	double		carrierPos;
 	/* length of the remaining signal is stored here when the
-	   callback exits */
-	double remainingSignal;
+	 * callback exits */
+	double		remainingSignal;
 	/* 1 = pulse, 0 = space */
-	int signalPhase;
-	int signaledDone;
-	int samplesToIgnore;
-	int samplerate;
+	int		signalPhase;
+	int		signaledDone;
+	int		samplesToIgnore;
+	int		samplerate;
 } paTestData;
 
-static PaStream *stream;
+static PaStream* stream;
 
 
 static char ptyName[256];
 static int master;
-static int sendPipe[2];		/* signals are written from audio_send
-				   and read from the callback */
-static int completedPipe[2];	/* a byte is written here when the
-				   callback has processed all signals */
+static int sendPipe[2];         /* signals are written from audio_send
+                                 * and read from the callback */
+static int completedPipe[2];    /* a byte is written here when the
+                                 * callback has processed all signals */
 static int outputLatency;
 static int inDevicesPrinted = 0;
 static int outDevicesPrinted = 0;
@@ -90,20 +89,19 @@ static void addCode(lirc_t data)
 ** It may be called at interrupt level on some machines so don't do anything
 ** that could mess up the system like calling malloc() or free().
 */
-
-static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-			  const PaStreamCallbackTimeInfo * outTime, PaStreamCallbackFlags status, void *userData)
+static int recordCallback(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer,
+			  const PaStreamCallbackTimeInfo* outTime, PaStreamCallbackFlags status, void* userData)
 {
-	paTestData *data = (paTestData *) userData;
-	SAMPLE *rptr = (SAMPLE *) inputBuffer;
+	paTestData* data = (paTestData*)userData;
+	SAMPLE* rptr = (SAMPLE*)inputBuffer;
 	long i;
 
-	SAMPLE *myPtr = rptr;
+	SAMPLE* myPtr = rptr;
 
 	unsigned int time;
 	int diff;
 
-	SAMPLE *outptr = (SAMPLE *) outputBuffer;
+	SAMPLE* outptr = (SAMPLE*)outputBuffer;
 	int out;
 	double currentSignal = data->remainingSignal;
 	lirc_t signal;
@@ -128,11 +126,10 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 		if (diff > 100) {
 			if (data->pulseSign == 0) {
 				/* we got the first signal, this is a PULSE */
-				if (*myPtr > data->lastFrames[0]) {
+				if (*myPtr > data->lastFrames[0])
 					data->pulseSign = 1;
-				} else {
+				else
 					data->pulseSign = -1;
-				}
 			}
 
 			if (data->lastCount > 0) {
@@ -141,36 +138,31 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 					data->lastSign = 1;
 
 					time = data->lastCount * 1000000 / data->samplerate;
-					if (data->lastSign == data->pulseSign) {
+					if (data->lastSign == data->pulseSign)
 						addCode(time);
 						/* printf("Pause: %d us, %d \n", time, data->lastCount); */
-					} else {
+					else
 						addCode(time | PULSE_BIT);
 						/* printf("Pulse: %d us, %d \n", time, data->lastCount); */
-					}
 					data->lastCount = 0;
-				}
-
-				else if (*myPtr < data->lastFrames[0] && data->lastSign >= 0) {
+				} else if (*myPtr < data->lastFrames[0] && data->lastSign >= 0) {
 					/* printf("CHANGE -- "); */
 					data->lastSign = -1;
 
 					time = data->lastCount * 1000000 / data->samplerate;
-					if (data->lastSign == data->pulseSign) {
+					if (data->lastSign == data->pulseSign)
 						/* printf("Pause: %d us, %d \n", time, data->lastCount); */
 						addCode(time);
-					} else {
+					else
 						/* printf("Pulse: %d us, %d \n", time, data->lastCount); */
 						addCode(time | PULSE_BIT);
-					}
 					data->lastCount = 0;
 				}
 			}
 		}
 
-		if (data->lastCount < 100000) {
+		if (data->lastCount < 100000)
 			data->lastCount++;
-		}
 
 		data->lastFrames[0] = data->lastFrames[1];
 		data->lastFrames[1] = *myPtr;
@@ -182,50 +174,49 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 
 	/* generate output */
 	for (i = 0; i < framesPerBuffer; i++) {
-		if (currentSignal <= 0.0) {	/* last signal we sent went out */
+		if (currentSignal <= 0.0) {     /* last signal we sent went out */
 			/* try to read a new signal, non blocking */
 			if (read(sendPipe[0], &signal, sizeof(signal)) > 0) {
 				if (data->signaledDone) {
 					/* first one sent is the
-					   carrier frequency */
+					 * carrier frequency */
 					data->carrierFreq = signal;
 					data->signaledDone = 0;
 				} else {
 					/* when a new signal is read,
-					   add it */
+					 * add it */
 					currentSignal += signal;
 					/* invert the phase */
 					data->signalPhase = data->signalPhase ? 0 : 1;
 				}
 
 				/* when transmitting, ignore input
-				   samples for one second */
+				 * samples for one second */
 				data->samplesToIgnore = data->samplerate;
 			} else {
 				/* no more signals, reset phase */
 				data->signalPhase = 0;
 				/* signal that we have written all
-				   signals */
+				 * signals */
 				if (!data->signaledDone) {
 					char done = 0;
 					data->signaledDone = 1;
-					chk_write(completedPipe[1], 
-                                                  &done, 
-                                                  sizeof(done));
+					chk_write(completedPipe[1],
+						  &done,
+						  sizeof(done));
 				}
 			}
 		}
 
 		if (currentSignal > 0.0) {
-			if (data->signalPhase) {
+			if (data->signalPhase)
 				/* write carrier */
 				out = rint(sin(data->carrierPos / (180.0 / PI)) * 127.0 + 128.0);
-			} else {
+			else
 				out = 128;
-			}
 
 			/* one channel is inverted, so both channels
-			   can be used to double the voltage */
+			 * can be used to double the voltage */
 			*outptr++ = out;
 			if (NUM_CHANNELS == 2)
 				*outptr++ = 256 - out;
@@ -253,8 +244,8 @@ static int recordCallback(const void *inputBuffer, void *outputBuffer, unsigned 
 }
 
 /*
-  decoding stuff
-*/
+ * decoding stuff
+ */
 
 #define BUFSIZE 20
 #define SAMPLE 47999
@@ -274,13 +265,13 @@ lirc_t audio_readdata(lirc_t timeout)
 		raise(SIGTERM);
 		return 0;
 	}
-	return (data);
+	return data;
 }
 
-int audio_send(struct ir_remote *remote, struct ir_ncode *code)
+int audio_send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int length;
-	const lirc_t *signals;
+	const lirc_t* signals;
 	int flags;
 	char completed;
 	lirc_t freq;
@@ -327,7 +318,7 @@ int audio_send(struct ir_remote *remote, struct ir_ncode *code)
 	return 1;
 }
 
-static void audio_parsedevicestr(char *api, char *device, int *rate, double *latency)
+static void audio_parsedevicestr(char* api, char* device, int* rate, double* latency)
 {
 	int ret;
 
@@ -370,38 +361,36 @@ static void audio_parsedevicestr(char *api, char *device, int *rate, double *lat
 	*latency = -1.0;
 }
 
-static void audio_choosedevice(PaStreamParameters * streamparameters, int input, char *api, char *device,
+static void audio_choosedevice(PaStreamParameters* streamparameters, int input, char* api, char* device,
 			       double latency)
 {
-	char *direction = input ? "input" : "output";
+	char* direction = input ? "input" : "output";
 	int chosendevice = -1;
 	int i;
 	int nrdevices = Pa_GetDeviceCount();
-	const PaDeviceInfo *deviceinfo;
-	const PaHostApiInfo *hostapiinfo;
-	const char *devicetype = "custom";
-	const char *latencytype = "custom";
+	const PaDeviceInfo* deviceinfo;
+	const PaHostApiInfo* hostapiinfo;
+	const char* devicetype = "custom";
+	const char* latencytype = "custom";
 
 	for (i = 0; i < nrdevices; i++) {
 		deviceinfo = Pa_GetDeviceInfo(i);
 
 		/* check if device can do input or output if
-		   we need it */
+		 * we need it */
 		if ((deviceinfo->maxOutputChannels >= NUM_CHANNELS && !input)
 		    || (deviceinfo->maxInputChannels >= NUM_CHANNELS && input)) {
 			hostapiinfo = Pa_GetHostApiInfo(deviceinfo->hostApi);
 			/*check if this matches the custom device */
-			if (strlen(api) && strlen(device)) {
+			if (strlen(api) && strlen(device))
 				if (strcmp(api, hostapiinfo->name) == 0 && strcmp(device, deviceinfo->name) == 0)
 					chosendevice = i;
-			}
 
 			/*allow devices to be printed to the log twice */
 			/*once for input, once for output */
-			if ((!inDevicesPrinted && input) || (!outDevicesPrinted && !input)) {
+			if ((!inDevicesPrinted && input) || (!outDevicesPrinted && !input))
 				logprintf(LIRC_INFO, "Found %s device %i %s:%s", direction, i, hostapiinfo->name,
 					  deviceinfo->name);
-			}
 		}
 	}
 
@@ -442,13 +431,12 @@ static void audio_choosedevice(PaStreamParameters * streamparameters, int input,
 }
 
 /*
-  interface functions
-*/
+ * interface functions
+ */
 static paTestData data;
 
 int audio_init()
 {
-
 	PaStreamParameters inputParameters;
 	PaStreamParameters outputParameters;
 	PaError err;
@@ -492,7 +480,7 @@ int audio_init()
 		logprintf(LIRC_ERROR, "No input device found");
 		goto error;
 	}
-	inputParameters.channelCount = NUM_CHANNELS;	/* stereo input */
+	inputParameters.channelCount = NUM_CHANNELS;    /* stereo input */
 	inputParameters.sampleFormat = PA_SAMPLE_TYPE;
 	inputParameters.hostApiSpecificStreamInfo = NULL;
 
@@ -502,14 +490,14 @@ int audio_init()
 		logprintf(LIRC_ERROR, "No output device found");
 		goto error;
 	}
-	outputParameters.channelCount = NUM_CHANNELS;	/* stereo output */
+	outputParameters.channelCount = NUM_CHANNELS;   /* stereo output */
 	outputParameters.sampleFormat = PA_SAMPLE_TYPE;
 	outputParameters.hostApiSpecificStreamInfo = NULL;
 
 	outputLatency = outputParameters.suggestedLatency * 1000000;
 
 	/* Record some audio. -------------------------------------------- */
-	err = Pa_OpenStream(&stream, &inputParameters, &outputParameters, data.samplerate, 512,	/* frames per buffer */
+	err = Pa_OpenStream(&stream, &inputParameters, &outputParameters, data.samplerate, 512, /* frames per buffer */
 			    paPrimeOutputBuffersUsingStreamCallback, recordCallback, &data);
 
 	if (err != paNoError)
@@ -537,9 +525,8 @@ int audio_init()
 	}
 
 	flags = fcntl(ptyfd, F_GETFL, 0);
-	if (flags != -1) {
+	if (flags != -1)
 		fcntl(ptyfd, F_SETFL, flags | O_NONBLOCK);
-	}
 
 	LOGPRINTF(1, "PTY name: %s", ptyName);
 
@@ -547,7 +534,7 @@ int audio_init()
 
 	/* make a pipe for sending signals to the callback */
 	/* make a pipe for signaling from the callback that everything
-	   was sent */
+	 * was sent */
 	if (pipe(sendPipe) == -1 || pipe(completedPipe) == -1) {
 		logprintf(LIRC_ERROR, "pipe failed");
 		logperror(LIRC_ERROR, "pipe()");
@@ -569,7 +556,7 @@ int audio_init()
 	/* wait for portaudio to settle */
 	usleep(50000);
 
-	return (1);
+	return 1;
 
 error:
 	Pa_Terminate();
@@ -577,7 +564,7 @@ error:
 	logprintf(LIRC_ERROR, "error number: %d", err);
 	logprintf(LIRC_ERROR, "error message: %s", Pa_GetErrorText(err));
 
-	return (0);
+	return 0;
 }
 
 int audio_deinit(void)
@@ -589,8 +576,8 @@ int audio_deinit(void)
 	logprintf(LIRC_INFO, "Deinitializing %s...", drv.device);
 
 	/* make absolutely sure the full output buffer has played out
-	   even though portaudio should wait for it, it doesn't always
-	   happen */
+	 * even though portaudio should wait for it, it doesn't always
+	 * happen */
 	sleep(outputLatency / 1000000);
 	usleep(outputLatency % 1000000);
 
@@ -623,32 +610,32 @@ error:
 	return 0;
 }
 
-char *audio_rec(struct ir_remote *remotes)
+char* audio_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
-		return (NULL);
-	return (decode_all(remotes));
+		return NULL;
+	return decode_all(remotes);
 }
 
 const struct driver hw_audio = {
-	.name		=	"audio",
-	.device		=	"",
-	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	audio_init,
-	.deinit_func	=	audio_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	audio_send,
-	.rec_func	=	audio_rec,
-	.decode_func	=	receive_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	audio_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "audio",
+	.device		= "",
+	.features	= LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= audio_init,
+	.deinit_func	= audio_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= audio_send,
+	.rec_func	= audio_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= NULL,
+	.readdata	= audio_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_audio, (const struct driver*)NULL };

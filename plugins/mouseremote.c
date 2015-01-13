@@ -1,17 +1,16 @@
-
 /****************************************************************************
- ** hw_mouseremote.c ********************************************************
- ****************************************************************************
- *
- * routines for X10 Mouse Remote
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
- *	modified for X10 receiver by Shawn Nycz <dscordia@eden.rutgers.edu>
- *	modified for X10 MouseRemote by Brian Craft <bcboy@thecraftstudio.com>
- *	removed dependency on multimouse by Geoffrey Hausheer <zcke0au02@sneakemail.com>
- *
- */
+** hw_mouseremote.c ********************************************************
+****************************************************************************
+*
+* routines for X10 Mouse Remote
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*       modified for logitech receiver by Isaac Lauer <inl101@alumni.psu.edu>
+*	modified for X10 receiver by Shawn Nycz <dscordia@eden.rutgers.edu>
+*	modified for X10 MouseRemote by Brian Craft <bcboy@thecraftstudio.com>
+*	removed dependency on multimouse by Geoffrey Hausheer <zcke0au02@sneakemail.com>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -45,69 +44,68 @@ static ir_code pre, code;
 static int serial_input;
 
 //Forwards:
-int mouseremote_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int mouseremote_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int mouseremote_init(void);
 int mouseremote_ps2_init(void);
 int mouseremote_deinit(void);
-char *mouseremote_rec(struct ir_remote *remotes);
+char* mouseremote_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_mouseremote = {
-	.name		=	"mouseremote",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	mouseremote_init,
-	.deinit_func	=	mouseremote_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	mouseremote_rec,
-	.decode_func	=	mouseremote_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "mouseremote",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= mouseremote_init,
+	.deinit_func	= mouseremote_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= mouseremote_rec,
+	.decode_func	= mouseremote_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver hw_mouseremote_ps2 = {
-	.name		=	"mouseremote_ps2",
-	.device		=	"/dev/psaux",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	mouseremote_ps2_init,
-	.deinit_func	=	mouseremote_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	mouseremote_rec,
-	.decode_func	=	mouseremote_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "mouseremote_ps2",
+	.device		= "/dev/psaux",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= mouseremote_ps2_init,
+	.deinit_func	= mouseremote_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= mouseremote_rec,
+	.decode_func	= mouseremote_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
-const struct driver* hardwares[] = {&hw_mouseremote,
-				    &hw_mouseremote_ps2,
-				    (const struct driver*)NULL};
+const struct driver* hardwares[] = { &hw_mouseremote,
+				     &hw_mouseremote_ps2,
+				     (const struct driver*)NULL };
 
 
-int mouseremote_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int mouseremote_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 8, 0x08, 16, code, 8, 0x7f)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 8, 0x08, 16, code, 8, 0x7f))
+		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
-	return (1);
+	return 1;
 }
 
 int mouseremote_init(void)
@@ -117,30 +115,30 @@ int mouseremote_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset tty");
 		mouseremote_deinit();
-		return (0);
+		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LIRC_ERROR, "could not set baud rate");
 		mouseremote_deinit();
-		return (0);
+		return 0;
 	}
 	if (!tty_setcsize(drv.fd, 7)) {
 		logprintf(LIRC_ERROR, "could not set character size");
 		mouseremote_deinit();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int mouseremote_ps2_init(void)
@@ -150,28 +148,29 @@ int mouseremote_ps2_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_ps2_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int mouseremote_deinit(void)
 {
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
-char *mouseremote_rec(struct ir_remote *remotes)
+char* mouseremote_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i = 0, dx = 0, dy = 0, stat = 0;
+
 #define NUMBYTES 3
 	unsigned char b[NUMBYTES];
 
@@ -186,16 +185,15 @@ char *mouseremote_rec(struct ir_remote *remotes)
 		int val;
 		if (!waitfordata(TIMEOUT)) {
 			LOGPRINTF(0, "timeout reading byte %d", i);
-			return (NULL);
+			return NULL;
 		}
 		if ((val = read(drv.fd, &b[i], 1)) != 1) {
 			logprintf(LIRC_ERROR, "reading of byte %d (%d) failed", i, val);
 			logperror(LIRC_ERROR, NULL);
-			return (NULL);
+			return NULL;
 		}
-		if (i == 0 && ((serial_input && (b[i] & 0xC0) != 0x40) || (!serial_input && (b[i] & 0x0C) != 0x08))) {
+		if (i == 0 && ((serial_input && (b[i] & 0xC0) != 0x40) || (!serial_input && (b[i] & 0x0C) != 0x08)))
 			continue;
-		}
 		if (serial_input && i && ((b[i] & 0x40) || (b[i] == 0x80))) {
 			/* the PS/2 initialization isn't unique
 			 * enough to check the stream for
@@ -210,10 +208,10 @@ char *mouseremote_rec(struct ir_remote *remotes)
 
 	if (serial_input) {
 		if (((char)(b[0]) & 0x0c) != 0x0c && (char)(b[2]) == 0x3f && ((char)(b[2]) & 0x07)) {
-			code = (ir_code) (char)(b[1]) | (((char)(b[0]) & 0x03) << 6);
-			LOGPRINTF(1, "result %llx", (__u64) code);
+			code = (ir_code)(char)(b[1]) | (((char)(b[0]) & 0x03) << 6);
+			LOGPRINTF(1, "result %llx", (__u64)code);
 			m = decode_all(remotes);
-			return (m);
+			return m;
 		}
 		stat = ((b[0] & 0x20) >> 3) | ((b[0] & 0x10) >> 4);
 		dx = (char)(((b[0] & 0x03) << 6) | (b[1] & 0x3F));
@@ -222,12 +220,12 @@ char *mouseremote_rec(struct ir_remote *remotes)
 		if ((char)b[2] == 0x7f) {
 			if ((char)b[0] != 0x08) {
 				LOGPRINTF(1, "Bad data");
-				return (NULL);
+				return NULL;
 			}
-			code = (ir_code) b[1];
-			LOGPRINTF(1, "result %llx", (__u64) code);
+			code = (ir_code)b[1];
+			LOGPRINTF(1, "result %llx", (__u64)code);
 			m = decode_all(remotes);
-			return (m);
+			return m;
 		}
 		stat = ((b[0] & 0x01) << 2) | ((b[0] & 0x06) >> 1);
 		dx = (char)b[1];
@@ -244,36 +242,33 @@ char *mouseremote_rec(struct ir_remote *remotes)
 	}
 	if (dy == 1 || dy == 2 || dy == 8) {
 		code |= 0x10;
-		if (dy == 2 && dx != 1) {
+		if (dy == 2 && dx != 1)
 			code |= 0x0200;
-		} else if (dy == 8) {
+		else if (dy == 8)
 			code |= 0x0400;
-		}
 	}
 	if (dx == 1 || dx == 2 || dx == 8) {
 		code |= 0x01;
-		if (dx == 2 && dy != 1) {
+		if (dx == 2 && dy != 1)
 			code |= 0x0200;
-		} else if (dx == 8) {
+		else if (dx == 8)
 			code |= 0x0400;
-		}
 	}
-	if (dy == 4 || dy == 16) {
+	if (dy == 4 || dy == 16)
 		code |= 0x30;
-	} else if (dx == 4 || dx == 16) {
+	else if (dx == 4 || dx == 16)
 		code |= 0x03;
-	}
 	if (code != 0) {
 		code |= 0x0100;
-		LOGPRINTF(1, "result %llx", (__u64) code);
+		LOGPRINTF(1, "result %llx", (__u64)code);
 		m = decode_all(remotes);
-		return (m);
+		return m;
 	} else if (dx == 0 && dy == 0) {
 		code = 0x0800 | stat;
-		LOGPRINTF(1, "result %llx", (__u64) code);
+		LOGPRINTF(1, "result %llx", (__u64)code);
 		m = decode_all(remotes);
-		return (m);
+		return m;
 	}
 	LOGPRINTF(1, "fallthrough is bad!%d %d %d", dx, dy, stat);
-	return (NULL);
+	return NULL;
 }

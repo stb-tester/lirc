@@ -1,31 +1,31 @@
 /****************************************************************************
- ** hw_ftdi.c ***************************************************************
- ****************************************************************************
- *
- * Mode2 receiver + transmitter using the bitbang mode of an FTDI
- * USB-to-serial chip such as the FT232R, with a demodulating IR receiver
- * connected to one of the FTDI chip's data pins -- by default, D1 (RXD).
- *
- * Copyright (C) 2008 Albert Huitsing <albert@huitsing.nl>
- * Copyright (C) 2008 Adam Sampson <ats@offog.org>
- *
- * Inspired by the UDP driver, which is:
- * Copyright (C) 2002 Jim Paris <jim@jtan.com>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */
+** hw_ftdi.c ***************************************************************
+****************************************************************************
+*
+* Mode2 receiver + transmitter using the bitbang mode of an FTDI
+* USB-to-serial chip such as the FT232R, with a demodulating IR receiver
+* connected to one of the FTDI chip's data pins -- by default, D1 (RXD).
+*
+* Copyright (C) 2008 Albert Huitsing <albert@huitsing.nl>
+* Copyright (C) 2008 Adam Sampson <ats@offog.org>
+*
+* Inspired by the UDP driver, which is:
+* Copyright (C) 2002 Jim Paris <jim@jtan.com>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -51,18 +51,18 @@
 /* PID of the child process */
 static pid_t child_pid = -1;
 
-#define RXBUFSZ		2048
-#define TXBUFSZ		65536
+#define RXBUFSZ         2048
+#define TXBUFSZ         65536
 
-static char *device_config = NULL;
+static char* device_config = NULL;
 static int tx_baud_rate = 65536;
 static int rx_baud_rate = 9600;
-static int input_pin = 1;	/* RXD as input */
-static int output_pin = 2;	/* RTS as output */
-static int usb_vendor = 0x0403;	/* default for FT232 */
+static int input_pin = 1;       /* RXD as input */
+static int output_pin = 2;      /* RTS as output */
+static int usb_vendor = 0x0403; /* default for FT232 */
 static int usb_product = 0x6001;
-static const char *usb_desc = NULL;
-static const char *usb_serial = NULL;
+static const char* usb_desc = NULL;
+static const char* usb_serial = NULL;
 
 static int laststate = -1;
 static __u32 rxctr = 0;
@@ -71,19 +71,19 @@ static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
 #if 0
-static lirc_t time_left(struct timeval *current,struct timeval *last, lirc_t gap)
+static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t gap)
 {
-	__u32 secs,diff;
+	__u32 secs, diff;
 
-	secs=current->tv_sec-last->tv_sec;
+	secs = current->tv_sec - last->tv_sec;
 
-	diff=1000000*secs+current->tv_usec-last->tv_usec;
+	diff = 1000000 * secs + current->tv_usec - last->tv_usec;
 
-	return((lirc_t) (diff<gap ? gap-diff:0));
+	return (lirc_t)(diff < gap ? gap - diff : 0);
 }
 #endif
 
-static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
+static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 {
 	int i;
 	lirc_t usecs;
@@ -103,14 +103,12 @@ static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 		usecs = (rxctr * 1000000LL) / (rx_baud_rate * 32);
 
 		/* Clamp */
-		if (usecs > PULSE_MASK) {
+		if (usecs > PULSE_MASK)
 			usecs = PULSE_MASK;
-		}
 
 		/* Indicate pulse or bit */
-		if (curstate) {
+		if (curstate)
 			usecs |= PULSE_BIT;
-		}
 
 		/* Send the sample */
 		chk_write(pipe_rxir_w, &usecs, sizeof usecs);
@@ -139,7 +137,6 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 	ret = write(fd_tx2main, &ret, 1);
 
 	while (1) {
-
 		/* Open the USB device */
 		if (ftdi_usb_open_desc(&ftdic, usb_vendor, usb_product, usb_desc, usb_serial) < 0) {
 			logprintf(LIRC_ERROR, "unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
@@ -147,8 +144,8 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 		}
 
 		/* Enable bit-bang mode, setting output & input pins
-		   direction */
-		if (ftdi_set_bitmode(&ftdic, 1 << output_pin,BITMODE_BITBANG) < 0) {
+		 * direction */
+		if (ftdi_set_bitmode(&ftdic, 1 << output_pin, BITMODE_BITBANG) < 0) {
 			logprintf(LIRC_ERROR, "unable to enable bitbang mode (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
@@ -173,14 +170,12 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 						  ftdi_get_error_string(&ftdic));
 					goto retry;
 				}
-				if (ftdi_write_data(&ftdic, buf, ret) < 0) {
+				if (ftdi_write_data(&ftdic, buf, ret) < 0)
 					logprintf(LIRC_ERROR, "enable to write ftdi buffer (%s)",
 						  ftdi_get_error_string(&ftdic));
-				}
-				if (ftdi_usb_purge_tx_buffer(&ftdic) < 0) {
+				if (ftdi_usb_purge_tx_buffer(&ftdic) < 0)
 					logprintf(LIRC_ERROR, "unable to purge ftdi buffer (%s)",
 						  ftdi_get_error_string(&ftdic));
-				}
 
 				/* back to rx baudrate: */
 				if (ftdi_set_baudrate(&ftdic, rx_baud_rate) < 0) {
@@ -197,9 +192,8 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 			/* receive IR */
 			ret = ftdi_read_data(&ftdic, buf, RXBUFSZ);
-			if (ret > 0) {
+			if (ret > 0)
 				parsesamples(buf, ret, fd_rx2main);
-			}
 		} while (ret > 0);
 
 retry:
@@ -214,7 +208,7 @@ static int hwftdi_init()
 	int pipe_rx2main[2] = { -1, -1 };
 	unsigned char buf[1];
 
-	char *p;
+	char* p;
 
 	logprintf(LIRC_INFO, "Initializing FTDI: %s", drv.device);
 
@@ -223,18 +217,16 @@ static int hwftdi_init()
 	 * more complicated than what some of the other drivers do. */
 	p = device_config = strdup(drv.device);
 	while (p) {
-		char  *comma;
-		char  *value;
+		char* comma;
+		char* value;
 
 		comma = strchr(p, ',');
-		if (comma != NULL) {
+		if (comma != NULL)
 			*comma = '\0';
-		}
 
 		/* Skip empty options. */
-		if (*p == '\0') {
+		if (*p == '\0')
 			goto next;
-		}
 
 		value = strchr(p, '=');
 		if (value == NULL) {
@@ -265,9 +257,8 @@ static int hwftdi_init()
 		}
 
 next:
-		if (comma == NULL) {
+		if (comma == NULL)
 			break;
-		}
 		p = comma + 1;
 	}
 
@@ -327,7 +318,7 @@ next:
 	/* wait for child to be started */
 	chk_read(pipe_tx2main[0], &buf, 1);
 
-	return (1);
+	return 1;
 
 fail:
 	drv.fd = -1;
@@ -353,19 +344,17 @@ fail_start:
 		device_config = NULL;
 	}
 
-	return (0);
+	return 0;
 }
 
 static int hwftdi_deinit(void)
 {
 	if (child_pid != -1) {
 		/* Kill the child process, and wait for it to exit */
-		if (kill(child_pid, SIGTERM) == -1) {
-			return (0);
-		}
-		if (waitpid(child_pid, NULL, 0) == 0) {
-			return (0);
-		}
+		if (kill(child_pid, SIGTERM) == -1)
+			return 0;
+		if (waitpid(child_pid, NULL, 0) == 0)
+			return 0;
 		child_pid = -1;
 	}
 
@@ -380,14 +369,14 @@ static int hwftdi_deinit(void)
 	free(device_config);
 	device_config = NULL;
 
-	return (1);
+	return 1;
 }
 
-static char *hwftdi_rec(struct ir_remote *remotes)
+static char* hwftdi_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
-		return (NULL);
-	return (decode_all(remotes));
+		return NULL;
+	return decode_all(remotes);
 }
 
 static lirc_t hwftdi_readdata(lirc_t timeout)
@@ -395,25 +384,23 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 	int n;
 	lirc_t res = 0;
 
-	if (!waitfordata((long)timeout)) {
+	if (!waitfordata((long)timeout))
 		return 0;
-	}
 
 	n = read(drv.fd, &res, sizeof res);
-	if (n != sizeof res) {
+	if (n != sizeof res)
 		res = 0;
-	}
 
-	return (res);
+	return res;
 }
 
-static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
+static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	__u32 f_sample = tx_baud_rate * 8;
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	__u32 div_carrier;
 	int val_carrier;
-	const lirc_t *pulseptr;
+	const lirc_t* pulseptr;
 	lirc_t pulse;
 	int n_pulses;
 	int pulsewidth;
@@ -424,9 +411,8 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	logprintf(LIRC_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
-	if (!send_buffer_put(remote, code)) {
+	if (!send_buffer_put(remote, code))
 		return 0;
-	}
 
 	/* init vars: */
 	n_pulses = send_buffer_length();
@@ -442,16 +428,15 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 		pulse = *pulseptr++;
 
 		/* compute the pulsewidth (in # samples) */
-		pulsewidth = ((__u64) f_sample) * ((__u32) (pulse & PULSE_MASK)) / 1000000ul;
+		pulsewidth = ((__u64)f_sample) * ((__u32)(pulse & PULSE_MASK)) / 1000000ul;
 
 		/* toggle pulse / space */
 		sendpulse = sendpulse ? 0 : 1;
 
 		while (pulsewidth--) {
-
 			/* carrier generator (generates a carrier
-			   continously, will be modulated by the
-			   requested signal): */
+			 * continously, will be modulated by the
+			 * requested signal): */
 			div_carrier += f_carrier * 2;
 			if (div_carrier >= f_sample) {
 				div_carrier -= f_sample;
@@ -459,11 +444,10 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 			}
 
 			/* send carrier or send space ? */
-			if (sendpulse) {
+			if (sendpulse)
 				buf[bufidx++] = val_carrier;
-			} else {
+			else
 				buf[bufidx++] = 0;
-			}
 
 			/* flush txbuffer? */
 			/* note: be sure to have room for last '0' */
@@ -472,7 +456,6 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 				return 0;
 			}
 		}
-
 	}
 
 	/* always end with 0 to turn off transmitter: */
@@ -484,10 +467,10 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	/* wait for child process to be ready with it */
 	chk_read(pipe_tx2main[0], buf, 1);
 
-	return (1);
+	return 1;
 }
 
-static int hwftdi_ioctl(unsigned int cmd, void *arg)
+static int hwftdi_ioctl(unsigned int cmd, void* arg)
 {
 	int res = -1;
 
@@ -502,26 +485,26 @@ static int hwftdi_ioctl(unsigned int cmd, void *arg)
 }
 
 const struct driver hw_ftdi = {
-	.name		=	"ftdi",
-	.device		=	"",
-	.features	=	LIRC_CAN_REC_MODE2 | \
-				LIRC_CAN_SEND_PULSE | \
-				LIRC_CAN_SET_SEND_CARRIER,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	hwftdi_init,
-	.deinit_func	=	hwftdi_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	hwftdi_send,
-	.rec_func	=	hwftdi_rec,
-	.decode_func	=	receive_decode,
-	.drvctl_func	=	hwftdi_ioctl,
-	.readdata	=	hwftdi_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "ftdi",
+	.device		= "",
+	.features	= LIRC_CAN_REC_MODE2 | \
+			  LIRC_CAN_SEND_PULSE | \
+			  LIRC_CAN_SET_SEND_CARRIER,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= hwftdi_init,
+	.deinit_func	= hwftdi_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= hwftdi_send,
+	.rec_func	= hwftdi_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= hwftdi_ioctl,
+	.readdata	= hwftdi_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_ftdi, (const struct driver*)NULL };

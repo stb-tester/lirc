@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** hw_creative.c ***********************************************************
- ****************************************************************************
- *
- * routines for Creative receiver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** hw_creative.c ***********************************************************
+****************************************************************************
+*
+* routines for Creative receiver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -41,45 +40,44 @@ lirc_t gap, signal_length;
 ir_code pre, code;
 
 //Forwards:
-int creative_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int creative_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int creative_init(void);
 int creative_deinit(void);
-char *creative_rec(struct ir_remote *remotes);
+char* creative_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_creative = {
-	.name		=	"creative",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	creative_init,
-	.deinit_func	=	creative_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	creative_rec,
-	.decode_func	=	creative_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "creative",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= creative_init,
+	.deinit_func	= creative_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= creative_rec,
+	.decode_func	= creative_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_creative, (const struct driver*)NULL };
 
 
-int creative_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int creative_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 16, pre, 16, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 16, pre, 16, code, 0, 0))
+		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
-	return (1);
+	return 1;
 }
 
 int creative_init(void)
@@ -88,37 +86,37 @@ int creative_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "creative_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset tty");
 		creative_deinit();
-		return (0);
+		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 2400)) {
 		logprintf(LIRC_ERROR, "could not set baud rate");
 		creative_deinit();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int creative_deinit(void)
 {
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
-char *creative_rec(struct ir_remote *remotes)
+char* creative_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i;
 
 	b[0] = 0x4d;
@@ -132,21 +130,21 @@ char *creative_rec(struct ir_remote *remotes)
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
 				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
-				return (NULL);
+				return NULL;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
 			logperror(LIRC_ERROR, "reading of byte %d failed", i);
-			return (NULL);
+			return NULL;
 		}
-		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */ ) {
+		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */) {
 			logprintf(LIRC_ERROR, "bad envelope");
-			return (NULL);
+			return NULL;
 		}
 		if (i == 5) {
 			if (b[2] != ((~b[3]) & 0xff)) {
 				logprintf(LIRC_ERROR, "bad checksum");
-				return (NULL);
+				return NULL;
 			}
 		}
 		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
@@ -154,9 +152,9 @@ char *creative_rec(struct ir_remote *remotes)
 	gettimeofday(&end, NULL);
 
 	/* pre=0x8435; */
-	pre = reverse((((ir_code) b[4]) << 8) | ((ir_code) b[5]), 16);
-	code = reverse((((ir_code) b[2]) << 8) | ((ir_code) b[3]), 16);
+	pre = reverse((((ir_code)b[4]) << 8) | ((ir_code)b[5]), 16);
+	code = reverse((((ir_code)b[2]) << 8) | ((ir_code)b[3]), 16);
 
 	m = decode_all(remotes);
-	return (m);
+	return m;
 }

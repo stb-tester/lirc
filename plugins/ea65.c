@@ -48,37 +48,37 @@ struct timeval start, end, last;
 ir_code code;
 
 //Forwards:
-int ea65_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int ea65_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int ea65_init(void);
 int ea65_release(void);
-char *ea65_receive(struct ir_remote *remote);
+char* ea65_receive(struct ir_remote* remote);
 
 
 const struct driver hw_ea65 = {
-	.name		=	"ea65",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	CODE_LENGTH,
-	.init_func	=	ea65_init,
-	.deinit_func	=	ea65_release,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	ea65_receive,
-	.decode_func	=	ea65_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "ea65",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= CODE_LENGTH,
+	.init_func	= ea65_init,
+	.deinit_func	= ea65_release,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= ea65_receive,
+	.decode_func	= ea65_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_ea65, (const struct driver*)NULL };
 
 
-int ea65_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int ea65_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	lirc_t d = 0;
 
@@ -89,11 +89,10 @@ int ea65_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 		ctx->repeat_flag = 0;
 	} else {
 		d = (start.tv_sec - last.tv_sec) * 1000000 + start.tv_usec - last.tv_usec;
-		if (d < 960000) {
+		if (d < 960000)
 			ctx->repeat_flag = 1;
-		} else {
+		else
 			ctx->repeat_flag = 0;
-		}
 	}
 
 	ctx->min_remaining_gap = 0;
@@ -141,7 +140,7 @@ int ea65_release(void)
 	return 1;
 }
 
-char *ea65_receive(struct ir_remote *remote)
+char* ea65_receive(struct ir_remote* remote)
 {
 	uint8_t data[5];
 	int r;
@@ -176,7 +175,7 @@ char *ea65_receive(struct ir_remote *remote)
 		code = (0xff << 16) | (data[2] << 8) | data[3];
 		break;
 	}
-	logprintf(LIRC_INFO, "EA65: receive code: %llx", (__u64) code);
+	logprintf(LIRC_INFO, "EA65: receive code: %llx", (__u64)code);
 
 	gettimeofday(&end, NULL);
 

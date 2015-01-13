@@ -1,23 +1,22 @@
-
 /****************************************************************************
- ** hw_audio_alsa.c *********************************************************
- ****************************************************************************
- *
- * routines for using a IR receiver connected to soundcard ADC.
- * Uses ALSA sound interface which is going to become standard
- * in the 2.6 series of kernels. It does the same as ir_audio,
- * but is linux-specific and does not require any exotic libraries
- * for doing such simple work like recording an audio stream.
- * Besides, its a lot more optimal since it uses 8kHz 8-bit
- * mono sampling rather than 44KHz stereo 16-bit (a lot less CPU usage).
- *
- * Copyright (C) 2003 Andrew Zabolotny <andyz@users.sourceforge.net>
- *
- * Distribute under GPL version 2 or later.
- *
- * A detailed (:-) description of hardware can be found in the doc directory
- * in the file ir-audio.html. Usage manual is in audio-alsa.html.
- */
+** hw_audio_alsa.c *********************************************************
+****************************************************************************
+*
+* routines for using a IR receiver connected to soundcard ADC.
+* Uses ALSA sound interface which is going to become standard
+* in the 2.6 series of kernels. It does the same as ir_audio,
+* but is linux-specific and does not require any exotic libraries
+* for doing such simple work like recording an audio stream.
+* Besides, its a lot more optimal since it uses 8kHz 8-bit
+* mono sampling rather than 44KHz stereo 16-bit (a lot less CPU usage).
+*
+* Copyright (C) 2003 Andrew Zabolotny <andyz@users.sourceforge.net>
+*
+* Distribute under GPL version 2 or later.
+*
+* A detailed (:-) description of hardware can be found in the doc directory
+* in the file ir-audio.html. Usage manual is in audio-alsa.html.
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -59,43 +58,43 @@
 /* The following structure contains current sound card setup */
 static struct {
 	/* ALSA PCM handle */
-	snd_pcm_t *handle;
+	snd_pcm_t*		handle;
 	/* Sampling rate */
-	unsigned rate;
+	unsigned		rate;
 	/* Data format */
-	snd_pcm_format_t format;
+	snd_pcm_format_t	format;
 	/* The audio buffer size in microseconds */
-	unsigned buffer_time;
+	unsigned		buffer_time;
 	/* The FIFO handle for reading and writing */
-	int fd;
+	int			fd;
 	/* The asynchronous I/O signal handler object */
-	snd_async_handler_t *sighandler;
+	snd_async_handler_t*	sighandler;
 	/* Value indicating number of channels for capture */
-	unsigned char num_channels;
+	unsigned char		num_channels;
 	/* Value indicating which channel to look for signal 0=right 1=left */
-	unsigned char channel;
+	unsigned char		channel;
 } alsa_hw = {
 	NULL,
-	    /* Desired sampling frequency */
-	    8000,
-	    /* Desired PCM format */
-	    SND_PCM_FORMAT_U8,
-	    /* Reserve buffer for 0.1 secs of sampled data.
-	     * If we use a larger buffer, our routine is called too seldom,
-	     * and record.c thinks there is a time gap between data (and drops
-	     * the repeat count).
-	     */
-	    100000, -1, NULL, 1, 0	/*Use left channel by default */
+	/* Desired sampling frequency */
+	8000,
+	/* Desired PCM format */
+	SND_PCM_FORMAT_U8,
+	/* Reserve buffer for 0.1 secs of sampled data.
+	 * If we use a larger buffer, our routine is called too seldom,
+	 * and record.c thinks there is a time gap between data (and drops
+	 * the repeat count).
+	 */
+	100000,		  -1,NULL, 1, 0 /*Use left channel by default */
 };
 
 /* Return the absolute difference between two unsigned 8-bit samples */
-#define U8_ABSDIFF(s1,s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
+#define U8_ABSDIFF(s1, s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
 
 /* Forward declarations */
 int audio_alsa_deinit(void);
-static void alsa_sig_io(snd_async_handler_t * h);
+static void alsa_sig_io(snd_async_handler_t* h);
 
-static int alsa_error(const char *errstr, int errcode)
+static int alsa_error(const char* errstr, int errcode)
 {
 	if (errcode < 0) {
 		logprintf(LIRC_ERROR, "ALSA function snd_pcm_%s returned error: %s", errstr, snd_strerror(errcode));
@@ -107,8 +106,8 @@ static int alsa_error(const char *errstr, int errcode)
 
 static int alsa_set_hwparams()
 {
-	snd_pcm_hw_params_t *hwp;
-	snd_pcm_sw_params_t *swp;
+	snd_pcm_hw_params_t* hwp;
+	snd_pcm_sw_params_t* swp;
 	int dir = 1;
 	unsigned period_time;
 	snd_pcm_uframes_t buffer_size, period_size;
@@ -134,8 +133,8 @@ static int alsa_set_hwparams()
 	/* How often to call our SIGIO handler (~40Hz) */
 	period_time = alsa_hw.buffer_time / 4;
 	if (alsa_error
-	    ("hw_params_set_period_time_near",
-	     snd_pcm_hw_params_set_period_time_near(alsa_hw.handle, hwp, &period_time, &dir))
+		    ("hw_params_set_period_time_near",
+		    snd_pcm_hw_params_set_period_time_near(alsa_hw.handle, hwp, &period_time, &dir))
 	    || alsa_error("hw_params_get_buffer_size", snd_pcm_hw_params_get_buffer_size(hwp, &buffer_size))
 	    || alsa_error("hw_params_get_period_size", snd_pcm_hw_params_get_period_size(hwp, &period_size, 0))
 	    || alsa_error("hw_params", snd_pcm_hw_params(alsa_hw.handle, hwp)))
@@ -143,7 +142,7 @@ static int alsa_set_hwparams()
 
 	snd_pcm_sw_params_current(alsa_hw.handle, swp);
 	if (alsa_error
-	    ("sw_params_set_start_threshold", snd_pcm_sw_params_set_start_threshold(alsa_hw.handle, swp, period_size))
+		    ("sw_params_set_start_threshold", snd_pcm_sw_params_set_start_threshold(alsa_hw.handle, swp, period_size))
 	    || alsa_error("sw_params_set_avail_min", snd_pcm_sw_params_set_avail_min(alsa_hw.handle, swp, period_size))
 	    || alsa_error("sw_params", snd_pcm_sw_params(alsa_hw.handle, swp)))
 		return -1;
@@ -154,7 +153,7 @@ static int alsa_set_hwparams()
 int audio_alsa_init()
 {
 	int fd, err;
-	char *pcm_rate;
+	char* pcm_rate;
 	char tmp_name[20];
 
 	rec_buffer_init();
@@ -182,7 +181,7 @@ int audio_alsa_init()
 	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open pipe %s", tmp_name);
 		logperror(LIRC_ERROR, "audio_alsa_init ()");
-error:		unlink(tmp_name);
+error:          unlink(tmp_name);
 		audio_alsa_deinit();
 		return 0;
 	}
@@ -199,7 +198,7 @@ error:		unlink(tmp_name);
 	pcm_rate = strchr(tmp_name, '@');
 	if (pcm_rate) {
 		int rate;
-		char *stereo_channel;
+		char* stereo_channel;
 
 		/* Examine if we need to capture in stereo
 		 * looking for an 'l' or 'r' character to indicate
@@ -207,32 +206,29 @@ error:		unlink(tmp_name);
 		stereo_channel = strchr(pcm_rate, ',');
 
 		if (stereo_channel) {
-
 			/* Syntax in device string indicates we need
-			   to use stereo */
+			 * to use stereo */
 			alsa_hw.num_channels = 2;
 			/* As we are requesting stereo now, use the
-			   more common signed 16bit samples */
+			 * more common signed 16bit samples */
 			alsa_hw.format = SND_PCM_FORMAT_S16_LE;
 
-			if (stereo_channel[1] == 'l') {
+			if (stereo_channel[1] == 'l')
 				alsa_hw.channel = 0;
-			} else if (stereo_channel[1] == 'r') {
+			else if (stereo_channel[1] == 'r')
 				alsa_hw.channel = 1;
-			} else {
+			else
 				logperror(LIRC_WARNING,
 					  "dont understand which channel to use - defaulting to left\n");
-			}
 		}
 
 		/* Remove the sample rate from device name (and
-		   channel indicator if present) */
+		 * channel indicator if present) */
 		*pcm_rate++ = 0;
 		/* See if rate is meaningful */
 		rate = atoi(pcm_rate);
-		if (rate > 0) {
+		if (rate > 0)
 			alsa_hw.rate = rate;
-		}
 	}
 
 	/* Open the audio card in non-blocking mode */
@@ -245,7 +241,7 @@ error:		unlink(tmp_name);
 
 	/* Set up the I/O signal handler */
 	if (alsa_error
-	    ("async_add_handler", snd_async_add_pcm_handler(&alsa_hw.sighandler, alsa_hw.handle, alsa_sig_io, NULL)))
+		    ("async_add_handler", snd_async_add_pcm_handler(&alsa_hw.sighandler, alsa_hw.handle, alsa_sig_io, NULL)))
 		goto error;
 
 	/* Set sampling parameters */
@@ -307,14 +303,14 @@ int audio_alsa_deinit(void)
  * (space <-> pulse).
  */
 
-#define READ_BUFFER_SIZE (2*4096)
+#define READ_BUFFER_SIZE (2 * 4096)
 
-static void alsa_sig_io(snd_async_handler_t * h)
+static void alsa_sig_io(snd_async_handler_t* h)
 {
 	/* Previous sample */
 	static unsigned char ps = 0x80;
 	/* Count samples with similar level (to detect pule/space
-	   length), 24.8 fp */
+	 * length), 24.8 fp */
 	static unsigned sample_count = 0;
 	/* Current signal level (dynamically changes) */
 	static unsigned signal_level = 0;
@@ -325,7 +321,7 @@ static void alsa_sig_io(snd_async_handler_t * h)
 	/* Non-zero if we're in zero crossing waiting state */
 	static char waiting_zerox = 0;
 	/* Store sample size, as our sample buffer will represent
-	   shorts or chars */
+	 * shorts or chars */
 	unsigned char bytes_per_sample = (alsa_hw.format == SND_PCM_FORMAT_S16_LE ? 2 : 1);
 
 	int i, err;
@@ -343,6 +339,7 @@ static void alsa_sig_io(snd_async_handler_t * h)
 	 * the X11 server starts. If we won't, recording will stop forever.
 	 */
 	snd_pcm_state_t state = snd_pcm_state(alsa_hw.handle);
+
 	switch (state) {
 	case SND_PCM_STATE_SUSPENDED:
 		while ((err = snd_pcm_resume(alsa_hw.handle)) == -EAGAIN)
@@ -350,11 +347,11 @@ static void alsa_sig_io(snd_async_handler_t * h)
 			sleep(1);
 		if (err >= 0)
 			goto var_reset;
-		/* Fallthrough */
+	/* Fallthrough */
 	case SND_PCM_STATE_XRUN:
 		alsa_error("prepare", snd_pcm_prepare(alsa_hw.handle));
 		alsa_error("start", snd_pcm_start(alsa_hw.handle));
-var_reset:			/* Reset variables */
+var_reset:                      /* Reset variables */
 		sample_count = 0;
 		waiting_zerox = 0;
 		signal_level = 0;
@@ -373,23 +370,22 @@ var_reset:			/* Reset variables */
 		count = snd_pcm_readi(alsa_hw.handle, buff, count);
 
 		/*Loop around samples, if stereo we are
-		 *only interested in one channel*/
+		 * only interested in one channel*/
 		for (i = 0; i < count; i++) {
 			/* cs == current sample */
 			unsigned char cs, as, sl, sz, xz;
-		        short stmp;
+			short stmp;
 			if (bytes_per_sample == 2) {
 				stmp = buff[i * bytes_per_sample * alsa_hw.num_channels +
-					     bytes_per_sample * alsa_hw.channel];
+					    bytes_per_sample * alsa_hw.channel];
 				cs = stmp >> 8;
 				cs ^= 0x80;
 			} else {
 				cs = buff[i];
 
 				/* Convert signed samples to unsigned */
-				if (alsa_hw.format == SND_PCM_FORMAT_S8) {
+				if (alsa_hw.format == SND_PCM_FORMAT_S8)
 					cs ^= 0x80;
-				}
 			}
 
 			/* Track signal middle value (it could differ from 0x80) */
@@ -511,7 +507,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	return data;
 }
 
-char *audio_alsa_rec(struct ir_remote *remotes)
+char* audio_alsa_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
 		return NULL;
@@ -521,25 +517,25 @@ char *audio_alsa_rec(struct ir_remote *remotes)
 #define audio_alsa_decode receive_decode
 
 const struct driver hw_audio_alsa = {
-	.name		=	"audio_alsa",
-	.device		=	"hw",
-	.fd		=	-1,
-	.features	=	LIRC_CAN_REC_MODE2,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	audio_alsa_init,
-	.deinit_func	=	audio_alsa_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	audio_alsa_rec,
-	.decode_func	=	audio_alsa_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	audio_alsa_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "audio_alsa",
+	.device		= "hw",
+	.fd		= -1,
+	.features	= LIRC_CAN_REC_MODE2,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= audio_alsa_init,
+	.deinit_func	= audio_alsa_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= audio_alsa_rec,
+	.decode_func	= audio_alsa_decode,
+	.drvctl_func	= NULL,
+	.readdata	= audio_alsa_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };

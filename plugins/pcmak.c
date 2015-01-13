@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** hw_pcmak.c ***********************************************************
- ****************************************************************************
- *
- * routines for Logitech receiver
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- * 	modified for pcmak serial/USB-ftdi receiver P_awe_L <pablozrudnika@wp.pl>
- *
- */
+** hw_pcmak.c ***********************************************************
+****************************************************************************
+*
+* routines for Logitech receiver
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*       modified for pcmak serial/USB-ftdi receiver P_awe_L <pablozrudnika@wp.pl>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -41,45 +40,44 @@ static ir_code pre, code;
 static int repeat_counter, pressed_key;
 
 //Forwards:
-int pcmak_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+int pcmak_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 int pcmak_init(void);
 int pcmak_deinit(void);
-char *pcmak_rec(struct ir_remote *remotes);
+char* pcmak_rec(struct ir_remote* remotes);
 
 
 const struct driver hw_pcmak = {
-	.name		=	"pcmak",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	16,
-	.init_func	=	pcmak_init,
-	.deinit_func	=	pcmak_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	pcmak_rec,
-	.decode_func	=	pcmak_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "pcmak",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 16,
+	.init_func	= pcmak_init,
+	.deinit_func	= pcmak_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= pcmak_rec,
+	.decode_func	= pcmak_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_pcmak, (const struct driver*)NULL };
 
 
-int pcmak_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int pcmak_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 8, pre, 8, code, 0, 0)) {
-		return (0);
-	}
+	if (!map_code(remote, ctx, 8, pre, 8, code, 0, 0))
+		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
-	return (1);
+	return 1;
 }
 
 int pcmak_init(void)
@@ -88,37 +86,37 @@ int pcmak_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
-		return (0);
+		return 0;
 	}
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "pcmak_init()");
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "could not reset tty");
 		pcmak_deinit();
-		return (0);
+		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
 		logprintf(LIRC_ERROR, "could not set baud rate");
 		pcmak_deinit();
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
 int pcmak_deinit(void)
 {
 	close(drv.fd);
 	tty_delete_lock();
-	return (1);
+	return 1;
 }
 
-char *pcmak_rec(struct ir_remote *remotes)
+char* pcmak_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i = 0;
 
 	last = end;
@@ -143,14 +141,14 @@ char *pcmak_rec(struct ir_remote *remotes)
 			repeat_counter = 0;
 		} else {
 			/* Range of allowed button codes */
-			if (	/* PCMAK codes */
-				   (b >= 0x01 && b <= 0x2B) ||
-				   /* codes with shift button */
-				   (b >= 0x41 && b <= 0x6B) ||
-				   /* MINIMAK/MINIMAK LASER codes */
-				   (b >= 0x2F && b <= 0x31) ||
-				   /* MINIMAK codes with shift */
-				   b == 0x5F || b == 0x79 || b == 0x75) {
+			if (    /* PCMAK codes */
+				(b >= 0x01 && b <= 0x2B) ||
+			        /* codes with shift button */
+				(b >= 0x41 && b <= 0x6B) ||
+			        /* MINIMAK/MINIMAK LASER codes */
+				(b >= 0x2F && b <= 0x31) ||
+			        /* MINIMAK codes with shift */
+				b == 0x5F || b == 0x79 || b == 0x75) {
 				if (repeat_counter < 1) {
 					repeat_counter++;
 					pressed_key = b;
@@ -158,7 +156,7 @@ char *pcmak_rec(struct ir_remote *remotes)
 					if (pressed_key == b) {
 						gettimeofday(&end, NULL);
 						pre = 0xAA;
-						code = (ir_code) b;
+						code = (ir_code)b;
 						m = decode_all(remotes);
 						return m;
 					}
