@@ -198,7 +198,7 @@ static int setup_uinputfd(const char* name, int source)
 			dev.name[sizeof(dev.name) - 1] = 0;
 		}
 	}
-	strncat(dev.name, name, sizeof(dev.name) - strlen(dev.name));
+	strncat(dev.name, name, sizeof(dev.name) - strlen(dev.name) - 1);
 	dev.name[sizeof(dev.name) - 1] = 0;
 
 	if (write(fd, &dev, sizeof(dev)) != sizeof(dev))
