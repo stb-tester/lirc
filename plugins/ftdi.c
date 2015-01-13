@@ -421,7 +421,6 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 	div_carrier = 0;
 	val_carrier = 0;
 	sendpulse = 0;
-	pulsewidth = 0;
 
 	while (n_pulses--) {
 		/* take pulse from buffer */
