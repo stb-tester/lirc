@@ -223,6 +223,8 @@ void button_state_init(struct button_state* state)
 
 static lirc_t calc_signal(struct lengths* len)
 {
+	if (len->count == 0)
+		return 0;
 	return (lirc_t)(len->sum / len->count);
 }
 
@@ -401,7 +403,6 @@ void remove_post_data(struct ir_remote* remote)
 	struct ir_code_node* n;
 
 	if (remote->post_data_bits == 0) {
-		remote = remote->next;
 		return;
 	}
 	for (codes = remote->codes; codes->name != NULL; codes++) {
@@ -445,7 +446,6 @@ void invert_data(struct ir_remote* remote)
 	}
 
 	if (remote->bits == 0) {
-		remote = remote->next;
 		return;
 	}
 
@@ -1138,7 +1138,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 				data_length =
 					calc_signal(signal_length) - remote->plead - remote->phead -
 					remote->shead +
-				        /* + 1/2 bit */
+					/* + 1/2 bit */
 					(remote->pone + remote->sone) / 2;
 				remote->bits = data_length / (remote->pone + remote->sone);
 				if (is_rc6(remote))
