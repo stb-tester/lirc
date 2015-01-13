@@ -713,9 +713,9 @@ struct trans_mouse* read_config(FILE* fd)
 		tm_new = (struct trans_mouse*) malloc(sizeof(struct trans_mouse));
 		if (remote == NULL || button == NULL || tm_new == NULL) {
 			syslog(LOG_ERR, "out of memory");
-			if (remote != NULL)
+			if (remote != NULL && remote != ALL)
 				free(remote);
-			if (button != NULL)
+			if (button != NULL && button != ALL)
 				free(button);
 			if (tm_new != NULL)
 				free(tm_new);
