@@ -387,7 +387,7 @@ int main(int argc, char** argv)
 				      (mode == LIRC_MODE_MODE2 ?
 				       (void*)&data : buffer),
 				      count);
-			if (result != count) {
+			if (result != (int)count) {
 				fputs("read() failed\n", stderr);
 				break;
 			}

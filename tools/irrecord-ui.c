@@ -137,7 +137,7 @@ static void get_commandline(int argc, char** argv, char* buff, size_t size)
 {
 	int i;
 	int j;
-	int dest = 0;
+	unsigned int dest = 0;
 
 	if (size == 0)
 		return;
@@ -319,7 +319,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			return STS_INIT_HW_FAIL;
 		}
 	}
-	aeps = (curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
+	aeps = ((int) curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
 	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		return STS_INIT_BAD_MODE;
 		fclose(state->fout);

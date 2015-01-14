@@ -95,8 +95,8 @@ static int bDaemon = 0;
 static int bInError = 0;
 
 struct keymodlist_t {
-	char*	name;
-	Mask	mask;
+	const char* name;
+	Mask mask;
 };
 static struct keymodlist_t keymodlist[] = {
 	{ "SHIFT",   ShiftMask	 },
@@ -133,7 +133,7 @@ static Time fake_timestamp(void)
 	struct timezone tz;     /* is not used since ages */
 
 	gettimeofday(&tv, &tz);
-	tint = (int)tv.tv_sec * 1000;
+	tint = (int) tv.tv_sec * 1000;
 	tint = tint / 1000 * 1000;
 	tint = tint + tv.tv_usec / 1000;
 	return (Time)tint;
@@ -227,7 +227,8 @@ static Window find_sub_sub_window(Window top, int* x, int* y)
 	Window foo;
 	Window target = 0;
 	int rel_x, rel_y, new_x = 1, new_y = 1;
-	unsigned int nc, width, height, border, depth, targetsize = 1000000;
+	int targetsize = 1000000;
+	unsigned int nc, width, height, border, depth;
 
 	base = top;
 	if (!base)
@@ -243,13 +244,13 @@ static Window find_sub_sub_window(Window top, int* x, int* y)
 		if (XGetGeometry(dpy, children[nc - 1],
 				 &foo, &rel_x, &rel_y, &width, &height, &border, &depth)) {
 			if ((rel_x <= *x)
-			    && (*x <= rel_x + width)
-			    && (rel_y <= *y) && (*y <= rel_y + height)) {
+			    && (*x <= (int) (rel_x + width))
+			    && (rel_y <= *y) && (*y <= (int) (rel_y + height))) {
 				logprintf(LIRC_DEBUG,
 					  "found a subwindow 0x%x +%d +%d  %d x %d\n",
 					  children[nc - 1], rel_x,
 					  rel_y, width, height);
-				if ((width * height) < targetsize) {
+				if ((int) (width * height) < targetsize) {
 					target = children[nc - 1];
 					targetsize = width * height;
 					new_x = *x - rel_x;
@@ -297,8 +298,8 @@ static Window find_sub_window(Window top, char* name, int* x, int* y)
 		if (XGetGeometry(dpy, children[nc - 1],
 				 &foo, &rel_x, &rel_y,
 				 &width, &height, &border, &depth)) {
-			if ((rel_x <= *x) && (*x <= rel_x + width)
-			    && (rel_y <= *y) && (*y <= rel_y + height)) {
+			if ((rel_x <= *x) && (*x <= (int) (rel_x + width))
+			    && (rel_y <= *y) && (*y <= (int) (rel_y + height))) {
 				logprintf(LIRC_DEBUG,
 					  "found a subwindow 0x%x +%d +%d  %d x %d\n",
 					  children[nc - 1], rel_x,
@@ -338,7 +339,8 @@ static Window find_window_focused(Window top, char* name)
 	/* return the currently focused window if it is a direct match or a
 	 * subwindow of the named window */
 
-	if ((w = find_window(top, name))) {
+	w = find_window(top, name);
+	if (w) {
 		XGetInputFocus(dpy, &cur, &tmp);
 		logprintf(LIRC_DEBUG, "current window: 0x%x named window: 0x%x\n", cur, w);
 
@@ -385,7 +387,7 @@ static void make_key(char* keyname, int x, int y, XKeyEvent* xev)
 	KeySym ks;
 	KeyCode kc;
 
-	part2 = malloc(128);
+	part2 = (char*) malloc(128);
 
 	xev->type = KeyPress;
 	xev->display = dpy;
@@ -546,7 +548,7 @@ int check(char* s)
 	int d;
 	char* buffer;
 
-	buffer = malloc(strlen(s) + 1);
+	buffer = (char*) malloc(strlen(s) + 1);
 	if (buffer == NULL) {
 		fprintf(stderr, "%s: out of memory\n", prog);
 		return -1;
@@ -587,7 +589,7 @@ int main(int argc, char* argv[])
 	struct lirc_config* config;
 	char* config_file = NULL;
 	int c;
-	int WindowID;
+	unsigned int WindowID;
 
 	while ((c = getopt_long(argc, argv, "dhV", long_options, NULL)) != EOF) {
 		switch (c) {

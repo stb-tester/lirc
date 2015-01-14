@@ -46,7 +46,7 @@ static const char* const help =
 	"    -a --address=host[:port]\tconnect to lircd at this address\n"
 	"    -# --count=n\t\tsend command n times\n";
 
-char* prog;
+const char* prog;
 
 int send_packet(lirc_cmd_ctx* ctx, int fd)
 {
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 	char* directive;
 	char* remote;
 	char* code;
-	char* lircd = NULL;
+	const char* lircd = NULL;
 	char* address = NULL;
 	unsigned short port = LIRC_INET_PORT;
 	unsigned long count = 1;

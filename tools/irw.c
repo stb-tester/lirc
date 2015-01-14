@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	char buf[128];
 	struct sockaddr_un addr;
 	int c;
-	char* progname;
+	const char* progname;
 
 	progname = "irw " VERSION;
 

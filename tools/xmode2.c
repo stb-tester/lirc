@@ -94,7 +94,7 @@ static struct stat s;
 static int use_stdin = 0;
 static int use_raw_access = 0;
 
-static char* device = "";
+static const char* device = "";
 static char* geometry = NULL;
 
 static struct option options[] = {
@@ -268,7 +268,7 @@ void drawGrid(int div)
 	int x;
 
 	XClearWindow(d1, w1);
-	for (x = 0; x < w1_w; x += 10)
+	for (x = 0; x < (int)w1_w; x += 10)
 		XDrawLine(d1, w1, gc1,  x, 0,  x, w1_h);
 
 	sprintf(textbuffer, "%5.3f ms/div", div/100.0);
@@ -430,8 +430,8 @@ int main(int argc, char** argv)
 				case Expose:
 					break;
 				case ConfigureNotify:
-					if (w1_w == event_return1.xconfigure.width &&
-					    w1_h == event_return1.xconfigure.height)
+					if ((int) w1_w == event_return1.xconfigure.width &&
+					    (int) w1_h == event_return1.xconfigure.height)
 						continue;
 
 					w1_w = event_return1.xconfigure.width;
@@ -504,7 +504,7 @@ int main(int argc, char** argv)
 						if (!dmode)
 							XDrawLine(d1, w1, gc2, x1, y1 + 10, x1, y1);
 					}
-					if (x1 < w1_w) {
+					if (x1 < (int) w1_w) {
 						if (dmode) {
 							if (data & PULSE_BIT)
 								XDrawLine(d1, w1, gc2, x1, y1, x1 + dx, y1);
@@ -520,7 +520,7 @@ int main(int argc, char** argv)
 						}
 					}
 				}
-				if (y1 > w1_h) {
+				if (y1 > (lirc_t) w1_h) {
 					x1 = 0;
 					drawGrid(div_);
 				}

@@ -55,7 +55,7 @@ struct lirc_config* lconfig;
 
 static int lsock, sigcaught;
 
-void die(char* fmt, ...)
+void die(const char* fmt, ...)
 {
 	va_list args;
 
@@ -106,7 +106,7 @@ static void copy_loop(int ptym, int ignoreeof)
 					if (ir == NULL)
 						break;
 					while ((ret = lirc_code2char(lconfig, ir, &irchars)) == 0 && irchars != NULL)
-						if (write(ptym, irchars, strlen(irchars)) != strlen(irchars))
+						if (write(ptym, irchars, strlen(irchars)) != (int) strlen(irchars))
 							die("writen error to master pty");
 					free(ir);
 					if (ret == -1)

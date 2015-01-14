@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 {
 	int fd_io;
 	int fd_cmd;
-	char* socketpath;
+	const char* socketpath;
 	char path[128];
 	int c;
 

@@ -96,7 +96,7 @@ void get_photo(const char* path, char* buff, ssize_t size)
 		return;
 	}
 	if (globbuf.gl_pathc > 1)
-		logprintf(LOG_WARNING, "Multiple photos for %s", buff);
+		logprintf(LIRC_WARNING, "Multiple photos for %s", buff);
 	strncpy(buff, basename(globbuf.gl_pathv[0]), size);
 }
 
@@ -166,7 +166,7 @@ int isdir(const struct dirent* ent)
 /** Return true if argument defines a lircd.conf file. */
 int isfile(const struct dirent* ent)
 {
-	char* dot = strrchr(ent->d_name, '.');
+	const char* dot = strrchr(ent->d_name, '.');
 
 	if (dot != NULL) {
 		if (strcasecmp(dot + 1, "jpg") == 0)

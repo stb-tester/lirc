@@ -4,8 +4,9 @@
  * lircd
  */
 
-
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -118,7 +119,7 @@ static void  lines_next(line_t* line)
 static line_t* line_new(const char* path)
 // Create a new, malloc'd line.
 {
-	line_t* line = malloc(sizeof(line_t));
+	line_t* line = (line_t*) malloc(sizeof(line_t));
 
 	line->flags = line->name = "-";
 	line->path = strdup(path);
@@ -166,7 +167,7 @@ static void print_folded_item(const char* arg)
 		puts("None");
 		return;
 	}
-	buff = alloca(strlen(arg) + 1);
+	buff = (char*) alloca(strlen(arg) + 1);
 	strcpy(buff, arg);
 	token = strtok(buff, " \t");
 	while (token != NULL) {
