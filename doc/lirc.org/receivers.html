@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+    <TITLE>LIRC - Serial Port Receivers</TITLE>
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+    BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#7070E0"
+    VLINK="#808080" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR>
+          <TD WIDTH="100%" HEIGHT="150" BGCOLOR="#000080" ALIGN="RIGHT"
+            VALIGN="TOP">
+            <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+              HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+            <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+              HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+          </TD>
+        </TR>
+        <TR>
+          <TD WIDTH="100%" ALIGN="LEFT" VALIGN="TOP">&#160;<BR>
+
+            <!-- Text -->
+
+            <CENTER><HR WIDTH="70%">
+              <H1>Serial Port Receivers</H1>
+              <HR WIDTH="50%"><BR></CENTER>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%" VALIGN="top">
+                    &#160;
+                    <script type="text/javascript"><!--
+                      google_ad_client = "pub-3628312733106047";
+                      google_ad_width = 120;
+                      google_ad_height = 240;
+                      google_ad_format = "120x240_as";
+                      google_ad_type = "text";
+                      google_ad_channel ="";
+                      google_color_border = "6060C0";
+                      google_color_bg = "FFFFFF";
+                      google_color_link = "7070E0";
+                      google_color_url = "666666";
+                      google_color_text = "333333";
+                      //--></script>
+                    <!-- AD --><script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+                  </TD>
+                  <TD WIDTH="70%">
+                    <P>
+                      The following page will show you how to build your
+                      own infrared receiver for the serial port. Please
+                      note that the serial port driver in the LIRC package
+                      only supports 8250 compatible UARTs (this includes
+                      the most common 16450 and 16550A types). That means
+                      that it won't work with exotic multi-port cards that
+                      need a special driver. <!-- Alessio Sangalli has put
+                      together an excellent <A HREF="http://www.manoweb.com/alesan/lirc/">step by
+                      step description</A> of how to put together a serial
+                      receiver like described below. Have a look at it. -->
+                      <!-- If you'd rather buy some device than
+                      solder your own circuit I recommend the
+                      receivers from  -->
+                    </P>
+                    <P>
+                      From my own experience, the hardest thing in
+                      building your receiver hardware is getting a
+                      suitable infrared receiver IC. Hence, here is a
+                      list of ICs that have been successfully used to
+                      build a serial port receiver. But be aware that not
+                      all of them have the same pin-out!
+                    </P>
+                    <UL>
+                      <LI>
+                        Vishay TSOP 1738 (available in the US at Newark Electronics)<BR>
+                        <!-- AD Available at conrad.de: <IMG SRC="http://banners.webmasterplan.com/view.asp?site=2945&ref=272927&b=0&type=text&tnb=34" BORDER="0" WIDTH="1" HEIGHT="1"><A HREF="http://partners.webmasterplan.com/click.asp?ref=272927&site=2945&type=text&tnb=34&pid=171077" TARGET="_blank">part number 171077</a -->
+                      </LI>
+                      <LI>
+                        Vishay TSOP 1838<BR>
+                        <!-- AD Available at conrad.de: <IMG SRC="http://banners.webmasterplan.com/view.asp?site=2945&ref=272927&b=0&type=text&tnb=34" BORDER="0" WIDTH="1" HEIGHT="1"><A HREF="http://partners.webmasterplan.com/click.asp?ref=272927&site=2945&type=text&tnb=34&pid=171115" TARGET="_blank">part number 171115</a -->
+                      </LI>
+                      <LI>
+                        Vishay <!-- A HREF="http://www.vishay.com/temporary/datasheets/optoelectronics/photomodules/tsop11...html" -->TSOP 11..<!-- /A --> series
+                      </LI>
+                      <LI>
+                        Siemens SFH 506 (not produced any more)
+                      </LI>
+                      <LI>
+                        Siemens <A HREF="http://www.infineon.com/products/opto/pdf/sfh5110.pdf">
+                          SFH 5110 </A> (successor of SFH 506)
+                      </LI>
+                      <LI>
+                        discontinued: Radio Shack 276-0137 (<A HREF="http://sourceforge.net/mailarchive/forum.php?thread_id=590689&amp;forum_id=5339">other
+                          Radio Shack part numbers</A>)
+                      </LI>
+                      <LI>
+                        Radio Shack 276-640<BR>
+                        <FONT COLOR="red">Warning:</FONT> There have been
+                        reports that the signal quality these receivers
+                        produce is very unstable. YMMV. If possible use
+                        another receiver IC.
+                      </LI>
+                      <LI>
+                        Hebei IT <A HREF="http://ledz.com/led.datasheet/PL-IRM0101-3.pdf">PL-IRM0101-3</A>
+                      </LI>
+                      <LI>
+                        Everlight IRM-2238
+                      </LI>
+                      <LI>
+                        Everlight IRM 8100-3-M (Radio Shack part
+                        no. 276-0137B)
+                      </LI>
+                      <LI>
+                        Everlight IRM-8601M
+                      </LI>
+                      <!-- LI>
+                      Panasonic <A HREF="http://www.semicon.panasonic.co.jp/cgi-bin/ds/search.cgi?search_word=PNA46&lang=1">PNA46xxM</A>
+                    </LI -->
+                      <LI>Mitsumi IR Preamp KEY-COOSV (0924G)</LI>
+                      <LI>TOSHIBA TK19 444 TFMS 5360 (known in Italy as Mivar IC)</LI>
+                      <LI>TEMIC TFMS 5380 by Telefunken Semiconductors</LI>
+                      <LI>
+                        Sharp <A HREF="http://www.sharp.co.jp/ecg/opto/products/pdf/ir_devices/ir_ds_ir_durc/is1u60.pdf">
+                          IS1U60</A> (available at <A HREF="http://www.rswww.com">RS</A>, it seems that this
+                        IC draws much more current than the others)<BR>
+
+                        <FONT COLOR="red">Warning:</FONT> Some users have
+                        reported problems with the IS1U60 receiver. It
+                        picks up ambient light and is nearly unusable with
+                        fluorescent lamps. If ever possible get a
+                        different receiver.
+                      </LI>
+                      <LI>
+                        <A HREF="http://www.everlight.com/">Everlight</A>
+                        <A HREF="http://www.everlight.com/pdf/Irm-8601s.pdf">IRM-8601S</A>
+                      </LI>
+                      <LI>
+                        Sony SBX 1404-01
+                      </LI>
+                      <LI>
+                        Sony SBX 1620-12
+                      </LI>
+                      <LI>
+                        Sharp 1u521X
+                      </LI>
+                      <LI>
+                        Sharp GP1U52XB
+                      </LI>
+                      <LI>
+                        Sharp GP1U271R (available from RS)
+                      </LI>
+                      <LI>
+                        Sharp GP1UD261XK (available from Digikey)
+                      </LI>
+                      <LI>
+                        Panasonic PNA4602M (available from Digikey)
+                      </LI>
+                      <LI>
+                        Panasonic PNA4611M (36 kHz, available from Digikey)
+                      </LI>
+                      <LI>
+                        Panasonic PNA4612M (38 kHz, available from Digikey)
+                      </LI>
+                      <LI>
+                        Kodenshi PIC-12043S
+                      </LI>
+                      <LI>
+                        Daewoo DHR-38 C 28
+                      </LI>
+                      <LI>
+                        ZD1952 (available in Australia at <A HREF="http://www.jaycar.com.au">Jaycar</A>)<BR>
+                        Check the pinout, it's different from most other modules.
+                      </LI>
+                      <LI>
+                        Z1955 (available in Australia at <A HREF="http://www.dse.com.au">Dick Smith Electronics</A>)<BR>
+                        Check the pinout, it's different from most other modules.
+                      </LI>
+                      <LI>
+                        A-Tronic TRM38 IR module
+                      </LI>
+                      <LI>
+                        TRM1038 (manufacturer unknown), <A HREF="pinout_TRM1038.txt">pinout</A>
+                      </LI>
+                      <LI>
+                        Sharp Electronics GP1UD277XK (Digikey part no. 425-1122-ND)<BR>
+                        This is a 56kHz type receiver. It has been reported to also work well with 38kHz remotes.
+                      </LI>
+                    </UL>
+                    <P>
+                      Most of these receivers come in variations
+                      adapted to a specific carrier frequency. You
+                      should choose the 38kHz types because most
+                      remote control standards use this
+                      frequency. 36kHz types should work as well. The
+                      receiver won't stop working if your remote uses
+                      another frequency but the range will
+                      decrease. If in doubt which IR receiver type to
+                      choose you should read this more <A
+                      HREF="cir.html">detailed description on how IR
+                      receivers work</A> internally.
+                    </P>
+                    <P>
+                      There are also some brands that use 56kHz carrier
+                      frequency. A 38kHz receiver should still work to
+                      create a config file for these kinds of remotes at
+                      short range but if you plan to use them regularly
+                      you should use a 56kHz receiver. Bang &amp; Olufsen
+                      uses 455kHz for their remotes so you will need a
+                      matching receiver. 38kHz or 56kHz receivers won't
+                      work.
+                    </P>
+                    <P>
+                      Some HiFi components also have a remote control
+                      output which carries the IR signal at TTL
+                      level. If you plan to integrate your computer
+                      into the HiFi rack, you might be able to reuse
+                      this output instead of using a dedicated
+                      receiver.
+                    </P>
+                    <P>
+                      Additionally to the receiver you will need the
+                      following parts:
+                    </P>
+                    <UL>
+                      <LI>C1 - 4.7&micro;F capacitor</LI>
+                      <LI>D1 - 1N4148 diode</LI>
+                      <LI>R1 - 4k7 resistor (4.7 kOhm)</LI>
+                      <LI>IC2 - 78L05, 100mA, voltage regulator (TO-92 casing)</LI>
+                      <LI>9-pin or 25-pin SUB-D socket</LI>
+                    </UL>
+                    <P>
+                      The pin-out of the voltage regulator usually looks
+                      like this (bottom view):
+                    </P>
+                    <PRE>
+
+   1 2 3
+  _______
+ /       \      Pin1 = OUT
+(  o o o  )     Pin2 = GND
+ \       /      Pin3 = IN
+   -___-
+
+                    </PRE>
+                    <P>
+                      But you should check the data sheet anyway to make
+                      sure you have the same type of regulator that is
+                      used here.
+                    </P>
+                    <P>
+                      Finally we come to the circuit itself. It's rather
+                      simple and can be explained in a few words. Here's
+                      also a <A HREF="images/schematics.gif">nicer
+                        version</A> of the ASCII arts below. There's also a
+                      suggestion how to <A
+                        HREF="images/irrcv_board.gif">layout</A> the circuit
+                      on a 5x5 hole-matrix board. The connector pins on
+                      the data-to-PC are designed to use a standard CD-ROM
+                      audio cables, but of course it's not necessary to
+                      use one.
+                    </P>
+                    <PRE>
+ IC1 = TSOP 1738
++-----------------------+ 3                           R1 (4k7)
+|               data -> +--------------------------------+------------o DCD
+|                       |                 _______        |
+|      ______________   |                | 78L05 |      | |   D1 (1N4148)
+|     /                 |    +-----+-----|OUT  IN|--+   | |
+|    (                  | 2  |     | +   |__GND__|  |    |      | /|
+|     \______________ + +----+   -----       |      +----+------|< |--o RTS
+|                       |        -----       | IC2              | \|
+|                       | 1        |         |
+|                     - +----------+---------+------------------------o GND
++-----------------------+      C1 (4.7&micro;F)
+
+                    </PRE>
+                    <P>
+                      The power for the circuit comes from the RTS line of
+                      the serial port. D1 protects the circuit from the
+                      negative voltage that is usually on the RTS pin. The
+                      LIRC driver will change the serial port settings on
+                      initialization so that the circuit will get the
+                      necessary positive voltage. For most standard PC
+                      serial ports this will be approximately 10V. IC2
+                      will convert the input voltage to exactly 5V. As the
+                      input voltage for the 78Lxx type regulators has to
+                      be at least 2V higher than the output voltage to
+                      work reliably, this circuit probably won't work on
+                      some notebooks. The line drivers inside notebooks
+                      often provide voltages about 6V or even less. So you
+                      should make sure that your serial port delivers at
+                      least 8V of output voltage. If your serial port
+                      provides less you can also try using a low-drop
+                      voltage regulator (e.g. LP 2950 CZ) instead of the
+                      regulator suggested here. Low-drop types need much
+                      less voltage offset for reliable regulation. Instead
+                      of pulling the power supply from the serial port you
+                      can also use a different source like e.g. the USB
+                      port or the internal 5V line to power the
+                      circuit. Then you won't need a voltage regulator at
+                      all.
+                    </P>
+                    <P>
+                      C1 is optional but I recommend using it anyway.  R1
+                      is a pull-up that makes sure the DCD line is on a
+                      valid voltage level if the receiver does not receive
+                      anything.  When an infrared signal is detected IC1
+                      (this is true for active low receivers, if you use
+                      an active high receiver leave away R1 or make it a
+                      pull-down to GND) pulls DCD down to ground, which
+                      should already be interpreted as a logical "1"
+                      (DCD=0) by the serial port.
+                    </P>
+                    <P>
+                      It should be noted that the circuit described above
+                      does not fully comply to the RS232 standard as
+                      latter demands a voltage swing of at least -3V/3V
+                      for the signals. This circuit will provide
+                      approximately 0V/5V which the majority of serial
+                      ports will also accept. If you have problems with
+                      this circuit or want to use it on a serial port that
+                      does not provide enough voltage for the regulator,
+                      you should use the <A HREF="http://www.tb-electronic.de/vdr/lirc/lirc_rx.html">more
+                        advanced circuit</A> (<A HREF="PCB.pdf">PCB layout</A>) suggested by Thomas Breuer in
+                      this <A HREF="http://sourceforge.net/mailarchive/message.php?msg_id=2593921">mailing
+                        list post</A>. This circuit addresses both
+                      problems but will need some additional parts.
+                    </P>
+                    <P>
+                      Here is a small overview of the most important pins
+                      of standard 9-pin and 25-pin SUB-D serial port
+                      connectors:
+                    </P>
+                    <P>
+                    <PRE>
+Name        25-pin         9-pin
+---------------------------------------------------------
+TxD           2             3       transmit data
+RxD           3             2       receive data
+RTS           4             7       request to send (here: power source)
+CTS           5             8       clear to send
+DSR           6             6       data set ready
+GND           7             5       ground
+DCD           8             1       data carrier detect (here: signal line)
+DTR          20             4       data terminal ready
+                    </PRE>
+                    <P>
+                      The following <A HREF="pictures1.html">pictures</A>
+                      were taken from the
+                      <A HREF="http://www.metzlerbros.de/lirc/index.html">
+                        lirc-0.3.6</A> package with kind permission of its
+                      author, Ralph Metzler. They show the receiver
+                      build into a SUB-D hood. The original circuit used
+                      resistors to get the 5V voltage but as this caused
+                      problems for many people it shouldn't be used
+                      anymore.
+                    </P>
+                    <P>
+                      Andreas Nestler came up with a nice idea for a
+                      receiver casing. He assembled the infrared receiver
+                      inside an old <A
+                        HREF="pictures2.html">mouse</A>. Note that he had to
+                      replace the old mouse plug because not all the
+                      necessary signals were passed through.
+                    </P>
+                    <P>
+                      Here's a highlight for all Star Wars fans: Petri
+                      Damst&eacute;n built his receiver inside a <A
+                        HREF="http://www.iki.fi/damu/mods/tie_lirc/index.html">TIE
+                        fighter</A> model.
+                    </P>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <!-- Text -->
+
+            <BR>&#160;<BR>
+            <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+            <BR>&#160;<BR>
+          </TD>
+        </TR>
+        <TR>
+          <TD WIDTH="100%" BGCOLOR="#000080" ALIGN="LEFT" VALIGN="TOP">
+            &#160;<BR>
+          </TD>
+        </TR>
+    </TABLE>
+  </BODY>
+</HTML>

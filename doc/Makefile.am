@@ -31,6 +31,18 @@ if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
 
+websitedir              = $(docdir)/lirc.org
+dist_website_DATA       = $(website_files)
+
+website_htmldir         = $(docdir)/lirc.org/html
+dist_website_html_DATA  = $(generated_html) \
+                          $(manpage_html) \
+                          $(website_html_extra)
+
+
+website_imagedir        = $(docdir)/lirc.org/images
+dist_website_image_DATA = $(dist_image_DATA)
+
 htmldir                 = $(docdir)/html
 nodist_html_DATA        += $(generated_html)
 if HAVE_MAN2HTML
@@ -203,3 +215,28 @@ generated_html          =  html/alsa-usb.html \
                            html/pronto2lirc.html \
                            html/technical.html \
                            html/tira.html
+
+website_files           =  lirc.org/cir.html \
+                           lirc.org/cvs.html \
+                           lirc.org/developers.html \
+                           lirc.org/faq.html \
+                           lirc.org/favicon.ico \
+                           lirc.org/git.html \
+                           lirc.org/improved_transmitter.html \
+                           lirc.org/index.html \
+                           lirc.org/ir-audio.html \
+                           lirc.org/irda.html \
+                           lirc.org/lirc.css \
+                           lirc.org/mirrors.html \
+                           lirc.org/parallel.html \
+                           lirc.org/pictures1.html \
+                           lirc.org/pictures2.html \
+                           lirc.org/pictures.html \
+                           lirc.org/pinout_TRM1038.txt \
+                           lirc.org/receivers.html \
+                           lirc.org/software.html \
+                           lirc.org/transmitters.html \
+                           lirc.org/tv_cards.html
+
+website_html_extra      =  html-source/lirc.css \
+                           lirc.org/robots.txt

@@ -43,19 +43,10 @@ header_HEADERS          = paths.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	cp -ar $(srcdir)/lirc.org       $(DESTDIR)$(docdir)
-	chmod -R u+w                    $(DESTDIR)$(docdir)/lirc.org
-	cp -ar $(srcdir)/doc/images     $(DESTDIR)$(docdir)/lirc.org
-	cp -a  doc/man-html/*           $(DESTDIR)$(docdir)/lirc.org/html
-	cp -ar doc/html/*               $(DESTDIR)$(docdir)/lirc.org/html
 
 dist-hook: ChangeLog
 	chmod u+w $(distdir)
-	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
 	find $(distdir) -name .gitkeep -o -name .gitignore -delete
-
-uninstall-local:
-	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
 
 paths.h: Makefile
 	@echo "#ifndef PATHS_H"          >$@

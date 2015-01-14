@@ -7,4 +7,3 @@ TRM1038 pinout (bottom view):
  \|   |
   | o | 1 Vout
   +---+
-

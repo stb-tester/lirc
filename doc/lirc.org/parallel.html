@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>LIRC - Parallel Port Hardware</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+    BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+      <TR>
+        <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+          <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+          <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+        </TD>
+      </TR>
+      <TR>
+        <TD WIDTH="100%" ALIGN="LEFT" VALIGN="TOP">&#160;<BR>
+
+          <!-- Text -->
+
+          <HR WIDTH="70%">
+          <H1 ALIGN="CENTER">Building your Parallel Port Hardware</H1>
+          <HR WIDTH="50%"><BR>
+
+          <TABLE WIDTH="100%">
+            <TR>
+              <TD WIDTH="15%" VALIGN="top">
+                &#160;
+                <script type="text/javascript"><!--
+                 google_ad_client = "pub-3628312733106047";
+                 google_ad_width = 120;
+                 google_ad_height = 240;
+                 google_ad_format = "120x240_as";
+                 google_ad_type = "text";
+                 google_ad_channel ="";
+                 google_color_border = "6060C0";
+                 google_color_bg = "FFFFFF";
+                 google_color_link = "7070E0";
+                 google_color_url = "666666";
+                 google_color_text = "333333";
+                 //--></script>
+                <!-- AD --><script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+              </TD>
+              <TD WIDTH="70%">
+                <P>
+                  These are simplified schematics for the IR hardware
+                  I build some time ago. I have written them down
+                  using some barely readable handwritten notes and
+                  some reverse-engineering. So don't expect this to
+                  really work. Here are some <A
+                    HREF="pictures.html">pictures</A> of this device.
+                </P>
+
+                <P><B>USE AT YOUR OWN RISK!</B></P>
+
+                <P>
+                  But if you manage to build this device, drop me a
+                  note.  I devided the schematics in three
+                  sections. The first shows the frequency generation
+                  circuit. I use this to generate a 38 kHz carrier
+                  frequency for the IR signals that are sent and a
+                  65536 Hz timer, which is required for both the
+                  transmitter and receiver circuits. The timer helps
+                  me to get the proper software timings, as interrupts
+                  are only generated on the rising edge of the /ACK
+                  signal. It is also handy for sending IR signals
+                  reliably. This shouldn't be really necessary on a
+                  Pentium but this way the device should also work
+                  with an 286.  The transmitter and receiver circuits
+                  should be quite self-explanatory.  The inverter in
+                  the receiver circuit is only necessary if you use an
+                  active low IR detector IC like the SFH506.
+                </P>
+                <P>
+                  Mike Karasoff created a modified circuit based on this
+                  design that allows to use up to <A HREF="http://www.freelancelogic.com/Projects/lirc_pport/lirc_pport_mod.html">8 independent transmitters</A>
+                  with your parallel port.
+                </P>
+
+                <PRE>
+Frequency generation:
+
+
+            C1
+            ||             +----------+             +----------+
+ GND o------||------+------|    R1    |------+------|    R2    |-----o Vcc
+            ||      |      +----------+      |      +----------+
+                    |                        |
+                    +---------+-----------+  |
+            C2                |           |  |
+            ||                |           |  |
+ GND o------||-------------------------+  |  |
+            ||                |        |  |  |
+                              |        |  |  |      +----------+
+BUSY o------------------------|--+  +--|--|--|------|    R3    |-----o Vcc
+       65536 Hz               |  |  |  |  |  |      +----------+
+                   GND o---+  |  |  |  |  |  |
+                           |  |  |  |  |  |  |
+                         +-+--+--+--+--+--+--+-+
+                         | 7  6  5  4  3  2  1 |
+                         |                     |
+                         |        NE556        |
+                         |                     |
+                         | 8  9 10 11 12 13 14 |
+                         +-+--+--+--+--+--+--+-+
+                           |  |  |  |  |  |  |
+                           |  |  |  |  |  |  +---o Vcc
+                           |  |  |  |  |  |
+     o---------------------|--+  +--|--|--|--------------------------o D0 (*)
+      38 kHz               |        |  |  |
+            ||             |        |  |  |
+ GND o------||----------------------+  |  |
+            ||             |           |  |
+            C2             |           |  |
+                    +------+-----------+  +--+
+                    |                        |
+            ||      |      +----------+      |      +----------+
+ GND o------||------+------|    R4    |------+------|    R2    |-----o Vcc
+            ||             +----------+             +----------+
+            C1
+
+
+Transmitter circuit:
+
+                         o 38 kHz
+                         |
+                         |
+                         |
+                         |
+                       +---+
+                       |   |
+                       |   |
+                       | R |
+                       | 6 |
+                       |   |
+                       |   |
+                       +---+
+                         |
+                         |          --->
+                         |          ---> D1 (IR LED)
+                         |          --->
+                        _|_
+                        / \         | /|            +----------+
+ GND o------------------   ---------|< |------------|    R7    |-----o Vcc
+                        T1          | \|            +----------+
+
+
+Receiver circuit:
+
+
+ GND o------------------------------------+
+                                     C3   |
+                                     ||   |   +--------------+
+                                +----||---+---|1             |
+                 +----------+   |    ||       |   =========  | <---
+ Vcc o-----------|    R5    |---+-------------|2  SFH506-38  | <---
+                 +----------+                 |   =========  | <---
+                                          +---|3             |
+                                          |   +--------------+
+/ACK o---------------------------------+  |
+                                       |  |
+                GND o---+-----+-----+  |  |
+                        |     |     |  |  |
+                      +-+--+--+--+--+--+--+-+
+                      | 7  6  5  4  3  2  1 |
+                      |                     |
+                      |       74HC04 (**)   |
+                      |                     |
+                      | 8  9 10 11 12 13 14 |
+                      +-+--+--+--+--+--+--+-+
+                           |     |     |  |
+                           +-----+-----+--+---o Vcc
+
+Part list:
+
+R1 = 22323R
+R2 = 2200R
+R3 = 4700R
+R4 = 39297R
+R5 = 330R
+R6 = 1000R
+R7 = 33R
+C1 = 470pF
+C2 = 10nF
+C3 = 4,7uF
+T1 = BC 338
+D1 = e.g. LD274 (R7 calculated for forward voltage of 1.3 V)
+
+C2, C3, R5 are optional, but recommended in the datasheets. Vcc is 5 V.
+
+(*) As D0 is an input the circuit always must be connected to the
+parallel port. You might also consider adding a pull-down resistor to
+GND.
+
+(**) I used a 74LS04 but 74HC04 should be the better choise. Don't
+forget to connect the unused inputs to a valid logic level,
+i.e. either Vcc or GND.
+
+                </PRE>
+
+                <P>
+                  The NE556 generates timings with pulses and spaces
+                  according to the following formulas:
+                </P>
+
+                <PRE>
+                t1=0.693(R2+R1)C1
+                t2=0.693(R1)C1
+                </PRE>
+
+                <P>
+                  I used a 50 kR and a 25 kR potentiometer for R4 and
+                  R1 to get the correct frequencies.
+                </P>
+
+                <P>
+                  Instead of the inverter IC (74LS04) you can also use
+                  some smarter circuit that will generate an interrupt
+                  for each change of the signal coming from the IR
+                  detector (SFH 506-38). Then the 65536 Hz generated
+                  by the NE556 IC won't be necessary either.
+                </P>
+
+                <P>
+                  The only thing that is missing here is the power
+                  supply. I used an external power supply as AFAIK the
+                  parallel port can not supply the necessary power.
+                </P>
+
+                <P><A HREF="mailto:lirc@bartelmus.de">Christoph</A></P>
+
+              </TD>
+              <TD WIDTH="15%">
+                &#160;
+              </TD>
+            </TR>
+          </TABLE>
+
+          <!-- Text -->
+
+          <BR>&#160;<BR>
+          <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+          <BR>&#160;<BR>
+        </TD>
+      </TR>
+      <TR>
+        <TD WIDTH="100%" BGCOLOR="#000080" ALIGN="LEFT" VALIGN="TOP">
+          &#160;<BR>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>

@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+
+  <HEAD>
+    <TITLE>LIRC - CIR</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+        BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+        <TR>
+          <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+            <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+            <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+                 HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+          </TD>
+        </TR>
+        <TR>
+          <TD WIDTH="100%" ALIGN="LEFT" VALIGN="TOP">&#160;<BR>
+
+            <!-- Text -->
+            <HR WIDTH="70%">
+            <H1 ALIGN="CENTER">A deeper look inside common Consumer
+              Infrared (CIR)</H1>
+            <center>by Brett Johnson</center>
+            <HR WIDTH="50%"><BR>
+
+            <TABLE WIDTH="100%">
+                <TR>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                  <TD WIDTH="70%">
+
+                    <p>
+                      A common CIR receiver chip includes more than a
+                      simple infrared photo-transistor (usually at
+                      950nm). It includes demodulation circuitry
+                      around a specific carrier frequency (typically
+                      38kHz) and a latch circuit for its data output
+                      pin that is triggered by that frequency
+                      demodulation. The extra circuitry is included to
+                      help block out ambient light and noise to make
+                      the incoming signal more reliable. When a button
+                      is pressed, the IR LED in a remote control turns
+                      on and off in specific timing patterns to
+                      transmit the button press data to the
+                      receiver. The "on times" aren't really fully on
+                      but rapidly turned on and off at the carrier
+                      frequency (38kHz modulation in this example). If
+                      the IR LED "on times" were fully on (like
+                      looking at a flash light), the receiver chip
+                      would think this was ambient light and ignore
+                      it.  Since the "on times" are rapidly
+                      fluctuating (modulated) at 38kHz, the receiver
+                      chip's demodulation circuit triggers the latch
+                      circuit and it triggers the data pin. When the
+                      38kHz modulated IR light turns off (the button
+                      on the IR remote control is released), the
+                      receiver chip's demodulation circuit releases
+                      the latch circuit and it releases the data pin.
+                    </p>
+                    <p>
+                      To make things a little more complicated for
+                      hardware building and software programming, the
+                      CIR receiver chip's latch circuit doesn't
+                      respond immediately to any changes. This is done
+                      intentionally to help avoid noise problems and
+                      increase signal reliability. Most receiver
+                      chips' latch circuits won't activate the data
+                      pin until about a dozen pulses at the carrier
+                      frequency are received. When the IR carrier
+                      frequency is stopped, the receiver chip's latch
+                      circuit will also hold the data pin active for
+                      several to a dozen more pulses in length. This
+                      helps make up for the initial delay and will not
+                      give spurious data signals if a few pulses of
+                      the carrier frequency are missed by the
+                      demodulation circuit. The latch circuit working
+                      this way makes for clean data pulses on output.
+                    </p>
+                    <p>
+                      The latch circuit delays will cause problems for
+                      critical timing applications. If the IR carrier
+                      burst is too short (under 12 cycles at 38kHz in
+                      this example), the latch circuit will likely not
+                      trigger its data pin. If the application expects
+                      short signals off the data pin, the latch
+                      circuit may hold the data pin for too long and
+                      cause a timing error again. If the latch circuit
+                      does not release in time for a short space and
+                      another IR carrier burst comes in, the output
+                      data pin will be held high for the entire time
+                      and make those two IR carrier bursts look like
+                      one. Different receiver chips (even of the same
+                      model) also have differently timed lengths for
+                      their latch circuits and may cause slight
+                      variations in the data pin time.
+                    </p>
+                    <p>
+                      The specific demodulation circuitry in the CIR
+                      receiver chip doesn't mean that it will only see
+                      one carrier frequency. It will likely respond to
+                      10-20% higher or lower than the primary carrier
+                      frequency (38kHz in this example), but the
+                      physical distance of that response will decrease
+                      as the frequency shifts away. Frequencies that
+                      are more off will mean that the data pin latch
+                      is less likely to be triggered by the
+                      demodulator. This is why it is important to keep
+                      application frequencies properly matched between
+                      hardware.
+                    </p>
+                    <p>
+                      IR LED transmitters usually don't have frequency
+                      problems since they are such simple and rapidly
+                      responding devices. The transmitters also do not
+                      have to decode data from a potentially unknown
+                      and unreliable source like the receivers do. So
+                      long as the transmitting hardware is properly
+                      clocked and has all its data ready to go, it's
+                      hard to screw up a transmitter. For all the
+                      reasons given so far, this is why some IR
+                      hardware can transmit a short burst protocol but
+                      not receive it (the receiver has to be rated for
+                      the short burst protocol).
+                    </p>
+                  </TD>
+                  <TD WIDTH="15%">
+                    &#160;
+                  </TD>
+                </TR>
+            </TABLE>
+
+            <!-- Text -->
+
+            <BR>&#160;<BR>
+            <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+            <BR>&#160;<BR>
+          </TD>
+        </TR>
+        <TR>
+          <TD CLASS="menu" WIDTH="100%">
+            &#160;<BR>
+          </TD>
+        </TR>
+    </TABLE>
+  </BODY>
+
+</HTML>

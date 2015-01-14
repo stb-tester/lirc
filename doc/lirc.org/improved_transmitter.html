@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<HTML>
+  <HEAD>
+    <TITLE>LIRC - Enrique Vidal's improved transmitter circuit</TITLE>
+    <LINK REL=stylesheet TYPE="text/css" HREF="lirc.css">
+    <LINK REL="shortcut icon" HREF="favicon.ico">
+  </HEAD>
+
+  <BODY BACKGROUND="images/marb18.jpg"
+    BGCOLOR="#FFFFFF" TEXT="#000000" ALINK="#9090FF">
+    <TABLE WIDTH="100%" BORDER="0" CELLSPACING="0" CELLPADDING="0">
+      <TR>
+        <TD CLASS="menu" WIDTH="100%" HEIGHT="150">
+          <IMG SRC="images/diode.gif" ALT="diode" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="LEFT">
+          <IMG SRC="images/lirc.gif" ALT="lirc-logo" WIDTH="300"
+            HEIGHT="150" BORDER="0" HSPACE="20" VSPACE="0" ALIGN="RIGHT">
+        </TD>
+      </TR>
+      <TR>
+        <TD WIDTH="100%">&#160;<BR>
+
+          <!-- Text -->
+          <HR WIDTH="70%">
+          <H1 ALIGN="CENTER">Simple signal-powered, middle-range
+            infra-red transmitter</H1>
+          <HR WIDTH="50%"><BR>
+
+          <TABLE WIDTH="100%">
+            <TR>
+              <TD WIDTH="15%">
+                &#160;
+              </TD>
+              <TD WIDTH="70%">
+                <center>
+                  <IMG SRC="images/improved_transmitter.gif" ALT="improved transmitter">
+                </center>
+                <h3>How it works:</h3>
+
+                <P>
+                  While the computer serial device is open and idle,
+                  DTR is negative w.r.t.&nbsp;GND and the large 4000
+                  &micro;F capacitor gets full charge through D2 and
+                  the 2k2 resistor in a few seconds.  Meanwhile, the
+                  input to the NPN transistor remains blocked thanks
+                  to D1.
+                </p>
+                <p>
+                  As IR commands are sent to the serial device,
+                  positive pulses arrive to DTR.  These pulses have no
+                  effect onto the capacitor, since they are now
+                  blocked by D2.  While the capacitor has enough
+                  charge, it powers the couple of NPN/PNP transistors,
+                  which behave as a simple conventional pulse current
+                  amplifier.  They yield enough (pulsed) current to
+                  the pair of infra-red diodes to allow mid-range
+                  operation; typically beyond 5 meters.  The
+                  (optional) red LED and 0.5k resistor are intended
+                  for visual monitoring of the outgoing IR bursts.
+                </p>
+                <p>
+                  Obviously, the current pulses tend to quickly
+                  discharge the capacitor, but 4000 &micro;F can hold
+                  enough charge for regular typical operation with
+                  most IR commands, even in those cases where bursts
+                  are repeatedly sent while
+                  button-pressed. Fortunately enough, even in these
+                  repeated-burst situations, the serial device is in
+                  fact idle most of the time, thereby allowing the
+                  capacitor to recover its charge and be prepared for
+                  powering new pulse bursts.
+                </p>
+
+                <h3>Notes:</h3>
+                <p>
+                  Any type of low/medium-power diodes and transistors
+                  are suitable.  The only critical components (apart
+                  from the IR diodes themselves) are the two voltage
+                  offset diodes. These diodes are marked as
+                  "silicon", meaning that they must be "normal"
+                  silicon diodes, which have a significant offset
+                  voltage (+0.7 volt, approx.).  Other kinds of diodes
+                  (e.g., germanium diodes) may have much lower offset
+                  and are inadequate for the intended purpose.
+                  Tolerances are not critical for any component of
+                  this circuit (&plusmn;10% or even &plusmn;20% should
+                  be ok).
+                </p>
+                <p>
+                  Of course, the range depends on how much power is
+                  applied to drive the IR diodes and of the type of
+                  diodes themselves.  I have tested several kinds of
+                  IR diodes (intended for standard remotes) with no
+                  much difference.  As to the power, it depends on two
+                  main factors: a) the value of the (22 Ohm) resistor
+                  from GND to the emitter of the PNP transistor and b)
+                  the large (4000 &micro;F) capacitor.  The range can
+                  always be increased by lowering the value of the
+                  resistor (and/or adding more IR diodes) but than the
+                  value of capacitor needs to be increased
+                  correspondingly.
+                </p>
+              </TD>
+              <TD WIDTH="15%">
+                &#160;
+              </TD>
+            </TR>
+          </TABLE>
+
+          <!-- Text -->
+          <BR>&#160;<BR>
+          <CENTER>[<A HREF="index.html">LIRC Homepage</A>]</CENTER>
+          <BR>&#160;<BR>
+        </TD>
+      </TR>
+      <TR>
+        <TD CLASS="menu" WIDTH="100%">
+          &#160;<BR>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>
