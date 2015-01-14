@@ -121,7 +121,7 @@ static
 line_status ciniparser_line(char* input_line, char* section,
 			    char* key, char* value)
 {
-	line_status sta;
+	line_status sta = LINE_ERROR;
 	char line[ASCIILINESZ + 1];
 	int len;
 
