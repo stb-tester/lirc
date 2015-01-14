@@ -244,7 +244,7 @@ class Controller(object):
                                                              errors='ignore')
         except urllib.error.URLError as ex:
             text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
-        self.view.show_text(text, 'lirc: download error')
+        self.view.show_text(text, 'lirc: Remote config file')
 
 
 def main():
