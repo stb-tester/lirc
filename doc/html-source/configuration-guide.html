@@ -341,7 +341,7 @@ remote |        |       devinput v        |
     here).  </p>
     <p>
     Then, grab the devinput/lircd.conf.devinput file
-    <a href="http://sourceforge.net/p/lirc/git/ci/master/tree/remotes/">
+    <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
     (remotes) </a> and copy it to /etc/lirc/lircd.conf. Start the lircd
     daemon and use irw to check:
     <pre>
@@ -389,9 +389,27 @@ remote |        |       devinput v        |
       Check if you need to configure the kernel <a href="#appendix-1">
       (Appendix 1)</a>.</li>
       <li>
-      Using mode2(1), verify that you get pulses using the --raw option. </li>
+      Using mode2(1), verify that you get pulses using the --raw option.
+      e. g.,
+        <pre>
+           $ sudo mode2 --raw --device /dev/lirc0
+           space 16777215
+           pulse 2750
+           space 800
+           pulse 500
+           space 350
+           ...
+        </pre>
+     </li>
       <li>
-      Update /etc/lirc/lirc_options.conf to use  the driver and device </li>
+      Update /etc/lirc/lirc_options.conf to use  the driver and device:
+      <pre>
+      [lircd]
+      nodaemon        = False
+      driver          = default
+      device          = /dev/lirc0
+      ....
+      </pre> </li>
     </ul>
     <p>
        lirc pass 1: Using lircd.conf, convert pulses to key symbols
@@ -400,39 +418,26 @@ remote |        |       devinput v        |
        The lircd.conf is the file which lircd uses to read data from the
        driver and then convert (or decode) it to key symbols.  It's the
        single most important lirc configuration file. There are some
-       ways to install such a file:
+       ways to find or create such a file.
     <ul>
+       <li> The lirc-setup GUI tool can be used to find and download
+       both driver and configuration file.</li>
        <li>
-       If you used one of the drivers from the driver table it might
+       If you manually selected a driver from the driver table it might
        need a specific lircd.conf. Such drivers are best installed using
-       the lirc-setup tool, but can be manually installed after checking
-       a config file found in the configs/ directory.</li>
+       the <em>lirc-setup</em> tool but the corresponding configuration files
+       can also be downloaded from the website(below)</li>
        <li>
        You can use one of the already existing configuration files the
-       lirc website. </li>
+       lirc website. You can browse
+       <a href=http://lirc-remotes.sourceforge.net/remotes-table.html"">
+       here</a> or use the
+       <a href="http://lirc.sourceforge.net/lirc.org/html/irdb-get.html">
+       irdb-get</a> program to search and download such files. </li>
        <li>
-       You can create your own configuration using the irrecord program.</li>
-    </ul>
-    To install the lircd.conf first read the
-    <a href="configure.html#lircd.conf">lircd.conf </a> chapter. After that,
-    decide on one of the following ways.
-    <ul>
-      <li>
-        If you have been using a userspace driver from the driver list, make
-        sure that it has the required config file (not all drivers requires a
-        specific file, though)</li>
-      <li>
-        Otherwise, if your userspace driver can be used with any config file,
-        you can pick one from the
-        <a href="http://lirc-remotes.sourceforge.net/remotes-table.html">
-        website</a>  Before you use the file you should make sure it
-        uses proper key symbols from the namespace <a href="#appendix-5">
-       (below)</a>.</li>
-        <li>
-       You can create your own configuration using the irrecord program.</li>
-       <li>
-       If you are using several remotes you need to combine several lircd.conf
-       files. See <a href="#appendix-8"> Appendix8</a> </li>
+       You can create your own configuration using the
+       <a href="http://lirc.sourceforge.net/lirc.org/html/irrecord.html">
+       irrecord</a> program. </li>
        <li>
        If you already have a config file for the libirman
        package you can convert it using the <em>irman2lirc</em> script
@@ -441,14 +446,32 @@ remote |        |       devinput v        |
        It's also possible to convert CCF files and Pronto codes to a
        valid lircd.conf file using the <A HREF="pronto2lirc.html">
        pronto2lirc</A> script.</li>
-    </ul>
-
-    After installing the lircd.conf file you should be able to start the
-    the lircd daemon using something like:
+     </ul>
+    To install the file it should be copied to the lircd.conf.d directory,
+    usually /etc/lirc/lircd.conf.d. Make sure the name ends with .lircd.conf.
+    <p>
+    If you are using several remotes you need to combine several lircd.conf
+    files. See <a href="#appendix-8"> Appendix8</a> </p>
+    <p>
+    After installation you should be able to start the the lircd daemon using
+    something like:
         <pre>
-        $ lircd --driver default --device /dev/lirc0
+        $ lircd --nodaemon
         </pre>
-    Verify the results using irw(1). Check all buttons!
+    Verify the results using irw(1) in another window. Pressing buttons
+    should give something like:
+        <pre>
+        $ irw
+        000000037ff07bef 00 KEY_VOLUMEUP Acer_Aspire_6530G_MCE
+        000000037ff07bef 01 KEY_VOLUMEUP Acer_Aspire_6530G_MCE
+        000000037ff07bdd 00 KEY_ENTER Acer_Aspire_6530G_MCE
+        000000037ff07bdd 02 KEY_ENTER Acer_Aspire_6530G_MCE
+        </pre> </p>
+
+    Once irw works you are done with this step: lirc can convert the button
+    presses to key symbols. The next step is to convert the symbols to
+    application strings.
+
     <A NAME="key-symbols-to-app-strings"></A>
     <A NAME="converting-key-symbols-to-application-strings"></A><HR>
     <h3 align="center">Converting key symbols to application strings</h3>
@@ -688,7 +711,7 @@ remote |        |       devinput v        |
     <p>
     Several of the pre-defined remotes uses non-standard key symbols. This
     is a Bad Thing, which makes it harder to create the ~/.config/lircrc file
-    in next step. It's also a prblem when using the uinput option, or when
+    in next step. It's also a problem when using the uinput option, or when
     converting to use the build-in decoding.</p>
     <p>
     You should replace all non-standard definitions with standard key symbols
