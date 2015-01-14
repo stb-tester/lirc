@@ -383,7 +383,6 @@ void remove_pre_data(struct ir_remote* remote)
 	struct ir_code_node* n;
 
 	if (remote->pre_data_bits == 0 || remote->pre_p != 0 || remote->pre_s != 0) {
-		remote = remote->next;
 		return;
 	}
 	for (codes = remote->codes; codes->name != NULL; codes++) {
@@ -1448,7 +1447,7 @@ enum lengths_status get_lengths(struct lengths_state* state,
 enum toggle_status
 get_toggle_bit_mask(struct toggle_state* state, struct ir_remote* remote)
 {
-	struct decode_ctx_t decode_ctx;
+	struct decode_ctx_t decode_ctx = {0};
 	int i;
 	ir_code mask;
 

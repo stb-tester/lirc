@@ -142,7 +142,7 @@ void options_load(int argc, char** const argv,
 		}
 	} else {
 		fprintf(stderr, "Warning: cannot open %s\n", path);
-		logprintf(LIRC_WARNING, "Warning: cannot open %s\n", path);
+		logprintf(LIRC_WARNING, "Cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}
 	parse_options(argc, argv);
