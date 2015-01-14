@@ -156,6 +156,7 @@ class View(baseview.Baseview):
             else:
                 return True
 
+        text = text.replace("&", "&amp;")
         self.builder.get_object("show_text_label").set_markup(text)
         w = self.builder.get_object('view_text_window')
         w.set_title(title)
