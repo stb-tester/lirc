@@ -372,7 +372,7 @@ int send_buffer_length(void)
 }
 
 
-const lirc_t* send_buffer_data()
+const lirc_t* send_buffer_data(void)
 {
 	return send_buffer.data;
 }

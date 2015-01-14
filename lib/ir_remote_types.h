@@ -164,13 +164,12 @@ struct ir_remote {
 	int			bits;   /**< bits (length of code) */
 	int			flags;  /**< flags */
 	int			eps;    /**< eps (_relative_ tolerance) */
-	                                /** detecting _very short_ pulses is
-	                                 * difficult with relative tolerance
-	                                 * for some remotes,
-	                                 * this is an _absolute_ tolerance
-	                                 * to solve this problem
-	                                 * usually you can say 0 here. */
-	int		aeps;
+	unsigned int            aeps;   /**< detecting _very short_ pulses is
+					 * difficult with relative tolerance
+					 * for some remotes,
+					 * this is an _absolute_ tolerance
+					 * to solve this problem
+					 * usually you can say 0 here. */
 	char*		dyncodes_name;  /**< name for unknown buttons */
 	int		dyncode;        /**< last received code */
 	struct ir_ncode dyncodes[2];    /**< helper structs for unknown buttons */

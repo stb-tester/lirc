@@ -11,6 +11,10 @@
 #ifndef IRRECORD_H
 #define IRRECORD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -329,5 +333,8 @@ void invert_data(struct ir_remote* remote);
 /** Test hook: Move remote->trail into remote->bits. */
 void remove_trail(struct ir_remote* remote);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
