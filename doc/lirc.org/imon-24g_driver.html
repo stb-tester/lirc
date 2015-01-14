@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>LIRC - Linux Infrared Remote Control</TITLE>
+<LINK REL="stylesheet" TYPE="text/css" HREF="lirc.css">
+<LINK REL="shortcut icon" HREF="../images/favicon.ico">
+<META NAME="description" CONTENT="LIRC - Linux Infrared Remote Control">
+<META NAME="keywords" CONTENT="linux remote control, multimedia">
+<META charset="UTF-8">
+</HEAD>
+<body>
+<TABLE CLASS="menu"><TR>
+<TD CLASS="menu"><IMG class="menuimg" SRC="../images/diode.gif" ALT="LIRC icon" ALIGN="LEFT"></TD>
+<TD><IMG class="menuimg" SRC="../images/lirc.gif" ALT="LIRC logo" ALIGN="RIGHT"></TD>
+</TR></TABLE>
+<a name="overview"></a><hr>
+<p>
+                    </p>
+<center><h1>iMON 2.4G DT/LT</h1></center>
+<p>
+
+                    </p>
+<p>
+                      The asccociation process of the iMON 2.4G DT/LT remote.
+                    </p>
+<p>
+
+                    </p>
+<p>
+                      Due to the design (could probably have been
+                      better), an application needs to have an open
+                      connection to the lirc-daemon*, to allow the
+                      association process to start.
+                    </p>
+<p>
+
+                    </p>
+<p>
+                      To associate the remote you need 2 terminals.
+                    </p>
+<dl>
+
+                      <dt>1 To:</dt>
+<dd>Find the "sys" entry and
+                        start the association process</dd>
+
+                      <dt>2 To:</dt>
+<dd>Start a process that has a connection
+                      open to the lirc-daemon</dd>
+
+                    </dl>
+<p>
+
+                    The example is shown for bash but sould be quite easy to adapt for (t)csh
+</p>
+<pre>
+ Term #1                                    | Term #2
+--------------------------------------------+----------------------------------------
+# file=`find /sys -name associate_remote`   |
+                                            |# irw
+# echo &gt; $file                              |
+--------------------------------------------+----------------------------------------
+</pre>
+<p>
+                    Then you hold down a button on the remote. And soon the
+                    "irw" process should start to spit out keycodes.
+
+
+                    Just stop </p>
+<em>(Ctrl-C)</em><p> the "irw" process,
+                    and you should be good to go.
+
+                    </p>
+<div><hr></div>
+<p>
+
+                    *) This is because the USB device connection is
+                    only initialized when the lirc-daemon gets a
+                    connection to an application, and when it is
+                    closed, the USB device connection gets closed
+                    too. So only in this period it is possible to send
+                    packages to the usb-device.
+
+</p>
+<p class="footer">
+        [<A HREF="http://www.lirc.org/">LIRC homepage</A>]
+      </p>
+</body>
+</html>

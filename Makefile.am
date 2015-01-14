@@ -43,19 +43,9 @@ header_HEADERS          = paths.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	cp -ar $(srcdir)/lirc.org       $(DESTDIR)$(docdir)
-	chmod -R u+w  $(DESTDIR)$(docdir)/lirc.org
-	cp -ar $(srcdir)/doc/images     $(DESTDIR)$(docdir)/lirc.org
-	cp -ar $(DESTDIR)$(docdir)/html/* $(DESTDIR)$(docdir)/lirc.org/html
-	find $(DESTDIR)$(docdir) -name .gitkeep -delete
 
 dist-hook: ChangeLog
-	chmod u+w $(distdir)
-	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
-	find $(distdir) -name .gitkeep -o -name .gitignore -delete
 
-uninstall-local:
-	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
 
 paths.h: Makefile
 	@echo "#ifndef PATHS_H"          >$@
@@ -72,12 +62,5 @@ ChangeLog: .phony
 	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
-
-lirc.org.local: .phony
-	cd doc; $(MAKE)
-	chmod -R u+w lirc.org
-	rm -rf lirc.org/images; cp -ar doc/images lirc.org
-	rm -f lirc.org/html/*
-	cp doc/html/* doc/man-html/* lirc.org/html
 
 .phony:
