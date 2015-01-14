@@ -56,8 +56,8 @@ struct client_data {
 };
 
 struct protocol_directive {
-	char*	name;
-	int	(*function)(int fd, char* message, char* arguments);
+	const char* name;
+	int (*function)(int fd, char* message, char* arguments);
 };
 
 static int code_func(int fd, char* message, char* arguments);
@@ -67,7 +67,7 @@ static int setmode_func(int fd, char* message, char* arguments);
 static int send_result(int fd, char* message, const char* result);
 static int send_success(int fd, char* message);
 
-struct protocol_directive directives[] = {
+const struct protocol_directive directives[] = {
 	{ "CODE",    code_func	  },
 	{ "IDENT",   ident_func	  },
 	{ "GETMODE", getmode_func },
@@ -88,7 +88,7 @@ enum protocol_string_num {
 	P_SIGHUP
 };
 
-char* protocol_string[] = {
+const char* const protocol_string[] = {
 	"BEGIN\n",
 	"DATA\n",
 	"END\n",
@@ -107,7 +107,7 @@ static int daemonized = 0;
 
 static struct lirc_config* config;
 
-static int send_error(int fd, char* message, char* format_str, ...);
+static int send_error(int fd, char* message, const char* format_str, ...);
 static int handle_input(void);
 
 static inline int max(int a, int b)
@@ -133,8 +133,7 @@ static int get_client_index(int fd)
 /* Return a positive integer containing the value of the ASCII
 * octal number S.  If S is not an octal number, return -1.  */
 
-static int oatoi(s)
-char* s;
+static int oatoi(const char* s)
 {
 	register int i;
 
@@ -149,7 +148,7 @@ char* s;
 
 /* A safer write(), since sockets might not write all but only some of the
  * bytes requested */
-inline int write_socket(int fd, char* buf, int len)
+inline int write_socket(int fd, const char* buf, int len)
 {
 	int done, todo = len;
 
@@ -163,7 +162,7 @@ inline int write_socket(int fd, char* buf, int len)
 	return len;
 }
 
-inline int write_socket_len(int fd, char* buf)
+inline int write_socket_len(int fd, const char* buf)
 {
 	int len;
 
@@ -317,7 +316,7 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 {
 	int sockfd;
 	struct stat s;
-	int new = 1;
+	int new_socket = 1;
 	int ret;
 
 	/* get socket name */
@@ -352,7 +351,7 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 	}
 
 	if (ret != -1) {
-		new = 0;
+		new_socket = 0;
 		ret = unlink(addr->sun_path);
 		if (ret == -1) {
 			fprintf(stderr, "%s: could not delete %s\n", progname, addr->sun_path);
@@ -368,7 +367,7 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 		goto opensocket_failed;
 	}
 
-	if (new ?
+	if (new_socket ?
 	    chmod(addr->sun_path, permission) :
 	    (chmod(addr->sun_path, s.st_mode) == -1 || chown(addr->sun_path, s.st_uid, s.st_gid) == -1)
 	    ) {
@@ -473,7 +472,7 @@ static int setmode_func(int fd, char* message, char* arguments)
 
 static int send_result(int fd, char* message, const char* result)
 {
-	char* count = "1\n";
+	const char* count = "1\n";
 	char buffer[strlen(result) + 1 + 1];
 
 	sprintf(buffer, "%s\n", result);
@@ -497,7 +496,7 @@ static int send_success(int fd, char* message)
 	return 1;
 }
 
-static int send_error(int fd, char* message, char* format_str, ...)
+static int send_error(int fd, char* message, const char* format_str, ...)
 {
 	char lines[4], buffer[PACKET_SIZE + 1];
 	int i, n, len;
@@ -680,7 +679,7 @@ static int schedule(int index, char* config_string)
 	while (c && c->next)
 		c = c->next;
 
-	n = malloc(sizeof(*c));
+	n = (struct config_info*) malloc(sizeof(*c));
 
 	if (n == NULL)
 		return 0;
@@ -715,7 +714,7 @@ static int handle_input(void)
 		return 0;
 
 	for (i = 0; i < clin; i++) {
-		n = malloc(sizeof(*n));
+		n = (struct event_info*) malloc(sizeof(*n));
 
 		if (n == NULL)
 			return 0;
@@ -783,7 +782,7 @@ int main(int argc, char** argv)
 	struct sockaddr_un addr;
 	char dir[FILENAME_MAX + 1] = { 0 };
 
-	lirc_log_open("lircrcd", 0, 0);
+	lirc_log_open("lircrcd", 0, LIRC_NOLOG);
 	while (1) {
 		int c;
 		static struct option long_options[] = {

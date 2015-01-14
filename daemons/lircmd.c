@@ -66,7 +66,7 @@ typedef uint64_t __u64;
 
 static int uinputfd = -1;
 static int useuinput = 0;
-loglevel_t loglevel = 0;
+loglevel_t loglevel = LIRC_NOLOG;
 
 
 static const struct option lircmd_options[] = {
@@ -113,9 +113,9 @@ enum directive { move_n, move_ne, move_e, move_se,
 		 mouse_activate, mouse_toggle_activate, ignore };
 
 struct config_mouse {
-	char*		string;
+	const char* string;
 	enum directive	d;
-	int		x, y, z, down, up, toggle;
+	int x, y, z, down, up, toggle;
 };
 
 struct config_mouse config_table[] = {
@@ -179,7 +179,7 @@ int lircm = -1;
 
 sig_atomic_t hup = 0;
 
-struct trans_mouse* read_config(FILE* fd);
+static struct trans_mouse* read_config(FILE* fd);
 
 void freetm(struct trans_mouse* tm_all)
 {
@@ -607,7 +607,7 @@ struct trans_mouse* read_config(FILE* fd)
 		if (len == PACKET_SIZE - 1 && buffer[len - 1] != '\n') {
 			syslog(LOG_ERR, "line %d too long in config file", line);
 			freetm(tm_list);
-			return (void*)-1;
+			return (struct trans_mouse*)-1;
 		}
 		if (len > 0) {
 			len--;
@@ -710,7 +710,7 @@ struct trans_mouse* read_config(FILE* fd)
 		else
 			button = strdup(button);
 
-		tm_new = malloc(sizeof(struct trans_mouse));
+		tm_new = (struct trans_mouse*) malloc(sizeof(struct trans_mouse));
 		if (remote == NULL || button == NULL || tm_new == NULL) {
 			syslog(LOG_ERR, "out of memory");
 			if (remote != NULL)
@@ -720,7 +720,7 @@ struct trans_mouse* read_config(FILE* fd)
 			if (tm_new != NULL)
 				free(tm_new);
 			free(tm_list);
-			return (void*)-1;
+			return (struct trans_mouse*)-1;
 		}
 		tm_new->tm_next = NULL;
 		tm_new->tm_remote = remote;

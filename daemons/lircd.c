@@ -165,8 +165,8 @@ static int send_core(int fd, char* message, char* arguments, int once);
 static int version(int fd, char* message, char* arguments);
 
 struct protocol_directive {
-	char*	name;
-	int	(*function)(int fd, char* message, char* arguments);
+	const char* name;
+	int (*function)(int fd, char* message, char* arguments);
 };
 
 
@@ -198,7 +198,7 @@ static FILE* pidf;
 static const char* pidfile = PIDFILE;
 static const char* lircdfile = LIRCD;
 
-static const struct protocol_directive const directives[] = {
+static const struct protocol_directive directives[] = {
 	{ "LIST",	      list	       },
 	{ "SEND_ONCE",	      send_once	       },
 	{ "SEND_START",	      send_start       },
@@ -249,7 +249,7 @@ static int uinputfd = -1;
 static int clis[MAX_CLIENTS];
 
 static int nodaemon = 0;
-static loglevel_t loglevel_opt = 0;
+static loglevel_t loglevel_opt = LIRC_NOLOG;
 
 #define CT_LOCAL  1
 #define CT_REMOTE 2
@@ -298,8 +298,7 @@ int max(int a, int b)
 /* Return a positive integer containing the value of the ASCII
 * octal number S.  If S is not an octal number, return -1.  */
 
-static int oatoi(s)
-char* s;
+static int oatoi(const char* s)
 {
 	register int i;
 
@@ -763,15 +762,15 @@ void drop_privileges(void)
 	}
 	pw = getpwnam(user);
 	if (pw == NULL) {
-		logperror(LOG_WARNING, "Illegal effective uid: %s", user);
+		logperror(LIRC_WARNING, "Illegal effective uid: %s", user);
 		return;
 	}
 	r = setuid(pw->pw_uid);
 	if (r == -1) {
-		logperror(LOG_WARNING, "Cannot change UID");
+		logperror(LIRC_WARNING, "Cannot change UID");
 		return;
 	}
-	logprintf(LOG_NOTICE, "Running as user %s", user);
+	logprintf(LIRC_NOTICE, "Running as user %s", user);
 }
 
 
@@ -828,13 +827,17 @@ void add_client(int sock)
 	clin++;
 }
 
-int add_peer_connection(const char* server)
+int add_peer_connection(const char* server_arg)
 {
 	char* sep;
 	struct servent* service;
+	char server[strlen(server_arg) + 1];
+
+	strncpy(server, server_arg, sizeof(server) - 1);
 
 	if (peern < MAX_PEERS) {
-		peers[peern] = malloc(sizeof(struct peer_connection));
+		peers[peern] = (struct peer_connection*) malloc(sizeof(
+						    struct peer_connection));
 		if (peers[peern] != NULL) {
 			gettimeofday(&peers[peern]->reconnect, NULL);
 			peers[peern]->connection_failure = 0;
@@ -966,7 +969,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	struct sockaddr_in serv_addr_in;
 	struct stat s;
 	int ret;
-	int new = 1;
+	int new_socket = 1;
 	int fd;
 
 #ifdef HAVE_SYSTEMD
@@ -1037,7 +1040,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 			goto start_server_failed1;
 		}
 		if (ret != -1) {
-			new = 0;
+			new_socket = 0;
 			ret = unlink(lircdfile);
 			if (ret == -1) {
 				fprintf(stderr, "%s: could not delete %s\n", progname, lircdfile);
@@ -1054,7 +1057,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 			goto start_server_failed1;
 		}
 
-		if (new ? chmod(lircdfile, permission)
+		if (new_socket ? chmod(lircdfile, permission)
 		    : (chmod(lircdfile, s.st_mode) == -1 || chown(lircdfile, s.st_uid, s.st_gid) == -1)
 		    ) {
 			fprintf(stderr, "%s: could not set file permissions\n", progname);
@@ -1136,7 +1139,7 @@ int send_success(int fd, char* message)
 }
 
 
-int send_error(int fd, char* message, char* format_str, ...)
+int send_error(int fd, char* message, const char* format_str, ...)
 {
 	logprintf(LIRC_DEBUG, "Sending error");
 	char lines[4], buffer[PACKET_SIZE + 1];
@@ -1231,8 +1234,10 @@ void dosigalrm(int sig)
 }
 
 
-int parse_rc(int fd, char* message, char* arguments, struct ir_remote** remote, struct ir_ncode** code, int* reps,
-	     int n, int* err)
+int parse_rc(int fd,
+	     char* message, char* arguments,
+	     struct ir_remote** remote, struct ir_ncode** code,
+	     unsigned int* reps, int n, int* err)
 {
 	char* name = NULL;
 	char* command = NULL;
@@ -1379,7 +1384,7 @@ static int list(int fd, char* message, char* arguments)
 	struct ir_ncode* code;
 	int err;
 
-	if (parse_rc(fd, message, arguments, &remote, &code, NULL, 0, &err) == 0)
+	if (parse_rc(fd, message, arguments, &remote, &code, 0, 0, &err) == 0)
 		return 0;
 	if (err)
 		return 1;
@@ -1399,7 +1404,7 @@ static int set_transmitters(int fd, char* message, char* arguments)
 	__u32 next_tx_hex = 0;
 	__u32 channels = 0;
 	int retval = 0;
-	int i;
+	unsigned int i;
 
 	if (arguments == NULL)
 		goto string_error;
@@ -1486,7 +1491,7 @@ static int simulate(int fd, char* message, char* arguments)
 	if (strlen(s) == 0 || space != NULL)
 		goto simulate_invalid_event;
 
-	sim = malloc(strlen(arguments) + 1 + 1);
+	sim = (char*) malloc(strlen(arguments) + 1 + 1);
 	if (sim == NULL)
 		return send_error(fd, message, "out of memory\n");
 	strcpy(sim, arguments);
@@ -1514,7 +1519,7 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	struct ir_remote* remote;
 	struct ir_ncode* code;
 	struct itimerval repeat_timer;
-	int reps;
+	unsigned int reps;
 	int err;
 
 	logprintf(LIRC_DEBUG, "Sending once, msg: %s, args: %s, once: %d",
@@ -1582,7 +1587,7 @@ static int send_stop(int fd, char* message, char* arguments)
 	struct itimerval repeat_timer;
 	int err;
 
-	if (parse_rc(fd, message, arguments, &remote, &code, NULL, 0, &err) == 0)
+	if (parse_rc(fd, message, arguments, &remote, &code, 0, 0, &err) == 0)
 		return 0;
 	if (err)
 		return 1;
@@ -1895,7 +1900,7 @@ void free_old_remotes(void)
 }
 
 
-static int mywaitfordata(long maxusec)
+static int mywaitfordata(unsigned long maxusec)
 {
 	fd_set fds;
 	int maxfd, i, ret, reconnect;
@@ -2109,11 +2114,14 @@ void loop(void)
 }
 
 
-static int opt2host_port(const char*		optarg,
+static int opt2host_port(const char*		optarg_arg,
 			 struct in_addr*	address,
 			 unsigned short*	port,
 			 char*			errmsg)
 {
+	char optarg[strlen(optarg_arg) + 1];
+	strncpy(optarg, optarg_arg, strlen(optarg_arg));
+
 	long p;
 	char* endptr;
 	char* sep = strchr(optarg, ':');
@@ -2127,7 +2135,7 @@ static int opt2host_port(const char*		optarg,
 	}
 	*port = (unsigned short int)p;
 	if (sep) {
-		*sep = 0;
+		*sep = '\0';
 		if (!inet_aton(optarg, address)) {
 			sprintf(errmsg,
 				"%s: bad address \"%s\"\n", progname, optarg);
@@ -2248,7 +2256,7 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:connect", optarg);
 			break;
 		case 'D':
-			loglevel_opt = options_set_loglevel(
+			loglevel_opt = (loglevel_t) options_set_loglevel(
 				optarg ? optarg : "debug");
 			if (loglevel_opt == LIRC_BADLEVEL) {
 				fprintf(stderr, DEBUG_HELP, optarg);
@@ -2357,10 +2365,9 @@ int main(int argc, char** argv)
 		}
 	}
 	opt = options_getstring("lircd:connect");
-
 	if (!parse_peer_connections(opt))
 		return(EXIT_FAILURE);
-	loglevel_opt = options_getint("lircd:debug");
+	loglevel_opt = (loglevel_t) options_getint("lircd:debug");
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
 	allow_simulate = options_getboolean("lircd:allow-simulate");
