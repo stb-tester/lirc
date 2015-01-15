@@ -31,11 +31,11 @@
 
 static const char* const USAGE =
 	"Usage: irexec [options] [lircrc config_file]\n"
-	"\t-h --help\t\tDisplay usage summary\n"
-	"\t-v --version\t\tDisplay version\n"
 	"\t-d --daemon\t\tRun in background\n"
 	"\t-D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
-	"\t-n --name\t\tUse this program name\n";
+	"\t-n --name=progname\tUse this program name for lircrc matching\n"
+	"\t-h --help\t\tDisplay usage summary\n"
+	"\t-v --version\t\tDisplay version\n";
 
 static const struct option options[] = {
 	{ "help",     no_argument,	 NULL, 'h' },
@@ -53,7 +53,7 @@ static const char* opt_progname = "irexec";
 static char path[256] = {0};
 
 
-/** Run shell command in isolated process using double fork(). */
+/** Run shell command line in isolated process using double fork(). */
 static void run_command(const char* cmd)
 {
 	pid_t pid1;
@@ -92,7 +92,8 @@ static void run_command(const char* cmd)
 }
 
 
-static void irexec(struct lirc_config* config)
+/** Get buttonclick messages from lircd socket and process them. */
+static void process_input(struct lirc_config* config)
 {
 	char* code;
 	char* c;
@@ -111,10 +112,38 @@ static void irexec(struct lirc_config* config)
 }
 
 
-int main(int argc, char* argv[])
+void irexec(const char* configfile)
 {
 	struct lirc_config* config;
-	const char* cf;
+
+	if (opt_daemonize) {
+		if (daemon(0, 0) == -1) {
+			perror("Can't daemonize");
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (lirc_readconfig(configfile, &config, NULL) != 0) {
+		fputs("Cannot parse config file\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+	lirc_log_get_clientlog("irexec", path, sizeof(path));
+	unlink(path);
+	lirc_log_set_file(path);
+	lirc_log_open("irexec", 1, opt_loglevel);
+
+	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
+		exit(EXIT_FAILURE);
+
+	process_input(config);
+
+	lirc_freeconfig(config);
+	lirc_deinit();
+	exit(EXIT_SUCCESS);
+}
+
+
+int main(int argc, char* argv[])
+{
 	int c;
 
 	while ((c = getopt_long(argc, argv, "D:hvdn:", options, NULL)) != -1) {
@@ -139,7 +168,6 @@ int main(int argc, char* argv[])
 			}
 			break;
 		default:
-			fprintf(stderr, "Bad option: %c\n", c);
 			fputs(USAGE, stderr);
 			return EXIT_FAILURE;
 		}
@@ -148,30 +176,7 @@ int main(int argc, char* argv[])
 		fputs("Too many arguments\n", stderr);
 		return EXIT_FAILURE;
 	}
-	if (opt_daemonize) {
-		if (daemon(0, 0) == -1) {
-			perror("Can't daemonize");
-			lirc_freeconfig(config);
-			lirc_deinit();
-			exit(EXIT_FAILURE);
-		}
-	}
 
-	cf = optind != argc ? argv[optind] : NULL;
-	if (lirc_readconfig(cf, &config, NULL) != 0) {
-		fputs("Cannot parse config file\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-	lirc_log_get_clientlog("irexec", path, sizeof(path));
-	unlink(path);
-	lirc_log_set_file(path);
-	lirc_log_open("irexec", 1, opt_loglevel);
-
-	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
-		exit(EXIT_FAILURE);
-
-	irexec(config);
-	lirc_freeconfig(config);
-	lirc_deinit();
+	irexec( optind != argc ? argv[optind] : NULL);
 	exit(EXIT_SUCCESS);
 }
