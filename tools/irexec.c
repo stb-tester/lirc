@@ -1,14 +1,13 @@
-
 /****************************************************************************
- ** irexec.c ****************************************************************
- ****************************************************************************
- *
- * irexec  - execute programs according to the pressed remote control buttons
- *
- * Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
- * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** irexec.c ****************************************************************
+****************************************************************************
+*
+* irexec  - execute programs according to the pressed remote control buttons
+*
+* Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
+* Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -25,93 +24,109 @@
 #include "lirc_client.h"
 #include "lirc_log.h"
 
-static char *prog;
+static const char* const USAGE =
+	"Usage: irexec [options] [lircrc config_file]\n"
+	"\t-h --help\t\tDisplay usage summary\n"
+	"\t-v --version\t\tDisplay version\n"
+	"\t-d --daemon\t\tRun in background\n"
+	"\t-n --name\t\tUse this program name\n";
 
-int main(int argc, char *argv[])
+static const struct option options[] = {
+	{ "help",    no_argument,	NULL, 'h' },
+	{ "version", no_argument,	NULL, 'v' },
+	{ "daemon",  no_argument,	NULL, 'd' },
+	{ "name",    required_argument, NULL, 'n' },
+	{ 0,	     0,			0,    0	  }
+};
+
+static const char* opt_progname = "irexec";
+static int opt_daemonize;
+
+
+static void run_command(const char* cmd)
 {
-	struct lirc_config *config;
-	int daemonize = 0;
-	char *program = "irexec";
-        int r;
+	int r;
 
-	prog = "irexec " VERSION;
-	while (1) {
-		int c;
-		static struct option long_options[] = {
-			{"help", no_argument, NULL, 'h'},
-			{"version", no_argument, NULL, 'v'},
-			{"daemon", no_argument, NULL, 'd'},
-			{"name", required_argument, NULL, 'n'},
-			{0, 0, 0, 0}
-		};
-		c = getopt_long(argc, argv, "hvdn:", long_options, NULL);
-		if (c == -1)
+	if (!opt_daemonize)
+		logprintf(LIRC_DEBUG,
+			  "Execing command \"%s\"\n", cmd);
+	r = system(cmd);
+	if (r != 0)
+		logprintf(LIRC_NOTICE,
+			  "Shell returned %d", r);
+}
+
+
+static void irexec(struct lirc_config* config)
+{
+	char* code;
+	char* c;
+	int ret;
+
+
+	while (lirc_nextcode(&code) == 0) {
+		if (code == NULL)
+			continue;
+		while ((ret = lirc_code2char(config, code, &c)) == 0
+		       && c != NULL)
+			run_command(c);
+		free(code);
+		if (ret == -1)
 			break;
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	struct lirc_config* config;
+	const char* cf;
+	int c;
+
+	while ((c = getopt_long(argc, argv, "hvdn:", options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
-			printf("Usage: %s [options] [config_file]\n", argv[0]);
-			printf("\t -h --help\t\tdisplay usage summary\n");
-			printf("\t -v --version\t\tdisplay version\n");
-			printf("\t -d --daemon\t\trun in background\n");
-			printf("\t -n --name\t\tuse this program name\n");
-			return (EXIT_SUCCESS);
+			puts(USAGE);
+			return EXIT_SUCCESS;
 		case 'v':
-			printf("%s\n", prog);
-			return (EXIT_SUCCESS);
+			puts("irexec " VERSION);
+			return EXIT_SUCCESS;
 		case 'd':
-			daemonize = 1;
+			opt_daemonize = 1;
 			break;
 		case 'n':
-			program = optarg;
+			opt_progname = optarg;
 			break;
 		default:
-			printf("Usage: %s [options] [config_file]\n", argv[0]);
-			return (EXIT_FAILURE);
+			fprintf(stderr, "Bad option: %o", c);
+			fputs(USAGE, stderr);
+			return EXIT_FAILURE;
 		}
 	}
 	if (optind < argc - 1) {
-		fprintf(stderr, "%s: too many arguments\n", prog);
-		return (EXIT_FAILURE);
+		fputs("Too many arguments\n", stderr);
+		return EXIT_FAILURE;
 	}
 
-	if (lirc_init(program, daemonize ? 0 : 1) == -1)
+	cf = optind != argc ? argv[optind] : NULL;
+	if (lirc_readconfig(cf, &config, NULL) != 0) {
+		fputs("Cannot parse config file\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+
+	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
 		exit(EXIT_FAILURE);
 
-	if (lirc_readconfig(optind != argc ? argv[optind] : NULL, &config, NULL) == 0) {
-		char *code;
-		char *c;
-		int ret;
-
-		if (daemonize) {
-			if (daemon(0, 0) == -1) {
-				fprintf(stderr, "%s: can't daemonize\n", prog);
-				perror(prog);
-				lirc_freeconfig(config);
-				lirc_deinit();
-				exit(EXIT_FAILURE);
-			}
+	if (opt_daemonize) {
+		if (daemon(0, 0) == -1) {
+			perror("Can't daemonize");
+			lirc_freeconfig(config);
+			lirc_deinit();
+			exit(EXIT_FAILURE);
 		}
-		while (lirc_nextcode(&code) == 0) {
-			if (code == NULL)
-				continue;
-			while ((ret = lirc_code2char(config, code, &c)) == 0 && c != NULL) {
-				if (!daemonize) {
-					logprintf(LIRC_DEBUG,
-						  "Execing command \"%s\"\n", c);
-				}
-				r = system(c);
-				if (r != 0) {
-					logprintf(LIRC_NOTICE, 
-    						  "Shell returned %d", r);
-				}
-			}
-			free(code);
-			if (ret == -1)
-				break;
-		}
-		lirc_freeconfig(config);
 	}
-
+	irexec(config);
+	lirc_freeconfig(config);
 	lirc_deinit();
 	exit(EXIT_SUCCESS);
 }
