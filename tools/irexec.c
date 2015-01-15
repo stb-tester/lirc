@@ -9,6 +9,8 @@
 *
 */
 
+#define _GNU_SOURCE
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -20,6 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 #include "lirc_client.h"
 #include "lirc_log.h"
@@ -48,17 +53,42 @@ static const char* opt_progname = "irexec";
 static char path[256] = {0};
 
 
+/** Run shell command in isolated process using double fork(). */
 static void run_command(const char* cmd)
 {
-	int r;
+	pid_t pid1;
+	pid_t pid2;
+	char* const vp[] = {
+		strdupa("/usr/bin/sh"), strdupa("-c"), strdupa(cmd), NULL
+	};
 
-	if (!opt_daemonize)
-		logprintf(LIRC_DEBUG,
-			  "Execing command \"%s\"", cmd);
-	r = system(cmd);
-	if (r != 0)
-		logprintf(LIRC_NOTICE,
-			  "Shell returned %d for \"%c\"", r, cmd);
+	pid1 = fork();
+	if (pid1 < 0) {
+		logperror(LIRC_ERROR, "Cannot fork");
+		perror("Cannot fork()");
+		exit(EXIT_FAILURE);
+	} else if (pid1 == 0) {
+		pid2 = fork();
+		if (pid2 < 0) {
+			logperror(LIRC_ERROR, "Cannot do secondary fork()");
+			exit(EXIT_FAILURE);
+		} else if (pid2 == 0) {
+			if (!opt_daemonize)
+				logprintf(LIRC_DEBUG,
+					  "Execing command \"%s\"", cmd);
+			execvp("/usr/bin/sh", vp );
+			/* not reached */
+			logperror(LIRC_ERROR, "execvp failed");
+			fputs("execvp failed\n", stderr);
+		} else {
+			waitpid(pid2, NULL, WNOHANG);
+			exit(0);
+		}
+
+	} else {
+		waitpid(pid1, NULL, 0);
+	}
+
 }
 
 
@@ -67,7 +97,6 @@ static void irexec(struct lirc_config* config)
 	char* code;
 	char* c;
 	int ret;
-
 
 	while (lirc_nextcode(&code) == 0) {
 		if (code == NULL)
