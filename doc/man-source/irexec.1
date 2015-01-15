@@ -29,6 +29,13 @@ Make irexec fork to background. That way you can easily start irexec
 from an init script. In this case you should specify a config file on the
 command line as irexec won't be able to find your home directory.
 .TP 4
+.B -D, --loglevel [level]
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'. By default, no logging is done.
+.TP 4
 .B -n, --name <name>
 Use this program name instead of the default 'irexec' as identifier in
 the lircd.conf file.
@@ -36,6 +43,14 @@ the lircd.conf file.
 .TP 4
 LIRC_SOCKET_PATH
 Path to the lircd socket irexec reads from, defaults to /var/run/lirc/lircd.
+
+
+.SH FILES
+.TP 4
+.B ~/.cache/irexec.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irexec.log
+
 
 .SH NOTE
 

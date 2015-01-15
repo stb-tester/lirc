@@ -29,18 +29,23 @@ static const char* const USAGE =
 	"\t-h --help\t\tDisplay usage summary\n"
 	"\t-v --version\t\tDisplay version\n"
 	"\t-d --daemon\t\tRun in background\n"
+	"\t-D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
 	"\t-n --name\t\tUse this program name\n";
 
 static const struct option options[] = {
-	{ "help",    no_argument,	NULL, 'h' },
-	{ "version", no_argument,	NULL, 'v' },
-	{ "daemon",  no_argument,	NULL, 'd' },
-	{ "name",    required_argument, NULL, 'n' },
-	{ 0,	     0,			0,    0	  }
+	{ "help",     no_argument,	 NULL, 'h' },
+	{ "version",  no_argument,	 NULL, 'v' },
+	{ "daemon",   no_argument,	 NULL, 'd' },
+	{ "name",     required_argument, NULL, 'n' },
+	{ "loglevel", required_argument, NULL, 'D' },
+	{ 0,	      0,		 0,    0   }
 };
 
+static int opt_daemonize = 0;
+static loglevel_t opt_loglevel = LIRC_NOLOG;
 static const char* opt_progname = "irexec";
-static int opt_daemonize;
+
+static char path[256] = {0};
 
 
 static void run_command(const char* cmd)
@@ -49,11 +54,11 @@ static void run_command(const char* cmd)
 
 	if (!opt_daemonize)
 		logprintf(LIRC_DEBUG,
-			  "Execing command \"%s\"\n", cmd);
+			  "Execing command \"%s\"", cmd);
 	r = system(cmd);
 	if (r != 0)
 		logprintf(LIRC_NOTICE,
-			  "Shell returned %d", r);
+			  "Shell returned %d for \"%c\"", r, cmd);
 }
 
 
@@ -83,7 +88,7 @@ int main(int argc, char* argv[])
 	const char* cf;
 	int c;
 
-	while ((c = getopt_long(argc, argv, "hvdn:", options, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "D:hvdn:", options, NULL)) != -1) {
 		switch (c) {
 		case 'h':
 			puts(USAGE);
@@ -97,8 +102,15 @@ int main(int argc, char* argv[])
 		case 'n':
 			opt_progname = optarg;
 			break;
+		case 'D':
+			opt_loglevel = string2loglevel(optarg);
+			if (opt_loglevel == LIRC_BADLEVEL) {
+				fprintf(stderr, "Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
 		default:
-			fprintf(stderr, "Bad option: %o", c);
+			fprintf(stderr, "Bad option: %c\n", c);
 			fputs(USAGE, stderr);
 			return EXIT_FAILURE;
 		}
@@ -107,16 +119,6 @@ int main(int argc, char* argv[])
 		fputs("Too many arguments\n", stderr);
 		return EXIT_FAILURE;
 	}
-
-	cf = optind != argc ? argv[optind] : NULL;
-	if (lirc_readconfig(cf, &config, NULL) != 0) {
-		fputs("Cannot parse config file\n", stderr);
-		exit(EXIT_FAILURE);
-	}
-
-	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
-		exit(EXIT_FAILURE);
-
 	if (opt_daemonize) {
 		if (daemon(0, 0) == -1) {
 			perror("Can't daemonize");
@@ -125,6 +127,20 @@ int main(int argc, char* argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	cf = optind != argc ? argv[optind] : NULL;
+	if (lirc_readconfig(cf, &config, NULL) != 0) {
+		fputs("Cannot parse config file\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+	lirc_log_get_clientlog("irexec", path, sizeof(path));
+	unlink(path);
+	lirc_log_set_file(path);
+	lirc_log_open("irexec", 1, opt_loglevel);
+
+	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
+		exit(EXIT_FAILURE);
+
 	irexec(config);
 	lirc_freeconfig(config);
 	lirc_deinit();
