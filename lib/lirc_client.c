@@ -805,7 +805,7 @@ static char *lirc_getfilename(const char *file, const char *current_file)
 			if (filename == NULL) {
 				return NULL;
 			}
-			strcat(filename, LIRCRC_USER_FILE);
+			strcat(filename, "/" LIRCRC_USER_FILE);
 		}
 		filename = realloc(filename, strlen(filename) + 1);
 	} else if (strncmp(file, "~/", 2) == 0) {
