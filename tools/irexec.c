@@ -9,7 +9,9 @@
 *
 */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -25,9 +27,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
 #include "lirc_client.h"
 #include "lirc_log.h"
+
 
 static const char* const USAGE =
 	"Usage: irexec [options] [lircrc config_file]\n"
@@ -43,12 +45,12 @@ static const struct option options[] = {
 	{ "daemon",   no_argument,	 NULL, 'd' },
 	{ "name",     required_argument, NULL, 'n' },
 	{ "loglevel", required_argument, NULL, 'D' },
-	{ 0,	      0,		 0,    0   }
+	{ 0,          0,		 0,    0   }
 };
 
-static int opt_daemonize = 0;
-static loglevel_t opt_loglevel = LIRC_NOLOG;
-static const char* opt_progname = "irexec";
+static int opt_daemonize	= 0;
+static loglevel_t opt_loglevel	= LIRC_NOLOG;
+static const char* opt_progname	= "irexec";
 
 static char path[256] = {0};
 
@@ -56,27 +58,27 @@ static char path[256] = {0};
 /** Run shell command line in isolated process using double fork(). */
 static void run_command(const char* cmd)
 {
-	pid_t pid1;
-	pid_t pid2;
 	char* const vp[] = {
 		strdupa("/usr/bin/sh"), strdupa("-c"), strdupa(cmd), NULL
 	};
+	pid_t pid1;
+	pid_t pid2;
 
 	pid1 = fork();
 	if (pid1 < 0) {
 		logperror(LIRC_ERROR, "Cannot fork");
 		perror("Cannot fork()");
 		exit(EXIT_FAILURE);
-	} else if (pid1 == 0) {
+	}
+	if (pid1 == 0) {
 		pid2 = fork();
 		if (pid2 < 0) {
 			logperror(LIRC_ERROR, "Cannot do secondary fork()");
 			exit(EXIT_FAILURE);
-		} else if (pid2 == 0) {
-			if (!opt_daemonize)
-				logprintf(LIRC_DEBUG,
-					  "Execing command \"%s\"", cmd);
-			execvp("/usr/bin/sh", vp );
+		}
+		if (pid2 == 0) {
+			logprintf(LIRC_DEBUG, "Execing command \"%s\"", cmd);
+			execvp("/usr/bin/sh", vp);
 			/* not reached */
 			logperror(LIRC_ERROR, "execvp failed");
 			fputs("execvp failed\n", stderr);
@@ -84,11 +86,9 @@ static void run_command(const char* cmd)
 			waitpid(pid2, NULL, WNOHANG);
 			exit(0);
 		}
-
 	} else {
 		waitpid(pid1, NULL, 0);
 	}
-
 }
 
 
@@ -104,7 +104,7 @@ static void process_input(struct lirc_config* config)
 			continue;
 		while ((ret = lirc_code2char(config, code, &c)) == 0
 		       && c != NULL)
-			run_command(c);
+				run_command(c);
 		free(code);
 		if (ret == -1)
 			break;
@@ -112,19 +112,19 @@ static void process_input(struct lirc_config* config)
 }
 
 
-void irexec(const char* configfile)
+int irexec(const char* configfile)
 {
 	struct lirc_config* config;
 
 	if (opt_daemonize) {
 		if (daemon(0, 0) == -1) {
 			perror("Can't daemonize");
-			exit(EXIT_FAILURE);
+			return EXIT_FAILURE;
 		}
 	}
 	if (lirc_readconfig(configfile, &config, NULL) != 0) {
 		fputs("Cannot parse config file\n", stderr);
-		exit(EXIT_FAILURE);
+		return EXIT_FAILURE;
 	}
 	lirc_log_get_clientlog("irexec", path, sizeof(path));
 	unlink(path);
@@ -132,13 +132,12 @@ void irexec(const char* configfile)
 	lirc_log_open("irexec", 1, opt_loglevel);
 
 	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
-		exit(EXIT_FAILURE);
-
+		return EXIT_FAILURE;
 	process_input(config);
+	lirc_deinit();
 
 	lirc_freeconfig(config);
-	lirc_deinit();
-	exit(EXIT_SUCCESS);
+	return EXIT_SUCCESS;
 }
 
 
@@ -162,10 +161,6 @@ int main(int argc, char* argv[])
 			break;
 		case 'D':
 			opt_loglevel = string2loglevel(optarg);
-			if (opt_loglevel == LIRC_BADLEVEL) {
-				fprintf(stderr, "Bad debug level: %s\n", optarg);
-				exit(EXIT_FAILURE);
-			}
 			break;
 		default:
 			fputs(USAGE, stderr);
@@ -176,7 +171,9 @@ int main(int argc, char* argv[])
 		fputs("Too many arguments\n", stderr);
 		return EXIT_FAILURE;
 	}
-
-	irexec( optind != argc ? argv[optind] : NULL);
-	exit(EXIT_SUCCESS);
+	if (opt_loglevel == LIRC_BADLEVEL) {
+		fprintf(stderr, "Bad debug level: %s\n", optarg);
+		return EXIT_FAILURE;
+	}
+	return irexec(optind != argc ? argv[optind] : NULL);
 }
