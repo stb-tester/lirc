@@ -8,6 +8,8 @@
  *
  */
 
+#include <ctype.h>
+
 #include "lirc_private.h"
 #include "irrecord.h"
 
@@ -281,7 +283,7 @@ static enum init_status init(struct opts *opts, struct main_state *state)
 			free_config(my_remote);
 			return (STS_INIT_TESTED);
 		}
-		remote.name = opts->filename;
+		remote.name = my_remote->name;  //FIXME: Who owns this chunk?
 		remote.codes = NULL;
 		remote.last_code = NULL;
 		remote.next = NULL;
@@ -694,6 +696,37 @@ void lirccode_get_lengths(const struct opts *opts, struct main_state *state)
 	}
 }
 
+void get_name(struct ir_remote* remote, struct opts* opts)
+{
+	char buff[256];
+	char path[256];
+	char* s;
+
+	while (remote->name == NULL) {
+again:
+		fputs("Enter name of remote (only ascii, no spaces) :",
+		      stdout);
+		s = fgets(buff, sizeof(buff), stdin);
+		if (s != buff) {
+			puts("gets() failed (!)");
+			continue;
+		}
+		s = strrchr(s, '\n');
+		if (s != NULL)
+			*s = '\0';
+		for (s = buff; *s; s += 1) {
+			if (*s == ' ' || !isalnum(*s) ){
+				printf("Bad character: %c (x%x)\n", *s, *s);
+				goto again;
+			}
+		}
+		remote->name = strdup(buff);
+	}
+	snprintf(path, sizeof(path), "%s.lircd.conf", buff);
+	opts->filename = strdup(path);  // FIXME: leak?
+	printf("Using %s as output filename\n\n", opts->filename);
+}
+
 
 int main(int argc, char **argv)
 {
@@ -719,7 +752,8 @@ int main(int argc, char **argv)
 	printf("Press RETURN to continue.\n");
 	getchar();
 
-	remote.name = opts.filename;
+	if (remote.name == NULL)
+		get_name(&remote, &opts);
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
 		mode2_get_lengths(&opts, &state);
