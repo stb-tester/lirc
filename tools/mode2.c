@@ -143,34 +143,11 @@ static void parse_options(int argc, char** argv)
 }
 
 
-int main(int argc, char **argv)
+int open_device(int use_raw_access, const char* device)
 {
-	int fd;
-	char buffer[sizeof(ir_code)];
-	lirc_t data;
-	__u32 mode;
-	/*
-	 * Was hard coded to 50000 but this is too long, the shortest gap in the
-	 * supplied .conf files is 10826, the longest space defined for any one,
-	 * zero or header is 7590
-	 */
 	struct stat s;
-	__u32 code_length;
-	size_t count = sizeof(lirc_t);
-	int i;
-        char path[128];
-
-	lirc_log_get_clientlog("mode2", path, sizeof(path));
-	lirc_log_set_file(path);
-	lirc_log_open("mode2", 1, LIRC_NOTICE);
-
-	strncpy(progname, "mode2", sizeof(progname));
-	hw_choose_driver(NULL);
-	options_load(argc, argv, NULL, parse_options);
-	if (device && strcmp(device, LIRCD) == 0) {
-		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
-		return EXIT_FAILURE;
-	}
+	__u32 mode;
+	int fd;
 
 	if (use_raw_access) {
 		if (device == NULL) {
@@ -212,7 +189,7 @@ int main(int argc, char **argv)
 			fprintf(stderr,
 				"Cannot initiate device %s\n",
 			 	curr_driver->device);
-			return EXIT_FAILURE;
+			exit(EXIT_FAILURE);
 		}
 		fd = curr_driver->fd;	/* please compiler */
 		mode = curr_driver->rec_mode;
@@ -229,6 +206,39 @@ int main(int argc, char **argv)
 		}
 
 	}
+	return fd;
+}
+
+int main(int argc, char **argv)
+{
+	int fd;
+	char buffer[sizeof(ir_code)];
+	lirc_t data;
+	__u32 mode;
+	/*
+	 * Was hard coded to 50000 but this is too long, the shortest gap in the
+	 * supplied .conf files is 10826, the longest space defined for any one,
+	 * zero or header is 7590
+	 */
+	__u32 code_length;
+	size_t count = sizeof(lirc_t);
+	int i;
+        char path[128];
+
+	strncpy(progname, "mode2", sizeof(progname));
+	hw_choose_driver(NULL);
+	options_load(argc, argv, NULL, parse_options);
+        fd = open_device(use_raw_access, device);
+	mode = curr_driver->rec_mode;
+	lirc_log_get_clientlog("mode2", path, sizeof(path));
+	lirc_log_set_file(path);
+	lirc_log_open("mode2", 1, LIRC_NOTICE);
+
+	if (device && strcmp(device, LIRCD) == 0) {
+		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
+		return EXIT_FAILURE;
+	}
+
 	if (mode == LIRC_MODE_LIRCCODE) {
 		if (use_raw_access) {
 			if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {
