@@ -27,7 +27,8 @@ liblirc_la_SOURCES          = config_file.c \
                               receive.c  \
                               release.c \
                               serial.c \
-                              transmit.c
+                              transmit.c \
+                              util.c
 
 libirrecord_la_SOURCES      = irrecord.c
 
@@ -73,6 +74,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               receive.h \
                               serial.h \
                               transmit.h \
+                              util.h \
                               input_map.inc
 
 driver_api.dox: $(srcdir)/driver_api.doxhead  \
