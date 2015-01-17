@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: November 2001" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Jan 2015" "mode2 @version@" "User Commands"
 .SH NAME
 mode2, xmode2 - shows the pulse/space length of infrared signals
 .SH SYNOPSIS
@@ -33,6 +33,31 @@ enable alternative display mode
 .TP
 \fB\-r\fR \fB\-\-raw\fR
 access device directly
+
+.SH RUNNING AS ROOT
+In many cases mode2 needs to run as root to access devices not available
+to regular users. On the other hand, running as root creates problems
+such as log files owned by root, security concerns etc.
+.P
+In order to cope with this, mode2 by default drops root privileges
+after opening the input device. This support is based on that root
+permissions are acquired using sudo(1) e. g., using
+.nf
+
+        $ sudo mode2 --raw /dev/lirc0
+
+.fi
+If not using sudo, the same behaviour could be accomplished using the
+SUDO_USER environment variable e. g.,
+.nf
+
+        # SUDO_USER=$LOGNAME mode2 --raw /dev/lirc0
+
+.fi
+The --keep-root option will make mode2 to keep root privileges for the
+complete run.
+
+
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The search path used for this is determined
 by (falling priority):

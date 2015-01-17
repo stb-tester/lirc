@@ -31,8 +31,10 @@
 #include <errno.h>
 #include <syslog.h>
 #include <time.h>
+#include <pwd.h>
 
 #include "lirc_private.h"
+
 static char *device = NULL;
 static int dmode = 0;
 static int t_div = 500;
@@ -45,6 +47,7 @@ static const char* const help =
 "\t -d --device=device\tread from given device\n"
 "\t -H --driver=driver\tuse given driver\n"
 "\t -U --plugindir=path\tLoad plugins from path.\n"
+"\t -k --keep-root\t\tkeep root privileges\n"
 "\t -m --mode\t\tenable column display mode\n"
 "\t -r --raw\t\taccess device directly\n"
 "\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
@@ -58,6 +61,7 @@ static const struct option options[] = {
 	{"version", no_argument, NULL, 'v'},
 	{"device", required_argument, NULL, 'd'},
 	{"driver", required_argument, NULL, 'H'},
+	{"keep-root", no_argument, NULL, 'k'},
 	{"mode", no_argument, NULL, 'm'},
 	{"raw", no_argument, NULL, 'r'},
 	{"gap", required_argument, NULL, 'g'},
@@ -88,7 +92,7 @@ static void add_defaults(void)
 static void parse_options(int argc, char** argv)
 {
 	int c;
-	static const char* const optstring= "hvd:H:mrg:s:U:";
+	static const char* const optstring= "hvd:H:mkrg:s:U:";
 
 	add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
@@ -115,6 +119,9 @@ static void parse_options(int argc, char** argv)
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
 			break;
+		case 'k':
+			unsetenv("SUDO_USER");
+			break;
 		case 'd':
 			device = optarg;
 			break;
@@ -140,6 +147,21 @@ static void parse_options(int argc, char** argv)
 		fprintf(stderr, "%s: too many arguments\n", progname);
 		exit(EXIT_FAILURE);
 	}
+}
+
+
+static void drop_root(void)
+{
+        const char* new_user;
+
+        new_user = drop_sudo_root(setuid);
+        if (strcmp("root", new_user) == 0)
+                puts("Warning: Running as root.");
+        else if (strlen(new_user) == 0)
+                puts("Warning: Cannot change uid.");
+        else
+                printf("Running as regular user %s\n", new_user);
+
 }
 
 
@@ -209,6 +231,7 @@ int open_device(int use_raw_access, const char* device)
 	return fd;
 }
 
+
 int main(int argc, char **argv)
 {
 	int fd;
@@ -223,12 +246,14 @@ int main(int argc, char **argv)
 	__u32 code_length;
 	size_t count = sizeof(lirc_t);
 	int i;
-        char path[128];
+	char path[128];
 
 	strncpy(progname, "mode2", sizeof(progname));
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
-        fd = open_device(use_raw_access, device);
+	fd = open_device(use_raw_access, device);
+	if (geteuid() == 0)
+		drop_root();
 	mode = curr_driver->rec_mode;
 	lirc_log_get_clientlog("mode2", path, sizeof(path));
 	lirc_log_set_file(path);
