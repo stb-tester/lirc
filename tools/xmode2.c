@@ -94,6 +94,7 @@ static struct option options[] = {
 	{"version", no_argument, NULL, 'v'},
 	{"device", required_argument, NULL, 'd'},
 	{"driver", required_argument, NULL, 'H'},
+	{"keep-root", required_argument, NULL, 'k'},
 	{"geometry", required_argument, NULL, 'g'},
 	{"timediv", required_argument, NULL, 't'},
 	{"mode", no_argument, NULL, 'm'},
@@ -110,6 +111,7 @@ static const char* const help =
 "    -g --geometry=geometry\twindow geometry\n"
 "    -t --timediv=value\t\tms per unit\n"
 "    -m --mode\t\t\tenable alternative display mode\n"
+"    -k --keep-root\t\tkeep root privileges\n"
 "    -r --raw\t\t\taccess device directly\n"
 "    -h --help\t\t\tdisplay usage summary\n"
 "    -v --version\t\tdisplay version\n";
@@ -161,6 +163,9 @@ static void parse_options(int argc, char** const argv)
 			break;
 		case 't':	/* timediv */
 			div_ = strtol(optarg, NULL, 10);
+			break;
+		case 'k':
+			unsetenv("SUDO_USER");
 			break;
 		case 'm':
 			dmode = 1;
@@ -230,6 +235,22 @@ void closescreen(void)
 	XCloseDisplay(d1);
 }
 
+
+static void drop_root(void)
+{
+        const char* new_user;
+
+        new_user = drop_sudo_root(setuid);
+        if (strcmp("root", new_user) == 0)
+                puts("Warning: Running as root.");
+        else if (strlen(new_user) == 0)
+                puts("Warning: Cannot change uid.");
+        else
+                printf("Running as regular user %s\n", new_user);
+
+}
+
+
 int main(int argc, char **argv)
 {
 	fd_set rfds;
@@ -241,6 +262,7 @@ int main(int argc, char **argv)
 	lirc_t x1, y1, x2, y2;
 	int result;
 	char textbuffer[80];
+
 	lirc_log_open("xmode2", 0, LIRC_INFO);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
@@ -278,7 +300,7 @@ int main(int argc, char **argv)
 	} else {
 		curr_driver->open_func(device);
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
-			fputs("Cannot initialize hardware", stderr);
+			fputs("Cannot initialize hardware\n", stderr);
 			exit(EXIT_FAILURE);
 		}
 
@@ -296,6 +318,8 @@ int main(int argc, char **argv)
 
 	}
 
+	if (geteuid() == 0)
+		drop_root();
 	initscreen(geometry);
 	xfd = XConnectionNumber(d1);
 	maxfd = fd > xfd ? fd : xfd;

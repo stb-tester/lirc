@@ -33,6 +33,31 @@ enable alternative display mode
 .TP
 \fB\-r\fR \fB\-\-raw\fR
 access device directly
+
+.SH RUNNING AS ROOT
+In many cases xmode2 needs to run as root to access devices not available
+to regular users. On the other hand, running as root creates problems
+such as log files owned by root, security concerns etc.
+.P
+In order to cope with this, xmode2 by default drops root privileges
+after opening the input device. This support is based on that root
+permissions are acquired using sudo(1) e. g., using
+.nf
+
+        $ sudo xmode2 --driver default --device /dev/lirc0
+
+.fi
+If not using sudo, the same behaviour could be accomplished using the
+SUDO_USER environment variable e. g.,
+.nf
+
+        # SUDO_USER=$LOGNAME xmode2 --raw /dev/lirc0
+
+.fi
+The --keep-root option will make xmode2 keep it's root privileges for the
+complete run.
+
+
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The search path used for this is determined
 by (falling priority):
