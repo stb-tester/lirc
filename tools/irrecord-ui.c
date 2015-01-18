@@ -24,6 +24,7 @@ static const char *const help =
     "\t -H --driver=driver\tUse given driver\n"
     "\t -d --device=device\tRead from given device\n"
     "\t -a --analyse\t\tAnalyse raw_codes config files\n"
+    "\t -k --keep-root\tDon't drop root privileges\n"
     "\t -l --list-namespace\tList valid button names\n"
     "\t -U --plugindir=dir\tLoad drivers from dir\n"
     "\t -f --force\t\tForce raw mode\n"
@@ -43,6 +44,7 @@ static const struct option long_options[] = {
 	{"driver", required_argument, NULL, 'H'},
 	{"force", no_argument, NULL, 'f'},
 	{"disable-namespace", no_argument, NULL, 'n'},
+	{"keep-root", no_argument, NULL, 'k'},
 	{"list-namespace", no_argument, NULL, 'l'},
 	{"plugindir", required_argument, NULL, 'U'},
 	{"dynamic-codes", no_argument, NULL, 'Y'},
@@ -125,7 +127,7 @@ static void add_defaults(void)
 		(const char *)NULL, (const char *)NULL
 	};
 	options_add_defaults(defaults);
-}
+};
 
 
 /** Stuff command line into the single string buff. */
@@ -186,6 +188,9 @@ static void parse_options(int argc, char **const argv)
 			exit(EXIT_SUCCESS);
 		case 'i':
 			options_set_opt("irrecord:invert", "True");
+			break;
+		case 'k':
+			unsetenv("SUDO_USER");
 			break;
 		case 'l':
 			options_set_opt("irrecord:list-namespace", "True");
@@ -733,6 +738,7 @@ int main(int argc, char **argv)
 	struct opts opts;
 	struct main_state state;
 	int r = 1;
+	const char* new_user;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&state, 0, sizeof(state));
@@ -743,6 +749,13 @@ int main(int argc, char **argv)
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
 	}
+	new_user = drop_sudo_root(seteuid);
+	if (strcmp("root", new_user) == 0)
+		puts("Warning: Running as root.");
+	else if (strlen(new_user) == 0)
+		puts("Warning: Cannot change uid.");
+	else
+		printf("Running as regular user %s\n", new_user);
 	do_init(&opts, &state);
 
 	puts(MSG_WELCOME);
