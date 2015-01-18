@@ -89,6 +89,9 @@ static void parse_options(int argc, char** argv)
 {
 	int c;
 	static const char* const optstring= "hvd:H:mrg:s:U:";
+	char driver[64];
+
+	strcpy(driver, "default");
 
 	add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
@@ -98,12 +101,7 @@ static void parse_options(int argc, char** argv)
 			printf(help);
 			exit(EXIT_SUCCESS);
 		case 'H':
-			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not found.\n", optarg);
-				fprintf(stderr, "Available drivers:\n");
-				hw_print_drivers(stderr);
-				exit(EXIT_FAILURE);
-			}
+			strncpy(driver, optarg, sizeof(driver) - 1);
 			break;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
@@ -134,6 +132,13 @@ static void parse_options(int argc, char** argv)
 	}
 	if (optind < argc) {
 		fprintf(stderr, "%s: too many arguments\n", progname);
+		exit(EXIT_FAILURE);
+	}
+	if (hw_choose_driver(driver) != 0) {
+		fprintf(stderr, "Driver `%s' not found.", driver);
+		fputs(" (Missing -U/--plugins option?)\n", stderr);
+		fputs("Available drivers:\n", stderr);
+		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
 }
