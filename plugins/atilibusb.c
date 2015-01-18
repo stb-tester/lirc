@@ -43,6 +43,7 @@ static char *ati_rec(struct ir_remote *remotes);
 static void usb_read_loop(int fd);
 static struct usb_device *find_usb_device(void);
 static int find_device_endpoints(struct usb_device *dev);
+static char device_path[PATH_MAX + 1] = {0};
 
 const struct driver hw_atilibusb = {
 	.name		=	"atilibusb",
@@ -151,6 +152,11 @@ static int ati_init()
 		goto fail;
 	}
 
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 	child = fork();
 	if (child == -1) {
 		logperror(LIRC_ERROR, "couldn't fork child process");
@@ -158,8 +164,6 @@ static int ati_init()
 	} else if (child == 0) {
 		usb_read_loop(pipe_fd[1]);
 	}
-
-	LOGPRINTF(1, "USB receiver initialized");
 	return 1;
 
 fail:
