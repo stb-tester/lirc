@@ -210,22 +210,43 @@ int open_device(int use_raw_access, const char* device)
 			 	curr_driver->device);
 			exit(EXIT_FAILURE);
 		}
+		printf("Using device: %s\n", curr_driver->device);
 		fd = curr_driver->fd;	/* please compiler */
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
 				puts("Please use the --raw option to access "
 				       "the device directly instead through\n"
-				       "the abstraction layer.\n");
+				       "the abstraction layer");
+				exit(EXIT_FAILURE);
+			} else if (mode == LIRC_MODE_LIRCCODE) {
+				return fd;
 			} else {
-				puts("This program does not work for this"
- 				       " hardware yet\n");
+				puts("Internal error: bad receive mode");
+				exit(EXIT_FAILURE);
 			}
-			exit(EXIT_FAILURE);
 		}
-
 	}
+	printf("Using device: %s\n", curr_driver->device);
 	return fd;
+}
+
+
+static void setup_log(void)
+{
+	char path[128];
+	const char* loglevel;
+
+	loglevel = getenv("LIRC_LOGLEVEL");
+	if (loglevel == NULL) {
+		loglevel = "LIRC_NOTICE";
+	} else if (string2loglevel(loglevel) == LIRC_BADLEVEL) {
+		fprintf(stderr, "Bad LIRC_LOGLEVEL: %s\n", loglevel);
+		loglevel = "LIRC_NOTICE";
+	}
+	lirc_log_get_clientlog("mode2", path, sizeof(path));
+	lirc_log_set_file(path);
+	lirc_log_open("mode2", 1, string2loglevel(loglevel));
 }
 
 
@@ -243,17 +264,14 @@ int main(int argc, char **argv)
 	__u32 code_length;
 	size_t count = sizeof(lirc_t);
 	int i;
-	char path[128];
 
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
+	setup_log();
 	fd = open_device(use_raw_access, device);
 	if (geteuid() == 0)
 		drop_root();
 	mode = curr_driver->rec_mode;
-	lirc_log_get_clientlog("mode2", path, sizeof(path));
-	lirc_log_set_file(path);
-	lirc_log_open("mode2", 1, LIRC_NOTICE);
 
 	if (device && strcmp(device, LIRCD) == 0) {
 		fputs("Refusing to connect to lircd socket\n", stderr);
@@ -271,8 +289,7 @@ int main(int argc, char **argv)
 			code_length = curr_driver->code_length;
 		}
 		if (code_length > sizeof(ir_code) * CHAR_BIT) {
-			fprintf(stderr,
-				"Cannot handle %u bit codes\n",
+			fprintf(stderr, "Cannot handle %u bit codes\n",
 				code_length);
 			close(fd);
 			exit(EXIT_FAILURE);
@@ -291,20 +308,19 @@ int main(int argc, char **argv)
 				fputs("read() failed\n", stderr);
 				break;
 			}
-		} else {
-			if (mode == LIRC_MODE_MODE2) {
-				data = curr_driver->readdata(0);
-				if (data == 0) {
-					fputs("readdata() failed\n",
-                                              stderr);
-					break;
-				}
-			} else {
-				/* not implemented yet */
+		} else if (mode == LIRC_MODE_MODE2) {
+			data = curr_driver->readdata(0);
+			if (data == 0) {
+				fputs("readdata() failed\n",
+                                      stderr);
+				break;
 			}
-		}
-
-		if (mode != LIRC_MODE_MODE2) {
+		} else {
+			result = read(fd, buffer, count);
+			if (result != count) {
+				fputs("read() failed\n", stderr);
+				break;
+			}
 			fputs("code: 0x", stdout);
 			for (i = 0; i < count; i++) {
 				printf("%02x", (unsigned char)buffer[i]);

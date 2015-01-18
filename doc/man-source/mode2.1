@@ -1,6 +1,7 @@
 .TH MODE2 "1" "Last change: Jan 2015" "mode2 @version@" "User Commands"
 .SH NAME
-mode2, xmode2 - shows the pulse/space length of infrared signals
+mode2 - shows pulse/space length or decoded input from infrared drivers
+
 .SH SYNOPSIS
 .B mode2
 [\fIoptions\fR]
@@ -8,10 +9,11 @@ mode2, xmode2 - shows the pulse/space length of infrared signals
 The main purpose of these programs is to check operation of your
 home-brew LIRC receiver hardware and to see the IR waveform of the
 remote controller without an expensive oscilloscope. Very useful for
-debugging. Of course this program won't work with hardware that decodes
-the signals itself like e.g. TV cards or the Irman.
+debugging also in situations you just need to verify configuration.
 
-mode2 will simply print pulse&space lengths to stdout.
+mode2 will simply print pulse and space lengths to stdout for drivers
+supporting LIRC_MODE_MODE2. For drivers supporting LIRC_MODE_LIRCCODE such
+as TV-cards and the irman driver mode2 writes the decoded, integer values.
 
 .SH OPTIONS
 
@@ -70,6 +72,19 @@ The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 
+.SH ENVIRONMENT
+.TP 4
+.B LIRC_LOGLEVEL
+Determines the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+.IP
+The level can also be an integer in the range 3 (almost no messages) to
+10.
+
+
 .SH FILES
 
 .TP 4
@@ -78,7 +93,11 @@ Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log
 
 .SH "SEE ALSO"
-mode2(1), xmode2(1)
+xmode2(1)
+.br
+lirc_ioctl(4)
+.br
+lirc(4)
 
 The documentation for
 .B lirc
