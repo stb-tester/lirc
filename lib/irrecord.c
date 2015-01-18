@@ -8,6 +8,10 @@
  *
  */
 
+#define _GNU_SOURCE
+
+#include <unistd.h>
+
 #include "lirc_private.h"
 #include "irrecord.h"
 
@@ -141,24 +145,39 @@ void flushhw(void)
 	while (read(curr_driver->fd, buffer, size) == size) ;
 }
 
+static uid_t getresuid_uid(void)
+{
+	uid_t ruid, euid, suid;
+
+	getresuid(&ruid, &euid, &suid);
+	return suid;
+}
 
 /** Reset the hardware. Return 1 on OK, else 0 and possibly closes driver. */
 int resethw(void)
 {
 	int flags;
 
+	if (getresuid_uid() == 0) {
+		if (seteuid(0) == -1)
+			logprintf(LIRC_ERROR, "Cannot reset root uid");
+	}
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
 	if (curr_driver->init_func) {
-		if (!curr_driver->init_func())
+		if (!curr_driver->init_func()){
+			drop_sudo_root(seteuid);
 			return (0);
+		}
 	}
 	flags = fcntl(curr_driver->fd, F_GETFL, 0);
 	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
+		drop_sudo_root(seteuid);
 		return (0);
 	}
+	drop_sudo_root(seteuid);
 	return (1);
 }
 
