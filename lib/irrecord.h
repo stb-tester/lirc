@@ -268,9 +268,6 @@ void btn_state_set_message(struct button_state* state, const char* fmt, ...);
 /** Clear the driver input buffers. */
 void flushhw(void);
 
-/** Reset the hardware. Return 1 on OK, else 0 and possibly close driver. */
-int resethw(void );
-
 /** Initiate a pristine gap_state. */
 void gap_state_init(struct gap_state* state);
 
