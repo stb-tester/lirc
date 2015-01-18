@@ -108,7 +108,7 @@ static void parse_options(int argc, char** argv)
 			strncpy(driver, optarg, sizeof(driver) - 1);
 			break;
 		case 'v':
-			printf("%s %s\n", progname, VERSION);
+			printf("%s %s\n", "mode2 ", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
@@ -133,12 +133,12 @@ static void parse_options(int argc, char** argv)
 			gap = atoi(optarg);
 			break;
 		default:
-			printf("Usage: %s [options]\n", progname);
+			printf("Usage: mode2 [options]\n");
 			exit(EXIT_FAILURE);
 		}
 	}
 	if (optind < argc) {
-		fprintf(stderr, "%s: too many arguments\n", progname);
+		fputs("Too many arguments\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 	if (hw_choose_driver(driver) != 0) {
@@ -186,13 +186,10 @@ int open_device(int use_raw_access, const char* device)
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
-			fprintf(stderr,
-				"%s: %s is not a character device\n",
-				progname, device);
-			fprintf(stderr,
-				"%s: use the -d option to specify the"
-					" correct device\n",
-				progname);
+			fprintf(stderr, "%s is not a character device\n",
+				device);
+			fputs("Use the -d option to specify the device\n",
+			       stderr);
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
@@ -209,8 +206,7 @@ int open_device(int use_raw_access, const char* device)
 	} else {
 		curr_driver->open_func(device);
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
-			fprintf(stderr,
-				"Cannot initiate device %s\n",
+			fprintf(stderr, "Cannot initiate device %s\n",
 			 	curr_driver->device);
 			exit(EXIT_FAILURE);
 		}
@@ -249,7 +245,6 @@ int main(int argc, char **argv)
 	int i;
 	char path[128];
 
-	strncpy(progname, "mode2", sizeof(progname));
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
 	fd = open_device(use_raw_access, device);
@@ -261,17 +256,14 @@ int main(int argc, char **argv)
 	lirc_log_open("mode2", 1, LIRC_NOTICE);
 
 	if (device && strcmp(device, LIRCD) == 0) {
-		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
+		fputs("Refusing to connect to lircd socket\n", stderr);
 		return EXIT_FAILURE;
 	}
 
 	if (mode == LIRC_MODE_LIRCCODE) {
 		if (use_raw_access) {
 			if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {
-				fprintf(stderr,
-					"%s: could not get code length\n",
-					progname);
-				perror(progname);
+				perror("Could not get code length");
 				close(fd);
 				exit(EXIT_FAILURE);
 			}
@@ -280,8 +272,8 @@ int main(int argc, char **argv)
 		}
 		if (code_length > sizeof(ir_code) * CHAR_BIT) {
 			fprintf(stderr,
-				"%s: cannot handle %u bit codes\n",
-				progname, code_length);
+				"Cannot handle %u bit codes\n",
+				code_length);
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
