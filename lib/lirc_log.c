@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <pwd.h>
 #include <unistd.h>
 #include <limits.h>
 #include <ctype.h>
@@ -86,6 +87,8 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 	strncpy(progname, _progname, sizeof(progname));
 	nodaemon = _nodaemon;
 	loglevel = level;
+	struct passwd* pw;
+	const char* user;
 
 	if (use_syslog) {
 		if (nodaemon) {
@@ -100,6 +103,13 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
                                 progname, logfile);
 			perror(progname);
 			return 1;
+		}
+		if( getenv("SUDO_USER") != NULL && geteuid() == 0) {
+			user = getenv("SUDO_USER");
+			user = user == NULL ? "root" : user;
+			pw = getpwnam(user);
+			if (chown(logfile, pw->pw_uid, pw->pw_gid) == -1)
+				perror("Cannot reset log file owner.");
 		}
 		gethostname(hostname, HOSTNAME_LEN);
 	}
@@ -302,11 +312,19 @@ void logperror(loglevel_t prio, const char *fmt, ...)
 int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size)
 {
 	const char* home;
+	struct passwd* pw;
+	const char* user;
 
 	if (getenv("XDG_CACHE_HOME") != NULL ) {
 		strncpy(buffer, getenv("XDG_CACHE_HOME"), size);
 		buffer[size - 1] = '\0';
 		strncat(buffer, "/", size - strlen(buffer) - 1);
+	} else if( getenv("SUDO_USER") != NULL && geteuid() == 0) {
+		user = getenv("SUDO_USER");
+		if (user == NULL)
+			user = "root";
+		pw = getpwnam(user);
+		snprintf(buffer, size, "%s/.cache/", pw->pw_dir);
 	} else {
 	    	home = getenv("HOME");
 		home = home != NULL ? home : "/";
