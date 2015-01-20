@@ -136,6 +136,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
 
 html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/api-general.html \
+                           $(srcdir)/html-source/atilibusb_driver.html \
                            $(srcdir)/html-source/atwf83_driver.html \
                            $(srcdir)/html-source/audio-alsa_driver.html \
                            $(srcdir)/html-source/audio_driver.html \
@@ -199,6 +200,7 @@ manpage_html            += man-html/ircat.html \
 
 generated_html          =  html/alsa-usb_driver.html \
                            html/audio-alsa_driver.html \
+                           html/atilibusb_driver.html \
                            html/atwf83_driver.html \
                            html/audio_driver.html \
                            html/configuration-guide.html \
