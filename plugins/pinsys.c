@@ -187,7 +187,7 @@ int pinsys_init(void)
 	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
 		int detected;
 		/* last character gets overwritten */
-		char auto_lirc_device[] = "/dev/ttyS_";
+		static char auto_lirc_device[] = "/dev/ttyS_";
 
 		tty_delete_lock();
 		logprintf(LIRC_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
