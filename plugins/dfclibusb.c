@@ -39,6 +39,8 @@
 #define CODE_BYTES 6
 #define USB_TIMEOUT (5000)
 
+static char device_path[PATH_MAX + 1] = {0};
+
 static int dfc_init();
 static int dfc_deinit();
 static char *dfc_rec(struct ir_remote *remotes);
@@ -115,6 +117,12 @@ static int dfc_init()
 		logperror(LIRC_ERROR, "couldn't open USB receiver");
 		goto fail;
 	}
+
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 
 	child = fork();
 	if (child == -1) {
