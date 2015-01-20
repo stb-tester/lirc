@@ -58,6 +58,7 @@ static ir_code code_last;
 static struct timeval time_current = { 0 };
 static struct timeval time_last = { 0 };
 #endif
+static char device_path[PATH_MAX + 1] = {0};
 
 static int awlibusb_init();
 static int awlibusb_deinit();
@@ -169,6 +170,12 @@ static int awlibusb_init()
 		logperror(LIRC_ERROR, "couldn't claim USB interface");
 		goto fail;
 	}
+
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 
 	child = fork();
 	if (child == -1) {
