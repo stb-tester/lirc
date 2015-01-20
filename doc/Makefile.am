@@ -152,6 +152,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
+                           $(srcdir)/html-source/srm7500atilibusb_driver.html \
                            $(srcdir)/html-source/technical.html \
                            $(srcdir)/html-source/tira_driver.html
 
@@ -215,6 +216,7 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \
+                           html/srm7500atilibusb_driver.html \
                            html/technical.html
 
 website_files           =  lirc.org/cir.html \

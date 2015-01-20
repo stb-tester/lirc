@@ -1,0 +1,51 @@
+<A NAME="overview"></A><HR>
+<CENTER><H1>srm7500atilibusb</H1></CENTER>
+
+<h3> General </h3>
+
+Philips SRM-7500 RF configuration for use with the srm7500libusb driver
+<p>
+
+The remote and the dongle communicate with each other over ieee 802.15.4
+a few extra network parameters are needed (via lircd's --device option).
+<pre>
+lircd --driver=srm7500libusb lircd.conf.srm7500libusb \
+      --device=macShortAddress=12:34,remoteShortAddress=56:78,macPANId=9a:bc
+</pre>
+<h3>Mandatory parameters</h3>
+<dt> macShortAddress<dt>
+    <dd>802.15.4 short address (2 byte hex)
+        to be assigned to the receiver</dd>
+<dt>remoteShortAddress</dt>
+    <dd> 802.15.4 short address (2 byte hex)
+         to be assigned to the remote </dd>
+<dt>macPANId</dt>
+    <dd>802.15.4 numeric network id (2 byte hex)</dd>
+
+<h3>Optional parameters </h3>
+<dt>remoteExtendedAddress</dt>
+    <dd>802.15.4 extended address (8 byte hex)
+        of the remote. when given, ignores all other
+        802.15.4 rf communication. lircd writes your
+        remotes address to the logs when pairing.</dd>
+<dt>macBeaconPayload</dt>
+     <dd>  802.15.4 network name  (ASCII string)
+           defaults to PHILIPS+your hostname. Remote will not
+           pair unless it starts with PHILIPS.</dd>
+<dt>LogicalChannel</dt>
+     <dd>802.15.4 channel number (1 byte hex) defaults to 19 other channels
+         than 19 do not work on my remote </dd>
+<dt>usb</dt>i
+      <dd>USB bus and device number (2 integer decimal)
+          bind to a specific USB device, e.g. 003:002</dd>
+
+<h3>Things that work using this driver.</h3>
+<ul>
+  <li>pairing</li>
+  <li>reception of all keypresses except for the 'music' button</li>
+</ul>
+<h3>Things that do not work yet</h3>
+<ul>
+  <li>signal strength monitoring (via 'rf settings' in the remotes setup menu) </li>
+  <li>displaying infos on the remote's display. </li>
+</ul>
