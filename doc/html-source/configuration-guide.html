@@ -390,10 +390,10 @@ remote |        |       devinput v        |
       Check if you need to configure the kernel <a href="#appendix-1">
       (Appendix 1)</a>.</li>
       <li>
-      Using mode2(1), verify that you get pulses using the --raw option.
-      e. g.,
+      Using mode2(1), verify that you get pulses using the driver and
+      device e. g.,
         <pre>
-           $ sudo mode2 --raw --device /dev/lirc0
+           $ sudo mode2 --driver default --device /dev/lirc0
            space 16777215
            pulse 2750
            space 800
@@ -492,7 +492,7 @@ remote |        |       devinput v        |
   | Application |
   ---------------
 </pre>
-    <p> By now you should know the driver and device used when running
+       By now you should know the driver and device used when running
        lircd. Update the configuration file /etc/lirc/lirc_options.conf
        with the driver and device you have determined. You should then
        be able to start, stop and inspect the service status using:
@@ -507,23 +507,62 @@ remote |        |       devinput v        |
       Check that you can start/stop a working service, irw is your friend.
     </li></ul>
     <p>Using ~/.config/lircrc, convert the key symbols to application-specific
-      strings:
-      <ul>
-        <li> Read the <a href="configure.html#lircrc_format">.lircrc chapter
-          </a> and create your ~/.config/lircrc. lirc-config-tool can generate
-            a starting point <a href="appendix-5">(below)</a>.</li>
-        <li>Restart the lircd daemon. Use <a href="ircat.html">ircat(1)</a>
-            to verify your application settings i. e., what your
-            application actually receives when pushing the remote button.</li>
-      </ul>
-    </p>
-    <p>Test the application, and investigate further steps:</p>
+      strings. The first step is to create a simple configuration for just
+      one key for the irexec application, dipping a toe into the water.</p>
+    <p> First, we need a lircrc file. Create the following file and store
+      is as ~/.config/lircrc:
+     <pre>
+        begin
+            remote = mceusb
+            button = KEY_RED
+            prog   = irexec
+            config = echo "foo"
+        end
+     </pre>
+    Notes:
     <ul>
-      <li> Configure your application to use the same socket as irw and
-        test it.</li>
-      <li>Once the application is up, you might want to exploit LIRC's
-        capabilities: </li>
-      <ul>
+      <li> The remote (here "mceusb") is the name attribute from the
+           lircd.conf file i. e., the line starting with 'name'.</li>
+      <li> The button is a key symbol from lircd.conf. If you don't have
+           a KEY_RED, use another button.</li>
+      <li> The whole idea with this step is that each application has its
+           own translation. We will use the simple irexec app as prog for
+           now, and check what kind of data it will receive when pressing
+           the KEY_RED button.</li>
+      <li> The config string is what irexec will receive when we press
+           the KEY_RED button.
+    </ul>
+    With this irexec file in place, we use ircat(1) to check what irexec
+    receives when we push the KEY_RED button:
+    <pre>
+        $ ./ircat irexec
+        echo "foo"
+        echo "foo"
+        echo "foo"
+        ^C
+        $
+    </pre>
+    So, at this point you can start irexec, and it will do actually
+    echo some "foo" when you press the red button:
+    <pre>
+        $ ./irexec
+        foo
+        foo
+        ^C
+        $
+    </pre>
+    With this simple example working, you now need to create complete
+    config files for your application(s). First, you should read
+    <a href="configure.html#lircrc_format">.lircrc chapter </a>. Then,
+    create your application config setup in ~/.config/lircrc and test
+    it with ircat as above</p>
+    <p>
+    Depending on your application, lirc-config-tool might be able to
+    generate a starting point. See <a href="appendix-5">(below)</a>. </p>
+    <p>
+    Once the application is up, you might want to exploit LIRC's
+    capabilities:
+    <ul>
          <li>Using <a href="irexec.html">irexec(1)</a> you can configure
            lirc to run arbitrary program when a button is pressed.</li>
          <li> Using <a href="lircmd.html">lircmd(1)</a> you can use lirc
@@ -532,7 +571,6 @@ remote |        |       devinput v        |
            other devices e. g., let the remote send ir signals to a TV
            set. The program is <a href="irsend.html">irsend(1)</a>, you
            might want to scan the web for howto:s.</li>
-       </ul>
     </ul>
     <A NAME="appendixes"></A><HR>
     <h2 align="center"> Appendixes</h2>
@@ -547,16 +585,14 @@ remote |        |       devinput v        |
      <p>
      <i> As of 0.9.1+ this is configured automatically by lircd, and
      neither the echo 'lirc' >/sys/class/rc/... nor the udev rule should
-     normally be required. </i>
-     </p>
+     normally be required. </i> </p>
      <p>
      Also, some lirc drivers conflicts with the kernel drivers. A common
      example is the lirc atilibusb driver which conflicts with the kernel
      ati_remote driver. Another example is lirc serial drivers which
      conflicts with the kernel default tty driver. Such conflicts shows
      up as dmesg output about not being able to open the involved device,
-     plus various other symptoms.
-     </p>
+     plus various other symptoms.  </p>
      <p>
      If required, the kernel driver configuration can be done using the
      interfaces under /sys/class/rc or using a udev rule. Conflicting kernel
@@ -744,7 +780,8 @@ remote |        |       devinput v        |
     capabilities. To actually write a .lircrc file from scratch is not that
     hard, but it's a lot of work. lirc-config-tool can save some of this
     work by creating a starting point. For this to work , the lircd.conf
-    file must be in place.</p>
+    file must be in place. It must also use standard key symbols from the
+    namespaceii as described above.</p>
     <p>
     The first step is to check if your application is supported by the script:
     <pre>
