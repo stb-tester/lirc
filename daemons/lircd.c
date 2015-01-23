@@ -114,7 +114,7 @@ static  const char* const help =
 "\t -r --release[=suffix]\t\tAuto-generate release events\n"
 "\t -a --allow-simulate\t\tAccept SIMULATE command\n"
 "\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
-"\t -A --driver-options=key:value[;key:value...]\n"
+"\t -A --driver-options=key:value[|key:value...]\n"
 "\t\t\t\t\tSet driver options\n"
 #       if defined(__linux__)
 "\t -u --uinput\t\t\tgenerate Linux input events\n"
