@@ -32,7 +32,7 @@ static int zotac_init(void);
 static int zotac_deinit(void);
 static char* zotac_rec(struct ir_remote* remotes);
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-static void* zotac_repeat(void);
+static void* zotac_repeat(void* arg);
 static int zotac_getcode(void);
 
 /** Max number of repetitions */
@@ -316,7 +316,7 @@ static int zotac_deinit(void)
  *	Runtime that reads device, forwards codes to main thread
  *	and simulates repetitions.
  */
-static void* zotac_repeat(void)
+static void* zotac_repeat(void* arg)
 {
 	int repeat_count = 0;
 	unsigned current_code;
