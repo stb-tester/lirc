@@ -45,7 +45,6 @@ static __u32 supported_rec_modes[] = {
 
 //Forwards:
 static int default_init(void);
-static int default_config(struct ir_remote* remotes);
 static int default_deinit(void);
 static int default_send(struct ir_remote* remote, struct ir_ncode* code);
 static char* default_rec(struct ir_remote* remotes);
