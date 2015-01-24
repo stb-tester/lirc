@@ -13,6 +13,9 @@
 #include "lirc_private.h"
 #include "irrecord.h"
 
+static const int NOISE_LIMIT = 500;
+static const int NOISE_TIMEOUT_US = 3000000;
+
 
 #define USAGE       "Usage: irrecord [options] [config file]\n" \
 	"	    irrecord -a <config file>\n" \
@@ -107,6 +110,18 @@ static const char* MSG_LENGTHS_INIT =
 	"down for approximately one second. Each button should generate at least one\n"
 	"dot but in no case more than ten dots of output.\n"
 	"Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n";
+
+static const char* const MSG_NOISE_INTRO =
+	"Checking for ambient light  creating too much disturbances.\n"
+	"Please don't press any buttons, just wait a few seconds...";
+
+static const char* const MSG_TOO_MUCH_NOISE =
+	"Running irrecord with this level of noise will not give good results.\n"
+	"Please try to turn off fluorescent lamps or tubes and other sources\n"
+	"of variable IR radiation and restart. If nothing else works, you\n"
+	"might have to mask the receiving IR diode. You REALLY should press\n"
+	"ctrl-C at this point, but it's technically possible to proceed\n"
+	"by pressing RETURN";
 
 
 /** Set up default values for all command line options + filename. */
@@ -576,6 +591,42 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 	}
 }
 
+/** Check that there is not "too" much ambient light & noise. */
+void check_ambient_light(const struct opts* opts)
+{
+	char buff[4096];
+	ssize_t count = 0;
+	ssize_t sum = 0;
+	struct timeval start;
+	struct timeval now;
+
+	puts(MSG_NOISE_INTRO);
+	gettimeofday(&start, NULL);
+	gettimeofday(&now, NULL);
+	while (time_elapsed(&start, &now) < NOISE_TIMEOUT_US) {
+		count = raw_read(buff, sizeof(buff), NOISE_TIMEOUT_US);
+		if (count < 0)
+			break;
+		sum += count;
+		gettimeofday(&now, NULL);
+	}
+	puts("");
+	if (count == -1) {
+		perror("Cannot read from device");
+	} else if (sum < NOISE_LIMIT) {
+		printf("No significant noise (received %d bytes)\n\n",
+		       (int) sum);
+	} else {
+		printf("Here is a lof of noise (%d bytes received)\n",
+		       (int) sum);
+		puts(MSG_TOO_MUCH_NOISE);
+		getchar();
+	}
+
+
+
+}
+
 
 /** View part of get_lengths. */
 static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
@@ -727,22 +778,10 @@ again:
 }
 
 
-int main(int argc, char** argv)
+static void drop_root(void)
 {
-	struct opts opts;
-	struct main_state state;
-	int r = 1;
 	const char* new_user;
 
-	memset(&opts, 0, sizeof(opts));
-	memset(&state, 0, sizeof(state));
-	get_options(argc, argv, argv[optind], &opts);
-
-	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
-	if (opts.list_namespace) {
-		fprint_namespace(stdout);
-		exit(EXIT_SUCCESS);
-	}
 	new_user = drop_sudo_root(seteuid);
 	if (strcmp("root", new_user) == 0)
 		puts("Warning: Running as root.");
@@ -750,7 +789,25 @@ int main(int argc, char** argv)
 		puts("Warning: Cannot change uid.");
 	else
 		printf("Running as regular user %s\n", new_user);
+
+}
+
+
+int main(int argc, char** argv)
+{
+	struct opts opts = {0};
+	struct main_state state = {0};
+	int r = 1;
+
+	get_options(argc, argv, argv[optind], &opts);
+	if (opts.list_namespace) {
+		fprint_namespace(stdout);
+		exit(EXIT_SUCCESS);
+	}
+	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
 	do_init(&opts, &state);
+	if (geteuid() == 0)
+		drop_root();
 
 	puts(MSG_WELCOME);
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0)
@@ -758,6 +815,7 @@ int main(int argc, char** argv)
 	printf("Press RETURN to continue.\n");
 	getchar();
 
+	check_ambient_light(&opts);
 	if (remote.name == NULL)
 		get_name(&remote, &opts);
 	switch (curr_driver->rec_mode) {

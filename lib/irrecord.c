@@ -167,7 +167,7 @@ int resethw(void)
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
 	if (curr_driver->init_func) {
-		if (!curr_driver->init_func()){
+		if (!curr_driver->init_func()) {
 			drop_sudo_root(seteuid);
 			return 0;
 		}
@@ -180,7 +180,7 @@ int resethw(void)
 		return 0;
 	}
 	drop_sudo_root(seteuid);
-	return (1);
+	return 1;
 }
 
 
@@ -1686,6 +1686,15 @@ int do_analyse(const struct opts* opts, struct main_state* state)
 	}
 	return 1;
 }
+
+
+ssize_t raw_read(void* buffer, size_t size, unsigned int timeout_us)
+{
+	if (!mywaitfordata(timeout_us))
+		return 0;
+	return read(curr_driver->fd, buffer, size);
+}
+
 
 
 enum button_status record_buttons(struct button_state*	btn_state,

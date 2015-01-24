@@ -262,6 +262,10 @@ extern lirc_t aeps;                     /** Absolute error tolerance (us). */
 
 // Functions
 
+
+/** Try to read some bytes from the device, no decoding whatsoever. */
+ssize_t raw_read(void* buffer, size_t size, unsigned int timeout_us);
+
 /** Unconditionally apply func(remote) for all items in remotes list. */
 void for_each_remote(struct ir_remote* remotes, remote_func func);
 
