@@ -123,6 +123,16 @@ static const char* const MSG_TOO_MUCH_NOISE =
 	"ctrl-C at this point, but it's technically possible to proceed\n"
 	"by pressing RETURN";
 
+static const char* const MSG_NO_BUTTONS =
+	"No recorded buttons saved. This config file makes no sense, but\n"
+	"you can add button definitions to it next time you run irrecord.\n";
+
+static const char* const MSG_TOO_FEW_BUTTONS =
+	"You have only recorded one button in a non-raw configuraton file.\n"
+	"This file doesn't really make much sense, you should record at\n"
+	"least two or three buttons to get meaningful results. You can add\n"
+	"more buttons next time you run irrecord.\n";
+
 
 /** Set up default values for all command line options + filename. */
 static void add_defaults(void)
@@ -746,6 +756,35 @@ void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 	}
 }
 
+
+/** Return number of button definitions in *remote. */
+static unsigned int remote_codes_length(const struct ir_remote* remote)
+{
+	const struct ir_ncode* code;
+	unsigned int count = 0;
+
+	for (code = remote->codes; code->name != NULL; code++) {
+		count += 1;
+	}
+	return count;
+}
+
+
+/** Check for too few buttons before saving data. */
+static void check_too_few_buttons(const struct ir_remote* remote,
+				  const struct opts* opts)
+{
+	unsigned int count = remote_codes_length(remote);
+
+	if (count == 0) {
+		puts(MSG_NO_BUTTONS);
+	} else if (count == 1 && !opts->force) {
+		puts(MSG_TOO_FEW_BUTTONS);
+	}
+}
+
+
+/** Get name of a code from user. */
 void get_name(struct ir_remote* remote, struct opts* opts)
 {
 	char buff[256];
@@ -830,6 +869,7 @@ int main(int argc, char** argv)
 		do_get_toggle_bit_mask(&remote, &state, &opts);
 	config_file_setup(&state, &opts);
 	do_record_buttons(&state, &opts);
+	check_too_few_buttons(&remote, &opts);
 	if (!is_raw(&remote))
 		r = config_file_finish(&state, &opts);
 	printf("Successfully written config file %s\n", opts.filename);
