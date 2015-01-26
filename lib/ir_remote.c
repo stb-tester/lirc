@@ -324,6 +324,8 @@ struct ir_ncode* get_code_by_name(const struct ir_remote* remote, const char* na
 	const struct ir_ncode* all;
 
 	all = remote->codes;
+	if (all == NULL)
+		return NULL;
 	if (strcmp(remote->name, "lirc") == 0)
 		return strcmp(name, "__EOF") == 0 ? &NCODE_EOF : 0;
 	while (all->name != NULL) {
