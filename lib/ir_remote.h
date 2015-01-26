@@ -36,6 +36,14 @@
 extern "C" {
 #endif
 
+
+/** Create a malloc'd, deep copy of ncode. Use ncode_free() to dispose(). */
+struct ir_ncode* ncode_dup(struct ir_ncode* ncode);
+
+/** Dispose an ir_ncode instance obtained from ncode_dup(). */
+void ncode_free(struct ir_ncode* ncode);
+
+
 /**
  * TODO
  */

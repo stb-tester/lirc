@@ -13,6 +13,7 @@
 #include "lirc_private.h"
 #include "irrecord.h"
 
+
 static const int NOISE_LIMIT = 500;
 static const int NOISE_TIMEOUT_US = 3000000;
 
@@ -132,6 +133,96 @@ static const char* const MSG_TOO_FEW_BUTTONS =
 	"This file doesn't really make much sense, you should record at\n"
 	"least two or three buttons to get meaningful results. You can add\n"
 	"more buttons next time you run irrecord.\n";
+
+/** Result code from init(). */
+enum init_status {
+	STS_INIT_NO_DRIVER,
+	STS_INIT_BAD_DRIVER,
+	STS_INIT_BAD_FILE,
+	STS_INIT_ANALYZE,
+	STS_INIT_TESTED,
+	STS_INIT_FOPEN,
+	STS_INIT_OK,
+	STS_INIT_FORCE_TMPL,
+	STS_INIT_HW_FAIL,
+	STS_INIT_BAD_MODE,
+	STS_INIT_O_NONBLOCK,
+};
+
+
+/** Linked list of all recorded buttons. */
+static struct ir_ncode* ncodes_root = NULL;
+
+
+/** Add a ncode to list, returns new root.  List owns memory*/
+static void ncode_list_add(struct ir_ncode* ncode)
+{
+	struct ir_ncode* new_ncode;
+	struct ir_ncode* n;
+
+	new_ncode = ncode_dup(ncode);
+	if (new_ncode == NULL) {
+		perror("No memory in ncode_list_add()");
+		return;
+	}
+	new_ncode->next_ncode = NULL;
+	if (ncodes_root == NULL) {
+		ncodes_root = new_ncode;
+		return;
+	}
+	for (n = ncodes_root; n->next_ncode != NULL; n = n->next_ncode)
+		;
+	n->next_ncode = new_ncode;
+}
+
+
+/** Find node with given name in list, or NULL. */
+static const struct ir_ncode* ncode_list_find_name(const char* name)
+{
+	const struct ir_ncode* nc;
+
+	for (nc = ncodes_root; nc != NULL; nc = nc->next_ncode) {
+		if (strcmp(nc->name, name) == 0)
+			return nc;
+	}
+	return NULL;
+}
+
+
+/** Remove item with given name from list, return boolean success/fail */
+static int ncode_list_remove_name(const char* name)
+{
+	struct ir_ncode* nc;
+
+	if (ncodes_root == NULL)
+		return 0;
+	if (strcmp(ncodes_root->name, name) == 0) {
+		ncodes_root = ncodes_root->next_ncode;
+		return 1;
+	}
+	for (nc = ncodes_root; nc->next_ncode != NULL; nc = nc->next_ncode) {
+		if (strcmp(nc->next_ncode->name, name) == 0) {
+			nc->next_ncode = nc->next_ncode->next_ncode;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+/** Apply func(ncode, arg) on each ncode in list, break if func returns 0. */
+static int ncode_list_for_each(int (*func)(struct ir_ncode*, void*),
+			       void* arg)
+{
+	struct ir_ncode* nc;
+
+	for (nc = ncodes_root; nc != NULL; nc = nc->next_ncode) {
+		if (!func(nc, arg))
+			return 0;
+	}
+	return 1;
+}
+
 
 
 /** Set up default values for all command line options + filename. */
@@ -271,6 +362,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	int flags;
 	struct ir_remote* my_remote;
 	FILE* f;
+	struct ir_ncode* ncode;
 
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0)
@@ -311,6 +403,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			return STS_INIT_TESTED;
 		}
 		remote = *my_remote;  //FIXME: Who owns this memory?
+		for (ncode = remote.codes; ncode->name != NULL; ncode++)
+			ncode_list_add(ncode);
 		remote.codes = NULL;
 		remote.last_code = NULL;
 		remote.next = NULL;
@@ -484,6 +578,13 @@ static void do_init(struct opts* opts, struct main_state* state)
 }
 
 
+static int printf_signal_func(struct ir_ncode* ncode, void* arg)
+{
+	fprint_remote_signal((FILE*) arg, &remote, ncode);
+	return 1;
+}
+
+
 /** View part: Record data for one button. */
 static enum button_status get_button_data(struct button_state* btn_state,
 					  struct main_state* state, const struct opts* opts)
@@ -491,12 +592,13 @@ static enum button_status get_button_data(struct button_state* btn_state,
 	const char* const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
 	const char* const MSG_BAD_RETURN = "Bad return from  get_button_data";
 	enum button_status sts = STS_BTN_INIT_DATA;
+	unsigned int retries;
 
-	btn_state->retries = 30;
+	retries = 30;
 	last_remote = NULL;
 	sts = STS_BTN_INIT_DATA;
 	sleep(1);
-	while (btn_state->retries > 0) {
+	while (retries > 0) {
 		switch (sts) {
 		case STS_BTN_INIT_DATA:
 			printf("\nNow hold down button \"%s\".\n", btn_state->buffer);
@@ -516,14 +618,16 @@ static enum button_status get_button_data(struct button_state* btn_state,
 		case STS_BTN_SOFT_ERROR:
 			printf("Something went wrong: ");
 			fputs(btn_state->message, stdout);
-			if (btn_state->retries <= 0 && !opts->force) {
+			if (retries <= 0 && !opts->force) {
 				printf("Try using the -f option.\n");
 				break;
 			}
-			printf("Please try again. (%d retries left)\n", btn_state->retries - 1);
+			printf("Please try again. (%d retries left)\n", retries - 1);
 			sts = STS_BTN_INIT_DATA;
 			continue;
 		case STS_BTN_BUTTON_DONE:
+			ncode_list_add(&(btn_state->ncode));
+			return sts;
 		case STS_BTN_HARD_ERROR:
 		case STS_BTN_ALL_DONE:
 			return sts;
@@ -538,13 +642,41 @@ static enum button_status get_button_data(struct button_state* btn_state,
 }
 
 
-/** View part of record_buttons. */
+/** Get name of button to be recorded from user, handle multiple ones. */
+static enum button_status get_button_name(struct button_state* btn_state)
+{
+	char* s;
+
+	printf("\nPlease enter the name for the next button"
+	       " (press <ENTER> to finish recording)\n");
+	s = fgets(btn_state->buffer, sizeof(btn_state->buffer), stdin);
+	if (s != btn_state->buffer) {
+		btn_state_set_message(btn_state, "fgets() failed\n");
+		return STS_BTN_HARD_ERROR;
+	}
+	s = strchr(s, '\n');
+	if (s != NULL)
+		*s = '\0';
+	if (ncode_list_find_name(btn_state->buffer) == NULL)
+		return STS_BTN_GET_NAME;
+	printf("Button %s is already recorded, removing old data.\n",
+	       btn_state->buffer);
+	if (!(ncode_list_remove_name(btn_state->buffer))) {
+		btn_state_set_message(btn_state,
+				      "Cannot remove old button\n");
+		return STS_BTN_HARD_ERROR;
+	}
+	return STS_BTN_GET_NAME;
+}
+
+
+/** View part of record_buttons. Leaves recorded state in global remote. */
 void do_record_buttons(struct main_state* state, const struct opts* opts)
 {
 	struct button_state btn_state;
 	enum button_status sts = STS_BTN_INIT;
-	char* s;
 
+	config_file_setup(state, opts);
 	button_state_init(&btn_state);
 	flushhw();
 	while (1) {
@@ -552,18 +684,11 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 		case STS_BTN_INIT:
 			break;
 		case STS_BTN_GET_NAME:
-			printf("\nPlease enter the name for the next button"
-			       " (press <ENTER> to finish recording)\n");
-			s = fgets(btn_state.buffer, sizeof(btn_state.buffer), stdin);
-			if (s != btn_state.buffer) {
-				btn_state_set_message(&btn_state, "%s: fgets() failed\n", progname);
-				sts = STS_BTN_HARD_ERROR;
+			sts = get_button_name(&btn_state);
+			if (sts != STS_BTN_GET_NAME)
+				continue;
+			else
 				break;
-			}
-			s = strchr(s, '\n');
-			if (s != NULL)
-				*s = '\0';
-			break;
 		case STS_BTN_INIT_DATA:
 			sts = get_button_data(&btn_state, state, opts);
 			continue;
@@ -574,6 +699,13 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 		case STS_BTN_BUTTON_DONE:
 			sts = STS_BTN_GET_NAME;
 			continue;
+		case STS_BTN_RECORD_DONE:
+			ncode_list_for_each(printf_signal_func,
+					    (void*) state->fout);
+			fprint_remote_signal_foot(state->fout, &remote);
+			fprint_remote_foot(state->fout, &remote);
+			fclose(state->fout);
+			break;
 		case STS_BTN_BUTTONS_DONE:
 			break;
 		case STS_BTN_ALL_DONE:
@@ -757,15 +889,28 @@ void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 }
 
 
+int count_ncode(struct ir_ncode* ncode, void* arg)
+{
+	int* sumptr = (int*) arg;
+
+	*sumptr += 1;
+	return 1;
+}
+
+
+int ncode_free_func(struct ir_ncode* ncode, void* arg)
+{
+	ncode_free(ncode);
+	return 1;
+}
+
+
 /** Return number of button definitions in *remote. */
 static unsigned int remote_codes_length(const struct ir_remote* remote)
 {
-	const struct ir_ncode* code;
 	unsigned int count = 0;
 
-	for (code = remote->codes; code->name != NULL; code++) {
-		count += 1;
-	}
+	ncode_list_for_each(count_ncode, &count);
 	return count;
 }
 
@@ -867,7 +1012,6 @@ int main(int argc, char** argv)
 	}
 	if (!opts.using_template && is_rc6(&remote))
 		do_get_toggle_bit_mask(&remote, &state, &opts);
-	config_file_setup(&state, &opts);
 	do_record_buttons(&state, &opts);
 	check_too_few_buttons(&remote, &opts);
 	if (!is_raw(&remote))

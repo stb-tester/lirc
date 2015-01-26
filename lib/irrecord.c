@@ -51,7 +51,6 @@ lirc_t aeps = 100;
 
 static lirc_t signals[MAX_SIGNALS];
 static struct ir_remote* emulation_data;
-static struct ir_ncode ncode;
 static struct ir_ncode* next_code = NULL;
 static struct ir_ncode* current_code = NULL;
 static int current_index = 0;
@@ -75,6 +74,7 @@ static __u32 lengths[MAX_SIGNALS];
 static __u32 first_length, first_lengths, second_lengths;
 static unsigned int count, count_spaces, count_signals;
 static unsigned int count_3repeats, count_5repeats;
+
 
 // Functions
 
@@ -1708,6 +1708,7 @@ enum button_status record_buttons(struct button_state*	btn_state,
 	int retries;
 	struct ir_remote* my_remote;
 	FILE* f;
+	enum button_status sts;
 
 	if (btn_state->no_data) {
 		btn_state->no_data = 0;
@@ -1740,12 +1741,13 @@ enum button_status record_buttons(struct button_state*	btn_state,
 			return STS_BTN_SOFT_ERROR;
 		}
 		if (strlen(btn_state->buffer) == 0)
-			return STS_BTN_BUTTONS_DONE;
+			return STS_BTN_RECORD_DONE;
 		if (!opts->disable_namespace && !is_in_namespace(btn_state->buffer)) {
-			btn_state_set_message(btn_state,
-					      "'%s' is not in name space"
-					      " (use --disable-namespace to disable checks)\n",
-					      btn_state->buffer);
+			btn_state_set_message(
+				btn_state,
+				"'%s' is not in name space"
+				" (use --disable-namespace to disable checks)\n",
+				btn_state->buffer);
 			return STS_BTN_SOFT_ERROR;
 		}
 		return STS_BTN_INIT_DATA;
@@ -1792,26 +1794,24 @@ enum button_status record_buttons(struct button_state*	btn_state,
 				retries--;
 				return STS_BTN_SOFT_ERROR;
 			}
-			ncode.name = btn_state->buffer;
-			ncode.code = state->decode_ctx.code;
+			btn_state->ncode.name = btn_state->buffer;
+			btn_state->ncode.code = state->decode_ctx.code;
 			curr_driver->rec_func(NULL);
 			if (!curr_driver->decode_func(&remote, &(state->decode_ctx))) {
 				code2 = state->decode_ctx.code;
-				state->decode_ctx.code = ncode.code;
+				state->decode_ctx.code = btn_state->ncode.code;
 				if (state->decode_ctx.code != code2) {
-					ncode.next = malloc(sizeof(*(ncode.next)));
-					if (ncode.next) {
-						memset(ncode.next, 0, sizeof(*(ncode.next)));
-						ncode.next->code = code2;
+					btn_state->ncode.next =
+						malloc(sizeof(*(btn_state->ncode.next)));
+					if (btn_state->ncode.next) {
+						memset(btn_state->ncode.next,
+						       0,
+						       sizeof(*(btn_state->ncode.next)));
+						btn_state->ncode.next->code = code2;
 					}
 				}
 			}
 			break;
-		}
-		fprint_remote_signal(state->fout, &remote, &ncode);
-		if (ncode.next) {
-			free(ncode.next);
-			ncode.next = NULL;
 		}
 		return STS_BTN_BUTTON_DONE;
 	case STS_BTN_GET_RAW_DATA:
@@ -1861,67 +1861,72 @@ enum button_status record_buttons(struct button_state*	btn_state,
 						btn_state->count = 0;
 						return STS_BTN_SOFT_ERROR;
 					}
-					ncode.name = btn_state->buffer;
-					ncode.length = btn_state->count - 1;
-					ncode.signals = signals;
-					fprint_remote_signal(state->fout, &remote, &ncode);
+					btn_state->ncode.name = btn_state->buffer;
+					btn_state->ncode.length = btn_state->count - 1;
+					btn_state->ncode.signals = signals;
 					break;
 				}
-				signals[btn_state->count - 1] = btn_state->data & PULSE_MASK;
+				signals[btn_state->count - 1] =
+					btn_state->data & PULSE_MASK;
 				btn_state->sum += btn_state->data & PULSE_MASK;
 			}
 			btn_state->count++;
 		}
 		if (btn_state->count == MAX_SIGNALS) {
-			btn_state_set_message(btn_state, "Signal is too long.\n");
+			btn_state_set_message(btn_state,
+					      "Signal is too long.\n");
 			return STS_BTN_SOFT_ERROR;
 		}
 		return STS_BTN_BUTTON_DONE;
-	case STS_BTN_BUTTONS_DONE:
-		fprint_remote_signal_foot(state->fout, &remote);
-		fprint_remote_foot(state->fout, &remote);
-		fclose(state->fout);
+	case STS_BTN_RECORD_DONE:
 		if (is_raw(&remote))
 			return STS_BTN_ALL_DONE;
 		if (!resethw()) {
-			btn_state_set_message(btn_state, "Could not reset hardware.");
+			btn_state_set_message(btn_state,
+					      "Could not reset hardware.");
 			return STS_BTN_HARD_ERROR;
 		}
-
+		return STS_BTN_BUTTONS_DONE;
+	case STS_BTN_BUTTONS_DONE:
 		f = fopen(opts->filename, "r");
 		if (f == NULL) {
-			btn_state_set_message(btn_state, "Could not reopen config file");
+			btn_state_set_message(btn_state,
+					      "Could not reopen config file");
 			return STS_BTN_HARD_ERROR;
 		}
 		my_remote = read_config(f, opts->filename);
 		fclose(f);
 		if (my_remote == NULL) {
-			btn_state_set_message(btn_state,
-					      "config file contains no valid remote"
-					      " control definition, this shouldn't"
-					      " ever happen!");
+			btn_state_set_message(
+				btn_state,
+				"Internal error: "
+				"config file contains no valid remote");
 			return STS_BTN_HARD_ERROR;
 		}
 		if (my_remote == (void*)-1) {
-			btn_state_set_message(btn_state,
-					      "Reading of config file failed"
-					      " this should never happen.");
+			btn_state_set_message(
+				btn_state,
+				"Internal error: "
+				"Reading of config file failed");
 			return STS_BTN_HARD_ERROR;
 		}
+		sts = STS_BTN_ALL_DONE;
 		if (!has_toggle_bit_mask(my_remote)) {
-			if (!opts->using_template && strcmp(curr_driver->name, "devinput") != 0) {
-				remote = *(my_remote);
-				return STS_BTN_GET_TOGGLE_BITS;
+			if (!opts->using_template
+			    && strcmp(curr_driver->name, "devinput") != 0) {
+					remote = *(my_remote);
+					sts = STS_BTN_GET_TOGGLE_BITS;
 			}
 		} else {
-			set_toggle_bit_mask(my_remote, my_remote->toggle_bit_mask);
+			set_toggle_bit_mask(my_remote,
+					    my_remote->toggle_bit_mask);
+			if (curr_driver->deinit_func)
+				curr_driver->deinit_func();
 		}
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
 		get_pre_data(my_remote);
 		get_post_data(my_remote);
 		remote = *my_remote;
-		return STS_BTN_ALL_DONE;
+		return sts;
 	case STS_BTN_BUTTON_DONE:
 		return STS_BTN_BUTTON_DONE;
 	case STS_BTN_HARD_ERROR:

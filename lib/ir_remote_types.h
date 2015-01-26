@@ -92,6 +92,9 @@ struct ir_ncode {
 
 	/** (private) */
 	struct ir_code_node*	transmit_state;
+
+	/** Next code in recorded buttons list. */
+	struct ir_ncode*	next_ncode;
 };
 
 /*

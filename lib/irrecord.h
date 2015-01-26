@@ -86,22 +86,6 @@ typedef void (*remote_func) (struct ir_remote* remotes);
 enum analyse_mode { MODE_GET_GAP, MODE_HAVE_GAP };
 
 
-/** Result code from init(). */
-enum init_status {
-	STS_INIT_NO_DRIVER,
-	STS_INIT_BAD_DRIVER,
-	STS_INIT_BAD_FILE,
-	STS_INIT_ANALYZE,
-	STS_INIT_TESTED,
-	STS_INIT_FOPEN,
-	STS_INIT_OK,
-	STS_INIT_FORCE_TMPL,
-	STS_INIT_HW_FAIL,
-	STS_INIT_BAD_MODE,
-	STS_INIT_O_NONBLOCK,
-};
-
-
 /** Return from one attempt to determine lengths in get_lengths().*/
 enum lengths_status {
 	STS_LEN_OK,
@@ -143,6 +127,7 @@ enum button_status {
 	STS_BTN_GET_RAW_DATA,
 	STS_BTN_GET_DATA,
 	STS_BTN_GET_TOGGLE_BITS,
+	STS_BTN_RECORD_DONE,
 	STS_BTN_BUTTON_DONE,
 	STS_BTN_BUTTONS_DONE,
 	STS_BTN_ALL_DONE,
@@ -191,7 +176,7 @@ struct main_state {
 };
 
 
-/** State in get_gap_length(). */
+/** Private state in get_gap_length(). */
 struct gap_state {
 	struct lengths* scan;
 	struct lengths* gaps;
@@ -205,8 +190,12 @@ struct gap_state {
 };
 
 
-/** State in get_lengths() (which also uses lot's of global state. */
+/** State in get_lengths(), private besides commented. */
 struct lengths_state {
+				/** Number of printed keypresses. */
+	int			keypresses_done;
+				/** Number of counted button presses. */
+	int			keypresses;
 	int			retval;
 	int			count;
 	lirc_t			data;
@@ -217,12 +206,10 @@ struct lengths_state {
 	lirc_t			header;
 	int			first_signal;
 	enum analyse_mode	mode;
-	int			keypresses_done;        /**< Number of printed keypresses. */
-	int			keypresses;             /**< Number of counted button presses. */
 };
 
 
-/** State in get_togggle_bit_mask(). */
+/** Private state in get_togggle_bit_mask(). */
 struct toggle_state {
 	struct decode_ctx_t	decode_ctx;
 	int			retval;
@@ -238,8 +225,12 @@ struct toggle_state {
 };
 
 
-/** State while recording buttons. */
+/** State while recording buttons, privates besides commented. */
 struct button_state {
+			/** Recorded button, valid on STS_BTN_BUTTON_DONE. */
+	struct ir_ncode ncode;
+			/** Error message, valid on STS_BTN_*_ERROR. */
+	char		message[128];
 	int		retval;
 	char		buffer[BUTTON];
 	char*		string;
@@ -248,8 +239,6 @@ struct button_state {
 	unsigned int	count;
 	int		flag;
 	int		no_data;
-	int		retries;
-	char		message[128];
 };
 
 
@@ -261,7 +250,6 @@ extern lirc_t aeps;                     /** Absolute error tolerance (us). */
 
 
 // Functions
-
 
 /** Try to read some bytes from the device, no decoding whatsoever. */
 ssize_t raw_read(void* buffer, size_t size, unsigned int timeout_us);

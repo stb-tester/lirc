@@ -56,6 +56,63 @@ struct ir_ncode* repeat_code;
 
 static int dyncodes = 0;
 
+
+/** Create a malloc'd, deep copy of ncode. Use ncode_free() to dispose. */
+struct ir_ncode* ncode_dup(struct ir_ncode* ncode)
+{
+	struct ir_ncode* new_ncode;
+	size_t signal_size;
+	struct ir_code_node* node;
+	struct ir_code_node** node_ptr;
+	struct ir_code_node* new_node;
+
+	new_ncode = (struct ir_ncode*) malloc(sizeof(struct ir_ncode));
+	if (new_ncode == NULL)
+		return NULL;
+	memcpy(new_ncode, ncode, sizeof(struct ir_ncode));
+	new_ncode->name = ncode->name == NULL ? NULL : strdup(ncode->name);
+	if (ncode->length > 0) {
+		signal_size = ncode->length * sizeof(lirc_t);
+		new_ncode->signals = (lirc_t*) malloc(signal_size);
+		if (new_ncode->signals == NULL)
+			return NULL;
+		memcpy(new_ncode->signals, ncode->signals, signal_size);
+	} else {
+		new_ncode->signals = NULL;
+	}
+	node_ptr = &(new_ncode->next);
+	for (node = ncode->next; node != NULL; node = node->next) {
+		new_node = malloc(sizeof(struct ir_code_node));
+		memcpy(new_node, node, sizeof(struct ir_code_node));
+		*node_ptr = new_node;
+		node_ptr = &(new_node->next);
+	}
+	*node_ptr = NULL;
+	return new_ncode;
+}
+
+
+/** Dispose an ir_ncode instance obtained from ncode_dup(). */
+void ncode_free(struct ir_ncode* ncode)
+{
+	struct ir_code_node* node;
+	struct ir_code_node* next;
+
+	if (ncode == NULL)
+		return;
+	node = ncode->next;
+	while (node != NULL) {
+		next = node->next;
+		if (node != NULL)
+			free(node);
+		node = next;
+	}
+	if (ncode->signals != NULL)
+		free(ncode->signals);
+	free(ncode);
+}
+
+
 void ir_remote_init(int use_dyncodes)
 {
 	dyncodes = use_dyncodes;
