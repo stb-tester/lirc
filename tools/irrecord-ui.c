@@ -288,7 +288,7 @@ static enum init_status init(struct opts *opts, struct main_state *state)
 			free_config(my_remote);
 			return (STS_INIT_TESTED);
 		}
-		remote.name = my_remote->name;  //FIXME: Who owns this chunk?
+		remote = *my_remote;  //FIXME: Who owns this memory?
 		remote.codes = NULL;
 		remote.last_code = NULL;
 		remote.next = NULL;
