@@ -587,8 +587,7 @@ static void do_init(struct opts* opts, struct main_state* state)
 			opts->filename);
 		exit(EXIT_FAILURE);
 	case STS_INIT_BAD_FILE:
-		fprintf(stderr, "Could not open new config file %s\n", opts->filename);
-		perror(progname);
+		fprintf(stderr, "Could not parse config file %s\n", opts->filename);
 		exit(EXIT_FAILURE);
 	case STS_INIT_TESTED:
 		exit(0);
