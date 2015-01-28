@@ -256,6 +256,7 @@ void initscreen(char* geometry)
 	gc2 = XCreateGC(d1, w1, GCForeground | GCLineStyle | GCFont, &gcval1);
 }
 
+
 void closescreen(void)
 {
 	XUnmapWindow(d1, w1);
@@ -276,7 +277,6 @@ void drawGrid(int div)
 	XFlush(d1);
 }
 
-
 int main(int argc, char** argv)
 {
 	fd_set rfds;
@@ -288,7 +288,6 @@ int main(int argc, char** argv)
 	lirc_t x1, y1, dx;
 	int result;
 	char textbuffer[80];
-	const char* new_user;
 	const char* opt;
 
 	lirc_log_open("xmode2", 0, LIRC_INFO);
@@ -355,14 +354,8 @@ int main(int argc, char** argv)
 		}
 	}
 
-	new_user = drop_sudo_root(setuid);
-	if (strcmp("root", new_user) == 0)
-		puts("Warning: Running as root.");
-	else if (strlen(new_user) == 0)
-		puts("Warning: Cannot change uid.");
-	else
-		printf("Running as regular user %s\n", new_user);
-
+	if (geteuid() == 0)
+		drop_root_cli(setuid);
 	initscreen(geometry);
 	xfd = XConnectionNumber(d1);
 	maxfd = fd > xfd ? fd : xfd;

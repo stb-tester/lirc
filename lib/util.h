@@ -35,6 +35,13 @@ extern "C" {
  */
 const char* drop_sudo_root(int (*set_some_uid)(uid_t));
 
+/**
+*   Default view part of drop_sudo_root. Invokes drop_sudo_root() and prints
+*   status messagea on stdout.
+*   @param set_some_uid Typically seteuid() or setuid()
+*/
+void drop_root_cli(int (*set_some_uid)(uid_t));
+
 
 /** @} */
 #ifdef __cplusplus

@@ -1,4 +1,3 @@
-
 /****************************************************************************
  * util.c ***************************************************************
  ****************************************************************************
@@ -12,6 +11,7 @@
 
 #include <pwd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -29,13 +29,11 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 	char* user;
 	int r;
 
-	if (getuid() != 0) {
+	if (getuid() != 0)
 		return "";
-	}
 	user = getenv("SUDO_USER");
-	if (user == NULL) {
+	if (user == NULL)
 		return "root";
-	}
 	pw = getpwnam(user);
 	if (pw == NULL) {
 		logperror(LIRC_ERROR, "Can't run getpwnam() for %s", user);
@@ -52,4 +50,15 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 }
 
 
+void drop_root_cli(int (*set_some_uid)(uid_t))
+{
+	const char* new_user;
 
+	new_user = drop_sudo_root(set_some_uid);
+	if (strcmp("root", new_user) == 0)
+		puts("Warning: Running as root.");
+	else if (strlen(new_user) == 0)
+		puts("Warning: Cannot change uid.");
+	else
+		printf("Running as regular user %s\n", new_user);
+}

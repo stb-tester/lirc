@@ -166,21 +166,6 @@ static void parse_options(int argc, char** argv)
 }
 
 
-static void drop_root(void)
-{
-        const char* new_user;
-
-        new_user = drop_sudo_root(setuid);
-        if (strcmp("root", new_user) == 0)
-                puts("Warning: Running as root.");
-        else if (strlen(new_user) == 0)
-                puts("Warning: Cannot change uid.");
-        else
-                printf("Running as regular user %s\n", new_user);
-
-}
-
-
 /** Open device using curr_driver->open_func() and curr_driver->init_func().*/
 int open_device(int opt_raw_access, const char* device)
 {
@@ -375,7 +360,7 @@ int main(int argc, char** argv)
 	setup_log();
 	fd = open_device(opt_raw_access, opt_device);
 	if (geteuid() == 0)
-		drop_root();
+		drop_root_cli(setuid);
 	mode = curr_driver->rec_mode;
 	if (mode == LIRC_MODE_LIRCCODE) {
 		code_length = get_codelength(fd, opt_raw_access);

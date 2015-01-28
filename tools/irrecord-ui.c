@@ -962,21 +962,6 @@ again:
 }
 
 
-static void drop_root(void)
-{
-	const char* new_user;
-
-	new_user = drop_sudo_root(seteuid);
-	if (strcmp("root", new_user) == 0)
-		puts("Warning: Running as root.");
-	else if (strlen(new_user) == 0)
-		puts("Warning: Cannot change uid.");
-	else
-		printf("Running as regular user %s\n", new_user);
-
-}
-
-
 int main(int argc, char** argv)
 {
 	struct opts opts = {0};
@@ -991,7 +976,7 @@ int main(int argc, char** argv)
 	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
 	do_init(&opts, &state);
 	if (geteuid() == 0)
-		drop_root();
+		drop_root_cli(seteuid);
 
 	puts(MSG_WELCOME);
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0)
