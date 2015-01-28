@@ -1888,7 +1888,7 @@ enum button_status record_buttons(struct button_state*	btn_state,
 		}
 		return STS_BTN_BUTTONS_DONE;
 	case STS_BTN_BUTTONS_DONE:
-		f = fopen(opts->filename, "r");
+		f = fopen(opts->tmpfile, "r");
 		if (f == NULL) {
 			btn_state_set_message(btn_state,
 					      "Could not reopen config file");
@@ -1911,6 +1911,10 @@ enum button_status record_buttons(struct button_state*	btn_state,
 			return STS_BTN_HARD_ERROR;
 		}
 		sts = STS_BTN_ALL_DONE;
+		if (opts->force) {
+			remote = *my_remote;
+			return sts;
+		}
 		if (!has_toggle_bit_mask(my_remote)) {
 			if (!opts->using_template
 			    && strcmp(curr_driver->name, "devinput") != 0) {
@@ -1941,10 +1945,10 @@ enum button_status record_buttons(struct button_state*	btn_state,
 /** Write the provisionary config file. */
 void config_file_setup(struct main_state* state, const struct opts* opts)
 {
-	state->fout = fopen(opts->filename, "w");
+	state->fout = fopen(opts->tmpfile, "w");
 	if (state->fout == NULL) {
-		logprintf(LIRC_ERROR, "Could not open new config file %s", opts->filename);
-		logperror(LIRC_ERROR, "While opening config file for write");
+		logprintf(LIRC_ERROR, "Could not open new config file %s", tmpfile);
+		logperror(LIRC_ERROR, "While opening temporary file for write");
 		return;
 	}
 	fprint_copyright(state->fout);
@@ -1960,7 +1964,9 @@ int config_file_finish(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {
-		logperror(LIRC_ERROR, "While opening \"%s\" for write", opts->filename);
+		logperror(LIRC_ERROR,
+			  "While opening \"%s\" for write",
+			  opts->filename);
 		return 0;
 	}
 	fprint_copyright(state->fout);

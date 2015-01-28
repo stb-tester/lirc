@@ -162,6 +162,8 @@ struct opts {
 	int		trail;
 	int		list_namespace;
 	const char*	filename;
+	const char*	tmpfile;
+	const char*	backupfile;
 	const char*	driver;
 	loglevel_t	loglevel;
 	int		using_template;

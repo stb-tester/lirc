@@ -8,7 +8,12 @@
 *
 */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <ctype.h>
+#include <unistd.h>
 
 #include "lirc_private.h"
 #include "irrecord.h"
@@ -224,6 +229,17 @@ static int ncode_list_for_each(int (*func)(struct ir_ncode*, void*),
 }
 
 
+/** getresuid wrapper, returns saved set-uid. */
+static uid_t getresuid_uid(void)
+{
+	uid_t ruid, euid, suid;
+
+	getresuid(&ruid, &euid, &suid);
+	return suid;
+}
+
+
+
 
 /** Set up default values for all command line options + filename. */
 static void add_defaults(void)
@@ -363,6 +379,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	struct ir_remote* my_remote;
 	FILE* f;
 	struct ir_ncode* ncode;
+	int fd;
 
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0)
@@ -372,7 +389,6 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	(void)unlink(logpath);
 	lirc_log_set_file(logpath);
 	lirc_log_open("irrecord", 0, opts->loglevel);
-	curr_driver->open_func(opts->device);
 	if (strcmp(curr_driver->name, "null") == 0 && !opts->analyse)
 		return STS_INIT_NO_DRIVER;
 	f = fopen(opts->filename, "r");
@@ -419,7 +435,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 				"%s: only first remote definition in file \"%s\" used\n", progname,
 				opts->filename);
 		}
-		snprintf(filename_new, sizeof(filename_new), "%s.conf", opts->filename);
+		snprintf(filename_new, sizeof(filename_new), "%s", opts->filename);
 		opts->filename = strdup(filename_new);
 	} else {
 		if (opts->analyse) {
@@ -428,21 +444,41 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			opts->analyse = 0;
 		}
 	}
-	state->fout = fopen(opts->filename, "w");
-	if (state->fout == NULL)
+	strcpy(filename_new, "irrecord-tmp-XXXXXX");
+	fd = mkstemp(filename_new);
+	if (fd == -1) {
+		logperror(LIRC_WARNING, "Cannot open tmpfile");
 		return STS_INIT_FOPEN;
+	}
+	opts->tmpfile = strdup(filename_new);
+	state->fout = fdopen(fd, "w");
+	if (state->fout == NULL) {
+		logperror(LIRC_WARNING, "Cannot fdopen tmpfile");
+		return STS_INIT_FOPEN;
+	}
+	snprintf(filename_new, sizeof(filename_new),
+		 "%s.bak", opts->filename);
+	opts->backupfile = strdup(filename_new);
+
+	if (getresuid_uid() == 0) {
+		if (seteuid(0) == -1)
+			logprintf(LIRC_ERROR, "Cannot reset root uid");
+	}
+	curr_driver->open_func(opts->device);
 	if (curr_driver->init_func) {
 		if (!curr_driver->init_func()) {
 			fclose(state->fout);
-			unlink(opts->filename);
+			unlink(opts->tmpfile);
 			return STS_INIT_HW_FAIL;
 		}
 	}
+	drop_sudo_root(seteuid);
+
 	aeps = ((int) curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
-	if (curr_driver->rec_mode != LIRC_MODE_MODE2 && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
-		return STS_INIT_BAD_MODE;
+	if (curr_driver->rec_mode != LIRC_MODE_MODE2
+	    && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		fclose(state->fout);
-		unlink(opts->filename);
+		unlink(opts->tmpfile);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		return STS_INIT_BAD_MODE;
@@ -451,7 +487,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
 		fclose(state->fout);
-		unlink(opts->filename);
+		unlink(opts->tmpfile);
 		if (curr_driver->deinit_func)
 			curr_driver->deinit_func();
 		return STS_INIT_O_NONBLOCK;
@@ -809,7 +845,7 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 			case STS_LEN_NO_GAP_FOUND:
 				fprintf(stderr, "%s: gap not found, can't continue\n", progname);
 				fclose(state->fout);
-				unlink(opts->filename);
+				unlink(opts->tmpfile);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
@@ -869,7 +905,7 @@ void lirccode_get_lengths(const struct opts* opts, struct main_state* state)
 		case STS_GAP_TIMEOUT:
 			fprintf(stderr, "Timeout (10 sec), giving  up.\n");
 			fclose(state->fout);
-			unlink(opts->filename);
+			unlink(opts->tmpfile);
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			exit(EXIT_FAILURE);
@@ -929,7 +965,7 @@ static void check_too_few_buttons(const struct ir_remote* remote,
 }
 
 
-/** Get name of a code from user. */
+/** Get name of a code from user, setup filename and backup file. */
 void get_name(struct ir_remote* remote, struct opts* opts)
 {
 	char buff[256];
@@ -954,11 +990,28 @@ again:
 				goto again;
 			}
 		}
+		snprintf(path, sizeof(path), "%s.lircd.conf.bak", buff);
+		if (access(path, F_OK) == 0) {
+			printf("Backup file %s already exists.\n", path);
+			puts("Choose another name or remove backup file.\n");
+			continue;
+		}
 		remote->name = strdup(buff);
 	}
+	opts->backupfile = strdup(path);
 	snprintf(path, sizeof(path), "%s.lircd.conf", buff);
 	opts->filename = strdup(path);  // FIXME: leak?
 	printf("Using %s as output filename\n\n", opts->filename);
+	if (access(opts->filename, F_OK) == 0) {
+		snprintf(buff, sizeof(buff),
+			 "cp -p %s %s", path, opts->backupfile);
+		if (system(buff) != 0)
+			printf("Warning: Cannot create backup file.\n");
+	} else {
+		free((void*) opts->backupfile);
+		opts->backupfile = NULL;
+	}
+
 }
 
 
@@ -974,9 +1027,9 @@ int main(int argc, char** argv)
 		exit(EXIT_SUCCESS);
 	}
 	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
-	do_init(&opts, &state);
 	if (geteuid() == 0)
 		drop_root_cli(seteuid);
+	do_init(&opts, &state);
 
 	puts(MSG_WELCOME);
 	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0)
@@ -999,8 +1052,20 @@ int main(int argc, char** argv)
 		do_get_toggle_bit_mask(&remote, &state, &opts);
 	do_record_buttons(&state, &opts);
 	check_too_few_buttons(&remote, &opts);
-	if (!is_raw(&remote))
+	if (is_raw(&remote)) {
+		r = rename(opts.tmpfile, opts.filename);
+		if (r != 0)
+			perror("Cannot write final file");
+		r = r == 0 ? 1 : 0;
+	} else {
 		r = config_file_finish(&state, &opts);
-	printf("Successfully written config file %s\n", opts.filename);
+	}
+	printf("\nSuccessfully written config file %s\n", opts.filename);
+	if (access(opts.tmpfile, F_OK) == 0 && unlink(opts.tmpfile) != 0) {
+		fprintf(stderr,
+			"Cannot remove temporary file %s\n", opts.tmpfile);
+	}
+	if (opts.backupfile != NULL)
+		printf("Saving old config file in %s\n", opts.backupfile);
 	return r ? EXIT_SUCCESS : EXIT_FAILURE;
 }
