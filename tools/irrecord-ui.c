@@ -984,7 +984,8 @@ again:
 		if (s != NULL)
 			*s = '\0';
 		for (s = buff; *s; s += 1) {
-			if (*s == ' ' || !isalnum(*s)) {
+			if (isspace(*s) || !isascii(*s) || iscntrl(*s)
+			    || strlen(buff) == 0) {
 				printf("Bad character: %c (x%x)\n", *s, *s);
 				goto again;
 			}
