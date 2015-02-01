@@ -80,6 +80,8 @@ XSetWindowAttributes winatt1;
 long event_mask1;
 XEvent event_return1;
 
+static int point = 0;
+static int showText = 0;
 static int div_ = 5;
 static int dmode = 0;
 static struct stat s;
@@ -99,6 +101,7 @@ static struct option options[] = {
 	{"timediv", required_argument, NULL, 't'},
 	{"mode", no_argument, NULL, 'm'},
 	{"raw", no_argument, NULL, 'r'},
+	{"plugindir", required_argument, NULL, 'U'},
 	{"driver-options", required_argument, NULL, 'A'},
 	{0, 0, 0, 0}
 };
@@ -117,7 +120,12 @@ static const char* const help =
 "    -h --help\t\t\tdisplay usage summary\n"
 "    -v --version\t\tdisplay version\n"
 "    -A --driver-options=key:value[|key:value...]\n"
-"\t\t\t\tSet driver options\n";
+"\t\t\t\tSet driver options\n"
+"The window responds to the following keys:\n"
+"    .1, .2, .5, 1, 2 & 5 set the timebase (ms)\n"
+"    m to toggle the display mode\n"
+"    q to quit\n";
+
 
 
 static void add_defaults(void)
@@ -243,6 +251,20 @@ void closescreen(void)
 	XCloseDisplay(d1);
 }
 
+void drawGrid(int div)
+{
+	char textbuffer[80];
+	int x;
+
+    XClearWindow(d1, w1);
+    for(x = 0; x < w1_w; x += 10)
+        XDrawLine(d1, w1, gc1,  x, 0,  x, w1_h);
+
+    sprintf(textbuffer, "%5.3f ms/div", div/100.0);
+    XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
+    XFlush(d1);
+}
+
 int main(int argc, char **argv)
 {
 	fd_set rfds;
@@ -250,8 +272,8 @@ int main(int argc, char **argv)
 
 	int fd;
 	__u32 mode;
-	lirc_t data;
-	lirc_t x1, y1, x2, y2;
+	lirc_t data = 0;
+	lirc_t x1, y1, dx;
 	int result;
 	char textbuffer[80];
 	const char* new_user;
@@ -332,20 +354,54 @@ int main(int argc, char **argv)
 	xfd = XConnectionNumber(d1);
 	maxfd = fd > xfd ? fd : xfd;
 	y1 = 20;
-	x1 = x2 = 0;
-	sprintf(textbuffer, "%d ms/unit", div_);
-	for (y2 = 0; y2 < w1_w; y2 += 10)
-		XDrawLine(d1, w1, gc1, y2, 0, y2, w1_h);
-	XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
-	XFlush(d1);
+	x1 = 0;
+	drawGrid(div_);
 	while (1) {
 		while (XPending(d1) > 0) {
 			XNextEvent(d1, &event_return1);
 			switch (event_return1.type) {
 			case KeyPress:
-				if (event_return1.xkey.keycode == XKeysymToKeycode(d1, XStringToKeysym("q"))) {
+				if (1 == XLookupString(&event_return1.xkey, textbuffer, strlen(textbuffer), NULL, NULL)) {
+					switch (textbuffer[0]) {
+					case 'q':
 					closescreen();
 					exit(1);
+					case 'm':
+						dmode = !dmode;
+						break;
+					/*
+					 * Switch the time-base, the screen is not cleared because it is useful to see
+					 * the IR data with different time-bases on the same screen. The new time-base
+					 * text is drawn to the screen and the waveform is set to start on a new line.
+					 */
+					case '.':
+						point = 1;	/* Remember the decimal point */
+						break;
+					case '1':
+						div_ = 100;	/* 1ms, 1000us per division / 10 pixels per division. */
+						showText = 1;
+						break;
+					case '2':
+						div_ = 200;
+						showText = 1;
+						break;
+					case '5':
+						div_ = 500;
+						showText = 1;
+						break;
+					}
+					if (showText) {
+						showText = 0;
+						if (point) {
+							point = 0;
+							div_ /= 10;
+						}
+						y1 += 25;
+						sprintf(textbuffer, "%5.3f ms/div", div_ / 100.0);
+						XDrawString(d1, w1, gc2, w1_w - 100, y1, textbuffer, strlen(textbuffer));
+						y1 += 5;
+						x1 = 0;
+					}
 				}
 				break;
 			case Expose:
@@ -363,13 +419,9 @@ int main(int argc, char **argv)
 					w1_h = event_return1.xconfigure.height;
 					break;
 				}
-				XClearWindow(d1, w1);
-				for (y2 = 0; y2 < w1_w; y2 += 10)
-					XDrawLine(d1, w1, gc1, y2, 0, y2, w1_h);
-				XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
-
-				XFlush(d1);
-				//            printf("resize \n");
+				y1 = 20;
+				x1 = 0;
+				drawGrid(div_);
 				break;
 			default:
 				;
@@ -401,12 +453,27 @@ int main(int argc, char **argv)
 				}
 				space = !space;
 			} else {
-				result = read(fd, &data, sizeof(data));
+				/*
+				 * Must use the driver read function, the UDP driver reformats the data!
+				 */
+				data = curr_driver->readdata(0);
+				if (data == 0) {
+					fprintf(stderr, "readdata() failed\n");
+					result = 0;
+				}
+				else {
+					result = 1;
+	            }
 			}
 			if (result != 0) {
-				//                  printf("%.8x\t",data);
-				x2 = (data & PULSE_MASK) / (div_ * 50);
-				if (x2 > 400) {
+#ifdef DEBUG
+				if (data & PULSE_BIT)
+					printf("%.8x\t",data);
+				else
+					printf("%.8x\n",data);
+#endif
+				dx = (data & PULSE_MASK) / (div_);
+				if (dx > 400) {
 					if (!dmode) {
 						y1 += 15;
 					} else {
@@ -424,25 +491,22 @@ int main(int argc, char **argv)
 					if (x1 < w1_w) {
 						if (dmode) {
 							if (data & PULSE_BIT)
-								XDrawLine(d1, w1, gc2, x1, y1, x1 + x2, y1);
-							x1 += x2;
+								XDrawLine(d1, w1, gc2, x1, y1, x1 + dx, y1);
+							x1 += dx;
 						} else {
-							XDrawLine(d1, w1, gc2, x1,
-								  ((data & PULSE_BIT) ? y1 : y1 + 10), x1 + x2,
-								  ((data & PULSE_BIT) ? y1 : y1 + 10));
-							x1 += x2;
-							XDrawLine(d1, w1, gc2, x1,
-								  ((data & PULSE_BIT) ? y1 : y1 + 10), x1,
-								  ((data & PULSE_BIT) ? y1 + 10 : y1));
+							XDrawLine(d1, w1, gc2,
+								x1,      ((data & PULSE_BIT) ? y1 : y1 + 10),
+								x1 + dx, ((data & PULSE_BIT) ? y1 : y1 + 10));
+							x1 += dx;
+							XDrawLine(d1, w1, gc2,
+								x1, ((data & PULSE_BIT) ? y1 : y1 + 10),
+								x1, ((data & PULSE_BIT) ? y1 + 10 : y1));
 						}
 					}
 				}
 				if (y1 > w1_h) {
-					y1 = 20;
-					XClearWindow(d1, w1);
-					for (y2 = 0; y2 < w1_w; y2 += 10)
-						XDrawLine(d1, w1, gc1, y2, 0, y2, w1_h);
-					XDrawString(d1, w1, gc2, w1_w - 100, 10, textbuffer, strlen(textbuffer));
+					x1 = 0;
+					drawGrid(div_);
 				}
 			}
 			XFlush(d1);
