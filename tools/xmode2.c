@@ -61,6 +61,13 @@
 
 #include "lirc_private.h"
 
+const char* const  MSG_USE_RAW =
+	"Please use the --raw option to access the device directly instead.";
+
+const char* const MSG_BAD_DRIVER =
+	"This program does not work for this driver and hardware.\n"
+	"(the driver is not a LIRC_MODE2 type driver)";
+
 Display *d1;
 Window w0, w1;			/*w0 = root */
 char w1_wname[] = "xmode2";
@@ -335,10 +342,9 @@ int main(int argc, char **argv)
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
-				puts("Please use the --raw option to access "
-				       "the device directly instead through\n" "the abstraction layer.");
+				puts(MSG_USE_RAW);
 			} else {
-				puts("This program does not work for this hardware yet.");
+				puts(MSG_BAD_DRIVER);
 			}
 			exit(EXIT_FAILURE);
 		}
