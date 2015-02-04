@@ -99,6 +99,7 @@ static struct option options[] = {
 	{"timediv", required_argument, NULL, 't'},
 	{"mode", no_argument, NULL, 'm'},
 	{"raw", no_argument, NULL, 'r'},
+	{"driver-options", required_argument, NULL, 'A'},
 	{0, 0, 0, 0}
 };
 
@@ -114,7 +115,10 @@ static const char* const help =
 "    -k --keep-root\t\tkeep root privileges\n"
 "    -r --raw\t\t\taccess device directly\n"
 "    -h --help\t\t\tdisplay usage summary\n"
-"    -v --version\t\tdisplay version\n";
+"    -v --version\t\tdisplay version\n"
+"    -A --driver-options=key:value[|key:value...]\n"
+"\t\t\t\tSet driver options\n";
+
 
 static void add_defaults(void)
 {
@@ -139,7 +143,8 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 	add_defaults();
-	while ((c = getopt_long(argc, argv, "U:hvd:H:g:t:mr", options, NULL)) != -1) {
+	const char* const optstring =  "U:hvd:H:g:t:mrA:";
+	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':puts(help);
 			exit (EXIT_SUCCESS);
@@ -175,6 +180,9 @@ static void parse_options(int argc, char** const argv)
 			break;
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
+			break;
+		case 'A':
+			options_set_opt("lircd:driver-options", optarg);
 			break;
 		default:
 			printf("Usage: %s [options]\n", progname);
@@ -235,22 +243,6 @@ void closescreen(void)
 	XCloseDisplay(d1);
 }
 
-
-static void drop_root(void)
-{
-        const char* new_user;
-
-        new_user = drop_sudo_root(setuid);
-        if (strcmp("root", new_user) == 0)
-                puts("Warning: Running as root.");
-        else if (strlen(new_user) == 0)
-                puts("Warning: Cannot change uid.");
-        else
-                printf("Running as regular user %s\n", new_user);
-
-}
-
-
 int main(int argc, char **argv)
 {
 	fd_set rfds;
@@ -262,6 +254,8 @@ int main(int argc, char **argv)
 	lirc_t x1, y1, x2, y2;
 	int result;
 	char textbuffer[80];
+	const char* new_user;
+	const char* opt;
 
 	lirc_log_open("xmode2", 0, LIRC_INFO);
 	hw_choose_driver(NULL);
@@ -299,6 +293,14 @@ int main(int argc, char **argv)
 		}
 	} else {
 		curr_driver->open_func(device);
+		opt = options_getstring("lircd:driver-options");
+		if (opt != NULL)
+			if (drv_handle_options(opt) != 0) {
+				fprintf(stderr,
+				"Cannot set driver (%s) options (%s)\n",
+				curr_driver->name, opt);
+				return EXIT_FAILURE;
+                       }
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
 			fputs("Cannot initialize hardware\n", stderr);
 			exit(EXIT_FAILURE);
@@ -318,8 +320,14 @@ int main(int argc, char **argv)
 
 	}
 
-	if (geteuid() == 0)
-		drop_root();
+	new_user = drop_sudo_root(setuid);
+	if (strcmp("root", new_user) == 0)
+		puts("Warning: Running as root.");
+	else if (strlen(new_user) == 0)
+		puts("Warning: Cannot change uid.");
+	else
+		printf("Running as regular user %s\n", new_user);
+
 	initscreen(geometry);
 	xfd = XConnectionNumber(d1);
 	maxfd = fd > xfd ? fd : xfd;
