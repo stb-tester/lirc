@@ -151,19 +151,16 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 	add_defaults();
+	char driver[64];
 	const char* const optstring =  "U:hvd:H:g:t:mrA:";
+
+	strcpy(driver, "default");
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
 		case 'h':puts(help);
 			exit (EXIT_SUCCESS);
 		case 'H':
-			if (hw_choose_driver(optarg) != 0) {
-				fprintf(stderr, "Driver `%s' not found", optarg);
-				fputs(" (wrong or missing -U/--plugindir?)\n",
-                                       stderr);
-				hw_print_drivers(stderr);
-				exit(EXIT_FAILURE);
-			}
+			strncpy(driver, optarg, sizeof(driver) - 1);
 			break;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
@@ -200,6 +197,12 @@ static void parse_options(int argc, char** const argv)
 	if (optind < argc) {
 		fprintf(stderr, "%s: too many arguments\n", progname);
 		exit (EXIT_FAILURE);
+	}
+	if (hw_choose_driver(driver) != 0) {
+		fprintf(stderr, "Driver `%s' not found", driver);
+		fputs(" (wrong or missing -U/--plugindir?)\n", stderr);
+		hw_print_drivers(stderr);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -361,7 +364,7 @@ int main(int argc, char **argv)
 			XNextEvent(d1, &event_return1);
 			switch (event_return1.type) {
 			case KeyPress:
-				if (1 == XLookupString(&event_return1.xkey, textbuffer, strlen(textbuffer), NULL, NULL)) {
+				if (1 == XLookupString(&event_return1.xkey, textbuffer, sizeof(textbuffer), NULL, NULL)) {
 					switch (textbuffer[0]) {
 					case 'q':
 					closescreen();
