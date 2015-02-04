@@ -58,6 +58,7 @@ int drv_handle_options(const char* options)
 	struct option_t option;
 	int found;
 	char* colon;
+	int result;
 
 	s = alloca(strlen(options) + 1);
 	strcpy(s, options);
@@ -71,7 +72,9 @@ int drv_handle_options(const char* options)
 			return DRV_ERR_BAD_OPTION;
 		if (!curr_driver->drvctl_func)
 			continue;
-		curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
+		result = curr_driver->drvctl_func(DRVCTL_SET_OPTION, (void*) &option);
+		if (result != 0)
+			return result;
 	}
 	return 0;
 }
