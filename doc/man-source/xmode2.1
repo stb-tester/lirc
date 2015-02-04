@@ -1,17 +1,22 @@
-.TH MODE2 "1" "Last change: Jan 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Feb 2015" "mode2 @version@" "User Commands"
 .SH NAME
-mode2, xmode2 - shows the pulse/space length of infrared signals
+xmode2 - shows the pulse/space length of infrared signals
 .SH SYNOPSIS
 .B mode2
 [\fIoptions\fR]
 .SH DESCRIPTION
-The main purpose of these programs is to check operation of your
+The main purpose of this program is to check operation of your
 home-brew LIRC receiver hardware and to see the IR waveform of the
 remote controller without an expensive oscilloscope. Very useful for
 debugging. Of course this program won't work with hardware that decodes
-the signals itself like e.g. TV cards or the Irman.
+the signals itself like e.g. TV cards or the Irman i. e., it only
+works with LIRC_MODE2 type drivers.
+.P
+xmode2 prints a simple graphics display of the pulse/space lengths. It
+accepts a few commands including time base changes; see the xmode2 -h output.
+.P
+lirc-lsplugins(1) allows checking if a driver is a LIRC_MODE2 type one.
 
-mode2 will simply print pulse&space lengths to stdout.
 
 .SH OPTIONS
 
@@ -62,7 +67,7 @@ complete run.
 Drivers are loaded dynamically. The search path used for this is determined
 by (falling priority):
 .IP \- 2
-The --plugindir option if available.
+The --plugindir option.
 .IP \- 2
 The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
@@ -78,7 +83,8 @@ Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log
 
 .SH "SEE ALSO"
-mode2(1), xmode2(1)
+mode2(1)
+lirc-lsplugins(1)
 
 The documentation for
 .B lirc

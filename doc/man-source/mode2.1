@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Jan 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Feb 2015" "mode2 @version@" "User Commands"
 .SH NAME
 mode2 - shows pulse/space length or decoded input from infrared drivers
 
@@ -51,6 +51,9 @@ Treat spaces longer than time as the gap. Time is in microseconds.
 Access device directly. This is primarely intended to be used with kernel
 drivers i.e., when accessing /dev/lirc* devices. Using other devices might
 work, but is in general undefined.
+.TP
+\fB\-A\fR \fB\-\-driver\-options=key:value[|key:value...]\fR
+Set driver-specific option named key to given value.
 .TP
 \fB\-U\fR \fB\-\-plugindir=directory\fR
 Load drivers from directory. See DRIVER LOADING.
@@ -109,9 +112,7 @@ log these messages are marked as 'debug'.
 The level can also be an integer in the range 3 (almost no messages) to
 10.
 
-
-.SH FILES
-
+.SH "FILES"
 .TP 4
 .B ~/.cache/mode2.log
 Debug output. Setting the XDG_CACHE_HOME environment variable relocates this

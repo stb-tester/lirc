@@ -1,0 +1,33 @@
+<A NAME="overview"></A><HR>
+<CENTER><H1>UDP driver</H1></CENTER>
+
+<p>
+The udp driver supports receiving mode2 input via UDP.</p>
+<p>
+Received UDP packets consist of a number of little endian 16-bit integers.
+The high bit signifies the state of the received signal; set indicates a
+mark, clear a space.  The low 15 bits specify how long the signal lasted.</p>
+<p>
+With the default resolution setting (61) the times are measured in 1/16384
+second intervals. This was used by old hardware using a cheap 32kHz clock
+crystal, when designing new devices a 1MHz 1&micro;s clock is recommended.</p>
+<p>
+To allow long times to be transfered a long UDP input format is available,
+this consists of a zero time as specified by the short format followed by
+a four byte little endian time value. This should only be needed occasionally
+for example the time between button presses.</p>
+<p>
+The UDP port can be set using the `--device=port` or `-d port` command line
+switch. In the time of writing, there is no way to specify the interface to
+use - the driver will listen to all interfaces.</p>
+<p>
+The timing resolution can be set using the `--driver-option=clocktick:value`
+or `-A clocktick:value` command line switch e.g.,
+<pre>
+
+mode2 --driver=udp --device=8766 --driver-option=clocktick:1
+
+</pre>
+to use port 8766 and 1 microsecond timing resolution.
+<p>
+<em>Note:</em> Little endian is not conventional network byte order. </p>

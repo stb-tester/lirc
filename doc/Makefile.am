@@ -154,7 +154,8 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/srm7500atilibusb_driver.html \
                            $(srcdir)/html-source/technical.html \
-                           $(srcdir)/html-source/tira_driver.html
+                           $(srcdir)/html-source/tira_driver.html \
+                           $(srcdir)/html-source/udp_driver.html
 
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
@@ -217,7 +218,8 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/programs.html \
                            html/pronto2lirc.html \
                            html/srm7500atilibusb_driver.html \
-                           html/technical.html
+                           html/technical.html \
+                           html/udp_driver.html
 
 website_files           =  lirc.org/cir.html \
                            lirc.org/cvs.html \

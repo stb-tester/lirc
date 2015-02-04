@@ -1,18 +1,45 @@
 /****************************************************************************
- ** udp.c ****************************************************************
+ ** udp.c *******************************************************************
  ****************************************************************************
- *
- * receive mode2 input via UDP
  *
  * Copyright (C) 2002 Jim Paris <jim@jtan.com>
  *
  * Distribute under GPL version 2 or later.
  *
- * Received UDP packets consist of some number of LE 16-bit integers.
- * The high bit signifies whether the received signal was high or low;
- * the low 15 bits specify the number of 1/16384-second intervals the
- * signal lasted.
+ */
+
+/**
+ * \file udp.c
  *
+ * \brief Receive mode2 input via UDP
+ *
+ * Received UDP packets consist of a number of little endian 16-bit integers.
+ * The high bit signifies the state of the received signal;
+ * set indicates a mark, clear a space.
+ * The low 15 bits specify how long the signal lasted.
+ *
+ * With the default resolution setting (61) the times are measured in 1/16384
+ * second intervals. This was used by old hardware using a cheap 32kHz clock
+ * crystal, when designing new devices a 1MHz 1µs clock is recommended.
+ *
+ * To allow long times to be transfered a long UDP input format is available,
+ * this consists of a zero time as specified by the short format followed by
+ * a four byte little endian time value. This should only be needed occasionally
+ * for example the time between button presses.
+ *
+ * The UDP port can be set using the `--device=port` or `-d port` command line
+ * switch.
+ *
+ * The timing resolution can be set using the `--driver-option=clocktick:value`
+ * or `-A clocktick:value` command line switch.
+ *
+ * e.g.
+ *
+ *     mode2 --driver=udp --device=8766 --driver-option=clocktick:1
+ *
+ * to use port 8766 and 1 microsecond timing resolution.
+ *
+ * \note Little endian is not conventional network byte order.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -33,20 +60,74 @@
 static int zerofd;		/* /dev/zero */
 static int sockfd;		/* the socket */
 
+
+/**
+ * Driver control.
+ *
+ * Process the --driver-option key:value pairs.
+ *
+ *  clocktick:value
+ *	Set the timing resolution to specified value.
+ *
+ * \retval 0	Success.
+ * \retval !=0	drvctl error.
+ */
+static int udp_drvctl_func(unsigned int cmd, void* arg)
+{
+	struct option_t* opt;
+	long value;
+
+	switch (cmd) {
+		case DRVCTL_SET_OPTION:
+			opt = (struct option_t*)arg;
+			if (strcmp(opt->key, "clocktick") == 0) {
+				value = strtol(opt->value, NULL, 10);
+				/* IR mark & space times are typically < 1ms */
+				if (value < 1 || 1000 < value) {
+					logprintf(LIRC_ERROR, "invalid clock period: %s", drv.device);
+					return DRV_ERR_BAD_VALUE;
+				}
+				drv.resolution = value;
+				return 0;
+			}
+			else {
+				return DRV_ERR_BAD_OPTION;
+			}
+			break;
+
+		default:
+			return DRV_ERR_NOT_IMPLEMENTED;
+	}
+	return 0;
+}
+
+/**
+ * Initialize the driver.
+ *
+ * Open the UDP port as specified by the device command line switch
+ * or use the default values: port = 8765, resolution = 61.
+ *
+ * \retval 1       Success.
+ * \retval 0       Error.
+ */
 int udp_init()
 {
-	int port;
+	int count;
+	unsigned int port;
 	struct sockaddr_in addr;
 
 	logprintf(LIRC_INFO, "Initializing UDP: %s", drv.device);
 
 	rec_buffer_init();
 
-	port = atoi(drv.device);
-	if (port == 0) {
-		logprintf(LIRC_ERROR, "invalid port: %s", drv.device);
-		return 0;
+	/* device string is "port" */
+	count = sscanf(drv.device, "%u", &port);
+	if (count != 1 || port < 1 || 65535 < port) {
+        logprintf(LIRC_ERROR, "invalid port: %s", drv.device);
+        return 0;
 	}
+
+	logprintf(LIRC_NOTICE, "using UDP port: %d, resolution: %d", port, drv.resolution);
 
 	/* drv.fd needs to point somewhere when we have extra data */
 	if ((zerofd = open("/dev/zero", O_RDONLY)) < 0) {
@@ -78,6 +159,11 @@ int udp_init()
 	return (1);
 }
 
+/**
+ * Deinitialize the driver (close the ports).
+ * \retval 1       Success.
+ * \retval 0       Error.
+ */
 int udp_deinit(void)
 {
 	close(sockfd);
@@ -86,6 +172,11 @@ int udp_deinit(void)
 	return (1);
 }
 
+/**
+ * Receive data from remote.
+ *
+ * The UDP driver just calls the standard functions.
+ */
 char *udp_rec(struct ir_remote *remotes)
 {
 	if (!rec_buffer_clear())
@@ -93,14 +184,22 @@ char *udp_rec(struct ir_remote *remotes)
 	return (decode_all(remotes));
 }
 
+/**
+ * Read data from the UDP port.
+ *
+ * Data read from the UDP port is converted to lirc mode2 format and returned
+ * one measured time interval at a time.
+ * \param timeout  Time to wait for data.
+ * \return         IR timing data in lirc mode2 format.
+ */
 lirc_t udp_readdata(lirc_t timeout)
 {
 	static u_int8_t buffer[8192];
 	static int buflen = 0;
 	static int bufptr = 0;
 	lirc_t data;
-	u_int8_t packed[2];
-	u_int32_t tmp;
+	u_int8_t packed[4];
+	u_int64_t tmp;
 
 	/* Assume buffer is empty; LIRC should select on the socket */
 	drv.fd = sockfd;
@@ -124,17 +223,64 @@ lirc_t udp_readdata(lirc_t timeout)
 	packed[0] = buffer[bufptr++];
 	packed[1] = buffer[bufptr++];
 
-	/* TODO: This assumes the receiver is active low.  Should
-	   be specified by user, or autodetected.  */
+	/* Low indicates that the receiver has detected the marking state
+	 * i.e. is receiving IR pulses.
+	 */
 	data = (packed[1] & 0x80) ? 0 : PULSE_BIT;
 
-	/* Convert 1/16384-seconds to microseconds */
 	tmp = (((u_int32_t) packed[1]) << 8) | packed[0];
-	/* tmp = ((tmp & 0x7FFF) * 1000000) / 16384; */
-	/* prevent integer overflow: */
-	tmp = ((tmp & 0x7FFF) * 15625) / 256;
+	tmp &= 0x7FFF;
+	if (tmp == 0) {
+		/*
+		 * A zero flags the following  bytes as an extended time value.
+		 * If buffer is empty, get data into it.
+		 */
+		if ((bufptr + 4) > buflen) {
+			if (!waitfordata(timeout))
+				return 0;
+			if ((buflen = recv(sockfd, &buffer, sizeof(buffer), 0)) < 0) {
+				logprintf(LOG_INFO, "Error reading from UDP socket");
+				return 0;
+			}
+			if (buflen & 1)
+				buflen--;
+			if (buflen == 0)
+				return 0;
+			bufptr = 0;
+		}
+		/* Read as 4 bytes to avoid endian-ness issues. */
+		packed[0] = buffer[bufptr++];
+		packed[1] = buffer[bufptr++];
+		packed[2] = buffer[bufptr++];
+		packed[3] = buffer[bufptr++];
+		tmp = (((u_int64_t) packed[3]) << 24)
+		    | (((u_int64_t) packed[2]) << 16)
+		    | (((u_int64_t) packed[1]) << 8)
+		    | packed[0];
+	}
+	switch (drv.resolution) {
+		case 1:
+			break;
+		/*
+		 * TODO: This case handles the way the code used to be,
+		 * 1/16384-second or 61.03515625 microseconds are only
+		 * a fraction of a percent from 61us so do not really
+		 * justify special treatment.
+		 *
+		case 61:
+			* Convert 1/16384-seconds to microseconds *
+			* tmp = (tmp * 1000000) / 16384; *
+			* prevent integer overflow: *
+			tmp = (tmp * 15625) / 256;
+			break;
+		*/
+		default:
+			tmp *= drv.resolution;
+	}
+    if (tmp > PULSE_MASK)
+        tmp = PULSE_MASK;
 
-	data |= tmp & PULSE_MASK;
+	data |= tmp;
 
 	/* If our buffer still has data, give LIRC /dev/zero to select on */
 	if ((bufptr + 2) <= buflen)
@@ -152,16 +298,18 @@ const struct driver hw_udp = {
 	.code_length	=	0,
 	.init_func	=	udp_init,
 	.deinit_func	=	udp_deinit,
-        .open_func      =       default_open,
-        .close_func     =       default_close,
+	.open_func	=	default_open,
+	.close_func	=	default_close,
 	.send_func	=	NULL,
 	.rec_func	=	udp_rec,
 	.decode_func	=	receive_decode,
-	.drvctl_func	=	NULL,
+	.drvctl_func	=	udp_drvctl_func,
 	.readdata	=	udp_readdata,
+	.resolution	=	61,
 	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.driver_version =	"0.9.2",
+	.info		=	"UDP driver receives IR mark and space time measurements on a UDP port and"
+				"converts them to LIRC mode2 format."
 };
 
 const struct driver* hardwares[] = { &hw_udp, (const struct driver*)NULL };

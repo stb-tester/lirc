@@ -72,7 +72,10 @@ int drv_handle_options(const char* options);
 #define  DRV_ERR_BAD_STATE		2
 
 /** drvctl error: */
-#define  DRV_ERR_BAD_OPTION             3
+#define  DRV_ERR_BAD_OPTION		3
+
+/** drvctl error: */
+#define  DRV_ERR_BAD_VALUE		4
 
 /**
  * The data the driver exports i. e., lirc accesses the driver as

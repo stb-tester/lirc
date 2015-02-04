@@ -53,8 +53,9 @@ static const char* const help =
 "\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
 "\t -s --scope=time\tenable 'scope like display with time us per char.\n"
 "\t -h --help\t\tdisplay usage summary\n"
-"\t -v --version\t\tdisplay version\n";
-
+"\t -v --version\t\tdisplay version\n"
+"\t -A --driver-options=key:value[|key:value...]\n"
+"\t\t\t\tSet driver options\n";
 
 static const struct option options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -67,6 +68,7 @@ static const struct option options[] = {
 	{"gap", required_argument, NULL, 'g'},
 	{"scope", required_argument, NULL, 's'},
 	{"plugindir", required_argument, NULL, 'U'},
+	{"driver-options", required_argument, NULL, 'A'},
 	{0, 0, 0, 0}
 };
 
@@ -100,11 +102,10 @@ static void add_defaults(void)
 static void parse_options(int argc, char** argv)
 {
 	int c;
-	static const char* const optstring= "hvd:H:mkrg:s:U:";
+	static const char* const optstring= "hvd:H:mkrg:s:U:A:";
 	char driver[64];
 
 	strcpy(driver, "default");
-
 	add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1)
 	{
@@ -139,6 +140,9 @@ static void parse_options(int argc, char** argv)
 			break;
 		case 'g':
 			opt_gap = atoi(optarg);
+			break;
+		case 'A':
+			options_set_opt("lircd:driver-options", optarg);
 			break;
 		default:
 			printf("Usage: mode2 [options]\n");
@@ -184,6 +188,7 @@ int open_device(int opt_raw_access, const char* device)
 	struct stat s;
 	__u32 mode;
 	int fd;
+	const char* opt;
 
 	if (opt_raw_access) {
 		fd = open(device, O_RDONLY);
@@ -207,6 +212,14 @@ int open_device(int opt_raw_access, const char* device)
 		}
 	} else {
 		curr_driver->open_func(device);
+		opt = options_getstring("lircd:driver-options");
+		if (opt != NULL)
+			if (drv_handle_options(opt) != 0) {
+				fprintf(stderr,
+				"Cannot set driver (%s) options (%s)\n",
+				curr_driver->name, opt);
+				exit(EXIT_FAILURE);
+			}
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			fprintf(stderr, "Cannot initiate device %s\n",
 			 	curr_driver->device);
@@ -229,7 +242,7 @@ int open_device(int opt_raw_access, const char* device)
 	}
 	if (opt_device && strcmp(opt_device, LIRCD) == 0) {
 		fputs("Refusing to connect to lircd socket\n", stderr);
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 	printf("Using device: %s\n", curr_driver->device);
 	return fd;
