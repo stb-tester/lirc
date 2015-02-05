@@ -1,4 +1,4 @@
-.TH IRXEVENT "1" "Last change: August 2014" "irxevent @version@" "User Commands"
+.TH IRXEVENT "1" "Last change: Feb 2015" "irxevent @version@" "User Commands"
 .SH NAME
 irxevent - infrared X-event sender
 .SH SYNOPSIS
@@ -29,7 +29,6 @@ Irxevent works with the same config file as irexec and irpty
 .B Part of your .lircrc could look like this:
 
 .nf
-.RS 3
 begin
         prog = irxevent
         button = VIDEO_UP
@@ -71,33 +70,28 @@ begin
         button = DOWN
         config = Button 1 130 80 GQmpeg
 end
-.RE
 .fi
 
 .B Simply said \fIconfig\fB =  lines may look like this:
 
 .nf
-.RS 3
 config = Key [shift\-][ctrl\-][alt\-]<key> [Focus] <windowname>
         | WindowID <id> | CurrentWindow | RootWindow
 config = Button <button> <x> <y> [Focus] <windowname> | WindowID <id>
         | CurrentWindow | RootWindow
 config = xy_Key <x> <y> [shift\-][ctrl\-][alt\-]<key> [Focus]
         <windowname> | WindowID id | CurrentWindow | RootWindow
-.RE
 .fi
 
 .B some more examples:
 
 .nf
-.RS 3
 config = Key Up xawtv
 config = Key Down xawtv
 config = Button 1 50 110 xclickme
 config = Key q xawtv
 config = Key ctrl\-c mpg123
 config = Key shift\-Page_Up rxvt
-.RE
 .fi
 
 .B In BNF this looks like:

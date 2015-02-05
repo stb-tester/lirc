@@ -14,7 +14,6 @@ usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 usb 3-1: Product: RF receiver
 usb 3-1: Manufacturer: X10 WTI
 </pre>
-<p>
 The driver conflicts with the linux atiusb kernel module. Thus, to use
 atilibusb  the kernel module must be blacklisted. This can be done with a
 file named e. g., /etc/modprobe.d/lirc-blacklist with the following
@@ -27,4 +26,3 @@ content
 The module autodetects available devices and a --device argument is normally
 not required. However, if given an existing device as argument this will be
 used.
-</P>
