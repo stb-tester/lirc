@@ -1,6 +1,19 @@
 0.9.3-devel
+  * Overall code formatting is improved with more consistent
+    layout and updated git hook. See CONTRIBUTE.md
+  * The compiler has been switched to c++, and filenames are
+    updated to *.cpp (#79)
+  * mode2 has been updated to handle also LIRCCODE devices (#94)
+  * xmode has been updated to handle udp driver + some general overhaul.
+  * irrecord has got some love:
+     + It handles multiple definitions of same symbol OK (#78)
+     + Warns about single-key config files (#77)
+     + Checks for ambient light disturbances (#76)
+     + New option allows updating of existing template file.
   * irrecord has been split into a library and a cli interface (#36). The
     library interface is unstable and not announced in pkg-config.
+  * The udp driver is patched to allow adjustable clockrates, see
+    new udp_driver.html driver doc.
   * The mplay driver has been updated with patches which has been
     available.
   * New build dependency: xsltproc (usually coming with libxml).
