@@ -432,15 +432,15 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		}
 		if (my_remote->next != NULL) {
 			fprintf(stderr,
-				"%s: only first remote definition in file \"%s\" used\n", progname,
+				"Only first remote definition in file \"%s\" used\n",
 				opts->filename);
 		}
 		snprintf(filename_new, sizeof(filename_new), "%s", opts->filename);
 		opts->filename = strdup(filename_new);
 	} else {
 		if (opts->analyse) {
-			fprintf(stderr, "%s: no input file given, ignoring analyse flag\n",
-				progname);
+			fputs("No input file given, ignoring analyse flag\n",
+			      stderr);
 			opts->analyse = 0;
 		}
 	}
@@ -485,7 +485,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	}
 	flags = fcntl(curr_driver->fd, F_GETFL, 0);
 	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-		fprintf(stderr, "%s: could not set O_NONBLOCK flag\n", progname);
+		fputs("Could not set O_NONBLOCK flag\n", stderr);
 		fclose(state->fout);
 		unlink(opts->tmpfile);
 		if (curr_driver->deinit_func)
@@ -839,18 +839,20 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 				remote.aeps = aeps;
 				return 1;
 			case STS_LEN_TIMEOUT:
-				fprintf(stderr, "%s: no data for 10 secs, aborting\n", progname);
+				fputs("No data for 10 secs, aborting\n",
+				      stderr);
 				exit(EXIT_FAILURE);
 			case STS_LEN_NO_GAP_FOUND:
-				fprintf(stderr, "%s: gap not found, can't continue\n", progname);
+				fputs("Gap not found, can't continue\n",
+				      stderr);
 				fclose(state->fout);
 				unlink(opts->tmpfile);
 				if (curr_driver->deinit_func)
 					curr_driver->deinit_func();
 				exit(EXIT_FAILURE);
 			case STS_LEN_TOO_LONG:
-				fprintf(stderr, "%s: signal too long\n", progname);
-				printf("Creating config file in raw mode.\n");
+				fputs("Signal too long\n", stderr);
+				puts("Creating config file in raw mode.");
 				set_protocol(&remote, RAW_CODES);
 				remote.eps = eps;
 				remote.aeps = aeps;
