@@ -1927,8 +1927,10 @@ enum button_status record_buttons(struct button_state*	btn_state,
 			if (curr_driver->deinit_func)
 				curr_driver->deinit_func();
 		}
-		get_pre_data(my_remote);
-		get_post_data(my_remote);
+		if (!opts->update) {
+			get_pre_data(my_remote);
+			get_post_data(my_remote);
+		}
 		remote = *my_remote;
 		return sts;
 	case STS_BTN_BUTTON_DONE:

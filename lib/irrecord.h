@@ -161,6 +161,7 @@ struct opts {
 	int		invert;
 	int		trail;
 	int		list_namespace;
+	int		update;
 	const char*	filename;
 	const char*	tmpfile;
 	const char*	backupfile;

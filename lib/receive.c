@@ -54,6 +54,13 @@ struct rbuf {
  * Global receiver buffer.
  */
 static struct rbuf rec_buffer;
+static int update_mode = 0;
+
+
+void rec_set_update_mode(int mode)
+{
+	update_mode = mode;
+}
 
 
 static lirc_t readdata(lirc_t timeout)
@@ -987,12 +994,30 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 static ir_code get_pre(struct ir_remote* remote)
 {
 	ir_code pre;
+	ir_code remote_pre;
+	ir_code match_pre;
+	ir_code toggle_mask;
 
 	pre = get_data(remote, remote->pre_data_bits, 0);
 
 	if (pre == (ir_code) -1) {
-		LOGPRINTF(1, "failed on pre_data");
+		LOGPRINTF(1, "Failed on pre_data: cannot get it");
 		return (ir_code) -1;
+	}
+	if (update_mode) {
+		/*
+		 * toggle_bit_mask is applied to the concatenated
+		 * pre_data - data - post_data. We dont check post data, but
+		 * adjusts for the length.
+		 */
+		toggle_mask =
+			remote->toggle_bit_mask >> remote->post_data_bits;
+		remote_pre = remote->pre_data & ~toggle_mask;
+		match_pre = pre & ~toggle_mask;
+		if (remote->pre_data != 0 && remote_pre != match_pre) {
+			LOGPRINTF(1, "Failed on pre_data: bad data: %x", pre);
+			return (ir_code) -1;
+		}
 	}
 	if (remote->pre_p > 0 && remote->pre_s > 0) {
 		if (!expectpulse(remote, remote->pre_p))

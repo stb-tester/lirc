@@ -34,6 +34,12 @@ extern "C" {
 #define MIN_RECEIVE_TIMEOUT 100000
 
 /**
+ * Set update mode, where recorded pre_data is verified to match
+ * the template pre_data. By defaulöt false.
+ */
+void rec_set_update_mode(int mode);
+
+/**
  * Set a file logging input from driver in same format as mode2(1).
  * @param f Open file to write on or NULL to disable logging.
  */

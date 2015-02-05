@@ -24,6 +24,7 @@ static const int NOISE_TIMEOUT_US = 3000000;
 
 
 #define USAGE       "Usage: irrecord [options] [config file]\n" \
+	"	    irrecord -u <config file>\n" \
 	"	    irrecord -a <config file>\n" \
 	"	    irrecord -l\n"
 
@@ -35,11 +36,12 @@ static const char* const help =
 	"\t -a --analyse\t\tAnalyse raw_codes config files\n"
 	"\t -k --keep-root\t\tDon't drop root privileges\n"
 	"\t -l --list-namespace\tList valid button names\n"
+	"\t -u --update\t\tAmend buttons to existing file\n"
 	"\t -U --plugindir=dir\tLoad drivers from dir\n"
 	"\t -f --force\t\tForce raw mode\n"
 	"\t -n --disable-namespace\tDisable namespace checks\n"
 	"\t -Y --dynamic-codes\tEnable dynamic codes\n"
-	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 0..10\n"
+	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n";
 
@@ -56,6 +58,7 @@ static const struct option long_options[] = {
 	{"disable-namespace", no_argument,	  NULL, 'n'},
 	{"keep-root",	       no_argument,	  NULL, 'k'},
 	{"list-namespace",    no_argument,	  NULL, 'l'},
+	{"update",	       required_argument, NULL, 'u'},
 	{"plugindir",	       required_argument, NULL, 'U'},
 	{"dynamic-codes",     no_argument,	  NULL, 'Y'},
 	{"pre",		       no_argument,	  NULL, 'p'},
@@ -138,6 +141,11 @@ static const char* const MSG_TOO_FEW_BUTTONS =
 	"This file doesn't really make much sense, you should record at\n"
 	"least two or three buttons to get meaningful results. You can add\n"
 	"more buttons next time you run irrecord.\n";
+
+static const char* const MSG_DONT_FORCE_UNLESS_UPDATE =
+	"File \"%s\" already exists\n"
+	"You cannot use the --force option together with a template file\n"
+	"unless also using --update";
 
 /** Result code from init(). */
 enum init_status {
@@ -253,10 +261,11 @@ static void add_defaults(void)
 		"irrecord:device",	      LIRC_DRIVER_DEVICE,
 		"irrecord:analyse",	      "False",
 		"irrecord:force",	      "False",
+		"irrecord:update",	      "False",
 		"irrecord:disable-namespace", "False",
 		"irrecord:dynamic-codes",     "False",
 		"irrecord:list_namespace",    "False",
-		"irrecord:filename",	      "irrecord.conf",
+		"irrecord:filename",	      "irrecord.lircd.conf",
 		"lircd:debug",		      level,
 		(const char*)NULL,	      (const char*)NULL
 	};
@@ -292,7 +301,7 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fnlO:pPtiTU:vY";
+	const char* const optstring = "had:D:H:fnlO:pPtiTU:uvY";
 
 	add_defaults();
 	optind = 1;
@@ -347,6 +356,9 @@ static void parse_options(int argc, char** const argv)
 		case 'T':
 			options_set_opt("irrecord:trail", "True");
 			break;
+		case 'u':
+			options_set_opt("irrecord:update", "True");
+			break;
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
 			break;
@@ -378,7 +390,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	int flags;
 	struct ir_remote* my_remote;
 	FILE* f;
-	struct ir_ncode* ncode;
+	struct ir_ncode* nc;
 	int fd;
 
 	hw_choose_driver(NULL);
@@ -393,7 +405,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		return STS_INIT_NO_DRIVER;
 	f = fopen(opts->filename, "r");
 	if (f != NULL) {
-		if (opts->force)
+		if (opts->force && !opts->update)
 			return STS_INIT_FORCE_TMPL;
 		my_remote = read_config(f, opts->filename);
 		fclose(f);
@@ -419,12 +431,15 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			return STS_INIT_TESTED;
 		}
 		remote = *my_remote;  //FIXME: Who owns this memory?
-		for (ncode = remote.codes; ncode->name != NULL; ncode++)
-			ncode_list_add(ncode);
+		if (opts->update) {
+			for (nc = remote.codes; nc->name != NULL; nc++)
+				ncode_list_add(nc);
+		}
 		remote.codes = NULL;
 		remote.last_code = NULL;
 		remote.next = NULL;
-		if (remote.pre_p == 0 && remote.pre_s == 0 && remote.post_p == 0
+		if (!opts->update
+		    && remote.pre_p == 0 && remote.pre_s == 0 && remote.post_p == 0
 		    && remote.post_s == 0) {
 			remote.bits = bit_count(&remote);
 			remote.pre_data_bits = 0;
@@ -456,10 +471,13 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		logperror(LIRC_WARNING, "Cannot fdopen tmpfile");
 		return STS_INIT_FOPEN;
 	}
-	snprintf(filename_new, sizeof(filename_new),
-		 "%s.bak", opts->filename);
-	opts->backupfile = strdup(filename_new);
-
+	if (opts->update) {
+		snprintf(filename_new, sizeof(filename_new),
+			 "%s.bak", opts->filename);
+		opts->backupfile = strdup(filename_new);
+	} else {
+		opts->backupfile = NULL;
+	}
 	if (getresuid_uid() == 0) {
 		if (seteuid(0) == -1)
 			logprintf(LIRC_ERROR, "Cannot reset root uid");
@@ -514,6 +532,7 @@ static int get_options(int argc, char** argv, const char* filename, struct opts*
 	options->invert = options_getboolean("irrecord:invert");
 	options->trail = options_getboolean("irrecord:trail");
 	options->filename = options_getstring("irrecord:filename");
+	options->update = options_getboolean("irrecord:update");
 	return 1;
 }
 
@@ -582,8 +601,7 @@ static void do_init(struct opts* opts, struct main_state* state)
 		exit(EXIT_FAILURE);
 	case STS_INIT_FORCE_TMPL:
 		fprintf(stderr,
-			"File \"%s\" already exists\n"
-			"You cannot use the --force option " "together with a template file\n",
+			MSG_DONT_FORCE_UNLESS_UPDATE,
 			opts->filename);
 		exit(EXIT_FAILURE);
 	case STS_INIT_BAD_FILE:
@@ -970,9 +988,12 @@ static void check_too_few_buttons(const struct ir_remote* remote,
 void get_name(struct ir_remote* remote, struct opts* opts)
 {
 	char buff[256];
+	char basename[256];
 	char path[256];
 	char* s;
 
+	if (!opts->update)
+		remote->name = NULL;
 	while (remote->name == NULL) {
 again:
 		fputs("Enter name of remote (only ascii, no spaces) :",
@@ -985,12 +1006,22 @@ again:
 		s = strrchr(s, '\n');
 		if (s != NULL)
 			*s = '\0';
+		if (strlen(buff) == 0)
+			continue;
 		for (s = buff; *s; s += 1) {
-			if (isspace(*s) || !isascii(*s) || iscntrl(*s)
-			    || strlen(buff) == 0) {
+			if (isspace(*s) || !isascii(*s) || iscntrl(*s)) {
 				printf("Bad character: %c (x%x)\n", *s, *s);
 				goto again;
 			}
+		}
+		strncpy(basename, opts->filename, sizeof(basename) - 1);
+		if (strchr(basename, '.') != NULL)
+			*strchr(basename, '.') = '\0';
+		if (strcmp(basename, buff) == 0 && !opts->update) {
+			fflush(stdout);
+			puts("You cannot use the same name if not updating\n");
+			puts("Please use another name\n");
+			continue;
 		}
 		snprintf(path, sizeof(path), "%s.lircd.conf.bak", buff);
 		if (access(path, F_OK) == 0) {
@@ -1000,20 +1031,19 @@ again:
 		}
 		remote->name = strdup(buff);
 	}
-	opts->backupfile = strdup(path);
+	opts->backupfile = opts->update ? strdup(path) : NULL;
 	snprintf(path, sizeof(path), "%s.lircd.conf", buff);
-	opts->filename = strdup(path);  // FIXME: leak?
+	opts->filename = strdup(path);
 	printf("Using %s as output filename\n\n", opts->filename);
-	if (access(opts->filename, F_OK) == 0) {
+	if (opts->update && access(opts->filename, F_OK) == 0) {
 		snprintf(buff, sizeof(buff),
 			 "cp -p %s %s", path, opts->backupfile);
 		if (system(buff) != 0)
 			printf("Warning: Cannot create backup file.\n");
-	} else {
+	} else if (opts->backupfile != NULL) {
 		free((void*) opts->backupfile);
 		opts->backupfile = NULL;
 	}
-
 }
 
 
@@ -1040,7 +1070,7 @@ int main(int argc, char** argv)
 	getchar();
 
 	check_ambient_light(&opts);
-	if (remote.name == NULL)
+	if (remote.name == NULL || !opts.update)
 		get_name(&remote, &opts);
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
