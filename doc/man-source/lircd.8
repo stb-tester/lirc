@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Nov 2014" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Feb 2015" "lircd @version@" "System Administration Utilities"
 .SH NAME
 lircd - LIRC daemon decodes infrared signals and provides them on a Unix
 domain socket.
@@ -15,7 +15,7 @@ codes received by lircd and they can send commands to lircd.
 
 .SH ARGUMENTS
 .TP 4
-.B config file <path>
+.B config file
 The configuration file, by default /etc/lirc/lircd.conf. A relative
 path is interpreted from /etc/lirc.
 .IP
@@ -76,7 +76,7 @@ syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
 also defines three additional levels 'trace', 'trace1' and 'trace2' which
 gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'.
-.P
+.IP
 The level can also be an integer in the range 3 (almost no messages) to
 10.
 .TP 4
@@ -122,7 +122,7 @@ under DRIVER LOADING.
 .TP 4
 .B -r, --release [suffix]
 Enables automatic generation of release events for each button press.
- lircd will append the given suffix to the button name for each release
+lircd will append the given suffix to the button name for each release
 event. If no suffix is given the default suffix is '_UP'.
 .TP
 .B -R, --repeat-max <limit>
@@ -149,21 +149,6 @@ to all sorts of changes. It has not ben tested thoroughly.
 If started as user root, lirc drops it privileges and runs as user <uid>
 after opening files etc.
 
-.SH "DRIVER LOADING"
-Drivers are loaded dynamically. The search path used for this is determined
-by (falling priority):
-.IP \- 2
-The --plugindir option if available.
-.IP \- 2
-The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
-.IP \- 2
-The environment variable LIRC_PLUGINDIR.
-.IP \- 2
-A hardcoded default (usually /usr/lib[64]/lirc/plugins).
-.SH "SEE ALSO"
-mode2(1), smode2(1), xmode2(1)
-
-
 
 .SH FILES
 .TP 4
@@ -187,20 +172,6 @@ Plugin load path, se DRIVER LOADING
 If set, enables debugging in early stages when the --debug parameter is
 yet not parsed.
 
-.SH SIGNALS
-.TP 4
-.B HUP
-On receiving SIGHUP lircd re-reads the lircd.conf configuration file
-(but not lirc_options.conf) and adjusts itself if the file has changed.
-.TP 4
-.B USR1
-On receiving SIGUSR1 lircd makes a clean exit.
-
-.SH DAEMONS
-lircd  is a daemon. You should start it in some init script
-depending on your system. Besides the preferred systemd setup which is
-installed by default there are also example scripts for other distros
-and init systems in the contrib directory.
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. This is done from a traditional *ux
 \':\'-separated path where each component in the path is searched (leading
@@ -215,9 +186,25 @@ The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+
+.SH SIGNALS
+.TP 4
+.B HUP
+On receiving SIGHUP lircd re-reads the lircd.conf configuration file
+(but not lirc_options.conf) and adjusts itself if the file has changed.
+.TP 4
+.B USR1
+On receiving SIGUSR1 lircd makes a clean exit.
+
+.SH DAEMONS
+lircd  is a daemon. You should start it in some init script
+depending on your system. Besides the preferred systemd setup which is
+installed by default there are also example scripts for other distros
+and init systems in the contrib directory.
+
 .SH "SEE ALSO"
 irdb-get(1)
 .br
 lirc-setup(1)
 .br
-rcd.conf(5)
+lircd.conf(5)
