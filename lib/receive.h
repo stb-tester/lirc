@@ -52,11 +52,13 @@ static inline lirc_t receive_timeout(lirc_t usec)
 }
 
 /**
- * Wait until data is available to read, or timeout.
+ * Wait until data is available in drv.fd, timeout or a signal is raised.
  *
- * @param maxusec Mac number of microseconda to wait.
- * @returns non-zero if the driver.fd is ready to read,
- *       or 0 indicating timeout
+ * @param maxusec timeout in micro seconds, given to select(2). If <= 0, the
+ *       function will block indefinitely until data is available or a
+ *       signal is processed. If positive, a timeout value in microseconds.
+ * @return True (1) if there is data available in drv.fd, else 0 indicating
+ *       timeout.
  */
 int waitfordata(__u32 maxusec);
 

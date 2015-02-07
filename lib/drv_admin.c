@@ -22,6 +22,8 @@
 
 #include "driver.h"
 
+static const char* const PLUGIN_FILE_EXTENSION  = "so";
+
 
 /** Max number if plugins handled. No point to malloc() this. */
 #define MAX_PLUGINS  256
@@ -242,12 +244,6 @@ void hw_print_drivers(FILE* file)
 }
 
 
-/**
- * Search for driver, update global hw with driver data if found.
- *
- * @param name
- * @return Returns 0 if found and hw updated, else -1.
- */
 int hw_choose_driver(const char* name)
 {
 	struct driver* found;

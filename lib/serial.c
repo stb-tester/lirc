@@ -293,12 +293,6 @@ int tty_setcsize(int fd, int csize)
 	return 1;
 }
 
-/**
- * Creates a lock file of the type /var/local/LCK.. + name
- * @param name Name of the device
- * @return non-zero if successful
- * @see  http://www.pathname.com/fhs/2.2/fhs-5.9.html
- */
 int tty_create_lock(const char* name)
 {
 	char filename[FILENAME_MAX + 1];
@@ -442,11 +436,6 @@ tty_create_lock_retry:
 	return 1;
 }
 
-/**
- * Delete any lock(s) owned by this process.
- * @return 0 on errors, else 1.
- * @see  http://www.pathname.com/fhs/2.2/fhs-5.9.html
- */
 int tty_delete_lock(void)
 {
 	DIR* dp;

@@ -345,25 +345,22 @@ static void send_signals(lirc_t* signals, int n)
 		add_send_buffer(signals[i]);
 }
 
-/**
- * Initializes the global sending buffer for transmitting the code int the second argument, residing in the remote in the first.
- * @param remote ir_remote containing code to send
- * @param code ir_ncode to send.
- * @return Success of operation.
- */
 int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code)
 {
 	return init_send_or_sim(remote, code, 0, 0);
 }
 
-/** Do not document this function
+/**
+ * Do not document this function
  * @cond
  */
 int init_sim(struct ir_remote* remote, struct ir_ncode* code, int repeat_preset)
 {
 	return init_send_or_sim(remote, code, 1, repeat_preset);
 }
-/** @endcond */
+/**
+ *@endcond
+ */
 
 
 int send_buffer_length(void)

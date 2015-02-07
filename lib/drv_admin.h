@@ -2,7 +2,7 @@
  *  @file drv_admin.h
  *  @author Alec Leamas
  *  @date August 2014
- *  license: GPL2 or later
+ *  @license GPL2 or later
  *  @brief Routines for dynamic drivers.
  *  @ingroup private_api
  *
@@ -25,7 +25,7 @@ extern "C" {
 /**
  *
  * Argument to for_each_driver(). Called with the loaded struct driver*
- * data and the argument given to for_each_driver. Returns NULL if
+ * data and the argument given to for_each_driver(). Returns NULL if
  * iteration should continue, else a struct hardware* pointer.
  *
  */
@@ -40,13 +40,18 @@ typedef struct driver* (*drv_guest_func)(struct driver*, void*);
 typedef struct driver*
 (* plugin_guest_func)(const char*, drv_guest_func, void*);
 
-/** Search for driver with given  name and install it in the drv struct. */
+/**
+ * Search for driver with given name, update global drv with driver data if found.
+ *
+ * @return Returns 0 if found and hw updated, else -1.
+ */
 int hw_choose_driver(const char* name);
 
 /* Print name of all drivers on FILE. */
 void hw_print_drivers(FILE*);
 
-/*
+/**
+ *
  * Apply func to all existing drivers. Returns pointer to a driver
  * if such a pointer is returned by func(), else NULL.
  *
@@ -58,8 +63,6 @@ struct driver* for_each_driver(drv_guest_func func, void* arg);
  */
 void for_each_plugin(plugin_guest_func plugin_guest, void* arg);
 
-
-#define PLUGIN_FILE_EXTENSION "so"
 
 #ifdef __cplusplus
 }

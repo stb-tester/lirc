@@ -154,14 +154,6 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 	return 0;
 }
 
-/**
- * Wait until data is available in drv.fd, timeout or a signal is raised.
- * @param maxusec timeout in micro seconds, given to select(2). If <= 0, the
- *       function will block indefinetaly, until data is available or a
- *       sugnal is processed. If positive, a timeout value in microseconds.
- * @return True (1) if there is data available in drv.fd, else 0 indicating
- *       timeout.
- */
 int waitfordata(__u32 maxusec)
 {
 	fd_set fds;

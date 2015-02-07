@@ -227,12 +227,6 @@ const struct ir_remote* is_in_remotes(const struct ir_remote*	remotes,
 	return NULL;
 }
 
-/**
- *
- * @param remotes
- * @param name
- * @return
- */
 struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
 				const char*		name)
 {
@@ -370,12 +364,7 @@ void map_gap(const struct ir_remote*	remote,
 		  (__u32)(ctx->max_remaining_gap));
 }
 
-/**
- *
- * @param remote
- * @param name
- * @return
- */
+
 struct ir_ncode* get_code_by_name(const struct ir_remote* remote, const char* name)
 {
 	const struct ir_ncode* all;
@@ -637,16 +626,15 @@ static __u64 set_code(struct ir_remote*		remote,
 }
 
 /**
- * Formats the arguments into a readable string (first argument, size the second argument).
- * The arguments start at the third position.) into a nice
- * @param buffer
- * @param size
+ * Formats the arguments into a readable string.
+ * @param buffer Formatted string on exit.
+ * @param size Size of buffer.
  * @param remote_name
  * @param button_name
  * @param button_suffix
  * @param code
  * @param reps
- * @return
+ * @return snprintf(3) result code i. e., number of formatted bytes in buffer.
  */
 int write_message(char* buffer, size_t size, const char* remote_name, const char* button_name,
 		  const char* button_suffix, ir_code code, int reps)
@@ -659,11 +647,7 @@ int write_message(char* buffer, size_t size, const char* remote_name, const char
 	return len;
 }
 
-/**
- * Tries to decode current signal trying all known remotes.
- * @param remotes
- * @return
- */
+
 char* decode_all(struct ir_remote* remotes)
 {
 	struct ir_remote* remote;
@@ -755,12 +739,6 @@ char* decode_all(struct ir_remote* remotes)
 	return NULL;
 }
 
-/**
- * Transmits the actual code in the second  argument by calling the current hardware driver.
- * @param remote Currently active remote, used as data base for timing, and as keeper of an internal state.
- * @param code IR code to be transmitted
- * @return nonzero if success
- */
 int send_ir_ncode(struct ir_remote* remote, struct ir_ncode* code, int delay)
 {
 	int ret;
