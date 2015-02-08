@@ -212,7 +212,7 @@ static void line_print_long(const line_t* line)
 	}
 
 	printf("Plugin path:\t%s\n", line->path);
-	printf("Driver name:\t%s\n", line->path ? line->name : "-");
+	printf("Driver name:\t%s\n", line->name ? line->name : "-");
 	printf("Load state:\t%s\n", loadstate);
 	printf("Timing info:\t%s\n", handles_timing);
 	printf("Can send:\t%s\n", can_send);

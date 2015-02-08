@@ -3,6 +3,8 @@ ACLOCAL_AMFLAGS         = -I m4
 
 DISTCLEANFILES          = man/* html/* man-html/*
 
+EXTRA_DIST              = Doxyfile
+
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.h \
@@ -29,6 +31,18 @@ if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
 
+websitedir              = $(docdir)/lirc.org
+dist_website_DATA       = $(website_files)
+
+website_htmldir         = $(docdir)/lirc.org/html
+dist_website_html_DATA  = $(generated_html) \
+                          $(manpage_html) \
+                          $(website_html_extra)
+
+
+website_imagedir        = $(docdir)/lirc.org/images
+dist_website_image_DATA = $(dist_image_DATA)
+
 htmldir                 = $(docdir)/html
 nodist_html_DATA        += $(generated_html)
 if HAVE_MAN2HTML
@@ -53,7 +67,8 @@ dist_image_DATA         = images/atwf83.jpg \
                           images/audio_wave.png \
                           images/diode.gif \
                           images/lirc.gif \
-                          images/marb18.jpg
+                          images/marb18.jpg \
+			  images/banner_en_1.gif
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -81,7 +96,7 @@ $(manpage_html): $(nodist_man_MANS)
 	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
-	man2html -M ../html/index.html $${src}* | \
+	man2html -M ../html/index.html $${src}.[1-8] | \
 	            $(SED) -e '1,/<BODY>/d' \
 	                -e '/<\/BODY>/,$$d' \
 	                -e '/HREF="#index"/d' \
@@ -98,6 +113,7 @@ $(nodist_man_MANS): $(man_sources)
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
 	doxygen >doxygen-warnings.txt 2>&1
+	find api-docs -name \*.tmp -delete
 	tar czf $@ api-docs
 
 man_sources             += $(srcdir)/man-source/ircat.1 \
@@ -137,6 +153,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
+                           $(srcdir)/html-source/srm7500atilibusb_driver.html \
                            $(srcdir)/html-source/technical.html \
                            $(srcdir)/html-source/tira.html
 
@@ -197,5 +214,31 @@ generated_html          =  html/alsa-usb.html \
                            html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \
+                           html/srm7500atilibusb_driver.html \
                            html/technical.html \
                            html/tira.html
+
+website_files           =  lirc.org/cir.html \
+                           lirc.org/cvs.html \
+                           lirc.org/developers.html \
+                           lirc.org/faq.html \
+                           lirc.org/favicon.ico \
+                           lirc.org/git.html \
+                           lirc.org/improved_transmitter.html \
+                           lirc.org/index.html \
+                           lirc.org/ir-audio.html \
+                           lirc.org/irda.html \
+                           lirc.org/lirc.css \
+                           lirc.org/mirrors.html \
+                           lirc.org/parallel.html \
+                           lirc.org/pictures1.html \
+                           lirc.org/pictures2.html \
+                           lirc.org/pictures.html \
+                           lirc.org/pinout_TRM1038.txt \
+                           lirc.org/receivers.html \
+                           lirc.org/software.html \
+                           lirc.org/transmitters.html \
+                           lirc.org/tv_cards.html
+
+website_html_extra      =  html-source/lirc.css \
+                           lirc.org/robots.txt

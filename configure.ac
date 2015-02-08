@@ -2,7 +2,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.2])
+AC_INIT([lirc], [0.9.2a])
 AC_CONFIG_SRCDIR([daemons/lircd.c])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -183,11 +183,17 @@ AC_CHECK_HEADER(usb.h,[
   ],[
   AM_CONDITIONAL([BUILD_USB],[false])]
 )
-AC_CHECK_HEADER(ftdi.h,[
+PKG_CHECK_MODULES([FTDI],[libftdi],,[true])
+test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1],,[true])
+if test -n "$FTDI_LIBS"; then
+  CFLAGS="$CFLAGS $FTDI_CFLAGS"
+  LDFLAGS="$LDFLAGS $FTDI_LIBS"
+  AC_DEFINE(HAVE_FTDI)
   AM_CONDITIONAL([BUILD_FTDI],[true])
-  ],[
+  AC_SUBST(FTDI_LIBS)
+else
   AM_CONDITIONAL([BUILD_FTDI],[false])]
-)
+fi
 AC_CHECK_HEADER(iguanaIR.h,[
   AM_CONDITIONAL([BUILD_IGUANAIR],[true])
   ],[

@@ -1,3 +1,10 @@
+0.9.2a 8/2/15
+  * Maintenance release: bugfixes, no new features.
+  * Notably fixes #85, multiple --connect regression.
+  * Fixes bad bug for locating ~/.lircrc config file.
+  * Documentation and lirc.org updates.
+  * All in all 19 patches.
+
 0.9.2 12/09/14
   * Documentation fixes
 

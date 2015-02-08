@@ -9,8 +9,6 @@ EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
 CHANGELOG_REVS          = lirc-0_9_1..HEAD
-TAR_DEREFERENCE         = $(shell tar --version | grep -q GNU \
-				 && echo 'tar -h' || echo 'tar -L')
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
@@ -45,16 +43,10 @@ header_HEADERS          = paths.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	cd $(srcdir); $(TAR_DEREFERENCE) -cf - lirc.org | \
-	    tar -C $(DESTDIR)$(docdir) -xf -
-	rm $(DESTDIR)$(datadir)/lirc/configs/check_configs.py
 
 dist-hook: ChangeLog
 	chmod u+w $(distdir)
-	cp -pr $(srcdir)/lirc.org ChangeLog $(distdir)
-
-uninstall-local:
-	dir=$(DESTDIR)$(docdir)/lirc.org; chmod -R a+w $$dir; rm -rf $$dir
+	find $(distdir) -name .gitkeep -o -name .gitignore -delete
 
 paths.h: Makefile
 	@echo "#ifndef PATHS_H"          >$@
@@ -71,8 +63,5 @@ ChangeLog: .phony
 	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
-
-lirc.org.tar: .phony
-	$(TAR_DEREFERENCE) -cf $@ lirc.org
 
 .phony:

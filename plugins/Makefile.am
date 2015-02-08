@@ -47,7 +47,7 @@ endif
 if BUILD_FTDI
 plugin_LTLIBRARIES          += ftdi.la
 ftdi_la_SOURCES             = ftdi.c
-ftdi_la_LDFLAGS             = $(AM_LDFLAGS) -lftdi
+ftdi_la_LDFLAGS             = $(AM_LDFLAGS) @FTDI_LIBS@
 endif
 
 if BUILD_IGUANAIR

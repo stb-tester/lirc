@@ -66,7 +66,7 @@ endif
 
 if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get
-dist_noinst_SCRIPTS     = make_rel_symlink.py
+dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
 pkgpython_PYTHON        = lirc-setup/mvc_control.py \
                           lirc-setup/mvc_view.py \
                           lirc-setup/mvc_model.py \

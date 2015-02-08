@@ -2,22 +2,8 @@
  ** lircd.c *****************************************************************
  ****************************************************************************
  *
- * lircd - LIRC Decoder Daemon
+ * lirc_log - simple logging module.
  *
- * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
- * Copyright (C) 1998,99 Christoph Bartelmus <lirc@bartelmus.de>
- *
- *  =======
- *  HISTORY
- *  =======
- *
- * 0.1:  03/27/96  decode SONY infra-red signals
- *                 create mousesystems mouse signals on pipe /dev/lircm
- *       04/07/96  send ir-codes to clients via socket (see irpty)
- *       05/16/96  now using ir_remotes for decoding
- *                 much easier now to describe new remotes
- *
- * 0.5:  09/02/98 finished (nearly) complete rewrite (Christoph)
  *
  */
 
@@ -58,6 +44,8 @@ const char *logfile = "syslog";
 
 char progname[128] = {'?','\0'};
 static int nodaemon = 0;
+
+static const int PRIO_LEN = 16; /**< Longest priority label, some margin. */
 
 
 static const char* prio2text(int prio)
@@ -246,6 +234,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 {
 	int save_errno = errno;
 	va_list ap;
+	char buff[PRIO_LEN + strlen(format_str)];
 
 #ifdef SYSTEMD_LOGPERROR_FIX
 	if (nodaemon && prio <= loglevel) {
@@ -258,8 +247,10 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 	}
 #endif
 	if (use_syslog) {
+		snprintf(buff, sizeof(buff),
+			 "%s: %s", prio2text(prio), format_str);
 		va_start(ap, format_str);
-		vsyslog(prio, format_str, ap);
+		vsyslog(prio, buff, ap);
 		va_end(ap);
 	} else if (lf && prio <= loglevel) {
 		time_t current;
