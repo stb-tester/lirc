@@ -219,6 +219,7 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/pronto2lirc.html \
                            html/srm7500atilibusb_driver.html \
                            html/technical.html \
+                           html/tira_driver.html \
                            html/udp_driver.html
 
 website_files           =  lirc.org/cir.html \
