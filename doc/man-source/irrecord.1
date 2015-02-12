@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: Nov 2014" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: Feb 2015" "irrecord @version@" "User Commands"
 .SH NAME
 irrecord - application for recording IR-codes for usage with LIRC
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ irrecord - application for recording IR-codes for usage with LIRC
 This program will record the signals from your remote control and create
 a config file for lircd. A proper config file for lircd is maybe the
 most vital part of this package, so you should invest some time to
-create a working config file. Although I put a good deal of effort in
+create a working config file. Although a good deal of effort is put in
 this program it is often not possible to automatically recognize all
 features of a remote control.
 .P
@@ -26,21 +26,23 @@ If \fIfile\fR already exists and contains a valid config irrecord will use the
 protocol description found there and will only try to record the
 buttons. This is very useful if you want to learn a remote where config
 files of the same brand are already available. Of course this will only
-work if the remotes use the same protocol but it's worth a try. You will
-find template files for the most common protocols in the
-remotes/generic/ directory of this package. The name of the new file is
-created by appending .conf to the given filename in this case.
+work if the remotes use the same protocol but it's worth a try.
+.P
+The irdb-get(1) tool can be used to find common protocols template files
+using the command
+.IP
+$ irdb-get find generic
+.P
+The tool can also download these files.
 .SH OPTIONS
-.TP
-\fB\-h\fR \fB\-\-help\fR
-display this message
-.TP
-\fB\-v\fR \fB\-\-version\fR
-display version
 .TP
 \fB\-a\fR \fB\-\-analyse\fR
 Analyse a raw_codes config file, trying to convert it to a
 regular configuration.
+.TP
+\fB\-u\fR \fB\-\-update\fR
+Add new buttons to an existing config file. No protocol information is
+updated.
 .TP
 \fB\-f\fR \fB\-\-force\fR
 Force raw mode. Use this if recording fails otherwise. This
@@ -48,25 +50,31 @@ creates a raw codes configuration file which can be used as-is
 or converted using the -a option.
 .TP
 \fB\-n\fR \fB\-\-disable\-namespace\fR
-disables namespace checks
+Disable namespace checks.
 .TP
 \fB\-l\fR \fB\-\-list\-namespace\fR
-list valid button names
+List valid button names.
 .TP
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
 Use given driver. -H help lists available drivers.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-read from given device
+Read from given device.
 .TP
 \fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
 Determine the amount of logging information. [level] can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
 also defines three additional levels 'trace', 'trace1' and 'trace2' which
 gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'.
 The level can also be an integer in the range 3 (almost no messages) to
 10.
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display this message.
+.TP
+\fB\-v\fR \fB\-\-version\fR
+Display version.
 .SH "DRIVER LOAD PATH"
 Drivers are loaded dynamically. This is done from a traditional *ux
 \':\'\-separated path where each component in the path is searched (leading
@@ -102,10 +110,6 @@ Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/irrecord.log
 
 .SH "SEE ALSO"
-The documentation for
-.B lirc
-is maintained as html pages. They are located under html/ in the
-documentation directory.
-
-Further information on this topic is available in section "Adding new
-remote controls" in html/help.html
+https://sourceforge.net/p/lirc-remotes/wiki
+.br
+irdb-get(1)
