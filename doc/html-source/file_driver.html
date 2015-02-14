@@ -1,0 +1,25 @@
+ <CENTER><H1>File driver.</H1></CENTER>
+
+ <P>
+  The file driver is a test tool. It can log recieved data to a disk file,
+  and optionally also send data from another file.  </P>
+
+ <P>
+  The device argument is a file where the logged data will be saved. The
+  saved data is printable, line like
+<pre>
+       space 50000
+       pulse 850
+       space 400
+</pre>
+  i. e., like presented by mode2(1).  </P>
+<p>
+  The driver supports the <code>set-infile</code> driver option, which can be
+  set using lircd <i>-A/--driver-option</i> option. The infile is in the same
+  format as the logged data.</p>
+<p>
+  The driver also supports the <code>send-space</code> option. This is used to
+  send spaces longer than what can be represented with normal data, typical
+  a gap. </p>
+<p>Upon a request to send a LIRC_EOF pulse the driver will terminate the
+running process using SIGUSR1.</p>
