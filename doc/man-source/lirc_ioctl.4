@@ -19,9 +19,10 @@ rely on working with the default settings initially.
 .SH ALWAYS SUPPORTED COMMANDS
 /dev/lirc* devices always supports the following commands:
 .TP 4
-.B LIRC_GET_FEATURES void
+.B LIRC_GET_FEATURES <__u32* argptr>
 Returns a bitmask of combined features bits, see FEATURES. Some drivers
 have dynamic features which are not updated until after an init() command.
+If argptr is non-zero, the result is also stored in *argptr.
 .TP 4
 .B LIRC_GET_REC_MODE void
 Returns the receive mode, one of
