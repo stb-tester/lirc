@@ -59,7 +59,7 @@ static char path[256] = {0};
 static void run_command(const char* cmd)
 {
 	char* const vp[] = {
-		strdupa("/usr/bin/sh"), strdupa("-c"), strdupa(cmd), NULL
+		strdupa(SH_PATH), strdupa("-c"), strdupa(cmd), NULL
 	};
 	pid_t pid1;
 	pid_t pid2;
@@ -78,7 +78,7 @@ static void run_command(const char* cmd)
 		}
 		if (pid2 == 0) {
 			logprintf(LIRC_DEBUG, "Execing command \"%s\"", cmd);
-			execvp("/usr/bin/sh", vp);
+			execvp(SH_PATH, vp);
 			/* not reached */
 			logperror(LIRC_ERROR, "execvp failed");
 			fputs("execvp failed\n", stderr);

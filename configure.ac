@@ -17,6 +17,7 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_PATH_PROG(SH_PATH,[sh])
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
 if test x$PKGCONFIG = xno; then
@@ -173,6 +174,9 @@ AH_TEMPLATE([LIRC_HAVE_DEVFS],
 
 AH_TEMPLATE([LIRC_LOCKDIR],
         [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
+
+AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
+
 
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
@@ -345,6 +349,7 @@ AC_SUBST(x_progs)
 dnl tell the C code what we decided
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_DEFINE_UNQUOTED(SH_PATH, "$SH_PATH")
 AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 
@@ -355,10 +360,6 @@ AH_TOP([
 AH_BOTTOM([
 #include     "lirc_config.h"
 ])
-
-
-dnl bug in automake/autoconf?
-dnl SHELL=/bin/sh AC_SUBST(SHELL)
 
 dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
