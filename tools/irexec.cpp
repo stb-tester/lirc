@@ -97,16 +97,18 @@ static void process_input(struct lirc_config* config)
 {
 	char* code;
 	char* c;
-	int ret;
+	int r;
 
 	while (lirc_nextcode(&code) == 0) {
 		if (code == NULL)
 			continue;
-		while ((ret = lirc_code2char(config, code, &c)) == 0
-		       && c != NULL)
-				run_command(c);
+		r = lirc_code2char(config, code, &c);
+		while (r == 0 && c != NULL) {
+			run_command(c);
+			r = lirc_code2char(config, code, &c);
+		}
 		free(code);
-		if (ret == -1)
+		if (r == -1)
 			break;
 	}
 }
