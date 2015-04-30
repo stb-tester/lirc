@@ -264,7 +264,7 @@ static void add_defaults(void)
 		"irrecord:update",	      "False",
 		"irrecord:disable-namespace", "False",
 		"irrecord:dynamic-codes",     "False",
-		"irrecord:list_namespace",    "False",
+		"irrecord:list-namespace",    "False",
 		"irrecord:filename",	      "irrecord.lircd.conf",
 		"lircd:debug",		      level,
 		(const char*)NULL,	      (const char*)NULL
@@ -527,7 +527,7 @@ static int get_options(int argc, char** argv, const char* filename, struct opts*
 	options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
 	options->get_pre = options_getboolean("irrecord:pre");
 	options->get_post = options_getboolean("irrecord:post");
-	options->list_namespace = options_getboolean("irrecord:list_namespace");
+	options->list_namespace = options_getboolean("irrecord:list-namespace");
 	options->test = options_getboolean("irrecord:test");
 	options->invert = options_getboolean("irrecord:invert");
 	options->trail = options_getboolean("irrecord:trail");
