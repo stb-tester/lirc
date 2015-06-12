@@ -134,14 +134,14 @@ remote |        |       devinput v        |
       ! driver   !
       ------------
            |
-           v
+           v  IR pulse data          Use mode2 --raw  to debug.
            |
       ------------                   Often needs a device e. g.,
       |  lirc    |                   /dev/input/eventXX
       |  driver  |
       ------------
            |
-           v  IR pulse data          Use mode2(1) to debug.
+           v  IR pulse data          Use mode2(1) to debug
            |
    ----------------
    |  lirc pass 1 |                  lircd.conf config file.
@@ -184,6 +184,13 @@ remote |        |       devinput v        |
             <A HREF="#converting-key-symbols-to-application-strings">
              Convert the key symbols to application strings</a> .</li>
     </ul>
+    <p>
+    lirc can handle multiple remotes using the same capture device. This is
+    described in <a href="#appendix-8">Appendix 8</a>.</p>
+    <p>
+    To use multiple capture devices you need to setup multiple lircd
+    instances as described in <a href="#appendix-9">Appendix 9</a>.</p>
+
     <A NAME="determine-driver-and-device"></A><HR>
     <h3 align="center">Determine driver and device</h3>
     <p>
@@ -340,7 +347,7 @@ remote |        |       devinput v        |
     the key symbol is perfectly possible, but probably not what you want
     here).  </p>
     <p>
-    Then, grab the devinput/lircd.conf.devinput file
+    Then, grab the devinput/devinput.lircd.conf file
     <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
     (remotes) </a> and copy it to /etc/lirc/lircd.conf. Start the lircd
     daemon and use irw to check:
@@ -983,3 +990,66 @@ remote |        |       devinput v        |
             end codes
         end remote
 </pre>
+    <A NAME="appendix-9"></A>
+    <h3 align="center">A9 : Using multiple capture devices</h3>
+    <p>
+    When using using multiple capture devices e. g., two different USB
+    dongles you need to create a separate lircd instance for each
+    device. Setup the first device according to the main flow in this
+    document, then add the second as documented below.</p>
+    <p>
+    Also, when using multiple capture devices you might run into trouble
+    with several /dev/lirc* devices e. g., /dev/lirc0 and /dev/lirc1. Since
+    udev does not guarantee in which order devices are created, you cannot
+    know which physical device /dev/lirc0 refers to is in this scenario. To
+    handle this you need to define udev rules defining fixed device names.</p>
+
+    <h4>Setup a new lircd instance.</h4>
+    To create a new lircd instance serving a separate capture device
+    create a file like /etc/systemd/system/lircd-lirc1.service:
+<pre>
+        [Unit]
+        Description=LIRC instance on /dev/lirc1
+        After=network.target
+
+        [Service]
+        Type=simple
+        ExecStart=/usr/sbin/lircd --driver=default \
+                                  --device=/dev/lirc1 \
+                                  --output=/var/run/lirc/lircd-lirc1 \
+                                  --pidfile=/run/lirc/dont-use-lirc1.pid \
+                                  --nodaemon
+
+        [Install]
+        WantedBy=multi-user.target
+
+</pre>
+    This will create a new service called lircd-lirc1.service which can be
+    started using <code># systemd start lircd-lirc1.service</code> etc. Options
+    not defined in the service file will default to the values in
+    lirc_options.conf.
+
+    <h4> Udev rules handling multiple /dev/lirc* devices.</h4>
+    Udev can be used to define fixed device names which can be used instead
+    of the random /dev/lirc[0-9] devices set up by default. To do this, you
+    need to define udev rules. As an example, a file
+    /etc/udev/rules.d/80-lirc.rules like:
+
+<pre>
+    SUBSYSTEM=="lirc", KERNEL=="lirc*",  DRIVERS=="mceusb", \
+    SYMLINK+="lirc-mce"
+</pre>
+    will create a new device called /dev/lirc-mce which will be connected to
+    a kernel device using the mceusb driver.
+    <p>
+    Practically, each installation will need to match other attributes
+    depending on the hardware. The command
+
+<pre>
+        # udevadm info --attribute-walk \
+        --path $(udevadm info --query path --name=/dev/lirc1)
+</pre>
+    will list the possible attributes to match for a given /dev/lirc* device.
+    <P>
+    Creating udev rules is a large topic. Please refer to more
+    generic information to resolve problems.
