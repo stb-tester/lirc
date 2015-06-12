@@ -1,5 +1,5 @@
 '''
- Simple lirc setup tool - selectors.
+ Simple lirc setup tool - choosers.
 
 Classes to select device and remote, part of the MVC view
 '''
