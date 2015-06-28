@@ -64,19 +64,25 @@ typedef uint64_t __u64;
 #define MAP_BUTTON2 1
 #define MAP_BUTTON3 2
 
+#define DEBUG_HELP "Bad debug level: \"%s\"\n\n" \
+	"Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, TRACE1,\n" \
+	" TRACE2 or a number in the range 3..10.\n"
+
 static int uinputfd = -1;
 static int useuinput = 0;
-loglevel_t loglevel = LIRC_NOLOG;
+static loglevel_t loglevel_opt = LIRC_NOLOG;
 
 
 static const struct option lircmd_options[] = {
 	{ "help",	  no_argument,	     NULL, 'h' },
 	{ "version",	  no_argument,	     NULL, 'v' },
 	{ "nodaemon",	  no_argument,	     NULL, 'n' },
+	{ "socket",       required_argument, NULL, 's' },
 	{ "options-file", required_argument, NULL, 'O' },
 #       if defined(__linux__)
 	{ "uinput",	  no_argument,	     NULL, 'u' },
 #       endif
+	{ "loglevel",	  optional_argument, NULL, 'D' },
 	{ 0,		  0,		     0,	   0   }
 };
 
@@ -85,10 +91,13 @@ static const char* const help =
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n"
 	"\t -n --nodaemon\t\tDon't fork to background\n"
+	"\t -s --socket=lircd socket\t\tUse alternate lircd socket\n"
 	"\t -O --options-file=file\tAlternative default options file\n"
 #       if defined(__linux__)
 	"\t -u --uinput\t\tGenerate Linux input events\n"
 #       endif
+	"\t -D[level] --loglevel[=level]\n"
+            "\t\t\t\t'info', 'warning', 'notice', etc., or 3..10.\n"
 ;
 
 
@@ -749,7 +758,7 @@ static void lircmd_add_defaults(void)
 		"lircmd:nodaemon",   "False",
 		"lircmd:uinput",     "False",
 		"lircmd:configfile", LIRCMDCFGFILE,
-		"lircmd:debug",	     level,
+		"lircmd:socket",     LIRCD,
 		(const char*)NULL,   (const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -761,9 +770,9 @@ static void lircmd_parse_options(int argc, char** const argv)
 	int c;
 
 #       if defined(__linux__)
-	const char* const optstring = "hvnuO";
+	const char* const optstring = "hDvns:uO";
 #       else
-	const char* const optstring = "hvnO";
+	const char* const optstring = "hDvns:O";
 #       endif
 
 	lircmd_add_defaults();
@@ -779,12 +788,23 @@ static void lircmd_parse_options(int argc, char** const argv)
 			exit(EXIT_SUCCESS);
 		case 'O':
 			break;
+		case 'D':
+			loglevel_opt = (loglevel_t) options_set_loglevel(
+				optarg ? optarg : "debug");
+			if (loglevel_opt == LIRC_BADLEVEL) {
+				fprintf(stderr, DEBUG_HELP, optarg);
+				exit(EXIT_FAILURE);
+			}
+			break;
 		case 'n':
-			options_set_opt("lircd:nodaemon", "True");
+			options_set_opt("lircmd:nodaemon", "True");
+			break;
+		case 's':
+			options_set_opt("lircmd:socket", optarg);
 			break;
 #               if defined(__linux__)
 		case 'u':
-			options_set_opt("lircd:uinput", "True");
+			options_set_opt("lircmd:uinput", "True");
 			break;
 #               endif
 		default:
@@ -794,7 +814,7 @@ static void lircmd_parse_options(int argc, char** const argv)
 		}
 	}
 	if (optind == argc - 1) {
-		options_set_opt("configfile", argv[optind]);
+		options_set_opt("lircmd:configfile", argv[optind]);
 	} else if (optind != argc) {
 		fprintf(stderr, "lircmd: invalid argument count\n");
 		exit(EXIT_FAILURE);
@@ -854,36 +874,30 @@ int main(int argc, char** argv)
 	sigset_t block;
 	int nodaemon = 0;
 	const char* filename;
-	loglevel_t loglevel;
-	const char* level;
 
 	options_load(argc, argv, NULL, lircmd_parse_options);
 	useuinput = options_getboolean("lircmd:uinput");
 	nodaemon = options_getboolean("lircmd:nodaemon");
 	configfile = options_getstring("lircmd:configfile");
-	level = options_getstring("lircmd:debug");
-	loglevel = string2loglevel(level);
-	lirc_log_open("lircmd",
-		      nodaemon,
-		      loglevel == LIRC_BADLEVEL ? LIRC_DEBUG : loglevel);
+	lirc_log_open("lircmd", nodaemon, loglevel_opt);
 
 	/* connect to lircd */
-	addr.sun_family = AF_UNIX;
-	strcpy(addr.sun_path, LIRCD);
 	lircd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (lircd == -1) {
 		fprintf(stderr, "%s: could not open socket\n", progname);
 		perror(progname);
 		exit(EXIT_FAILURE);
-	}
-	;
+	};
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path,
+		options_getstring("lircmd:socket"),
+		sizeof(addr.sun_path) - 1);
 	if (connect(lircd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		fprintf(stderr, "%s: could not connect to socket: %s\n",
 			progname, addr.sun_path);
 		perror(progname);
 		exit(EXIT_FAILURE);
-	}
-	;
+	};
 
 	/* either create uinput device or fifo device */
 	uinputfd = -1;
