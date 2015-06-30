@@ -5,5 +5,6 @@ find . -name Makefile -a \( ! -path './drivers/**' -a ! -path './test/**' \) \
     -delete
 find . -name Makefile.in -delete
 find . -name \*.la -delete
-autoreconf -i -f
 cd plugins; ./make-pluginlist.sh > pluginlist.am
+cd ..
+autoreconf -i -f

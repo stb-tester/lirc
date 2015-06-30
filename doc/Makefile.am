@@ -4,7 +4,7 @@ ACLOCAL_AMFLAGS         = -I m4
 DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl table.html
 
 EXTRA_DIST              = Doxyfile make-driver-toc.sh \
-                          manpage.xsl docpage.xsl.in page.xsl
+                          manpage.xsl docpage.xsl docpage.xsl  page.xsl
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
