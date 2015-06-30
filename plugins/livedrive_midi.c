@@ -23,11 +23,11 @@
 
 #include "livedrive_common.h"
 
-char *livedrive_rec_midi(struct ir_remote *remotes)
+char* livedrive_rec_midi(struct ir_remote* remotes)
 {
 	int i;
 	struct midi_packet midi;
-	unsigned char *bytep = (unsigned char *)&midi;
+	unsigned char* bytep = (unsigned char*)&midi;
 	unsigned char buf;
 	ir_code bit[4];
 
@@ -35,24 +35,24 @@ char *livedrive_rec_midi(struct ir_remote *remotes)
 
 	gettimeofday(&start, NULL);
 	/* poll for system exclusive status byte so we don't try to
-	   record other midi events */
-	do {
+	 * record other midi events */
+	do
 		chk_read(drv.fd, &buf, sizeof(buf));
-	}
 	while (buf != SYSEX);
 
 	for (i = 0; i < sizeof(midi); i++) {
 		chk_read(drv.fd, &buf, sizeof(buf));
-		if (midi.dev == NONREMOTE && i == 4)	/* skip 2 missing filler bytes for audigy2 non-infrared messages */
+		/* skip 2 missing filler bytes for audigy2 non-infrared messages */
+		if (midi.dev == NONREMOTE && i == 4)
 			i += 2;
 		*(bytep + i) = buf;
 	}
 	gettimeofday(&end, NULL);
 
 	/* test for correct system exclusive end byte so we don't try
-	   to record other midi events */
+	 * to record other midi events */
 	if (midi.sysex_end != SYSEX_END)
-		return (NULL);
+		return NULL;
 
 	bit[0] = (midi.keygroup >> 3) & 0x1;
 	bit[1] = (midi.keygroup >> 2) & 0x1;
@@ -62,28 +62,28 @@ char *livedrive_rec_midi(struct ir_remote *remotes)
 	pre = reverse(midi.remote[0] | (midi.remote[1] << 8), 16) | (bit[0] << 8) | bit[1];
 	code = reverse(midi.key[0] | (midi.key[1] << 8), 16) | (bit[2] << 8) | bit[3];
 
-	return (decode_all(remotes));
+	return decode_all(remotes);
 }
 
 struct driver hw_livedrive_midi = {
-	.name		=	"livedrive_midi",
-	.device		=	"/dev/midi",
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	livedrive_init,
-	.deinit_func	=	livedrive_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	livedrive_rec_midi,
-	.decode_func	=	livedrive_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "livedrive_midi",
+	.device		= "/dev/midi",
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= livedrive_init,
+	.deinit_func	= livedrive_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= livedrive_rec_midi,
+	.decode_func	= livedrive_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_livedrive_midi, (struct driver*)NULL };

@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -66,7 +66,7 @@ extern "C" {
  * This clearly fails in the case a section name contains a colon, but
  * this should simply be avoided.
  */
-int ciniparser_getnsec(dictionary *d);
+int ciniparser_getnsec(dictionary* d);
 
 /**
  * @brief    Get name for section n in a dictionary.
@@ -78,7 +78,7 @@ int ciniparser_getnsec(dictionary *d);
  * its name as a pointer to a string statically allocated inside the
  * dictionary. Do not free or modify the returned string!
  */
-const char *ciniparser_getsecname(dictionary *d, int n);
+const char* ciniparser_getsecname(dictionary* d, int n);
 
 /**
  * @brief    Save a dictionary to a loadable ini file
@@ -89,7 +89,7 @@ const char *ciniparser_getsecname(dictionary *d, int n);
  * This function dumps a given dictionary into a loadable ini file.
  * It is Ok to specify @c stderr or @c stdout as output files.
  */
-void ciniparser_dump_ini(dictionary *d, FILE *f);
+void ciniparser_dump_ini(dictionary* d, FILE* f);
 
 /**
  * @brief    Dump a dictionary to an opened file pointer.
@@ -102,7 +102,7 @@ void ciniparser_dump_ini(dictionary *d, FILE *f);
  * or @c stdout as output files. This function is meant for debugging
  * purposes mostly.
  */
-void ciniparser_dump(dictionary *d, FILE *f);
+void ciniparser_dump(dictionary* d, FILE* f);
 
 /**
  * @brief    Get the string associated to a key
@@ -117,7 +117,7 @@ void ciniparser_dump(dictionary *d, FILE *f);
  * The returned char pointer is pointing to a string allocated in
  * the dictionary, do not free or modify it.
  */
-const char *ciniparser_getstring(dictionary *d, const char *key, char *def);
+const char* ciniparser_getstring(dictionary* d, const char* key, char* def);
 
 /**
  * @brief    Get the string associated to a key, convert to an int
@@ -144,7 +144,7 @@ const char *ciniparser_getstring(dictionary *d, const char *key, char *def);
  *
  * Credits: Thanks to A. Becker for suggesting strtol()
  */
-int ciniparser_getint(dictionary *d, const char *key, int notfound);
+int ciniparser_getint(dictionary* d, const char* key, int notfound);
 
 /**
  * @brief    Get the string associated to a key, convert to a double
@@ -157,7 +157,7 @@ int ciniparser_getint(dictionary *d, const char *key, int notfound);
  * ini file is given as "section:key". If the key cannot be found,
  * the notfound value is returned.
  */
-double ciniparser_getdouble(dictionary *d, const char *key, double notfound);
+double ciniparser_getdouble(dictionary* d, const char* key, double notfound);
 
 /**
  * @brief    Get the string associated to a key, convert to a boolean
@@ -189,7 +189,7 @@ double ciniparser_getdouble(dictionary *d, const char *key, double notfound);
  * The notfound value returned if no boolean is identified, does not
  * necessarily have to be 0 or 1.
  */
-int ciniparser_getboolean(dictionary *d, const char *key, int notfound);
+int ciniparser_getboolean(dictionary* d, const char* key, int notfound);
 
 /**
  * @brief    Set an entry in a dictionary.
@@ -202,7 +202,7 @@ int ciniparser_getboolean(dictionary *d, const char *key, int notfound);
  * contain the provided value. If it cannot be found, -1 is returned.
  * It is Ok to set val to NULL.
  */
-int ciniparser_setstring(dictionary *ini, char const *entry, const char *val);
+int ciniparser_setstring(dictionary* ini, char const* entry, const char* val);
 
 /**
  * @brief    Delete an entry in a dictionary
@@ -212,7 +212,7 @@ int ciniparser_setstring(dictionary *ini, char const *entry, const char *val);
  *
  * If the given entry can be found, it is deleted from the dictionary.
  */
-void ciniparser_unset(dictionary *ini, char *entry);
+void ciniparser_unset(dictionary* ini, char* entry);
 
 /**
  * @brief    Finds out if a given entry exists in a dictionary
@@ -224,7 +224,7 @@ void ciniparser_unset(dictionary *ini, char *entry);
  * are stored as keys with NULL associated values, this is the only way
  * of querying for the presence of sections in a dictionary.
  */
-int ciniparser_find_entry(dictionary *ini, const char *entry) ;
+int ciniparser_find_entry(dictionary* ini, const char* entry);
 
 /**
  * @brief    Parse an ini file and return an allocated dictionary object
@@ -238,7 +238,7 @@ int ciniparser_find_entry(dictionary *ini, const char *entry) ;
  *
  * The returned dictionary must be freed using ciniparser_freedict().
  */
-dictionary *ciniparser_load(const char *ininame);
+dictionary* ciniparser_load(const char* ininame);
 
 /**
  * @brief    Free all memory associated to an ini dictionary
@@ -249,7 +249,7 @@ dictionary *ciniparser_load(const char *ininame);
  * It is mandatory to call this function before the dictionary object
  * gets out of the current context.
  */
-void ciniparser_freedict(dictionary *d);
+void ciniparser_freedict(dictionary* d);
 
 /**
  * @brief Set an item in the dictionary
@@ -261,9 +261,9 @@ void ciniparser_freedict(dictionary *d);
  * Remember that string values are converted by ciniparser_getboolean(),
  * ciniparser_getdouble(), etc. It is also OK to set an entry to NULL.
  */
-int ciniparser_set(dictionary *d, const char *entry, const char *val);
+int ciniparser_set(dictionary* d, const char* entry, const char* val);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

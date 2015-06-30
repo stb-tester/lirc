@@ -2,8 +2,8 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.2a])
-AC_CONFIG_SRCDIR([daemons/lircd.c])
+AC_INIT([lirc], [0.9.3pre1])
+AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE
@@ -14,12 +14,19 @@ CFLAGS="${CFLAGS--O2 -g -Wall}"
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_PATH_PROG(SH_PATH,[sh])
 AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
 AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
 if test x$PKGCONFIG = xno; then
   AC_MSG_ERROR([Required program pkg-config is missing])
+fi
+AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
+if test x$XSLTPROC != "xyes"; then
+    AC_MSG_ERROR([
+      xsltproc is required to build. It usually comes with libxml])
 fi
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
@@ -105,9 +112,6 @@ case "${host_os}" in
     ;;
 esac
 
-# use fifo instead of devnode (required on mac os x)
-AM_CONDITIONAL(USE_FIFOS, test "$use_fifos" = "yes")
-
 AC_MSG_CHECKING([for which drivers can be installed on this system])
 AC_MSG_RESULT()
 
@@ -171,6 +175,9 @@ AH_TEMPLATE([LIRC_HAVE_DEVFS],
 AH_TEMPLATE([LIRC_LOCKDIR],
         [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
 
+AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
+
+
 AC_CHECK_LIB(caraca_client, caraca_init,[
   AM_CONDITIONAL([BUILD_CARACA],[true])
   ],[
@@ -183,6 +190,7 @@ AC_CHECK_HEADER(usb.h,[
   ],[
   AM_CONDITIONAL([BUILD_USB],[false])]
 )
+
 PKG_CHECK_MODULES([FTDI],[libftdi],,[true])
 test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1],,[true])
 if test -n "$FTDI_LIBS"; then
@@ -194,6 +202,7 @@ if test -n "$FTDI_LIBS"; then
 else
   AM_CONDITIONAL([BUILD_FTDI],[false])]
 fi
+
 AC_CHECK_HEADER(iguanaIR.h,[
   AM_CONDITIONAL([BUILD_IGUANAIR],[true])
   ],[
@@ -340,6 +349,7 @@ AC_SUBST(x_progs)
 dnl tell the C code what we decided
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_DEFINE_UNQUOTED(SH_PATH, "$SH_PATH")
 AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 
@@ -351,10 +361,6 @@ AH_BOTTOM([
 #include     "lirc_config.h"
 ])
 
-
-dnl bug in automake/autoconf?
-dnl SHELL=/bin/sh AC_SUBST(SHELL)
-
 dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
   Makefile
@@ -365,6 +371,7 @@ AC_CONFIG_FILES([
   tools/Makefile
   lib/Makefile
   doc/Makefile
+  doc/docpage.xsl
   systemd/Makefile
 ])
 
@@ -403,7 +410,6 @@ AC_REPORT_CONDITIONAL([BUILD_LIBIRMAN_SW])
 AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
 AC_REPORT_CONDITIONAL([BUILD_USB])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
-AC_REPORT_CONDITIONAL([USE_FIFOS])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_PYTHON])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])

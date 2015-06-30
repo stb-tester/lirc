@@ -8,8 +8,6 @@ import sys
 import yaml
 
 
-FOOTER_PATH = '../doc/html-source/foot.html'
-HEADER_PATH = '../doc/html-source/head.html'
 
 MENUS = {'home_brew': 'Home-brew serial and parallel devices',
          'irda': 'IRDA/Cir hardware',
@@ -23,7 +21,6 @@ MENUS = {'home_brew': 'Home-brew serial and parallel devices',
 
 
 _TEMPLATE = '''
-@TABLE_HEAD@
 <table border="1">
     <tr>
         <th>Hardware</th>
@@ -34,7 +31,6 @@ _TEMPLATE = '''
    </tr>"
 @TABLE_ROWS@
 </table>
-@TABLE_FOOT@
 '''
 
 
@@ -69,28 +65,28 @@ def load_configs(configdir_arg):
 def _add_submenu(menu, configs):
     ''' Return all entries for a submenu as a string of html table rows. '''
 
-    def getit(remote, what, _default='&nbsp'):
+    def getit(remote, what, _default='&nbsp;'):
         ''' Get an item from  a remote, using default if not existing. '''
         try:
             return remote[what]
         except KeyError:
             return _default
 
-    s = '<tr><th colspan="5"><a name="%s">'  %  menu
-    s += MENUS[menu] + '</a></th></tr> '
+    s = '<tr><th colspan="5"><a name="%s">\n'  %  menu
+    s += MENUS[menu] + '</a></th></tr> \n'
     if not configs:
         return ""
     for remote in sorted(configs, key=lambda r: getit(r, 'label', '')):
         s += '<tr>'
         s += '<td>' +  getit(remote, 'label') + '</td>'
-        s += '<td>' + ' '.join(getit(remote, 'modules', ['&nbsp'])) + '</td>'
+        s += '<td>' + ' '.join(getit(remote, 'modules', ['&nbsp;'])) + '</td>'
         s += '<td>' + getit(remote, 'driver') + '</td>'
         s += '<td>'
         files = getit(remote, 'lircd_conf') + ' ' + getit(remote, 'lircmd_conf')
         s += files.replace('run_select_any_config', '')
         s += '</td>'
         s += '<td>' + getit(remote, 'supports') + '</td>'
-    return s
+    return s.replace('& ', '&amp; ')
 
 
 def main():
@@ -104,16 +100,12 @@ def main():
 
     configs = load_configs(configdir)
     template = _TEMPLATE
-    with open(FOOTER_PATH) as f:
-        template = template.replace('@TABLE_FOOT@', f.read())
-    with open(HEADER_PATH) as f:
-        template = template.replace('@TABLE_HEAD@', f.read())
 
     text = ''
     for menu in MENUS.keys():
-        text += '<tr><th colspan="5"><a href="#%s">%s</a></th></tr>' % \
+        text += '<tr><th colspan="5"><a href="#%s">%s</a></th></tr>\n' % \
             (menu, MENUS[menu])
-    text += '<tr><th colspan="5"><hr></th></tr>'
+    text += '<tr><th colspan="5"><hr></th></tr>\n'
     for menu in MENUS.keys():
         menuconfigs = [cf for cf in configs.values() if cf['menu'] == menu]
         text += _add_submenu(menu, menuconfigs)

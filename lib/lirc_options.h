@@ -1,6 +1,6 @@
 /****************************************************************************
- ** options.h ***************************************************************
- ****************************************************************************/
+** options.h ***************************************************************
+****************************************************************************/
 
 /**
  * @file lirc_options.h
@@ -12,7 +12,7 @@
 #ifndef LIRC_OPTIONS
 #define LIRC_OPTIONS
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -55,7 +55,8 @@ void options_add_defaults(const char* const defaults[]);
  *        path to the configuration file.
  *
  */
-void options_load(int argc, char** const argv,
+void options_load(int argc,
+		  char** const argv,
 		  const char* options_file,
 		  void (*options_load)(int, char** const));
 

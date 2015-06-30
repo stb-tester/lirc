@@ -1,29 +1,28 @@
-
 /****************************************************************************
- ** hw_uirt2_common.c *******************************************************
- ****************************************************************************
- *
- * Routines for UIRT2 receiver/transmitter
- *
- * UIRT2 web site: http://users.skynet.be/sky50985/
- *
- * Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- */
+** hw_uirt2_common.c *******************************************************
+****************************************************************************
+*
+* Routines for UIRT2 receiver/transmitter
+*
+* UIRT2 web site: http://users.skynet.be/sky50985/
+*
+* Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Library General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -43,32 +42,31 @@
 #include "uirt2_common.h"
 
 #define PRINT_TIME(a) \
-LOGPRINTF(1, "time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)
+	LOGPRINTF(1, "time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)
 
 struct tag_uirt2_t {
-	int fd;
-	int flags;
-	int version;
+	int		fd;
+	int		flags;
+	int		version;
 
-	struct timeval pre_delay;
-	struct timeval pre_time;
-	int new_signal;
+	struct timeval	pre_delay;
+	struct timeval	pre_time;
+	int		new_signal;
 };
 
 const int unit = UIRT2_UNIT;
 
-static ssize_t readagain(int fd, void *buf, size_t count)
+static ssize_t readagain(int fd, void* buf, size_t count)
 {
 	ssize_t rc;
 	size_t pos = 0;
-	struct timeval timeout = {.tv_sec = 0,.tv_usec = 200000 };
+	struct timeval timeout = { .tv_sec = 0, .tv_usec = 200000 };
 	fd_set fds;
 
 	rc = read(fd, buf, count);
 
-	if (rc > 0) {
+	if (rc > 0)
 		pos += rc;
-	}
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && pos < count)) {
 		FD_ZERO(&fds);
@@ -76,25 +74,23 @@ static ssize_t readagain(int fd, void *buf, size_t count)
 
 		rc = select(fd + 1, &fds, NULL, NULL, &timeout);
 
-		if (rc == 0) {
+		if (rc == 0)
 			/* timeout */
 			break;
-		} else if (rc == -1) {
+		else if (rc == -1)
 			/* continue for EAGAIN case */
 			continue;
-		}
 
-		rc = read(fd, ((char *)buf) + pos, count - pos);
+		rc = read(fd, ((char*)buf) + pos, count - pos);
 
-		if (rc > 0) {
+		if (rc > 0)
 			pos += rc;
-		}
 
 	}
 	return (pos == 0) ? -1 : pos;
 }
 
-static int mywaitfordata(uirt2_t * dev, long usec)
+static int mywaitfordata(uirt2_t* dev, long usec)
 {
 	int fd = dev->fd;
 	fd_set fds;
@@ -110,45 +106,42 @@ static int mywaitfordata(uirt2_t * dev, long usec)
 
 	ret = select(maxfd + 1, &fds, NULL, NULL, &tv);
 
-	if (ret <= 0) {
+	if (ret <= 0)
 		return 0;
-	} else {
+	else
 		return 1;
-	}
 }
 
-static int uirt2_readflush(uirt2_t * dev, long timeout)
+static int uirt2_readflush(uirt2_t* dev, long timeout)
 {
 	int res;
 	char c;
 
 	while (mywaitfordata(dev, timeout) > 0) {
 		res = readagain(dev->fd, &c, 1);
-		if (res < 1) {
+		if (res < 1)
 			return -1;
-		}
 	}
 	return 0;
 }
 
-static byte_t checksum(byte_t * data, int len)
+static byte_t checksum(byte_t* data, int len)
 {
 	int check = 0;
 	int i;
 
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < len; i++)
 		check = check - data[i];
-	}
 
 	return check & 0xff;
 }
 
-static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
+static int command_ext(uirt2_t* dev, const byte_t* in, byte_t* out)
 {
 	byte_t tmp[1024];
 	int res;
 	int len = in[0];
-	const byte_t *buf = in + 1;
+	const byte_t* buf = in + 1;
 
 	memcpy(tmp, buf, len + 1);
 
@@ -217,7 +210,7 @@ static int command_ext(uirt2_t * dev, const byte_t * in, byte_t * out)
 	return 0;
 }
 
-static int command(uirt2_t * dev, const byte_t * buf, int len)
+static int command(uirt2_t* dev, const byte_t* buf, int len)
 {
 	byte_t in[1024];
 	byte_t out[2];
@@ -226,14 +219,13 @@ static int command(uirt2_t * dev, const byte_t * buf, int len)
 	in[0] = len;
 	out[0] = 1;
 
-	if (command_ext(dev, in, out) < 0) {
+	if (command_ext(dev, in, out) < 0)
 		return -1;
-	}
 
 	return out[1] < UIRT2_CSERROR;
 }
 
-static __u32 calc_bits_length(remstruct1_data_t * buf)
+static __u32 calc_bits_length(remstruct1_data_t* buf)
 {
 	int i;
 	byte_t b = 0;
@@ -242,34 +234,31 @@ static __u32 calc_bits_length(remstruct1_data_t * buf)
 	for (i = 0; i < buf->bBits; i++) {
 		int bit;
 
-		if (!(i % 8)) {
+		if (!(i % 8))
 			b = buf->bDatBits[i / 8];
-		}
 
 		bit = b & 1;
 		b = b >> 1;
 
 		if (i % 2) {
 			// Odd
-			if (bit) {
+			if (bit)
 				len += buf->bOff1;
-			} else {
+			else
 				len += buf->bOff0;
-			}
 		} else {
 			// Even
-			if (bit) {
+			if (bit)
 				len += buf->bOn1;
-			} else {
+			else
 				len += buf->bOn0;
-			}
 		}
 	}
 
 	return unit * len;
 }
 
-static __u32 calc_struct1_length(int repeat, remstruct1_data_t * buf)
+static __u32 calc_struct1_length(int repeat, remstruct1_data_t* buf)
 {
 	int bISDly = unit * (buf->bISDlyLo + 256 * buf->bISDlyHi);
 	int bHdr = unit * (buf->bHdr1 + buf->bHdr0);
@@ -283,10 +272,9 @@ static __u32 calc_struct1_length(int repeat, remstruct1_data_t * buf)
 /*
  * Exported functions
  */
-
-uirt2_t *uirt2_init(int fd)
+uirt2_t* uirt2_init(int fd)
 {
-	uirt2_t *dev = (uirt2_t *) malloc(sizeof(uirt2_t));
+	uirt2_t* dev = (uirt2_t*)malloc(sizeof(uirt2_t));
 
 	if (dev == NULL) {
 		logprintf(LIRC_ERROR, "uirt2_raw: out of memory");
@@ -307,27 +295,26 @@ uirt2_t *uirt2_init(int fd)
 		return NULL;
 	}
 
-	if (dev->version < 0x0104) {
+	if (dev->version < 0x0104)
 		logprintf(LIRC_WARNING, "uirt2_raw: Old UIRT hardware");
-	} else {
+	else
 		logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x ok", dev->version);
-	}
 
 	return dev;
 }
 
-int uirt2_uninit(uirt2_t * dev)
+int uirt2_uninit(uirt2_t* dev)
 {
 	free(dev);
 	return 0;
 }
 
-int uirt2_getmode(uirt2_t * dev)
+int uirt2_getmode(uirt2_t* dev)
 {
-	return (dev->flags & UIRT2_MODE_MASK);
+	return dev->flags & UIRT2_MODE_MASK;
 }
 
-int uirt2_setmode(uirt2_t * dev, int mode)
+int uirt2_setmode(uirt2_t* dev, int mode)
 {
 	byte_t buf[20];
 	byte_t cmd;
@@ -363,22 +350,22 @@ int uirt2_setmode(uirt2_t * dev, int mode)
 	return 0;
 }
 
-int uirt2_setmodeuir(uirt2_t * dev)
+int uirt2_setmodeuir(uirt2_t* dev)
 {
 	return uirt2_setmode(dev, UIRT2_MODE_UIR);
 }
 
-int uirt2_setmoderaw(uirt2_t * dev)
+int uirt2_setmoderaw(uirt2_t* dev)
 {
 	return uirt2_setmode(dev, UIRT2_MODE_RAW);
 }
 
-int uirt2_setmodestruc(uirt2_t * dev)
+int uirt2_setmodestruc(uirt2_t* dev)
 {
 	return uirt2_setmode(dev, UIRT2_MODE_STRUC);
 }
 
-int uirt2_getversion(uirt2_t * dev, int *version)
+int uirt2_getversion(uirt2_t* dev, int* version)
 {
 	byte_t out[20];
 	byte_t in[20];
@@ -416,7 +403,7 @@ int uirt2_getversion(uirt2_t * dev, int *version)
 	return -1;
 }
 
-int uirt2_getgpiocaps(uirt2_t * dev, int *slots, byte_t masks[4])
+int uirt2_getgpiocaps(uirt2_t* dev, int* slots, byte_t masks[4])
 {
 	byte_t in[3];
 	byte_t out[6];
@@ -427,16 +414,15 @@ int uirt2_getgpiocaps(uirt2_t * dev, int *slots, byte_t masks[4])
 
 	out[0] = 6;
 
-	if (command_ext(dev, in, out) < 0) {
+	if (command_ext(dev, in, out) < 0)
 		return -1;
-	}
 
 	*slots = out[1];
 	memcpy(masks, out + 2, 4);
 	return 0;
 }
 
-int uirt2_getgpiocfg(uirt2_t * dev, int slot, uirt2_code_t code, int *action, int *duration)
+int uirt2_getgpiocfg(uirt2_t* dev, int slot, uirt2_code_t code, int* action, int* duration)
 {
 	byte_t in[4];
 	byte_t out[10];
@@ -447,9 +433,8 @@ int uirt2_getgpiocfg(uirt2_t * dev, int slot, uirt2_code_t code, int *action, in
 	in[3] = slot;
 	out[0] = 9;
 
-	if (command_ext(dev, in, out) < 0) {
+	if (command_ext(dev, in, out) < 0)
 		return -1;
-	}
 
 	memcpy(code, out + 1, UIRT2_CODE_SIZE);
 	*action = out[UIRT2_CODE_SIZE + 1];
@@ -457,7 +442,7 @@ int uirt2_getgpiocfg(uirt2_t * dev, int slot, uirt2_code_t code, int *action, in
 	return 0;
 }
 
-int uirt2_setgpiocfg(uirt2_t * dev, int slot, uirt2_code_t code, int action, int duration)
+int uirt2_setgpiocfg(uirt2_t* dev, int slot, uirt2_code_t code, int action, int duration)
 {
 	byte_t in[12];
 
@@ -474,7 +459,7 @@ int uirt2_setgpiocfg(uirt2_t * dev, int slot, uirt2_code_t code, int action, int
 	return command(dev, in + 1, in[0]);
 }
 
-int uirt2_getgpio(uirt2_t * dev, byte_t ports[4])
+int uirt2_getgpio(uirt2_t* dev, byte_t ports[4])
 {
 	byte_t in[3];
 	byte_t out[6];
@@ -484,15 +469,14 @@ int uirt2_getgpio(uirt2_t * dev, byte_t ports[4])
 	in[2] = 1;
 	out[0] = 5;
 
-	if (command_ext(dev, in, out) < 0) {
+	if (command_ext(dev, in, out) < 0)
 		return -1;
-	}
 
 	memcpy(ports, out + 1, 4);
 	return 0;
 }
 
-int uirt2_setgpio(uirt2_t * dev, int action, int duration)
+int uirt2_setgpio(uirt2_t* dev, int action, int duration)
 {
 	byte_t buf[20];
 
@@ -504,7 +488,7 @@ int uirt2_setgpio(uirt2_t * dev, int action, int duration)
 	return command(dev, buf, 3);
 }
 
-int uirt2_refreshgpio(uirt2_t * dev)
+int uirt2_refreshgpio(uirt2_t* dev)
 {
 	byte_t buf[2];
 
@@ -514,7 +498,7 @@ int uirt2_refreshgpio(uirt2_t * dev)
 	return command(dev, buf, 1);
 }
 
-int uirt2_read_uir(uirt2_t * dev, byte_t * buf, int length)
+int uirt2_read_uir(uirt2_t* dev, byte_t* buf, int length)
 {
 	int pos = 0;
 	int res;
@@ -527,21 +511,19 @@ int uirt2_read_uir(uirt2_t * dev, byte_t * buf, int length)
 	while (1) {
 		res = readagain(dev->fd, buf + pos, 1);
 
-		if (res == -1) {
+		if (res == -1)
 			return pos;
-		}
 
 		pos += res;
 
-		if (pos == 6) {
+		if (pos == 6)
 			break;
-		}
 	}
 
 	return pos;
 }
 
-lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
+lirc_t uirt2_read_raw(uirt2_t* dev, lirc_t timeout)
 {
 	lirc_t data;
 	static int pulse = 0;
@@ -560,9 +542,8 @@ lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
 
 		res = readagain(dev->fd, &b, 1);
 
-		if (res == -1) {
+		if (res == -1)
 			return 0;
-		}
 
 		LOGPRINTF(3, "read_raw %02x", b);
 
@@ -579,9 +560,8 @@ lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
 
 			res = readagain(dev->fd, &isdly[1], 1);
 
-			if (res == -1) {
+			if (res == -1)
 				return 0;
-			}
 
 			data = UIRT2_UNIT * (256 * isdly[0] + isdly[1]);
 			pulse = 1;
@@ -590,9 +570,8 @@ lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
 			data = UIRT2_UNIT * b;
 			if (data == 0)
 				data = 1;
-			if (pulse) {
+			if (pulse)
 				data = data | PULSE_BIT;
-			}
 
 			pulse = !pulse;
 		}
@@ -603,7 +582,7 @@ lirc_t uirt2_read_raw(uirt2_t * dev, lirc_t timeout)
 	return 0;
 }
 
-int uirt2_send_raw(uirt2_t * dev, byte_t * buf, int length)
+int uirt2_send_raw(uirt2_t* dev, byte_t* buf, int length)
 {
 	byte_t tmp[1024];
 
@@ -614,7 +593,7 @@ int uirt2_send_raw(uirt2_t * dev, byte_t * buf, int length)
 	return command(dev, tmp, length + 1);
 }
 
-int uirt2_send_struct1(uirt2_t * dev, int freq, int bRepeatCount, remstruct1_data_t * buf)
+int uirt2_send_struct1(uirt2_t* dev, int freq, int bRepeatCount, remstruct1_data_t* buf)
 {
 	int res;
 	__u32 delay;
@@ -624,11 +603,10 @@ int uirt2_send_struct1(uirt2_t * dev, int freq, int bRepeatCount, remstruct1_dat
 	if (dev->version >= 0x0905) {
 		byte_t tmp[2 + sizeof(remstruct1_ext_t)];
 
-		if (freq == 0 || ((5000000 / freq) + 1) / 2 >= 0x80) {
+		if (freq == 0 || ((5000000 / freq) + 1) / 2 >= 0x80)
 			rem_ext.bFrequency = 0x80;
-		} else {
+		else
 			rem_ext.bFrequency = ((5000000 / freq) + 1) / 2;
-		}
 		rem_ext.bRepeatCount = bRepeatCount;
 		memcpy(&rem_ext.data, buf, sizeof(*buf));
 
@@ -638,14 +616,13 @@ int uirt2_send_struct1(uirt2_t * dev, int freq, int bRepeatCount, remstruct1_dat
 		memcpy(tmp + 2, &rem_ext, sizeof(rem_ext));
 		res = command(dev, tmp, sizeof(rem_ext) + 1);
 	} else {
-		if (bRepeatCount > 0x1f) {
+		if (bRepeatCount > 0x1f)
 			rem.bCmd = uirt2_calc_freq(freq) + 0x1f;
-		} else {
+		else
 			rem.bCmd = uirt2_calc_freq(freq) + bRepeatCount;
-		}
 		memcpy(&rem.data, buf, sizeof(*buf));
 
-		res = command(dev, (byte_t *) & rem, sizeof(rem) - 2);
+		res = command(dev, (byte_t*)&rem, sizeof(rem) - 2);
 	}
 	delay = calc_struct1_length(bRepeatCount, buf);
 	gettimeofday(&dev->pre_time, NULL);
@@ -659,11 +636,10 @@ int uirt2_send_struct1(uirt2_t * dev, int freq, int bRepeatCount, remstruct1_dat
 
 int uirt2_calc_freq(int freq)
 {
-	if (freq > 39000) {
+	if (freq > 39000)
 		return UIRT2_FREQ_40;
-	} else if (freq > 37000) {
+	else if (freq > 37000)
 		return UIRT2_FREQ_38;
-	} else {
+	else
 		return UIRT2_FREQ_36;
-	}
 }

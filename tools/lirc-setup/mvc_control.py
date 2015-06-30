@@ -8,7 +8,7 @@ import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
 import mvc_model
 import mvc_view
-import selectors
+import choosers
 
 _DEBUG = 'LIRC_DEBUG' in os.environ
 _REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
@@ -96,7 +96,7 @@ class Controller(object):
             self.view.show_info(msg)
             self.select_device_done(config['id'], device, next_state)
         else:
-            gui = selectors.factory(device_list, self.view, on_select_cb)
+            gui = choosers.factory(device_list, self.view, on_select_cb)
             gui.show_dialog()
 
     def check_device(self):
@@ -130,7 +130,7 @@ class Controller(object):
             self.set_remote(remotes[0], self.CHECK_NOTE)
         else:
             self.state = self.CHECK_DIALOG
-            selector = selectors.RemoteSelector(self, self.lircd_conf_done)
+            selector = choosers.RemoteSelector(self, self.lircd_conf_done)
             selector.select(remotes)
 
     def lircd_conf_done(self, remote):

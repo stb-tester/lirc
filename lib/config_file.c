@@ -1,12 +1,11 @@
-
 /****************************************************************************
- ** config_file.c ***********************************************************
- ****************************************************************************
- *
- *
- * Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
- *
- */
+** config_file.c ***********************************************************
+****************************************************************************
+*
+*
+* Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
+*
+*/
 
 /**
  * @file config_file.c
@@ -47,149 +46,157 @@
 enum directive { ID_none, ID_remote, ID_codes, ID_raw_codes, ID_raw_name };
 
 struct ptr_array {
-	void **ptr;
-	size_t nr_items;
-	size_t chunk_size;
+	void**	ptr;
+	size_t	nr_items;
+	size_t	chunk_size;
 };
 
 struct void_array {
-	void *ptr;
-	size_t item_size;
-	size_t nr_items;
-	size_t chunk_size;
+	void*	ptr;
+	size_t	item_size;
+	size_t	nr_items;
+	size_t	chunk_size;
 };
 
 
 #define LINE_LEN 1024
 #define MAX_INCLUDES 10
 
-const char *whitespace = " \t";
+const char* whitespace = " \t";
 
 static int line;
 static int parse_error;
 
-static struct ir_remote *read_config_recursive(FILE * f, const char *name, int depth);
-static void calculate_signal_lengths(struct ir_remote *remote);
+static struct ir_remote* read_config_recursive(FILE* f, const char* name, int depth);
+static void calculate_signal_lengths(struct ir_remote* remote);
 
-void **init_void_array(struct void_array *ar, size_t chunk_size, size_t item_size)
+void** init_void_array(struct void_array* ar, size_t chunk_size, size_t item_size)
 {
 	ar->chunk_size = chunk_size;
 	ar->item_size = item_size;
 	ar->nr_items = 0;
-	if (!(ar->ptr = calloc(chunk_size, ar->item_size))) {
+	ar->ptr = calloc(chunk_size, ar->item_size);
+	if (!ar->ptr) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
-		return (NULL);
+		return NULL;
 	}
-	return (ar->ptr);
+	return ar->ptr;
 }
 
 const struct flaglist all_flags[] = {
-	{"RAW_CODES", RAW_CODES},
-	{"RC5", RC5},
-	{"SHIFT_ENC", SHIFT_ENC},	/* obsolete */
-	{"RC6", RC6},
-	{"RCMM", RCMM},
-	{"SPACE_ENC", SPACE_ENC},
-	{"SPACE_FIRST", SPACE_FIRST},
-	{"GOLDSTAR", GOLDSTAR},
-	{"GRUNDIG", GRUNDIG},
-	{"BO", BO},
-	{"SERIAL", SERIAL},
-	{"XMP", XMP},
+	{ "RAW_CODES",	   RAW_CODES	 },
+	{ "RC5",	   RC5		 },
+	{ "SHIFT_ENC",	   SHIFT_ENC	 }, /* obsolete */
+	{ "RC6",	   RC6		 },
+	{ "RCMM",	   RCMM		 },
+	{ "SPACE_ENC",	   SPACE_ENC	 },
+	{ "SPACE_FIRST",   SPACE_FIRST	 },
+	{ "GOLDSTAR",	   GOLDSTAR	 },
+	{ "GRUNDIG",	   GRUNDIG	 },
+	{ "BO",		   BO		 },
+	{ "SERIAL",	   SERIAL	 },
+	{ "XMP",	   XMP		 },
 
-	{"REVERSE", REVERSE},
-	{"NO_HEAD_REP", NO_HEAD_REP},
-	{"NO_FOOT_REP", NO_FOOT_REP},
-	{"CONST_LENGTH", CONST_LENGTH},	/* remember to adapt warning
-					   message when changing this */
-	{"REPEAT_HEADER", REPEAT_HEADER},
-	{NULL, 0},
+	{ "REVERSE",	   REVERSE	 },
+	{ "NO_HEAD_REP",   NO_HEAD_REP	 },
+	{ "NO_FOOT_REP",   NO_FOOT_REP	 },
+	{ "CONST_LENGTH",  CONST_LENGTH	 }, /* remember to adapt warning
+					     * message when changing this */
+	{ "REPEAT_HEADER", REPEAT_HEADER },
+	{ NULL,		   0		 },
 };
 
 
-int add_void_array(struct void_array *ar, void *dataptr)
+int add_void_array(struct void_array* ar, void* dataptr)
 {
-	void *ptr;
+	void* ptr;
 
 	if ((ar->nr_items % ar->chunk_size) == (ar->chunk_size) - 1) {
 		/* I hope this works with the right alignment,
-		   if not we're screwed */
-		if (!(ptr = realloc(ar->ptr, ar->item_size * ((ar->nr_items) + (ar->chunk_size + 1))))) {
+		 * if not we're screwed */
+		ptr = realloc(ar->ptr,
+			      ar->item_size *
+			      (ar->nr_items + ar->chunk_size + 1));
+		if (!ptr) {
 			logprintf(LIRC_ERROR, "out of memory");
 			parse_error = 1;
-			return (0);
+			return 0;
 		}
 		ar->ptr = ptr;
 	}
 	memcpy((ar->ptr) + (ar->item_size * ar->nr_items), dataptr, ar->item_size);
 	ar->nr_items = (ar->nr_items) + 1;
 	memset((ar->ptr) + (ar->item_size * ar->nr_items), 0, ar->item_size);
-	return (1);
+	return 1;
 }
 
- void *get_void_array(struct void_array *ar)
+void* get_void_array(struct void_array* ar)
 {
-	return (ar->ptr);
+	return ar->ptr;
 }
 
-void *s_malloc(size_t size)
+void* s_malloc(size_t size)
 {
-	void *ptr;
-	if ((ptr = malloc(size)) == NULL) {
+	void* ptr;
+
+	ptr = malloc(size);
+	if (ptr == NULL) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
-		return (NULL);
+		return NULL;
 	}
 	memset(ptr, 0, size);
-	return (ptr);
+	return ptr;
 }
 
- char *s_strdup(char *string)
+char* s_strdup(char* string)
 {
-	char *ptr;
-	if (!(ptr = strdup(string))) {
+	char* ptr;
+
+	ptr = strdup(string);
+	if (!ptr) {
 		logprintf(LIRC_ERROR, "out of memory");
 		parse_error = 1;
-		return (NULL);
+		return NULL;
 	}
-	return (ptr);
+	return ptr;
 }
 
- ir_code s_strtocode(const char *val)
+ir_code s_strtocode(const char* val)
 {
 	ir_code code = 0;
-	char *endptr;
+	char* endptr;
 
 	errno = 0;
 	code = strtoull(val, &endptr, 0);
-	if ((code == (__u64) - 1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
+	if ((code == (__u64) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (__u64) number", val);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
-	return (code);
+	return code;
 }
 
-__u32 s_strtou32(char *val)
+__u32 s_strtou32(char* val)
 {
 	__u32 n;
-	char *endptr;
+	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
 	if (!*val || *endptr) {
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (__u32) number", val);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
-	return (n);
+	return n;
 }
 
-int s_strtoi(char *val)
+int s_strtoi(char* val)
 {
-	char *endptr;
+	char* endptr;
 	long n;
 	int h;
 
@@ -199,61 +206,61 @@ int s_strtoi(char *val)
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (int) number", val);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
-	return (h);
+	return h;
 }
 
-unsigned int s_strtoui(char *val)
+unsigned int s_strtoui(char* val)
 {
-	char *endptr;
+	char* endptr;
 	__u32 n;
 	unsigned int h;
 
 	n = strtoul(val, &endptr, 0);
 	h = (unsigned int)n;
-	if (!*val || *endptr || n != ((__u32) h)) {
+	if (!*val || *endptr || n != ((__u32)h)) {
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (unsigned int) number", val);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
-	return (h);
+	return h;
 }
 
-lirc_t s_strtolirc_t(char *val)
+lirc_t s_strtolirc_t(char* val)
 {
 	__u32 n;
 	lirc_t h;
-	char *endptr;
+	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
-	h = (lirc_t) n;
-	if (!*val || *endptr || n != ((__u32) h)) {
+	h = (lirc_t)n;
+	if (!*val || *endptr || n != ((__u32)h)) {
 		logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\": must be a valid (lirc_t) number", val);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
 	if (h < 0) {
 		logprintf(LIRC_WARNING, "error in configfile line %d:", line);
 		logprintf(LIRC_WARNING, "\"%s\" is out of range", val);
 	}
-	return (h);
+	return h;
 }
 
-int checkMode(int is_mode, int c_mode, char *error)
+int checkMode(int is_mode, int c_mode, char* error)
 {
 	if (is_mode != c_mode) {
 		logprintf(LIRC_ERROR, "fatal error in configfile line %d:", line);
 		logprintf(LIRC_ERROR, "\"%s\" isn't valid at this position", error);
 		parse_error = 1;
-		return (0);
+		return 0;
 	}
-	return (1);
+	return 1;
 }
 
-int addSignal(struct void_array *signals, char *val)
+int addSignal(struct void_array* signals, char* val)
 {
 	unsigned int t;
 
@@ -266,18 +273,18 @@ int addSignal(struct void_array *signals, char *val)
 	return 1;
 }
 
-struct ir_ncode *defineCode(char *key, char *val, struct ir_ncode *code)
+struct ir_ncode* defineCode(char* key, char* val, struct ir_ncode* code)
 {
 	memset(code, 0, sizeof(*code));
 	code->name = s_strdup(key);
 	code->code = s_strtocode(val);
 	LOGPRINTF(3, "      %-20s 0x%016llX", code->name, code->code);
-	return (code);
+	return code;
 }
 
-struct ir_code_node *defineNode(struct ir_ncode *code, const char *val)
+struct ir_code_node* defineNode(struct ir_ncode* code, const char* val)
 {
-	struct ir_code_node *node;
+	struct ir_code_node* node;
 
 	node = s_malloc(sizeof(*node));
 	if (node == NULL)
@@ -298,11 +305,12 @@ struct ir_code_node *defineNode(struct ir_ncode *code, const char *val)
 	return node;
 }
 
-int parseFlags(char *val)
+int parseFlags(char* val)
 {
-	const struct flaglist *flaglptr;
+	const struct flaglist* flaglptr;
 	int flags = 0;
-	char *flag, *help;
+	char* flag;
+	char* help;
 
 	flag = help = val;
 	while (flag != NULL) {
@@ -322,7 +330,7 @@ int parseFlags(char *val)
 					logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 					logprintf(LIRC_ERROR, "multiple protocols given in flags: \"%s\"", flag);
 					parse_error = 1;
-					return (0);
+					return 0;
 				}
 				flags = flags | flaglptr->flag;
 				LOGPRINTF(3, "flag %s recognized", flaglptr->name);
@@ -334,82 +342,77 @@ int parseFlags(char *val)
 			logprintf(LIRC_ERROR, "error in configfile line %d:", line);
 			logprintf(LIRC_ERROR, "unknown flag: \"%s\"", flag);
 			parse_error = 1;
-			return (0);
+			return 0;
 		}
 		flag = help;
 	}
 	LOGPRINTF(2, "flags value: %d", flags);
 
-	return (flags);
+	return flags;
 }
 
-int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
+int defineRemote(char* key, char* val, char* val2, struct ir_remote* rem)
 {
 	if ((strcasecmp("name", key)) == 0) {
 		if (rem->name != NULL)
-			free((void*) (rem->name));
+			free((void*)(rem->name));
 		rem->name = s_strdup(val);
 		logprintf(LIRC_INFO, "Using remote: %s.", val);
-		return (1);
+		return 1;
 	}
 	if (options_getboolean("lircd:dynamic-codes")) {
 		if ((strcasecmp("dyncodes_name", key)) == 0) {
-			if (rem->dyncodes_name != NULL) {
+			if (rem->dyncodes_name != NULL)
 				free(rem->dyncodes_name);
-			}
 			rem->dyncodes_name = s_strdup(val);
-			return (1);
+			return 1;
 		}
-	}
-	else if (strcasecmp("driver", key) == 0) {
-		if (rem->driver != NULL) {
+	} else if (strcasecmp("driver", key) == 0) {
+		if (rem->driver != NULL)
 			free((void*)(rem->driver));
-		}
-	 	rem->driver = s_strdup(val);
+		rem->driver = s_strdup(val);
 		return 1;
-	}
-	else if ((strcasecmp("bits", key)) == 0) {
+	} else if ((strcasecmp("bits", key)) == 0) {
 		rem->bits = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("flags", key) == 0) {
 		rem->flags |= parseFlags(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("eps", key) == 0) {
 		rem->eps = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("aeps", key) == 0) {
 		rem->aeps = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("plead", key) == 0) {
 		rem->plead = s_strtolirc_t(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("ptrail", key) == 0) {
 		rem->ptrail = s_strtolirc_t(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("pre_data_bits", key) == 0) {
 		rem->pre_data_bits = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("pre_data", key) == 0) {
 		rem->pre_data = s_strtocode(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("post_data_bits", key) == 0) {
 		rem->post_data_bits = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("post_data", key) == 0) {
 		rem->post_data = s_strtocode(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("gap", key) == 0) {
-		if (val2 != NULL) {
+		if (val2 != NULL)
 			rem->gap2 = s_strtou32(val2);
-		}
 		rem->gap = s_strtou32(val);
-		return (val2 != NULL ? 2 : 1);
+		return val2 != NULL ? 2 : 1;
 	} else if (strcasecmp("repeat_gap", key) == 0) {
 		rem->repeat_gap = s_strtou32(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("repeat_mask", key) == 0) {
 		rem->repeat_mask = s_strtocode(val);
-		return (1);
+		return 1;
 	}
 	/* obsolete: use toggle_bit_mask instead */
 	else if (strcasecmp("toggle_bit", key) == 0) {
@@ -420,39 +423,39 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 		return 1;
 	} else if (strcasecmp("toggle_mask", key) == 0) {
 		rem->toggle_mask = s_strtocode(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("rc6_mask", key) == 0) {
 		rem->rc6_mask = s_strtocode(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("ignore_mask", key) == 0) {
 		rem->ignore_mask = s_strtocode(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("manual_sort", key) == 0) {
 		rem->manual_sort = s_strtoi(val);
-		return (1);
+		return 1;
 	}
 	/* obsolete name */
 	else if (strcasecmp("repeat_bit", key) == 0) {
 		rem->toggle_bit = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("suppress_repeat", key) == 0) {
 		rem->suppress_repeat = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("min_repeat", key) == 0) {
 		rem->min_repeat = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("min_code_repeat", key) == 0) {
 		rem->min_code_repeat = s_strtoi(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("frequency", key) == 0) {
 		rem->freq = s_strtoui(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("duty_cycle", key) == 0) {
 		rem->duty_cycle = s_strtoui(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("baud", key) == 0) {
 		rem->baud = s_strtoui(val);
-		return (1);
+		return 1;
 	} else if (strcasecmp("serial_mode", key) == 0) {
 		if (val[0] < '5' || val[0] > '9') {
 			logprintf(LIRC_ERROR, "error in configfile line %d:", line);
@@ -477,49 +480,48 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 			parse_error = 1;
 			return 0;
 		}
-		if (strcmp(val + 2, "1.5") == 0) {
+		if (strcmp(val + 2, "1.5") == 0)
 			rem->stop_bits = 3;
-		} else {
+		else
 			rem->stop_bits = s_strtoui(val + 2) * 2;
-		}
-		return (1);
+		return 1;
 	} else if (val2 != NULL) {
 		if (strcasecmp("header", key) == 0) {
 			rem->phead = s_strtolirc_t(val);
 			rem->shead = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("three", key) == 0) {
 			rem->pthree = s_strtolirc_t(val);
 			rem->sthree = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("two", key) == 0) {
 			rem->ptwo = s_strtolirc_t(val);
 			rem->stwo = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("one", key) == 0) {
 			rem->pone = s_strtolirc_t(val);
 			rem->sone = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("zero", key) == 0) {
 			rem->pzero = s_strtolirc_t(val);
 			rem->szero = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("foot", key) == 0) {
 			rem->pfoot = s_strtolirc_t(val);
 			rem->sfoot = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("repeat", key) == 0) {
 			rem->prepeat = s_strtolirc_t(val);
 			rem->srepeat = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("pre", key) == 0) {
 			rem->pre_p = s_strtolirc_t(val);
 			rem->pre_s = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		} else if (strcasecmp("post", key) == 0) {
 			rem->post_p = s_strtolirc_t(val);
 			rem->post_s = s_strtolirc_t(val2);
-			return (2);
+			return 2;
 		}
 	}
 	if (val2) {
@@ -530,13 +532,13 @@ int defineRemote(char *key, char *val, char *val2, struct ir_remote *rem)
 		logprintf(LIRC_ERROR, "unknown definiton or too few arguments: \"%s %s\"", key, val);
 	}
 	parse_error = 1;
-	return (0);
+	return 0;
 }
 
-static int sanityChecks(struct ir_remote *rem)
+static int sanityChecks(struct ir_remote* rem)
 {
-	struct ir_ncode *codes;
-	struct ir_code_node *node;
+	struct ir_ncode* codes;
+	struct ir_code_node* node;
 
 	if (!rem->name) {
 		logprintf(LIRC_ERROR, "you must specify a remote name");
@@ -544,7 +546,7 @@ static int sanityChecks(struct ir_remote *rem)
 	}
 	if (rem->gap == 0) {
 		logprintf(LIRC_WARNING,
-                     	  "%s: you should specify a valid gap value",
+			  "%s: you should specify a valid gap value",
 			  rem->name);
 	}
 	if (has_repeat_gap(rem) && is_const(rem)) {
@@ -595,10 +597,12 @@ static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
 	int r1_is_raw = is_raw(r1);
 	int r2_is_raw = is_raw(r2);
 
-	if (!r1_is_raw && r2_is_raw) return -1;
-	if (r1_is_raw && !r2_is_raw) return 1;
+	if (!r1_is_raw && r2_is_raw)
+		return -1;
+	if (r1_is_raw && !r2_is_raw)
+		return 1;
 
-	if (r1_is_raw && r2_is_raw){
+	if (r1_is_raw && r2_is_raw) {
 		for (c = r1->codes, r1_size = 0; c->name != NULL; c++)
 			r1_size += 1;
 		for (c = r2->codes, r2_size = 0; c->name != NULL; c++)
@@ -607,7 +611,8 @@ static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
 		r1_size = bit_count(r1);
 		r2_size = bit_count(r2);
 	}
-	if (r1_size == r2_size) return 0;
+	if (r1_size == r2_size)
+		return 0;
 	return r1_size < r2_size ? -1 : 1;
 }
 
@@ -616,16 +621,18 @@ static int remote_bits_cmp(struct ir_remote* r1, struct ir_remote* r2)
  * Sort remotes so the faster decoding ones comes first in list,
  *  ignored if any remote has manual_sort == TRUE.
  */
-static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
+static struct ir_remote* sort_by_bit_count(struct ir_remote* remotes)
 {
+	struct ir_remote* top;
+	struct ir_remote* rem;
+	struct ir_remote* next;
+	struct ir_remote* prev;
+	struct ir_remote* scan;
+	struct ir_remote* r;
 
-	struct ir_remote *top, *rem, *next, *prev, *scan, *r;
-
-	for (r = remotes; r != NULL && r != (void*)-1; r = r->next) {
-		if (r->manual_sort) {
+	for (r = remotes; r != NULL && r != (void*)-1; r = r->next)
+		if (r->manual_sort)
 			return remotes;
-		}
-	}
 	rem = remotes;
 	top = NULL;
 	while (rem != NULL && rem != (void*)-1) {
@@ -637,16 +644,14 @@ static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 			prev = scan;
 			scan = scan->next;
 		}
-		if (prev) {
+		if (prev)
 			prev->next = rem;
-		} else {
+		else
 			top = rem;
-		}
-		if (scan) {
+		if (scan)
 			rem->next = scan;
-		} else {
+		else
 			rem->next = NULL;
-		}
 
 		rem = next;
 	}
@@ -654,44 +659,39 @@ static struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 	return top;
 }
 
-static const char *lirc_parse_include(char *s)
+static const char* lirc_parse_include(char* s)
 {
-	char *last;
+	char* last;
 	size_t len;
 
 	len = strlen(s);
-	if (len < 2) {
+	if (len < 2)
 		return NULL;
-	}
 	last = s + len - 1;
-	while (last > s && strchr(whitespace, *last) != NULL) {
+	while (last > s && strchr(whitespace, *last) != NULL)
 		last--;
-	}
-	if (last <= s) {
+	if (last <= s)
 		return NULL;
-	}
-	if (*s != '"' && *s != '<') {
+	if (*s != '"' && *s != '<')
 		return NULL;
-	}
-	if (*s == '"' && *last != '"') {
+	if (*s == '"' && *last != '"')
 		return NULL;
-	} else if (*s == '<' && *last != '>') {
+	else if (*s == '<' && *last != '>')
 		return NULL;
-	}
 	*last = 0;
-	memmove(s, s + 1, len - 2 + 1);	/* terminating 0 is copied, and
-					   maybe more, but we don't care */
+	memmove(s, s + 1, len - 2 + 1); /* terminating 0 is copied, and
+					 * maybe more, but we don't care */
 	return s;
 }
 
 
 /** Convert a relative path using another path as reference. */
-static const char *lirc_parse_relative(char *dst, 
-				       size_t dst_size, 
-				       const char *child, 
-				       const char *current)
+static const char* lirc_parse_relative(char*		dst,
+				       size_t		dst_size,
+				       const char*	child,
+				       const char*	current)
 {
-	char *dir;
+	char* dir;
 	size_t dirlen;
 
 	if (!current)
@@ -701,19 +701,16 @@ static const char *lirc_parse_relative(char *dst,
 	if (*child == '/')
 		return child;
 
-	if (strlen(current) >= dst_size) {
+	if (strlen(current) >= dst_size)
 		return NULL;
-	}
 	strcpy(dst, current);
 	dir = dirname(dst);
 	dirlen = strlen(dir);
-	if (dir != dst) {
+	if (dir != dst)
 		memmove(dst, dir, dirlen + 1);
-	}
 
-	if (dirlen + 1 + strlen(child) + 1 > dst_size) {
+	if (dirlen + 1 + strlen(child) + 1 > dst_size)
 		return NULL;
-	}
 	strcat(dst, "/");
 	strcat(dst, child);
 
@@ -743,7 +740,7 @@ ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
 }
 
 
-struct ir_remote* read_config(FILE * f, const char *name)
+struct ir_remote* read_config(FILE* f, const char* name)
 {
 	struct ir_remote* head;
 
@@ -763,17 +760,17 @@ struct ir_remote* read_config(FILE * f, const char *name)
  * @return root of new list, with possibly added remotes.
  *
  */
-static struct ir_remote* 
+static struct ir_remote*
 read_included(const char* name, int depth, char* val, struct ir_remote* top_rem)
 {
-	FILE *childFile;
-	const char *childName;
+	FILE* childFile;
+	const char* childName;
 	struct ir_remote* rem = NULL;
 
 	if (depth > MAX_INCLUDES) {
 		logprintf(LIRC_ERROR, "error opening child file defined at %s:%d", name, line);
 		logprintf(LIRC_ERROR, "too many files included");
-	        return top_rem;	
+		return top_rem;
 	}
 	childName = lirc_parse_include(val);
 	if (!childName) {
@@ -787,11 +784,10 @@ read_included(const char* name, int depth, char* val, struct ir_remote* top_rem)
 			  childName, line);
 		logprintf(LIRC_ERROR, "ignoring this child file for now.");
 		return NULL;
-	} else {
-		rem = read_config_recursive(childFile, childName, depth + 1);
-		top_rem = ir_remotes_append(top_rem, rem);
 	}
-        fclose(childFile);
+	rem = read_config_recursive(childFile, childName, depth + 1);
+	top_rem = ir_remotes_append(top_rem, rem);
+	fclose(childFile);
 	return top_rem;
 }
 
@@ -806,21 +802,21 @@ read_included(const char* name, int depth, char* val, struct ir_remote* top_rem)
  * @return root of new list, with possibly added remotes.
  *
  */
-static struct ir_remote* read_all_included(const char* name, 
-					   int depth, 
-					   char* val, 
-					   struct ir_remote* top_rem)
+static struct ir_remote* read_all_included(const char*		name,
+					   int			depth,
+					   char*		val,
+					   struct ir_remote*	top_rem)
 {
 	int i;
 	glob_t globbuf;
-	char buff[256] = {'\0'};
+	char buff[256] = { '\0' };
 
-        memset(&globbuf, 0, sizeof(globbuf));
+	memset(&globbuf, 0, sizeof(globbuf));
 	val = val + 1;   // Strip quotes
 	val[strlen(val) - 1] = '\0';
 	lirc_parse_relative(buff, sizeof(buff), val, name);
 	glob(buff, 0, NULL, &globbuf);
-	for (i = 0; i <  globbuf.gl_pathc; i +=1) {
+	for (i = 0; i < globbuf.gl_pathc; i += 1) {
 		snprintf(buff, sizeof(buff), "\"%s\"", globbuf.gl_pathv[i]);
 		top_rem = read_included(name, depth, buff, top_rem);
 	}
@@ -829,15 +825,19 @@ static struct ir_remote* read_all_included(const char* name,
 }
 
 static struct ir_remote*
-read_config_recursive(FILE * f, const char *name, int depth)
+read_config_recursive(FILE* f, const char* name, int depth)
 {
-	char buf[LINE_LEN + 1], *key, *val, *val2;
+	char buf[LINE_LEN + 1];
+	char* key;
+	char* val;
+	char* val2;
 	int len, argc;
-	struct ir_remote *top_rem = NULL, *rem = NULL;
+	struct ir_remote* top_rem = NULL;
+	struct ir_remote* rem = NULL;
 	struct void_array codes_list, raw_codes, signals;
 	struct ir_ncode raw_code = { NULL, 0, 0, NULL };
 	struct ir_ncode name_code = { NULL, 0, 0, NULL };
-	struct ir_ncode *code;
+	struct ir_ncode* code;
 	int mode = ID_none;
 
 	line = 0;
@@ -864,9 +864,8 @@ read_config_recursive(FILE * f, const char *name, int depth)
 				buf[len] = 0;
 		}
 		/* ignore comments */
-		if (buf[0] == '#') {
+		if (buf[0] == '#')
 			continue;
-		}
 		key = strtok(buf, whitespace);
 		/* ignore empty lines */
 		if (key == NULL)
@@ -877,8 +876,9 @@ read_config_recursive(FILE * f, const char *name, int depth)
 			LOGPRINTF(3, "Tokens: \"%s\" \"%s\" \"%s\"", key, val, (val2 == NULL ? "(null)" : val));
 			if (strcasecmp("include", key) == 0) {
 				int save_line = line;
-				top_rem = read_all_included(name, 
-						    	    depth, 
+
+				top_rem = read_all_included(name,
+							    depth,
 							    val,
 							    top_rem);
 				line = save_line;
@@ -924,16 +924,15 @@ read_config_recursive(FILE * f, const char *name, int depth)
 						rem = top_rem = s_malloc(sizeof(struct ir_remote));
 					} else {
 						/* create new remote */
-                                                LOGPRINTF(2, "creating next remote");
-                                                rem = s_malloc(sizeof(struct ir_remote));
+						LOGPRINTF(2, "creating next remote");
+						rem = s_malloc(sizeof(struct ir_remote));
 						ir_remotes_append(top_rem, rem);
 					}
-
 				} else if (mode == ID_codes) {
 					code = defineCode(key, val, &name_code);
 					while (!parse_error && val2 != NULL) {
 						if (val2[0] == '#')
-							break;	/* comment */
+							break;  /* comment */
 						defineNode(code, val2);
 						val2 = strtok(NULL, whitespace);
 					}
@@ -951,15 +950,13 @@ read_config_recursive(FILE * f, const char *name, int depth)
 						  rem->name, val, line);
 				}
 			} else if (strcasecmp("end", key) == 0) {
-
 				if (strcasecmp("codes", val) == 0) {
 					/* end Codes mode */
 					LOGPRINTF(2, "    end codes");
 					if (!checkMode(mode, ID_codes, "end codes"))
 						break;
 					rem->codes = get_void_array(&codes_list);
-					mode = ID_remote;	/* switch back */
-
+					mode = ID_remote;       /* switch back */
 				} else if (strcasecmp("raw_codes", val) == 0) {
 					/* end raw codes mode */
 					LOGPRINTF(2, "    end raw_codes");
@@ -979,7 +976,7 @@ read_config_recursive(FILE * f, const char *name, int depth)
 					if (!checkMode(mode, ID_raw_codes, "end raw_codes"))
 						break;
 					rem->codes = get_void_array(&raw_codes);
-					mode = ID_remote;	/* switch back */
+					mode = ID_remote;       /* switch back */
 				} else if (strcasecmp("remote", val) == 0) {
 					/* end remote mode */
 					LOGPRINTF(2, "end remote");
@@ -990,23 +987,22 @@ read_config_recursive(FILE * f, const char *name, int depth)
 						parse_error = 1;
 						break;
 					}
-                                       	if (options_getboolean("lircd:dynamic-codes")) {
-						if (rem->dyncodes_name == NULL) {
+					if (options_getboolean("lircd:dynamic-codes")) {
+						if (rem->dyncodes_name == NULL)
 							rem->dyncodes_name = s_strdup("unknown");
-						}
 						rem->dyncodes[0].name = rem->dyncodes_name;
 						rem->dyncodes[1].name = rem->dyncodes_name;
 					}
 					/* not really necessary because we
-					   clear the alloced memory */
+					 * clear the alloced memory */
 					rem->next = NULL;
 					rem->last_code = NULL;
-					mode = ID_none;	/* switch back */
+					mode = ID_none; /* switch back */
 				} else if (mode == ID_codes) {
 					code = defineCode(key, val, &name_code);
 					while (!parse_error && val2 != NULL) {
 						if (val2[0] == '#')
-							break;	/* comment */
+							break;  /* comment */
 						defineNode(code, val2);
 						val2 = strtok(NULL, whitespace);
 					}
@@ -1020,8 +1016,8 @@ read_config_recursive(FILE * f, const char *name, int depth)
 				if (!parse_error && val2 != NULL) {
 					logprintf(LIRC_WARNING,
 						  "%s: garbage after '%s'"
-                                                  " token in line %d ignored",
-						   rem->name, val, line);
+						  " token in line %d ignored",
+						  rem->name, val, line);
 				}
 			} else {
 				switch (mode) {
@@ -1040,7 +1036,7 @@ read_config_recursive(FILE * f, const char *name, int depth)
 					code = defineCode(key, val, &name_code);
 					while (!parse_error && val2 != NULL) {
 						if (val2[0] == '#')
-							break;	/* comment */
+							break;  /* comment */
 						defineNode(code, val2);
 						val2 = strtok(NULL, whitespace);
 					}
@@ -1063,17 +1059,17 @@ read_config_recursive(FILE * f, const char *name, int depth)
 							if (!add_void_array(&raw_codes, &raw_code))
 								break;
 						}
-						if (!(raw_code.name = s_strdup(val))) {
+						raw_code.name = s_strdup(val);
+						if (!raw_code.name)
 							break;
-						}
 						raw_code.code++;
 						init_void_array(&signals, 50, sizeof(lirc_t));
 						mode = ID_raw_name;
 						if (!parse_error && val2 != NULL) {
 							logprintf(LIRC_WARNING,
 								  "%s: garbage after '%s'"
- 								  " token in line %d ignored",
-								   rem->name, key, line);
+								  " token in line %d ignored",
+								  rem->name, key, line);
 						}
 					} else {
 						if (mode == ID_raw_codes) {
@@ -1086,31 +1082,26 @@ read_config_recursive(FILE * f, const char *name, int depth)
 							break;
 						if (!addSignal(&signals, val))
 							break;
-						if (val2) {
-							if (!addSignal(&signals, val2)) {
+						if (val2)
+							if (!addSignal(&signals, val2))
 								break;
-							}
-						}
-						while ((val = strtok(NULL, whitespace))) {
+						while ((val = strtok(NULL, whitespace)))
 							if (!addSignal(&signals, val))
 								break;
-						}
 					}
 					break;
 				}
 			}
 		} else if (mode == ID_raw_name) {
-			if (!addSignal(&signals, key)) {
+			if (!addSignal(&signals, key))
 				break;
-			}
 		} else {
 			logprintf(LIRC_ERROR, "error in configfile line %d", line);
 			parse_error = 1;
 			break;
 		}
-		if (parse_error) {
+		if (parse_error)
 			break;
-		}
 	}
 	if (mode != ID_none) {
 		switch (mode) {
@@ -1142,22 +1133,20 @@ read_config_recursive(FILE * f, const char *name, int depth)
 		free_config(top_rem);
 		if (depth == 0)
 			print_error = 1;
-		return ((void *)-1);
+		return (void*)-1;
 	}
 	/* kick reverse flag */
 	/* handle RC6 flag to be backwards compatible: previous RC-6
-	   config files did not set rc6_mask */
+	 * config files did not set rc6_mask */
 	rem = top_rem;
 	while (rem != NULL) {
 		if ((!is_raw(rem)) && rem->flags & REVERSE) {
-			struct ir_ncode *codes;
+			struct ir_ncode* codes;
 
-			if (has_pre(rem)) {
+			if (has_pre(rem))
 				rem->pre_data = reverse(rem->pre_data, rem->pre_data_bits);
-			}
-			if (has_post(rem)) {
+			if (has_post(rem))
 				rem->post_data = reverse(rem->post_data, rem->post_data_bits);
-			}
 			codes = rem->codes;
 			while (codes->name != NULL) {
 				codes->code = reverse(codes->code, rem->bits);
@@ -1166,31 +1155,29 @@ read_config_recursive(FILE * f, const char *name, int depth)
 			rem->flags = rem->flags & (~REVERSE);
 			rem->flags = rem->flags | COMPAT_REVERSE;
 			/* don't delete the flag because we still need
-			   it to remain compatible with older versions
+			 * it to remain compatible with older versions
 			 */
 		}
 		if (rem->flags & RC6 && rem->rc6_mask == 0 && rem->toggle_bit > 0) {
 			int all_bits = bit_count(rem);
 
-			rem->rc6_mask = ((ir_code) 1) << (all_bits - rem->toggle_bit);
+			rem->rc6_mask = ((ir_code)1) << (all_bits - rem->toggle_bit);
 		}
 		if (rem->toggle_bit > 0) {
 			int all_bits = bit_count(rem);
 
-			if (has_toggle_bit_mask(rem)) {
+			if (has_toggle_bit_mask(rem))
 				logprintf(LIRC_WARNING, "%s uses both toggle_bit and toggle_bit_mask", rem->name);
-			} else {
-				rem->toggle_bit_mask = ((ir_code) 1) << (all_bits - rem->toggle_bit);
-			}
+			else
+				rem->toggle_bit_mask = ((ir_code)1) << (all_bits - rem->toggle_bit);
 			rem->toggle_bit = 0;
 		}
 		if (has_toggle_bit_mask(rem)) {
 			if (!is_raw(rem) && rem->codes) {
 				rem->toggle_bit_mask_state = (rem->codes->code & rem->toggle_bit_mask);
-				if (rem->toggle_bit_mask_state) {
+				if (rem->toggle_bit_mask_state)
 					/* start with state set to 0 for backwards compatibility */
 					rem->toggle_bit_mask_state ^= rem->toggle_bit_mask;
-				}
 			}
 		}
 		if (is_serial(rem)) {
@@ -1198,16 +1185,13 @@ read_config_recursive(FILE * f, const char *name, int depth)
 
 			if (rem->baud > 0) {
 				base = 1000000 / rem->baud;
-				if (rem->pzero == 0 && rem->szero == 0) {
+				if (rem->pzero == 0 && rem->szero == 0)
 					rem->pzero = base;
-				}
-				if (rem->pone == 0 && rem->sone == 0) {
+				if (rem->pone == 0 && rem->sone == 0)
 					rem->sone = base;
-				}
 			}
-			if (rem->bits_in_byte == 0) {
+			if (rem->bits_in_byte == 0)
 				rem->bits_in_byte = 8;
-			}
 		}
 		if (rem->min_code_repeat > 0) {
 			if (!has_repeat(rem) || rem->min_code_repeat > rem->min_repeat) {
@@ -1219,10 +1203,10 @@ read_config_recursive(FILE * f, const char *name, int depth)
 		rem = rem->next;
 	}
 
-	return (top_rem);
+	return top_rem;
 }
 
-void calculate_signal_lengths(struct ir_remote *remote)
+void calculate_signal_lengths(struct ir_remote* remote)
 {
 	if (is_const(remote)) {
 		remote->min_total_signal_length = min_gap(remote);
@@ -1235,14 +1219,15 @@ void calculate_signal_lengths(struct ir_remote *remote)
 	lirc_t min_signal_length = 0, max_signal_length = 0;
 	lirc_t max_pulse = 0, max_space = 0;
 	int first_sum = 1;
-	struct ir_ncode *c = remote->codes;
+	struct ir_ncode* c = remote->codes;
 	int i;
 
 	while (c->name) {
 		struct ir_ncode code = *c;
-		struct ir_code_node *next = code.next;
+		struct ir_code_node* next = code.next;
 		int first = 1;
 		int repeat = 0;
+
 		do {
 			if (first) {
 				first = 0;
@@ -1255,24 +1240,19 @@ void calculate_signal_lengths(struct ir_remote *remote)
 					lirc_t sum = send_buffer_sum();
 
 					if (sum) {
-						if (first_sum || sum < min_signal_length) {
+						if (first_sum || sum < min_signal_length)
 							min_signal_length = sum;
-						}
-						if (first_sum || sum > max_signal_length) {
+						if (first_sum || sum > max_signal_length)
 							max_signal_length = sum;
-						}
 						first_sum = 0;
 					}
 					for (i = 0; i < send_buffer_length(); i++) {
-						if (i & 1) {	/* space */
-							if (send_buffer_data()[i] > max_space) {
+						if (i & 1) {    /* space */
+							if (send_buffer_data()[i] > max_space)
 								max_space = send_buffer_data()[i];
-							}
-						} else {	/* pulse */
-
-							if (send_buffer_data()[i] > max_pulse) {
+						} else {        /* pulse */
+							if (send_buffer_data()[i] > max_pulse)
 								max_pulse = send_buffer_data()[i];
-							}
 						}
 					}
 				}
@@ -1282,7 +1262,7 @@ void calculate_signal_lengths(struct ir_remote *remote)
 	}
 	if (first_sum) {
 		/* no timing data, so assume gap is the actual total
-		   length */
+		 * length */
 		remote->min_total_signal_length = min_gap(remote);
 		remote->max_total_signal_length = max_gap(remote);
 		remote->min_gap_length = min_gap(remote);
@@ -1292,7 +1272,7 @@ void calculate_signal_lengths(struct ir_remote *remote)
 			remote->min_gap_length = remote->min_total_signal_length - max_signal_length;
 		} else {
 			logprintf(LIRC_WARNING,
-                             	  "min_gap_length is 0 for '%s' remote",
+				  "min_gap_length is 0 for '%s' remote",
 				  remote->name);
 			remote->min_gap_length = 0;
 		}
@@ -1310,10 +1290,10 @@ void calculate_signal_lengths(struct ir_remote *remote)
 		  remote->min_gap_length, remote->max_gap_length);
 }
 
-void free_config(struct ir_remote *remotes)
+void free_config(struct ir_remote* remotes)
 {
-	struct ir_remote *next;
-	struct ir_ncode *codes;
+	struct ir_remote* next;
+	struct ir_ncode* codes;
 
 	while (remotes != NULL) {
 		next = remotes->next;
@@ -1325,7 +1305,8 @@ void free_config(struct ir_remote *remotes)
 		if (remotes->codes != NULL) {
 			codes = remotes->codes;
 			while (codes->name != NULL) {
-				struct ir_code_node *node, *next_node;
+				struct ir_code_node* node;
+				struct ir_code_node* next_node;
 
 				free(codes->name);
 				if (codes->signals != NULL)

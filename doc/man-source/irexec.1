@@ -1,4 +1,4 @@
-.TH IREXEC "1" "Last change: Nov 2014" "irexec @version@" "User Commands"
+.TH IREXEC "1" "Last change: Jan 2015" "irexec @version@" "User Commands"
 .SH NAME
 irexec - run programs with one button press
 .SH SYNOPSIS
@@ -11,8 +11,15 @@ which has to be a name of a valid config file. If no command line
 parameters are given irexec reads the default config file which is
 usually ~/.config/lircrc.
 
-If irexec executes a program it will wait until this program terminates.
-So append a '&' to the command string if you don't want that.
+For version up to 0.9.2 irexec will wait until the executed program
+terminates. So append a '&' to the command string if you don't want that.
+
+For version 0.9.3+ irexec does
+.B not
+wait for the executed program to terminate. In fact, the executed code
+is completely disconnected from irexec. So, for 0.9.3+ the trailing
+& is not required, and there is no way to make irexec wait for the
+executed code.
 
 The config string consists of the command to be run. Potential
 uses are shutting down the computer, starting a dial-up connection etc.
@@ -29,6 +36,13 @@ Make irexec fork to background. That way you can easily start irexec
 from an init script. In this case you should specify a config file on the
 command line as irexec won't be able to find your home directory.
 .TP 4
+.B -D, --loglevel [level]
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'. By default, no logging is done.
+.TP 4
 .B -n, --name <name>
 Use this program name instead of the default 'irexec' as identifier in
 the lircd.conf file.
@@ -36,6 +50,14 @@ the lircd.conf file.
 .TP 4
 LIRC_SOCKET_PATH
 Path to the lircd socket irexec reads from, defaults to /var/run/lirc/lircd.
+
+
+.SH FILES
+.TP 4
+.B ~/.cache/irexec.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irexec.log
+
 
 .SH NOTE
 

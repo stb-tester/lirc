@@ -9,32 +9,32 @@
 # substituted with it. Otherwise, $with_[$1] will be set to 'no'.
 
 AC_DEFUN([SYSTEMD_DIRECTORY_AC], [
-        AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+	AC_REQUIRE([PKG_PROG_PKG_CONFIG])
 
-        AC_ARG_WITH([$1],
-                AS_HELP_STRING([--with-$1=DIR],
-                        [Directory for $2 (default: auto-detect through pkg-config)]))
+	AC_ARG_WITH([$1],
+		AS_HELP_STRING([--with-$1=DIR],
+			[Directory for $2 (default: auto-detect through pkg-config)]))
 
-        AC_MSG_CHECKING([$2 directory])
+	AC_MSG_CHECKING([$2 directory])
 
-        AS_IF([test x"$with_$1" = x"yes" -o x"$with_$1" = x""], [
-                ac_systemd_pkgconfig_dir=`$PKG_CONFIG --variable=$1 systemd`
+	AS_IF([test x"$with_$1" = x"yes" -o x"$with_$1" = x""], [
+		ac_systemd_pkgconfig_dir=`$PKG_CONFIG --variable=$1 systemd`
 
-                AS_IF([test x"$ac_systemd_pkgconfig_dir" = x""], [
-                        AS_IF([test x"$with_$1" = x"yes"], [
-                                AC_MSG_ERROR([systemd support requested but pkg-config unable to query systemd package])
-                        ])
-                        with_$1=no
-                ], [
-                        with_$1=$ac_systemd_pkgconfig_dir
-                ])
-        ])
+		AS_IF([test x"$ac_systemd_pkgconfig_dir" = x""], [
+			AS_IF([test x"$with_$1" = x"yes"], [
+				AC_MSG_ERROR([systemd support requested but pkg-config unable to query systemd package])
+			])
+			with_$1=no
+		], [
+			with_$1=$ac_systemd_pkgconfig_dir
+		])
+	])
 
-        AC_MSG_RESULT([$with_$1])
+	AC_MSG_RESULT([$with_$1])
 
-        AS_IF([test x"$with_$1" != x"no"], [
-                AC_SUBST([$1], [$with_$1])
-        ])
+	AS_IF([test x"$with_$1" != x"no"], [
+		AC_SUBST([$1], [$with_$1])
+	])
 ])
 
 # SYSTEMD_DIRECTORY_AM(directory-variable)
@@ -44,10 +44,10 @@ AC_DEFUN([SYSTEMD_DIRECTORY_AC], [
 # --with-$1 or obtained from pkg-config.
 
 AC_DEFUN([SYSTEMD_DIRECTORY_AM], [
-        m4_pushdef([AM_MACRO], WITH_[]m4_toupper([$1]))
-        AM_CONDITIONAL(AM_MACRO,
-                [test x"$with_$1" != x"no"])
-        m4_popdef([AM_MACRO])
+	m4_pushdef([AM_MACRO], WITH_[]m4_toupper([$1]))
+	AM_CONDITIONAL(AM_MACRO,
+		[test x"$with_$1" != x"no"])
+	m4_popdef([AM_MACRO])
 ])
 
 # SYSTEMD_SYSTEMUNITDIR_AC
@@ -67,7 +67,7 @@ AC_DEFUN([SYSTEMD_DIRECTORY_AM], [
 # instead.
 
 AC_DEFUN([SYSTEMD_SYSTEMUNITDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdsystemunitdir], [systemd system unit])
+	SYSTEMD_DIRECTORY_AC([systemdsystemunitdir], [systemd system unit])
 ])
 
 # SYSTEMD_SYSTEMUNITDIR
@@ -80,15 +80,15 @@ AC_DEFUN([SYSTEMD_SYSTEMUNITDIR_AC], [
 #
 # Example use:
 # - configure.ac:
-#       SYSTEMD_SYSTEMUNITDIR
+#	SYSTEMD_SYSTEMUNITDIR
 # - Makefile.am:
-#       if WITH_SYSTEMDSYSTEMUNITDIR
-#       dist_systemdsystemunit_DATA = foo.service
-#       endif
+#	if WITH_SYSTEMDSYSTEMUNITDIR
+#	dist_systemdsystemunit_DATA = foo.service
+#	endif
 
 AC_DEFUN([SYSTEMD_SYSTEMUNITDIR], [
-        AC_REQUIRE([SYSTEMD_SYSTEMUNITDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdsystemunitdir])
+	AC_REQUIRE([SYSTEMD_SYSTEMUNITDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdsystemunitdir])
 ])
 
 # SYSTEMD_SYSTEMPRESETDIR_AC
@@ -108,7 +108,7 @@ AC_DEFUN([SYSTEMD_SYSTEMUNITDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_SYSTEMPRESETDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdsystempresetdir], [systemd system preset])
+	SYSTEMD_DIRECTORY_AC([systemdsystempresetdir], [systemd system preset])
 ])
 
 # SYSTEMD_SYSTEMPRESETDIR
@@ -121,8 +121,8 @@ AC_DEFUN([SYSTEMD_SYSTEMPRESETDIR_AC], [
 # an automake conditional called WITH_SYSTEMDSYSTEMPRESETDIR.
 
 AC_DEFUN([SYSTEMD_SYSTEMPRESETDIR], [
-        AC_REQUIRE([SYSTEMD_SYSTEMPRESETDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdsystempresetdir])
+	AC_REQUIRE([SYSTEMD_SYSTEMPRESETDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdsystempresetdir])
 ])
 
 # SYSTEMD_SYSTEMCONFDIR_AC
@@ -142,7 +142,7 @@ AC_DEFUN([SYSTEMD_SYSTEMPRESETDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_SYSTEMCONFDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdsystemconfdir], [systemd system configuration])
+	SYSTEMD_DIRECTORY_AC([systemdsystemconfdir], [systemd system configuration])
 ])
 
 # SYSTEMD_SYSTEMCONFDIR
@@ -155,8 +155,8 @@ AC_DEFUN([SYSTEMD_SYSTEMCONFDIR_AC], [
 # an automake conditional called WITH_SYSTEMDSYSTEMCONFDIR.
 
 AC_DEFUN([SYSTEMD_SYSTEMCONFDIR], [
-        AC_REQUIRE([SYSTEMD_SYSTEMCONFDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdsystemconfdir])
+	AC_REQUIRE([SYSTEMD_SYSTEMCONFDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdsystemconfdir])
 ])
 
 # SYSTEMD_USERUNITDIR_AC
@@ -176,7 +176,7 @@ AC_DEFUN([SYSTEMD_SYSTEMCONFDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_USERUNITDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemduserunitdir], [systemd user unit])
+	SYSTEMD_DIRECTORY_AC([systemduserunitdir], [systemd user unit])
 ])
 
 # SYSTEMD_USERUNITDIR
@@ -189,15 +189,15 @@ AC_DEFUN([SYSTEMD_USERUNITDIR_AC], [
 #
 # Example use:
 # - configure.ac:
-#       SYSTEMD_USERUNITDIR
+#	SYSTEMD_USERUNITDIR
 # - Makefile.am:
-#       if WITH_SYSTEMDUSERUNITDIR
-#       dist_systemduserunit_DATA = foo.service
-#       endif
+#	if WITH_SYSTEMDUSERUNITDIR
+#	dist_systemduserunit_DATA = foo.service
+#	endif
 
 AC_DEFUN([SYSTEMD_USERUNITDIR], [
-        AC_REQUIRE([SYSTEMD_USERUNITDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemduserunitdir])
+	AC_REQUIRE([SYSTEMD_USERUNITDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemduserunitdir])
 ])
 
 # SYSTEMD_USERPRESETDIR_AC
@@ -217,7 +217,7 @@ AC_DEFUN([SYSTEMD_USERUNITDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_USERPRESETDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemduserpresetdir], [systemd user preset])
+	SYSTEMD_DIRECTORY_AC([systemduserpresetdir], [systemd user preset])
 ])
 
 # SYSTEMD_USERPRESETDIR
@@ -230,8 +230,8 @@ AC_DEFUN([SYSTEMD_USERPRESETDIR_AC], [
 # an automake conditional called WITH_SYSTEMDUSERPRESETDIR.
 
 AC_DEFUN([SYSTEMD_USERPRESETDIR], [
-        AC_REQUIRE([SYSTEMD_USERPRESETDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemduserpresetdir])
+	AC_REQUIRE([SYSTEMD_USERPRESETDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemduserpresetdir])
 ])
 
 # SYSTEMD_USERCONFDIR_AC
@@ -251,7 +251,7 @@ AC_DEFUN([SYSTEMD_USERPRESETDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_USERCONFDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemduserconfdir], [systemd user configuration])
+	SYSTEMD_DIRECTORY_AC([systemduserconfdir], [systemd user configuration])
 ])
 
 # SYSTEMD_USERCONFDIR
@@ -264,8 +264,8 @@ AC_DEFUN([SYSTEMD_USERCONFDIR_AC], [
 # an automake conditional called WITH_SYSTEMDUSERCONFDIR.
 
 AC_DEFUN([SYSTEMD_USERCONFDIR], [
-        AC_REQUIRE([SYSTEMD_USERCONFDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemduserconfdir])
+	AC_REQUIRE([SYSTEMD_USERCONFDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemduserconfdir])
 ])
 
 # SYSTEMD_UTILDIR_AC
@@ -285,7 +285,7 @@ AC_DEFUN([SYSTEMD_USERCONFDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_UTILDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdutildir], [systemd utility])
+	SYSTEMD_DIRECTORY_AC([systemdutildir], [systemd utility])
 ])
 
 # SYSTEMD_UTILDIR
@@ -298,8 +298,8 @@ AC_DEFUN([SYSTEMD_UTILDIR_AC], [
 # an automake conditional called WITH_SYSTEMDUTILDIR.
 
 AC_DEFUN([SYSTEMD_UTILDIR], [
-        AC_REQUIRE([SYSTEMD_UTILDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdutildir])
+	AC_REQUIRE([SYSTEMD_UTILDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdutildir])
 ])
 
 # SYSTEMD_SYSTEMGENERATORDIR_AC
@@ -319,7 +319,7 @@ AC_DEFUN([SYSTEMD_UTILDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_SYSTEMGENERATORDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdsystemgeneratordir], [systemd system generator])
+	SYSTEMD_DIRECTORY_AC([systemdsystemgeneratordir], [systemd system generator])
 ])
 
 # SYSTEMD_SYSTEMGENERATORDIR
@@ -332,8 +332,8 @@ AC_DEFUN([SYSTEMD_SYSTEMGENERATORDIR_AC], [
 # an automake conditional called WITH_SYSTEMDSYSTEMGENERATORDIR.
 
 AC_DEFUN([SYSTEMD_SYSTEMGENERATORDIR], [
-        AC_REQUIRE([SYSTEMD_SYSTEMGENERATORDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdsystemgeneratordir])
+	AC_REQUIRE([SYSTEMD_SYSTEMGENERATORDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdsystemgeneratordir])
 ])
 
 # SYSTEMD_USERGENERATORDIR_AC
@@ -353,7 +353,7 @@ AC_DEFUN([SYSTEMD_SYSTEMGENERATORDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_USERGENERATORDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([systemdusergeneratordir], [systemd user generator])
+	SYSTEMD_DIRECTORY_AC([systemdusergeneratordir], [systemd user generator])
 ])
 
 # SYSTEMD_USERGENERATORDIR
@@ -366,8 +366,8 @@ AC_DEFUN([SYSTEMD_USERGENERATORDIR_AC], [
 # an automake conditional called WITH_SYSTEMDUSERGENERATORDIR.
 
 AC_DEFUN([SYSTEMD_USERGENERATORDIR], [
-        AC_REQUIRE([SYSTEMD_USERGENERATORDIR_AC])
-        SYSTEMD_DIRECTORY_AM([systemdusergeneratordir])
+	AC_REQUIRE([SYSTEMD_USERGENERATORDIR_AC])
+	SYSTEMD_DIRECTORY_AM([systemdusergeneratordir])
 ])
 
 # SYSTEMD_CATALOGDIR_AC
@@ -387,7 +387,7 @@ AC_DEFUN([SYSTEMD_USERGENERATORDIR], [
 # instead.
 
 AC_DEFUN([SYSTEMD_CATALOGDIR_AC], [
-        SYSTEMD_DIRECTORY_AC([catalogdir], [Journal catalog])
+	SYSTEMD_DIRECTORY_AC([catalogdir], [Journal catalog])
 ])
 
 # SYSTEMD_CATALOGDIR
@@ -400,8 +400,8 @@ AC_DEFUN([SYSTEMD_CATALOGDIR_AC], [
 # conditional called WITH_CATALOGDIR.
 
 AC_DEFUN([SYSTEMD_CATALOGDIR], [
-        AC_REQUIRE([SYSTEMD_CATALOGDIR_AC])
-        SYSTEMD_DIRECTORY_AM([catalogdir])
+	AC_REQUIRE([SYSTEMD_CATALOGDIR_AC])
+	SYSTEMD_DIRECTORY_AM([catalogdir])
 ])
 
 # SYSTEMD_MISC
@@ -418,36 +418,36 @@ AC_DEFUN([SYSTEMD_CATALOGDIR], [
 #
 # Example use:
 # - configure.ac:
-#       SYSTEMD_MISC
+#	SYSTEMD_MISC
 # - Makefile.am:
-#       dist_binfmt_DATA = binfmt/foo.conf
+#	dist_binfmt_DATA = binfmt/foo.conf
 #
 # TODO: systemd only supports /usr and /usr/local
 
 AC_DEFUN([SYSTEMD_MISC], [
-        AS_IF([test x"$prefix" = x"/"], [
-                AC_SUBST([binfmtdir], [/usr/lib/binfmt.d])
-                AC_SUBST([modulesloaddir], [/usr/lib/modules-load.d])
-                AC_SUBST([sysctldir], [/usr/lib/sysctl.d])
-                AC_SUBST([tmpfilesdir], [/usr/lib/tmpfiles.d])
-                AC_SUBST([kernelinstalldir], [/usr/lib/kernel/install.d])
-                AC_SUBST([ntpunitsdir], [/usr/lib/systemd/ntp-units.d])
-        ], [
-                AC_SUBST([binfmtdir], ['${prefix}/lib/binfmt.d'])
-                AC_SUBST([modulesloaddir], ['${prefix}/lib/modules-load.d'])
-                AC_SUBST([sysctldir], ['${prefix}/lib/sysctl.d'])
-                AC_SUBST([tmpfilesdir], ['${prefix}/lib/tmpfiles.d'])
-                AC_SUBST([kernelinstalldir], ['${prefix}/lib/kernel/install.d'])
-                AC_SUBST([ntpunitsdir], ['${prefix}/lib/systemd/ntp-units.d'])
-        ])
+	AS_IF([test x"$prefix" = x"/"], [
+		AC_SUBST([binfmtdir], [/usr/lib/binfmt.d])
+		AC_SUBST([modulesloaddir], [/usr/lib/modules-load.d])
+		AC_SUBST([sysctldir], [/usr/lib/sysctl.d])
+		AC_SUBST([tmpfilesdir], [/usr/lib/tmpfiles.d])
+		AC_SUBST([kernelinstalldir], [/usr/lib/kernel/install.d])
+		AC_SUBST([ntpunitsdir], [/usr/lib/systemd/ntp-units.d])
+	], [
+		AC_SUBST([binfmtdir], ['${prefix}/lib/binfmt.d'])
+		AC_SUBST([modulesloaddir], ['${prefix}/lib/modules-load.d'])
+		AC_SUBST([sysctldir], ['${prefix}/lib/sysctl.d'])
+		AC_SUBST([tmpfilesdir], ['${prefix}/lib/tmpfiles.d'])
+		AC_SUBST([kernelinstalldir], ['${prefix}/lib/kernel/install.d'])
+		AC_SUBST([ntpunitsdir], ['${prefix}/lib/systemd/ntp-units.d'])
+	])
 ])
 
 
 # Obsolete macros.
 AU_ALIAS([SYSTEMD_SYSTEM_UNITS_AC], [SYSTEMD_SYSTEMUNITDIR_AC])
 AU_DEFUN([SYSTEMD_SYSTEM_UNITS], [
-        SYSTEMD_SYSTEMUNITDIR
+	SYSTEMD_SYSTEMUNITDIR
 
-        AM_CONDITIONAL([WITH_SYSTEMD_SYSTEM_UNITS],
-                [test x"$with_systemdsystemunitdir" != x"no"])
+	AM_CONDITIONAL([WITH_SYSTEMD_SYSTEM_UNITS],
+		[test x"$with_systemdsystemunitdir" != x"no"])
 ], [Please replace WITH_SYSTEMD_SYSTEM_UNITS automake conditionals with WITH_SYSTEMDSYSTEMUNITDIR and drop the definition of the former.])

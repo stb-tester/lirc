@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** receive.h ***************************************************************
- ****************************************************************************
- *
- * functions that decode IR codes
- *
- * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
- *
- */
+** receive.h ***************************************************************
+****************************************************************************
+*
+* functions that decode IR codes
+*
+* Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
+*
+*/
 
 /**
  * @file receive.h
@@ -21,7 +20,7 @@
 
 #include "ir_remote.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -34,7 +33,13 @@ extern "C" {
 /** Min value returned by receive_timeout. */
 #define MIN_RECEIVE_TIMEOUT 100000
 
-/** 
+/**
+ * Set update mode, where recorded pre_data is verified to match
+ * the template pre_data. By defaulöt false.
+ */
+void rec_set_update_mode(int mode);
+
+/**
  * Set a file logging input from driver in same format as mode2(1).
  * @param f Open file to write on or NULL to disable logging.
  */
@@ -47,16 +52,18 @@ static inline lirc_t receive_timeout(lirc_t usec)
 }
 
 /**
- * Wait until data is available to read, or timeout.
+ * Wait until data is available in drv.fd, timeout or a signal is raised.
  *
- * @param maxusec Mac number of microseconda to wait.
- * @returns non-zero if the driver.fd is ready to read,
- *       or 0 indicating timeout
+ * @param maxusec timeout in micro seconds, given to select(2). If <= 0, the
+ *       function will block indefinitely until data is available or a
+ *       signal is processed. If positive, a timeout value in microseconds.
+ * @return True (1) if there is data available in drv.fd, else 0 indicating
+ *       timeout.
  */
 int waitfordata(__u32 maxusec);
 
 /** Clear internal buffer to pristine state. */
-void rec_buffer_init();
+void rec_buffer_init(void);
 
 /**
  * Flush the internal fifo and store a single code read
@@ -83,7 +90,7 @@ void rec_buffer_reset_wptr(void);
 
 
 /** @} */
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

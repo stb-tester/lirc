@@ -23,4 +23,3 @@
 extern const struct driver* hardwares[];
 
 #endif
-

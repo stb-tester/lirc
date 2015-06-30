@@ -1,14 +1,14 @@
 /****************************************************************************
- ** hw_iguanaIR.c ***********************************************************
- ****************************************************************************
- *
- * routines for interfacing with Iguanaworks USB IR devices
- *
- * Copyright (C) 2006, Joseph Dunn <jdunn@iguanaworks.net>
- *
- * Distribute under GPL version 2.
- *
- */
+** hw_iguanaIR.c ***********************************************************
+****************************************************************************
+*
+* routines for interfacing with Iguanaworks USB IR devices
+*
+* Copyright (C) 2006, Joseph Dunn <jdunn@iguanaworks.net>
+*
+* Distribute under GPL version 2.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -60,12 +60,11 @@ static void recv_loop(int fd, int notify)
 		lirc_t prevCode = -1;
 
 		request = iguanaCreateRequest(IG_DEV_RECVON, 0, NULL);
-		if (iguanaWriteRequest(request, conn))
+		if (iguanaWriteRequest(request, conn)) {
 			while (!recvDone) {
 				/* read from device */
-				do {
+				do
 					response = iguanaReadResponse(conn, 1000);
-				}
 				while (!recvDone && ((response == NULL && errno == ETIMEDOUT)
 						     || (iguanaResponseIsError(response) && errno == ETIMEDOUT)));
 
@@ -75,15 +74,15 @@ static void recv_loop(int fd, int notify)
 						logprintf(LIRC_ERROR, "error response: %s\n", strerror(errno));
 					break;
 				} else if (iguanaCode(response) == IG_DEV_RECV) {
-					uint32_t *code;
+					uint32_t* code;
 					unsigned int length, x, y = 0;
-					lirc_t buffer[8];	/* we read 8 bytes max at a time
+					lirc_t buffer[8];       /* we read 8 bytes max at a time
 								 * from the device, i.e. packet
 								 * can only contain 8
 								 * signals. */
 
 					/* pull the data off the packet */
-					code = (uint32_t *) iguanaRemoveData(response, &length);
+					code = (uint32_t*)iguanaRemoveData(response, &length);
 					length /= sizeof(uint32_t);
 
 					/* translate the code into lirc_t pulses (and make
@@ -118,15 +117,16 @@ static void recv_loop(int fd, int notify)
 
 					/* write the data and free it */
 					if (y > 0) {
-						chk_write(fd, 
-                                                          buffer, 
-                                                          sizeof(lirc_t) * y);
+						chk_write(fd,
+							  buffer,
+							  sizeof(lirc_t) * y);
 					}
 					free(code);
 				}
 
 				iguanaFreePacket(response);
 			}
+		}
 
 		iguanaFreePacket(request);
 	}
@@ -135,7 +135,7 @@ static void recv_loop(int fd, int notify)
 	close(fd);
 }
 
-static int iguana_init()
+static int iguana_init(void)
 {
 	int recv_pipe[2], retval = 0;
 
@@ -163,6 +163,7 @@ static int iguana_init()
 				_exit(0);
 			} else {
 				int dummy;
+
 				close(recv_pipe[1]);
 				close(notify[1]);
 				/* make sure child has set its signal handler to avoid race with iguana_deinit() */
@@ -181,19 +182,18 @@ static int iguana_init()
 	return retval;
 }
 
-static pid_t dowaitpid(pid_t pid, int *stat_loc, int options)
+static pid_t dowaitpid(pid_t pid, int* stat_loc, int options)
 {
 	pid_t retval;
 
-	do {
+	do
 		retval = waitpid(pid, stat_loc, options);
-	}
-	while (retval == (pid_t) - 1 && errno == EINTR);
+	while (retval == (pid_t)-1 && errno == EINTR);
 
 	return retval;
 }
 
-static int iguana_deinit()
+static int iguana_deinit(void)
 {
 	/* close the connection to the iguana daemon */
 	if (sendConn != -1) {
@@ -202,9 +202,8 @@ static int iguana_deinit()
 	}
 
 	/* signal the child process to exit */
-	if (child > 0 && (kill(child, SIGTERM) == -1 || dowaitpid(child, NULL, 0) != (pid_t) - 1)) {
+	if (child > 0 && (kill(child, SIGTERM) == -1 || dowaitpid(child, NULL, 0) != (pid_t)-1))
 		child = 0;
-	}
 
 	/* close drv.fd since otherwise we leak open files */
 	close(drv.fd);
@@ -213,20 +212,21 @@ static int iguana_deinit()
 	return child == 0;
 }
 
-static char *iguana_rec(struct ir_remote *remotes)
+static char* iguana_rec(struct ir_remote* remotes)
 {
-	char *retval = NULL;
+	char* retval = NULL;
+
 	if (rec_buffer_clear())
 		retval = decode_all(remotes);
 	return retval;
 }
 
-static bool daemonTransaction(unsigned char code, void *value, size_t size)
+static bool daemonTransaction(unsigned char code, void* value, size_t size)
 {
-	uint8_t *data;
+	uint8_t* data;
 	bool retval = false;
 
-	data = (uint8_t *) malloc(size);
+	data = (uint8_t*)malloc(size);
 	if (data != NULL) {
 		iguanaPacket request, response = NULL;
 
@@ -236,8 +236,9 @@ static bool daemonTransaction(unsigned char code, void *value, size_t size)
 			if (iguanaWriteRequest(request, sendConn))
 				response = iguanaReadResponse(sendConn, 10000);
 			iguanaFreePacket(request);
-		} else
+		} else {
 			free(data);
+		}
 
 		/* handle success */
 		if (!iguanaResponseIsError(response))
@@ -247,7 +248,7 @@ static bool daemonTransaction(unsigned char code, void *value, size_t size)
 	return retval;
 }
 
-static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
+static int iguana_send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int retval = 0;
 	uint32_t freq;
@@ -260,13 +261,13 @@ static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	if (send_buffer_put(remote, code)) {
 		int length, x;
-		const lirc_t *signals;
-		uint32_t *igsignals;
+		const lirc_t* signals;
+		uint32_t* igsignals;
 
 		length = send_buffer_length();
 		signals = send_buffer_data();
 
-		igsignals = (uint32_t *) malloc(sizeof(uint32_t) * length);
+		igsignals = (uint32_t*)malloc(sizeof(uint32_t) * length);
 		if (igsignals != NULL) {
 			iguanaPacket request, response = NULL;
 
@@ -277,15 +278,18 @@ static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
 					igsignals[x] |= IG_PULSE_BIT;
 			}
 
-			/* construct a request and send it to the daemon */
+			/* construct a request and send it to the daemon
+			 * TRICKY: IguanaFreePacket free()'s both the
+			 * igsignals  chunk and the request packet, but
+			 * iguanaCreateRequest does not malloc that chunk.
+			 */
 			request = iguanaCreateRequest(IG_DEV_SEND, sizeof(uint32_t) * length, igsignals);
 			if (iguanaWriteRequest(request, sendConn)) {
 				/* response will only come back after the device has
 				 * transmitted */
 				response = iguanaReadResponse(sendConn, 10000);
-				if (!iguanaResponseIsError(response)) {
+				if (!iguanaResponseIsError(response))
 					retval = 1;
-				}
 
 				iguanaFreePacket(response);
 			}
@@ -298,13 +302,13 @@ static int iguana_send(struct ir_remote *remote, struct ir_ncode *code)
 	return retval;
 }
 
-static int iguana_ioctl(unsigned int code, void *arg)
+static int iguana_ioctl(unsigned int code, void* arg)
 {
 	int retcode = -1;
-	uint8_t channels = *(uint8_t *) arg;
+	uint8_t channels = *(uint8_t*)arg;
 
 	/* set the transmit channels: return 0 on success, 4 if
-	   out-of-range (see ioctl) */
+	 * out-of-range (see ioctl) */
 	if (code == LIRC_SET_TRANSMITTER_MASK) {
 		if (channels > 0x0F)
 			retcode = 4;
@@ -334,28 +338,27 @@ static lirc_t readdata(lirc_t timeout)
 }
 
 const struct driver hw_iguanaIR = {
-	.name		=	"iguanaIR",
-	.device		=	"0",
-	.features	=	LIRC_CAN_REC_MODE2 | \
-				LIRC_CAN_SEND_PULSE | \
-				LIRC_CAN_SET_SEND_CARRIER | \
-				LIRC_CAN_SET_TRANSMITTER_MASK,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	sizeof(int),
-	.init_func	=	iguana_init,
-	.deinit_func	=	iguana_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	iguana_send,
-	.rec_func	=	iguana_rec,
-	.decode_func	=	receive_decode,
-	.drvctl_func	=	iguana_ioctl,
-	.readdata	=	readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "iguanaIR",
+	.device		= "0",
+	.features	= LIRC_CAN_REC_MODE2 | \
+			  LIRC_CAN_SEND_PULSE | \
+			  LIRC_CAN_SET_SEND_CARRIER | \
+			  LIRC_CAN_SET_TRANSMITTER_MASK,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= sizeof(int),
+	.init_func	= iguana_init,
+	.deinit_func	= iguana_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= iguana_send,
+	.rec_func	= iguana_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= iguana_ioctl,
+	.readdata	= readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_iguanaIR, (const struct driver*)NULL };
-

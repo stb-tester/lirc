@@ -3,20 +3,21 @@ ACLOCAL_AMFLAGS             = -I m4
 DISTCLEANFILES              = input_map.inc lirc/input_map.inc
 CLEANFILES                  = driver_api.dox lirc_client.dox
 EXTRA_DIST                  = input_map.inc input_map.sh \
-			      driver_api.dox  lirc_client.dox  mainpage.dox \
-			      driver_api.doxhead  lirc_client.doxhead
+                              driver_api.dox  lirc_client.dox  mainpage.dox \
+                              driver_api.doxhead  lirc_client.doxhead
 
 BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
 
-lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la
+lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
+                              libirrecord.la
 
 liblirc_la_LDFLAGS          = -ldl
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \
-			      driver.c \
+                              driver.c \
                               drv_admin.c \
                               dump_config.c \
                               input_map.c \
@@ -26,7 +27,10 @@ liblirc_la_SOURCES          = config_file.c \
                               receive.c  \
                               release.c \
                               serial.c \
-                              transmit.c
+                              transmit.c \
+                              util.c
+
+libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 3:0:3
 liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
@@ -40,7 +44,7 @@ liblirc_driver_la_SOURCES   = driver.h \
                               lirc_log.h \
                               receive.c \
                               receive.h \
-			      release.c \
+                              release.c \
                               serial.h \
                               serial.c \
                               transmit.c \
@@ -61,6 +65,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               input_map.h \
                               ir_remote.h \
                               ir_remote_types.h \
+                              irrecord.h \
                               lirc_client.h \
                               lirc_config.h \
                               lirc_log.h \
@@ -69,6 +74,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               receive.h \
                               serial.h \
                               transmit.h \
+                              util.h \
                               input_map.inc
 
 driver_api.dox: $(srcdir)/driver_api.doxhead  \
@@ -96,4 +102,6 @@ input_map.inc: lirc/input_map.inc
 lirc/input_map.inc:
 	$(srcdir)/input_map.sh >./input_map.inc
 
+checkfiles:
+	../git-tools/checkfiles $(SOURCES) $(HEADERS)
 

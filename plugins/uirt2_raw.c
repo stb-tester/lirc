@@ -1,28 +1,27 @@
-
 /****************************************************************************
- ** hw_uirt2_raw.c **********************************************************
- ****************************************************************************
- *
- * Routines for UIRT2 receiver/transmitter.
- * Receiving using the raw mode and transmitting using struc or raw mode,
- * depending on code length.
- *
- * Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- */
+** hw_uirt2_raw.c **********************************************************
+****************************************************************************
+*
+* Routines for UIRT2 receiver/transmitter.
+* Receiving using the raw mode and transmitting using struc or raw mode,
+* depending on code length.
+*
+* Copyright (C) 2003 Mikael Magnusson <mikma@users.sourceforge.net>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Library General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+*/
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -45,7 +44,7 @@
 
 #define NUMBYTES 6
 
-static uirt2_t *dev;
+static uirt2_t* dev;
 static lirc_t rec_buf[200];
 static int rec_rptr;
 static int rec_wptr;
@@ -54,65 +53,59 @@ static int rec_size;
 /* exported functions  */
 static int uirt2_raw_init(void);
 static int uirt2_raw_deinit(void);
-static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code);
-static char *uirt2_raw_rec(struct ir_remote *remotes);
-static int uirt2_raw_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
+static int uirt2_send(struct ir_remote* remote, struct ir_ncode* code);
+static char* uirt2_raw_rec(struct ir_remote* remotes);
+static int uirt2_raw_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static lirc_t uirt2_raw_readdata(lirc_t timeout);
 
 /* forwards */
-static int uirt2_send_mode2_raw(uirt2_t * dev,
-				struct ir_remote *remote,
-				const lirc_t * buf,
-				int length);
-static int uirt2_send_mode2_struct1(uirt2_t * dev,
-                                    struct ir_remote *remote,
-                                    const lirc_t * buf,
-                                    int length);
+static int uirt2_send_mode2_raw(uirt2_t* dev, struct ir_remote* remote, const lirc_t* buf, int length);
+static int uirt2_send_mode2_struct1(uirt2_t* dev, struct ir_remote* remote, const lirc_t* buf, int length);
 
 #ifndef LIRC_IRTTY
 #define LIRC_IRTTY "/dev/ttyS0"
 #endif
 
 const struct driver hw_uirt2_raw = {
-	.name		=	"uirt2_raw",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	uirt2_raw_init,
-	.deinit_func	=	uirt2_raw_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	uirt2_send,
-	.rec_func	=	uirt2_raw_rec,
-	.decode_func	=	uirt2_raw_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	uirt2_raw_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "uirt2_raw",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= uirt2_raw_init,
+	.deinit_func	= uirt2_raw_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= uirt2_send,
+	.rec_func	= uirt2_raw_rec,
+	.decode_func	= uirt2_raw_decode,
+	.drvctl_func	= NULL,
+	.readdata	= uirt2_raw_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver hw_usb_uirt_raw = {
-	.name		=	"usb_uirt_raw",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	0,
-	.init_func	=	uirt2_raw_init,
-	.deinit_func	=	uirt2_raw_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	uirt2_send,
-	.rec_func	=	uirt2_raw_rec,
-	.decode_func	=	uirt2_raw_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	uirt2_raw_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "usb_uirt_raw",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= uirt2_raw_init,
+	.deinit_func	= uirt2_raw_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= uirt2_send,
+	.rec_func	= uirt2_raw_rec,
+	.decode_func	= uirt2_raw_decode,
+	.drvctl_func	= NULL,
+	.readdata	= uirt2_raw_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, NULL };
@@ -130,13 +123,12 @@ static int queue_put(lirc_t data)
 		rec_buf[rec_wptr] = data;
 		rec_wptr = next;
 		return 0;
-	} else {
-		logprintf(LIRC_ERROR, "uirt2_raw: queue full");
-		return -1;
 	}
+	logprintf(LIRC_ERROR, "uirt2_raw: queue full");
+	return -1;
 }
 
-static int queue_get(lirc_t * pdata)
+static int queue_get(lirc_t* pdata)
 {
 	if (rec_wptr != rec_rptr) {
 		*pdata = rec_buf[rec_rptr];
@@ -144,24 +136,23 @@ static int queue_get(lirc_t * pdata)
 		LOGPRINTF(3, "queue_get: %d", *pdata);
 
 		return 0;
-	} else {
-		logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
-		return -1;
 	}
+	logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
+	return -1;
 }
 
-static int queue_is_empty()
+static int queue_is_empty(void)
 {
 	return rec_wptr == rec_rptr;
 }
 
-static void queue_clear()
+static void queue_clear(void)
 {
 	rec_rptr = 0;
 	rec_wptr = 0;
 }
 
-static int uirt2_raw_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+static int uirt2_raw_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
@@ -193,7 +184,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout)
 
 	LOGPRINTF(1, "uirt2_raw_readdata %d %d", !!(data & PULSE_BIT), data & PULSE_MASK);
 
-	return (data);
+	return data;
 }
 
 static int uirt2_raw_init(void)
@@ -202,20 +193,21 @@ static int uirt2_raw_init(void)
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not create lock files");
-		return (0);
+		return 0;
 	}
 
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not open %s", drv.device);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not reset tty");
 		close(drv.fd);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	/* Wait for UIRT device to power up */
@@ -225,45 +217,46 @@ static int uirt2_raw_init(void)
 		logprintf(LIRC_ERROR, "uirt2_raw: could not set baud rate");
 		close(drv.fd);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	if (!tty_setcsize(drv.fd, 8)) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not set csize");
 		close(drv.fd);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	if (!tty_setrtscts(drv.fd, 1)) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not enable hardware flow");
 		close(drv.fd);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
-	if ((dev = uirt2_init(drv.fd)) == NULL) {
+	dev = uirt2_init(drv.fd);
+	if (dev == NULL) {
 		logprintf(LIRC_ERROR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
 		close(drv.fd);
 		tty_delete_lock();
-		return (0);
+		return 0;
 	}
 
 	if (uirt2_setmoderaw(dev) < 0) {
 		logprintf(LIRC_ERROR, "uirt2_raw: could not set raw mode");
 		uirt2_raw_deinit();
-		return (0);
+		return 0;
 	}
 
 	if (uirt2_getversion(dev, &version) < 0) {
 		uirt2_raw_deinit();
-		return (0);
+		return 0;
 	}
 	if (version >= 0x0905) {
 		if (!tty_setdtr(drv.fd, 0)) {
 			logprintf(LIRC_ERROR, "uirt2_raw: could not set DTR");
 			uirt2_raw_deinit();
-			return (0);
+			return 0;
 		}
 	}
 
@@ -274,16 +267,15 @@ static int uirt2_raw_init(void)
 	rec_wptr = 0;
 	rec_size = sizeof(rec_buf) / sizeof(rec_buf[0]);
 
-	return (1);
+	return 1;
 }
 
 static int uirt2_raw_deinit(void)
 {
 	int version;
 
-	if (uirt2_getversion(dev, &version) >= 0 && version >= 0x0905) {
+	if (uirt2_getversion(dev, &version) >= 0 && version >= 0x0905)
 		tty_setdtr(drv.fd, 1);
-	}
 	uirt2_uninit(dev);
 	dev = NULL;
 	close(drv.fd);
@@ -292,42 +284,38 @@ static int uirt2_raw_deinit(void)
 	return 1;
 }
 
-static char *uirt2_raw_rec(struct ir_remote *remotes)
+static char* uirt2_raw_rec(struct ir_remote* remotes)
 {
 	LOGPRINTF(1, "uirt2_raw_rec");
 	LOGPRINTF(1, "uirt2_raw_rec: %p", remotes);
 
 	if (!rec_buffer_clear())
-		return (NULL);
+		return NULL;
 
 	if (remotes) {
-		char *res;
+		char* res;
+
 		res = decode_all(remotes);
-
 		return res;
-	} else {
-		lirc_t data;
-
-		queue_clear();
-		data = uirt2_read_raw(dev, 1);
-		if (data) {
-			queue_put(data);
-		}
-
-		return NULL;
 	}
+	lirc_t data;
+
+	queue_clear();
+	data = uirt2_read_raw(dev, 1);
+	if (data)
+		queue_put(data);
+	return NULL;
 }
 
-static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
+static int uirt2_send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int i, length;
 	unsigned long delay;
-	const lirc_t *signals;
+	const lirc_t* signals;
 	int res = 0;
 
-	if (!send_buffer_put(remote, code)) {
+	if (!send_buffer_put(remote, code))
 		return 0;
-	}
 
 	length = send_buffer_length();
 	signals = send_buffer_data();
@@ -345,11 +333,10 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 		res = uirt2_send_mode2_raw(dev, remote, signals, length);
 	}
 
-	if (!res) {
+	if (!res)
 		logprintf(LIRC_ERROR, "uirt2_send: remote not supported");
-	} else {
+	else
 		LOGPRINTF(1, "uirt2_send: succeeded");
-	}
 
 	/*
 	 * Some devices send the sequence in the background.  Wait for
@@ -360,19 +347,18 @@ static int uirt2_send(struct ir_remote *remote, struct ir_ncode *code)
 	 * our clock.
 	 */
 	delay = remote->min_remaining_gap;
-	for (i = 0; i < length; i++) {
-	    delay += signals[i];
-	}
+	for (i = 0; i < length; i++)
+		delay += signals[i];
 	delay = (delay * 11) / 10;
-	usleep (delay);
+	usleep(delay);
 
 	return res;
 }
 
-static int uirt2_send_mode2_raw(uirt2_t * dev,
-				struct ir_remote *remote,
-				const lirc_t * buf,
-				int length)
+static int uirt2_send_mode2_raw(uirt2_t*		dev,
+				struct ir_remote*	remote,
+				const lirc_t*		buf,
+				int			length)
 {
 	byte_t tmp[64];
 	int i, dest;
@@ -387,10 +373,11 @@ static int uirt2_send_mode2_raw(uirt2_t * dev,
 
 	for (i = 0, dest = 2; i < length; i++) {
 		int val = buf[i] / UIRT2_UNIT;
+
 		while (val > 0) {
 			if (val > UCHAR_MAX) {
 				tmp[dest++] = UCHAR_MAX - 1;
-				tmp[dest++] = 1;	/* 0 won't work */
+				tmp[dest++] = 1;        /* 0 won't work */
 				val -= UCHAR_MAX;
 				length += 2;
 			} else {
@@ -409,15 +396,14 @@ static int uirt2_send_mode2_raw(uirt2_t * dev,
 
 	res = uirt2_send_raw(dev, tmp, dest);
 
-	if (!res) {
+	if (!res)
 		return 0;
-	}
 
 	LOGPRINTF(1, "uirt2_send_mode2_raw exit");
 	return 1;
 }
 
-static void set_data_bit(byte_t * dest, int offset, int bit)
+static void set_data_bit(byte_t* dest, int offset, int bit)
 {
 	int i = offset / 8;
 	int j = offset % 8;
@@ -426,16 +412,15 @@ static void set_data_bit(byte_t * dest, int offset, int bit)
 	byte_t src = dest[i];
 	byte_t dst;
 
-	if (bit) {
+	if (bit)
 		dst = src | mask;
-	} else {
+	else
 		dst = src & ~mask;
-	}
 
 	dest[i] = dst;
 }
 
-static int calc_data_bit(struct ir_remote *remote, int table[], int table_len, int signal, int tUnit)
+static int calc_data_bit(struct ir_remote* remote, int table[], int table_len, int signal, int tUnit)
 {
 	int i;
 
@@ -459,10 +444,10 @@ static int calc_data_bit(struct ir_remote *remote, int table[], int table_len, i
 	return -1;
 }
 
-static int uirt2_send_mode2_struct1(uirt2_t * dev,
-               			    struct ir_remote *remote,
-               			    const lirc_t * buf,
-               			    int length)
+static int uirt2_send_mode2_struct1(uirt2_t*		dev,
+				    struct ir_remote*	remote,
+				    const lirc_t*	buf,
+				    int			length)
 {
 	const int TABLE_LEN = 2;
 	remstruct1_data_t rem;
@@ -482,19 +467,17 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev,
 	memset(table[1], 0, sizeof(table[1]));
 
 	res = uirt2_getversion(dev, &version);
-	if (res < 0) {
+	if (res < 0)
 		return res;
-	}
 	logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x", version);
 	freq = remote->freq;
 	if (freq == 0)
 		freq = DEFAULT_FREQ;
 	if (version >= 0x0905) {
-		if (((5000000 / freq) + 1) / 2 >= 0x80) {
+		if (((5000000 / freq) + 1) / 2 >= 0x80)
 			bFrequency = 0x80;
-		} else {
+		else
 			bFrequency = ((5000000 / freq) + 1) / 2;
-		}
 		tUnit = (bFrequency * 100) / 125;
 	} else {
 		tUnit = UIRT2_UNIT;
@@ -504,7 +487,7 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev,
 		int len = buf[i] / tUnit;
 
 		if (len > UCHAR_MAX) {
-			LOGPRINTF(0, "signal too long for transmission %lu", (__u32) buf[i]);
+			LOGPRINTF(0, "signal too long for transmission %lu", (__u32)buf[i]);
 			return 0;
 		}
 		if (i == 0) {
@@ -521,22 +504,19 @@ static int uirt2_send_mode2_struct1(uirt2_t * dev,
 			int part_length = i + 1;
 
 			/* is this a repeated signal sequence? */
-			if (!(i % 2 /* space */  && buf[i] == remote->min_remaining_gap)) {
+			if (!(i % 2 /* space */ && buf[i] == remote->min_remaining_gap))
 				return 0;
-			}
 
-			if ((length + 1) % part_length != 0) {
+			if ((length + 1) % part_length != 0)
 				return 0;
-			}
 
 			repeats = (length + 1) / part_length;
 
 			for (j = 1; j < repeats; j++) {
 				if (memcmp
-				    (&buf[0], &buf[j * part_length],
-				     (j + 1 == repeats ? part_length - 1 : part_length) * sizeof(*buf)) != 0) {
+					    (&buf[0], &buf[j * part_length],
+					    (j + 1 == repeats ? part_length - 1 : part_length) * sizeof(*buf)) != 0)
 					return 0;
-				}
 			}
 			break;
 		}

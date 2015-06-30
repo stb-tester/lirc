@@ -1,33 +1,33 @@
 /*****************************************************************************
- ** tira.c ****************************************************************
- *****************************************************************************
- * Routines for the HomeElectronics TIRA-2 USB dongle.
- *
- * Serial protocol described at:
- *    http://www.home-electro.com/Download/Protocol2.pdf
- *
- * Copyright (C) 2003 Gregory McLean <gregm@gxsnmp.org>
- *  modified for
- *  IRA support,
- *  transmit feature,
- *  receive in pulse/space mode feature
- *  by Arnold Pakolitz <spud28@gmail.com>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- *
- */
+** tira.c ****************************************************************
+*****************************************************************************
+* Routines for the HomeElectronics TIRA-2 USB dongle.
+*
+* Serial protocol described at:
+*    http://www.home-electro.com/Download/Protocol2.pdf
+*
+* Copyright (C) 2003 Gregory McLean <gregm@gxsnmp.org>
+*  modified for
+*  IRA support,
+*  transmit feature,
+*  receive in pulse/space mode feature
+*  by Arnold Pakolitz <spud28@gmail.com>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Library General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+*
+*/
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -52,13 +52,13 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
-int tira_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-int tira_init(void);
-int tira_deinit(void);
-char *tira_rec(struct ir_remote *remotes);
-char *tira_rec_mode2(struct ir_remote *remotes);
-static int tira_send(struct ir_remote *remote, struct ir_ncode *code);
-lirc_t tira_readdata(lirc_t timeout);
+static int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int tira_init(void);
+static int tira_deinit(void);
+static char* tira_rec(struct ir_remote* remotes);
+static char* tira_rec_mode2(struct ir_remote* remotes);
+static int tira_send(struct ir_remote* remote, struct ir_ncode* code);
+static lirc_t tira_readdata(lirc_t timeout);
 
 const char failwrite[] = "failed writing to device";
 const char strreconly[] = "receive";
@@ -69,64 +69,63 @@ static unsigned char deviceflags = 0;
 
 int pipe_fd[2] = { -1, -1 };
 
-static unsigned char device_type = 0;	//'t' for tira,'i' for ira
+static unsigned char device_type = 0;   //'t' for tira,'i' for ira
 static pid_t child_pid = -1;
 static struct timeval start, end, last;
 static unsigned char b[6];
-static unsigned char pulse_space;	//1=pulse
+static unsigned char pulse_space;       //1=pulse
 
 static ir_code code;
 
 #define CODE_LENGTH 64
 const struct driver hw_tira = {
-	.name		=	"tira",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_PULSE,
-	.send_mode	=	LIRC_MODE_PULSE,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	CODE_LENGTH,
-	.init_func	=	tira_init,
-	.deinit_func	=	tira_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	tira_send,
-	.rec_func	=	tira_rec,
-	.decode_func	=	tira_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "tira",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_LIRCCODE | LIRC_CAN_SEND_PULSE,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= CODE_LENGTH,
+	.init_func	= tira_init,
+	.deinit_func	= tira_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= tira_send,
+	.rec_func	= tira_rec,
+	.decode_func	= tira_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver hw_tira_raw = {
-	.name		=	"tira_raw",
-	.device		=	LIRC_IRTTY,
-	.features	=	LIRC_CAN_REC_MODE2,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_MODE2,
-	.code_length	=	CODE_LENGTH,
-	.init_func	=	tira_init,
-	.deinit_func	=	tira_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,	/* Cannot transmit in timing mode */
-	.rec_func	=	tira_rec_mode2,
-	.decode_func	=	tira_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	tira_readdata,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "tira_raw",
+	.device		= LIRC_IRTTY,
+	.features	= LIRC_CAN_REC_MODE2,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= CODE_LENGTH,
+	.init_func	= tira_init,
+	.deinit_func	= tira_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,              /* Cannot transmit in timing mode */
+	.rec_func	= tira_rec_mode2,
+	.decode_func	= tira_decode,
+	.drvctl_func	= NULL,
+	.readdata	= tira_readdata,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
 
 
-int tira_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	if (!map_code(remote, ctx, 0, 0, CODE_LENGTH, code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, CODE_LENGTH, code, 0, 0))
 		return 0;
-	}
 
 	map_gap(remote, ctx, &start, &last, 0);
 
@@ -137,8 +136,8 @@ char response[64 + 1];
 
 void displayonline(void)
 {
-	const char *dflags;
-	const char *dmode;
+	const char* dflags;
+	const char* dmode;
 
 	dflags = strreconly;
 	if (deviceflags & 1)
@@ -191,6 +190,7 @@ int child_process(int pipe_w, int oldprotocol)
 	fd_set read_set;
 	struct timeval tv, trailtime, currtime;
 	__u32 eusec;
+
 	tv.tv_sec = 0;
 	tv.tv_usec = 1000;
 	FD_ZERO(&read_set);
@@ -232,7 +232,7 @@ int child_process(int pipe_w, int oldprotocol)
 				data <<= 5;
 			if (data == 0) {
 				if (tmp > tirabuflen - 4)
-					break;	//we have to receive more data
+					break;  //we have to receive more data
 				if (tirabuffer[tmp + 3] != 0xB2) {
 					logprintf(LIRC_ERROR, "Tira error 00 00 xx B2 trailing : missing 0xB2");
 					return 0;
@@ -240,7 +240,7 @@ int child_process(int pipe_w, int oldprotocol)
 				if ((trailtime.tv_sec == 0) && (trailtime.tv_usec == 0))
 					gettimeofday(&trailtime, NULL);
 				if (tmp > tirabuflen - 6)
-					break;	//we have to receive more data
+					break;  //we have to receive more data
 				tmp += 4;
 				continue;
 			}
@@ -266,7 +266,6 @@ int child_process(int pipe_w, int oldprotocol)
 						logprintf(LIRC_ERROR, "Error writing pipe");
 						return 0;
 					}
-
 				}
 			}
 
@@ -314,7 +313,7 @@ int tira_setup_timing(int oldprotocol)
 		if (strncmp(response, "OIC", 3) != 0)
 			return 0;
 	}
-	pulse_space = 1;	//pulse
+	pulse_space = 1;        //pulse
 	/* Allocate a pipe for lircd to read from */
 	if (pipe(pipe_fd) == -1) {
 		logperror(LIRC_ERROR, "unable to create pipe");
@@ -345,43 +344,44 @@ int tira_setup_timing(int oldprotocol)
 	}
 	close(pipe_fd[1]);
 	displayonline();
-	return (1);
+	return 1;
 
 fail:
 	if (pipe_fd[0] != -1) {
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
 	}
-	return (0);
-
+	return 0;
 }
 
 int tira_setup(void)
 {
 	int ptr;
+
 	/* Clear the port of any random data */
-	while (read(drv.fd, &ptr, 1) >= 0) ;
+	while (read(drv.fd, &ptr, 1) >= 0)
+		;
 
 	/* Start off with the IP command. This was initially used to
-	   switch to timing mode on the Tira-1. The Tira-2 also
-	   supports this mode, however it does not switch the Tira-2
-	   into timing mode.
+	 * switch to timing mode on the Tira-1. The Tira-2 also
+	 * supports this mode, however it does not switch the Tira-2
+	 * into timing mode.
 	 */
 	if (write(drv.fd, "IP", 2) != 2) {
 		logprintf(LIRC_ERROR, failwrite);
 		return 0;
 	}
 	/* Wait till the chars are written, should use tcdrain but
-	   that don't seem to work... *shrug*
+	 * that don't seem to work... *shrug*
 	 */
 	usleep(2 * (100 * 1000));
 	chk_read(drv.fd, response, 3);
 
 	if (strncmp(response, "OIP", 3) == 0) {
-		chk_read(drv.fd, &ptr, 1);	/* read the calibration value */
-		chk_read(drv.fd, &ptr, 1);	/* read the version word */
+		chk_read(drv.fd, &ptr, 1);      /* read the calibration value */
+		chk_read(drv.fd, &ptr, 1);      /* read the version word */
 		/* Bits 4:7 in the version word set to one indicates a
-		   Tira-2 */
+		 * Tira-2 */
 		deviceflags = ptr & 0x0f;
 		if (ptr & 0xF0) {
 			logprintf(LIRC_INFO, "Tira-2 detected");
@@ -396,18 +396,18 @@ int tira_setup(void)
 		}
 
 		/* According to the docs we can do some bit work here
-		   and figure out what the device supports from the
-		   version word retrived.
-
-		   At this point we have a Device of some sort. Lets
-		   kick it into "Six bytes or Timing" mode.
+		 * and figure out what the device supports from the
+		 * version word retrived.
+		 *
+		 * At this point we have a Device of some sort. Lets
+		 * kick it into "Six bytes or Timing" mode.
 		 */
 		if (drv.rec_mode == LIRC_MODE_LIRCCODE)
-			return (tira_setup_sixbytes());
+			return tira_setup_sixbytes();
 		if (drv.rec_mode == LIRC_MODE_MODE2)
-			return (tira_setup_timing(0));
+			return tira_setup_timing(0);
 
-		return 0;	//unknown recmode
+		return 0;       //unknown recmode
 	}
 	logprintf(LIRC_ERROR, "unexpected response from device");
 	return 0;
@@ -416,6 +416,7 @@ int tira_setup(void)
 int ira_setup_sixbytes(unsigned char info)
 {
 	int i;
+
 	if (info != 0)
 		logprintf(LIRC_INFO, "Switching to 6bytes mode");
 	if (write(drv.fd, "I", 1) != 1) {
@@ -429,7 +430,7 @@ int ira_setup_sixbytes(unsigned char info)
 	}
 
 	/* Wait till the chars are written, should use tcdrain but
-	   that don't seem to work... *shrug*
+	 * that don't seem to work... *shrug*
 	 */
 	usleep(100000);
 	i = read(drv.fd, response, 2);
@@ -446,9 +447,10 @@ int ira_setup(void)
 {
 	int i;
 	int ptr;
+
 	/* Clear the port of any random data */
-	while (read(drv.fd, &ptr, 1) >= 0) 
-   		;
+	while (read(drv.fd, &ptr, 1) >= 0)
+		;
 
 	if (ira_setup_sixbytes(0) == 0)
 		return 0;
@@ -464,7 +466,7 @@ int ira_setup(void)
 	}
 
 	/* Wait till the chars are written, should use tcdrain but
-	   that don't seem to work... *shrug*
+	 * that don't seem to work... *shrug*
 	 */
 	if (!tty_setbaud(drv.fd, 57600))
 		return 0;
@@ -493,16 +495,20 @@ int ira_setup(void)
 			usleep(200000);
 			memset(response, 0, sizeof(response));
 			i = read(drv.fd, response, sizeof(response) - 1);
-			logprintf(LIRC_INFO, "Ira %s detected", response);
+			if (i > 0)
+				logprintf(LIRC_INFO, "Ira %s detected", response);
+			else
+				logprintf(LIRC_WARNING,
+					  "Cannot read firmware response");
 		} else {
 			logprintf(LIRC_INFO, "Ira-1 detected");
 		}
 
 		if (drv.rec_mode == LIRC_MODE_LIRCCODE)
-			return (ira_setup_sixbytes(1));	//switch back to 6bytes mode
+			return ira_setup_sixbytes(1);   //switch back to 6bytes mode
 		if (drv.rec_mode == LIRC_MODE_MODE2)
-			return (tira_setup_timing(1));
-		return 0;	//unknown recmode
+			return tira_setup_timing(1);
+		return 0;       //unknown recmode
 	}
 	logprintf(LIRC_ERROR, "unexpected response from device");
 	return 0;
@@ -541,7 +547,8 @@ int tira_init(void)
 		logprintf(LIRC_ERROR, "could not create lock files");
 		return 0;
 	}
-	if ((drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
+	if (drv.fd < 0) {
 		tty_delete_lock();
 		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 		return 0;
@@ -562,7 +569,7 @@ int tira_init(void)
 	else if (check_ira())
 		device_type = 'i';
 
-	const char *device_string;
+	const char* device_string;
 
 	switch (device_type) {
 	case 't':
@@ -588,17 +595,15 @@ int tira_deinit(void)
 {
 	if (child_pid != -1) {
 		/* Kill the child process, and wait for it to exit */
-		if (kill(child_pid, SIGTERM) == -1) {
-			return (0);
-		}
-		if (waitpid(child_pid, NULL, 0) == 0) {
-			return (0);
-		}
+		if (kill(child_pid, SIGTERM) == -1)
+			return 0;
+		if (waitpid(child_pid, NULL, 0) == 0)
+			return 0;
 		child_pid = -1;
 	}
 
 	if (drv.fd != -1) {
-		close(drv.fd);	/* pipe_fd[0] or actual device */
+		close(drv.fd);  /* pipe_fd[0] or actual device */
 		drv.fd = -1;
 	}
 	sleep(1);
@@ -606,16 +611,16 @@ int tira_deinit(void)
 	return 1;
 }
 
-char *tira_rec_mode2(struct ir_remote *remotes)
+char* tira_rec_mode2(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
-		return (NULL);
-	return (decode_all(remotes));
+		return NULL;
+	return decode_all(remotes);
 }
 
-char *tira_rec(struct ir_remote *remotes)
+char* tira_rec(struct ir_remote* remotes)
 {
-	char *m;
+	char* m;
 	int i, x;
 
 	last = end;
@@ -641,45 +646,45 @@ char *tira_rec(struct ir_remote *remotes)
 	gettimeofday(&end, NULL);
 	code = 0;
 	for (i = 0; i < x; i++) {
-		code |= ((ir_code) b[i]);
+		code |= ((ir_code)b[i]);
 		code = code << 8;
 	}
 
-	LOGPRINTF(1, " -> %0llx", (__u64) code);
+	LOGPRINTF(1, " -> %0llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;
 }
 
-static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
+static int tira_send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int retval = 0;
 	unsigned int freq;
-	unsigned char *sendtable;
+	unsigned char* sendtable;
 
 	if ((deviceflags & 1) == 0) {
 		logprintf(LIRC_ERROR, "this device cannot send ir signals!");
-		return (0);
+		return 0;
 	}
 
 	if (drv.rec_mode != LIRC_MODE_LIRCCODE) {
 		logprintf(LIRC_ERROR, "can't send ir signals in timing mode!");
-		return (0);
+		return 0;
 	}
 	/* set the carrier frequency if necessary */
 	freq = remote->freq;
 	if (freq == 0)
 		freq = DEFAULT_FREQ;
 	logprintf(LIRC_INFO, "modulation freq %d Hz", freq);
-	freq = 2000000 / freq;	/* this will be the clock word */
+	freq = 2000000 / freq;  /* this will be the clock word */
 	if (freq > 255)
 		freq = 255;
 
 	if (!send_buffer_put(remote, code))
-		return (0);
+		return 0;
 
 	int length, i, s;
-	const lirc_t *signals;
+	const lirc_t* signals;
 	char idx;
 	int tmp;
 
@@ -693,8 +698,8 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	/* Create burst space array for tira */
 	int bsa[12];
-	memset(&bsa, 0, sizeof(bsa));
 
+	memset(&bsa, 0, sizeof(bsa));
 	for (i = 0; i < length; i++) {
 		idx = -1;
 		tmp = signals[i] / 8;
@@ -705,12 +710,13 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 				break;
 			}
 
-		if (idx == -1)
+		if (idx == -1) {
 			for (s = 0; s < 12; s++)
 				if ((tmp < bsa[s] + (freq / 16)) && (tmp > bsa[s] - (freq / 16))) {
 					idx = s;
 					break;
 				}
+		}
 
 		if (idx == -1) {
 			/* Add a new entry into bsa table */
@@ -742,15 +748,15 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 		tmp++;
 	}
 
-	unsigned char *wrtbuf;
+	unsigned char* wrtbuf;
+
 	wrtbuf = malloc(length + 28);
 	if (wrtbuf == NULL)
 		return retval;
-
 	wrtbuf[0] = 'I';
 	wrtbuf[1] = 'X';
 	wrtbuf[2] = freq;
-	wrtbuf[3] = 0;		/* reserved */
+	wrtbuf[3] = 0;          /* reserved */
 	for (i = 0; i < 12; i++) {
 		wrtbuf[4 + i * 2] = (bsa[i] & 0xFFFF) >> 8;
 		wrtbuf[5 + i * 2] = bsa[i] & 0xFF;
@@ -766,19 +772,19 @@ static int tira_send(struct ir_remote *remote, struct ir_ncode *code)
 			i = 0;
 		if (i != 0) {
 			usleep(200000);
-			if (write(drv.fd, &wrtbuf[1], length - 1) != length - 1) {
+			if (write(drv.fd, &wrtbuf[1], length - 1) != length - 1)
 				i = 0;
-			}
 		}
-	} else
+	} else {
 		i = write(drv.fd, wrtbuf, length);
+	}
 
-	if (i != length)
+	if (i != length) {
 		logprintf(LIRC_ERROR, failwrite);
-	else {
+	} else {
 		usleep(200000);
 		i = read(drv.fd, wrtbuf, 3);
-		if (strncmp((char *)wrtbuf, "OIX", 3) == 0)
+		if (i == 3 && strncmp((char *)wrtbuf, "OIX", 3) == 0)
 			retval = 1;
 		else
 			logprintf(LIRC_ERROR, "no response from device");

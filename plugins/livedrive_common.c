@@ -41,18 +41,19 @@ ir_code pre, code;
 
 int livedrive_init(void)
 {
-	if ((drv.fd = open(drv.device, O_RDONLY, 0)) < 0) {
+	drv.fd = open(drv.device, O_RDONLY, 0);
+	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
-		return (0);
+		return 0;
 	}
 
-	return (1);
+	return 1;
 }
 
 int livedrive_deinit(void)
 {
 	close(drv.fd);
-	return (1);
+	return 1;
 }
 
 int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
@@ -60,12 +61,12 @@ int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	lirc_t gap;
 
 	if (!map_code(remote, ctx, 16, pre, 16, code, 0, 0))
-		return (0);
+		return 0;
 
 	gap = 0;
-	if (start.tv_sec - last.tv_sec >= 2)
+	if (start.tv_sec - last.tv_sec >= 2) {
 		ctx->repeat_flag = 0;
-	else {
+	} else {
 		gap = time_elapsed(&last, &start);
 
 		if (gap < 300000)
@@ -75,7 +76,7 @@ int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	}
 
 	LOGPRINTF(1, "repeat_flag: %d", ctx->repeat_flag);
-	LOGPRINTF(1, "gap: %lu", (__u32) gap);
+	LOGPRINTF(1, "gap: %lu", (__u32)gap);
 
-	return (1);
+	return 1;
 }

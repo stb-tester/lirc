@@ -70,7 +70,6 @@ contains one or more driver(s) visible in the user interface. </p>
 
   <p> The tool lirc-lsplugins can be used to generate overviews of the drivers and their
      capabilities. </p>
-  </p>
     <!--hr width="70%">
     <br-->
     <h1>The C interface</h1>
@@ -261,11 +260,10 @@ struct driver my_driver = {
 }
 
 
-struct driver* hardwares[] = { &my_hardware, NULL };
+struct driver* hardwares[] = { &amp;my_hardware, NULL };
     </pre>
-  </p>
   <h3>Syntax and semantics of the functions</h3>
-  <p>Note that, even if implementing the functions in C++, there is no need to declare them as <code>external "C"</code>.</p>
+  <p>Note that, even if implementing the functions in C++, there is no need to declare them as <code>external "C"</code>.
 
   <h4><code>init_func</code></h4>
   <code>int myinit_func(void)</code> <p>Function called for initializing the driver and the hardware.
@@ -307,7 +305,7 @@ struct driver* hardwares[] = { &my_hardware, NULL };
   <p>For non-LIRC_MODE_LIRCCODE, just call <code>receive_decode</code>,
  or write <code>receive_decode</code> directly in the <code>struct driver</code>.
   <h4><code>drvctl_func</code></h4>
-  <code>mydrvctl_func(unsigned int cmd, void *arg)</code></h4>
+  <code>mydrvctl_func(unsigned int cmd, void *arg)</code>
       <p>Depending on the particular driver and hardware, additional
          functionality can be implemented here, with semantics as
          determined by the driver. There are some cmd definitions in
@@ -453,11 +451,11 @@ CPP := g++
 
 # Rule for compiling C
 %.so: %.c
-        $(CC)  $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
+        $(CC)  $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $&lt; $(EXTRA_LIBS)
 
 # Rule for compiling C++
 %.so: %.cpp
-        $(CPP) $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
+        $(CPP) $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $&lt; $(EXTRA_LIBS)
 
 default:
         @echo "There is no default target in this makefile."

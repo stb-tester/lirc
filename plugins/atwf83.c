@@ -1,14 +1,14 @@
 /****************************************************************************
- ** hw_atwf83.c *************************************************************
- ****************************************************************************
- *
- * Lirc driver for Aureal remote (ATWF@83-W001 ESKY.CC USB_V3B)
- *
- * Copyright (C) 2010 Romain Henriet <romain-devel@laposte.net>
- *
- * Distribute under GPL version 2 or later.
- *
- */
+** hw_atwf83.c *************************************************************
+****************************************************************************
+*
+* Lirc driver for Aureal remote (ATWF@83-W001 ESKY.CC USB_V3B)
+*
+* Copyright (C) 2010 Romain Henriet <romain-devel@laposte.net>
+*
+* Distribute under GPL version 2 or later.
+*
+*/
 
 #include <stdio.h>
 #include <pthread.h>
@@ -22,18 +22,18 @@ enum {
 	RPT_YES = 1,
 };
 
-static int atwf83_init();
-static int atwf83_deinit();
-static char *atwf83_rec(struct ir_remote *remotes);
-static int atwf83_decode(struct ir_remote *remote, struct decode_ctx_t* ctx);
-static void *atwf83_repeat();
+static int atwf83_init(void);
+static int atwf83_deinit(void);
+static char* atwf83_rec(struct ir_remote* remotes);
+static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static void* atwf83_repeat(void*);
 
 /** Max number of repetitions */
 const unsigned max_repeat_count = 500;
 /** Code that triggers key release */
 const unsigned release_code = 0x00000000;
 /** Code that triggers device remove  */
-const unsigned remove_code =0x00FFFFFF;
+const unsigned remove_code = 0x00FFFFFF;
 /** Time to wait before first repetition */
 const unsigned repeat_time1_us = 500000;
 /** Time to wait between two repetitions */
@@ -53,37 +53,36 @@ static int repeat_state = RPT_NO;
 
 /* Aureal USB iR Receiver */
 const struct driver hw_atwf83 = {
-	.name		=	"atwf83",
-	.device		=	"/dev/hidraw0",
-	.fd		=	-1,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	32,
-	.init_func	=	atwf83_init,
-	.deinit_func	=	atwf83_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	atwf83_rec,
-	.decode_func	=	atwf83_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "atwf83",
+	.device		= "/dev/hidraw0",
+	.fd		= -1,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= 32,
+	.init_func	= atwf83_init,
+	.deinit_func	= atwf83_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= atwf83_rec,
+	.decode_func	= atwf83_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };
 
 
-static int atwf83_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
+static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	LOGPRINTF(1, "atwf83_decode");
 
-	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0)) {
+	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
-	}
 
 	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
@@ -92,17 +91,18 @@ static int atwf83_decode(struct ir_remote *remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int atwf83_init()
+static int atwf83_init(void)
 {
 	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
-	if ((fd_hidraw = open(drv.device, O_RDONLY)) < 0) {
+	fd_hidraw = open(drv.device, O_RDONLY);
+	if (fd_hidraw < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
 		return 0;
 	}
 	drv.fd = fd_hidraw;
 
 	/* Create pipe so that events sent by the repeat thread will
-	   trigger main thread */
+	 * trigger main thread */
 	if (pipe(fd_pipe) != 0) {
 		logperror(LIRC_ERROR, "couldn't open pipe");
 		close(fd_hidraw);
@@ -117,7 +117,7 @@ static int atwf83_init()
 	return 1;
 }
 
-static int atwf83_deinit()
+static int atwf83_deinit(void)
 {
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
@@ -144,7 +144,7 @@ static int atwf83_deinit()
  *	Runtime that reads device, forwards codes to main thread
  *	and simulates repetitions.
  */
-static void *atwf83_repeat()
+static void* atwf83_repeat(void* arg)
 {
 	int repeat_count = 0;
 	unsigned ev[2];
@@ -159,11 +159,10 @@ static void *atwf83_repeat()
 		// Initialize set to monitor device's events
 		FD_ZERO(&files);
 		FD_SET(fd_hidraw, &files);
-		if (pressed) {
+		if (pressed)
 			sel = select(FD_SETSIZE, &files, NULL, NULL, &delay);
-		} else {
+		else
 			sel = select(FD_SETSIZE, &files, NULL, NULL, NULL);
-		}
 
 		switch (sel) {
 		case 1:
@@ -172,7 +171,9 @@ static void *atwf83_repeat()
 
 			if (rd == -1) {
 				// Error
-				logprintf(LIRC_ERROR, "(%s) Could not read %s", __FUNCTION__, drv.device);
+				logprintf(LIRC_ERROR,
+					  "(%s) Could not read %s",
+					   __func__, drv.device);
 				goto exit_loop;
 			}
 			if ((rd == 8 && ev[0] != 0) || (rd == 6 && ev[0] > 2)) {
@@ -192,7 +193,8 @@ static void *atwf83_repeat()
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR,"(%s) too many repetitions", __FUNCTION__);
+				logprintf(LIRC_ERROR, "(%s) too many repetitions", __func__);
+
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -202,7 +204,8 @@ static void *atwf83_repeat()
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR, "(%s) select() failed", __FUNCTION__);
+			logprintf(LIRC_ERROR,
+				  "(%s) select() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
@@ -217,21 +220,21 @@ exit_loop:
 }
 
 /*
-*  Aureal Technology ATWF@83 cheap remote
-*  specific code.
-*/
-
-static char *atwf83_rec(struct ir_remote *remotes)
+ *  Aureal Technology ATWF@83 cheap remote
+ *  specific code.
+ */
+static char* atwf83_rec(struct ir_remote* remotes)
 {
 	unsigned ev;
 	int rd;
+
 	last = end;
 	gettimeofday(&start, NULL);
 	rd = read(drv.fd, &ev, sizeof(ev));
 
 	if (rd == -1) {
 		// Error
-		logprintf(LIRC_ERROR, "(%s) could not read pipe", __FUNCTION__);
+		logprintf(LIRC_ERROR, "(%s) could not read pipe", __func__);
 		atwf83_deinit();
 		return 0;
 	}

@@ -1,9 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-DISTCLEANFILES          = man/* html/* man-html/*
+DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl table.html
 
-EXTRA_DIST              = Doxyfile
+EXTRA_DIST              = Doxyfile make-driver-toc.sh \
+                          manpage.xsl docpage.xsl docpage.xsl  page.xsl
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
@@ -15,7 +16,6 @@ dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
 man_sources             =
-nodist_html_DATA        =
 nodist_man_MANS         =
 
 if BUILD_XTOOLS
@@ -26,7 +26,7 @@ manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
-dist_doc_DATA           = lirc.css irxevent.keys
+dist_doc_DATA           = irxevent.keys
 if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
@@ -37,19 +37,18 @@ dist_website_DATA       = $(website_files)
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
-                          $(website_html_extra)
-
+                          html-source/lirc.css
 
 website_imagedir        = $(docdir)/lirc.org/images
 dist_website_image_DATA = $(dist_image_DATA)
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        += $(generated_html)
+nodist_html_DATA        = $(generated_html)
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
 
-dist_html_DATA          = $(html_includes) html-source/lirc.css
+dist_html_DATA          =  html-source/lirc.css
 
 if HAVE_PYMOD_YAML
 dist_html_DATA          += table.html
@@ -74,35 +73,30 @@ dist_image_DATA         = images/atwf83.jpg \
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 clean-local:
-	rm -rf html
-	rm -rf man
-	rm -rf man-html
+	rm -rf $(DISTCLEANFILES)
 
-table.html:
-	$(PYTHON) $(srcdir)/data2table > table.html
+table.html: driver-toc.xsl
+	$(PYTHON) $(srcdir)/data2table  | \
+	    xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-$(generated_html): $(html_sources)
+driver-toc.xsl: .phony
+	$(srcdir)/make-driver-toc.sh > $@
+
+$(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
 	mkdir html 2>/dev/null || :
-	cat $(srcdir)/html-source/head.html > $@
-	cat $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') >> $@
-	cat $(srcdir)/html-source/foot.html >> $@
+	xsltproc --html docpage.xsl \
+	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
-$(manpage_html): $(nodist_man_MANS)
+$(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
 	-test -d man-html || mkdir man-html
-	cat $(srcdir)/html-source/head.html > $@
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
-	man2html -M ../html/index.html $${src}.[1-8] | \
-	            $(SED) -e '1,/<BODY>/d' \
-	                -e '/<\/BODY>/,$$d' \
-	                -e '/HREF="#index"/d' \
-	                -e '/NAME="index"/,/^Time:/d' \
-	                -e '/SEE ALSO/,/^<HR>/d' >> $@
-	cat  $(srcdir)/html-source/foot.html >> $@
+	    man2html -M ../html/index.html $${src}.[1-8] | \
+	        sed '1,/^$$/d' | xsltproc --html $(srcdir)/manpage.xsl - > $@
 
 $(nodist_man_MANS): $(man_sources)
 	-test -d man || mkdir man
@@ -116,6 +110,8 @@ api-docs.tar.gz: $(API_SRC)
 	find api-docs -name \*.tmp -delete
 	tar czf $@ api-docs
 
+.phony:
+
 man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irdb-get.1 \
                            $(srcdir)/man-source/irexec.1 \
@@ -127,6 +123,8 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irtestcase.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
+                           $(srcdir)/man-source/lirc.4 \
+                           $(srcdir)/man-source/lirc_ioctl.4 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
@@ -136,18 +134,21 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircrcd.8 \
                            $(srcdir)/man-source/mode2.1
 
-html_sources            =  $(srcdir)/html-source/alsa-usb.html \
+html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/api-general.html \
-                           $(srcdir)/html-source/atwf83.html \
-                           $(srcdir)/html-source/audio-alsa.html \
-                           $(srcdir)/html-source/audio.html \
+                           $(srcdir)/html-source/atilibusb_driver.html \
+                           $(srcdir)/html-source/atwf83_driver.html \
+                           $(srcdir)/html-source/audio-alsa_driver.html \
+                           $(srcdir)/html-source/audio_driver.html \
                            $(srcdir)/html-source/configuration-guide.html \
                            $(srcdir)/html-source/configure.html \
-                           $(srcdir)/html-source/devinput.html \
+                           $(srcdir)/html-source/default_driver.html \
+                           $(srcdir)/html-source/devinput_driver.html \
                            $(srcdir)/html-source/driver-api.html \
+                           $(srcdir)/html-source/file_driver.html \
                            $(srcdir)/html-source/help.html \
-                           $(srcdir)/html-source/imon-24g.html \
-                           $(srcdir)/html-source/imon.html \
+                           $(srcdir)/html-source/imon-24g_driver.html \
+                           $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
                            $(srcdir)/html-source/lirc_client.html \
@@ -155,10 +156,8 @@ html_sources            =  $(srcdir)/html-source/alsa-usb.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/srm7500atilibusb_driver.html \
                            $(srcdir)/html-source/technical.html \
-                           $(srcdir)/html-source/tira.html
-
-html_includes           =  $(srcdir)/html-source/foot.html \
-                           $(srcdir)/html-source/head.html
+                           $(srcdir)/html-source/tira_driver.html \
+                           $(srcdir)/html-source/udp_driver.html
 
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
@@ -171,6 +170,8 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irtestcase.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
+                           man/lirc.4 \
+                           man/lirc_ioctl.4 \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
                            man/lirc-setup.1 \
@@ -190,6 +191,8 @@ manpage_html            += man-html/ircat.html \
                            man-html/irtestcase.html \
                            man-html/irw.html \
                            man-html/lirc-config-tool.html \
+                           man-html/lirc.html \
+                           man-html/lirc_ioctl.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
                            man-html/lirc-setup.html \
@@ -199,16 +202,20 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircrcd.html \
                            man-html/mode2.html
 
-generated_html          =  html/alsa-usb.html \
-                           html/audio-alsa.html \
-                           html/audio.html \
+generated_html          =  html/alsa-usb_driver.html \
+                           html/audio-alsa_driver.html \
+                           html/atilibusb_driver.html \
+                           html/atwf83_driver.html \
+                           html/audio_driver.html \
                            html/configuration-guide.html \
                            html/configure.html \
-                           html/devinput.html \
+                           html/default_driver.html \
+                           html/devinput_driver.html \
                            html/driver-api.html \
+                           html/file_driver.html \
                            html/help.html \
-                           html/imon-24g.html \
-                           html/imon.html \
+                           html/imon-24g_driver.html \
+                           html/imon_driver.html \
                            html/index.html \
                            html/install.html \
                            html/lirc_client.html \
@@ -216,7 +223,8 @@ generated_html          =  html/alsa-usb.html \
                            html/pronto2lirc.html \
                            html/srm7500atilibusb_driver.html \
                            html/technical.html \
-                           html/tira.html
+                           html/tira_driver.html \
+                           html/udp_driver.html
 
 website_files           =  lirc.org/cir.html \
                            lirc.org/cvs.html \
@@ -236,9 +244,7 @@ website_files           =  lirc.org/cir.html \
                            lirc.org/pictures.html \
                            lirc.org/pinout_TRM1038.txt \
                            lirc.org/receivers.html \
+                           lirc.org/robots.txt \
                            lirc.org/software.html \
                            lirc.org/transmitters.html \
                            lirc.org/tv_cards.html
-
-website_html_extra      =  html-source/lirc.css \
-                           lirc.org/robots.txt

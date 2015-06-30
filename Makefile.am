@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ## Makefile.am, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 ACLOCAL_AMFLAGS         = -I m4
+AM_MAKEFLAGS            = -j
 
 AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2 -Wno-portability
 
@@ -45,8 +46,7 @@ install-data-hook:
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 
 dist-hook: ChangeLog
-	chmod u+w $(distdir)
-	find $(distdir) -name .gitkeep -o -name .gitignore -delete
+
 
 paths.h: Makefile
 	@echo "#ifndef PATHS_H"          >$@

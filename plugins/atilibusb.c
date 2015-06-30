@@ -1,25 +1,24 @@
-
 /****************************************************************************
- ** hw_atilibusb.c **********************************************************
- ****************************************************************************
- *  Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
- *
- *  Copyright (C) 2004 Michael Gold <mgold@scs.carleton.ca>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- */
+** hw_atilibusb.c **********************************************************
+****************************************************************************
+*  Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
+*
+*  Copyright (C) 2004 Michael Gold <mgold@scs.carleton.ca>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Library General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+*/
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -35,65 +34,67 @@
 #include "lirc_driver.h"
 
 #define CODE_BYTES 5
-#define USB_TIMEOUT (1000*60)
+#define USB_TIMEOUT (1000 * 60)
 
-static int ati_init();
-static int ati_deinit();
-static char *ati_rec(struct ir_remote *remotes);
+static int ati_init(void);
+static int ati_deinit(void);
+static char* ati_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
-static struct usb_device *find_usb_device(void);
-static int find_device_endpoints(struct usb_device *dev);
+static struct usb_device* find_usb_device(void);
+static int find_device_endpoints(struct usb_device* dev);
+static char device_path[PATH_MAX + 1] = {0};
 
 const struct driver hw_atilibusb = {
-	.name		=	"atilibusb",
-	.device		=	NULL,
-	.fd		=	-1,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	CODE_BYTES * CHAR_BIT,
-	.init_func	=	ati_init,
-	.deinit_func	=	ati_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	ati_rec,
-	.decode_func	=	receive_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=  	"No info available."
+	.name		= "atilibusb",
+	.device		= NULL,
+	.fd		= -1,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= CODE_BYTES * CHAR_BIT,
+	.init_func	= ati_init,
+	.deinit_func	= ati_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= ati_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available."
 };
 
 const struct driver* hardwares[] = { &hw_atilibusb, (const struct driver*)NULL };
 
 typedef struct {
-	u_int16_t vendor;
-	u_int16_t product;
+	u_int16_t	vendor;
+	u_int16_t	product;
 } usb_device_id;
 
 /* table of compatible remotes -- from lirc_atiusb */
 static usb_device_id usb_remote_id_table[] = {
-	{0x0bc7, 0x0002},	/* X10 USB Firecracker Interface */
-	{0x0bc7, 0x0003},	/* X10 VGA Video Sender */
-	{0x0bc7, 0x0004},	/* ATI Wireless Remote Receiver */
-	{0x0bc7, 0x0005},	/* NVIDIA Wireless Remote Receiver */
-	{0x0bc7, 0x0006},	/* ATI Wireless Remote Receiver */
-	{0x0bc7, 0x0007},	/* X10 USB Wireless Transceiver */
-	{0x0bc7, 0x0008},	/* X10 USB Wireless Transceiver */
-	{0x0bc7, 0x0009},	/* X10 USB Wireless Transceiver */
-	{0x0bc7, 0x000A},	/* X10 USB Wireless Transceiver */
-	{0x0bc7, 0x000B},	/* X10 USB Transceiver */
-	{0x0bc7, 0x000C},	/* X10 USB Transceiver */
-	{0x0bc7, 0x000D},	/* X10 USB Transceiver */
-	{0x0bc7, 0x000E},	/* X10 USB Transceiver */
-	{0x0bc7, 0x000F},	/* X10 USB Transceiver */
-	{0, 0}			/* Terminating entry */
+	{ 0x0bc7, 0x0002 },     /* X10 USB Firecracker Interface */
+	{ 0x0bc7, 0x0003 },     /* X10 VGA Video Sender */
+	{ 0x0bc7, 0x0004 },     /* ATI Wireless Remote Receiver */
+	{ 0x0bc7, 0x0005 },     /* NVIDIA Wireless Remote Receiver */
+	{ 0x0bc7, 0x0006 },     /* ATI Wireless Remote Receiver */
+	{ 0x0bc7, 0x0007 },     /* X10 USB Wireless Transceiver */
+	{ 0x0bc7, 0x0008 },     /* X10 USB Wireless Transceiver */
+	{ 0x0bc7, 0x0009 },     /* X10 USB Wireless Transceiver */
+	{ 0x0bc7, 0x000A },     /* X10 USB Wireless Transceiver */
+	{ 0x0bc7, 0x000B },     /* X10 USB Transceiver */
+	{ 0x0bc7, 0x000C },     /* X10 USB Transceiver */
+	{ 0x0bc7, 0x000D },     /* X10 USB Transceiver */
+	{ 0x0bc7, 0x000E },     /* X10 USB Transceiver */
+	{ 0x0bc7, 0x000F },     /* X10 USB Transceiver */
+	{ 0,	  0	 }      /* Terminating entry */
 };
 
-static struct usb_dev_handle *dev_handle = NULL;
-struct usb_endpoint_descriptor *dev_ep_in = NULL, *dev_ep_out = NULL;
+static struct usb_dev_handle* dev_handle = NULL;
+struct usb_endpoint_descriptor* dev_ep_in = NULL;
+struct usb_endpoint_descriptor* dev_ep_out = NULL;
 static pid_t child = -1;
 
 /* init strings -- from lirc_atiusb */
@@ -103,9 +104,9 @@ static char init2[] = { 0x80, 0x01, 0x00, 0x20, 0x14, 0x20, 0x20, 0x20 };
 /****/
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int ati_init()
+static int ati_init(void)
 {
-	struct usb_device *usb_dev;
+	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
 	LOGPRINTF(1, "initializing USB receiver");
@@ -151,6 +152,11 @@ static int ati_init()
 		goto fail;
 	}
 
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 	child = fork();
 	if (child == -1) {
 		logperror(LIRC_ERROR, "couldn't fork child process");
@@ -158,8 +164,6 @@ static int ati_init()
 	} else if (child == 0) {
 		usb_read_loop(pipe_fd[1]);
 	}
-
-	LOGPRINTF(1, "USB receiver initialized");
 	return 1;
 
 fail:
@@ -175,7 +179,7 @@ fail:
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int ati_deinit()
+static int ati_deinit(void)
 {
 	int err = 0;
 
@@ -200,7 +204,7 @@ static int ati_deinit()
 	return !err;
 }
 
-static char *ati_rec(struct ir_remote *remotes)
+static char* ati_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear()) {
 		ati_deinit();
@@ -210,46 +214,45 @@ static char *ati_rec(struct ir_remote *remotes)
 }
 
 /* returns 1 if the given device should be used, 0 otherwise */
-static int is_device_ok(struct usb_device *dev)
+static int is_device_ok(struct usb_device* dev)
 {
 	/* TODO: allow exact device to be specified */
 
 	/* check if the device ID is in usb_remote_id_table */
-	usb_device_id *dev_id;
-	for (dev_id = usb_remote_id_table; dev_id->vendor; dev_id++) {
-		if ((dev->descriptor.idVendor == dev_id->vendor) && (dev->descriptor.idProduct == dev_id->product)) {
+	usb_device_id* dev_id;
+
+	for (dev_id = usb_remote_id_table; dev_id->vendor; dev_id++)
+		if ((dev->descriptor.idVendor == dev_id->vendor) && (dev->descriptor.idProduct == dev_id->product))
 			return 1;
-		}
-	}
 
 	return 0;
 }
 
 /* find a compatible USB receiver and return a usb_device,
  * or NULL on failure. */
-static struct usb_device *find_usb_device(void)
+static struct usb_device* find_usb_device(void)
 {
-	struct usb_bus *usb_bus;
-	struct usb_device *dev;
+	struct usb_bus* usb_bus;
+	struct usb_device* dev;
 
 	usb_init();
 	usb_find_busses();
 	usb_find_devices();
 
 	for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
-		for (dev = usb_bus->devices; dev; dev = dev->next) {
+		for (dev = usb_bus->devices; dev; dev = dev->next)
 			if (is_device_ok(dev))
 				return dev;
-		}
 	}
-	return NULL;		/* no suitable device found */
+	return NULL;            /* no suitable device found */
 }
 
 /* set dev_ep_in and dev_ep_out to the in/out endpoints of the given
  * device. returns 1 on success, 0 on failure. */
-static int find_device_endpoints(struct usb_device *dev)
+static int find_device_endpoints(struct usb_device* dev)
 {
-	struct usb_interface_descriptor *idesc;
+	struct usb_interface_descriptor* idesc;
+
 	if (dev->descriptor.bNumConfigurations != 1)
 		return 0;
 	if (dev->config[0].bNumInterfaces != 1)
@@ -295,7 +298,7 @@ static void usb_read_loop(int fd)
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 
-	for (;;) {
+	for (;; ) {
 		char buf[CODE_BYTES];
 		int bytes_r, bytes_w, pos;
 		/* TODO: accept codes only for a specific channel */
@@ -303,7 +306,7 @@ static void usb_read_loop(int fd)
 
 		/* read from the USB device */
 		bytes_r =
-		    usb_interrupt_read(dev_handle, dev_ep_in->bEndpointAddress, &buf[0], sizeof(buf), USB_TIMEOUT);
+			usb_interrupt_read(dev_handle, dev_ep_in->bEndpointAddress, &buf[0], sizeof(buf), USB_TIMEOUT);
 		if (bytes_r < 0) {
 			if (errno == EAGAIN || errno == ETIMEDOUT)
 				continue;

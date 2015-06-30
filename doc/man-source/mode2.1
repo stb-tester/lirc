@@ -1,43 +1,98 @@
-.TH MODE2 "1" "Last change: November 2001" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Feb 2015" "mode2 @version@" "User Commands"
 .SH NAME
-mode2, xmode2 - shows the pulse/space length of infrared signals
+mode2 - shows pulse/space length or decoded input from infrared drivers
+
 .SH SYNOPSIS
-.B mode2
-[\fIoptions\fR]
+.B mode2 --driver <driver> --device <device>
+[\fIother options\fR]
+.br
+.B mode2 --raw --device <device>
+[\fIother options\fR]
 .SH DESCRIPTION
 The main purpose of these programs is to check operation of your
 home-brew LIRC receiver hardware and to see the IR waveform of the
 remote controller without an expensive oscilloscope. Very useful for
-debugging. Of course this program won't work with hardware that decodes
-the signals itself like e.g. TV cards or the Irman.
-
-mode2 will simply print pulse&space lengths to stdout.
+debugging also in situations you just need to verify configuration.
+.P
+mode2 will simply print pulse and space lengths to stdout for drivers
+supporting LIRC_MODE_MODE2. For drivers supporting LIRC_MODE_LIRCCODE such
+as TV-cards and the irman driver writes the decoded, integer values.
+.P
+When given the correct driver mode2 should always work. Without a driver,
+the --raw option should always work for /dev/lirc* devices. At the time
+of writing, usb devices also work in most cases. However, since it is
+tricky to get the path to the usb device, such ones are normally best
+accessed using a driver.
 
 .SH OPTIONS
 
 .TP
-\fB\-h\fR \fB\-\-help\fR
-display usage summary
-.TP
-\fB\-v\fR \fB\-\-version\fR
-display version
-.TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-read from given device
+Read from given device.
 .TP
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
-use given driver
+Use given driver.
 .TP
-\fB\-m\fR \fB\-\-mode\fR
-enable alternative display mode
+\fB\-m\fR \fB\-\-mode=mode\fR
+Write pulse/space data as raw config files. Does not affect
+LIRCCODE drivers.
+.TP
+\fB\-s\fR \fB\-\-scope=time\fR
+Enable 'scope like display with time us per char. Does not
+affect lirccode drivers.
+.TP
+\fB\-k\fR \fB\-\-keep-root\fR
+Don't drop root privileges after opening device. See RUNNING AS ROOT.
+.TP
+\fB\-g\fR \fB\-\-gap=time\fR
+Treat spaces longer than time as the gap. Time is in microseconds.
 .TP
 \fB\-r\fR \fB\-\-raw\fR
-access device directly
+Access device directly. This is primarely intended to be used with kernel
+drivers i.e., when accessing /dev/lirc* devices. Using other devices might
+work, but is in general undefined.
+.TP
+\fB\-A\fR \fB\-\-driver\-options=key:value[|key:value...]\fR
+Set driver-specific option named key to given value.
+.TP
+\fB\-U\fR \fB\-\-plugindir=directory\fR
+Load drivers from directory. See DRIVER LOADING.
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display usage summary.
+.TP
+\fB\-v\fR \fB\-\-version\fR
+Display version.
+
+.SH RUNNING AS ROOT
+In many cases mode2 needs to run as root to access devices not available
+to regular users. On the other hand, running as root creates problems
+such as log files owned by root, security concerns etc.
+.P
+In order to cope with this, mode2 by default drops root privileges
+after opening the input device. This support is based on that root
+permissions are accquired using sudo(1) e. g., using
+.nf
+
+        $ sudo mode2 --raw /dev/lirc0
+
+.fi
+If not using sudo, the same behaviour could be accomplished using the
+SUDO_USER environment variable e. g.,
+.nf
+
+        # SUDO_USER=$LOGNAME mode2 --raw /dev/lirc0
+
+.fi
+The --keep-root option will make mode2 to keep root privileges for the
+complete run.
+
+
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The search path used for this is determined
 by (falling priority):
 .IP \- 2
-The --plugindir option if available.
+The --plugindir option.
 .IP \- 2
 The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
@@ -45,15 +100,30 @@ The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 
-.SH FILES
+.SH ENVIRONMENT
+.TP 4
+.B LIRC_LOGLEVEL
+Determines the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+.IP
+The level can also be an integer in the range 3 (almost no messages) to
+10.
 
+.SH "FILES"
 .TP 4
 .B ~/.cache/mode2.log
 Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log
 
 .SH "SEE ALSO"
-mode2(1), xmode2(1)
+xmode2(1)
+.br
+lirc_ioctl(4)
+.br
+lirc(4)
 
 The documentation for
 .B lirc

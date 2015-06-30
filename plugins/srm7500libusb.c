@@ -1,38 +1,38 @@
-
 /****************************************************************************
- ** hw_srm7500libusb.c ******************************************************
- ****************************************************************************
- *  Userspace (libusb) driver for Philips SRM7500 RF Remote.
- *
- *  Copyright (C) 2009 Henning Glawe <glaweh@debian.org>
- *
- *  based on Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
- *
- *  Copyright (C) 2004 Michael Gold <mgold@scs.carleton.ca>
- *
- *  and hw_devinput.c
- *
- *  Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
- */
+** hw_srm7500libusb.c ******************************************************
+****************************************************************************
+*  Userspace (libusb) driver for Philips SRM7500 RF Remote.
+*
+*  Copyright (C) 2009 Henning Glawe <glaweh@debian.org>
+*
+*  based on Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
+*
+*  Copyright (C) 2004 Michael Gold <mgold@scs.carleton.ca>
+*
+*  and hw_devinput.c
+*
+*  Copyright (C) 2002 Oliver Endriss <o.endriss@gmx.de>
+*
+*  This program is free software; you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation; either version 2 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Library General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
+*/
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
 #define _GNU_SOURCE
+
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -79,27 +79,27 @@
 
 #pragma pack(1)
 typedef struct {
-	u_int8_t time[4];
-	u_int8_t length;
-	u_int8_t type;
+	u_int8_t	time[4];
+	u_int8_t	length;
+	u_int8_t	type;
 	union {
 		struct {
-			u_int8_t SrcAddrMode;
-			u_int8_t SrcPANId[2];
-			u_int8_t SrcAddr[2];	//Note: only valid for SrcAddrMode==0x02
-			u_int8_t DstAddrMode;
-			u_int8_t DstPANId[2];
-			u_int8_t DstAddr[2];	//Note: only valid for DstAddrMode==0x02
-			u_int8_t msduLength;	// <= aMaxMACFrameSize, so it is most probably one byte
-			u_int8_t data[PACKET_SIZE_MAX - 6 - 10];
+			u_int8_t	SrcAddrMode;
+			u_int8_t	SrcPANId[2];
+			u_int8_t	SrcAddr[2]; //Note: only valid for SrcAddrMode==0x02
+			u_int8_t	DstAddrMode;
+			u_int8_t	DstPANId[2];
+			u_int8_t	DstAddr[2];     //Note: only valid for DstAddrMode==0x02
+			u_int8_t	msduLength;     // <= aMaxMACFrameSize, so it is most probably one byte
+			u_int8_t	data[PACKET_SIZE_MAX - 6 - 10];
 		} zig;
 		u_int8_t data[PACKET_SIZE_MAX - 6];
 	};
 } philipsrf_incoming_t;
 
 typedef struct {
-	u_int8_t length;
-	u_int8_t type;
+	u_int8_t	length;
+	u_int8_t	type;
 	union {
 		u_int8_t data[PACKET_SIZE_MAX - 2];
 	};
@@ -107,59 +107,60 @@ typedef struct {
 #pragma pack()
 
 #define CODE_BYTES 3
-#define USB_TIMEOUT (1000*10)
+#define USB_TIMEOUT (1000 * 10)
 #define CONTROL_BUFFERSIZE 128
 
-static int srm7500_init();
-static int srm7500_deinit();
-static char *srm7500_rec(struct ir_remote *remotes);
-static int srm7500_decode(struct ir_remote *remote, struct decode_ctx_t *ctx);
+static int srm7500_init(void);
+static int srm7500_deinit(void);
+static char* srm7500_rec(struct ir_remote* remotes);
+static int srm7500_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int usb_read_loop(int fd);
-static struct usb_device *find_usb_device(void);
-static int find_device_endpoints(struct usb_device *dev);
-static int srm7500_initialize_usbdongle();
-static int srm7500_initialize_802154_stack();
-static int srm7500_deinitialize_usbdongle();
-static int philipsrf_input(philipsrf_incoming_t * buffer_in);
+static struct usb_device* find_usb_device(void);
+static int find_device_endpoints(struct usb_device* dev);
+static int srm7500_initialize_usbdongle(void);
+static int srm7500_initialize_802154_stack(void);
+static int srm7500_deinitialize_usbdongle(void);
+static int philipsrf_input(philipsrf_incoming_t* buffer_in);
 static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
 
 const struct driver hw_srm7500libusb = {
-	.name		=	"srm7500libusb",
-	.device		=	NULL,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	CODE_BYTES * CHAR_BIT,
-	.init_func	=	srm7500_init,
-	.deinit_func	=	srm7500_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	srm7500_rec,
-	.decode_func	=	srm7500_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "srm7500libusb",
+	.device		= NULL,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= CODE_BYTES * CHAR_BIT,
+	.init_func	= srm7500_init,
+	.deinit_func	= srm7500_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= srm7500_rec,
+	.decode_func	= srm7500_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 const struct driver* hardwares[] = { &hw_srm7500libusb, NULL };
 
 typedef struct {
-	u_int16_t vendor;
-	u_int16_t product;
+	u_int16_t	vendor;
+	u_int16_t	product;
 } usb_device_id;
 
 /* table of compatible remotes */
 static usb_device_id usb_remote_id_table[] = {
-	{0x0471, 0x0617},	/* Philips IEEE802.15.4 RF Dongle */
-	{0, 0}			/* Terminating entry */
+	{ 0x0471, 0x0617 },     /* Philips IEEE802.15.4 RF Dongle */
+	{ 0,	  0	 }      /* Terminating entry */
 };
 
-static struct usb_dev_handle *dev_handle = NULL;
-static struct usb_endpoint_descriptor *dev_ep_in = NULL, *dev_ep_out = NULL;
+static struct usb_dev_handle* dev_handle = NULL;
+static struct usb_endpoint_descriptor* dev_ep_in = NULL;
+static struct usb_endpoint_descriptor* dev_ep_out = NULL;
 static pid_t child = -1;
 static ir_code code;
 static int repeat_flag = 0;
@@ -178,13 +179,15 @@ static int requested_usb_device_number = -1;
 static int srm7500_terminate = 0;
 
 /* initialize driver -- returns 1 on success, 0 on error */
-static int srm7500_init()
+static int srm7500_init(void)
 {
 	int pipe_fd[2] = { -1, -1 };
 	int got_macShortAddress = 0;
 	int got_macPANId = 0;
 	int got_remoteShortAddress = 0;
-	const char *op_start, *op_end, *string_end;
+	const char* op_start;
+	const char* op_end;
+	const char* string_end;
 
 	logprintf(LIRC_INFO, "initializing driver");
 
@@ -199,21 +202,20 @@ static int srm7500_init()
 	string_end = strchr(drv.device, 0);
 	while (op_start < string_end) {
 		int result;
+
 		op_end = strchrnul(op_start, ',');
 		if (!strncmp(op_start, "macShortAddress=", 16)) {
 			result = sscanf(op_start + 16, "%hhx:%hhx", macShortAddress, macShortAddress + 1);
-			if (result == 2) {
+			if (result == 2)
 				got_macShortAddress = 1;
-			} else {
+			else
 				logprintf(LIRC_ERROR, "error parsing option macShortAddress");
-			}
 		} else if (!strncmp(op_start, "macPANId=", 9)) {
 			result = sscanf(op_start + 9, "%hhx:%hhx", macPANId, macPANId + 1);
-			if (result == 2) {
+			if (result == 2)
 				got_macPANId = 1;
-			} else {
+			else
 				logprintf(LIRC_ERROR, "error parsing option macPANId");
-			}
 		} else if (!strncmp(op_start, "LogicalChannel=", 15)) {
 			result = sscanf(op_start + 15, "%hhx", &LogicalChannel);
 			if (result == 1) {
@@ -224,24 +226,22 @@ static int srm7500_init()
 			}
 		} else if (!strncmp(op_start, "remoteShortAddress=", 19)) {
 			result = sscanf(op_start + 19, "%hhx:%hhx", remoteShortAddress, remoteShortAddress + 1);
-			if (result == 2) {
+			if (result == 2)
 				got_remoteShortAddress = 1;
-			} else {
+			else
 				logprintf(LIRC_ERROR, "error parsing option remoteShortAddress");
-			}
 		} else if (!strncmp(op_start, "remoteExtendedAddress=", 22)) {
 			result = sscanf(op_start + 22, "%hhx:%hhx:%hhx:%hhx:"
 					"%hhx:%hhx:%hhx:%hhx",
 					remoteExtendedAddress, remoteExtendedAddress + 1, remoteExtendedAddress + 2,
 					remoteExtendedAddress + 3, remoteExtendedAddress + 4, remoteExtendedAddress + 5,
 					remoteExtendedAddress + 6, remoteExtendedAddress + 7);
-			if (result == 8) {
+			if (result == 8)
 				remoteExtendedAddressGiven = 1;
-			} else {
+			else
 				logprintf(LIRC_ERROR, "error parsing option remoteExtendedAddress");
-			}
 		} else if (!strncmp(op_start, "macBeaconPayload=", 17)) {
-			strncpy((char *)macBeaconPayload, op_start + 17, op_end - (op_start + 17));
+			strncpy((char*)macBeaconPayload, op_start + 17, op_end - (op_start + 17));
 			macBeaconPayload[op_end - (op_start + 17)] = 0;
 			macBeaconPayloadGiven = 1;
 		} else if (!strncmp(op_start, "usb=", 4)) {
@@ -265,7 +265,7 @@ static int srm7500_init()
 		return 0;
 	}
 	if (!macBeaconPayloadGiven) {
-		if (gethostname((char *)(macBeaconPayload + 7), 64 - 7) != 0) {
+		if (gethostname((char*)(macBeaconPayload + 7), 64 - 7) != 0) {
 			logprintf(LIRC_ERROR, "could not get hostname!");
 			return 0;
 		}
@@ -312,7 +312,7 @@ static int srm7500_init()
 
 		act.sa_handler = srm7500_sigterm;
 		sigfillset(&act.sa_mask);
-		act.sa_flags = SA_RESTART;	/* don't fiddle with EINTR */
+		act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 		sigaction(SIGTERM, &act, NULL);
 		sigaction(SIGINT, &act, NULL);
 
@@ -339,7 +339,6 @@ fail:
 	drv.fd = pipe_fd[0];
 
 	return 1;
-
 }
 
 static void srm7500_sigterm(int sig)
@@ -350,9 +349,9 @@ static void srm7500_sigterm(int sig)
 	srm7500_terminate = 1;
 }
 
-static int srm7500_initialize_usbdongle()
+static int srm7500_initialize_usbdongle(void)
 {
-	struct usb_device *usb_dev;
+	struct usb_device* usb_dev;
 	int res;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 
@@ -390,45 +389,44 @@ static int srm7500_initialize_usbdongle()
 	/* device initialization */
 	memset(control_buffer, 0, sizeof(control_buffer));
 	usb_control_msg(dev_handle, USB_TYPE_STANDARD | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_INTERFACE,
-			0x0000, 0x0000, (char *)control_buffer, 0x0000, USB_TIMEOUT);
+			0x0000, 0x0000, (char*)control_buffer, 0x0000, USB_TIMEOUT);
 	control_buffer[0] = 0xe4;
 	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
-			0x0300, 0x0000, (char *)control_buffer, 0x0010, USB_TIMEOUT);
+			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	control_buffer[0] = 0;
 	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
-			0x0300, 0x0000, (char *)control_buffer, 0x0010, USB_TIMEOUT);
+			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	/*
-	   HG: with this the red control light on usb receiver is
-	   switched on seems like the command to enable transceiver
+	 * HG: with this the red control light on usb receiver is
+	 * switched on seems like the command to enable transceiver
 	 */
 	memset(control_buffer, 0, sizeof(control_buffer));
 	control_buffer[0] = 0xe2;
 	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
-			0x0300, 0x0000, (char *)control_buffer, 0x0010, USB_TIMEOUT);
+			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	memset(control_buffer, 0, sizeof(control_buffer));
 	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
-			0x0300, 0x0000, (char *)control_buffer, 0x0010, USB_TIMEOUT);
+			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	return 1;
 }
 
-static int srm7500_deinitialize_usbdongle()
+static int srm7500_deinitialize_usbdongle(void)
 {
 	int result = 1;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 
 	logprintf(LIRC_INFO, "disabling USB receiver");
 
-	if (!dev_handle) {
+	if (!dev_handle)
 		return result;
-	}
 	/*
-	   HG: sending e1 as control payload disables the control
-	   light. so most probably the transceiver, too
+	 * HG: sending e1 as control payload disables the control
+	 * light. so most probably the transceiver, too
 	 */
 	memset(control_buffer, 0, sizeof(control_buffer));
 	control_buffer[0] = 0xe1;
 	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
-			0x0300, 0x0000, (char *)control_buffer, 0x0010, USB_TIMEOUT);
+			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	usb_reset(dev_handle);
 	if (usb_close(dev_handle) < 0)
 		result = 0;
@@ -437,7 +435,7 @@ static int srm7500_deinitialize_usbdongle()
 	return result;
 }
 
-static int srm7500_initialize_802154_stack()
+static int srm7500_initialize_802154_stack(void)
 {
 	philipsrf_outgoing_t packet_buffer_out;
 	philipsrf_incoming_t packet_buffer_in;
@@ -458,7 +456,7 @@ static int srm7500_initialize_802154_stack()
 
 	packet_buffer_out.length = 2;
 	packet_buffer_out.type = MLME_RESET_request;
-	packet_buffer_out.data[0] = MLME_TRUE;	/* SetDefaultPIB */
+	packet_buffer_out.data[0] = MLME_TRUE;  /* SetDefaultPIB */
 
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
@@ -526,11 +524,11 @@ static int srm7500_initialize_802154_stack()
 	}
 
 	/* beacon data:
-	   contents: ASCII PHILIPS + hostname */
+	 * contents: ASCII PHILIPS + hostname */
 	u_int8_t beacon_length = 0;
-	beacon_length = (u_int8_t) strnlen((char *)macBeaconPayload, 64);
 
 	/* beacon data length */
+	beacon_length = (u_int8_t)strnlen((char*)macBeaconPayload, 64);
 	packet_buffer_out.length = 3;
 	packet_buffer_out.type = MLME_SET_request;
 	packet_buffer_out.data[0] = PIB_ATTR_macBeaconPayload_Length;
@@ -562,12 +560,12 @@ static int srm7500_initialize_802154_stack()
 	packet_buffer_out.data[2] = LogicalChannel;
 	/* note: the RFC lists three bytes StartTime here. strange. */
 	/* BeaconOrder/SuperframeOrder? both are listed in the rfc
-	   with 0-15 range so this could be the compression of
-	   both... */
+	 * with 0-15 range so this could be the compression of
+	 * both... */
 	packet_buffer_out.data[3] = 0xff;
-	packet_buffer_out.data[4] = MLME_TRUE;	/* PANCoordinator */
+	packet_buffer_out.data[4] = MLME_TRUE;  /* PANCoordinator */
 	/* In RFC, there is a bunch of other data for this primitive
-	   (Table 72), which will be interpreted as set to 0 */
+	 * (Table 72), which will be interpreted as set to 0 */
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_START_confirm) && (packet_buffer_in.data[0] == 0))) {
@@ -577,11 +575,11 @@ static int srm7500_initialize_802154_stack()
 	return 1;
 }
 
-static int philipsrf_input(philipsrf_incoming_t * buffer_in)
+static int philipsrf_input(philipsrf_incoming_t* buffer_in)
 {
 	int ret = 0;
 
-	ret = usb_interrupt_read(dev_handle, dev_ep_in->bEndpointAddress, (char *)buffer_in, 64, USB_TIMEOUT);
+	ret = usb_interrupt_read(dev_handle, dev_ep_in->bEndpointAddress, (char*)buffer_in, 64, USB_TIMEOUT);
 	if (ret > 0) {
 		LOGPRINTF(1, "in: time 0x%08x, length 0x%02x, type 0x%02x",
 			  ((buffer_in->time[3] << 24) | (buffer_in->time[2] << 16) | (buffer_in->
@@ -601,13 +599,13 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 	hexdump("out data:", buffer_out.data, buffer_out.length - 1);
 
 	ret =
-	    usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, (char *)&buffer_out, buffer_out.length + 1,
-				USB_TIMEOUT);
+		usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, (char*)&buffer_out, buffer_out.length + 1,
+				    USB_TIMEOUT);
 	return ret;
 }
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
-static int srm7500_deinit()
+static int srm7500_deinit(void)
 {
 	int result = 1;
 
@@ -628,7 +626,7 @@ static int srm7500_deinit()
 	return result;
 }
 
-static char *srm7500_rec(struct ir_remote *remotes)
+static char* srm7500_rec(struct ir_remote* remotes)
 {
 	u_int8_t rccode[3];
 	int rd;
@@ -658,27 +656,26 @@ static char *srm7500_rec(struct ir_remote *remotes)
 }
 
 /* returns 1 if the given device should be used, 0 otherwise */
-static int is_device_ok(struct usb_device *dev)
+static int is_device_ok(struct usb_device* dev)
 {
 	/* TODO: allow exact device to be specified */
 
 	/* check if the device ID is in usb_remote_id_table */
-	usb_device_id *dev_id;
-	for (dev_id = usb_remote_id_table; dev_id->vendor; dev_id++) {
-		if ((dev->descriptor.idVendor == dev_id->vendor) && (dev->descriptor.idProduct == dev_id->product)) {
+	usb_device_id* dev_id;
+
+	for (dev_id = usb_remote_id_table; dev_id->vendor; dev_id++)
+		if ((dev->descriptor.idVendor == dev_id->vendor) && (dev->descriptor.idProduct == dev_id->product))
 			return 1;
-		}
-	}
 
 	return 0;
 }
 
 /* find a compatible USB receiver and return a usb_device,
  * or NULL on failure. */
-static struct usb_device *find_usb_device(void)
+static struct usb_device* find_usb_device(void)
 {
-	struct usb_bus *usb_bus;
-	struct usb_device *dev;
+	struct usb_bus* usb_bus;
+	struct usb_device* dev;
 
 	usb_init();
 	usb_find_busses();
@@ -702,27 +699,25 @@ static struct usb_device *find_usb_device(void)
 		}
 		if (is_device_ok(dev)) {
 			return dev;
-		} else {
-			logprintf(LIRC_ERROR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
-				  requested_usb_bus_number, requested_usb_device_number, dev->descriptor.idVendor,
-				  dev->descriptor.idProduct);
 		}
+		logprintf(LIRC_ERROR, "requested USB device %d:%d, but id %04x:%04x not handled by this driver",
+			  requested_usb_bus_number, requested_usb_device_number, dev->descriptor.idVendor,
+			  dev->descriptor.idProduct);
 	} else {
 		for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
-			for (dev = usb_bus->devices; dev; dev = dev->next) {
+			for (dev = usb_bus->devices; dev; dev = dev->next)
 				if (is_device_ok(dev))
 					return dev;
-			}
 		}
 	}
-	return NULL;		/* no suitable device found */
+	return NULL;            /* no suitable device found */
 }
 
 /* set dev_ep_in and dev_ep_out to the in/out endpoints of the given
  * device. returns 1 on success, 0 on failure. */
-static int find_device_endpoints(struct usb_device *dev)
+static int find_device_endpoints(struct usb_device* dev)
 {
-	struct usb_interface_descriptor *idesc;
+	struct usb_interface_descriptor* idesc;
 
 	if (dev->descriptor.bNumConfigurations != 1)
 		return 0;
@@ -765,10 +760,10 @@ static int usb_read_loop(int fd)
 		int inret;
 		int i;
 		int is_ok;
+
 		inret = philipsrf_input(&packet_buffer_in);
 		if (srm7500_terminate)
 			break;
-
 		if (inret == -ETIMEDOUT)
 			continue;
 
@@ -791,11 +786,11 @@ static int usb_read_loop(int fd)
 			/* first packet in setup */
 			packet_buffer_out.length = 13;
 			packet_buffer_out.type = MLME_ASSOCIATE_response;
-			for (i = 0; i < 8; i++) {
+			for (i = 0; i < 8; i++)
 				packet_buffer_out.data[i] = packet_buffer_in.data[i];
-			}	/* DeviceAddress, copied from indication */
-			packet_buffer_out.data[8] = remoteShortAddress[0];	/* AssocShortAddress[0] */
-			packet_buffer_out.data[9] = remoteShortAddress[1];	/* AssocShortAddress[1] */
+			/* DeviceAddress, copied from indication */
+			packet_buffer_out.data[8] = remoteShortAddress[0];      /* AssocShortAddress[0] */
+			packet_buffer_out.data[9] = remoteShortAddress[1];      /* AssocShortAddress[1] */
 
 			is_ok = 1;
 			if (remoteExtendedAddressGiven)
@@ -825,9 +820,10 @@ static int usb_read_loop(int fd)
 			/* SecurityLevel,KeyIdMode */
 			packet_buffer_out.data[11] = 0;
 			philipsrf_output(packet_buffer_out);
-			inret = philipsrf_input(&packet_buffer_in);
+			inret = philipsrf_input(&packet_buffer_in); // FIXME: never read.
 			if ((packet_buffer_in.type == MLME_COMM_STATUS_indication)
 			    && (packet_buffer_in.data[packet_buffer_in.length - 2] == 0)) {
+					/* Empty body(!). */
 			}
 			break;
 		case MLME_ORPHAN_indication:
@@ -892,15 +888,16 @@ static int usb_read_loop(int fd)
 				   (packet_buffer_in.zig.DstAddr[1])),
 				  ((packet_buffer_in.zig.SrcPANId[0] << 8) | (packet_buffer_in.zig.SrcPANId[1])),
 				  ((packet_buffer_in.zig.SrcAddr[0] << 8) | (packet_buffer_in.zig.SrcAddr[1]))
-			    );
+				  );
 			hexdump("MCPS_DATA_indication payload:", packet_buffer_in.zig.data,
 				packet_buffer_in.zig.msduLength);
 			if ((packet_buffer_in.zig.data[0] == 0x00) && (packet_buffer_in.zig.msduLength == 4)) {
 				int bytes_w, pos;
+
 				for (pos = 1; pos < packet_buffer_in.zig.msduLength; pos += bytes_w) {
 					bytes_w =
-					    write(fd, packet_buffer_in.zig.data + pos,
-						  packet_buffer_in.zig.msduLength - pos);
+						write(fd, packet_buffer_in.zig.data + pos,
+						      packet_buffer_in.zig.msduLength - pos);
 					if (bytes_w < 0) {
 						logperror(LIRC_ERROR, "could not write to pipe");
 						return 0;
@@ -914,16 +911,14 @@ static int usb_read_loop(int fd)
 	}
 
 	return 1;
-
 }
 
-int srm7500_decode(struct ir_remote *remote, struct decode_ctx_t* decode_ctx)
+int srm7500_decode(struct ir_remote* remote, struct decode_ctx_t* decode_ctx)
 {
 	LOGPRINTF(1, "srm7500_decode");
 
-	if (!map_code(remote, decode_ctx, 0, 0, hw_srm7500libusb.code_length, code, 0, 0)) {
+	if (!map_code(remote, decode_ctx, 0, 0, hw_srm7500libusb.code_length, code, 0, 0))
 		return 0;
-	}
 
 	decode_ctx->repeat_flag = repeat_flag;
 	decode_ctx->min_remaining_gap = 0;

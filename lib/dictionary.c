@@ -28,7 +28,7 @@
  * @file dictionary.c
  * @author N. Devillard
  * @date Sep 2007
- * @version $Revision: 1.27 $
+ * @version Revision: 1.27
  * @brief Implements a dictionary for string variables.
  *
  * This module implements a simple dictionary object, i.e. a list
@@ -44,27 +44,26 @@
 #include <unistd.h>
 
 /** Maximum value size for integers and doubles. */
-#define MAXVALSZ	1024
+#define MAXVALSZ        1024
 
 /** Minimal allocated number of entries in a dictionary */
-#define DICTMINSZ	128
+#define DICTMINSZ       128
 
 /** Invalid key token */
-#define DICT_INVALID_KEY	((char*)-1)
+#define DICT_INVALID_KEY        ((char*)-1)
 
 /**
  * @brief Double the allocated size associated to a pointer
  * @param size the current allocated size
  * @return re-allocated pointer on success, NULL on failure
  */
-static void *mem_double(void *ptr, int size)
+static void* mem_double(void* ptr, int size)
 {
-	void *newptr;
+	void* newptr;
 
 	newptr = calloc(2 * size, 1);
-	if (newptr == NULL) {
+	if (newptr == NULL)
 		return NULL;
-	}
 	memcpy(newptr, ptr, size);
 	free(ptr);
 	return newptr;
@@ -72,7 +71,7 @@ static void *mem_double(void *ptr, int size)
 
 /* The remaining exposed functions are documented in dictionary.h */
 
-unsigned dictionary_hash(const char *key)
+unsigned dictionary_hash(const char* key)
 {
 	int len;
 	unsigned hash;
@@ -80,7 +79,7 @@ unsigned dictionary_hash(const char *key)
 
 	len = strlen(key);
 	for (hash = 0, i = 0; i < len; i++) {
-		hash += (unsigned) key[i];
+		hash += (unsigned)key[i];
 		hash += (hash << 10);
 		hash ^= (hash >> 6);
 	}
@@ -90,24 +89,24 @@ unsigned dictionary_hash(const char *key)
 	return hash;
 }
 
-dictionary *dictionary_new(int size)
+dictionary* dictionary_new(int size)
 {
-	dictionary *d;
+	dictionary* d;
 
 	/* If no size was specified, allocate space for DICTMINSZ */
-	if (size<DICTMINSZ) size=DICTMINSZ;
+	if (size < DICTMINSZ)
+		size = DICTMINSZ;
 
-	if (!(d = (dictionary *) calloc(1, sizeof(dictionary)))) {
+	if (!(d = (dictionary*)calloc(1, sizeof(dictionary))))
 		return NULL;
-	}
 	d->size = size;
-	d->val  = (char **) calloc(size, sizeof(char *));
-	d->key  = (char **) calloc(size, sizeof(char *));
-	d->hash = (unsigned int *) calloc(size, sizeof(unsigned));
+	d->val = (char**)calloc(size, sizeof(char*));
+	d->key = (char**)calloc(size, sizeof(char*));
+	d->hash = (unsigned int*)calloc(size, sizeof(unsigned));
 	return d;
 }
 
-void dictionary_del(dictionary *d)
+void dictionary_del(dictionary* d)
 {
 	int i;
 
@@ -126,32 +125,31 @@ void dictionary_del(dictionary *d)
 	return;
 }
 
-const char *dictionary_get(dictionary *d, const char *key, const char *def)
+const char* dictionary_get(dictionary* d, const char* key, const char* def)
 {
 	unsigned hash;
 	int i;
 
 	hash = dictionary_hash(key);
-	for (i=0; i < d->size; i++) {
+	for (i = 0; i < d->size; i++) {
 		if (d->key[i] == NULL)
 			continue;
 		/* Compare hash */
 		if (hash == d->hash[i]) {
 			/* Compare string, to avoid hash collisions */
-			if (!strcmp(key, d->key[i])) {
+			if (!strcmp(key, d->key[i]))
 				return d->val[i];
-			}
 		}
 	}
 	return def;
 }
 
-int dictionary_set(dictionary *d, const char *key, const char *val)
+int dictionary_set(dictionary* d, const char* key, const char* val)
 {
 	int i;
 	unsigned hash;
 
-	if (d==NULL || key==NULL)
+	if (d == NULL || key == NULL)
 		return -1;
 
 	/* Compute hash for this key */
@@ -180,10 +178,10 @@ int dictionary_set(dictionary *d, const char *key, const char *val)
 	 * See if dictionary needs to grow */
 	if (d->n == d->size) {
 		/* Reached maximum size: reallocate dictionary */
-		d->val  = (char **) mem_double(d->val, d->size * sizeof(char *));
-		d->key  = (char **) mem_double(d->key, d->size * sizeof(char *));
-		d->hash = (unsigned int *)
-			mem_double(d->hash, d->size * sizeof(unsigned));
+		d->val = (char**)mem_double(d->val, d->size * sizeof(char*));
+		d->key = (char**)mem_double(d->key, d->size * sizeof(char*));
+		d->hash = (unsigned int*)
+			  mem_double(d->hash, d->size * sizeof(unsigned));
 		if ((d->val == NULL) || (d->key == NULL) || (d->hash == NULL))
 			/* Cannot grow dictionary */
 			return -1;
@@ -193,20 +191,19 @@ int dictionary_set(dictionary *d, const char *key, const char *val)
 
 	/* Insert key in the first empty slot */
 	for (i = 0; i < d->size; i++) {
-		if (d->key[i] == NULL) {
+		if (d->key[i] == NULL)
 			/* Add key here */
 			break;
-		}
 	}
 	/* Copy key */
 	d->key[i] = strdup(key);
 	d->val[i] = val ? strdup(val) : NULL;
 	d->hash[i] = hash;
-	d->n ++;
+	d->n++;
 	return 0;
 }
 
-void dictionary_unset(dictionary *d, const char *key)
+void dictionary_unset(dictionary* d, const char* key)
 {
 	unsigned hash;
 	int i;
@@ -221,10 +218,9 @@ void dictionary_unset(dictionary *d, const char *key)
 		/* Compare hash */
 		if (hash == d->hash[i]) {
 			/* Compare string, to avoid hash collisions */
-			if (!strcmp(key, d->key[i])) {
+			if (!strcmp(key, d->key[i]))
 				/* Found key */
 				break;
-			}
 		}
 	}
 	if (i >= d->size)
@@ -233,16 +229,16 @@ void dictionary_unset(dictionary *d, const char *key)
 
 	free(d->key[i]);
 	d->key[i] = NULL;
-	if (d->val[i]!=NULL) {
+	if (d->val[i] != NULL) {
 		free(d->val[i]);
 		d->val[i] = NULL;
 	}
 	d->hash[i] = 0;
-	d->n --;
+	d->n--;
 	return;
 }
 
-void dictionary_dump(dictionary *d, FILE *out)
+void dictionary_dump(dictionary* d, FILE* out)
 {
 	int i;
 

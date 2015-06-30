@@ -5,6 +5,7 @@
     <H1 ALIGN="CENTER">Reporting bugs and FAQ</H1>
 
     <HR WIDTH="70%">
+     <p>
       There are various sources of information you could check before
       reporting a bug. Please read the <A HREF="http://www.lirc.org/">
       LIRC homepage</A> carefully, have a look at the
@@ -12,7 +13,7 @@
       <a href="https://sourceforge.net/p/lirc/tickets"> issue tracker</a>
       and search the
       <A HREF="https://sourceforge.net/p/lirc/mailman/lirc-list/">
-      mail archives</a>.
+      mail archives</a>.</p>
 
     <P>
       If you believe that you have found a bug in LIRC please report it on
@@ -51,8 +52,7 @@
       The following description was written having receivers in mind
       that deliver IR signals as pulses and spaces. So some of this
       will not be relevant for receivers that work at a higher
-      abstraction layer as <NOBR>e.g.</NOBR> the Irman or TV card
-      receivers.
+      abstraction layer as e.g., the Irman or TV card receivers.
     </P>
 
     <P>
@@ -65,8 +65,8 @@
       different devices it is often wise to create separate config
       files for each functional unit of the remote control.  You can
       later use a single config file for <em>lircd</em> by simply
-      merging the config files with <NOBR><em>cat config1 config2
-      &gt;lircd.conf</em></NOBR>.
+      merging the config files with <em>cat config1 config2
+      &gt;lircd.conf</em>.
     </P>
 
     <P>
@@ -104,7 +104,7 @@
     <P>
       If you want to use a config file to send IR commands you should
       try to vary the modulation frequency of the signals. The default
-      frequency is <NOBR>38000 Hz</NOBR>. It cannot be detected
+      frequency is 38000 Hz. It cannot be detected
       automatically because the receiver hardware only gives us the
       demodulated signals. Using the correct modulation frequency will
       increase range significantly. You can set the modulation
@@ -153,4 +153,3 @@
         url using pastebin.com or so</LI>
 
     </UL>
-    </P>

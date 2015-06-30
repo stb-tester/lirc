@@ -1,9 +1,32 @@
-0.9.2a 8/2/15
-  * Maintenance release: bugfixes, no new features.
-  * Notably fixes #85, multiple --connect regression.
-  * Fixes bad bug for locating ~/.lircrc config file.
-  * Documentation and lirc.org updates.
-  * All in all 19 patches.
+0.9.3pre1
+  * mode2 has been updated to handle also LIRCCODE devices (#94)
+    and also handling the --driver-options switch
+  * xmode2 has been updated to handle udp driver, the new
+    --driver-options switch  + some general overhaul.
+  * irrecord has got some love:
+     + It handles multiple definitions of same symbol OK (#78)
+     + Warns about single-key config files (#77)
+     + Checks for ambient light disturbances (#76)
+     + New option allows updating of existing template file.
+     + Template handling bug fixed
+     + -l --list-namespace option parsing bug fixed (#101).
+  * irrecord has been split into a library and a cli interface (#36). The
+    library interface is unstable and not announced in pkg-config.
+  * lircmd: Several option parsing bug fixed, one of which blocked the
+    systemd service (#104, RH bz 1234155).
+  * lirc-setup: fixed name clash on recent python versions.
+  * The udp driver is patched to allow adjustable clockrates, see
+    new udp_driver.html driver doc.
+  * The mplay driver has been updated with patches which has been
+    available.
+  * Overall code formatting is improved with more consistent
+    layout and updated git hook. See CONTRIBUTE.md
+  * The compiler has been switched to c++, and filenames are
+    updated to *.cpp (#79)
+  * New build dependency: xsltproc (usually coming with libxml).
+  * Unlinked and hard to find driver docs and manpages have been linked.
+  * Build: now uses parallell make by default.
+  * Docs: The Configuration Guide has been updated.
 
 0.9.2 12/09/14
   * Documentation fixes

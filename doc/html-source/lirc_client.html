@@ -1,6 +1,3 @@
-    <!-- lirc_client ++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-
 <A NAME="lirc_client"></A><HR>
 <CENTER><H1>The lirc_client API</H1></CENTER>
 <HR WIDTH="70%">
@@ -232,23 +229,9 @@
 </P>
 <PRE>
     dnl Check for LIRC client support
-    dnl This really is not worth making a separate file for it.
-
-    have_lirc=yes
-    AC_REQUIRE_CPP
-    AC_CHECK_LIB(lirc_client,lirc_init,
-      AC_CHECK_HEADER(lirc/lirc_client.h,true,have_lirc=no),have_lirc=no)
-
-    if test "$have_lirc" = "yes"; then
-    dnl  AC_DEFINE(HAVE_LIRC);
-      true;
-    else
-      AC_MSG_ERROR([*** LIRC client support not available ***]);
-    fi
+    PKG_CHECK_MODULES([LIRC], [lirc],,)
 </PRE>
 <P>
-  There is also a more complex m4 macro in the contrib directory
-  of the current LIRC distribution if you plan to add LIRC support
-  to your application without using the lirc_client library.
+  This will setup the variables LIRC_FLAGS and LIRC_LIBS which can be
+  used to augment AM_CPPFLAGS and AM_LIBS. See pkg-config(3).
 </P>
-

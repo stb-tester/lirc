@@ -1,7 +1,6 @@
-
 /****************************************************************************
- ** transmit.h **************************************************************
- ****************************************************************************/
+** transmit.h **************************************************************
+****************************************************************************/
 /**
  * @file transmit.h
  * @brief Functions that prepare IR codes for transmitting
@@ -29,7 +28,7 @@
 
 #include "ir_remote.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -39,31 +38,32 @@ extern "C" {
 void send_buffer_init(void);
 
 /**
- * Prepare the buffer.
- * @param remote Parsed lircd.conf data.
- * @param code Data item to be represented in buff.
- * @return 0 on errors, else 1
+ * Initializes the global send buffer for transmitting the code in
+ * the second argument, residing in the remote in the first.
+ * @param remote ir_remote containing code to send.
+ * @param code ir_ncode to send.
+ * @return 0 on failures, else 1.
  */
 int send_buffer_put(struct ir_remote* remote, struct ir_ncode* code);
 
 /** @cond */
-int init_sim(struct ir_remote* remote,
-             struct ir_ncode* code,
-             int repeat_preset);
+int init_sim(struct ir_remote*	remote,
+	     struct ir_ncode*	code,
+	     int		repeat_preset);
 /** @endcond */
 
 /** @return Number of items accessible in array send_buffer_data(). */
-int send_buffer_length();
+int send_buffer_length(void);
 
 /** @return Pointer to timing data in microseconds for pulses/spaces. */
-const lirc_t* send_buffer_data();
+const lirc_t* send_buffer_data(void);
 
-/** @return Total length of buffer in microseconds. */
-lirc_t send_buffer_sum();
+/** @return Total length of send buffer in microseconds. */
+lirc_t send_buffer_sum(void);
 
 /** @} */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

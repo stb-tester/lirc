@@ -1,0 +1,35 @@
+#!/bin/bash
+
+here=$( dirname $( readlink -fn $0))
+
+ignored="C99_COMMENTS"
+ignored="$ignored,BRACES"
+ignored="$ignored,INITIALISED_STATIC"
+ignored="$ignored,NEW_TYPEDEFS"
+ignored="$ignored,POINTER_LOCATION"
+ignored="$ignored,SPLIT_STRING"
+ignored="$ignored,STRING_FRAGMENTS"
+ignored="$ignored,USE_NEGATIVE_ERRNO"
+
+retval=0;
+
+
+for f in $@; do
+        [[ $files = *$f#* ]]  && continue
+        echo "Checking: $f"
+        $here/checkpatch.pl --emacs --terse \
+                                --ignore $ignored \
+                                --show-types \
+                                --no-tree \
+                                --max-line-length=120 \
+                                -f $f
+        result=$?
+        [ $result -ne 0 ] && retval=$result
+        files="$files$f#"
+done
+
+exit $retval
+
+
+
+

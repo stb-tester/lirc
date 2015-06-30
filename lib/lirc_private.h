@@ -29,5 +29,6 @@
 #include "lirc/serial.h"
 #include "lirc/transmit.h"
 #include "lirc/ciniparser.h"
+#include "lirc/util.h"
 
 #endif

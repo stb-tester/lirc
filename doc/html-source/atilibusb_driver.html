@@ -1,0 +1,28 @@
+<A NAME="overview"></A><HR>
+<CENTER><H1>atilibusb</H1></CENTER>
+
+<p>
+The atilibusb driver offers support for many RF devices sporting
+usb receivers with the X10 chip, Some of these are X10 branded, other sold
+under names such as ATI or Medion.</p>
+<p>
+Typical dmesg output for hotplugging such a device:
+<pre>
+usb 3-1: new low-speed USB device number 23 using xhci_hcd
+usb 3-1: New USB device found, idVendor=0bc7, idProduct=0006
+usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+usb 3-1: Product: RF receiver
+usb 3-1: Manufacturer: X10 WTI
+</pre>
+The driver conflicts with the linux atiusb kernel module. Thus, to use
+atilibusb  the kernel module must be blacklisted. This can be done with a
+file named e. g., /etc/modprobe.d/lirc-blacklist with the following
+content
+<pre>
+    # blacklist drivers which conflict with lirc userspace drivers.
+    blacklist ati_remote
+    blacklist lirc_atiusb
+</pre>
+The module autodetects available devices and a --device argument is normally
+not required. However, if given an existing device as argument this will be
+used.

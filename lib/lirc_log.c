@@ -1,11 +1,11 @@
 /****************************************************************************
- ** lircd.c *****************************************************************
- ****************************************************************************
- *
- * lirc_log - simple logging module.
- *
- *
- */
+** lircd.c *****************************************************************
+****************************************************************************
+*
+* lirc_log - simple logging module.
+*
+*
+*/
 
 /**
  * @file lirc_log.c
@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <pwd.h>
 #include <unistd.h>
 #include <limits.h>
 #include <ctype.h>
@@ -33,16 +34,16 @@
 
 #define HOSTNAME_LEN 128
 char hostname[HOSTNAME_LEN + 1];
-FILE *lf = NULL;
+FILE* lf = NULL;
 
 loglevel_t loglevel = LIRC_NOLOG;
 
 static int use_syslog = 1;
 
-const char *syslogident = "lircd-" VERSION;
-const char *logfile = "syslog";
+const char* syslogident = "lircd-" VERSION;
+const char* logfile = "syslog";
 
-char progname[128] = {'?','\0'};
+char progname[128] = { '?', '\0' };
 static int nodaemon = 0;
 
 static const int PRIO_LEN = 16; /**< Longest priority label, some margin. */
@@ -51,20 +52,20 @@ static const int PRIO_LEN = 16; /**< Longest priority label, some margin. */
 static const char* prio2text(int prio)
 {
 	switch (prio) {
-		case LIRC_DEBUG:	return "Debug";
-		case LIRC_NOTICE:	return "Notice";
-		case LIRC_INFO:		return "Info";
-		case LIRC_WARNING:	return "Warning";
-		case LIRC_ERROR:	return "Error";
-		case LIRC_TRACE:        return "Trace";
-		case LIRC_TRACE1:       return "Trace1";
-		case LIRC_TRACE2:       return "Trace2";
-		default:		return "(Bad prio)";
+	case LIRC_DEBUG:        return "Debug";
+	case LIRC_NOTICE:       return "Notice";
+	case LIRC_INFO:         return "Info";
+	case LIRC_WARNING:      return "Warning";
+	case LIRC_ERROR:        return "Error";
+	case LIRC_TRACE:        return "Trace";
+	case LIRC_TRACE1:       return "Trace1";
+	case LIRC_TRACE2:       return "Trace2";
+	default:                return "(Bad prio)";
 	}
 }
 
 
-int lirc_log_use_syslog()
+int lirc_log_use_syslog(void)
 {
 	return use_syslog;
 }
@@ -73,10 +74,10 @@ int lirc_log_use_syslog()
 void lirc_log_set_file(const char* s)
 {
 	if (strcmp(s, "syslog") == 0) {
-	    use_syslog  = 1;
+		use_syslog = 1;
 	} else {
-	    logfile = s;
-	    use_syslog = 0;
+		logfile = s;
+		use_syslog = 0;
 	}
 }
 
@@ -86,20 +87,28 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 	strncpy(progname, _progname, sizeof(progname));
 	nodaemon = _nodaemon;
 	loglevel = level;
+	struct passwd* pw;
+	const char* user;
 
 	if (use_syslog) {
-		if (nodaemon) {
+		if (nodaemon)
 			openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LOG_LOCAL0);
-		} else {
+		else
 			openlog(syslogident, LOG_CONS | LOG_PID, LOG_LOCAL0);
-		}
 	} else {
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
 			fprintf(stderr, "%s: could not open logfile \"%s\"\n",
-                                progname, logfile);
+				progname, logfile);
 			perror(progname);
 			return 1;
+		}
+		if (getenv("SUDO_USER") != NULL && geteuid() == 0) {
+			user = getenv("SUDO_USER");
+			user = user == NULL ? "root" : user;
+			pw = getpwnam(user);
+			if (chown(logfile, pw->pw_uid, pw->pw_gid) == -1)
+				perror("Cannot reset log file owner.");
 		}
 		gethostname(hostname, HOSTNAME_LEN);
 	}
@@ -107,16 +116,16 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 }
 
 
-int lirc_log_close()
+int lirc_log_close(void)
 {
-	if (use_syslog){
+	if (use_syslog) {
 		closelog();
-		return(0);
+		return 0;
+	} else if (lf) {
+		return fclose(lf);
+	} else {
+		return 0;
 	}
-	else if (lf)
-		return( fclose(lf));
-	else
-		return(0);
 }
 
 
@@ -126,7 +135,7 @@ int lirc_log_reopen(void)
 
 	if (use_syslog)
 		/* Don't need to do anything; this is syslogd's task */
-		return(0);
+		return 0;
 
 	logprintf(LIRC_INFO, "closing logfile");
 	if (-1 == fstat(fileno(lf), &s)) {
@@ -151,40 +160,40 @@ int lirc_log_reopen(void)
 
 int lirc_log_setlevel(loglevel_t level)
 {
-	if (level >= LIRC_MIN_LOGLEVEL && level <= LIRC_MAX_LOGLEVEL){
+	if (level >= LIRC_MIN_LOGLEVEL && level <= LIRC_MAX_LOGLEVEL) {
 		loglevel = level;
 		return 1;
-	}
-	else
+	} else {
 		return 0;
+	}
 }
 
 
 static loglevel_t symbol2loglevel(const char* levelstring)
 {
-	static const struct {const char* label; int value;} options[] = {
-		{"TRACE2" 	, LIRC_TRACE2},
-		{"TRACE1" 	, LIRC_TRACE1},
-		{"TRACE" 	, LIRC_TRACE},
-		{"DEBUG" 	, LIRC_DEBUG},
-		{"INFO" 	, LIRC_INFO},
-		{"NOTICE"	, LIRC_NOTICE},
-		{"WARNING"	, LIRC_WARNING},
-		{"ERROR" 	, LIRC_ERROR},
-		{0,0}
+	static const struct { const char* label; int value; } options[] = {
+		{ "TRACE2",  LIRC_TRACE2  },
+		{ "TRACE1",  LIRC_TRACE1  },
+		{ "TRACE",   LIRC_TRACE	  },
+		{ "DEBUG",   LIRC_DEBUG	  },
+		{ "INFO",    LIRC_INFO	  },
+		{ "NOTICE",  LIRC_NOTICE  },
+		{ "WARNING", LIRC_WARNING },
+		{ "ERROR",   LIRC_ERROR	  },
+		{ 0,	     0		  }
 	};
 
 	char label[128];
 	int i;
 
-   	if (levelstring == NULL || ! *levelstring)
+	if (levelstring == NULL || !*levelstring)
 		return LIRC_BADLEVEL;
 	for (i = 0; i < sizeof(label) && levelstring[i]; i += 1)
 		label[i] = toupper(levelstring[i]);
 	label[i] = '\0';
 	i = 0;
 	while (options[i].label && strcmp(options[i].label, label) != 0)
-              i += 1;
+		i += 1;
 	return options[i].label ? options[i].value : -1;
 }
 
@@ -230,7 +239,7 @@ loglevel_t string2loglevel(const char* s)
  * @param format_str Format string in the usual C sense.
  * @param ... Additional vararg parameters.
  */
-void logprintf(loglevel_t prio, const char *format_str, ...)
+void logprintf(loglevel_t prio, const char* format_str, ...)
 {
 	int save_errno = errno;
 	va_list ap;
@@ -254,7 +263,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
 		va_end(ap);
 	} else if (lf && prio <= loglevel) {
 		time_t current;
-		char *currents;
+		char* currents;
 
 		current = time(&current);
 		currents = ctime(&current);
@@ -276,7 +285,7 @@ void logprintf(loglevel_t prio, const char *format_str, ...)
  * @param prio Priority of log request.
  * @param fmt printf-style format string
  */
-void logperror(loglevel_t prio, const char *fmt, ...)
+void logperror(loglevel_t prio, const char* fmt, ...)
 {
 	char s[256];
 	va_list ap;
@@ -284,17 +293,16 @@ void logperror(loglevel_t prio, const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
-	if (use_syslog){
+	if (use_syslog) {
 		if ((s) != NULL)
 			syslog(prio, "%s: %m\n", s);
 		else
 			syslog(prio, "%m\n");
 	} else {
-		if (s != NULL) {
+		if (s != NULL)
 			logprintf(prio, "%s: %s", s, strerror(errno));
-		} else {
+		else
 			logprintf(prio, "%s", strerror(errno));
-		}
 	}
 }
 
@@ -302,13 +310,21 @@ void logperror(loglevel_t prio, const char *fmt, ...)
 int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size)
 {
 	const char* home;
+	struct passwd* pw;
+	const char* user;
 
-	if (getenv("XDG_CACHE_HOME") != NULL ) {
+	if (getenv("XDG_CACHE_HOME") != NULL) {
 		strncpy(buffer, getenv("XDG_CACHE_HOME"), size);
 		buffer[size - 1] = '\0';
 		strncat(buffer, "/", size - strlen(buffer) - 1);
+	} else if (getenv("SUDO_USER") != NULL && geteuid() == 0) {
+		user = getenv("SUDO_USER");
+		if (user == NULL)
+			user = "root";
+		pw = getpwnam(user);
+		snprintf(buffer, size, "%s/.cache/", pw->pw_dir);
 	} else {
-	    	home = getenv("HOME");
+		home = getenv("HOME");
 		home = home != NULL ? home : "/";
 		strncpy(buffer, home, size);
 		buffer[size - 1] = '\0';
@@ -320,25 +336,24 @@ int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size)
 }
 
 
-void hexdump(char *prefix, unsigned char* buf, int len)
+void hexdump(char* prefix, unsigned char* buf, int len)
 // Dump a byte array as hex code, adding a prefix.
 {
 	int i;
 	char str[1024];
 	int pos = 0;
+
 	if (prefix != NULL) {
 		strncpy(str, prefix, sizeof(str));
 		pos = strnlen(str, sizeof(str));
 	}
 	if (len > 0) {
 		for (i = 0; i < len; i++) {
-			if (pos + 3 >= sizeof(str)) {
+			if (pos + 3 >= sizeof(str))
 				break;
-			}
 
-			if (!(i % 8)) {
+			if (!(i % 8))
 				str[pos++] = ' ';
-			}
 
 			sprintf(str + pos, "%02x ", buf[i]);
 

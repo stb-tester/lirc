@@ -1,4 +1,3 @@
-
 /*
  * Remote control driver for I2C-attached devices from userspace
  *
@@ -32,7 +31,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -52,7 +51,7 @@
 #include <time.h>
 #include <signal.h>
 #include <linux/i2c-dev.h>
-#ifndef I2C_SLAVE		/* hack */
+#ifndef I2C_SLAVE               /* hack */
 #include <linux/i2c.h>
 #endif
 
@@ -71,27 +70,27 @@
 static int i2cuser_init(void);
 static int i2cuser_deinit(void);
 static void i2cuser_read_loop(int fd);
-static char *i2cuser_rec(struct ir_remote *remotes);
+static char* i2cuser_rec(struct ir_remote* remotes);
 
 const struct driver hw_i2cuser = {
-	.name		=	"i2cuser",
-	.device		=	NULL,
-	.features	=	LIRC_CAN_REC_LIRCCODE,
-	.send_mode	=	0,
-	.rec_mode	=	LIRC_MODE_LIRCCODE,
-	.code_length	=	CODE_SIZE_BITS,
-	.init_func	=	i2cuser_init,
-	.deinit_func	=	i2cuser_deinit,
-	.open_func	=	default_open,
-	.close_func	=	default_close,
-	.send_func	=	NULL,
-	.rec_func	=	i2cuser_rec,
-	.decode_func	=	receive_decode,
-	.drvctl_func	=	NULL,
-	.readdata	=	NULL,
-	.api_version	=	2,
-	.driver_version = 	"0.9.2",
-	.info		=	"No info available"
+	.name		= "i2cuser",
+	.device		= NULL,
+	.features	= LIRC_CAN_REC_LIRCCODE,
+	.send_mode	= 0,
+	.rec_mode	= LIRC_MODE_LIRCCODE,
+	.code_length	= CODE_SIZE_BITS,
+	.init_func	= i2cuser_init,
+	.deinit_func	= i2cuser_deinit,
+	.open_func	= default_open,
+	.close_func	= default_close,
+	.send_func	= NULL,
+	.rec_func	= i2cuser_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= NULL,
+	.readdata	= NULL,
+	.api_version	= 2,
+	.driver_version = "0.9.2",
+	.info		= "No info available"
 };
 
 
@@ -99,7 +98,7 @@ const struct driver* hardwares[] = { &hw_i2cuser, (const struct driver*)NULL };
 
 
 /* FD of the i2c device. Since it's not selectable, we give the lircd core a
-   pipe and poll it ourself in a separate process. */
+ * pipe and poll it ourself in a separate process. */
 static int i2c_fd = -1;
 /* The device name. */
 char device_name[256];
@@ -109,8 +108,8 @@ static pid_t child = -1;
 /* Hunt for the appropriate i2c device and open it. */
 static int open_i2c_device(void)
 {
-	const char *adapter_dir = "/sys/class/i2c-adapter";
-	DIR *dir;
+	const char* adapter_dir = "/sys/class/i2c-adapter";
+	DIR* dir;
 	int found;
 
 	dir = opendir(adapter_dir);
@@ -122,8 +121,8 @@ static int open_i2c_device(void)
 
 	while (1) {
 		char s[256];
-		FILE *f;
-		struct dirent *de;
+		FILE* f;
+		struct dirent* de;
 
 		de = readdir(dir);
 		if (de == NULL)
@@ -132,12 +131,12 @@ static int open_i2c_device(void)
 			continue;
 
 		/* Kernels 2.6.22 and later had the name here: */
-		snprintf(s, sizeof s, "%s/%s/name", adapter_dir, de->d_name);
+		snprintf(s, sizeof(s), "%s/%s/name", adapter_dir, de->d_name);
 
 		f = fopen(s, "r");
 		if (f == NULL) {
 			/* ... and kernels prior to 2.6.22 have it here: */
-			snprintf(s, sizeof s, "%s/%s/device/name", adapter_dir, de->d_name);
+			snprintf(s, sizeof(s), "%s/%s/device/name", adapter_dir, de->d_name);
 
 			f = fopen(s, "r");
 		}
@@ -145,12 +144,11 @@ static int open_i2c_device(void)
 			logprintf(LIRC_ERROR, "Cannot open i2c name file %s", s);
 			return -1;
 		}
-		memset(s, 0, sizeof s);
-		if (fread(s, 1, sizeof s, f) != sizeof(s)) {
-			if (ferror(f)) {
-				logprintf(LIRC_WARNING, 
-				 	  "Error reading i2c device");
-			}
+		memset(s, 0, sizeof(s));
+		if (fread(s, 1, sizeof(s), f) != sizeof(s)) {
+			if (ferror(f))
+				logprintf(LIRC_WARNING,
+					  "Error reading i2c device");
 		}
 		fclose(f);
 
@@ -170,7 +168,7 @@ static int open_i2c_device(void)
 		return -1;
 	}
 
-	snprintf(device_name, sizeof device_name, "/dev/i2c-%d", found);
+	snprintf(device_name, sizeof(device_name), "/dev/i2c-%d", found);
 	logprintf(LIRC_INFO, "Using i2c device %s", device_name);
 	drv.device = device_name;
 	return open(device_name, O_RDWR);
@@ -247,7 +245,7 @@ static void i2cuser_read_loop(int out_fd)
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 
-	for (;;) {
+	for (;; ) {
 		unsigned char buf[3], code_buf[CODE_SIZE];
 		int rc, i;
 		ir_code new_code;
@@ -257,13 +255,13 @@ static void i2cuser_read_loop(int out_fd)
 		do {
 			/* Poll 20 times per second. */
 			struct timespec ts = { 0, 50000000 };
-			nanosleep(&ts, NULL);
 
-			rc = read(i2c_fd, &buf, sizeof buf);
+			nanosleep(&ts, NULL);
+			rc = read(i2c_fd, &buf, sizeof(buf));
 			if (rc < 0 && errno != EREMOTEIO) {
 				logprintf(LIRC_ERROR, "Error reading from i2c device: %s", strerror(errno));
 				goto fail;
-			} else if (rc != sizeof buf) {
+			} else if (rc != sizeof(buf)) {
 				continue;
 			}
 		} while ((buf[0] & 0x80) == 0);
@@ -274,9 +272,9 @@ static void i2cuser_read_loop(int out_fd)
 		new_code = ((buf[0] & 0x7f) << 6) | (buf[1] >> 2);
 		if (new_code == last_code) {
 			/* Same code as last time -- so we need to see whether
-			   it should be repeated or not. (The Hauppauge remote
-			   control will send a different code if you release
-			   and press the same key.) */
+			 * it should be repeated or not. (The Hauppauge remote
+			 * control will send a different code if you release
+			 * and press the same key.) */
 			if (new_time - last_time < REPEAT_TIME)
 				continue;
 		}
@@ -299,7 +297,7 @@ fail:
 	_exit(1);
 }
 
-static char *i2cuser_rec(struct ir_remote *remotes)
+static char* i2cuser_rec(struct ir_remote* remotes)
 {
 	if (!rec_buffer_clear())
 		return NULL;

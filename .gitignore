@@ -33,6 +33,8 @@ doc/man/*.[1-9]
 doc/html
 doc/lirc.hwdb
 doc/table.html
+doc/driver-toc.xsl
+doc/docpage.xsl
 
 doxygen-warnings.txt
 doxygen.warnings

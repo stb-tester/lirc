@@ -1,11 +1,10 @@
-
 /****************************************************************************
- ** config_file.h ***********************************************************
- ****************************************************************************
- *
- * Copyright (C) 1998 Pablo d'Angelo (pablo@ag-trek.allgaeu.org)
- *
- */
+** config_file.h ***********************************************************
+****************************************************************************
+*
+* Copyright (C) 1998 Pablo d'Angelo (pablo@ag-trek.allgaeu.org)
+*
+*/
 
 /**
  * @file config_file.h
@@ -20,10 +19,10 @@
  * @{
  */
 
-#ifndef  _CONFIG_FILE_H
+#ifndef _CONFIG_FILE_H
 #define  _CONFIG_FILE_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -43,7 +42,7 @@ void free_config(struct ir_remote* remotes);
 
 /** @} */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

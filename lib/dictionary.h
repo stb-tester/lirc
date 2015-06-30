@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -41,7 +41,7 @@ extern "C" {
  * @file    dictionary.h
  * @author  N. Devillard
  * @date    Sep 2007
- * @version $Revision: 1.12 $
+ * @version Revision: 1.12
  * @brief   Implements a dictionary for string variables.
  * @ingroup private_api
  *
@@ -65,11 +65,11 @@ extern "C" {
  * hash function.
  */
 typedef struct _dictionary_ {
-	int n;
-	int size;
-	char **val;
-	char **key;
-	unsigned *hash;
+	int		n;
+	int		size;
+	char**		val;
+	char**		key;
+	unsigned*	hash;
 } dictionary;
 
 /**
@@ -82,7 +82,7 @@ typedef struct _dictionary_ {
  * The key is stored anyway in the struct so that collision can be avoided
  * by comparing the key itself in last resort.
  */
-unsigned dictionary_hash(const char *key);
+unsigned dictionary_hash(const char* key);
 
 /**
  * @brief Create a new dictionary object.
@@ -93,7 +93,7 @@ unsigned dictionary_hash(const char *key);
  * it. If you do not know in advance (roughly) the number of entries in the
  * dictionary, give size=0.
  */
-dictionary *dictionary_new(int size);
+dictionary* dictionary_new(int size);
 
 /**
  * @brief Delete a dictionary object
@@ -102,7 +102,7 @@ dictionary *dictionary_new(int size);
  *
  * Deallocate a dictionary object and all memory associated to it.
  */
-void dictionary_del(dictionary *vd);
+void dictionary_del(dictionary* vd);
 
 /**
  * @brief Get a value from a dictionary.
@@ -116,7 +116,7 @@ void dictionary_del(dictionary *vd);
  * dictionary. The returned character pointer points to data internal to the
  * dictionary object, you should not try to free it or modify it.
  */
-const char *dictionary_get(dictionary *d, const char *key, const char *def);
+const char* dictionary_get(dictionary* d, const char* key, const char* def);
 
 /**
  * @brief Set a value in a dictionary.
@@ -142,7 +142,7 @@ const char *dictionary_get(dictionary *d, const char *key, const char *def);
  *
  * This function returns non-zero in case of failure.
  */
-int dictionary_set(dictionary *vd, const char *key, const char *val);
+int dictionary_set(dictionary* vd, const char* key, const char* val);
 
 /**
  * @brief Delete a key in a dictionary
@@ -153,7 +153,7 @@ int dictionary_set(dictionary *vd, const char *key, const char *val);
  * This function deletes a key in a dictionary. Nothing is done if the
  * key cannot be found.
  */
-void dictionary_unset(dictionary *d, const char *key);
+void dictionary_unset(dictionary* d, const char* key);
 
 /**
  * @brief Dump a dictionary to an opened file pointer.
@@ -165,9 +165,9 @@ void dictionary_unset(dictionary *d, const char *key);
  * as @c [Key]=[Value], one per line. It is Ok to provide stdout or stderr as
  * output file pointers.
  */
-void dictionary_dump(dictionary *d, FILE *out);
+void dictionary_dump(dictionary* d, FILE* out);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

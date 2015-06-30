@@ -1,13 +1,12 @@
-
 /****************************************************************************
- ** dump_config.h ***********************************************************
- ****************************************************************************
- *
- * dump_config.h - dumps data structures into file
- *
- * Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
- *
- */
+** dump_config.h ***********************************************************
+****************************************************************************
+*
+* dump_config.h - dumps data structures into file
+*
+* Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
+*
+*/
 
 /**
  * @file dump_config.h
@@ -17,10 +16,10 @@
  * @ingroup private_api
  */
 
-#ifndef  _DUMP_CONFIG_H
+#ifndef _DUMP_CONFIG_H
 #define  _DUMP_CONFIG_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -59,10 +58,10 @@ void fprint_remote_signal(FILE* f,
 void fprint_remote_signals(FILE* f, const struct ir_remote* rem);
 
 void fprint_remote(FILE* f,
-                   const struct ir_remote* rem,
-                   const char* commandline);
+		   const struct ir_remote* rem,
+		   const char* commandline);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
