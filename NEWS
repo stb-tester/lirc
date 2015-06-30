@@ -1,4 +1,4 @@
-0.9.3-devel
+0.9.3pre1
   * mode2 has been updated to handle also LIRCCODE devices (#94)
     and also handling the --driver-options switch
   * xmode2 has been updated to handle udp driver, the new
