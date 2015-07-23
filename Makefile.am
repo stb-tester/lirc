@@ -39,7 +39,7 @@ nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
-header_HEADERS          = paths.h
+header_HEADERS          = paths.h drivers/irpipe/irpipe.h
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
