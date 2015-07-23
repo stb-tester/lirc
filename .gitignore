@@ -21,6 +21,7 @@ Makefile
 *~
 *.swp
 ChangeLog
+simsend.out
 var
 *.log
 
@@ -35,6 +36,7 @@ doc/lirc.hwdb
 doc/table.html
 doc/driver-toc.xsl
 doc/docpage.xsl
+doc/lirc.org/html
 
 doxygen-warnings.txt
 doxygen.warnings
