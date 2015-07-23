@@ -249,6 +249,7 @@ static int open_read_write(struct ir_device* dev, struct file* filp, int minor)
 	atomic_inc(&dev->writers);
 	atomic_inc(&dev->readers);
 	spin_unlock(&dev->mutex);
+	wake_up_interruptible(&dev->wait_for_reader);
 	return 0;
 }
 
@@ -266,8 +267,10 @@ static int open_write(struct ir_device* dev, struct file* filp, int minor)
 		if (filp->f_flags & O_NONBLOCK)
 			return -ENXIO;
 		cond_wait(have_readers, &dev->wait_for_reader, dev);
-		if (signal_pending(current))
+		if (signal_pending(current)) {
+			IR_DEBUG("signals pending on open - ERESTARTSYS");
 			return -ERESTARTSYS;
+		}
 		spin_lock(&dev->mutex);
 	}
 	ir_device_reset(dev, minor);
@@ -354,8 +357,10 @@ irpipe_read(struct file* filp, char* buff, size_t length, loff_t* ppos)
 		if (filp->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 		cond_wait(fifo_have_data, &dev->wait_for_writer, dev);
-		if (signal_pending(current))
+		if (signal_pending(current)) {
+			IR_DEBUG("Signals pending on read- ERESTARTSYS");
 			return -ERESTARTSYS;
+		}
 		spin_lock(&dev->mutex);
 	}
 	bytes = fifo_get(dev, kbuff, length);
@@ -387,7 +392,7 @@ irpipe_write(struct file* filp, const char* buff, size_t length, loff_t* ppos)
 			return -EAGAIN;
 		cond_wait(fifo_have_space, &dev->wait_for_reader, dev);
 		if (signal_pending(current)) {
-			IR_DEBUG("Write: signals pending: ERESTARTSYS.");
+			IR_DEBUG("Write: signals pending on write: ERESTARTSYS.");
 			return -ERESTARTSYS;
 		}
 		spin_lock(&dev->mutex);

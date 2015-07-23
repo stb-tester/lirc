@@ -30,7 +30,7 @@ bin_PROGRAMS            = ircat \
                           irsimsend \
                           irtestcase \
                           irw \
-                          lirc-lsremotes \
+                          lirc_lsremotes \
                           mode2 \
                           @x_progs@
 
@@ -43,8 +43,7 @@ irexec_LDADD            = @daemon@ $(LIRC_LIBS)
 ircat_SOURCES           = ircat.cpp
 ircat_LDADD             = $(LIRC_LIBS)
 irpipe_SOURCES		= irpipe.cpp
-irpipe_CPPFLAGS         = -I$(top_srcdir)/include \
-                          -I$(top_srcdir)/drivers/irpipe $(AM_CPPFLAGS)
+irpipe_CPPFLAGS         = -I../include -I../lib -I../drivers/irpipe $(AM_CFLAGS)
 irrecord_SOURCES        = irrecord-ui.cpp
 irrecord_LDADD          = $(LIRC_LIBS)  ../lib/libirrecord.la
 irsimsend_SOURCES       = irsimsend.cpp
