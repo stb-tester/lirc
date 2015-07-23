@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
 			printf("%s\n", "irw " VERSION);
 			return EXIT_SUCCESS;
 		case 'U':
-			options_set_opt("lircd:pluginpath", optarg);
+			options_set_opt("lircd:plugindir", optarg);
 			break;
 		case 'k':
 			opt_keysym = optarg;
