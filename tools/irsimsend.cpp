@@ -270,43 +270,6 @@ int main(int argc, char* argv[])
 	struct ir_remote* remote;
 	char path[128];
 
-	while ((c = getopt_long(argc, argv, "c:hk:l:s:U:v", options, NULL))
-	       != EOF) {
-		switch (c) {
-		case 'h':
-			puts(USAGE);
-			return EXIT_SUCCESS;
-		case 'c':
-			opt_count = parse_uint_arg(optarg,
-						   "Illegal count value\n");
-			break;
-		case 'v':
-			printf("%s\n", "irw " VERSION);
-			return EXIT_SUCCESS;
-		case 'U':
-			options_set_opt("lircd:plugindir", optarg);
-			break;
-		case 'k':
-			opt_keysym = optarg;
-			break;
-		case 'l':
-			opt_listfile = optarg;
-			break;
-		case 's':
-			opt_startspace = parse_uint_arg(optarg,
-							"Illegal space value\n");
-			break;
-		case '?':
-			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fputs("Try `irsimsend -h' for more information.\n",
-			      stderr);
-			return EXIT_FAILURE;
-		}
-	}
-	if (argc != optind + 1) {
-		fputs(USAGE, stderr);
-		return EXIT_FAILURE;
-	}
 	lirc_log_get_clientlog("irsimsend", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irsimsend", 1, LIRC_NOTICE);
