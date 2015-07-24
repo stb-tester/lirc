@@ -127,9 +127,12 @@ static int simsend_remote(struct ir_remote* remote)
 {
 	struct ir_ncode* code;
 
-	for (code = remote->codes; code->name != NULL; code++) {
-		printf("%s\n", code->name);
-		send_code(remote, code);
+	while (remote != NULL) {
+		for (code = remote->codes; code->name != NULL; code++) {
+			printf("%s\n", code->name);
+			send_code(remote, code);
+		}
+		remote = remote->next;
 	}
 	return 0;
 }
