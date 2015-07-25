@@ -1,4 +1,4 @@
-.TH IRW "1" "Last change: Aug 2015" "irw @version@" "User Commands"
+.TH IRW "1" "Last change: Jul 2015" "irw @version@" "User Commands"
 .SH NAME
 .P
 \fBirw\fR - Send data from Unix domain socket to stdout
@@ -16,24 +16,10 @@ Options:
 \fB\-h\fR \fI\-\-help\fR
 Display usage summary
 .TP
-\fB\-v\fR \fI\-\-version\fR
-Display version
+\fB\-v\fR \fB\-\-version\fR
+display version
 .SH SIGNALS
-.P
-On receiving SIGUSR1 \fBirw\fR makes a clean exit.
-.SH NOTES
-.P
-Since the lircd socket supports multiple clients, \fBirw\fR can run in
-parallell with other applications.
-.P
-\fBirw\fR does nothing more than dumps a unix-domain socket, a task which
-many standard tools also can do. E. g., the ncat(1) tool can be
-used instead of irw to provide more flexibility (but without any sane default
-socket):
-.nf
-    ncat -U /var/run/lirc/lircd
-.fi
-
+On receiving SIGUSR1 irw makes a clean exit.
 .SH "SEE ALSO"
 .P
 The documentation for \fBlirc\fR
