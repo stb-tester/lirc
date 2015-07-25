@@ -1,4 +1,4 @@
-.TH IRW "1" "Last change: March 2009" "irw @version@" "User Commands"
+.TH IRW "1" "Last change: Jul 2015" "irw @version@" "User Commands"
 .SH NAME
 irw - sends data from Unix domain socket to stdout
 .SH SYNOPSIS
@@ -15,6 +15,8 @@ display usage summary
 .TP
 \fB\-v\fR \fB\-\-version\fR
 display version
+.SH SIGNALS
+On receiving SIGUSR1 irw makes a clean exit.
 .SH "SEE ALSO"
 The documentation for
 .B lirc

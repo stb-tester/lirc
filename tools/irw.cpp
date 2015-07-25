@@ -13,6 +13,7 @@
 # include <config.h>
 #endif
 
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,8 +34,17 @@ static struct option long_options[] = {
 	{ 0,	     0,		  0,	0   }
 };
 
+
+void sigusr1(int sig)
+{
+	exit(0);
+}
+
+
+
 int main(int argc, char* argv[])
 {
+	struct sigaction act;
 	int fd, i;
 	char buf[128];
 	struct sockaddr_un addr;
@@ -42,6 +52,11 @@ int main(int argc, char* argv[])
 	const char* progname;
 
 	progname = "irw " VERSION;
+
+	act.sa_handler = sigusr1;
+	sigfillset(&act.sa_mask);
+	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
+	sigaction(SIGUSR1, &act, NULL);
 
 	addr.sun_family = AF_UNIX;
 
