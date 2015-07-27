@@ -327,7 +327,6 @@ if [ "$1" = '-l' ]; then
 	do
 		test -n "$REPLY" && test_one $REPLY
 	done
-	find output -type d -empty -delete
 	exit 0
 fi
 
