@@ -38,6 +38,9 @@ website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
                           html-source/lirc.css
+if HAVE_PYMOD_YAML
+dist_website_html_DATA  += table.html
+endif
 
 website_imagedir        = $(docdir)/lirc.org/images
 dist_website_image_DATA = $(dist_image_DATA)
