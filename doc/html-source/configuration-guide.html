@@ -57,8 +57,8 @@
        |        |---->----| layer       |---------->----------| Appli- |
        |        |         |             |  /dev/input/eventX  | cation |
        |        |         ---------------                     |        |
---->---| kernel |            |        |                       ----------
-remote |        |   devinput v        |
+--->---|        |            |        |                       ----------
+remote | kernel |   devinput v        |
        |        |            |        ^ uinput
        |        |            |        |                       ----------
        |        |         ---------------                     | Appli- |
@@ -76,7 +76,7 @@ remote |        |   devinput v        |
     </p>
     <p>
     Depending on whether lirc is used or not application will get data
-    either from the input layer (/dev/input) or from LIRC §i
+    either from the input layer (/dev/input) or from LIRC
     (/var/run/lirc/lircd). Using the LIRC data requires application support.
     Support for LIRC is common in typical linux htpc applications like mythtv,
     kodi and vlc.
@@ -93,7 +93,7 @@ remote |        |   devinput v        |
     this is probably the way to go.
     </li></ul>
     <p>
-    If you need to use lirc, there is two cases depending on if your
+    If you need to use lirc, there are two cases depending on if your
     remote is supported by the kernel or not.
     </p>
     <ul>
