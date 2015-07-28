@@ -40,8 +40,6 @@ website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
                           html-source/lirc.css
-nodist_website_html_DATA = NEWS.txt
-
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
 endif
