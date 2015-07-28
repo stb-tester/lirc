@@ -82,8 +82,8 @@
        |        |---->----| layer       |---------->----------| Appli- |
        |        |         |             |  /dev/input/eventX  | cation |
        |        |         ---------------                     |        |
---->---|        |            |        |                       ----------
-remote | kernel |   devinput v        |
+--->---| kernel |            |        |                       ----------
+remote |        |   devinput v        |
        |        |            |        ^ uinput
        |        |            |        |                       ----------
        |        |         ---------------                     | Appli- |
@@ -101,17 +101,18 @@ remote | kernel |   devinput v        |
     </p>
     <p>
     Depending on whether lirc is used or not application will get data
-    either from the input layer (/dev/input) or from LIRC
+    either from the input layer (/dev/input) or from LIRC §i
     (/var/run/lirc/lircd). Using the LIRC data requires application support.
     Support for LIRC is common in typical linux htpc applications like mythtv,
-    kodi and vlc; of course also LIRC applications like irexec, lircmd and
-    irpty supports this.
+    kodi and vlc.
     </p>
     <p>
     The /var/run/lirc/lircd interfaces allows several applications to receive
     input events. On the other hand, the /dev/input interfaces only allows
-    one  application to receive each event. Despite these limitations,
-    a common scenario is to not involve lirc at all, the upmost
+    one  application to receive each event.
+    </p>
+    <ul><li>
+    A common scenario is to not involve lirc at all, the upmost
     path in the picture (kernel -&gt; Linux input layer -&gt; application).
     Unless there is reason to use lirc <a href="#why-use-lirc">(above)</a>)
     this is probably the way to go.
@@ -167,11 +168,11 @@ remote | kernel |   devinput v        |
       ! driver   !                   modprobe(1) configuration.
       ------------
            |
-           v  IR pulse data          Device like /dev/lirc0, /dev/ttyACM0.
-           |                         or /dev/ttyS0.
-      ------------
-      |  lirc    |                   Configure lirc_options.conf
-      |  driver  |                   with driver and usually also device.
+           v  IR pulse data          Use mode2 --raw  to debug.
+           |
+      ------------                   Often needs a device e. g.,
+      |  lirc    |                   /dev/input/eventXX or
+      |  driver  |                   /dev/lirc0
       ------------
            |
            v  IR pulse data          Use mode2(1) to debug
@@ -180,7 +181,7 @@ remote | kernel |   devinput v        |
    |  lirc pass 1 |                  lircd.conf config file.
    ----------------
            |
-           v  Key symbols            Output socket e. g.,
+           v  Key symbols            Presented on output socket e. g.,
            |                         /var/run/lirc/lircd. Use irw(1) to debug.
            |
    ----------------
@@ -202,41 +203,22 @@ remote | kernel |   devinput v        |
             driver and made available on a kernel device such as
             /dev/lirc0, /dev/ttyS0 or /dev/input/eventXX.</li>
        <li> Data from the kernel is then caught by LIRC using a
-            lircd driver.</li>
-       <li> In the next step, <em>lircd</em> converts the kernel data
-            from the lirc driver to key symbols using the lircd.conf
-            file. The key symbols are presented on the output socket,
-            by default /var/run/lirc/lircd.</li>
-       <li> In the next step the key symbols are converted
+            lirc driver. The lirc driver often needs to know from
+            which kernel device it should get the data from. This is
+            described in
+            <A HREF="#determine-driver-and-device">Determine driver and
+             device</a>.</li>
+       <li> In the next step, lirc converts the IR pulse data from the
+            lirc  driver to key symbols either using
+            <A HREF="#key-symbols-using-linux-input-layer">the linux input
+            layer</a> or <A HREF="#key-symbols-using-lirc-drivers">an lirc
+            driver</a> using the lircd.conf file. The key symbols are
+            presented on the output socket, default /var/run/lirc/lircd. </li>
+       <li> In the next step the application converts the key symbols
             to application-specific strings using the ~/.config/lircrc file
-            and a lirc library. </li>
-    </ul>
-    This flow is configured in four points:
-    <ul>
-        <li>
-           The kernel driver occasionally needs to be configured
-           using modprobe(1). See <a href="#appendix-1">Configuring
-           the kernel</a></li>
-        <li>
-           <em>lircd</em> needs to know which driver and often also kernel
-           device to use. This is configured using command line options
-           which eventually are stored in <em>lirc_options.conf</em>. This
-           is described in <A HREF="#determine-driver-and-device">
-           Determine driver and device</a>.</li>
-        <li>
-           To convert IR pulse data to key symbols <em>lircd</em> needs
-           a <em>lircd.conf</em> configuration file. Creating this is
-           done either by using
-           <A HREF="#key-symbols-using-linux-input-layer">
-           the linux input layer</a> or
-           <A HREF="#key-symbols-using-lirc-drivers">an lirc driver</a>.</li>
-         <li>
-           Converting key symbols to application strings is done using
-           a <em>lircrc</em> config file. This is created according to
+            and a lirc library.  This is described in
             <A HREF="#converting-key-symbols-to-application-strings">
             Convert the key symbols to application strings</a> .</li>
-
-
     </ul>
 
     <p>
@@ -470,11 +452,16 @@ remote | kernel |   devinput v        |
            space 350
            ...
         </pre>
-        If you don't see anything, try to find out: (a) if you selected
-        the correct driver b) If the driver needs settings (I/O base
-        address, IRQ) in modprobe.d, (c) if the remote which works and
-        (d) if your capture hardware works.</li>
-
+     </li>
+      <li>
+      Update /etc/lirc/lirc_options.conf to use the driver and device:
+      <pre>
+      [lircd]
+      nodaemon        = False
+      driver          = default
+      device          = /dev/lirc0
+      ....
+      </pre> </li>
     </ul>
     <p>
        lirc pass 1: Using lircd.conf, convert pulses to key symbols
@@ -485,8 +472,8 @@ remote | kernel |   devinput v        |
        single most important lirc configuration file. There are some
        ways to find or create such a file.
     <ul>
-       <li> The <a href="lirc-setup.html">lirc-setup</a> GUI tool can be used
-       to find and download both driver and configuration file.</li>
+       <li> The <em>lirc-setup</em> GUI tool can be used to find and
+       download both driver and configuration file.</li>
        <li>
        If you manually selected a driver from the driver table it might
        need a specific lircd.conf. Such drivers are best installed using
