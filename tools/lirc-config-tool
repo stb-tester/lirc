@@ -14,10 +14,15 @@ declare -a  ALL_LIRCD_KEYS      # All buttons in /etc/lirc/lircd.conf
 declare -a  BAD_LIRCD_KEYS      # Buttons not listed by irrecord -l
 declare -a  DUPLICATE_KEYS
 declare -a  GOOD_KEYS
-declare -ar GOOD_KEYS=( $( irrecord -l | egrep '^KEY_' |
+declare -a  GOOD_KEYS=( $( irrecord -l |
+                               egrep '^KEY_|BTN_LEFT|BTN_RIGHT' |
                                egrep -v 'KEY_KP[0-9]' |
                                egrep -v 'KEY_NUMERIC_[0-9]')
 )
+GOOD_KEYS+=('MOUSE_NW' 'MOUSE_N' 'MOUSE_NE'
+            'MOUSE_W' 'MOUSE_E' 'MOUSE_SW' 'MOUSE_SE')
+readonly GOOD_KEYS
+
 
 declare -A OPTIONS             # Option values, with single-letter
                                # option as key.
