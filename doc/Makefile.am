@@ -12,6 +12,9 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
+install-data-hook:
+	ln -s ../images $(DESTDIR)/$(htmldir)/images
+
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
@@ -37,7 +40,11 @@ dist_website_DATA       = $(website_files)
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
-                          html-source/lirc.css
+                          html-source/lirc.css \
+                          lirc.org/parallel.html \
+                          lirc.org/receivers.html \
+                          lirc.org/transmitters.html
+
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
 endif
@@ -46,7 +53,10 @@ website_imagedir        = $(docdir)/lirc.org/images
 dist_website_image_DATA = $(dist_image_DATA)
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html)
+nodist_html_DATA        = $(generated_html) \
+                          lirc.org/parallel.html \
+                          lirc.org/receivers.html \
+                          lirc.org/transmitters.html
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
