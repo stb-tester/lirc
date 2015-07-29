@@ -86,7 +86,74 @@
       and should be available on any reasonably updated system. However,
       some are in the staging area; if they are part of your kernel
       depends on the distro you use (unless of course if you compile
-      your own kernel).</P>
+      your own kernel).
+    <P>
+    <P>
+      If you want to use a home-brew receiver, an Anir Multimedia
+      Magic, a Packard Bell receiver, the IRdeo or if you want to use
+      the SIR IrDA driver, I suggest that you use the lirc_serial
+      or lirc_sir module.  Usually the serial port driver grabs all
+      ports it auto-detects as soon as it is loaded and the LIRC
+      modules won't be able to use any of them.
+    </P>
+    <P>
+      There are two solutions for this problem. Either you load the
+      LIRC module before the kernel serial port driver is loaded
+      (that's why you have to compile it as a module) or you call
+      <em>setserial /dev/ttySx uart none</em> to release the according
+      port. setserial usually is already called during boot-up in some
+      init script whose location depends on the distribution you
+      use.  If you tell setserial to
+      configure a port that is already claimed by a LIRC module, the
+      kernel serial driver will steal the port from the LIRC module
+      and LIRC will stop working. So check your setserial
+      configuration to only configure available ports. Debian users
+      should adjust their <em>/etc/serial.conf</em>.
+    </P>
+
+    <P>
+      <B>TV cards:</B> To use any remote control receivers connected
+      directly to a bttv based TV card you will need a working bttv
+      setup in your kernel. For most TV cards we rely on bttv
+      autodetection. That way you don't have to give any parameters to
+      the module as they are selected internally depending on the
+      information the bttv module gives us. This means that you should
+      pay attention that your TV card is detected correctly by bttv.
+    </P>
+
+    <!-- Supported Hardware ++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <A NAME="hardware"></A><HR>
+    <H1 ALIGN="CENTER">Supported Hardware</H1>
+    <HR WIDTH="70%">
+
+    <P>
+      Generally speaking everything that can receive or send infrared
+      signals can be supported by LIRC. The project began with support
+      for home-brew receivers and transmitters for the serial port and
+      later support for analogous hardware for the parallel port was
+      added. At that time the focus of the project was to provide an
+      infrared solution that is both very cheap and easy to
+      assemble. The following links point to instructions how to build
+      your own receiver/transmitter.
+    </P>
+
+    <UL>
+      <LI><A HREF="receivers.html">
+          Building a serial port receiver</A></LI>
+      <LI><A HREF="transmitters.html">
+          Building a serial port transmitter</A></LI>
+      <LI><A HREF="parallel.html">
+          Building a parallel port transceiver</A></LI>
+    </UL>
+
+    <P>
+      Current versions of LIRC now support many more commercially
+      available solutions. Examples are the Irman, built-in IrDA ports
+      or TV cards. Drivers for even more hardware are likely to appear
+      in the future. If you are a programmer who wants to maintain
+      such a driver you are welcome to join the project.
+    </P>
     <P>
       There are example and test kernel modules in the drivers/
       directory. None of these are required for regular LIRC use, but
