@@ -49,6 +49,8 @@
     cases, there are still scenarios when LIRC is the right tool.
     </p>
 
+
+
     <A NAME="overall-configuration-decisions"></A><HR>
     <h2 align="center">Overall Configuration Decisions.</h2>
     <pre>
@@ -72,7 +74,7 @@ remote | kernel |   devinput v        |
     </pre>
     <p>
     LIRC can be run together with the kernel in different ways. You need
-    to decide on a general approach first.
+    to decide on a general approach.
     </p>
     <p>
     Depending on whether lirc is used or not application will get data
@@ -104,16 +106,23 @@ remote | kernel |   devinput v        |
     -&gt; app).
     </li>
     <li>
-    If the kernel built-in decoding can't be used you need to use a lirc
-    driver instead. This is the bottom data path (kernel -&gt; lirc -&gt; app).
+    If the kernel built-in decoding can't be used (e. g., due to need of
+    IR blasting or remote not being supported by the kernel) you should
+    use a lirc driver instead. This is the bottom data path
+    (kernel -&gt; lirc -&gt; app).
     </li>
     </ul>
     <p>
     Last option is to connect the LIRC driver to the linux input layer
     using LIRC's --uinput option. This means that application sees the
     input as coming from the kernel, and LIRC's other capabilities are
-    not available. This is not described here.
+    not available. This is not described here.  </p>
+    <p>
+    The lirc configuration consists ov several files described in
+    <a href="appendix-10">Appendix 10</a>. There are some tools to
+    aid in the configuration listed in <a href="appendix-11">Appendix 11</a>
     </p>
+
     <A NAME="basic-setup-flow"></A><HR>
     <h2 align="center">Basic setup flow</h2>
     <pre>
@@ -1058,3 +1067,79 @@ remote | kernel |   devinput v        |
     <P>
     Creating udev rules is a large topic. Please refer to more
     generic information to resolve problems.
+
+
+    <A NAME="appendix-10"></A>
+    <h3 align="center">A10 : Configuration files</h3>
+
+    The lirc configuration is mostly done in the lirc config directory,
+    usually /etc/lirc. Besides this, there are occasionally needs to
+    configure the kernel drivers using files in /etc/modprobe.d.
+    <pre>
+           /etc
+            |
+            |
+            |---lirc
+            |     |
+            |     |-----------  lirc_options.conf
+            |     |
+            |     |-----------  lircd.conf
+            |     |
+            |     |-----------  lircd.conf.d
+            |                       |
+            |                       |------- remote1.lircd.conf
+            |                       |
+            |                       |------- remote2.lircd.conf
+            |
+            |---modprobe.d
+                    |
+                    | --------- blacklist-xxx.conf
+                    |
+                    | ----------options-xxx.conf
+     </pre>
+     The files:
+     <ul>
+       <li> <b>lirc_options.conf</b> holds the lircd options. This includes driver,
+       port and other important configuration. All of these options can
+       be overridden on the lircd command line.</li>
+       <li> <b>lircd.conf contains</b> timing information. It's used by lircd to
+       convert raw data from the kernel to key symbols. As shipped, the
+       lircd.conf is empty and just includes any configuration file in
+       lircd.conf.d.</li>
+       <li><b>lircd.conf.d contains</b> all used remote configuration files. When
+       receiving data lircd will try to decode it, trying each of these
+       files.</li>
+       <li> <b>modprobe.d/blacklist-*</b>. These contains a single <em>blacklist</em>
+       directive used to disable kernel drivers which conflicts with
+       lirc's driver.</li>
+       <li><b>modprobe.d/options-*</b>. Contains kernel module options e. g.,
+       which serial port the lirc_serial module should use.</li>
+     </ul>
+
+    <A NAME="appendix-11"></A>
+    <h3 align="center">A11 : Configuration tools</h3>
+    LIRC contains several tools used in the configuration process:
+    <dl>
+       <dt>lirc-setup</dt>
+       <dd>GUI tool which automates the creation of lircd.conf,
+       lirc_options.conf and various files in /etc/modprobe.d.</dd>
+
+       <dt><a href="irdb-get.html">irdb-get</a></dt>
+       <dd>Command line tool to search, list and download configuration files
+       from the remotes database at
+       <a href="http://sourceforge.net/p/lirc-remotes">
+       http://sourceforge.net/p/lirc-remotes</a></dd>
+
+       <dt><a href="lirc-config-tool.html">lirc-config-tool</a></dt>
+       <dd>Command linetTool which can be used to create a lircrc file for
+       some applications including mythttv and vlc. It can also be used to
+       convert old style ad-hoc button names to names in the legal namespace.
+
+       <dt><a href="lirc-lsremotes.html">lirc-lsremotes</a></dt>
+       <dd>Command line tool to display  information about lircd.conf files.
+       Using the -s option it can also be used as a static checker.</dt>
+
+       <dt><a href="lirc-lsplugins.html">lirc-lsplugins</a></dt>
+       <dd>Command line tool to display info on plugins i. e., lirc
+       drivers.</dt>
+    </dl>
