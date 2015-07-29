@@ -48,30 +48,6 @@
     cases, there are still scenarios when LIRC is the right tool.
     </p>
 
-    <A NAME="hardware"></A><HR>
-    <H2 ALIGN="CENTER">Supported Hardware</H2>
-
-    <P>
-      Generally speaking everything that can receive or send infrared
-      signals can be supported by LIRC. The project began with support
-      for home-brew receivers and transmitters for the serial port and
-      later support for similar hardware for the parallel port was
-      added. At that time the focus of the project was to provide an
-      infrared solution that was both very cheap and easy to
-      assemble. There is some more info on this in <a href="#appendix-11">
-      Appendix 11</a>
-    <P>
-      Current versions of LIRC now support many more commercially
-      available solutions. As a starter, it can use all devices
-      supported by the kernel. Besides those, it has specific
-      drivers for other devices including the Irman, built-in
-      IrDA ports, TV cards, and consumer devices like Tira
-      and Irtoy.</p>
-     <p>
-      Drivers for even more hardware are likely to appear
-      in the future. If you are a programmer who wants to maintain
-      such a driver you are welcome to join the project.  </P>
-    <P>
 
 
     <A NAME="overall-configuration-decisions"></A><HR>
@@ -141,10 +117,9 @@ remote | kernel |   devinput v        |
     input as coming from the kernel, and LIRC's other capabilities are
     not available. This is not described here.  </p>
     <p>
-    The lirc configuration consists of several files described in
-    <a href="#appendix-10">Appendix 10</a>. There are some tools to
-    aid in the configuration listed in
-    <a href="programs-overview.html#config"> programs overview</a>
+    The lirc configuration consists ov several files described in
+    <a href="appendix-10">Appendix 10</a>. There are some tools to
+    aid in the configuration listed in <a href="appendix-11">Appendix 11</a>
     </p>
 
     <A NAME="basic-setup-flow"></A><HR>
@@ -1213,49 +1188,6 @@ remote | kernel |   devinput v        |
     Creating udev rules is a large topic. Please refer to more
     generic information to resolve problems.
 
-    <h4> Connecting several input capture devices.</h4>
-    <p>
-    For each device you want to use you have to
-    <a href="#setup-instance">setup an individual lircd instance</a>.
-    If you want to receive events from all receivers
-    at one socket interface you have to connect the different lircd
-    interfaces with an additional TCP/IP socket. This could e. g., look
-    like this:</p>
-<pre>
-&gt; lircd --driver=default --device=/dev/lirc1 --output=/var/run/lirc/lircd1 \
-    --pidfile=/var/run/lirc/lircd1.pid --listen
-&gt; lircd --driver=default --device=/dev/lirc0 --output=/var/run/lirc/lircd \
-    --pidfile=/var/run/lirc/lircd.pid --connect=localhost:8765
-</pre>
-
-    <P>
-      All events will now be visible at /var/run/lirc/lircd. The second lircd
-      instance connects to the first instance using a TCP/IP
-      socket. The default port is 8765. It can be changed by providing
-      an optional parameter to the <em>--listen</em> switch. If you
-      have more lircd instances you want to connect to, you can
-      add more host:port items to the last lircd instance's
-      --connect option. Please note that lircd will not relay
-      events received from one lircd to another. So you can't
-      daisy-chain lircds. Instead you need a star topology setup.
-    </P>
-      In order to check each lircd instance individually if events are
-      being received, use irw providing the according socket
-      interface on the command line:
-<pre>
-&gt; irw /var/run/lirc/lircd1
-</pre>
-    <P>
-      The only situation where the described procedure will not work
-      is when you have two devices that both use a kernel driver that
-      can only handle one device at once like e.g. lirc_serial,
-      lirc_sir or lirc_parallel. Resolving this requires recompiling
-      the kernel drivers with different names and device numbers.
-      Lifting this limitation is one of the todo items
-      for future releases.
-    </P>
-
-
 
     <A NAME="appendix-10"></A>
     <h3 align="center">A10 : Configuration files</h3>
@@ -1271,8 +1203,6 @@ remote | kernel |   devinput v        |
             |     |
             |     |-----------  lirc_options.conf
             |     |
-            |     |-----------  lircrc
-            |     |
             |     |-----------  lircd.conf
             |     |
             |     |-----------  lircd.conf.d
@@ -1286,91 +1216,50 @@ remote | kernel |   devinput v        |
                     | --------- blacklist-xxx.conf
                     |
                     | ----------options-xxx.conf
-
-         $HOME
-           |
-           |----.config
-                    |
-                    |-----------lircrc
      </pre>
      The files:
      <ul>
-       <li>
-         <b>lirc_options.conf</b> holds the lircd options. This includes driver,
-         port and other important configuration. All of these options can
-         be overridden on the lircd command line.</li>
-       <li>
-         <b>lircd.conf</b> contains timing information. It's used by lircd to
-         convert raw data from the kernel to key symbols. As shipped, the
-         lircd.conf is empty and just includes any configuration file in
-         lircd.conf.d.</li>
-       <li>
-         <b>lircd.conf.d</b> contains all used remote configuration files. When
-         receiving data lircd will try to decode it, trying each of these
-         files.</li>
-       <li>
-         <b>/etc/lirc/lircrc</b> is an optional default lircrc file.</li>
-       <li>
-         <b>modprobe.d/blacklist-*</b>. These contains a single <em>blacklist</em>
-         directive used to disable kernel drivers which conflicts with
-         lirc's driver.</li>
-       <li>
-         <b>modprobe.d/options-*</b>. Contains kernel module options e. g.,
-         which serial port the lirc_serial module should use.</li>
-       <li>
-         <b>$HOME/.config/lircrc</b> is the main lircrc file. Many
-         applications supporting LIRC have specific paths to their lircrc
-         files.</li>
+       <li> <b>lirc_options.conf</b> holds the lircd options. This includes driver,
+       port and other important configuration. All of these options can
+       be overridden on the lircd command line.</li>
+       <li> <b>lircd.conf contains</b> timing information. It's used by lircd to
+       convert raw data from the kernel to key symbols. As shipped, the
+       lircd.conf is empty and just includes any configuration file in
+       lircd.conf.d.</li>
+       <li><b>lircd.conf.d contains</b> all used remote configuration files. When
+       receiving data lircd will try to decode it, trying each of these
+       files.</li>
+       <li> <b>modprobe.d/blacklist-*</b>. These contains a single <em>blacklist</em>
+       directive used to disable kernel drivers which conflicts with
+       lirc's driver.</li>
+       <li><b>modprobe.d/options-*</b>. Contains kernel module options e. g.,
+       which serial port the lirc_serial module should use.</li>
      </ul>
 
     <A NAME="appendix-11"></A>
-    <h3 align="center">A11 : Using home-brew hardware</h3>
-     The LIRC project began as an attempt to create drivers for
-     home-brew hardware. Some links to build such:
-    <UL>
-      <LI><A HREF="lirc.org/receivers.html">
-          Building a serial port receiver</A></LI>
-      <LI><A HREF="lirc.org/transmitters.html">
-          Building a serial port transmitter</A></LI>
-      <LI><A HREF="lirc.org/parallel.html">
-          Building a parallel port transceiver</A></LI>
-    </UL>
-    Using  home-brew hardware in many cases means using the lirc_serial
-    or lirc_parallel driver. These drivers needs configuration such as
-    I/O base address and IRQ. This is done using modprobe, using
-    command line parameters to modprobe(1) or adding files to
-    the modprobe.d(5) directory. The modinfo(1) command provides useful
-    info how to configure the drivers.
-    <p>
-    If there is no output when testing with mode2, there are some things
-    to check:
-    <ul>
-      <li>
-        Is this the correct kernel driver? is there anything useful in
-        dmesg(1)?  </li>
-      <li>
-        Are the kernel driver settings OK? Does modinfo(1) provide any
-        help?</li>
-      <li>
-        Does the remote work? Can you test it with some other hardware?
-        </li>
-      <li> Does the hardware work?  The voltage input of the infrared
-        receiver should be 5V +/- 0.5V, the output pin of the receiver
-        should be about 0.5V less than the input voltage.
-     </ul>
-      From time to time there should be long spaces (&gt;30000). If you
-      can see very long pulses this usually means that sense auto
-      detection of your serial port IR receiver circuit has
-      failed. You can override sense auto detection by loading the
-      device driver with the following option:
+    <h3 align="center">A11 : Configuration tools</h3>
+    LIRC contains several tools used in the configuration process:
+    <dl>
+       <dt>lirc-setup</dt>
+       <dd>GUI tool which automates the creation of lircd.conf,
+       lirc_options.conf and various files in /etc/modprobe.d.</dd>
 
-    <P>
-      <em>modprobe lirc_serial sense=0</em> if your receiver circuit is active
-      high or<BR>
+       <dt><a href="irdb-get.html">irdb-get</a></dt>
+       <dd>Command line tool to search, list and download configuration files
+       from the remotes database at
+       <a href="http://sourceforge.net/p/lirc-remotes">
+       http://sourceforge.net/p/lirc-remotes</a></dd>
 
-      <em>modprobe lirc_serial sense=1</em> if your receiver circuit is active
-      low.
-    </P>
-     <p>
-     There is also a hardware-related section in the
-     <a href="lirc.org/faq.html">FAQ</a> </p>
+       <dt><a href="lirc-config-tool.html">lirc-config-tool</a></dt>
+       <dd>Command linetTool which can be used to create a lircrc file for
+       some applications including mythttv and vlc. It can also be used to
+       convert old style ad-hoc button names to names in the legal namespace.
+
+       <dt><a href="lirc-lsremotes.html">lirc-lsremotes</a></dt>
+       <dd>Command line tool to display  information about lircd.conf files.
+       Using the -s option it can also be used as a static checker.</dt>
+
+       <dt><a href="lirc-lsplugins.html">lirc-lsplugins</a></dt>
+       <dd>Command line tool to display info on plugins i. e., lirc
+       drivers.</dt>
+    </dl>
