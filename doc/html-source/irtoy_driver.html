@@ -1,0 +1,64 @@
+    <A NAME="irtoy"></A><HR>
+    <H1>The IrToy driver</H1>
+
+    <P>
+        The <a href="http://dangerousprototypes.com/docs/USB_Infrared_Toy">IrToy</a>
+        by Dangerous Prototypes is a versatile and cheap USB sender and receiver
+        that can be used with Lirc. It is "open hardware" with circuit plans etc being freely available.
+        Since Lirc 0.9.2, there is native driver, written by Peter
+        Kooiman, contained in Lirc. Previous versions could use it utilizing the
+        IrMan emulation in the IrToy.
+
+    <H2>Firmware version</H2>
+    <p>Only version 2.2 is supported by the driver.
+        For instructions, programs, and firmware, see
+        <a href="http://dangerousprototypes.com/docs/USB_IR_Toy_firmware_update">this guide</A>.
+
+    <h2>Device file</H2>
+    <p>Linux (udev really) assigns a connected IrToy a name of the form <code>/dev/ttyACM<EM>n</EM></code>,
+        where <code><EM>n</EM></CODE> is the smallest non-negative integer not yet taken. This can cause
+        unpredicted behavior, not only when using several IrToys, but also in context
+        of other device using the same names, like Arduinos. By using <code>--device=auto</code> when
+        as argument to Lircd, the lowest <code>/dev/ttyACM<EM>n</EM></CODE>, that actually contains an
+        IrToy, will be used.
+
+    <h2>Debugging LEDs</H2>
+    <p>There are a few GPIOs which are normally unused. Attaching LEDs to these
+        is great for debugging, not only of the
+        IrToy and the driver, but also of Lirc itself. For this, solder LEDs between
+        the different "pins" and ground, as follows:
+    <ul>
+        <LI>RA5, the "open" LED". This will be on whenever the device is held open from the host.
+        <LI>RA4, the "sending LED". Lights when IR transmission takes place.
+        <LI>RA3, the "receive LED". This is on whenever the device is expecting to receive IR signals.
+    </ul>
+    <p>This behavior is the same as in <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>.
+
+    <p><A href="https://www.google.de/search?q=led+resistor+built-in">LEDs with
+            build-in resistor</A> are recommended. Otherwise, be sure to include a
+            resistor of a few hundered ohms up to a few kiloohms
+            (depending to desired brightness and the type of the LED) in series with the LED.
+
+    <h2>FAQs</H2>
+    <h3>Is there a forum for the IrToy?</H3>
+    <p><a href="http://dangerousprototypes.com/forum/viewforum.php?f=29">Yes.</A>
+    <h3>The orange LED is permanently on, the device does not show up as /dev/ttyACMn
+        any longer, and cannot be accessed from Lirc.</H3>
+    <p>The device has gone into the bootloader mode, and expects to be flashed with "new" firmware.
+        See <a href="http://dangerousprototypes.com/docs/USB_IR_Toy_firmware_update">this guide</A>.
+    <h3>How do I find out the firmware version?</H3>
+    <p>Start Lircd with loglevel 8 or higher, and search for <code>irtoy_getversion</CODE> in the log file. Alternatively use IrScutinizer.
+    <h3>How do I use udev to get a permanent name for the device?</H3>
+    <p>Put a file with the following content in, e.g., <code>/etc/udev/rules.d/11-irtoy.rules</CODE>.
+        (Tested with Fedora)
+    <pre>
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="fd08", ATTRS{idVendor}=="04d8", SYMLINK+="irtoy"
+</PRE>
+    <h3>How is it supposed to look like with the present software?</H3>
+    <p>When sending, the opening LED and the sending LED go on, and then out immediately.
+        Note that Lirc (at in the present version) closes the device directly after sending,
+        i.e. the opening LED goes out. When receiving (can be tested with <code>irw</CODE>),
+        the opening and the receiving LEDs go on.
+
+
+<p class="footer"/>
