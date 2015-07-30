@@ -1,38 +1,19 @@
-0.9.3a 14/10/15
-  * Broken fix for kernel bug reverted (#148, #119). This makes lirc
-    incompatible with at least the 4.04 kernels. kernels < 4.0 and >
-    4.1.6 seemingly works.
-  * Several irrecord fixes (#146, #139, d8826b, #141).
-  * Some fixes for poll() usage, one of which blocked irrecord
-    (02c2480, d9339b6).
-  * lib: Fix parsing of multiple files (#141).
-  * lib: Fix privilege dropping code and a compiler flag (e8be7ae,
-    8a08ab1)
-  * lirc-lsplugins: Fix --plugindir not being respected (#144).
-  * atilibusb: Fix crash for non-existing device (#145).
-  * plugins: file.c: Fix off-by-one sscanf error (#138).
+0.9.4
+  * TBD
 
-0.9.3 4/9/15
-
-  * Digest of 0.9.3pre1..0.9.3pre3
-
-  * New build dependency: xsltproc (sometimes coming with libxml).
-  * The irexec semantics have been changed so that the invoked
-    programs run disconnected from the main irexec process.
-    See irexec(1) (#92).
-  * irrecord has got some love:
-     + It handles multiple definitions of same symbol OK (#78)
-     + Warns about single-key config files (#77)
-     + Checks for ambient light disturbances (#76)
-     + New option allows updating of existing template file.
-     + Template handling bug fixed
-     + -l --list-namespace option parsing bug fixed (#101).
-     + Minor fixes to irrecord-ui including -k option parsing fixed.
-  * mode2 has been updated
-     +  handle also LIRCCODE devices (#94),
-     +  Drop root privileges (#91)
-     +  Add  new scope-like display
-     +  Handle the--driver-options switch
+0.9.3pre2
+  * The library routines for parsing lircd.conf now warns for
+    duplicate keys and values (#107).
+  * lirc-lsremotes now displays logs after parsing files, making
+    more parsing warnings visible.
+  * lirc-config-tool has been updated to comply with guidelines (#105).
+  * Bug in irexec when using modes fixed (#102).
+  * Options parsing (notably -U) and just listing first remote bugs
+    in irsimsend have been fixed.
+  * Support for irtoy added to lirc-setup and driver docs.
+0.9.3pre1
+  * mode2 has been updated to handle also LIRCCODE devices (#94)
+    and also handling the --driver-options switch
   * xmode2 has been updated to handle udp driver, the new
     --driver-options switch + some general overhaul.
   * irrecord has been split into a library and a cli interface
