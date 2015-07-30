@@ -233,6 +233,27 @@ int lsremotes(const char* dirpath, const char* remote)
 }
 
 
+int check_logs(const char* path)
+{
+	struct stat statbuf;
+	FILE* f;
+	char buff[256];
+
+	if (stat(path, &statbuf) == -1)
+		return 1;
+	if (statbuf.st_size == 0)
+		return 1;
+	f = fopen(path, "r");
+	if (f == NULL) {
+		fprintf(stderr, "Cannot open logfile %s for read", path);
+		return 0;
+	}
+	while (fgets(buff, sizeof(buff), f) != NULL)
+		fprintf(stderr, buff);
+	fclose(f);
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	const char* configs;
@@ -272,8 +293,10 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 	lirc_log_get_clientlog("lirc-lsremotes", path, sizeof(path));
+	unlink(path);
 	lirc_log_set_file(path);
 	lirc_log_open("lirc-lsremotes", 1, LIRC_NOTICE);
 	lsremotes(dirpath, configs);
+	check_logs(path);
 	return 0;
 }
