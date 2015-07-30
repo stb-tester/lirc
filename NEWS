@@ -1,4 +1,17 @@
-0.9.3-devel
+0.9.4
+  * TBD
+
+0.9.3pre2
+  * The library routines for parsing lircd.conf now warns for
+    duplicate keys and values (#107).
+  * lirc-lsremotes now displays logs after parsing files, making
+    more parsing warnings visible.
+  * lirc-config-tool has been updated to comply with guidelines (#105).
+  * Bug in irexec when using modes fixed (#102).
+  * Options parsing (notably -U) and just listing first remote bugs
+    in irsimsend have been fixed.
+  * Support for irtoy added to lirc-setup and driver docs.
+0.9.3pre1
   * mode2 has been updated to handle also LIRCCODE devices (#94)
     and also handling the --driver-options switch
   * xmode2 has been updated to handle udp driver, the new
