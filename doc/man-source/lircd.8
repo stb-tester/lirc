@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Feb 2015" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Jul 2015" "lircd @version@" "System Administration Utilities"
 .SH NAME
 lircd - LIRC daemon decodes infrared signals and provides them on a Unix
 domain socket.
@@ -8,8 +8,8 @@ domain socket.
 .SH DESCRIPTION
 The main task of lircd is to decode the infrared signals and provide
 an uniform interface for client applications. Clients can connect to
-lircd through a Unix domain socket which is located in
-\/var/run/lirc/lircd.  Using this socket they will get the infrared
+lircd through a Unix domain socket, by default
+/var/run/lirc/lircd.  Using this socket they will get the infrared
 codes received by lircd and they can send commands to lircd.
 .PP
 
@@ -17,10 +17,12 @@ codes received by lircd and they can send commands to lircd.
 .TP 4
 .B config file
 The configuration file, by default /etc/lirc/lircd.conf. A relative
-path is interpreted from /etc/lirc.
+path is interpreted from /etc/lirc. The default configuration file
+includes all files in /etc/lircd.conf.d.
 .IP
-The file is specific for the remote(s) that lircd should decode. The
-format is described in lircd.conf(5). Configuration files could be
+Each remote which should be decoded by lircd usually requires that a
+specic file is used e. g., by copying it to /etc/lirc/lirc.conf.d/.
+The format is described in lircd.conf(5). Configuration files could be
 found using irdb-get(1) or lirc-setup(1). It's also possible to
 generate a config file using irrecord(1)
 
@@ -102,10 +104,10 @@ is to use syslog.
 .TP 4
 .B -o, --output <output socket>
 Select Unix domain socket, which lircd will write remote key codes to.
-The default currently is \/var/run/lirc/lircd.
+The default currently is /var/run/lirc/lircd.
 .TP 4
 .B \-p, --permission
-Gives the file permission of \/var/run/lirc/lircd if it has to be
+Gives the file permission of /var/run/lirc/lircd if it has to be
 created in octal representation. See chmod(1).
 If no \-\-permission option is given when the
 socket is initially created the default is to give all users read
@@ -208,3 +210,5 @@ irdb-get(1)
 lirc-setup(1)
 .br
 lircd.conf(5)
+.br
+irrecord(1)
