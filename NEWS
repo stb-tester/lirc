@@ -10,7 +10,8 @@
   * Bug in irexec when using modes fixed (#102).
   * Options parsing (notably -U) and just listing first remote bugs
     in irsimsend have been fixed.
-  * Support for irtoy added to lirc-setup and driver docs.
+  * irtoy: New support for debug LEDs added. New documentation file, support
+    in lirc-setup and driver table doc added.
 0.9.3pre1
   * mode2 has been updated to handle also LIRCCODE devices (#94)
     and also handling the --driver-options switch
@@ -109,17 +110,10 @@
      + New option allows updating of existing template file.
      + Template handling bug fixed
      + -l --list-namespace option parsing bug fixed (#101).
-  * mode2 has been updated
-     +  handle also LIRCCODE devices (#94),
-     +  Drop root privileges (#91)
-     +  Add  new scope-like display
-     +  Handle the--driver-options switch
-  * xmode2 has been updated to handle udp driver, the new
-    --driver-options switch + some general overhaul.
-  * irrecord has been split into a library and a cli interface
-    (#36). The library interface is unstable.
-  * lircmd: Several option parsing bugs fixed, one of which
-    blocked the systemd service (#104, RH bz 1234155).
+  * irrecord has been split into a library and a cli interface (#36). The
+    library interface is unstable and not announced in pkg-config.
+  * lircmd: Several option parsing bugs fixed, one of which blocked the
+    systemd service (#104, RH bz 1234155).
   * lirc-setup: fixed name clash on recent python versions.
   * The udp driver is patched to allow adjustable clockrates,
     see new udp_driver.html driver doc.
