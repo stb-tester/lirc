@@ -1,10 +1,10 @@
-.TH LIRC 4 "Aug 2015" "Linux" "Linux Programmer's Manual"
+.TH LIRC 4 "Jul 2015" "Linux" "Linux Programmer's Manual"
 .SH NAME
 lirc \- lirc devices
 .SH DESCRIPTION
-.P
-\fB/dev/lirc*\fR are character devices providing a low-level
-bi-directional interface to IR remotes.
+.B  /dev/lirc*
+are character devices providing a low-level bi-directional interface to IR
+remotes.
 When receiving data the driver works in two different modes depending on the
 underlying hardware.
 .P
@@ -23,11 +23,13 @@ Sometimes, this kind of hardware also supports
 sending IR data.
 It can be used with (almost) any kind of remote.
 .P
-The \fBLIRC_GET_REC_MODE\fR ioctl allows probing for the mode.
+The
+.B LIRC_GET_REC_MODE
+ioctl allows probing for the mode.
 
 .SH Reading using LIRC_MODE_MODE2 drivers
-.P
-In the \fBLIRC_MODE_MODE2 mode\fR, the driver read() provides 32-bit values
+In the
+.B LIRC_MODE_MODE2 mode, the driver read() provides 32-bit values
 representing a space or a pulse duration, by convention typed as lirc_t.
 The time of the duration (us) is encoded in the lower 24 bits.
 The upper 8 bit reflects the type of package:
@@ -45,17 +47,18 @@ Value reflects a frequency (hz), see the LIRC_SET_MEASURE_CARRIER ioctl.
 The package reflects a timeout, see the LIRC_SET_REC_TIMEOUT_REPORTS ioctl.
 
 .SH Reading using LIRC_MODE_LIRCCODE drivers.
-.P
-In the \fBLIRC_MODE_LIRCCODE\fR
+In the
+.B LIRC_MODE_LIRCCODE
 mode, the data returned by read() reflects decoded
-button presses. The length of each packet could be retrieved using
-the  \fBLIRC_GET_LENGTH\fR ioctl.
+button presses. The length of each packet could be retrieved using the
+.B LIRC_GET_LENGTH
+ioctl.
 read() on the device must be done in blocks matching
 the bit count, rounded up so it matches full bytes.
 
 .SH Sending data.
-.P
-When sending data, only the \fBLIRC_MODE_PULSE\fR
+When sending data, only the
+.B LIRC_MODE_PULSE
 mode is supported.
 The data written to the chardev using write() is a pulse/space sequence
 of integer values.
@@ -85,8 +88,8 @@ the device can rely on working with the default settings initially.
 
 .BR
 .SH Always Supported Commands
-.P
-\fI/dev/lirc*\fR devices always supports the following commands:
+.BR
+/dev/lirc* devices always supports the following commands:
 .TP 4
 .B LIRC_GET_FEATURES void
 Returns a bitmask of combined features bits, see FEATURES.
@@ -103,18 +106,21 @@ Driver return a sequence of pulse/space durations.
 .B LIRC_MODE_LIRCCODE
 Driver returns integer values, each of which representing a decoded button
 press.
-.RE
 .P
 If a device returns a negative error code  for
 .B LIRC_GET_REC_MODE
 it is safe to assume it is not a lirc device.
+.RE
 
 .BR
 .SH Optional Commands
-.P
+.BR
 Some lirc devices supports the following commands. Unless otherwise stated
-these  returns \fI-ENOIOCTLCMD\fR or \fI-ENOSYS\fR if the operation
-isn't supported and \fI-EINVAL\fR if operation failed.
+these  returns
+.B -ENOIOCTLCMD or
+.B -ENOSYS
+if the operation isn't supported and
+.B -EINVAL if operation failed.
 .TP
 .B LIRC_SET_REC_MODE  " (\fIint\fP)"
 Set the receive mode, either
@@ -253,7 +259,6 @@ incoming IR signal could be done. This can be used by supporting hardware
 to give visual user feedback e.g.,  by flashing a LED.
 
 .SH FEATURES
-.P
 The features returned by
 .B LIRC_GET_FEATURES
 is a bitmask combining the following bits.
@@ -267,7 +272,7 @@ The driver is capable of receiving using LIRC_MODE_PULSE
 .B LIRC_CAN_REC_MODE2
 The driver is capable of receiving using LIRC_MODE_MODE2
 .TP 8
-.B LIRC_CAN_REC_LIRCCODE
+LIRC_CAN_REC_LIRCCODE
 The driver is capable of receiving using LIRC_MODE_LIRCCODE
 .TP 8
 .B LIRC_CAN_SET_SEND_CARRIER
@@ -328,14 +333,12 @@ Driver supports sending using
 .TP 8
 .B LIRC_CAN_SEND_LIRCCODE
 Driver supports sending
-.B LIRC_SEND_LIRCCODE
-(this is uncommon, since
+.B LIRC_SEND_LIRCCODE (this is uncommon, since
 .B LIRCCODE
 drivers reflects hardware like TV-cards which usually does not support
 sending.)
 
 .SH BUGS
-.P
 Using these devices requires the kernel source header file lirc.h. That this
 file is not public is a bug, see
 https://bugzilla.kernel.org/show_bug.cgi?id=75751.
@@ -344,5 +347,5 @@ This manual page should really be part of the upstream man-pages project.
 
 
 .SH SEE ALSO
-.P
-https://www.kernel.org/doc/htmldocs/media_api/lirc_dev.html
+.br
+.B https://www.kernel.org/doc/htmldocs/media_api/lirc_dev.html
