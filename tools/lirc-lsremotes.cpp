@@ -249,7 +249,7 @@ int check_logs(const char* path)
 		return 0;
 	}
 	while (fgets(buff, sizeof(buff), f) != NULL)
-		fputs(buff, stderr);
+		fprintf(stderr, buff);
 	fclose(f);
 	return 0;
 }
