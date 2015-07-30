@@ -44,6 +44,8 @@
 
 
 const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x24, 0x25, 0x26, 0x03 };
+static const unsigned char cmdIOwrite = 0x30; // Sets the IO pins to ground (0) or +5volt (1).
+static const unsigned char cmdIOdirection = 0x31; // Sets the IO pins to input (1) or output (0).
 #define IRTOY_COMMAND_RESET 0
 #define IRTOY_COMMAND_SMODE_ENTER 's'
 #define IRTOY_COMMAND_VERSION 'v'
@@ -62,6 +64,18 @@ const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x24, 0x25, 0x26, 0x03 };
 #define IRTOY_TIMEOUT_SMODE_ENTER 500000
 #define IRTOY_TIMEOUT_VERSION 500000
 
+// To aid debugging, attach LEDs to the pins below. They will light up
+// under certain circumstances, helping to find out what the driver does.
+// If not needed, the performance penalty is believed to be very small.
+
+/** This LED lights when device is held open. */
+static const int openPin = 5; // RA5
+
+/** This LED lights when the device is listening for inputs. */
+static const int receivePin = 3; // RA3
+
+/** This LED LED lights during IR signal transmission. */
+static const int sendingPin = 4; // RA4
 
 struct tag_irtoy_t {
 	int	hwVersion;
@@ -128,6 +142,37 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return res;
 }
 
+static unsigned int IOdirections = (unsigned int) -1;
+static unsigned int IOdata = 0U;
+
+int send3(unsigned char cmd, unsigned int data)
+{
+	unsigned char array[3];
+	int res;
+	array[0] = cmd;
+	array[1] = (unsigned char) ((data >> 8) & 0xff);
+	array[2] = (unsigned char) (data & 0xff);
+	res = write(dev->fd, array, 3);
+	if (res != 3)
+		logprintf(LIRC_ERROR, "irtoy_setIOData: couldn't write command");
+	return res == 3;
+}
+
+static int setIOData(void)
+{
+	return send3(cmdIOdirection, IOdirections) && send3(cmdIOwrite, IOdata);
+}
+
+static int setPin(unsigned int pin, int state)
+{
+	unsigned int mask = 1 << pin;
+	IOdirections &= ~mask;
+	if (state)
+		IOdata |= mask;
+	else
+		IOdata &= ~mask;
+	return setIOData();
+}
 
 static ssize_t
 read_with_timeout(int fd, void* buf, size_t count, long to_usec)
@@ -436,6 +481,9 @@ static int init_device(void)
 	}
 	rec_buffer_init();
 	send_buffer_init();
+        setPin(openPin, 1);
+	setPin(sendingPin, 0);
+	setPin(receivePin, 1);
 
 	return 1;
 }
@@ -489,6 +537,9 @@ static int deinit(void)
 	// sending the next one, while sample mode will keep streaming
 	// (and under fluorescent light it WILL stream..)
 	// triggering the problem
+	setPin(openPin, 0);
+	setPin(sendingPin, 0);
+	setPin(receivePin, 0);
 	if (dev != NULL) {
 		irtoy_reset(dev);
 		free(dev);
@@ -604,6 +655,7 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 	int numToXmit;
 	int i;
 	lirc_t val;
+	int res;
 
 
 	if (!send_buffer_put(remote, code))
@@ -622,5 +674,8 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 	rawSB[2 * length + 1] = 0xFF;
 
 	numToXmit = 2 * length + 2;
-	return irtoy_send_double_buffered(rawSB, numToXmit);
+	setPin(sendingPin, 1);
+	res = irtoy_send_double_buffered(rawSB, numToXmit);
+	setPin(sendingPin, 0);
+	return res;
 }
