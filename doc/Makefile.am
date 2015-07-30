@@ -182,7 +182,6 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
-                           $(srcdir)/html-source/iguanair_driver.html \
                            $(srcdir)/html-source/irtoy_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/no-api-docs.html \
@@ -255,7 +254,6 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/imon_driver.html \
                            html/index.html \
                            html/install.html \
-                           html/iguanair_driver.html \
                            html/irtoy_driver.html \
                            html/lirc_client.html \
                            html/no-api-docs.html \
