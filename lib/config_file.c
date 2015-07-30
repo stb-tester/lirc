@@ -59,6 +59,10 @@ struct void_array {
 };
 
 
+/** foreach_void_array argument. */
+typedef void* (*array_guest_func)(void* item, void* arg);
+
+
 #define LINE_LEN 1024
 #define MAX_INCLUDES 10
 
@@ -108,6 +112,7 @@ const struct flaglist all_flags[] = {
 };
 
 
+/** Add *dataptr to end of ar, re-allocating as necessary. */
 int add_void_array(struct void_array* ar, void* dataptr)
 {
 	void* ptr;
@@ -131,10 +136,85 @@ int add_void_array(struct void_array* ar, void* dataptr)
 	return 1;
 }
 
+
+/** Return the array dataptr, an array[nr_items] of item_size elements. */
 void* get_void_array(struct void_array* ar)
 {
 	return ar->ptr;
 }
+
+
+/**
+ * Apply func(item, arg) on each item in ar, stopping if func returns
+ * non-NULL and then returning this value. Else returns NULL.
+ */
+static void*
+foreach_void_array(struct void_array* ar, array_guest_func func, void* arg)
+{
+	void* r;
+	int i;
+
+	for (i = 0; i < ar->nr_items; i += 1) {
+		r =  func(ar->ptr + (i * ar->item_size), arg);
+		if (r != NULL)
+			return r;
+	}
+	return NULL;
+}
+
+
+static int
+ir_code_node_equals(struct ir_code_node* node1, struct ir_code_node* node2)
+{
+	if (node1 == NULL || node2 == NULL)
+		return node1 == node2;
+	return node1->code == node2->code;
+}
+
+
+/**
+ * array_guest_func, compares two ncodes returning arg1 if values are the
+ * same, else NULL.
+ */
+static void* array_guest_code_equals(void* arg1, void* arg2)
+{
+
+	struct ir_ncode* code1 = (struct ir_ncode*) arg1;
+	struct ir_ncode* code2 = (struct ir_ncode*) arg2;
+	struct ir_code_node* next1;
+	struct ir_code_node* next2;
+
+	if (code1 == NULL || code2 == NULL)
+		return code1 == code2 ? arg1 : NULL;
+	if (code1->code != code2->code)
+		return NULL;
+	next1 = code1->next;
+	next2 = code2->next;
+	while  (code1->next != NULL) {
+		if (!ir_code_node_equals(next1, next2))
+			return NULL;
+		next1 = code1->next;
+		next2 = code2->next;
+	}
+	return arg1;
+}
+
+
+/**
+ * array_guest_func, compares two ncodes returning arg if names are the
+ * same, else NULL.
+ */
+static void* array_guest_ncode_cmp(void* item, void* arg)
+{
+
+	struct ir_ncode* code1 = (struct ir_ncode*) item;
+	struct ir_ncode* code2 = (struct ir_ncode*) arg;
+
+	if (strcmp(code1->name, code2->name) == 0)
+		return item;
+	return NULL;
+}
+
 
 void* s_malloc(size_t size)
 {
@@ -535,50 +615,55 @@ int defineRemote(char* key, char* val, char* val2, struct ir_remote* rem)
 	return 0;
 }
 
-static int sanityChecks(struct ir_remote* rem)
+static int sanityChecks(struct ir_remote* rem, const char* path)
 {
 	struct ir_ncode* codes;
 	struct ir_code_node* node;
 
+	path = path != NULL ? path : "unknown file";
+
 	if (!rem->name) {
-		logprintf(LIRC_ERROR, "you must specify a remote name");
+		logprintf(LIRC_ERROR,
+			  "%s: %s: Missing remote name", path, rem);
 		return 0;
 	}
 	if (rem->gap == 0) {
-		logprintf(LIRC_WARNING,
-			  "%s: you should specify a valid gap value",
-			  rem->name);
+		logprintf(LIRC_WARNING, "%s: %s: Gap value missing or invalid",
+			  path, rem->name);
 	}
 	if (has_repeat_gap(rem) && is_const(rem)) {
 		logprintf(LIRC_WARNING,
-			  "%s: repeat_gap will be ignored if CONST_LENGTH flag is set",
-			  rem->name);
+			  "%s: %s: Repeat_gap ignored (CONST_LENGTH is set)",
+			  path, rem->name);
 	}
 
 	if (is_raw(rem))
 		return 1;
 
 	if ((rem->pre_data & gen_mask(rem->pre_data_bits)) != rem->pre_data) {
-		logprintf(LIRC_WARNING, "invalid pre_data found for %s", rem->name);
+		logprintf(LIRC_WARNING,
+			  "%s: %s: Invalid pre_data", path, rem->name);
 		rem->pre_data &= gen_mask(rem->pre_data_bits);
 	}
 	if ((rem->post_data & gen_mask(rem->post_data_bits)) != rem->post_data) {
-		logprintf(LIRC_WARNING, "invalid post_data found for %s", rem->name);
+		logprintf(LIRC_WARNING, "%s: %s: Invalid post_data",
+			  path, rem->name);
 		rem->post_data &= gen_mask(rem->post_data_bits);
 	}
 	for (codes = rem->codes; codes->name != NULL; codes++) {
 		if ((codes->code & gen_mask(rem->bits)) != codes->code) {
-			logprintf(LIRC_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
+			logprintf(LIRC_WARNING, "%s: %s: Invalid code : %s",
+				  path, rem->name, codes->name);
 			codes->code &= gen_mask(rem->bits);
 		}
 		for (node = codes->next; node != NULL; node = node->next) {
 			if ((node->code & gen_mask(rem->bits)) != node->code) {
-				logprintf(LIRC_WARNING, "invalid code found for %s: %s", rem->name, codes->name);
+				logprintf(LIRC_WARNING, "%s: %s: Invalid code %s: %s",
+					  path, rem->name, codes->name);
 				node->code &= gen_mask(rem->bits);
 			}
 		}
 	}
-
 	return 1;
 }
 
@@ -824,6 +909,25 @@ static struct ir_remote* read_all_included(const char*		name,
 	return top_rem;
 }
 
+
+static void check_ncode_dups(const char* path,
+			     const char* name,
+			     struct void_array* ar,
+			     struct ir_ncode* code)
+{
+	if (foreach_void_array(ar, array_guest_ncode_cmp, code) != NULL) {
+		logprintf(LIRC_WARNING,
+			  "%s: %s: Duplicate codes: %s",
+			  path, name, code->name);
+	}
+	if (foreach_void_array(ar, array_guest_code_equals, code) != NULL) {
+		logprintf(LIRC_WARNING,
+			  "%s: %s: Duplicate values: %s",
+			  path, name, code->name);
+	}
+}
+
+
 static struct ir_remote*
 read_config_recursive(FILE* f, const char* name, int depth)
 {
@@ -937,6 +1041,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 						val2 = strtok(NULL, whitespace);
 					}
 					code->current = NULL;
+					check_ncode_dups(name, rem->name, &codes_list, code);
 					add_void_array(&codes_list, code);
 				} else {
 					logprintf(LIRC_ERROR, "error in configfile line %d:", line);
@@ -983,7 +1088,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 					/* print_remote(rem); */
 					if (!checkMode(mode, ID_remote, "end remote"))
 						break;
-					if (!sanityChecks(rem)) {
+					if (!sanityChecks(rem, name)) {
 						parse_error = 1;
 						break;
 					}
@@ -1041,6 +1146,10 @@ read_config_recursive(FILE* f, const char* name, int depth)
 						val2 = strtok(NULL, whitespace);
 					}
 					code->current = NULL;
+					check_ncode_dups(name,
+							 rem->name,
+							 &codes_list,
+							 code);
 					add_void_array(&codes_list, code);
 					break;
 				case ID_raw_codes:
