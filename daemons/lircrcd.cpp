@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -58,6 +59,13 @@ struct protocol_directive {
 	const char* name;
 	int (*function)(int fd, char* message, char* arguments);
 };
+
+struct pfd_byname{
+	struct pollfd sockfd;
+	struct pollfd lircdfd;
+	struct pollfd clis[MAX_CLIENTS];
+};
+
 
 static int code_func(int fd, char* message, char* arguments);
 static int ident_func(int fd, char* message, char* arguments);
@@ -173,14 +181,8 @@ inline int write_socket_len(int fd, const char* buf)
 
 inline int read_timeout(int fd, char* buf, int len, int timeout)
 {
-	fd_set fds;
-	struct timeval tv;
 	int ret, n;
-
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-	tv.tv_sec = timeout;
-	tv.tv_usec = 0;
+	struct pollfd  pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 
 	/* CAVEAT: (from libc documentation)
 	 * Any signal will cause `select' to return immediately.  So if your
@@ -190,24 +192,22 @@ inline int read_timeout(int fd, char* buf, int len, int timeout)
 	 * repeat the `select' with a newly calculated timeout based on the
 	 * current time.  See the example below.
 	 *
-	 * Obviously the timeout is not recalculated in the example because
-	 * this is done automatically on Linux systems...
+	 * The timeout is not recalculated here although it should, we keep
+	 * waiting as long as there are EINTR.
 	 */
 
 	do
-		ret = select(fd + 1, &fds, NULL, NULL, &tv);
+		ret = poll(&pfd, 1, timeout * 1000);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		logprintf(LIRC_ERROR, "select() failed");
-		logperror(LIRC_ERROR, "");
+		logperror(LIRC_ERROR, "read_timeout, poll() failed");
 		return -1;
-	} else if (ret == 0) {
+	};
+	if (ret == 0)
 		return 0;       /* timeout */
-	}
 	n = read(fd, buf, len);
 	if (n == -1) {
-		logprintf(LIRC_ERROR, "read() failed");
-		logperror(LIRC_ERROR, "");
+		logperror(LIRC_ERROR, "read_timeout: read() failed");
 		return -1;
 	}
 	return n;
@@ -293,7 +293,7 @@ void add_client(int sock)
 	}
 	;
 
-	if (fd >= FD_SETSIZE || clin >= MAX_CLIENTS) {
+	if (clin >= MAX_CLIENTS) {
 		logprintf(LIRC_ERROR, "connection rejected");
 		shutdown(fd, 2);
 		close(fd);
@@ -601,10 +601,17 @@ skip:
 	return 1;
 }
 
+
+
 static void loop(int sockfd, int lircdfd)
 {
-	fd_set fds;
-	int maxfd, i;
+	static const int POLLFDS_SIZE =
+		sizeof(struct pfd_byname) / sizeof(struct pollfd);
+	union {
+		struct pfd_byname byname;
+		struct pollfd byindex[POLLFDS_SIZE];
+	} poll_fds;
+	int i;
 	int ret;
 
 	while (1) {
@@ -614,29 +621,32 @@ static void loop(int sockfd, int lircdfd)
 				logprintf(LIRC_NOTICE, "caught signal");
 				return;
 			}
-			FD_ZERO(&fds);
-			FD_SET(sockfd, &fds);
-			FD_SET(lircdfd, &fds);
-			maxfd = max(sockfd, lircdfd);
+			memset(&poll_fds, 0, sizeof(poll_fds));
+			for (i = 0; i < POLLFDS_SIZE; i += 1)
+				poll_fds.byindex[i].fd = -1;
+			poll_fds.byname.sockfd.fd = sockfd;
+			poll_fds.byname.sockfd.events = POLLIN;
+			poll_fds.byname.lircdfd.fd = lircdfd;
+			poll_fds.byname.lircdfd.events = POLLIN;
 
 			for (i = 0; i < clin; i++) {
-				FD_SET(clis[i].fd, &fds);
-				maxfd = max(maxfd, clis[i].fd);
+				poll_fds.byname.clis[i].fd = clis[i].fd;
+				poll_fds.byname.clis[i].events = POLLIN;
 			}
-			LOGPRINTF(3, "select");
-			ret = select(maxfd + 1, &fds, NULL, NULL, NULL);
-
+			LOGPRINTF(3, "poll");
+			ret = poll((struct pollfd*) &poll_fds.byindex,
+				   POLLFDS_SIZE,
+				   0);
 			if (ret == -1 && errno != EINTR) {
-				logprintf(LIRC_ERROR, "select() failed");
-				logperror(LIRC_ERROR, "");
+				logperror(LIRC_ERROR, "loop: poll() failed");
 				raise(SIGTERM);
 				continue;
 			}
 		} while (ret == -1 && errno == EINTR);
 
 		for (i = 0; i < clin; i++) {
-			if (FD_ISSET(clis[i].fd, &fds)) {
-				FD_CLR(clis[i].fd, &fds);
+			if (poll_fds.byname.clis[i].revents & POLLIN) {
+				poll_fds.byname.clis[i].revents	= 0;
 				if (get_command(clis[i].fd) == 0) {
 					remove_client(i);
 					i--;
@@ -647,11 +657,11 @@ static void loop(int sockfd, int lircdfd)
 				}
 			}
 		}
-		if (FD_ISSET(sockfd, &fds)) {
+		if (poll_fds.byname.sockfd.revents & POLLIN) {
 			LOGPRINTF(1, "registering local client");
 			add_client(sockfd);
 		}
-		if (FD_ISSET(lircdfd, &fds)) {
+		if (poll_fds.byname.lircdfd.revents & POLLIN) {
 			if (!handle_input()) {
 				while (clin > 0)
 					remove_client(0);
