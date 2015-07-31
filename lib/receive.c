@@ -164,9 +164,7 @@ int waitfordata(__u32 maxusec)
 	while (1) {
 		do {
 			do {
-				ret = poll(&pfd, 1, (maxusec > 0) ? (maxusec / 1000) : -1);
-				if (maxusec > 0 && ret == 0)
-					return 0;
+				ret = poll(&pfd, 1, maxusec * 1000);
 			} while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
 				logperror(LIRC_ERROR, "poll() failed");
