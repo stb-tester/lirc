@@ -11,6 +11,7 @@
 #define _GNU_SOURCE
 
 #include <unistd.h>
+#include <poll.h>
 
 #include "lirc_private.h"
 #include "irrecord.h"
@@ -101,32 +102,24 @@ static void fprint_copyright(FILE* fout)
 }
 
 
-/** Return 1 if there is available after running select(2), else 0. */
+/** Return 1 if there is available after running poll(2), else 0. */
 int availabledata(void)
 {
-	fd_set fds;
+	struct pollfd pfd = {
+		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
 	int ret;
-	struct timeval tv;
 
-	FD_ZERO(&fds);
-	FD_SET(curr_driver->fd, &fds);
 	do {
 		do {
-			tv.tv_sec = 0;
-			tv.tv_usec = 0;
-			ret = select(curr_driver->fd + 1, &fds,
-				     NULL, NULL,
-				     &tv);
+			ret = poll(&pfd, 1, 0);
 		} while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
-			logperror(LIRC_ERROR, "select() failed");
+			logperror(LIRC_ERROR, "availabledata: poll() failed");
 			continue;
 		}
 	} while (ret == -1);
 
-	if (FD_ISSET(curr_driver->fd, &fds))
-		return 1;
-	return 0;
+	return pfd.revents & POLLIN ? 1 : 0;
 }
 
 
@@ -503,34 +496,22 @@ void for_each_remote(struct ir_remote* remotes, remote_func func)
 
 static int mywaitfordata(__u32 maxusec)
 {
-	fd_set fds;
+	struct pollfd pfd  = {
+		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
 	int ret;
-	struct timeval tv;
 
 	while (1) {
-		FD_ZERO(&fds);
-		FD_SET(curr_driver->fd, &fds);
 		do {
 			do {
-				if (maxusec > 0) {
-					tv.tv_sec = maxusec / 1000000;
-					tv.tv_usec = maxusec % 1000000;
-					ret = select(curr_driver->fd + 1,
-						     &fds, NULL, NULL, &tv);
-					if (ret == 0)
-						return 0;
-				} else {
-					ret = select(curr_driver->fd + 1,
-						     &fds, NULL, NULL, NULL);
-				}
+				ret = poll(&pfd, 1, maxusec / 1000);
 			} while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logperror(LIRC_ERROR, "select() failed");
+				logperror(LIRC_ERROR,
+					  "mywaitfordata: poll() failed");
 				continue;
 			}
 		} while (ret == -1);
-
-		if (FD_ISSET(curr_driver->fd, &fds))
+		if (pfd.revents & POLLIN)
 			/* we will read later */
 			return 1;
 	}
