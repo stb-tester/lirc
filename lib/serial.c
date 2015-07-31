@@ -23,6 +23,7 @@
 #endif
 
 #include <limits.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -552,27 +553,19 @@ int tty_write(int fd, char byte)
 
 int tty_read(int fd, char* byte)
 {
-	fd_set fds;
+	struct pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
 	int ret;
-	struct timeval tv;
 
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-
-	tv.tv_sec = 1;          /* timeout after 1 sec */
-	tv.tv_usec = 0;
-	ret = select(fd + 1, &fds, NULL, NULL, &tv);
+	ret = poll(&pfd, 1, 1000); /* 1 second timeout. */
 	if (ret == 0) {
 		logprintf(LIRC_ERROR, "tty_read(): timeout");
 		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
-		LOGPRINTF(1, "tty_read(): select() failed");
-		LOGPERROR(1, "tty_read()");
+		LOGPERROR(1, "tty_read(): poll() failed");
 		return -1;
 	}
 	if (read(fd, byte, 1) != 1) {
-		LOGPRINTF(1, "tty_read(): read() failed");
-		LOGPERROR(1, "tty_read()");
+		LOGPERROR(1, "tty_read(): read() failed");
 		return -1;
 	}
 	return 1;
