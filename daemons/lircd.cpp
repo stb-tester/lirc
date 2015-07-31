@@ -53,6 +53,7 @@
 #include <fcntl.h>
 #include <sys/file.h>
 #include <pwd.h>
+#include <poll.h>
 
 #if defined(__linux__)
 #include <linux/input.h>
@@ -230,9 +231,9 @@ static const char* const protocol_string[] = {
 	"SIGHUP\n"
 };
 
-/* substract one for lirc, sockfd, sockinet, logfile, pidfile, uinput */
-#define MAX_PEERS       ((FD_SETSIZE - 6) / 2)
-#define MAX_CLIENTS     ((FD_SETSIZE - 6) / 2)
+/* Used to be depending on FD_SETSIZE, but using poll() it's now arbitrary. */
+static const int MAX_PEERS  = 256;
+static const int MAX_CLIENTS = 256;
 
 static int sockfd, sockinet;
 static int do_shutdown;
@@ -337,14 +338,9 @@ int write_socket_len(int fd, const char* buf)
 
 int read_timeout(int fd, char* buf, int len, int timeout)
 {
-	fd_set fds;
-	struct timeval tv;
 	int ret, n;
+	struct pollfd  pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
 
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-	tv.tv_sec = timeout;
-	tv.tv_usec = 0;
 
 	/* CAVEAT: (from libc documentation)
 	 * Any signal will cause `select' to return immediately.  So if your
@@ -354,24 +350,21 @@ int read_timeout(int fd, char* buf, int len, int timeout)
 	 * repeat the `select' with a newly calculated timeout based on the
 	 * current time.  See the example below.
 	 *
-	 * Obviously the timeout is not recalculated in the example because
-	 * this is done automatically on Linux systems...
+	 * The timeout is not recalculated here although it should, we keep
+	 * waiting as long as there are EINTR.
 	 */
-
 	do
-		ret = select(fd + 1, &fds, NULL, NULL, &tv);
+		ret = poll(&pfd, 1, timeout * 1000);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		logprintf(LIRC_ERROR, "select() failed");
-		logperror(LIRC_ERROR, NULL);
+		logperror(LIRC_ERROR, "read_timeout: poll() failed");
 		return -1;
-	} else if (ret == 0) {
+	};
+	if (ret == 0)
 		return 0;       /* timeout */
-	}
 	n = read(fd, buf, len);
 	if (n == -1) {
-		logprintf(LIRC_ERROR, "read() failed");
-		logperror(LIRC_ERROR, NULL);
+		logperror(LIRC_ERROR, "read_timeout: read() failed");
 		return -1;
 	}
 	return n;
@@ -768,8 +761,9 @@ void add_client(int sock)
 	}
 	;
 
-	if (fd >= FD_SETSIZE || clin >= MAX_CLIENTS) {
-		logprintf(LIRC_ERROR, "connection rejected");
+	if (clin >= MAX_CLIENTS) {
+		logprintf(LIRC_ERROR,
+			  "connection rejected (too many clients)");
 		shutdown(fd, 2);
 		close(fd);
 		return;
@@ -1876,11 +1870,26 @@ void free_old_remotes(void)
 	}
 }
 
+struct pollfd_byname {
+	struct pollfd sockfd;
+	struct pollfd sockinet;
+	struct pollfd curr_driver;
+	struct pollfd clis[MAX_CLIENTS];
+	struct pollfd peers[MAX_PEERS];
+};
+
+#define POLLFDS_SIZE (sizeof(struct pollfd_byname)/sizeof(pollfd))
+
+static union {
+	struct  pollfd_byname byname;
+	struct  pollfd byindex[POLLFDS_SIZE];
+} poll_fds;
+
 
 static int mywaitfordata(unsigned long maxusec)
 {
-	fd_set fds;
-	int maxfd, i, ret, reconnect;
+	int i;
+	int ret, reconnect;
 	struct timeval tv, start, now, timeout, release_time;
 	loglevel_t oldlevel;
 
@@ -1898,17 +1907,20 @@ static int mywaitfordata(unsigned long maxusec)
 				dosigalrm(SIGALRM);
 				alrm = 0;
 			}
-			FD_ZERO(&fds);
-			FD_SET(sockfd, &fds);
+			memset(&poll_fds, 0, sizeof(poll_fds));
+			for (i = 0; i < (int)POLLFDS_SIZE; i += 1)
+				poll_fds.byindex[i].fd = -1;
 
-			maxfd = sockfd;
+			poll_fds.byname.sockfd.fd = sockfd;
+			poll_fds.byname.sockfd.events = POLLIN;
+
 			if (listen_tcpip) {
-				FD_SET(sockinet, &fds);
-				maxfd = max(maxfd, sockinet);
+				poll_fds.byname.sockinet.fd = sockinet;
+				poll_fds.byname.sockinet.events = POLLIN;
 			}
 			if (use_hw() && curr_driver->rec_mode != 0 && curr_driver->fd != -1) {
-				FD_SET(curr_driver->fd, &fds);
-				maxfd = max(maxfd, curr_driver->fd);
+				poll_fds.byname.curr_driver.fd = curr_driver->fd;
+				poll_fds.byname.curr_driver.events = POLLIN;
 			}
 
 			for (i = 0; i < clin; i++) {
@@ -1917,16 +1929,16 @@ static int mywaitfordata(unsigned long maxusec)
 				 * we could mix up answer packets and send
 				 * them back in the wrong order. */
 				if (clis[i] != repeat_fd) {
-					FD_SET(clis[i], &fds);
-					maxfd = max(maxfd, clis[i]);
+					poll_fds.byname.clis[i].fd = clis[i];
+					poll_fds.byname.clis[i].events = POLLIN;
 				}
 			}
 			timerclear(&tv);
 			reconnect = 0;
 			for (i = 0; i < peern; i++) {
 				if (peers[i]->socket != -1) {
-					FD_SET(peers[i]->socket, &fds);
-					maxfd = max(maxfd, peers[i]->socket);
+					poll_fds.byname.peers[i].fd = peers[i]->socket;
+					poll_fds.byname.peers[i].events = POLLIN;
 				} else if (timerisset(&tv)) {
 					if (timercmp(&tv, &peers[i]->reconnect, >))
 						tv = peers[i]->reconnect;
@@ -1974,16 +1986,18 @@ static int mywaitfordata(unsigned long maxusec)
 				}
 			}
 #ifdef SIM_REC
-			ret = select(maxfd + 1, &fds, NULL, NULL, NULL);
+			ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
 #else
 			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
-				ret = select(maxfd + 1, &fds, NULL, NULL, &tv);
+				ret = poll((struct pollfd *) &poll_fds.byindex,
+					    POLLFDS_SIZE,
+					    tv.tv_sec * 1000 + tv.tv_usec / 1000);
 			else
-				ret = select(maxfd + 1, &fds, NULL, NULL, NULL);
+				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
 
 #endif
 			if (ret == -1 && errno != EINTR) {
-				logprintf(LIRC_ERROR, "select() failed");
+				logprintf(LIRC_ERROR, "poll()() failed");
 				logperror(LIRC_ERROR, NULL);
 				raise(SIGTERM);
 				continue;
@@ -2025,8 +2039,8 @@ static int mywaitfordata(unsigned long maxusec)
 			lirc_log_setlevel(oldlevel);
 		}
 		for (i = 0; i < clin; i++) {
-			if (FD_ISSET(clis[i], &fds)) {
-				FD_CLR(clis[i], &fds);
+			if (poll_fds.byname.clis[i].revents & POLLIN) {
+				poll_fds.byname.clis[i].revents = 0;
 				if (get_command(clis[i]) == 0) {
 					remove_client(clis[i]);
 					i--;
@@ -2034,7 +2048,8 @@ static int mywaitfordata(unsigned long maxusec)
 			}
 		}
 		for (i = 0; i < peern; i++) {
-			if (peers[i]->socket != -1 && FD_ISSET(peers[i]->socket, &fds)) {
+			if (peers[i]->socket != -1 && poll_fds.byname.peers[i].revents & POLLIN) {
+				poll_fds.byname.peers[i].revents = 0;
 				if (get_peer_message(peers[i]) == 0) {
 					shutdown(peers[i]->socket, 2);
 					close(peers[i]->socket);
@@ -2046,17 +2061,19 @@ static int mywaitfordata(unsigned long maxusec)
 			}
 		}
 
-		if (FD_ISSET(sockfd, &fds)) {
+		if (poll_fds.byname.sockfd.revents & POLLIN) {
+			poll_fds.byname.sockfd.revents = 0;
 			LOGPRINTF(1, "registering local client");
 			add_client(sockfd);
 		}
-		if (listen_tcpip && FD_ISSET(sockinet, &fds)) {
+		if (poll_fds.byname.sockinet.revents & POLLIN) {
+			poll_fds.byname.sockinet.revents = 0;
 			LOGPRINTF(1, "registering inet client");
 			add_client(sockinet);
 		}
 		if (use_hw() && curr_driver->rec_mode != 0
 		    && curr_driver->fd != -1
-		    && FD_ISSET(curr_driver->fd, &fds)) {
+		    && poll_fds.byname.curr_driver.revents & POLLIN) {
 			register_input();
 			/* we will read later */
 			return 1;
