@@ -20,6 +20,7 @@
 
 #include <limits.h>
 #include <errno.h>
+#include <poll.h>
 
 #include "include/media/lirc.h"
 #include "lirc/driver.h"
@@ -156,32 +157,22 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 
 int waitfordata(__u32 maxusec)
 {
-	fd_set fds;
 	int ret;
-	struct timeval tv;
+	struct pollfd pfd = {
+		.fd = curr_driver->fd, .events = POLLIN, .revents = 0 };
 
 	while (1) {
-		FD_ZERO(&fds);
-		FD_SET(curr_driver->fd, &fds);
 		do {
 			do {
-				if (maxusec > 0) {
-					tv.tv_sec = maxusec / 1000000;
-					tv.tv_usec = maxusec % 1000000;
-					ret = select(curr_driver->fd + 1, &fds, NULL, NULL, &tv);
-					if (ret == 0)
-						return 0;
-				} else {
-					ret = select(curr_driver->fd + 1, &fds, NULL, NULL, NULL);
-				}
+				ret = poll(&pfd, 1, maxusec * 1000);
 			} while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logperror(LIRC_ERROR, "select() failed");
+				logperror(LIRC_ERROR, "poll() failed");
 				continue;
 			}
 		} while (ret == -1);
 
-		if (FD_ISSET(curr_driver->fd, &fds))
+		if (pfd.revents & POLLIN)
 			/* we will read later */
 			return 1;
 	}
