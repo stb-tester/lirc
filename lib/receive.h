@@ -54,7 +54,7 @@ static inline lirc_t receive_timeout(lirc_t usec)
 /**
  * Wait until data is available in drv.fd, timeout or a signal is raised.
  *
- * @param maxusec timeout in micro seconds, given to select(2). If <= 0, the
+ * @param maxusec timeout in micro seconds, given to poll(2). If <= 0, the
  *       function will block indefinitely until data is available or a
  *       signal is processed. If positive, a timeout value in microseconds.
  * @return True (1) if there is data available in drv.fd, else 0 indicating
