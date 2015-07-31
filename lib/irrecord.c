@@ -102,32 +102,24 @@ static void fprint_copyright(FILE* fout)
 }
 
 
-/** Return 1 if there is available after running select(2), else 0. */
+/** Return 1 if there is available after running poll(2), else 0. */
 int availabledata(void)
 {
-	fd_set fds;
+	struct pollfd pfd = {
+		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
 	int ret;
-	struct timeval tv;
 
-	FD_ZERO(&fds);
-	FD_SET(curr_driver->fd, &fds);
 	do {
 		do {
-			tv.tv_sec = 0;
-			tv.tv_usec = 0;
-			ret = select(curr_driver->fd + 1, &fds,
-				     NULL, NULL,
-				     &tv);
+			ret = poll(&pfd, 1, 0);
 		} while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
-			logperror(LIRC_ERROR, "select() failed");
+			logperror(LIRC_ERROR, "availabledata: poll() failed");
 			continue;
 		}
 	} while (ret == -1);
 
-	if (FD_ISSET(curr_driver->fd, &fds))
-		return 1;
-	return 0;
+	return pfd.revents & POLLIN ? 1 : 0;
 }
 
 
@@ -504,17 +496,25 @@ void for_each_remote(struct ir_remote* remotes, remote_func func)
 
 static int mywaitfordata(__u32 maxusec)
 {
-	int ret;
 	struct pollfd pfd  = {
 		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
+	int ret;
 
-	do {
-		ret = poll(&pfd, 1, maxusec / 1000);
-	} while (ret == -1 && errno == EINTR);
-
-	if (ret == -1 && errno != EINTR)
-		logperror(LIRC_ERROR, "mywaitfordata: poll() failed");
-	return (pfd.revents & POLLIN) != 0;
+	while (1) {
+		do {
+			do {
+				ret = poll(&pfd, 1, maxusec / 1000);
+			} while (ret == -1 && errno == EINTR);
+			if (ret == -1) {
+				logperror(LIRC_ERROR,
+					  "mywaitfordata: poll() failed");
+				continue;
+			}
+		} while (ret == -1);
+		if (pfd.revents & POLLIN)
+			/* we will read later */
+			return 1;
+	}
 }
 
 
