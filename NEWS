@@ -1,4 +1,8 @@
 0.9.3pre2
+  * A new kernel driver irpipe has been added. This allows feeding data
+    from userspace to lircd, which can use the /dev/irpipeX device
+    as a clean substitute for /dev/lircX. A companion CLI tool
+    irpipe(1) is also added.
   * The library routines for parsing lircd.conf now warns for
     duplicate keys and values (#107).
   * lirc-lsremotes now displays logs after parsing files, making
@@ -7,7 +11,8 @@
   * Bug in irexec when using modes fixed (#102).
   * Options parsing (notably -U) and just listing first remote bugs
     in irsimsend have been fixed.
-  * Support for irtoy added to lirc-setup and driver docs.
+  * irtoy: New support for debug LEDs added. New documentation file, support
+    in lirc-setup and driver table doc added.
 0.9.3pre1
   * mode2 has been updated to handle also LIRCCODE devices (#94)
     and also handling the --driver-options switch
