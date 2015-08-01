@@ -10,6 +10,7 @@
 *
 */
 
+#include <poll.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/fcntl.h>
@@ -150,20 +151,18 @@ static void* atwf83_repeat(void* arg)
 	unsigned ev[2];
 	unsigned current_code;
 	int rd, sel;
-	fd_set files;
-	struct timeval delay;
+	struct pollfd pfd = {
+		.fd = fd_hidraw, .events = POLLIN, .revents = 0};
+	int delay = 0;
 	int pressed = 0;
 	int fd = fd_pipe[1];
 
 	while (1) {
 		// Initialize set to monitor device's events
-		FD_ZERO(&files);
-		FD_SET(fd_hidraw, &files);
 		if (pressed)
-			sel = select(FD_SETSIZE, &files, NULL, NULL, &delay);
+			sel = poll(&pfd, 1, delay);
 		else
-			sel = select(FD_SETSIZE, &files, NULL, NULL, NULL);
-
+			sel = poll(&pfd, 1, -1);
 		switch (sel) {
 		case 1:
 			// Data ready in device's file
@@ -180,8 +179,7 @@ static void* atwf83_repeat(void* arg)
 				// Key code : forward it to main thread
 				pressed = 1;
 				repeat_count = 0;
-				delay.tv_sec = 0;
-				delay.tv_usec = repeat_time1_us;
+				delay = repeat_time1_us / 1000;
 				current_code = ev[0];
 			} else {
 				// Release code : stop repetitions
@@ -199,13 +197,12 @@ static void* atwf83_repeat(void* arg)
 			}
 			// Timeout : send current_code again to main
 			//           thread to simulate repetition
-			delay.tv_sec = 0;
-			delay.tv_usec = repeat_time2_us;
+			delay = repeat_time2_us / 1000;
 			break;
 		default:
 			// Error
 			logprintf(LIRC_ERROR,
-				  "(%s) select() failed", __func__);
+				  "(%s) poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
