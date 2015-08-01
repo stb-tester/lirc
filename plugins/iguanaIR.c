@@ -14,6 +14,7 @@
 # include <config.h>
 #endif
 
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -322,18 +323,13 @@ static int iguana_ioctl(unsigned int code, void* arg)
 static lirc_t readdata(lirc_t timeout)
 {
 	lirc_t code = 0;
-	struct timeval tv = { timeout / 1000000, timeout % 1000000 };
-	fd_set fds;
-
-	FD_ZERO(&fds);
-	FD_SET(drv.fd, &fds);
-
+	struct pollfd pfd = {.fd = drv.fd, .events = POLLIN, .revents = 0};
 	/* attempt a read with a timeout using select */
-	if (select(drv.fd + 1, &fds, NULL, &fds, &tv) > 0)
+	if (poll(&pfd, 1, timeout / 1000) > 0) {
 		/* if we failed to get data return 0 */
 		if (read(drv.fd, &code, sizeof(lirc_t)) <= 0)
 			iguana_deinit();
-
+	}
 	return code;
 }
 
