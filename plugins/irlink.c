@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
+#include <poll.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -148,16 +149,12 @@ static int irlink_write(const int port, unsigned char* buffer, int bufferSize)
 
 static void irlink_read_flush(const int port)
 {
-	for (;; ) {
-		fd_set fds;
-		struct timeval tm;
-		lirc_t data = 0;
+	struct pollfd pfd = {.fd = port, .events = POLLIN, .revents = 0};
+	lirc_t data = 0;
 
-		FD_ZERO(&fds);
-		FD_SET(port, &fds);
-		tm.tv_sec = 0;
-		tm.tv_usec = 0;
-		if (select(port + 1, &fds, 0, 0, &tm) > 0) {
+	/* FIXME: This loop makes no sense. */
+	for (;; ) {
+		if (poll(&pfd, 1, 0) > 0) {
 			if (read(port, &data, sizeof(data)) <= 0)
 				break;
 		} else {
