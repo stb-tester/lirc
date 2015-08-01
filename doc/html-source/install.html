@@ -43,34 +43,32 @@
      build LIRC in a more or less limited way.
      <ul>
       <li>Several scripts need the python3 PyYaml package at
-          http://pyyaml.org/wiki/PyYAML. Building without
-          this is possible but not recommended.</li>
-      <li>Generating the HTML manpages requires man2html. </li>
-      <li>Generating the API documentation requires Doxygen. </li>
-      <li>The <em>lirc-setup</em> GUI configuration tool
-          needs python3-gi and thus also the Gtk
-          libs. These are not required for the build, though. </li>
-      <li>Building the X11 GUI tools like <em>irxevent</em> and
-          <em>xmode2</em> requires the X11 header files. </li>
-      <li> The audio drivers needs the alsa and portaudio libs
-           (libraries and headers). </li>
-       <li>
-          The <em>Irman (=UIR)</em> driver requires libirman available at
-         <A HREF="http://www.lirc.org/software/snapshots/"><em>libirman</em>
-         </A>. To build, the irman library must exist as a dynamic .so module.
-         At the time of writing this is true for the Fedora package, but
-         not for Debian. You can build and install the library locally
-         directly from the sources to walk around problems with the
-         packaged version. </li>
-       <li>
-         The <em>ftdi</em> driver requires libftdi from
-         <a href="http://www.intra2net.com/de/produkte/opensource/ftdi/">
-         http://www.intra2net.com/de/produkte/opensource/ftdi/</a></li>
-       <li>
-         The <em>iguanair</em> driver requires libiguanair from
-         <a href="http://iguanaworks.net/ir">http://iguanaworks.net/ir
-         </a></li>
-     </ul>
+          http://pyyaml.org/wiki/PyYAML.</li>
+      <li>Overall, python3 is.required for the build </li>
+      <li>The build also needs man2html (although it adjusts without it)
+          and xsltproc. </li>
+      <li>The configuration script needs python3-gi and thus also the Gtk
+          libs. Theese are not required for the build, though. </li>.
+    </ul>
+
+    <P>
+      If you want to compile and use all tools, you also need an
+      installed version of the  X11 header files (needed by
+      <em>irxevent</em> and <em>xmode2</em>) The configure script
+      will notify you if some necessary files are missing and the
+      according tools won't be compiled.
+    </P>
+
+    <P>
+      <B>Irman (=UIR) :</B> To use your Irman with LIRC you need the
+      latest <A HREF="http://www.lirc.org/software/snapshots/">
+      <em>libirman</em></A> library. At the time this has been written
+      the current libirman version was 0.4.3.  To build, the irman
+      library must exist as a dynamic .so module. At the time of writing
+      this is true for the Fedora package, but not for Debian. configure
+      checks for the library, and won't build the irman driver without
+      it.
+   </P>
 
     <A NAME="kernel"></A>
     <hr>
@@ -89,10 +87,15 @@
       your own kernel).
     <P>
     <P>
+      There are example and test kernel modules in the drivers/
+      directory. None of these are required for regular LIRC use, but
+      are supposed to be helpful while testing or writing drivers.
+    </P>
+    <P>
       If you want to use a home-brew receiver, an Anir Multimedia
       Magic, a Packard Bell receiver, the IRdeo or if you want to use
       the SIR IrDA driver, I suggest that you use the lirc_serial
-      or lirc_sir module.  Usually the serial port driver grabs all
+      or lirc_sir module kernel. Usually the serial port driver grabs all
       ports it auto-detects as soon as it is loaded and the LIRC
       modules won't be able to use any of them.
     </P>
@@ -149,7 +152,7 @@
 
     <P>
       Current versions of LIRC now support many more commercially
-      available solutions. Examples are the Irman, built-in IrDA ports
+      available solutions. Examples includes the Irman, built-in IrDA ports
       or TV cards. Drivers for even more hardware are likely to appear
       in the future. If you are a programmer who wants to maintain
       such a driver you are welcome to join the project.
@@ -170,57 +173,22 @@
       The former setup.sh script is dropped in favor of a standard
       ./configure, make, make install sequence.
     </P>
-    <p>
-      When building directly from git, a first required step to
-      create ./configure and some other files is </p>
-<pre>
-           ./autogen.sh
-</pre>
-      Whether using git sources or just using a distributed tarball, the
-      next steps are the canonical
-<pre>
-            ./configure
-            make
-            sudo make install
-</pre>
-    Notes:
-    <ul>
-      <li>
-        When running the configure script, please pay attention at its
-        output.  Specifically, at the very end it prints a list of
-        the enabled functionality.</li>
-      <li>
-        Running configure without options will install lirc in /usr/local
-        according to GNU standards. However, many examples in this manual
-        as well as other documentation are assuming that ./configure ran
-        with the <em>--prefix=/usr</em> option, installing in /etc/lirc,
-        /usr/bin etc.</li>
-      <li>
-        The build system supports VPATH builds which does not
-        clutter the source tree. To use this do something like:
-<pre>
-            mkdir _build; cd _build;
-            ../configure
-            make
-            sudo make install
-</pre>
-        </li>
-    </ul>
-    <A NAME="check"></A><HR>
-    <H1 ALIGN="CENTER">Checking the build</H1>
+    <P>
+      When running the configure script, please pay attention at its
+      output.  After having configured the package just type
+     <em>make</em> and lean back.
+    </P>
 
-     Since the dynamic drivers are not linked during the build, it's
-     recommended to check that the expected drivers are built and can
-     be loaded using
-<pre>
-             cd tools; ./lirc-lsplugins -U ../plugins/.libs
-</pre>
-     <p>
-     This will create a list of the all drivers available, and also
-     possible link errors not revealed during the build.
-     <em>lirc-lsplugins</em> has a -h option providing help, and
-     <em> nroff -man ../doc/man/lirc-lsplugins.1 | more </em>
-     provides more complete info.</p>
+    <P>
+      <B>Note:</B> You won't find a configure script in the source repo
+      version of LIRC. You will have to generate it first by executing
+      <em>./autogen.sh</em>.
+    </P>
+    <P>
+      Installing the compiled programs is really easy, just type
+      <em>make install</em>. All binaries  and  configuration
+      files should be copied to its proper destination
+    </P>
      <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="configuration"></A><HR>
@@ -233,6 +201,8 @@
       0.9.1+ the configuration is instead done after the build. The
       configuration steps for the main lircd program involves:
     <ul>
+        <li> Selecting the driver and device for your capture device.</li>
+        <li> Selecting configuration file for your remote.</li>
         <li> In some cases e. g., serial devices setting up kernel module
              options in /etc/modprobe.d. </li>
         <li> Selecting the driver and kernel device for your capture
@@ -243,7 +213,162 @@
     </ul>
     <p>
       This is described in the <a href="configuration-guide.html">
-      configuration guide</a>.</p>
+      configuration guide</a>.
+
+    <P>
+      Other configuration aspects includes adjusting the file permissions of
+      <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
+      use to connect to lircd) so others than <em>root</em> can
+      connect to lircd. Either edit lirc_options.conf or use the
+      --permissions command line option e. g., </P>
+    <PRE>
+        lircd --permission 666  &lt;other options&gt;
+    </PRE>
+    <P>
+      should do. You can also create a special group for this purpose.
+      Since 0.9.2, it's possible to run lircd without root permissions.
+      For this to work you might need to install udev rules making
+      /dev/lirc0 accessible for the lirc user. There are example files
+      in contrib/ for this.
+    </P>
+    <P>
+      Finally you might want to add <em>/usr/local/lib</em> to
+      <em>/etc/ld.so.conf</em> so the <em>lirc_client</em> library is
+      found by the run-time linker. Don't forget to call
+      <em>ldconfig</em> afterwards for the change to take effect.
+    </P>
+
+    <!-- Testing +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <A NAME="testing"></A><HR>
+    <H1 ALIGN="CENTER">Testing your hardware &amp; configuration</H1>
+    <HR WIDTH="70%">
+
+    <P>
+      If you have build the infrared hardware yourself you are
+      probably eager to find out if it really works. If you have not
+      build the hardware yourself you can skip the first test. For
+      most receivers it even won't work because it makes no
+      sense.
+    </P>
+
+    <P>
+      Type <em>su</em> to get root privileges and start <em>mode2</em>
+      (<B>Warning:</B> don't confuse mode2 with mode3: mode3 will set
+      your video card to a vesa mode using the vesa bios
+      calls...). This should load the kernel module into the kernel
+      and display the infrared signals. Hold your remote control to
+      your infrared receiver and press some buttons. You should see an
+      output like this (the values of your remote will probably be
+      different):
+    </P>
+
+    <PRE>
+        pulse 93
+        space 4965
+        pulse 108
+        space 4969
+        pulse 93
+        space 7496
+        pulse 93
+        space 7489
+        pulse 93
+        space 47915
+        pulse 138
+        space 7475
+        pulse 93
+        space 7494
+        pulse 93</PRE>
+    <P>
+      If you don't see anything, try to find out: (a) if you selected
+      the correct driver with the correct settings (I/O base address,
+      IRQ), (b) if you use a remote which works and (c) if your
+      hardware works. The voltage input of the infrared receiver
+      should be 5V +/- 0.5V, the output pin of the receiver should be
+      about 0.5V less than the input voltage.
+    </P>
+
+    <P>
+      From time to time there should be long spaces (&gt;30000). If you
+      can see very long pulses this usually means that sense auto
+      detection of your serial port IR receiver circuit has
+      failed. You can override sense auto detection by loading the
+      device driver with the following option:</P>
+
+    <P>
+      <em>modprobe lirc_serial sense=0</em> if your receiver circuit is active
+      high or<BR>
+
+      <em>modprobe lirc_serial sense=1</em> if your receiver circuit is active
+      low.
+    </P>
+
+    <P>
+      Well, the driver seems to work, now let's test if lircd also
+      does its job. This only works, if lircd uses a <A
+      HREF="configure.html#lircd.conf">config file</A> which fits to
+      your remote control. Use <A
+      HREF="irrecord.html"><em>irrecord</em></A> in the case the LIRC
+      distribution doesn't provide a config file suitable for your
+      remote and it still is not available at the LIRC homepage. A
+      more detailed discussion of creating new config files is
+      available in the section about, you guess it: <A
+      HREF="help.html#new_remote">Adding new remote controls</A>.
+    </P>
+
+    <P>
+      Then start the decoder daemon with (make sure it is in your
+      path): <em>lircd</em> [config file]
+    </P>
+
+    <P>
+      The following program dumps the decoded key codes from lircd to
+      stdout: <em>irw</em>
+    </P>
+
+    <P>
+      This looks like this (depending on your remote):
+    </P>
+    <PRE>
+        0000000000f40bf0 00 1_DOWN ANIMAX
+        0000000000f40bf0 01 1_DOWN ANIMAX
+        0000000000f40bf0 02 1_DOWN ANIMAX
+        0000000000f40bf0 03 1_DOWN ANIMAX
+        0000000000f40bf0 04 1_DOWN ANIMAX
+        0000000000f40bf0 05 1_DOWN ANIMAX
+        0000000000748bf0 00 1_UP ANIMAX
+        0000000000748bf0 01 1_UP ANIMAX
+        0000000000748bf0 02 1_UP ANIMAX
+        0000000000718ef0 00 RED_BUTTON_UP ANIMAX</PRE>
+    <P>
+      If the driver test did work, but you now see nothing, then check
+      <em>/var/log/lircd</em>. If you still see nothing suspicious
+      add a --debug=10 option and look at the log file again.
+    </P>
+
+    <A NAME="sending"></A><HR>
+    <H1 ALIGN="CENTER">Sending infrared signals</H1>
+    <HR WIDTH="70%">
+
+    <P>
+      The LIRC package contains the <A HREF="irsend.html">irsend</A> tool for
+      sending infrared signals to e.g. your TV or CD player. For
+      reliable transmission a good config file is even more important
+      than for receiving. A discussion of all the infrared protocols
+      is way beyond the scope of this manual but when creating a
+      config file at least read the <A
+        HREF="help.html#new_remote">hints</A> at the end of this
+      manual. You can find exact timing specifications for most common
+      inside the remotes/generic/ directory of the LIRC package.
+    </P>
+    <P>
+      If you want a graphical interface for controlling your devices
+      using LIRC, you might have a look at xrc. You can download the
+      xrc package from the LIRC homepage. xrc is a Qt based
+      program. Setting up xrc and Qt is a bit tricky so if you don't
+      manage to compile it you can still use irsend. It has the full
+      functionality you need.
+    </P>
 
     <!-- Uninstall LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -259,7 +384,6 @@
       <LI>Remove the config files, if you don't need them anymore:<BR>
         <BR>
         <em>rm -rf /etc/lirc/</em><BR>
-        <em>rm -f ~/.config/lircrc</em><BR>
         <BR>
         You might also want to check /etc/modprobe.d for left-overs.
       </LI>
