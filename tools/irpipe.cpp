@@ -138,7 +138,6 @@ static void irpipe_setup(int newfd, const char* device, int mode)
 static uint32_t process_line(const char* token1, const char* token2)
 {
 	long value;
-	uint32_t uvalue;
 
 	if (token1 == NULL || token2 == NULL)
 		return (uint32_t)-1;
@@ -160,11 +159,12 @@ static void write_tobin(void)
 	char buff[128];
 	char* token1;
 	char* token2;
-	uint32_t value;
+	int32_t value;
 
 	if (opt_add_sync) {
 		value = 1000000;
-		write(1, &value, sizeof(uint32_t));
+		if (write(1, &value, sizeof(uint32_t)) != sizeof(uint32_t))
+			perror("write() failed.");
 	}
 	while (fgets(line, sizeof(line), stdin) != NULL) {
 		strncpy(buff, line, sizeof(buff) - 1);
@@ -175,7 +175,9 @@ static void write_tobin(void)
 			fprintf(stderr,
 				"Illegal data (ignored):\"%s\"\n", line);
 		else
-			write(1, &value, sizeof(uint32_t));
+			if (write(1, &value, sizeof(uint32_t))
+			    != sizeof(uint32_t))
+				perror("write() failed");
 	}
 }
 
@@ -185,7 +187,6 @@ static void write_totext(void)
 {
 	char buff[2048 * sizeof(int)];
 	int r;
-	int written;
 	int i;
 	const uint32_t* data;
 
