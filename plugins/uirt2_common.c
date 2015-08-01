@@ -88,26 +88,13 @@ static ssize_t readagain(int fd, void* buf, size_t count)
 	return (pos == 0) ? -1 : pos;
 }
 
-static int mywaitfordata(uirt2_t* dev, long usec)
+static int mywaitfordata(uirt2_t* dev, long timeout_usec)
 {
-	int fd = dev->fd;
-	fd_set fds;
-	int maxfd = fd;
+	struct pollfd pfd = {.fd = dev->fd, .events = POLLIN, .revents = 0};
 	int ret;
-	struct timeval tv;
 
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-
-	tv.tv_sec = usec / 1000000;
-	tv.tv_usec = usec % 1000000;
-
-	ret = select(maxfd + 1, &fds, NULL, NULL, &tv);
-
-	if (ret <= 0)
-		return 0;
-	else
-		return 1;
+	ret = poll(&pfd, 1, timeout_usec / 1000);
+	return ret <= 0 ? 0 : 1;
 }
 
 static int uirt2_readflush(uirt2_t* dev, long timeout)
