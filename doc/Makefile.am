@@ -13,7 +13,7 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.doxhead
 
 install-data-hook:
-	ln -s ../images $(DESTDIR)/$(htmldir)/images
+	ln -sf ../images $(DESTDIR)/$(htmldir)/images
 
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
