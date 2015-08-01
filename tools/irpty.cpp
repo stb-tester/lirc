@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <grp.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -77,19 +78,19 @@ static void copy_loop(int ptym, int ignoreeof)
 	int nread;
 	char buf[BUFFSIZE];
 	struct sigaction act;
+	struct pollfd pfd[2] = {
+		{.fd = lsock, .events = POLLIN, .revents = 0},
+		{.fd = STDIN_FILENO, .events = POLLIN, .revents = 0}
+	};;
 
 	if ((child = fork()) < 0) {
 		die("fork error");
 	} else if (!child) {
-		fd_set fds;
 
 		while (1) {
-			FD_ZERO(&fds);
-			FD_SET(lsock, &fds);
-			FD_SET(STDIN_FILENO, &fds);
-			select(lsock + 1, &fds, NULL, NULL, NULL);
+			poll(pfd, 2, 0);
 
-			if (FD_ISSET(STDIN_FILENO, &fds)) {
+			if (pfd[1].revents & POLLIN) { /* STDIN_FILENO */
 				if ((nread = read(STDIN_FILENO, buf, BUFFSIZE)) < 0)
 					die("read error from stdin");
 				else if (!nread)
@@ -97,7 +98,7 @@ static void copy_loop(int ptym, int ignoreeof)
 				if (write(ptym, buf, nread) != nread)
 					die("writen error to master pty");
 			}
-			if (FD_ISSET(lsock, &fds)) {
+			if (pfd[0].revents & POLLIN) {  /*lsock */
 				char* ir;
 				char* irchars;
 				int ret;
