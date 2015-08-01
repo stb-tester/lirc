@@ -37,6 +37,7 @@
 #define LIRC_IRTTY "/dev/ttyUSB0"
 #endif
 
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -187,29 +188,25 @@ int child_process(int pipe_w, int oldprotocol)
 	int tirabuflen = 0;
 	int readsize, tmp;
 	lirc_t data, tdata;
-	fd_set read_set;
-	struct timeval tv, trailtime, currtime;
+	struct pollfd pfd = {.fd = drv.fd, .events = POLLIN, .revents = 0};
+	struct timeval trailtime, currtime;
 	__u32 eusec;
-
-	tv.tv_sec = 0;
-	tv.tv_usec = 1000;
-	FD_ZERO(&read_set);
 
 	trailtime.tv_sec = 0;
 	trailtime.tv_usec = 0;
 
 	while (1) {
-		FD_SET(drv.fd, &read_set);
-		tmp = select(drv.fd + 1, &read_set, NULL, NULL, &tv);
+		tmp = poll(&pfd, 1, 1);  /* 1 ms timeout. */
 
 		if (tmp == 0)
 			continue;
 		if (tmp < 0) {
-			logprintf(LIRC_ERROR, "Error select()");
+			logperror(LIRC_ERROR,
+				  "child_process: Error  in poll()");
 			return 0;
 		}
 
-		if (!FD_ISSET(drv.fd, &read_set))
+		if (!pfd.revents & POLLIN)
 			continue;
 		readsize = read(drv.fd, &tirabuffer[tirabuflen], sizeof(tirabuffer) - tirabuflen);
 		if (readsize <= 0) {
