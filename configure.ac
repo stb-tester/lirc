@@ -200,7 +200,7 @@ if test -n "$FTDI_LIBS"; then
   AM_CONDITIONAL([BUILD_FTDI],[true])
   AC_SUBST(FTDI_LIBS)
 else
-  AM_CONDITIONAL([BUILD_FTDI],[false])]
+  AM_CONDITIONAL([BUILD_FTDI],[false])
 fi
 
 AC_CHECK_HEADER(iguanaIR.h,[
