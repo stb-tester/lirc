@@ -16,19 +16,19 @@
     <ul>
       <li>Several scripts need the python3 PyYaml package at
           http://pyyaml.org/wiki/PyYAML.</li>
-      <li> Overall, python3 is.required for the build </li>
-      <li>The build also needs man2html.</li>
+      <li>Overall, python3 is.required for the build </li>
+      <li>The build also needs man2html (although it adjusts without it)
+          and xsltproc. </li>
       <li>The configuration script needs python3-gi and thus also the Gtk
-          libs. It's not required for the build, though. </li>.
+          libs. Theese are not required for the build, though. </li>.
     </ul>
 
     <P>
       If you want to compile and use all tools, you also need an
-      installed version of the  X
-      Windows header files (needed by <em>irxevent</em> and
-      <em>xmode2</em>) The configure script will notify you if
-      some necessary files are missing and the according tools won't
-      be compiled.
+      installed version of the  X11 header files (needed by
+      <em>irxevent</em> and <em>xmode2</em>) The configure script
+      will notify you if some necessary files are missing and the
+      according tools won't be compiled.
     </P>
 
     <P>
@@ -37,7 +37,9 @@
       <em>libirman</em></A> library. At the time this has been written
       the current libirman version was 0.4.3.  To build, the irman
       library must exist as a dynamic .so module. At the time of writing
-      this is true for the Fedora package, but not for Debian.
+      this is true for the Fedora package, but not for Debian. configure
+      checks for the library, and won't build the irman driver without
+      it.
    </P>
 
     <A NAME="kernel"></A>
@@ -56,10 +58,15 @@
       your own kernel).
     <P>
     <P>
+      There are example and test kernel modules in the drivers/
+      directory. None of these are required for regular LIRC use, but
+      are supposed to be helpful while testing or writing drivers.
+    </P>
+    <P>
       If you want to use a home-brew receiver, an Anir Multimedia
       Magic, a Packard Bell receiver, the IRdeo or if you want to use
       the SIR IrDA driver, I suggest that you use the lirc_serial
-      or lirc_sir module.  Usually the serial port driver grabs all
+      or lirc_sir module kernel. Usually the serial port driver grabs all
       ports it auto-detects as soon as it is loaded and the LIRC
       modules won't be able to use any of them.
     </P>
@@ -116,7 +123,7 @@
 
     <P>
       Current versions of LIRC now support many more commercially
-      available solutions. Examples are the Irman, built-in IrDA ports
+      available solutions. Examples includes the Irman, built-in IrDA ports
       or TV cards. Drivers for even more hardware are likely to appear
       in the future. If you are a programmer who wants to maintain
       such a driver you are welcome to join the project.
@@ -150,7 +157,6 @@
       version of LIRC. You will have to generate it first by executing
       <em>./autogen.sh</em>.
     </P>
-
     <P>
       Installing the compiled programs is really easy, just type
       <em>make install</em>. All binaries  and  configuration
@@ -178,8 +184,8 @@
       0.9.1+ the configuration is instead done after the build. The
       configuration steps for the main lircd program involves:
     <ul>
-        <li> Selecting the driver and device. </li>
-        <li> Selecting configuration file.</li>
+        <li> Selecting the driver and device for your capture device.</li>
+        <li> Selecting configuration file for your remote.</li>
         <li> In some cases e. g., serial devices setting up kernel module
              options in /etc/modprobe.d. </li>
         <li> Configuring and using systemd to run the services. </li>
@@ -187,20 +193,8 @@
       This is described in the <a href="configuration-guide.html">
       configuration guide</a>.
 
-   <P>
-      When you are using <em>devfs</em> or <em>sysfs</em> with your
-      kernel, the /dev/lirc device node will disappear again once you
-      reboot your machine. In that case the LIRC kernel module will
-      generate the required entry every time it is loaded. But the
-      device node won't be visible as /dev/lirc, but might be located
-      in a different location like e.g. /dev/lirc0. Please be aware
-      of this  when starting programs that access the device node
-      like mode2 or lircd. You will have to use the --device command
-      line option of these programs to point them to the correct
-      location.
-   </P>
     <P>
-      Now you should adjust the file permissions of
+      Other configuration aspects includes adjusting the file permissions of
       <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
       use to connect to lircd) so others than <em>root</em> can
       connect to lircd. Either edit lirc_options.conf or use the
@@ -210,6 +204,10 @@
     </PRE>
     <P>
       should do. You can also create a special group for this purpose.
+      Since 0.9.2, it's possible to run lircd without root permissions.
+      For this to work you might need to install udev rules making
+      /dev/lirc0 accessible for the lirc user. There are example files
+      in contrib/ for this.
     </P>
     <P>
       Finally you might want to add <em>/usr/local/lib</em> to
@@ -364,7 +362,7 @@
       </LI>
       <LI>Remove the config files, if you don't need them anymore:<BR>
         <BR>
-        <em>rm /etc/lirc/lircd.conf /etc/lirc/lircmd.conf /etc/lirc/lircrc ~/config/lircrc</em><BR>
+        <em>rm -rf /etc/lirc/</em><BR>
         <BR>
       </LI>
     </UL>
