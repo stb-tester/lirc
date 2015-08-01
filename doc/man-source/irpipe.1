@@ -1,0 +1,76 @@
+.TH IRPIPE "1" "Last change: Aug 2015" "irpipe @version@" "User Commands"
+.SH NAME
+irpipe - tool to send data to lircd over /dev/irpipe kernel device.
+.SH SYNOPSIS
+irpipe [\fIoptions\fR] <file
+.br
+irpipe --read [\fIoptions\fR] >file
+.br
+irpipe --filter [\fIoptions\fR] <infile >outfile
+
+.SH DESCRIPTION
+irpipe is designed to feed data to lircd(8) over a /dev/irpipe device. It's a tool
+to enter test data to lircd in a way which is identical to real data from /dev/lirc
+devices.
+.PP
+irpipe uses two formats: text and binary. The binary format is documented in
+the lirc(4) manual page. The text format is as defined in mode2(1).
+.PP
+The irpipe driver allows user  to set the features returned by the
+.B LIRC_GET_FEATURES
+ioctl. These are documented in lirc(4).
+.PP
+The irpipe kernel device is often not built in packaged lirc versions. See
+[KERNEL DRIVER] below.
+
+.SH OPTIONS
+.TP
+\fB\-d\fR \fB\-\-device=driver\fR
+Set kernel device, default is /dev/irpipe0.
+.TP
+\fB\-b\fR \fB\-\-bin2text\fR
+Convert binary data to text.
+.TP
+\fB\-t\fR \fB\-\-text2bin\fR
+Convert text data to binary.
+.TP
+\fB\-s\fR \fB\-\-add-sync\fR
+Add long initial sync on converted output. This is often required for lircd to
+be able to decode data, in particular if keys are not repeated.
+.TP
+\fB\-f\fR \fB\-\-filter\fR
+Send data from stdin to stdout
+.TP
+\fB\-r\fR \fB\-\-read\fR
+Send data from kernel device to stdout. This option is experimental and not
+tested.
+.TP
+\fB\-l\fB\-\-length\fR=\fIbits\fR
+Set kernel device signal length. This is only meaningful on LIRCCODE device
+emulation.
+.TP
+\fB\-F\fB\-\-features\fR=\fIbitmask\fR
+Set the features bitmask, as returned by the
+.B LIRC_GET_FEATURES
+ioctl. See lirc(4) for more.
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display usage summary.
+.TP
+\fB\-v\fR \fB\-\-version\fR
+Display version.
+
+
+.SH KERNEL DRIVER
+
+The irpipe tool is designed to work with the irpipe kernel driver, although
+the --filter option works without it. This driver is often not built
+in packaged versions. If this is the case, the driver can be built from
+sources in the drivers/irpipe directory. This requires kernel sources
+installed. The drivers/irpipe/README  provides information on building
+and installing the driver.
+
+.SH "SEE ALSO"
+.B lircd(8)
+.br
+.B lirc(4)
