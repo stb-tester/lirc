@@ -21,6 +21,7 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
 */
 
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -179,11 +180,7 @@ read_with_timeout(int fd, void* buf, size_t count, long to_usec)
 {
 	ssize_t rc;
 	size_t numread = 0;
-	struct timeval timeout;
-	fd_set fds;
-
-	timeout.tv_sec = 0;
-	timeout.tv_usec = to_usec;
+	struct pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
 
 	rc = read(fd, (char*)buf, count);
 
@@ -191,10 +188,8 @@ read_with_timeout(int fd, void* buf, size_t count, long to_usec)
 		numread += rc;
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && numread < count)) {
-		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
 
-		rc = select(fd + 1, &fds, NULL, NULL, &timeout);
+		rc = poll(&pfd, 1, to_usec / 1000);
 
 		if (rc == 0)
 			/* timeout */
