@@ -124,6 +124,9 @@ int irexec(const char* configfile)
 			return EXIT_FAILURE;
 		}
 	}
+	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
+		return EXIT_FAILURE;
+
 	if (lirc_readconfig(configfile, &config, NULL) != 0) {
 		fputs("Cannot parse config file\n", stderr);
 		return EXIT_FAILURE;
@@ -133,8 +136,6 @@ int irexec(const char* configfile)
 	lirc_log_set_file(path);
 	lirc_log_open("irexec", 1, opt_loglevel);
 
-	if (lirc_init(opt_progname, opt_daemonize ? 0 : 1) == -1)
-		return EXIT_FAILURE;
 	process_input(config);
 	lirc_deinit();
 

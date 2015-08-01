@@ -1,0 +1,13 @@
+#
+# Copy to /etc/udev/rules.d to let udev set up links.
+#
+KERNEL=="irpipe0", SYMLINK+="irpipe0", MODE="0666"
+KERNEL=="irpipe1", SYMLINK+="irpipe1", MODE="0666"
+KERNEL=="irpipe2", SYMLINK+="irpipe2", MODE="0666"
+KERNEL=="irpipe3", SYMLINK+="irpipe3", MODE="0666"
+KERNEL=="irpipe4", SYMLINK+="irpipe4", MODE="0666"
+KERNEL=="irpipe5", SYMLINK+="irpipe5", MODE="0666"
+KERNEL=="irpipe6", SYMLINK+="irpipe6", MODE="0666"
+KERNEL=="irpipe7", SYMLINK+="irpipe7", MODE="0666"
+KERNEL=="irpipe8", SYMLINK+="irpipe8", MODE="0666"
+KERNEL=="irpipe9", SYMLINK+="irpipe9", MODE="0666"

@@ -49,22 +49,24 @@
     cases, there are still scenarios when LIRC is the right tool.
     </p>
 
+
+
     <A NAME="overall-configuration-decisions"></A><HR>
     <h2 align="center">Overall Configuration Decisions.</h2>
     <pre>
-       ----------         ---------------------               ----------
-       |        |         |                   |               |        |
-       |        |---->----| Linux input layer |------->-------| Appli- |
-       |        |         |                   |  /dev/input   | cation |
-       |        |         ---------------------               |        |
---->---| kernel |                |        |                   ----------
-remote |        |       devinput v        |
-       |        |                |        ^ uinput
-       |        |                |        |                   ----------
-       |        |         ---------------------               | Appli- |
-       |        |---->----|      lirc         |------->-------| cation |--
-       |        |         |                   | /var/run/lirc |        | |
-       ----------         ---------------------               ---------- |--
+       ----------         ---------------                     ----------
+       |        |         | Linux input |                     |        |
+       |        |---->----| layer       |---------->----------| Appli- |
+       |        |         |             |  /dev/input/eventX  | cation |
+       |        |         ---------------                     |        |
+--->---|        |            |        |                       ----------
+remote | kernel |   devinput v        |
+       |        |            |        ^ uinput
+       |        |            |        |                       ----------
+       |        |         ---------------                     | Appli- |
+       |        |---->----|    lirc     |---------->----------| cation |--
+       |        |         |             | /var/run/lirc/lircd |        | |
+       ----------         ---------------                     ---------- |--
                                                                 |        | |
                                                                 ---------- |
                                                                   |        |
@@ -72,18 +74,19 @@ remote |        |       devinput v        |
     </pre>
     <p>
     LIRC can be run together with the kernel in different ways. You need
-    to decide on a general approach first.
+    to decide on a general approach.
     </p>
     <p>
     Depending on whether lirc is used or not application will get data
-    either from the input layer (/dev/input) or from LIRC (/var/run/lirc).
-    Using the LIRC data requires application support. Support for LIRC
-    is common in typical linux htpc applications like mythtv, xbmc and vlc.
+    either from the input layer (/dev/input) or from LIRC
+    (/var/run/lirc/lircd). Using the LIRC data requires application support.
+    Support for LIRC is common in typical linux htpc applications like mythtv,
+    kodi and vlc.
     </p>
     <p>
-    The /var/run/lirc interfaces allows several applications to receive
+    The /var/run/lirc/lircd interfaces allows several applications to receive
     input events. On the other hand, the /dev/input interfaces only allows
-    one  application to receive the events.
+    one  application to receive each event.
     </p>
     <ul><li>
     A common scenario is to not involve lirc at all, the upmost
@@ -92,7 +95,7 @@ remote |        |       devinput v        |
     this is probably the way to go.
     </li></ul>
     <p>
-    If you need to use lirc, there is two cases depending on if your
+    If you need to use lirc, there are two cases depending on if your
     remote is supported by the kernel or not.
     </p>
     <ul>
@@ -103,16 +106,23 @@ remote |        |       devinput v        |
     -&gt; app).
     </li>
     <li>
-    If the kernel built-in decoding can't be used you need to use a lirc
-    driver instead. This is the bottom data path (kernel -&gt; lirc -&gt; app).
+    If the kernel built-in decoding can't be used (e. g., due to need of
+    IR blasting or remote not being supported by the kernel) you should
+    use a lirc driver instead. This is the bottom data path
+    (kernel -&gt; lirc -&gt; app).
     </li>
     </ul>
     <p>
     Last option is to connect the LIRC driver to the linux input layer
     using LIRC's --uinput option. This means that application sees the
     input as coming from the kernel, and LIRC's other capabilities are
-    not available. This is not described here.
+    not available. This is not described here.  </p>
+    <p>
+    The lirc configuration consists ov several files described in
+    <a href="appendix-10">Appendix 10</a>. There are some tools to
+    aid in the configuration listed in <a href="appendix-11">Appendix 11</a>
     </p>
+
     <A NAME="basic-setup-flow"></A><HR>
     <h2 align="center">Basic setup flow</h2>
     <pre>
@@ -137,8 +147,8 @@ remote |        |       devinput v        |
            v  IR pulse data          Use mode2 --raw  to debug.
            |
       ------------                   Often needs a device e. g.,
-      |  lirc    |                   /dev/input/eventXX
-      |  driver  |
+      |  lirc    |                   /dev/input/eventXX or
+      |  driver  |                   /dev/lirc0
       ------------
            |
            v  IR pulse data          Use mode2(1) to debug
@@ -147,7 +157,8 @@ remote |        |       devinput v        |
    |  lirc pass 1 |                  lircd.conf config file.
    ----------------
            |
-           v  Key symbols            Use irw(1) to debug.
+           v  Key symbols            Presented on output socket e. g.,
+           |                         /var/run/lirc/lircd. Use irw(1) to debug.
            |
    ----------------
    |  lirc pass 2 |                  lircrc config file.
@@ -163,13 +174,13 @@ remote |        |       devinput v        |
     <ul>
        <li> The remote generates an IR (or perhaps RF) signal.</li>
        <li> The IR data is captured by a capture device such
-            as a IR dongle or a built-in ir port.</li>
-       <li> Data from the capture device is caught by the linux kernel
-            drivers and made available on a kernel device such as
-            /dev/lirc0 or /dev/ttyS02.</li>
+            as an IR dongle or a built-in IR port.</li>
+       <li> Data from the capture device is caught by a linux kernel
+            driver and made available on a kernel device such as
+            /dev/lirc0, /dev/ttyS0 or /dev/input/eventXX.</li>
        <li> Data from the kernel is then caught by LIRC using a
             lirc driver. The lirc driver often needs to know from
-            which device it should get the kernel data. This is
+            which kernel device it should get the data from. This is
             described in
             <A HREF="#determine-driver-and-device">Determine driver and
              device</a>.</li>
@@ -177,12 +188,13 @@ remote |        |       devinput v        |
             lirc  driver to key symbols either using
             <A HREF="#key-symbols-using-linux-input-layer">the linux input
             layer</a> or <A HREF="#key-symbols-using-lirc-drivers">an lirc
-            driver</a> using the lircd.conf file.</li>
+            driver</a> using the lircd.conf file. The key symbols are
+            presented on the output socket, default /var/run/lirc/lircd. </li>
        <li> In the next step the application converts the key symbols
-            to application-specific strings using the ~/.config/lircrc file.
-            This is described in
+            to application-specific strings using the ~/.config/lircrc file
+            and a lirc library.  This is described in
             <A HREF="#converting-key-symbols-to-application-strings">
-             Convert the key symbols to application strings</a> .</li>
+            Convert the key symbols to application strings</a> .</li>
     </ul>
     <p>
     lirc can handle multiple remotes using the same capture device. This is
@@ -240,13 +252,13 @@ remote |        |       devinput v        |
      rc rc0: lirc_dev: driver ir-lirc-codec (mceusb) registered at minor = 0
    </pre>
     <p>
-    If you just find something like this you have a device which isn't an ir
+    If you just find something like this you have a device which isn't an IR
     device (in this case an RF remote):
     <pre>
         usb 2-2: Product: RF receiver
         usb 2-2: Manufacturer: X10 WTI
     </pre>
-    Even if you have an ir device, you might see something like this if the
+    Even if you have an IR device, you might see something like this if the
     kernel sees it as a keyboard rather than a remote. Here, an usb
     keyboard from JITTEL:
     <pre>
@@ -256,7 +268,7 @@ remote |        |       devinput v        |
     </pre>
     <p>
     For devices like these which not are registered as rc devices (and thus
-    not recognized by ir-keytable) you need to find out the corresponding
+    not recognized by ir-keytable) you might need to find out the corresponding
     event device as described in <a href="#appendix-2">Appendix 2</a> .</p>
     <p>
     Knowing the capture device name, the kernel module loaded (if any) and
@@ -282,7 +294,7 @@ remote |        |       devinput v        |
        <li>
          If you could find out the driver used to record this device in
          the driver database (above) you should try this driver if it
-         makes sense.  If it doesn't make sense i. e., it refers to some
+         makes sense.  If it doesn't make sense e. g., it refers to some
          hardware you don't have just proceed. </li>
        <li>
          if you can find the device name in the
@@ -320,7 +332,7 @@ remote |        |       devinput v        |
   |              |                   Use lircd.conf.devinput
   ----------------
         |
-        v  key symbols               Use irw to debug
+        v  /var/run/lirc/lircd       Key symbols, use irw to debug
         |
 
     </pre>
@@ -349,7 +361,7 @@ remote |        |       devinput v        |
     <p>
     Then, grab the devinput/devinput.lircd.conf file
     <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
-    (remotes) </a> and copy it to /etc/lirc/lircd.conf. Start the lircd
+    (remotes) </a> and copy it to /etc/lirc/lircd.conf.d/. Start the lircd
     daemon and use irw to check:
     <pre>
     $ lircd --device /dev/input/event13 --driver devinput
@@ -373,19 +385,21 @@ remote |        |       devinput v        |
        |       | kernel rc driver |  Needs configuration
        |       -- -----------------
        |                  |
-       v                  v          raw pulse data
-       |                  |
-  ---------------         |
+       v                  v          raw pulse data on
+       |                  |          a kernel device like
+  ---------------         |          /dev/lirc0 or /dev/ttyACM0
   | LIRC driver |----------
   ---------------
        |
-       v      pulses                 Use mode2 to debug.
+       v      pulses                 Use mode2 to debug
        |
   ---------------
   | LIRC pass 1 |                    lircd.conf
   ---------------
        |
-       v      keysyms                Use irw to debug
+       |      keysyms on             Use irw(1) to debug
+       v      /var/run/lirc/lircd
+       |
     </pre>
     <p>
       You have already determined the driver and perhaps device to use.
@@ -409,7 +423,7 @@ remote |        |       devinput v        |
         </pre>
      </li>
       <li>
-      Update /etc/lirc/lirc_options.conf to use  the driver and device:
+      Update /etc/lirc/lirc_options.conf to use the driver and device:
       <pre>
       [lircd]
       nodaemon        = False
@@ -427,8 +441,8 @@ remote |        |       devinput v        |
        single most important lirc configuration file. There are some
        ways to find or create such a file.
     <ul>
-       <li> The lirc-setup GUI tool can be used to find and download
-       both driver and configuration file.</li>
+       <li> The <em>lirc-setup</em> GUI tool can be used to find and
+       download both driver and configuration file.</li>
        <li>
        If you manually selected a driver from the driver table it might
        need a specific lircd.conf. Such drivers are best installed using
@@ -438,13 +452,11 @@ remote |        |       devinput v        |
        You can use one of the already existing configuration files the
        lirc website. You can browse
        <a href=http://lirc-remotes.sourceforge.net/remotes-table.html"">
-       here</a> or use the
-       <a href="http://lirc.sourceforge.net/lirc.org/html/irdb-get.html">
-       irdb-get</a> program to search and download such files. </li>
+       here</a> or use the <a href="irdb-get.html">irdb-get</a> tool to
+       search and download such files. </li>
        <li>
        You can create your own configuration using the
-       <a href="http://lirc.sourceforge.net/lirc.org/html/irrecord.html">
-       irrecord</a> program. </li>
+       <a href="irrecord.html">irrecord</a>tool </li>
        <li>
        If you already have a config file for the libirman
        package you can convert it using the <em>irman2lirc</em> script
@@ -1053,3 +1065,80 @@ remote |        |       devinput v        |
     <P>
     Creating udev rules is a large topic. Please refer to more
     generic information to resolve problems.
+
+
+    <A NAME="appendix-10"></A>
+    <h3 align="center">A10 : Configuration files</h3>
+
+    The lirc configuration is mostly done in the lirc config directory,
+    usually /etc/lirc. Besides this, there are occasionally needs to
+    configure the kernel drivers using files in /etc/modprobe.d.
+    <pre>
+           /etc
+            |
+            |
+            |---lirc
+            |     |
+            |     |-----------  lirc_options.conf
+            |     |
+            |     |-----------  lircd.conf
+            |     |
+            |     |-----------  lircd.conf.d
+            |                       |
+            |                       |------- remote1.lircd.conf
+            |                       |
+            |                       |------- remote2.lircd.conf
+            |
+            |---modprobe.d
+                    |
+                    | --------- blacklist-xxx.conf
+                    |
+                    | ----------options-xxx.conf
+     </pre>
+     The files:
+     <ul>
+       <li> <b>lirc_options.conf</b> holds the lircd options. This includes driver,
+       port and other important configuration. All of these options can
+       be overridden on the lircd command line.</li>
+       <li> <b>lircd.conf contains</b> timing information. It's used by lircd to
+       convert raw data from the kernel to key symbols. As shipped, the
+       lircd.conf is empty and just includes any configuration file in
+       lircd.conf.d.</li>
+       <li><b>lircd.conf.d contains</b> all used remote configuration files. When
+       receiving data lircd will try to decode it, trying each of these
+       files.</li>
+       <li> <b>modprobe.d/blacklist-*</b>. These contains a single <em>blacklist</em>
+       directive used to disable kernel drivers which conflicts with
+       lirc's driver.</li>
+       <li><b>modprobe.d/options-*</b>. Contains kernel module options e. g.,
+       which serial port the lirc_serial module should use.</li>
+     </ul>
+
+    <A NAME="appendix-11"></A>
+    <h3 align="center">A11 : Configuration tools</h3>
+    LIRC contains several tools used in the configuration process:
+    <dl>
+       <dt>lirc-setup</dt>
+       <dd>GUI tool which automates the creation of lircd.conf,
+       lirc_options.conf and various files in /etc/modprobe.d.</dd>
+
+       <dt><a href="irdb-get.html">irdb-get</a></dt>
+       <dd>Command line tool to search, list and download configuration files
+       from the remotes database at
+       <a href="http://sourceforge.net/p/lirc-remotes">
+       http://sourceforge.net/p/lirc-remotes</a></dd>
+
+       <dt><a href="lirc-config-tool.html">lirc-config-tool</a></dt>
+       <dd>Command linetTool which can be used to create a lircrc file for
+       some applications including mythttv and vlc. It can also be used to
+       convert old style ad-hoc button names to names in the legal namespace.
+       </dd>
+
+       <dt><a href="lirc-lsremotes.html">lirc-lsremotes</a></dt>
+       <dd>Command line tool to display  information about lircd.conf files.
+       Using the -s option it can also be used as a static checker.</dd>
+
+       <dt><a href="lirc-lsplugins.html">lirc-lsplugins</a></dt>
+       <dd>Command line tool to display info on plugins i. e., lirc
+       drivers.</dd>
+    </dl>

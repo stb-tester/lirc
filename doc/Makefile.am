@@ -12,6 +12,9 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
+install-data-hook:
+	ln -s ../images $(DESTDIR)/$(htmldir)/images
+
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
@@ -37,13 +40,23 @@ dist_website_DATA       = $(website_files)
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
-                          html-source/lirc.css
+                          html-source/lirc.css \
+                          lirc.org/parallel.html \
+                          lirc.org/receivers.html \
+                          lirc.org/transmitters.html
+
+if HAVE_PYMOD_YAML
+dist_website_html_DATA  += table.html
+endif
 
 website_imagedir        = $(docdir)/lirc.org/images
 dist_website_image_DATA = $(dist_image_DATA)
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html)
+nodist_html_DATA        = $(generated_html) \
+                          lirc.org/parallel.html \
+                          lirc.org/receivers.html \
+                          lirc.org/transmitters.html
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
@@ -86,7 +99,7 @@ driver-toc.xsl: .phony
 	$(srcdir)/make-driver-toc.sh > $@
 
 $(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
-	mkdir html 2>/dev/null || :
+	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
@@ -124,7 +137,6 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
                            $(srcdir)/man-source/lirc.4 \
-                           $(srcdir)/man-source/lirc_ioctl.4 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
@@ -151,6 +163,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
+                           $(srcdir)/html-source/irtoy_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
@@ -171,7 +184,6 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
                            man/lirc.4 \
-                           man/lirc_ioctl.4 \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
                            man/lirc-setup.1 \
@@ -192,7 +204,6 @@ manpage_html            += man-html/ircat.html \
                            man-html/irw.html \
                            man-html/lirc-config-tool.html \
                            man-html/lirc.html \
-                           man-html/lirc_ioctl.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
                            man-html/lirc-setup.html \
@@ -218,6 +229,7 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/imon_driver.html \
                            html/index.html \
                            html/install.html \
+                           html/irtoy_driver.html \
                            html/lirc_client.html \
                            html/programs.html \
                            html/pronto2lirc.html \

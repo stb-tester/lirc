@@ -56,6 +56,85 @@ static const char* opt_keysym = NULL;
 static const char* opt_listfile = NULL;
 
 
+/** Set up default values for all command line options + filename. */
+static void add_defaults(void)
+{
+	static char plugindir[128];
+	const char* defaults[] = {
+		"lircd:plugindir",	      plugindir,
+		"irsimsend:driver",	      "devinput",
+		"irsimsend:count",	      "1",
+		"irsimsend:keysym",	      (const char*)NULL,
+		"irsimsend:listfile",	      (const char*)NULL,
+		"irsimsend:start-space"	      "-1",
+		(const char*)NULL,	      (const char*)NULL
+	};
+	const char* s = getenv("LIRC_PLUGIN_PATH");
+
+	strncpy(plugindir, s != NULL ? s : PLUGINDIR, sizeof(plugindir) - 1);
+	options_add_defaults(defaults);
+};
+
+
+int parse_uint_arg(const char* optind, const char* errmsg)
+{
+	long c;
+
+	c = strtol(optarg, NULL, 10);
+	if (c > INT_MAX || c < 0 || errno == EINVAL || errno == ERANGE) {
+		fputs(errmsg, stderr);
+		exit(EXIT_FAILURE);
+	}
+	return (int)c;
+}
+
+
+static void parse_options(int argc, char** const argv)
+{
+	long c;
+
+	add_defaults();
+
+	while ((c = getopt_long(argc, argv, "c:hk:l:s:U:v", options, NULL))
+	       != EOF) {
+		switch (c) {
+		case 'h':
+			puts(USAGE);
+			exit(EXIT_SUCCESS);
+		case 'c':
+			(void) parse_uint_arg(optarg, "Illegal count value\n");
+			options_set_opt("irsimsend:count", optarg);
+			break;
+		case 'v':
+			printf("%s\n", "irw " VERSION);
+			exit(EXIT_SUCCESS);
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
+		case 'k':
+			options_set_opt("irsimsend:keysym", optarg);
+			break;
+		case 'l':
+			options_set_opt("irsimsend:listfile", optarg);
+			break;
+		case 's':
+			(void) parse_uint_arg(optarg, "Illegal space value\n");
+			options_set_opt("irsimsend:start-space", optarg);
+			break;
+		case '?':
+			fprintf(stderr, "unrecognized option: -%c\n", optopt);
+			fputs("Try `irsimsend -h' for more information.\n",
+			      stderr);
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (argc != optind + 1) {
+		fputs(USAGE, stderr);
+		exit(EXIT_FAILURE);
+	}
+}
+
+
 static struct ir_remote* setup(const char* path)
 {
 	struct ir_remote* remote;
@@ -127,9 +206,12 @@ static int simsend_remote(struct ir_remote* remote)
 {
 	struct ir_ncode* code;
 
-	for (code = remote->codes; code->name != NULL; code++) {
-		printf("%s\n", code->name);
-		send_code(remote, code);
+	while (remote != NULL) {
+		for (code = remote->codes; code->name != NULL; code++) {
+			printf("%s\n", code->name);
+			send_code(remote, code);
+		}
+		remote = remote->next;
 	}
 	return 0;
 }
@@ -183,65 +265,21 @@ static int simsend_list(struct ir_remote* remote)
 	return 0;
 }
 
-int parse_uint_arg(const char* optind, const char* errmsg)
-{
-	long c;
-
-	c = strtol(optarg, NULL, 10);
-	if (c > INT_MAX || c < 0 || errno == EINVAL || errno == ERANGE) {
-		fputs(errmsg, stderr);
-		exit(EXIT_FAILURE);
-	}
-	return (int)c;
-}
-
-
 int main(int argc, char* argv[])
 {
-	long c;
 	struct ir_remote* remote;
 	char path[128];
 
-	while ((c = getopt_long(argc, argv, "c:hk:l:s:U:v", options, NULL))
-	       != EOF) {
-		switch (c) {
-		case 'h':
-			puts(USAGE);
-			return EXIT_SUCCESS;
-		case 'c':
-			opt_count = parse_uint_arg(optarg,
-						   "Illegal count value\n");
-			break;
-		case 'v':
-			printf("%s\n", "irw " VERSION);
-			return EXIT_SUCCESS;
-		case 'U':
-			options_set_opt("lircd:pluginpath", optarg);
-			break;
-		case 'k':
-			opt_keysym = optarg;
-			break;
-		case 'l':
-			opt_listfile = optarg;
-			break;
-		case 's':
-			opt_startspace = parse_uint_arg(optarg,
-							"Illegal space value\n");
-			break;
-		case '?':
-			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fputs("Try `irsimsend -h' for more information.\n",
-			      stderr);
-			return EXIT_FAILURE;
-		}
-	}
-	if (argc != optind + 1) {
-		fputs(USAGE, stderr);
-		return EXIT_FAILURE;
-	}
 	lirc_log_get_clientlog("irsimsend", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irsimsend", 1, LIRC_NOTICE);
+
+	options_load(argc, argv, NULL, parse_options);
+        opt_startspace = options_getint("irsimsend:start-space");
+        opt_count = options_getint("irsimsend:count");
+        opt_keysym = options_getstring("irsimsend:keysym");
+        opt_listfile = options_getstring("irsimsend:listfile");
+
 	remote = setup(argv[optind]);
 	if (opt_startspace != -1)
 		send_space(opt_startspace);

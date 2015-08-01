@@ -1,0 +1,27 @@
+The irpipe driver is a simple kernel driver. It's basically just a fifo,
+but it also emulates a subset of the LIRC ioctl commands. It's purpose
+is to provide a device which can be accessed by the lirc drivers in
+the same way as a regular kernel interface.
+
+The driver, supported ioctl commands etc. are documented in the driver
+source irpipe.c.
+
+The driver supports some extra ioctl commands used for testing. These are
+in irpipe.h.
+
+The supplied udev rule can be used to set the permissions.
+
+Basic usage:
+
+	# cp 99-irpipe.rules /etc/udev/rules.d
+	# udevadm control --reload
+	# udevadm trigger
+	$ make
+	$ modinfo irpipe.ko
+	# rmmod irpipe || :
+	# insmod irpipe.ko
+	$ ls-l /dev/irpipe*
+
+The test program provides some crude ways to write(), read() and ioctl()
+the device. The irpipe(3) tool can be used to write to the device, but
+is not required.

@@ -2,7 +2,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.3pre1])
+AC_INIT([lirc], [0.9.3pre2])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -200,7 +200,7 @@ if test -n "$FTDI_LIBS"; then
   AM_CONDITIONAL([BUILD_FTDI],[true])
   AC_SUBST(FTDI_LIBS)
 else
-  AM_CONDITIONAL([BUILD_FTDI],[false])]
+  AM_CONDITIONAL([BUILD_FTDI],[false])
 fi
 
 AC_CHECK_HEADER(iguanaIR.h,[
