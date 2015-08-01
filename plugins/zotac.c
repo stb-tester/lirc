@@ -15,6 +15,7 @@
 #endif
 
 #include <stdio.h>
+#include <poll.h>
 #include <pthread.h>
 #include <sys/fcntl.h>
 #include <signal.h>
@@ -322,20 +323,17 @@ static void* zotac_repeat(void* arg)
 	unsigned current_code;
 	int ret;
 	int sel;
-	fd_set files;
-	struct timeval delay;
+	int delay_ms = 0;
 	int pressed = 0;
 	int fd = fd_pipe[1];
+	struct pollfd pfd = {.fd = fd_hidraw, .events = POLLIN, .revents = 0};
 
 	while (1) {
 		// Initialize set to monitor device's events
-		FD_ZERO(&files);
-		FD_SET(fd_hidraw, &files);
 		if (pressed)
-			sel = select(FD_SETSIZE, &files, NULL, NULL, &delay);
+			sel = poll(&pfd, 1, delay_ms);
 		else
-			sel = select(FD_SETSIZE, &files, NULL, NULL, NULL);
-
+			sel = poll(&pfd, 1, 0);
 		switch (sel) {
 		case 1:
 			// Data ready in device's file
@@ -350,8 +348,7 @@ static void* zotac_repeat(void* arg)
 				// Key code : forward it to main thread
 				pressed = 1;
 				repeat_count = 0;
-				delay.tv_sec = 0;
-				delay.tv_usec = repeat_time1_us;
+				delay_ms = repeat_time1_us / 1000;
 				current_code = probe_code;
 			} else if (ret == 2) {
 				// Release code : stop repetitions
@@ -370,12 +367,11 @@ static void* zotac_repeat(void* arg)
 			}
 			// Timeout : send current_code again to main
 			//           thread to simulate repetition
-			delay.tv_sec = 0;
-			delay.tv_usec = repeat_time2_us;
+			delay_ms = repeat_time2_us / 1000;
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR, "(%s) select() failed", __func__);
+			logprintf(LIRC_ERROR, "(%s) poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
