@@ -333,35 +333,26 @@
               remote controls.
             </P>
             <p>
-              Recent linux kernels make it possible to use some IR remote
-              controls as regular input devices. In some cases this makes
+              Recent linux kernels makes it possible to use some IR remote
+              controls as regular input devices. Sometimes this makes
               LIRC redundant. However, LIRC offers more flexibility and
               functionality and is still the right tool in a lot of
               scenarios.
             </p>
             <P>
-              Former versions focussed on home-brew hardware connected
-              to the serial or parallel port. Descriptions how to build
-              this hardware can be found here. Current versions of LIRC
-              also support a variety of other hardware. An up-to-date
-              list of all supported devices and the status of the
-              according drivers is available on the left.
-            </P>
-
-            <P>
-              The most important part of LIRC is the lircd daemon that
-              will decode IR signals received by the device drivers and
-              provide the information on a socket. It will also accept
+              The most important part of LIRC is the lircd daemon which
+              decodes IR signals received by the device drivers and
+              provides the information on a socket. It also accepts
               commands for IR signals to be sent if the hardware
               supports this. The second daemon program called lircmd
               will connect to lircd and translate the decoded IR signals
-              to mouse movements. You can e.g. configure X to use your
+              to mouse movements. You can e.g., configure X11 to use your
               remote control as an input device.
             </P>
 
             <P>
-              The user space applications will allow you to control your
-              computer with your remote control. You can send X events
+              The user space applications allows you to control your
+              computer with your remote control. You can send X11 events
               to applications, start programs and much more on just one
               button press. The possible applications are obvious:
               Infra-red mouse, remote control for your TV tuner card or
@@ -378,7 +369,7 @@
               There are some config files for remote controls at
               <a href="http://lirc-remotes.sourceforge.net/remotes-table.html">
               the remotes database</a>.
-              This is about 2000 devices and counting. These devices
+              This is about 2500 devices and counting. These devices
               should work with the general drivers or (if it lacks timing
               info) the driver used to create them.</p>
             <P>
@@ -393,13 +384,15 @@
             <H1 ALIGN="CENTER">Supported capture devices</H1>
             <p>
               Besides a remote control you also need a capture device
-              to read the data from the remote. LIRC supports a broad
-              range of input devices. As a starter, you can use the
-              kernel built-in support for many USB dongles and similar.
-              Besides this LIRC supports basically any conceivable way
-              to capture your data including serial devices, parallel
-              ports, sound input etc. You can see the complete list in
-              the left pane.
+              to read the data from the remote.  Former versions focussed on
+              home-brew capture hardware connected to the serial or parallel
+              port. Descriptions how to build such hardware can be found here.
+              Current versions of LIRC also support a broad range of other
+              hardware. As a starter, you can use the kernel built-in support
+              for many USB dongles and similar. Besides this LIRC supports
+              basically any conceivable way to capture your data including
+              serial devices, parallel ports, sound input etc. You can see
+              the complete list in the left pane.
             </p>
             <HR WIDTH="50%"><BR>
             <!-- AD --><BR>
