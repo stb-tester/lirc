@@ -28,6 +28,7 @@
 # include <config.h>
 #endif
 
+#include <poll.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -60,8 +61,8 @@ static ssize_t readagain(int fd, void* buf, size_t count)
 {
 	ssize_t rc;
 	size_t pos = 0;
-	struct timeval timeout = { .tv_sec = 0, .tv_usec = 200000 };
-	fd_set fds;
+	static const int TIMEOUT_MS = 20;
+	struct pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
 
 	rc = read(fd, buf, count);
 
@@ -69,10 +70,7 @@ static ssize_t readagain(int fd, void* buf, size_t count)
 		pos += rc;
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && pos < count)) {
-		FD_ZERO(&fds);
-		FD_SET(fd, &fds);
-
-		rc = select(fd + 1, &fds, NULL, NULL, &timeout);
+		rc = poll(&pfd, 1, TIMEOUT_MS);
 
 		if (rc == 0)
 			/* timeout */
