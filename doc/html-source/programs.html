@@ -1,7 +1,108 @@
-    <A NAME="list"></A><HR>
     <H1 ALIGN="center">Description of programs</H1>
     <HR WIDTH="70%">
+    <!-- Debug and test tools  +++++++++++++++++++++++++++++++++++++++ -->
 
+    <A NAME="programs-overview"></A>
+    <H2 ALIGN="CENTER">LIRC manpages overview</H1>
+    <p>
+    LIRC contains a quite large number of tools.  This chapter tries to
+    provide an overview.
+
+
+    <h3>User programs</h3>
+    <ul>
+      <li>
+         <a href="irsend.html">irsend</a> sends data using
+         lirc from the command line.</li>
+      <li>
+         <a href="irpty.html">irpty</a> emulates keyboard
+         input from a tty using a remote. </li>
+      <li>
+         <a href="irrecord.html">irrecord</a> can create a new
+         lircd.conf for a remote which isn't available in the database.</li>
+    </ul>
+    <h3>Daemons</h3>
+     <ul>
+      <li>
+         <a href="lircd.html">lircd</a> is the main LIRC daemon and runs
+         as a systemd service. It usually reads from a kernel device like
+         /dev/lirc0 or /dev/ttyACM0 and presents the decoded data on an
+         output socket like /var/run/lirc/lircd.</li>
+      <li>
+         <a href="lircrcd.html">lircrcd</a> is a helper daemon which
+         coordinates the LIRC state as defined in lircrc in different
+         clients. It's managed, started  and stopped by lircd.</li>
+      <li>
+         <a href="lircmd.html">lircmd</a> runs as a systemd service.
+         It reads data from the lircd output socket and generates
+         mouse events, so that a remote can emulate a mouse.</li>
+      <li>
+         <a href="irexec.html">irexec</a> normally runs as a user
+         daemon in the session. It is used to run arbitrary commands
+         on various button presses.</li>
+    </ul>
+    <h3>Configuration tools</h3>
+    <ul>
+      <li>
+         <a href="irdb-get.html">irdb-get</a> can list, search and
+         download lircd.conf remote configuration files from the
+         <a href="http://sf.net/p/lirc-remotes">remotes database</a>.</li>
+      <li>
+         <a href="lirc-setup.html">lirc-setup</a> is a GUI tool
+         which can create the different configuration files after some
+         user dialogs.</li>
+      <li>
+         <a href="lirc-lsplugins.html">lirc-lsplugins</a> lists the plugins
+         and drivers which are actually available in an installation. It
+         also provides info on the drivers, including drivers that can't be
+         loaded.</li>
+      <li>
+         <a href="lirc-lsremotes.html">lirc-lsremotes</a> can parse
+         lircd.conf configuration files and act as a static checker. It is
+         also used to provide dense, parseable keyword information about
+         remote config files.</li>
+      <li>
+         <a href="lirc-config-tool.html">lirc-config-tool</a> can generate
+         a first shot for lircrc configuration file for some applications.
+         It can also be used to sanitize old lircd.conf files which does
+         not use symbols from the official namespace.</li>
+    </ul>
+
+    <h3>Test and debug tools</h3>
+    <ul>
+      <li> <a href="mode2.html">mode2</a> can monitor the data sent from
+         the kernel to lircd. It displays either timing information or, if
+         the hardware decodes the signals, the decoded values.</li>
+      <li>
+         <a href="irw.html">irw</a> can monitor the data sent from lircd to
+         the applications, normally in the /var/run/lirc/lircd socket. Since
+         this socket supports multiple connections  it can be used together
+         with other user programs. </li>
+      <li>
+         <a href="ircat.html">ircat</a> connects to same socket as irw. However,
+         it displays the application strings delivered to the application after
+         mapping the lircd output using the lircrc file. </li>
+      <li>
+         <a href="irpipe.html">irpipe</a> works together with the irpipe kernel
+         driver. It can be used to feed data to lircd which it can read on
+         /dev/irpipe0. This device works the same way as /dev/lirc0 as seen
+         from lircd. </li>
+      <li>
+         <a href="irsimsend.html">irsimsend</a> can "send" data using a
+         lircd.conf configuration file and store the data (pulse/space
+         durations) in a file. This file can be used with irpipe to send
+         the same data to lircd.</li>
+      <li>
+         <a href="irtestcase.html">irtestcase</a> can log the data from
+         a remote together with the decoded symbols. It can also send the
+         data to lircd and check that the decoded symbols matches the
+         logged ones. </li>
+     </ul>
+
+<hr>
+    <H2 ALIGN="CENTER">Daemons and tools</H2>
+
+    <A NAME="list"></A>
     <UL TYPE="disc">
       <LI><A HREF="ircat.html">ircat</A></LI>
       <LI><A HREF="irdb-get.html">irdb-get</A></LI>
@@ -25,15 +126,14 @@
       <LI><A HREF="xmode2.html">xmode2</A></LI>
     </UL>
 
-    <A NAME="driver_list"></A><HR>
-    <H1 ALIGN="center">Driver documentation</H1>
-    <HR WIDTH="70%">
-    <UL class="driver-toc"/>
-
-    <A NAME="misc_list"></A><HR>
-    <H1 ALIGN="center">Devices and configuration files</H1>
-    <HR WIDTH="70%">
+<hr>
+    <A NAME="misc_list"></A>
+    <H2 ALIGN="center">Devices and configuration files</H2>
     <UL TYPE="disc">
       <LI><A HREF="lirc.html">lirc</A></LI>
       <LI><A HREF="lircd.conf.html">lircd.conf</A></LI>
-    </UL>
+    </UL>    <A NAME="driver_list"></A>
+
+<HR>
+    <H2 ALIGN="center">Driver documentation</H2>
+    <UL class="driver-toc"/>
