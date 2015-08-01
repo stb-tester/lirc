@@ -14,7 +14,7 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.doxhead
 
 install-data-hook:
-	ln -s ../images $(DESTDIR)/$(htmldir)/images
+	ln -sf ../images $(DESTDIR)/$(htmldir)/images
 
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
@@ -112,10 +112,7 @@ lirc.hwdb:
 driver-toc.xsl: .phony
 	$(srcdir)/make-driver-toc.sh > $@
 
-NEWS.txt: $(top_srcdir)/NEWS
-	cp -a $< $@
-
-$(generated_html): $(html_sources) docpage.xsl driver-toc.xsl
+$(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
 	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
