@@ -60,50 +60,8 @@ W | +------------------------+ +----------+ +-------------------------+
     <UL>
       <LI><B>/dev/lirc:</B><BR>
         <P>
-          highly depends on the mode selected with ioctls:
+          This is documented in the <a href="lirc.html">lirc(4)</a>manpage.
         </P>
-        <DL>
-          <DT>LIRC_MODE_MODE2</DT>
-          <DD>
-            <P>
-              outputs packets containing an int value describing a IR
-              signal
-            </P>
-            <UL>
-              <LI>bits 0-23 contain the length of the pulse/space in
-                microseconds</LI>
-              <LI>bits 31-24 can be:
-                <UL>
-                  <LI>0: space</LI>
-                  <LI>1: pulse</LI>
-                  <LI>2: timeout (has to be enabled using
-                    LIRC_SET_REC_TIMEOUT ioctl and is not supported by
-                    all receivers)</LI>
-                </UL>
-              </LI>
-              <LI>all other values are reserved</LI>
-            </UL>
-            <P>
-              Lengths greater than or equal to 16 seconds are clamped to
-              0xffffff.
-            </P>
-            <P>References:</P>
-            <UL>
-              <LI>drivers/lirc_serial/lirc_serial.c</LI>
-              <LI>drivers/lirc_parallel/lirc_parallel.c</LI>
-              <LI>tools/mode2.c (dumps the output from the driver to
-                stdout)</LI>
-            </UL>
-            <BR>
-          </DD>
-          <DT>LIRC_MODE_LIRCCODE</DT>
-          <DD>
-            <P>
-              outputs codes of configurable length in big endian byte
-              order
-            </P>
-          </DD>
-        </DL>
       </LI>
       <LI><B>/var/run/lirc/lircd:</B><BR>
         <P>
@@ -147,35 +105,10 @@ W | +------------------------+ +----------+ +-------------------------+
     <A NAME="lirc_dev"></A><HR>
     <H1 ALIGN="CENTER">Writing TV card drivers using lirc_dev</H1>
     <HR WIDTH="70%">
-
     <P>
-      The <em>lirc_dev</em> module is a helper and abstraction layer
-      for other modules.  It registers <em>/dev/lirc</em> device in a
-      system (including support for devfs) and waits for plugin
-      registration.  After that it serves device requests (open, read,
-      poll, ioctl, close) and if needed calls callback functions from
-      plugin(s) to communicate with the physical device.
-    </P>
-    <P>
-      Plugins can be registered and unregistered many times. The
-      current implementation allows two concurrent plugins, but can be
-      easily changed by increasing the MAX_IRCTL_DEVICES
-      definition. It also allows receiving of scan codes, which have
-      more than 8 bits. Current limit for a scan code is 16*8 bits and
-      also can be changed by increasing the BUFLEN definition.
-    </P>
-    <P>
-      For an API description see <em>lirc_dev.h</em>. The lirc_gpio
-      module can be treated as examples of using this API.<br> This
-      code contains many lines with debug messages (activated by
-      <em>debug</em> option) and they will sustain until more tests
-      will be performed.
-    </P>
-    <P>
-      <B>Warning:</B> Due to the used kernel API it requires kernel
-      2.2.4 or higher.<br> Any suggestions and questions are
-      welcome. <A href="mailto:alipowski@interia.pl">Artur
-        Lipowski</A>
+    The TV card drivers  been upstreamed to the kernel, see the
+    <a href="https://www.kernel.org/doc/htmldocs/media_api/lirc_dev.html">
+    kernel documentation.</a>
     </P>
 
     <!-- Writing LIRC Applications +++++++++++++++++++++++++++++++++++++++ -->
@@ -223,6 +156,8 @@ W | +------------------------+ +----------+ +-------------------------+
     <P>
       <i>NOTE: As of 0.9.2+, this way of sending data is obsolete since
       sending is supported directly in the API. See the API documentation,</i>
+    </P>
+    <P>
       Applications that want to send out IR commands can use the
       following commands:
       </P>
@@ -344,44 +279,15 @@ W | +------------------------+ +----------+ +-------------------------+
       </DD>
     </DL>
 
-    <A NAME="hal"></A><HR>
-    <H1 ALIGN="CENTER">Hardware Abstraction Layer (HAL) integration</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      If your system support the <a href="http://www.freedesktop.org/wiki/Software/hal">FreeDesktop Hardware Abstraction Layer (HAL)</a>,
-      you will want to install the file <em>contrib/hal/20-ircontrol-lirc.fdi</em> in
-      <em>${datarootdir}/hal/fdi/information/20thirdparty</em>
-    </P>
-    <P>
-      This file can be generated at will using contrib/hal/gen-hal-fdi.pl.<br>
-      Installing 20-ircontrol-lirc.fdi allow applications developers to detect
-      USB remotes easily by searching for HAL devices with <em>info.capabilities=input.remote_control</em>
-    </P>
-    <P>
-      This is a work in progress. We will also provide more information in the
-      future, such as the driver/manufacturer/device name(s), and possibly
-      event reporting.
-    </P>
-
     <A NAME="config"></A><HR>
     <H1 ALIGN="CENTER">Note for configuration application developers</H1>
     <HR WIDTH="70%">
 
     <P>
       If you want to make a configuration application, lirc provides
-      a parseable list of LIRC supported devices.<br>
-      <br>
-      This file is generated at compilation time, along with its <a href="table.html">HTML
-      equivalent</a> and is available as doc/lirc.hwdb in the source tree.
-      It should also be installed by the binary packages of your prefered
-      distribution (bug report otherwise!).
-      <br><br>
-      The format is:
-      <br>
-      [remote controls type]<br>
-      description;driver;lirc driver;HW_DEFAULT;lircd_conf;<br>
-      The HW_DEFAULT entry is always empty.
+      a  parseable database of the drivers in the configs/ directory.
+      See configs/README for documentation of the format. The lirc-setup
+      tool has example code for parsing the files in configs/.
     </P>
 
     <A NAME="bugs"></A><HR>
@@ -390,44 +296,8 @@ W | +------------------------+ +----------+ +-------------------------+
 
     <UL>
       <LI>
-        <p> The general lirc bugtracker is at the
+         The general lirc bugtracker is at the
             <a href=https://sourceforge.net/p/lirc/tickets> sourceforge
-            website</a>. </p>
-        <P>
-          If you use the <em>lirc_serial</em> or
-          <em>lirc_parallel</em> driver regularly to transmit
-          infra-red signals you might notice that your system clock
-          will slow down. During transmit the driver turns off
-          interrupts and hence some clock interrupts might get lost
-          causing system clock inaccuracy. Unfortunately in order to
-          ensure a good signal timing interrupts have to be
-          disabled. Currently no work-around is known for this problem
-          except using a program like <em>netdate</em> to synchronize
-          your system clock regularly.
-        </P>
-      </LI>
-      <LI>
-        <P>
-          The <em>lirc_serial</em> and <em>lirc_parallel</em> drivers
-          measure the time between interrupts on the serial resp.
-          parallel port to get a pulse and space representation of the
-          incoming infra-red signal. If interrupts are disabled by the
-          CPU for a rather long time (&gt;100 &micro;s, which happens
-          often e.g. during heavy IDE disk activity) some interrupts
-          might get lost and the incoming data stream becomes
-          disturbed. In this case decoding of the infra-red signal
-          will fail. This is the downside of the really simple
-          receiver circuits and can't be addressed in software except
-          keeping the time where interrupts are disabled to a minimum.
-        </P>
-        <P>
-          If you are using an IDE system you might want to try calling
-          <em>hdparm -u1 -d1</em> for all of your drives. This enables
-          DMA for the drive and allows the driver to unmask other
-          interrupts during handling of a disk interrupt. But be aware
-          that this can be dangerous for some (buggy) IDE
-          chipsets. Consult the hdparm man page for further
-          information.
-        </P>
+            website</a>. Please refer to this to get a list of actual bugs.
       </LI>
     </UL>
