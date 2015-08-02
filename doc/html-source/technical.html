@@ -81,6 +81,10 @@ W | +------------------------+ +----------+ +-------------------------+
     <hr/>
     <A NAME="drivers"></A>
     <H1 ALIGN="CENTER">Writing LIRC userspace drivers</H1>
+    <P>
+      Since 0.9.0 the lirc kernel drivers have been upstreamed to the
+      kernel. So, while developing kernel drivers might be important
+      from a LIRC perspective, it's no longer part of this project. </p>
     <p>
       Since 0.9.1, lirc user-space drivers (plugins) are loaded dynamically
       and compiled out-of-tree. Refer to the <a href="driver-api.html">
@@ -91,10 +95,6 @@ W | +------------------------+ +----------+ +-------------------------+
     <hr/>
     <A NAME="applications"></A>
     <H1 ALIGN="CENTER">Writing Applications for LIRC</H1>
-    <P>
-      Since 0.9.0 the lirc kernel drivers have been upstreamed to the
-      kernel. So, while developing kernel drivers might be important
-      from a LIRC perspective, it's no longer part of this project. </li>
     <P>
       As LIRC is able to both receive and send IR commands there are
       two possible types of applications: programs that send IR

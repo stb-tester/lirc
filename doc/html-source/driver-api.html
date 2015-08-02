@@ -417,7 +417,7 @@ lirc
 </pre>
 <p>
 The driver code has been described all over in this document. There is
-also plenty of examples in the plugins/ directory. The compiled .so
+also plenty oof examples in the plugins/ directory. The compiled .so
 file could just be dropped into a directory in the -U/--plugins
 search path which basically could be anywhere.</p>
 <p>
@@ -430,16 +430,6 @@ The documentation is a single html file in the doc/html-source directory.
 The filename should have _driver.html suffix. New files with this suffix
 are automatically picked up by the build system, as long it's
 listed in doc/Makefile.am.</p>
-<P>
-The lirc-driver pkgconfig file defines three variables useful when
-installing files: <i>plugindir</i>, <i>configdir</i> and <i>plugindocs</i>.
-These are the configured locations for each file. E. g., to get
-the plugindir location
-<pre>
-	$ pkg-config --variable=plugindir lirc-driver
-        /usr/lib64/lirc/plugins
-</pre>
-
 
 
 <h2>Using C++</h2>
