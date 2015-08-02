@@ -1,4 +1,4 @@
-.TH LIRCRCD "8" "Last change: Nov 2014" "lircrcd @version@" "System Manager Manual"
+.TH LIRCRCD "8" "Last change: Aug 2015" "lircrcd @version@" "System Manager Manual"
 .SH NAME
 lircrcd - daemon to handle consistent .lircrc state among client applications
 .SH SYNOPSIS
@@ -40,6 +40,37 @@ representation).
 With the \-\-output option you can select the Unix domain socket, which
 lircrcd will create. The default is to create a socket in VARRUNDIR
 (usually /var/run/lirc), see FILES.
+
+.SH SOCKET PROTOCOL
+
+lircrcd syntactically uses the same protocol as lircd described in the
+lircd(8) manpage. It supports the following commands:
+
+.TP 4
+.B IDENT \fIident\fR
+Each program connecting to lircrcd identifies itself using this program.
+\fIident\fR is the string that is used in the \fIProg = \fR token inside
+the .lircrc file.
+
+.TP 4
+.B CODE \fIcode\fR
+When the client receives the code string from lircd it will send it to
+lircrcd and will receive back the applicable config string from the
+.lircrc config file. It should resend the CODE command until nothing is
+returned back which means that nothing (more) should happen in response
+to \fIcode\fR. This command is used each time the lirc_code2char()
+function is called by a client.
+
+.TP 4
+.B GETMODE
+lircrcd will return the current mode string.
+
+
+.TP 4
+.B SETMODE \fImode\fR
+lircrcd will set the actual mode, reflecting a mode in the .lircrc
+file.
+
 .SH FILES
 lircrcd creates its socket(s) in the VARRUNDIR directory, usually
 /var/run/lirc.  The socket basename includes the user UID and the
