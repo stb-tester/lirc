@@ -387,6 +387,44 @@ struct driver* hardwares[] = { &amp;my_hardware, NULL };
     another example is available in the sources as  @ref drivers/default/Makefile.
     The autotools are not needed, in particular not libtool.</p>
 
+<h2>The anatomy of a complete driver package.</h2>
+<P>
+A complete driver package consists of three files: the driver code, the
+configuration support and the documentation.</p>
+<pre>
+lirc
+ |
+ |-----doc
+ |      |
+ |      |
+ |     html-source------
+ |                     |
+ |               foo_driver.html
+ |-----configs
+ |        |
+ |     foo.conf
+ |
+ |----plugins
+          |
+       foo.so
+</pre>
+<p>
+The driver code has been described all over in this document. There is
+also plenty oof examples in the plugins/ directory. The compiled .so
+file could just be dropped into a directory in the -U/--plugins
+search path which basically could be anywhere.</p>
+<p>
+The configuration support is a single file in the configs/ directory.
+The file configs/README describes the format. This is used by tools
+like lirc-setup, but also to create the list of all drivers. New
+files are automatically picked up.</p>
+<p>
+The documentation is a single html file in the doc/html-source directory.
+The filename should have _driver.html suffix. New files with this suffix
+are automatically picked up by the build system, as long it's
+listed in doc/Makefile.am.</p>
+
+
 <h2>Using C++</h2>
 <p>Plugins can also be written in C++. The used include files are required to be "C++-safe"
    i. e., the functions to be called from C++ have to be declared  <code>extern "C"</code>,
