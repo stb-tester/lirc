@@ -69,7 +69,7 @@
  *         application specific string as defined in the licrrc file. Since
  *         more than one string can be returned  lirc_code2char() should be
  *         called until it returns a NULL string.
- *       - The complete source for this example is in @ref irexec.c
+ *       - The complete source for this example is in @ref irexec.cpp
  *
  * Sending (blasting) is done according to following:
  *
@@ -98,10 +98,10 @@
  *    - lirc_send_one() and lirc_simulate() are blocking. If  you need to do
  *      non-blocking IO and/or access other functionality available you need
  *      to use lirc_command_init() and lirc_command_run(). Example code is
- *      in @ref irsend.c.
+ *      in @ref irsend.cpp.
  *
- *      @example irsend.c
- *      @example irexec.c
+ *      @example irsend.cpp
+ *      @example irexec.cpp
  * @{
  * @}
  */

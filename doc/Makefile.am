@@ -12,9 +12,6 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
-install-data-hook:
-	ln -sf ../images $(DESTDIR)/$(htmldir)/images
-
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
@@ -30,12 +27,13 @@ endif
 
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = irxevent.keys
-if HAVE_DOXYGEN
-dist_doc_DATA           += api-docs.tar.gz
-endif
 
 websitedir              = $(docdir)/lirc.org
 dist_website_DATA       = $(website_files)
+
+if HAVE_DOXYGEN
+dist_website_DATA       += api-docs.tar.gz
+endif
 
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
@@ -84,6 +82,20 @@ dist_image_DATA         = images/atwf83.jpg \
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
+
+
+install-data-hook: install-api-docs
+	ln -sf ../images $(DESTDIR)/$(htmldir)/images
+
+install-api-docs:
+if HAVE_DOXYGEN
+	cd $(DESTDIR)$(websitedir); \
+	    tar xzf api-docs.tar.gz && rm api-docs.tar.gz
+	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(docdir)/api-docs
+else
+	ln -sf html/no-api-docs.html $(DESTDIR)$(docdir)/api-docs
+endif
+
 
 clean-local:
 	rm -rf $(DISTCLEANFILES)
@@ -166,6 +178,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/install.html \
                            $(srcdir)/html-source/irtoy_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
+                           $(srcdir)/html-source/no-api-docs.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/srm7500atilibusb_driver.html \
@@ -234,6 +247,7 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/install.html \
                            html/irtoy_driver.html \
                            html/lirc_client.html \
+                           html/no-api-docs.html \
                            html/programs.html \
                            html/pronto2lirc.html \
                            html/srm7500atilibusb_driver.html \
