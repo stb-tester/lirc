@@ -312,13 +312,7 @@ int write_socket(int fd, const char* buf, int len)
 	int done, todo = len;
 
 	while (todo) {
-#ifdef SIM_REC
-		do
-			done = write(fd, buf, todo);
-		while (done < 0 && errno == EAGAIN);
-#else
 		done = write(fd, buf, todo);
-#endif
 		if (done <= 0)
 			return done;
 		buf += done;
@@ -2010,9 +2004,6 @@ static int mywaitfordata(unsigned long maxusec)
 						tv = gap;
 				}
 			}
-#ifdef SIM_REC
-			ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
-#else
 			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
 				ret = poll((struct pollfd *) &poll_fds.byindex,
 					    POLLFDS_SIZE,
@@ -2020,7 +2011,6 @@ static int mywaitfordata(unsigned long maxusec)
 			else
 				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
 
-#endif
 			if (ret == -1 && errno != EINTR) {
 				logprintf(LIRC_ERROR, "poll()() failed");
 				logperror(LIRC_ERROR, NULL);
@@ -2440,41 +2430,6 @@ int main(int argc, char** argv)
 	if (!nodaemon)
 		daemonize();
 
-#if defined(SIM_SEND)
-	{
-		struct ir_remote* r;
-		struct ir_ncode* c;
-
-		if (curr_driver->init_func)
-			if (!curr_driver->init_func())
-				dosigterm(SIGTERM);
-
-		printf("space 1000000\n");
-		r = remotes;
-		while (r != NULL) {
-			c = r->codes;
-			while (c->name != NULL) {
-				repeat_remote = NULL;
-				repeat_code = NULL;
-				c->transmit_state = NULL;
-				send_ir_ncode(r, c, 0);
-				repeat_remote = r;
-				repeat_code = c;
-				send_ir_ncode(r, c, 0);
-				send_ir_ncode(r, c, 0);
-				send_ir_ncode(r, c, 0);
-				send_ir_ncode(r, c, 0);
-				c++;
-			}
-			r = r->next;
-		}
-		fflush(stdout);
-		if (curr_driver->deinit_func)
-			curr_driver->deinit_func();
-	}
-	fprintf(stderr, "Ready.\n");
-	dosigterm(SIGUSR1);
-#endif
 	loop();
 
 	/* never reached */
