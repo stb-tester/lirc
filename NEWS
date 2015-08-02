@@ -1,5 +1,6 @@
 0.9.4
-  * TBD
+  * The documentatoin has been revised. Notably has the socket
+    for lircd and lircrcd been updated and moved to the manpages.
 
 0.9.3pre2
   * The library routines for parsing lircd.conf now warns for
