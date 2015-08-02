@@ -1,4 +1,4 @@
-.TH LIRCMD "8" "Last change: Jun 2015" "lircmd @version@" "System Administration Utilities"
+.TH LIRCMD "8" "Last change: Aug 2015" "lircmd @version@" "System Administration Utilities"
 .SH NAME
 lircmd - LIRC mouse daemon translates infrared signals into mouse events
 .SH SYNOPSIS
@@ -42,6 +42,29 @@ syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
 also defines three additional levels 'trace', 'trace1' and 'trace2' which
 gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'.
+
+.SH SOCKET PROTOCOL
+The socket protocol contains undocumented parts. The data on the output
+socket is
+.TP 4
+.B MouseSystems
+5 byte packets:
+.RS 4
+.IP \(bu 4
+Byte 1: Button information.
+.IP \(bu 4
+Byte 2: X-axis change.
+.IP \(bu 4
+Byte 3: Y-axis change.
+.IP \(bu 4
+Byte 4 and 5: 0.
+.RE
+.TP
+.B IMPS/2
+4 byte packets. Please refer to the lircmd source code for details.
+.TP 4
+.B IntelliMouse
+4 byte packets. Please refer to the lircmd source code for details.
 
 
 .SH FILES
