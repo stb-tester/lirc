@@ -2,8 +2,9 @@
 <CENTER><H1>The lirc_client API</H1></CENTER>
 <HR WIDTH="70%">
 <p>
-  Since 0.6.0, the client API have supported receiving data. Since
-  0.9.2+, the API also supports sending of data.
+  From 0.9.2+, the lirc_client.h API supports sending of data. See
+  the <a href="../api-docs">API documentation</a> (which also has
+  some more info on receiving).
 </p>
 <p>
   This text is also available in the <a href="api-docs">
@@ -12,11 +13,14 @@
 </p>
 <h3>Receiving data</h3>
 <P>
-  If you only want to make your application to receive commands
+  If you only want to make your application to receive or send IR commands
   and if you don't want to mess with all the protocol stuff you
   can use the <em>lirc_client</em> library that comes with LIRC
   since version 0.6.0. With the help of this library a program
-  can be as simple as this to receive data. </P>
+  can be as simple as this to receive data. For sending data,
+  refer to the Client API in the <a href="../api-docs">API documentation.</a>
+  (here is also a doxygen-linked version of this text).
+</P>
 <PRE>
 
     /****************************************************************************

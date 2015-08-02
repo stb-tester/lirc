@@ -13,9 +13,6 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
-install-data-hook:
-	ln -sf ../images $(DESTDIR)/$(htmldir)/images
-
 dist_noinst_SCRIPTS     = data2table data2hwdb
 
 manpage_html            =
@@ -80,17 +77,12 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 install-data-hook: install-api-docs
 	ln -sf ../images $(DESTDIR)/$(htmldir)/images
-	ln -sf ../lirc.org $(DESTDIR)/$(htmldir)/lirc.org
-	ln -sf ../api-docs/html/index.html \
-	     $(DESTDIR)$(website_htmldir)/api-docs
-	@rm -f $(DESTDIR)$(website_htmldir)/lirc.org
-	ln -sf .. $(DESTDIR)$(website_htmldir)/lirc.org
 
 install-api-docs:
 if HAVE_DOXYGEN
 	cd $(DESTDIR)$(websitedir); \
 	    tar xzf api-docs.tar.gz && rm api-docs.tar.gz
-	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(htmldir)/api-docs
+	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(docdir)/api-docs
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(docdir)/api-docs
 endif
