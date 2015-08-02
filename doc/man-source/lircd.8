@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Jul 2015" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Aug 2015" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -21,7 +21,7 @@ path is interpreted from /etc/lirc. The default configuration file
 includes all files in /etc/lircd.conf.d.
 .IP
 Each remote which should be decoded by lircd usually requires that a
-specic file is used e. g., by copying it to /etc/lirc/lirc.conf.d/.
+specfiic file is used e. g., by copying it to /etc/lirc/lirc.conf.d/.
 The format is described in lircd.conf(5). Configuration files could be
 found using irdb-get(1) or lirc-setup(1). It's also possible to
 generate a config file using irrecord(1)
@@ -116,7 +116,7 @@ interpreted from current directory. See [FILES] below.
 Select Unix domain socket, which lircd will write remote key codes to.
 The default currently is /var/run/lirc/lircd.
 .TP 4
-.B \-p, --permission
+.B \-p, \-\-permission
 Gives the file permission of /var/run/lirc/lircd if it has to be
 created in octal representation. See chmod(1).
 If no \-\-permission option is given when the
@@ -247,8 +247,104 @@ Make lircd invoke the drvctl_func(DRVCTL_SET_OPTION, option) with
 option being made up by the parsed key and value.
 The return package reflects the outcome of the drvctl_func call.
 .TP
+.B -e, --effective-user <uid>
+If started as user root, lirc drops it privileges and runs as user <uid>
+after opening files etc.
+
+.SH SOCKET BROADCAST MESSAGES FORMAT
+
+When decoding a button press or receiving a SIGHUP and thus re-parsing
+the lircd.conf file lircd broadcasts messages to all connected clients.
+.PP
+For each decoded button press lircd makes a package available on the
+socket. This is printable data formatted as:
+.nf
+<code> <repeat count> <button name> <remote control name>
+.if
+.PP
+e. g.,
+.PP
+.nf
+0000000000f40bf0 00 KEY_UP ANIMAX
+.if
+.PP
+.TP 4
+.I code
+is a 16 hexadecimal digits encoding of the IR signal.
+It's usage in applications is deprecated and it  should be ignored.
+.TP 4
+.I repeat count
+shows how long the user has been holding down a button. The counter
+will start at 0 and increment each time a new IR signal has been
+received.
+.TP 4
+.I button name
+is the name of a key defined in the lircd.conf file.
+.TP 4
+.I remote control name
+is the mandatory \fIname\fR attribute in the lircd.conf config file.
+.PP
+These packets are broadcasted to all clients. The only other situation
+when lircd broadcasts to all clients is when it receives the SIGHUP signal
+and successfully re-reads its config file. Then it will send a SIGHUP
+packet to its clients indicating that its configuration might have changed.
+The sighup packet is three lines
+.PP
+.nf
+BEGIN
+SIGHUP
+END
+.if
+.PP
+
+.SH SOCKET COMMAND INTERFACE
+Applications can also send commands to lircd over the socket interface. The
+most common task is sending data, but there are also other commands.
+Each command is a single printable line, terminated with a newline. For
+each command, lircd replies with a reply package.
+.PP
+Supported commands:
+.TP 4
+.B SEND_ONCE \fI<remote control> <button name> [repeats]\fR
+tells lircd to send the IR signal associated with the given \fIremote
+control\fR and \fIbutton name\fR, and then repeat
+it \fIrepeats\fR times.
+ \fIrepeats\fR is a decimal number between 0
+and repeat_max.
+The latter can be given as a --repeat-max command line argument to lircd,
+and defaults to 600.
+If \fIrepeats\fR is not specified or is less than the minimum number of
+repeats for the selected remote control, the minimum value will be used.
+.PP
+.TP 4
+.B SEND_START \fI<remote control name> <button name>\fR
+tells lircd to start repeating the given button until it receives a
+SEND_STOP command.
+However, the number of repeats is limited to repeat_max. lircd won't
+accept any new send commands while it is repeating.
+.TP 4
+.B SEND_STOP \fI<remote control name> <button name>\fR
+tells lircd to abort a SEND_START command.
+.TP 4
+.B LIST \fI[remote control]\fR
+without arguments lircd replies with a list of all defined remote
+controls.
+Given a remote control argument, lircd replies with a
+list of all keys defined in the given remote.
+.TP 4
+.B SET_INPUTLOG \fI[path]\fR
+Given a path, lircd will start logging all received data on that file.
+The log is printable lines as defined in mode2(1) describing pulse/space
+durations.
+Without a path, current logfile is closed and the logging is stopped.
+.TP
+.B DRV_OPTION \fIkey\fR \fIvalue\fR
+will make lircd invoke the drvctl_func(DRVCTL_SET_OPTION, option) with
+option being made up by the parsed key and value.
+The return package reflects the outcome of the drvctl_func call.
+.TP
 .B SIMULATE \fIkey data\fR
-Given \fIkey data\fR, instructs lircd to send this to all
+Given \fIkey data\fR, instructs lircd to send the given data to all
 clients i.  e., to simulate that this key has been decoded.
 The \fIkey data\fR must be formatted exactly as the packet described in
 [SOCKET BROADCAST MESSAGES FORMAT], notably is the number of digits in
@@ -257,12 +353,12 @@ This command is only accepted if the --allow-simulate command line
 option is active.
 .TP
 .B SET_TRANSMITTERS \fItransmitter mask\fR
-Make lircd invoke the drvctl_func(LIRC_SET_TRANSMITTER_MASK, &channels),
+makes lircd invoke the drvctl_func(LIRC_SET_TRANSMITTER_MASK, &channels),
 where channels is the decoded value of \fItransmitter mask\fR. See
 lirc(4) for more information.
 .TP 4
 .B VERSION
-Tell lircd to send a version packet response.
+tells lircd to send a version packet response.
 .PP
 The protocol guarantees that broadcasted messages won't interfere with
 reply packets. But broadcasts may appear at any point between packets.
@@ -280,7 +376,7 @@ The format of the reply packet is
   n
   n lines of data]
   END
-.fi
+.if
 .PP
 If the command was successful, data is only sent for the commands that
 return some information. Note that a packet containing 0 lines of data
@@ -346,3 +442,5 @@ lirc-setup(1)
 lircd.conf(5)
 .br
 irrecord(1)
+.br
+lirc(4)

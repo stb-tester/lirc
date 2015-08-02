@@ -58,7 +58,7 @@ W | +------------------------+ +----------+ +-------------------------+
     <UL>
       <LI><B>/dev/lirc:</B><BR>
         <P>
-          This is documented in the <a href="lirc.html">lirc(4)</a>manpage.
+          This is documented in the <a href="lirc.html">lirc(4)</a> manpage.
         </P>
       </LI>
       <LI><B>/var/run/lirc/lircd:</B><BR>
@@ -77,181 +77,42 @@ W | +------------------------+ +----------+ +-------------------------+
       </li>
     </UL>
 
-    <A NAME="lirc_dev"></A><HR>
-    <H1 ALIGN="CENTER">Writing TV card drivers using lirc_dev</H1>
-    <HR WIDTH="70%">
-    <P>
-    The TV card drivers  been upstreamed to the kernel, see the
-    <a href="https://www.kernel.org/doc/htmldocs/media_api/lirc_dev.html">
-    kernel documentation.</a>
-    </P>
+    <!-- Writing LIRC Drivers ++++++++++++++++++++++++++++++++++++++++++++ -->
+    <hr/>
+    <A NAME="drivers"></A>
+    <H1 ALIGN="CENTER">Writing LIRC userspace drivers</H1>
+    <p>
+      Since 0.9.1, lirc user-space drivers (plugins) are loaded dynamically
+      and compiled out-of-tree. Refer to the <a href="driver-api.html">
+      Driver API</a>, the last chapter.
+    </p>
 
     <!-- Writing LIRC Applications +++++++++++++++++++++++++++++++++++++++ -->
     <hr/>
     <A NAME="applications"></A>
     <H1 ALIGN="CENTER">Writing Applications for LIRC</H1>
     <P>
+      Since 0.9.0 the lirc kernel drivers have been upstreamed to the
+      kernel. So, while developing kernel drivers might be important
+      from a LIRC perspective, it's no longer part of this project. </li>
+    <P>
       As LIRC is able to both receive and send IR commands there are
-      two possible types of applications. Programs that send IR
-      commands like <em>xrc</em> and <em>irsend</em> or programs that
-      receive commands like <em>irexec</em>, <em>irxevent</em> and
-      <em>irpty</em>.  Both types of applications will have to connect
-      to the lircd daemon using the socket interface usually located
-      in /var/run/lirc/lircd. Communication on the socket uses human
-      readable format. The end of a line is indicated by a newline
-      character.
-    </P>
-    <P>
-      Whenever lircd receives a IR signal it will broadcast the
-      following string to each client:</P>
-    <PRE>
-  &lt;code&gt; &lt;repeat count&gt; &lt;button name&gt; &lt;remote control name&gt;</PRE>
-    <P>
-      <em>code</em> is a 64-bit encoding (in hexadecimal
-      representation) of the IR signal. It's usage in applications is
-      deprecated and should be ignored. The <em>repeat count</em>
-      shows how long the user has been holding down a button. The
-      counter will start at 0 and increment each time a new IR signal
-      has been received. The <em>button name</em> and <em>remote
-      control name</em> are defined in the lircd config file. Their
-      purpose should be quite self-explanatory. They must not contain
-      any whitespace.<BR>
-
-      The only other situation when lircd broadcasts to all clients is
-      when it receives the SIGHUP signal and successfully re-reads its
-      config file. Then it will send a SIGHUP packet to its clients
-      indicating that its configuration might have changed. This
-      feature is e.g.,  used in <em>xrc</em> to rebuild the
-      list of supported remote controls each time lircd's
-      configuration changes. The format of the packet will be
-      explained later.
-    </P>
-    <P>
-      <i>NOTE: As of 0.9.2+, this way of sending data is obsolete since
-      sending is supported directly in the API. See the
-      <a href="../api-docs">API documentation</a></i>
-    </P>
-    <P>
-      Applications that want to send out IR commands can use the
-      following commands:
-      </P>
-    <PRE>
-  SEND_ONCE &lt;remote control name&gt; &lt;button name&gt; [&lt;repeat count&gt;]
-  SEND_START &lt;remote control name&gt; &lt;button name&gt;
-  SEND_STOP &lt;remote control name&gt; &lt;button name&gt;</PRE>
-    <P>
-      The SEND_ONCE directive tells lircd to send the IR signal
-      associated with the given remote control and button name, and then
-      repeat it <var>repeat count</var> times. <var>repeat count</var> is
-      a decimal number between 0 and <var>repeat_max</var>. The latter
-      can be given as a command line argument to lircd, and defaults
-      to 600.  If <var>repeat count</var> is
-      not specified or is less than the minimum number of repeats
-      for the selected remote control, the minimum value will be
-      used. SEND_START tells lircd to start repeating the
-      given button until it receives a SEND_STOP command. However, the
-      number of repeats is limited to <var>repeat_max</var>. lircd
-      won't accept any new send commands while it is repeating.
-    </P>
-    <P>
-      lircd also understands the following commands:
-    </P>
-    <PRE>
-  VERSION
-  LIST [&lt;remote control name&gt;]</PRE>
-    <P>
-      The response to the VERSION command will be a packet containing
-      lircd's version.<BR>
-
-      The LIST command without further arguments can be used to get a
-      list of all remote controls known to lircd. If a name of a
-      supported remote control is given as argument all buttons of the
-      given remote control are listed in the reply packet. Have a look
-      at <em>xrc</em> for an example how this can be used.
-    </P>
-    <P>
-      There still remains to explain the format of lircd's reply
-      packets. Here is a formal description of the packets:
-    </P>
-    <PRE>
-  BEGIN
-  &lt;command&gt;
-  [SUCCESS|ERROR]
-  [DATA
-  n
-  n lines of data]
-  END</PRE>
-    <P>
-      The protocol guarantees that broadcasted messages won't
-      interfere with reply packets. But broadcasts may appear at any
-      point between packets. <em>command</em> is the command lircd is
-      currently processing. Its an exact copy of the command the
-      client application has sent. The only exception are SIGHUP
-      packages where <em>command</em> is substituted with SIGHUP. Note
-      that SIGHUP packages may appear just after you have sent a
-      command to lircd, so you have to make sure you don't confuse
-      them with replies. SIGHUP packages come without any further data
-      while each reply to a command contains either SUCCESS or ERROR
-      indicating the result of processing the command. In case of an
-      error the following data is a message explaining the
-      problem. This message can be used to create an error message for
-      the user.<BR>
-
-      If the command was successful, data is only sent for the
-      commands that return some information. Note that a packet
-      containing 0 lines of data can be a valid reply.
-    </P>
-
-    <!-- Writing LIRC Applications +++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="library"></A><HR>
-
-    <H2 ALIGN="CENTER">The lirc_client library</H2>
-    <HR WIDTH="70%">
-
-    <P>
-      If you only want to make your application to send or receive
-      IR commands and if you don't want to mess with all the protocol stuff
-      you can use the <a href="lirc_client.html" >lirc_client api</a>.
-
-    </P>
-
-    <A NAME="lircrcd"></A><HR>
-    <H1 ALIGN="CENTER">lircrcd protocol</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      lircrcd syntactically uses the same protocol as lircd described
-      in the last section. It supports the following commands:
-    </P>
-    <DL>
-      <DT>IDENT <em>ident</em></DT>
-      <DD>
-        <P>
-          Each program connecting to lircrcd identifies itself using
-          this program. <em>ident</em> is the string that is used in
-          the prog token inside the .lircrc file.
-        </P>
-      </DD>
-      <DT>CODE <em>code</em></DT>
-      <DD>
-        <P>
-          When the client receives the <em>code</em> string from lircd
-          it will send it to lircrcd and will receive back the
-          applicable config string from the .lircrc config file. It
-          should resend the CODE command until nothing is returned
-          back which means that nothing (more) should happen in
-          response to <em>code</em>. This command is used each time
-          the lirc_code2char() function is called by a client.
-        </P>
-      </DD>
-      <DT>GETMODE</DT>
-      <DD>
-        <P>
-          lircrcd will return the current mode string.
-        </P>
-      </DD>
-    </DL>
+      two possible types of applications: programs that send IR
+      commands liked <em>irsend</em> or programs that
+      receive commands like <em>irexec</em>. </p>
+    <p>
+      In both cases, the lirc_client api can be used, supporting both
+      sending and receiving of data. Refer to the <a href="../api-docs">
+      API documentation</a> and the <a href="lirc_client.html" >
+      lirc_client api</a>.</p>
+    <p>
+      Another way is to connect directly to lircd's output socket and
+      use the command interface. This is common in older code, often
+      to send data (the ability to send data was added to the API
+      0.9.2). The lircd socket interface is described in the
+      <a href="lircd.html">lircd manpage</a>. Note that the routines
+      in the client API can be used to send and receive arbitrary
+      commands, not just to send IR data.</p>
 
     <A NAME="config"></A><HR>
     <H1 ALIGN="CENTER">Note for configuration application developers</H1>
@@ -262,13 +123,3 @@ W | +------------------------+ +----------+ +-------------------------+
       See configs/README for documentation of the format. The lirc-setup
       tool has example code for parsing the files in configs/.
     </P>
-
-    <!-- New remotes++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <UL>
-      <LI>
-         The general lirc bugtracker is at the
-            <a href=https://sourceforge.net/p/lirc/tickets> sourceforge
-            website</a>. Please refer to this to get a list of actual bugs.
-      </LI>
-    </UL>
