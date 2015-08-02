@@ -47,12 +47,6 @@ pixelview_la_SOURCES             = pixelview.c
 plugin_LTLIBRARIES              += silitek.la
 silitek_la_SOURCES               = silitek.c
 
-plugin_LTLIBRARIES              += simreceive.la
-simreceive_la_SOURCES            = simreceive.c
-
-plugin_LTLIBRARIES              += simsend.la
-simsend_la_SOURCES               = simsend.c
-
 plugin_LTLIBRARIES              += slinke.la
 slinke_la_SOURCES                = slinke.c
 
