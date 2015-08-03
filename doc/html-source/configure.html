@@ -2,142 +2,18 @@
 
     <A NAME="lircd.conf_format"></A><HR>
     <H1 ALIGN="CENTER">The lircd.conf file format</H1>
-    <HR WIDTH="70%">
 
     <P>
-      A description of the  format is available in the lircd.conf(5) manpage.
-      In fact you probably  don't need to know anything about it except that
+      A description of the  format is available in the
+      <a href="lircd.conf.html"> lircd.conf(5)</a> manpage.
+      In fact you probably don't need to know anything about it except that
       it's maybe the most important part of the package.
-    </P>
-
-    <!-- multiple devices ++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="multiple"></A><HR>
-    <H1 ALIGN="CENTER">Using multiple different devices simultaneously</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      There are some situations when you might want to use multiple
-      devices with LIRC simultaneously. E.g. you might have a TV card
-      receiver and want to control your set-top box with a home-brew
-      serial port transmitter at the same time. Or you might have a
-      serial port receiver connected to your PC and a different
-      network connected receiver (UDP, different LIRC/WinLIRC
-      instance) in a different room.
-    </P>
-    <P>
-      The configuration depends much on the type of devices you want
-      to use. If you are using devices that require a kernel module,
-      then you should first compile and install LIRC individually for
-      each device, basically just to get all required kernel modules
-      installed. The further steps depend on which user-space driver
-      is used in lircd for your devices. Most devices (actually all
-      devices that use a kernel module) use the <em>default</em>
-      driver.  You should check if the drivers
-      you want are listed now with <em>lircd --driver=?</em>. You
-      should get something like this:
-    </P>
-<pre>
-> lircd --driver=?
-Driver `?' not supported.
-Supported drivers:
-        audio
-        bte
-        creative
-        creative_infracd
-        default
-        dev/input
-        dsp
-        ea65
-        irman
-        livedrive_midi
-        livedrive_seq
-        logitech
-        mp3anywhere
-        null
-        pcmak
-        pinsys
-        pixelview
-        silitek
-        tira
-        udp
-        uirt2
-        uirt2_raw
-</pre>
-    <P>
-      If you want to use more than one device that uses a kernel
-      module you should now have a look at the character device setup
-      in /dev/. Each LIRC kernel module provides a device with major
-      number 61 and a minor number beginning at 0 which is counted up
-      every time a new driver is loaded (note: both the major number
-      and the minor number concept are subject to change in future
-      LIRC releases). If you want to use two devices then the LIRC
-      related files in /dev/ should look something like this (this
-      might be done automatically if you are using devfs or sysfs):
-    </P>
-<pre>
-&gt; ls -l /dev/lirc*
-crw-r--r--    1 root     root      61,   0 Apr 25  2001 /dev/lirc0
-crw-r--r--    1 root     root      61,   1 Nov  6 19:24 /dev/lirc1
-</pre>
-    <P>
-      You can create new entries by running:
-    </P>
-<pre>
-&gt; mknod /dev/lirc2 c 61 2
-</pre>
-    <P>
-      For each device you want to use you have to start an individual
-      lircd instance. If you want to receive events from all receivers
-      at one socket interface you have to connect the different lircd
-      interfaces with an additional TCP/IP socket. This could look
-      e.g. like this:
-    </P>
-<pre>
-&gt; lircd --driver=default --device=/dev/lirc1 --output=/var/run/lirc/lircd1 \
-    --pidfile=/var/run/lirc/lircd1.pid --listen
-&gt; lircd --driver=default --device=/dev/lirc --output=/var/run/lirc/lircd \
-    --pidfile=/var/run/lirc/lircd.pid --connect=localhost:8765
-</pre>
-    <P>
-      All events will now be visible at /var/run/lirc/lircd. The second lircd
-      instance connects to the first instance using a TCP/IP
-      socket. The default port is 8765. It can be changed by providing
-      an optional parameter to the <em>--listen</em> switch. If you
-      have more lircd instances you want to connect to, you can
-      provide multiple <em>--connect</em> parameters to the last lircd
-      instance. Please note that lircd will not relay events received
-      from one lircd to another. So you can't daisy-chain
-      lircds. Instead you need a star topology setup.
-    </P>
-      In order to check each lircd instance individually if events are
-      being received, just use irw providing the according socket
-      interface on the command line:
-<pre>
-&gt; irw /var/run/lirc/lircd1
-</pre>
-    <P>
-      Also using a special lircd instance to send infra-red commands
-      is quite easy: use the --device command line option of irsend to
-      provide the desired socket interface.
-    </P>
-    <P>
-      The only situation where the described procedure will not work
-      is when you have two devices that both use a kernel driver that
-      can only handle one device at once like e.g. lirc_serial,
-      lirc_sir or lirc_parallel. You can still make it work with a
-      trick by compiling the affected driver multiple times using
-      different names and different major numbers. You will find
-      detailed instructions how to achieve this by searching the
-      mailing list. Lifting this limitation is one of the todo items
-      for future releases.
     </P>
 
     <!-- lircmd.conf +++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="lircmd.conf"></A><HR>
     <H1 ALIGN="CENTER">Configuring lircmd (the LIRC mouse daemon)</H1>
-    <HR WIDTH="70%">
 
     <P>
       <em>lircmd</em> can be used to emulate a mouse with your remote
@@ -273,7 +149,6 @@ EndSection</PRE>
 
     <A NAME="lircmd.conf_format"></A><HR>
     <H1 ALIGN="CENTER">The lircmd.conf file format</H1>
-    <HR WIDTH="70%">
 
     <P>
       The config file for lircmd is quite simple. Just look at the
@@ -375,7 +250,6 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
 
     <A NAME="lircrc_format"></A><HR>
     <H1 ALIGN="CENTER">The .lircrc file format</H1>
-    <HR WIDTH="70%">
 
     <P>
       At this point all you need are the tools, which react on the
@@ -707,3 +581,23 @@ lircrc_class default
       a first line in the file <code>#! lircrcd</code> From 0.9.2+, the
       support for this deprecated and it will be removed in an upcoming
       release.</p>
+
+    <A NAME="sending"></A><HR>
+    <H1 ALIGN="CENTER">Sending infrared signals</H1>
+
+    <P>
+      The LIRC package contains the <A HREF="irsend.html">irsend</A> tool for
+      sending infrared signals to e.g. your TV or CD player. For
+      reliable transmission a good config file is even more important
+      than for receiving. A discussion of all the infrared protocols
+      is way beyond the scope of this manual but when creating a
+      config file at least read the <A HREF="help.html">hints</A> at the
+      end of this manual. You can find exact timing specifications for most i
+      common protocols inside the remotes/generic/ directory in the lirc-remotes
+      database.
+    </P>
+    <P>
+      LIRC also provides interfaces to develop applications which sends
+      data. Sine 0.9.2, the primary interface is the
+      <a href="lirc_client.html">client API</a>.
+    </P>
