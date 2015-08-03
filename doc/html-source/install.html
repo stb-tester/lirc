@@ -15,8 +15,11 @@
     <A NAME="dependencies"></A><HR>
     <H1 ALIGN="CENTER">Dependencies</H1>
 
-    <p>
-      <b>Mandatory dependencies</b>
+    <P>
+      First, lirc is packaged for all major linux distributions. If you
+      just want to use lirc, you should be able to install it like any
+      other package. This way, you don't have to look at the
+      dependencies, build and installation description found here.
     </p>
     <p>
       There are a few mandatory dependencies, all of which
@@ -71,7 +74,6 @@
    </P>
 
     <A NAME="kernel"></A>
-    <hr>
     <H1 ALIGN="CENTER">Kernel</H1>
 
     <P>
@@ -84,36 +86,16 @@
       and should be available on any reasonably updated system. However,
       some are in the staging area; if they are part of your kernel
       depends on the distro you use (unless of course if you compile
-      your own kernel).
-    <P>
+      your own kernel).  </P>
     <P>
       There are example and test kernel modules in the drivers/
       directory. None of these are required for regular LIRC use, but
-      are supposed to be helpful while testing or writing drivers.
-    </P>
+      they are supposed to be helpful while testing or writing drivers.</P>
     <P>
       If you want to use a home-brew receiver, an Anir Multimedia
       Magic, a Packard Bell receiver, the IRdeo or if you want to use
       the SIR IrDA driver, I suggest that you use the lirc_serial
-      or lirc_sir module kernel. Usually the serial port driver grabs all
-      ports it auto-detects as soon as it is loaded and the LIRC
-      modules won't be able to use any of them.
-    </P>
-    <P>
-      There are two solutions for this problem. Either you load the
-      LIRC module before the kernel serial port driver is loaded
-      (that's why you have to compile it as a module) or you call
-      <em>setserial /dev/ttySx uart none</em> to release the according
-      port. setserial usually is already called during boot-up in some
-      init script whose location depends on the distribution you
-      use.  If you tell setserial to
-      configure a port that is already claimed by a LIRC module, the
-      kernel serial driver will steal the port from the LIRC module
-      and LIRC will stop working. So check your setserial
-      configuration to only configure available ports. Debian users
-      should adjust their <em>/etc/serial.conf</em>.
-    </P>
-
+      or lirc_sir kernel module. </p>
     <P>
       <B>TV cards:</B> To use any remote control receivers connected
       directly to a bttv based TV card you will need a working bttv
@@ -123,44 +105,6 @@
       information the bttv module gives us. This means that you should
       pay attention that your TV card is detected correctly by bttv.
     </P>
-
-    <!-- Supported Hardware ++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="hardware"></A><HR>
-    <H1 ALIGN="CENTER">Supported Hardware</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      Generally speaking everything that can receive or send infrared
-      signals can be supported by LIRC. The project began with support
-      for home-brew receivers and transmitters for the serial port and
-      later support for analogous hardware for the parallel port was
-      added. At that time the focus of the project was to provide an
-      infrared solution that is both very cheap and easy to
-      assemble. The following links point to instructions how to build
-      your own receiver/transmitter.
-    </P>
-
-    <UL>
-      <LI><A HREF="receivers.html">
-          Building a serial port receiver</A></LI>
-      <LI><A HREF="transmitters.html">
-          Building a serial port transmitter</A></LI>
-      <LI><A HREF="parallel.html">
-          Building a parallel port transceiver</A></LI>
-    </UL>
-
-    <P>
-      Current versions of LIRC now support many more commercially
-      available solutions. Examples includes the Irman, built-in IrDA ports
-      or TV cards. Drivers for even more hardware are likely to appear
-      in the future. If you are a programmer who wants to maintain
-      such a driver you are welcome to join the project.
-    </P>
-    <P>
-      There are example and test kernel modules in the drivers/
-      directory. None of these are required for regular LIRC use, but
-      they are supposed to be helpful while testing or writing drivers.</P>
 
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -175,8 +119,9 @@
     </P>
     <P>
       When running the configure script, please pay attention at its
-      output.  After having configured the package just type
-     <em>make</em> and lean back.
+      output.  Specifically, at the very end it prints a list of
+      the enabled functionality. After having configured the package just type
+     <em>make</em>.
     </P>
 
     <P>
@@ -186,8 +131,8 @@
     </P>
     <P>
       Installing the compiled programs is really easy, just type
-      <em>make install</em>. All binaries  and  configuration
-      files should be copied to its proper destination
+      <em>sudo make install</em>. All binaries  and  configuration
+      files should be copied to their proper destinations.
     </P>
      <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -214,161 +159,6 @@
     <p>
       This is described in the <a href="configuration-guide.html">
       configuration guide</a>.
-
-    <P>
-      Other configuration aspects includes adjusting the file permissions of
-      <em>/var/run/lirc/lircd</em> (this is the Unix domain socket that clients
-      use to connect to lircd) so others than <em>root</em> can
-      connect to lircd. Either edit lirc_options.conf or use the
-      --permissions command line option e. g., </P>
-    <PRE>
-        lircd --permission 666  &lt;other options&gt;
-    </PRE>
-    <P>
-      should do. You can also create a special group for this purpose.
-      Since 0.9.2, it's possible to run lircd without root permissions.
-      For this to work you might need to install udev rules making
-      /dev/lirc0 accessible for the lirc user. There are example files
-      in contrib/ for this.
-    </P>
-    <P>
-      Finally you might want to add <em>/usr/local/lib</em> to
-      <em>/etc/ld.so.conf</em> so the <em>lirc_client</em> library is
-      found by the run-time linker. Don't forget to call
-      <em>ldconfig</em> afterwards for the change to take effect.
-    </P>
-
-    <!-- Testing +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
-
-    <A NAME="testing"></A><HR>
-    <H1 ALIGN="CENTER">Testing your hardware &amp; configuration</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      If you have build the infrared hardware yourself you are
-      probably eager to find out if it really works. If you have not
-      build the hardware yourself you can skip the first test. For
-      most receivers it even won't work because it makes no
-      sense.
-    </P>
-
-    <P>
-      Type <em>su</em> to get root privileges and start <em>mode2</em>
-      (<B>Warning:</B> don't confuse mode2 with mode3: mode3 will set
-      your video card to a vesa mode using the vesa bios
-      calls...). This should load the kernel module into the kernel
-      and display the infrared signals. Hold your remote control to
-      your infrared receiver and press some buttons. You should see an
-      output like this (the values of your remote will probably be
-      different):
-    </P>
-
-    <PRE>
-        pulse 93
-        space 4965
-        pulse 108
-        space 4969
-        pulse 93
-        space 7496
-        pulse 93
-        space 7489
-        pulse 93
-        space 47915
-        pulse 138
-        space 7475
-        pulse 93
-        space 7494
-        pulse 93</PRE>
-    <P>
-      If you don't see anything, try to find out: (a) if you selected
-      the correct driver with the correct settings (I/O base address,
-      IRQ), (b) if you use a remote which works and (c) if your
-      hardware works. The voltage input of the infrared receiver
-      should be 5V +/- 0.5V, the output pin of the receiver should be
-      about 0.5V less than the input voltage.
-    </P>
-
-    <P>
-      From time to time there should be long spaces (&gt;30000). If you
-      can see very long pulses this usually means that sense auto
-      detection of your serial port IR receiver circuit has
-      failed. You can override sense auto detection by loading the
-      device driver with the following option:</P>
-
-    <P>
-      <em>modprobe lirc_serial sense=0</em> if your receiver circuit is active
-      high or<BR>
-
-      <em>modprobe lirc_serial sense=1</em> if your receiver circuit is active
-      low.
-    </P>
-
-    <P>
-      Well, the driver seems to work, now let's test if lircd also
-      does its job. This only works, if lircd uses a <A
-      HREF="configure.html#lircd.conf">config file</A> which fits to
-      your remote control. Use <A
-      HREF="irrecord.html"><em>irrecord</em></A> in the case the LIRC
-      distribution doesn't provide a config file suitable for your
-      remote and it still is not available at the LIRC homepage. A
-      more detailed discussion of creating new config files is
-      available in the section about, you guess it: <A
-      HREF="help.html#new_remote">Adding new remote controls</A>.
-    </P>
-
-    <P>
-      Then start the decoder daemon with (make sure it is in your
-      path): <em>lircd</em> [config file]
-    </P>
-
-    <P>
-      The following program dumps the decoded key codes from lircd to
-      stdout: <em>irw</em>
-    </P>
-
-    <P>
-      This looks like this (depending on your remote):
-    </P>
-    <PRE>
-        0000000000f40bf0 00 1_DOWN ANIMAX
-        0000000000f40bf0 01 1_DOWN ANIMAX
-        0000000000f40bf0 02 1_DOWN ANIMAX
-        0000000000f40bf0 03 1_DOWN ANIMAX
-        0000000000f40bf0 04 1_DOWN ANIMAX
-        0000000000f40bf0 05 1_DOWN ANIMAX
-        0000000000748bf0 00 1_UP ANIMAX
-        0000000000748bf0 01 1_UP ANIMAX
-        0000000000748bf0 02 1_UP ANIMAX
-        0000000000718ef0 00 RED_BUTTON_UP ANIMAX</PRE>
-    <P>
-      If the driver test did work, but you now see nothing, then check
-      <em>/var/log/lircd</em>. If you still see nothing suspicious
-      add a --debug=10 option and look at the log file again.
-    </P>
-
-    <A NAME="sending"></A><HR>
-    <H1 ALIGN="CENTER">Sending infrared signals</H1>
-    <HR WIDTH="70%">
-
-    <P>
-      The LIRC package contains the <A HREF="irsend.html">irsend</A> tool for
-      sending infrared signals to e.g. your TV or CD player. For
-      reliable transmission a good config file is even more important
-      than for receiving. A discussion of all the infrared protocols
-      is way beyond the scope of this manual but when creating a
-      config file at least read the <A
-        HREF="help.html#new_remote">hints</A> at the end of this
-      manual. You can find exact timing specifications for most common
-      inside the remotes/generic/ directory of the LIRC package.
-    </P>
-    <P>
-      If you want a graphical interface for controlling your devices
-      using LIRC, you might have a look at xrc. You can download the
-      xrc package from the LIRC homepage. xrc is a Qt based
-      program. Setting up xrc and Qt is a bit tricky so if you don't
-      manage to compile it you can still use irsend. It has the full
-      functionality you need.
-    </P>
 
     <!-- Uninstall LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 

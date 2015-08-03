@@ -48,6 +48,30 @@
     cases, there are still scenarios when LIRC is the right tool.
     </p>
 
+    <A NAME="hardware"></A><HR>
+    <H2 ALIGN="CENTER">Supported Hardware</H2>
+
+    <P>
+      Generally speaking everything that can receive or send infrared
+      signals can be supported by LIRC. The project began with support
+      for home-brew receivers and transmitters for the serial port and
+      later support for analogous hardware for the parallel port was
+      added. At that time the focus of the project was to provide an
+      infrared solution that is both very cheap and easy to
+      assemble. There is some more info on this in <a href="#appendix-11">
+      Appendix 11</a>
+    <P>
+      Current versions of LIRC now support many more commercially
+      available solutions. As a starter, it can use all devices
+      supported by the kernel. Besides those, it has specific
+      drivers for other devices including the Irman, built-in
+      IrDA ports, TV cards, and consumer devices like Tira
+      and Irtoy.</p>
+     <p>
+      Drivers for even more hardware are likely to appear
+      in the future. If you are a programmer who wants to maintain
+      such a driver you are welcome to join the project.  </P>
+    <P>
 
 
     <A NAME="overall-configuration-decisions"></A><HR>
@@ -428,7 +452,11 @@ remote | kernel |   devinput v        |
            space 350
            ...
         </pre>
-     </li>
+        If you don't see anything, try to find out: (a) if you selected
+        the correct driver b) If the driver needs settings (I/O base
+        address, IRQ) in modprobe.d, (c) if the remote which works and
+        (d) if your hardware works.</li>
+
       <li>
       Update /etc/lirc/lirc_options.conf to use the driver and device:
       <pre>
@@ -548,14 +576,25 @@ remote | kernel |   devinput v        |
   | Application |
   ---------------
 </pre>
-    <p>
-      Using <em>~/.config/lircrc</em>, convert the key symbols to
-      application-specific strings.</p>
-    <p>
-      The first step is to create a simple configuration for just
-      one key for the irexec application, dipping a toe into the water.
-      Create the following file and store it as <em>~/.config/lircrc:</em>
-    <pre>
+       By now you should know the driver and device used when running
+       lircd. Update the configuration file /etc/lirc/lirc_options.conf
+       with the driver and device you have determined. You should then
+       be able to start, stop and inspect the service using:
+<pre>
+          # systemctl start lircd.socket
+          # systemctl stop lircd.socket
+          # systemctl status lircd.socket lircd.service
+          # journalctl -b 0  /usr/sbin/lircd
+</pre>
+    <ul><li>
+      Check that you can start/stop a working service, irw is your friend.
+    </li></ul>
+    <p>Using ~/.config/lircrc, convert the key symbols to application-specific
+      strings. The first step is to create a simple configuration for just
+      one key for the irexec application, dipping a toe into the water.</p>
+    <p> First, we need a lircrc file. Create the following file and store
+      is as ~/.config/lircrc:
+     <pre>
         begin
             remote = mceusb
             button = KEY_RED
@@ -605,7 +644,7 @@ remote | kernel |   devinput v        |
     <p>
     Depending on your application, <a href="lirc-config-tool.html">
     lirc-config-tool</a> might be able to generate a starting point. i
-    See <a href="#appendix-5">appendix 5</a>. </p>
+    See <a href="appendix-5">(below)</a>. </p>
     <p>
     Once the application is up, you might want to exploit LIRC's
     capabilities:
@@ -1189,6 +1228,48 @@ remote | kernel |   devinput v        |
     Creating udev rules is a large topic. Please refer to more
     generic information to resolve problems.
 
+    <h4> Connecting several input capture devices.</h4>
+    For each device you want to use you have to start an individual
+    lircd instance. If you want to receive events from all receivers
+    at one socket interface you have to connect the different lircd
+    interfaces with an additional TCP/IP socket. This could look
+    e.g. like this:
+    </P>
+<pre>
+&gt; lircd --driver=default --device=/dev/lirc1 --output=/var/run/lirc/lircd1 \
+    --pidfile=/var/run/lirc/lircd1.pid --listen
+&gt; lircd --driver=default --device=/dev/lirc0 --output=/var/run/lirc/lircd \
+    --pidfile=/var/run/lirc/lircd.pid --connect=localhost:8765
+</pre>
+
+    <P>
+      All events will now be visible at /var/run/lirc/lircd. The second lircd
+      instance connects to the first instance using a TCP/IP
+      socket. The default port is 8765. It can be changed by providing
+      an optional parameter to the <em>--listen</em> switch. If you
+      have more lircd instances you want to connect to, you can
+      provide multiple <em>--connect</em> parameters to the last lircd
+      instance. Please note that lircd will not relay events received
+      from one lircd to another. So you can't daisy-chain
+      lircds. Instead you need a star topology setup.
+    </P>
+      In order to check each lircd instance individually if events are
+      being received, use irw providing the according socket
+      interface on the command line:
+<pre>
+&gt; irw /var/run/lirc/lircd1
+</pre>
+    <P>
+      The only situation where the described procedure will not work
+      is when you have two devices that both use a kernel driver that
+      can only handle one device at once like e.g. lirc_serial,
+      lirc_sir or lirc_parallel. Resolving this requires recompiling
+      the kernel drivers with different names and device numbers.
+      Lifting this limitation is one of the todo items
+      for future releases.
+    </P>
+
+
 
     <A NAME="appendix-10"></A>
     <h3 align="center">A10 : Configuration files</h3>
@@ -1236,3 +1317,52 @@ remote | kernel |   devinput v        |
        <li><b>modprobe.d/options-*</b>. Contains kernel module options e. g.,
        which serial port the lirc_serial module should use.</li>
      </ul>
+
+    <A NAME="appendix-11"></A>
+    <h3 align="center">A11 : Using home-brew hardware</h3>
+     The LIRC project began as an attempt to create drivers for
+     home-brew hardware. Some links to build such:
+    <UL>
+      <LI><A HREF="receivers.html">
+          Building a serial port receiver</A></LI>
+      <LI><A HREF="transmitters.html">
+          Building a serial port transmitter</A></LI>
+      <LI><A HREF="parallel.html">
+          Building a parallel port transceiver</A></LI>
+    </UL>
+    Using  home-brew hardware in many cases means using the lirc_serial
+    or lirc_parallel driver. These drivers needs configuration such as
+    I/O base address and IRQ. This is done using modprobe, using
+    command line parameters to modprobe(1) or adding files to
+    the modprobe.d(5) directory. The modinfo(1) command provides useful
+    info how to configure the drivers.
+    <p>
+    If there is no output when testing with mode2, there are some things
+    to check:
+    <ul>
+      <li>
+        Is this the correct kernel driver? is there anything useful in
+        dmesg(1)?  </li>
+      <li>
+        Are the kernel driver settings OK? Does modinfo(1) provide any
+        help?</li>
+      <li>
+        Does the remote work? Can you test it with some other hardware?
+        </li>
+      <li> Does the hardware work?  The voltage input of the infrared
+        receiver should be 5V +/- 0.5V, the output pin of the receiver
+        should be about 0.5V less than the input voltage.
+     </ul>
+      From time to time there should be long spaces (&gt;30000). If you
+      can see very long pulses this usually means that sense auto
+      detection of your serial port IR receiver circuit has
+      failed. You can override sense auto detection by loading the
+      device driver with the following option:</P>
+
+    <P>
+      <em>modprobe lirc_serial sense=0</em> if your receiver circuit is active
+      high or<BR>
+
+      <em>modprobe lirc_serial sense=1</em> if your receiver circuit is active
+      low.
+    </P>

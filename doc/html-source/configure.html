@@ -191,20 +191,15 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
     <!-- .lircrc file format ++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="lircrc_format"></A><HR>
-    <H1 ALIGN="CENTER">The <em>lircrc</em> file format</H1>
+    <H1 ALIGN="CENTER">The .lircrc file format</H1>
 
     <P>
-      The <em>lircrc</em> file is used to map the key symbols defined
-      in <em>lircd.conf</em> to application-specific strings. Thus,
-      this file cannot be configured until lircd has been
-      configured to provide proper key symbols as displayed by
-      <a href="irw.html">irw</a>.</p>
-    <p>
-      The <em>lircrc</em> file should be placed in the home
-      directory as <em>~/.config/lircrc</em>. Optionally you
-      can create a system-wide configuration file located in
-      <em>/etc/lirc/lircrc</em> which will be used when no
-      <em>lircrc</em>file can be found in the user's home directory. The idea
+      At this point all you need are the tools, which react on the
+      signals decoded by lircd. To do this you need a file called
+      <em>.lircrc</em>. It should be placed in your home
+      directory. Optionally you can create a system-wide configuration
+      file located in /etc/lirc/lircrc, which will be used when no
+      .lircrc file can be found in the user's home directory. The idea
       is to have configuration information of all clients in one
       place. That lets you keep a better overview of clients and
       simplifies the use of modes explained later.
