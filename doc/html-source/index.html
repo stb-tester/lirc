@@ -36,41 +36,42 @@
         <li> <A HREF="configuration-guide.html#key-symbols-to-app-strings">
            Converting key symbols to application strings</a></li>
         <li> <A HREF="configuration-guide.html#appendixes">
-           Appendixes</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-1">
-           A1: Configuring the kernel</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-2">
-           A2: Finding the event device</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-3">
-           A3: Understanding the driver table</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-4">
-           A4: Normalizing the lircd.conf</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-5">
-           A5: Generating the .lircrc</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-6">
-           A6: Addressing changing event devices</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-7">
-           A7: Running irexec</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-8">
-           A8: Using multiple remotes</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-9">
-           A9: Using multiple capture devices</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-10">
-           A10: LIRC configuration files</a></li>
-        <li> <A HREF="configuration-guide.html#appendix-11">
-           A11: Using home-brewn hardware</a></li>
+           Appendixes</a>
+           <ul>
+             <li> <A HREF="configuration-guide.html#appendix-1">
+                A1: Configuring the kernel</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-2">
+                A2: Finding the event device</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-3">
+                A3: Understanding the driver table</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-4">
+                A4: Normalizing the lircd.conf</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-5">
+                A5: Generating the .lircrc</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-6">
+                A6: Addressing changing event devices</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-7">
+                A7: Running irexec</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-8">
+                A8: Using multiple remotes</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-9">
+                A9: Using multiple capture devices</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-10">
+                A10: LIRC configuration files</a></li>
+             <li> <A HREF="configuration-guide.html#appendix-11">
+                A11: Using home-brewn hardware</a></li>
+           </ul></li>
         </UL>
         <BR>
       </LI>
       <LI>
         <B><A HREF="configure.html">Configuration reference</A></B><BR>
-<p/>
+        <BR>
         <UL TYPE="disc">
           <LI><A HREF="configure.html#lircd.conf_format">lircd.conf file format</A></LI>
-          <LI><A HREF="configure.html#lircmd.conf">Configuring lircmd</A> (lircmd - the LIRC mouse daemon)</LI>
+          <LI><A HREF="configure.html#lircmd.conf">Configuring lircmd</A></LI>
           <LI><A HREF="configure.html#lircmd.conf_format">lircmd.conf file format</A></LI>
-          <LI><A HREF="configure.html#lircmd.conf_format">Configuring LIRC tools</A></LI>
-          <LI><A HREF="configure.html#lircrc_format">.lircrc file format</A></LI>
+          <LI><A HREF="configure.html#lircrc_format">lircrc file format</A></LI>
           <LI><A HREF="configure.html#sending">Sending infrared signals</A></LI>
         </UL>
         <BR>
@@ -79,7 +80,7 @@
       <LI>
         <B><a href="programs.html">Manpages</a></B>
         <br/>
-        <a href=programs.html#programs-overview>Overview</a>
+        <a href="programs-overview.html">Programs and Drivers Overview</a>
         <br/>
         <A HREF="programs.html#list">Programs and tools</A>
         <UL TYPE="disc">
@@ -87,9 +88,6 @@
           <LI><A HREF="irdb-get.html">irdb-get</A></LI>
           <LI><A HREF="irexec.html">irexec</A></LI>
           <LI><A HREF="irpty.html">irpty</A></LI>
-          <LI><A HREF="irsimsend.html">irsimsend</A></LI>
-          <LI><A HREF="irtestcase.html">irtestcase</A></LI>
-          <LI><A HREF="irxevent.html">irxevent</A></LI>
           <LI><A HREF="irrecord.html">irrecord</A></LI>
           <LI><A HREF="irsend.html">irsend</A></LI>
           <LI><A HREF="irsimsend.html">irsimsend</A></LI>
@@ -99,8 +97,9 @@
           <LI><A HREF="lirc-lsplugins.html">lirc-lsplugins</A></LI>
           <LI><A HREF="lirc-lsremotes.html">lirc-lsremotes</A></LI>
           <LI><A HREF="lirc-setup.html">lirc-setup</A></LI>
-          <LI><A HREF="lirc-lsplugins.html">lirc-lsplugins</A></LI>
-          <LI><A HREF="lirc-lsremotes.html">lirc-lsremotes</A></LI>
+          <LI><A HREF="lircd.html">lircd</A></LI>
+          <LI><A HREF="lircmd.html">lircmd</A></LI>
+          <LI><A HREF="lircrcd.html">lircrcd</A></LI>
           <LI><A HREF="mode2.html">mode2</A></LI>
           <LI><A HREF="xmode2.html">xmode2</A></LI>
         </UL>
@@ -110,8 +109,10 @@
           <LI><A HREF="lircd.conf.html">lircd.conf</A></LI>
         </UL>
          <A HREF="programs.html#driver_list">Driver documentation</A>
+        <UL class="driver-toc"/>
      </LI>
-<p/>
+
+<br/>
       <LI>
         <B><A HREF="technical.html">Technical</A></B><BR>
 <p/>
@@ -129,10 +130,11 @@
         <ul type="disc">
         <li><a href="driver-api.html">User space driver API. </a></li>
         <li><a href="lirc_client.html">lirc_client API. </a></li>
-        <li><a href="../api-docs">lirc library API documentation</a></li>
+        <li><a href="api-docs"> lirc library API documentation</a></li>
         </ul>
       </li>
-<p/>
+<br/>
+
       <LI>
         <B><A HREF="help.html">Getting additional information</A></B><BR>
 <p/>
@@ -144,7 +146,6 @@
         <BR>
       </LI>
     </OL>
-<hr>
 <p>
 
     Copyright (C) 1999-2002 Christoph Bartelmus (<A

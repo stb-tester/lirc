@@ -42,7 +42,14 @@ dist_website_html_DATA  = $(generated_html) \
                           html-source/lirc.css \
                           lirc.org/parallel.html \
                           lirc.org/receivers.html \
-                          lirc.org/transmitters.html
+                          lirc.org/transmitters.html \
+                          lirc.org/ir-audio.html \
+                          lirc.org/audio-alsa.html \
+                          lirc.org/faq.html \
+                          lirc.org/favicon.ico \
+                          lirc.org/pictures.html \
+                          lirc.org/pinout_TRM1038.txt \
+                          lirc.org/improved_transmitter.html
 
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
@@ -51,10 +58,8 @@ endif
 website_imagedir        = $(docdir)/lirc.org/images
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html) \
-                          lirc.org/parallel.html \
-                          lirc.org/receivers.html \
-                          lirc.org/transmitters.html
+nodist_html_DATA        = $(generated_html)
+
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
@@ -71,18 +76,52 @@ endif
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)
 
+imagedir                = $(docdir)/images
+dist_image_DATA         = images/atwf83.jpg \
+                          images/audio_transmitter.png \
+                          images/audio_wave.png \
+                          images/diode.gif \
+                          lirc.org/images/ir-audio.png \
+                          images/lirc.gif \
+                          images/marb18.jpg \
+			  images/banner_en_1.gif \
+                          lirc.org/images/d.jpg \
+                          lirc.org/images/front.jpg \
+                          lirc.org/favicon.ico \
+                          lirc.org/images/top3.jpg \
+                          lirc.org/images/IR-mouse1.jpg \
+                          lirc.org/images/IR-mouse2.jpg \
+                          lirc.org/images/lirclogo.gif \
+                          lirc.org/images/lirc1.jpg \
+                          lirc.org/images/lirc2.jpg \
+                          lirc.org/images/lirc3.jpg \
+                          lirc.org/images/better_transmitter.gif \
+                          lirc.org/images/improved_transmitter.gif \
+                          lirc.org/images/simple_transmitter.gif \
+                          lirc.org/images/schematics.gif \
+                          lirc.org/images/screenshot.gif \
+                          lirc.org/images/screenshot.jpg \
+                          lirc.org/images/screenshot1.gif \
+                          lirc.org/images/tsop173x.png \
+                          lirc.org/images/irrcv_board.gif
+
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 
 install-data-hook: install-api-docs
 	ln -sf ../images $(DESTDIR)/$(htmldir)/images
+	ln -sf ../lirc.org $(DESTDIR)/$(htmldir)/lirc.org
+	ln -sf ../api-docs/html/index.html \
+	     $(DESTDIR)$(website_htmldir)/api-docs
+	@rm -f $(DESTDIR)$(website_htmldir)/lirc.org
+	ln -sf .. $(DESTDIR)$(website_htmldir)/lirc.org
 
 install-api-docs:
 if HAVE_DOXYGEN
 	cd $(DESTDIR)$(websitedir); \
 	    tar xzf api-docs.tar.gz && rm api-docs.tar.gz
-	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(docdir)/api-docs
+	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(htmldir)/api-docs
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(docdir)/api-docs
 endif
@@ -176,6 +215,7 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
+                           $(srcdir)/html-source/iguanair_driver.html \
                            $(srcdir)/html-source/irtoy_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/no-api-docs.html \
@@ -248,6 +288,7 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/imon_driver.html \
                            html/index.html \
                            html/install.html \
+                           html/iguanair_driver.html \
                            html/irtoy_driver.html \
                            html/lirc_client.html \
                            html/no-api-docs.html \
@@ -284,6 +325,7 @@ website_files           =  lirc.org/audio-alsa.html \
                            lirc.org/pictures.html \
                            lirc.org/pinout_TRM1038.txt \
                            lirc.org/receivers.html \
+                           lirc.org/Remote-Control-XMMS.pdf \
                            lirc.org/robots.txt \
                            lirc.org/software.html \
                            lirc.org/transmitters.html \

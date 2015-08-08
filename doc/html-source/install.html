@@ -15,11 +15,8 @@
     <A NAME="dependencies"></A><HR>
     <H1 ALIGN="CENTER">Dependencies</H1>
 
-    <P>
-      First, lirc is packaged for all major linux distributions. If you
-      just want to use lirc, you should be able to install it like any
-      other package. This way, you don't have to look at the
-      dependencies, build and installation description found here.
+    <p>
+      <b>Mandatory dependencies</b>
     </p>
     <p>
       There are a few mandatory dependencies, all of which
@@ -28,50 +25,43 @@
 
     <ul>
       <li>Building directly from the git source tree requires
-          <em>autoconf</em>,<em>automake</em> and
-          <em>libtool</em>>.</li>
+          <em>autoconf</em> and <em>automake</em>.</li>
       <li>Compilation and linking requires the GNU toolchain
           including <em>make</em>, <em>gcc</em>, <em>g++</em>
           and <em>ld</em>.</li>
-      <li>The build requires python3. If the installed package does
-          not provide a python3 link (e. g., just python3.3)
-          the <em>--enable-python3-fix</em>  installs a
-          wrapper.</li>
-      <li>Building without kernel headers is not tested, and might
-          cause all sorts of problems. </li>
+      <li>The build requires python3.</li>
+      <li>Several scripts need the python3 PyYaml package at
+          http://pyyaml.org/wiki/PyYAML.</li>
       <li>xsltproc </li>
      </ul>
      <p><b>Optional dependencies</b></p>
      If these are missing, ./configure can cope with it and still
      build LIRC in a more or less limited way.
      <ul>
-      <li>Several scripts need the python3 PyYaml package at
-          http://pyyaml.org/wiki/PyYAML.</li>
-      <li>Overall, python3 is.required for the build </li>
-      <li>The build also needs man2html (although it adjusts without it)
-          and xsltproc. </li>
-      <li>The configuration script needs python3-gi and thus also the Gtk
-          libs. Theese are not required for the build, though. </li>.
-    </ul>
-
-    <P>
-      If you want to compile and use all tools, you also need an
-      installed version of the  X11 header files (needed by
-      <em>irxevent</em> and <em>xmode2</em>) The configure script
-      will notify you if some necessary files are missing and the
-      according tools won't be compiled.
-    </P>
-
-    <P>
-      <B>Irman (=UIR) :</B> To use your Irman with LIRC you need the
-      latest <A HREF="http://www.lirc.org/software/snapshots/">
-      <em>libirman</em></A> library. At the time this has been written
-      the current libirman version was 0.4.3.  To build, the irman
-      library must exist as a dynamic .so module. At the time of writing
-      this is true for the Fedora package, but not for Debian. configure
-      checks for the library, and won't build the irman driver without
-      it.
-   </P>
+      <li>Generating the HTML manpages requires man2html. </li>
+      <li>Generating the API documentation requires Doxygen. </li>
+      <li>The <em>lirc-setup</em> GUI configuration tool
+          needs python3-gi and thus also the Gtk
+          libs. These are not required for the build, though. </li>
+      <li>Building the X11 GUI tools like <em>irxevent</em> and
+          <em>xmode2</em> requires the X11 header files. </li>
+       <li>
+          The <em>Irman (=UIR)</em> driver requires libirman available at
+         <A HREF="http://www.lirc.org/software/snapshots/"> <em>libirman</em>
+         </A>To build, the irman library must exist as a dynamic .so module.
+           At the time of writing this is true for the Fedora package, but
+           not for Debian. You can build and install the
+           library locally directly from the sources
+           to walk around problems with the packaged version. </li>
+       <li>
+         The <em>ftdi</em> driver requires libftdi from
+         <a href="http://www.intra2net.com/de/produkte/opensource/ftdi/">
+         http://www.intra2net.com/de/produkte/opensource/ftdi/</a></li>
+       <li>
+         The <em>iguanair</em> driver requires libiguanair from
+         <a href="http://iguanaworks.net/ir">http://iguanaworks.net/ir
+         </a></li>
+     </ul>
 
     <A NAME="kernel"></A>
     <H1 ALIGN="CENTER">Kernel</H1>
@@ -86,7 +76,7 @@
       and should be available on any reasonably updated system. However,
       some are in the staging area; if they are part of your kernel
       depends on the distro you use (unless of course if you compile
-      your own kernel).  </P>
+      your own kernel).</P>
     <P>
       There are example and test kernel modules in the drivers/
       directory. None of these are required for regular LIRC use, but
@@ -105,6 +95,14 @@
       information the bttv module gives us. This means that you should
       pay attention that your TV card is detected correctly by bttv.
     </P>
+    <p>
+      <b>kernel driver conflicts</b>. Some LIRC user-space drivers
+     conflicts with the kernel drivers. Running:
+<pre>
+     grep conflicts configs/*.conf
+</pre>
+     creates a list of conflicting drivers.
+
 
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -117,23 +115,47 @@
       The former setup.sh script is dropped in favor of a standard
       ./configure, make, make install sequence.
     </P>
-    <P>
-      When running the configure script, please pay attention at its
-      output.  Specifically, at the very end it prints a list of
-      the enabled functionality. After having configured the package just type
-     <em>make</em>.
-    </P>
+    <p>
+      When building directly from git, a first required step to
+      create ./configure and some other files is </p>
+<pre>
+           ./autogen.sh
+</pre>
+      Whether using git sources or just using a distributed tarball, the
+      next steps are the canonical
+<pre>
+            ./configure
+            make
+            sudo make install
+</pre>
+    Notes:
+    <ul>
+      <li>
+        When running the configure script, please pay attention at its
+        output.  Specifically, at the very end it prints a list of
+        the enabled functionality.</li>
+      <li>
+        Running configure without options will install lirc in /usr/local
+        according to GNU standards. However, many examples in this manual
+        as well as other documentation are assuming that ./configure ran
+        with the <em>--prefix=/usr</em> option, installing in /etc/lirc,
+        /usr/bin etc.</li>
+    </ul>
+    <A NAME="check"></A><HR>
+    <H1 ALIGN="CENTER">Checking the build</H1>
 
-    <P>
-      <B>Note:</B> You won't find a configure script in the source repo
-      version of LIRC. You will have to generate it first by executing
-      <em>./autogen.sh</em>.
-    </P>
-    <P>
-      Installing the compiled programs is really easy, just type
-      <em>sudo make install</em>. All binaries  and  configuration
-      files should be copied to their proper destinations.
-    </P>
+     Since the dynamic drivers are not linked during the build, it's
+     recommended to check that the expected drivers are built and can
+     be loaded using
+<pre>
+             cd tools; ./lirc-lsplugins -U ../plugins/.libs
+</pre>
+     <p>
+     This will create a list of the all drivers available, and also
+     possible link errors not revealed during the build.
+     <em>lirc-lsplugins</em> has a -h option providing help, and
+     <em> nroff -man ../doc/man/lirc-lsplugins.1 | more </em>
+     provides more complete info.</p>
      <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="configuration"></A><HR>
@@ -158,7 +180,7 @@
     </ul>
     <p>
       This is described in the <a href="configuration-guide.html">
-      configuration guide</a>.
+      configuration guide</a>.</p>
 
     <!-- Uninstall LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 

@@ -67,12 +67,14 @@
 
     <h3>Test and debug tools</h3>
     <ul>
-      <li> <a href="mode2.html">mode2</a> monitors the data sent from
+      <li> <a href="mode2.html">mode2</a> can monitor the data sent from
          the kernel to lircd. It displays either timing information or, if
          the hardware decodes the signals, the decoded values.</li>
       <li>
-         <a href="irw.html">irw</a> monitors the data sent from lircd to
-         the applications, normally in the /var/run/lirc/lircd socket. </li>
+         <a href="irw.html">irw</a> can monitor the data sent from lircd to
+         the applications, normally in the /var/run/lirc/lircd socket. Since
+         this socket supports multiple connections  it can be used together
+         with other user programs. </li>
       <li>
          <a href="ircat.html">ircat</a> connects to same socket as irw. However,
          it displays the application strings delivered to the application after
@@ -88,9 +90,6 @@
          durations) in a file. This file can be used with irpipe to send
          the same data to lircd.</li>
       <li>
-         <a href="irsimreceive.html">irsimreceive</a> can "receive" from a file
-         e. g., created by mode2(1) or irsimrecieve(1).</li>
-      <li>
          <a href="irtestcase.html">irtestcase</a> can log the data from
          a remote together with the decoded symbols. It can also send the
          data to lircd and check that the decoded symbols matches the
@@ -104,48 +103,48 @@
     to generate the complete list of drivers with some basic info.</p>
     <ul>
       <li>
-         <a href="alsa-usb_driver.html">alsa-usb</a> receives IR data
+         <a href="alsa-usb_driver.html">alsa-usb</a> can receive IR data
          over the microphone input, using the alsa drivers.</li>
       <li>
-         <a href="atilibusb_driver.html">atilibusb</a> receives RF data
+         <a href="atilibusb_driver.html">atilibusb</a> can receive RF data
          with various hardware using the X10 chip.</li>
       <li>
-         <a href="atwf83_driver.html">atwf83</a> receives IR data using
+         <a href="atwf83_driver.html">atwf83</a> can receive IR data using
           Aureal ATWF@83 ESKY chip.</li>
       <li>
-         <a href="audio_driver.html">audio</a> sends IR data using
+         <a href="audio_driver.html">audio</a> can send IR data using
          standard audio hardware.</li>
       <li>
-         <a href="default_driver.html">default</a> sends and receives IR
+         <a href="default_driver.html">default</a> can send and receive IR
          data using any device supported by the kernel.
       <li>
-         <a href="devinput_driver.html">devinput</a> receives IR data
+         <a href="devinput_driver.html">devinput</a> can receive IR data
          from any remote supported by ir-keytable(1) with a minimum of
          configuration.</li>
       <li>
-         <a href="file_driver.html">file driver</a> logs data (pulse
-         durations) otherwise sent, and can also be used to "receive"
-         simulated data from a file.</li>
+         <a href="file_driver.html">file driver</a> can log data (pulse durations)
+         otherwise sent, and also be used to "receive" simulated data on
+         file.</li>
       <li>
-         <a href="imon-24g_driver.html">imon-24g</a> handles data from
+         <a href="imon-24g_driver.html">imon-24g</a> can handle data from
          the iMON 2.4G DT/LT remote.</li>
       <li>
-         <a href="imon_driver.html">imon</a> handles data from various
+         <a href="imon_driver.html">imon</a> can handle data from various
          iMON remotes.</li>
       <li>
-         <a href="iguanair_driver.html">iguanair</a> receives and sends
+         <a href="iguanair_driver.html">iguanair</a> can receive and send
          IR data using the IguanaIR devices.</li>
       <li>
-         <a href="irtoy_driver.html">irtoy</a> recieves and sends IR data
+         <a href="irtoy_driver.html">irtoy</a> can recieve and send IR data
          using the Dangerous Prototypes IrToy device.</li>
       <li>
-         <a href="srm7500atilibusb_driver.html">srm7500atilibusb</a>
-         receives RF data using a Philips SRM-7500 capture device.</li>
+         <a href="srm7500atilibusb_driver.html">srm7500atilibusb</a> can
+         receive RF data using a Philips SRM-7500 capture device.</li>
       <li>
-         <a href="tira_driver.html">tira</a> sends and receives IR data
+         <a href="tira_driver.html">tira</a> can send and receive IR data
          using the Home Electronics Ira/Tira capture device.</li>
       <li>
-         <a href="udp_driver.html">udp</a> receives data over a network
+         <a href="udp_driver.html">udp</a> can  receive data over a network
          UDP port using a specific protocol.</li>
     </ul>
     <h3>Devices and data formats</h3>

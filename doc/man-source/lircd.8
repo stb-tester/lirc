@@ -21,13 +21,17 @@ path is interpreted from /etc/lirc. The default configuration file
 includes all files in /etc/lircd.conf.d.
 .IP
 Each remote which should be decoded by lircd usually requires that a
-specfiic file is used e. g., by copying it to /etc/lirc/lirc.conf.d/.
+specific file is used e. g., by copying it to /etc/lirc/lirc.conf.d/.
 The format is described in lircd.conf(5). Configuration files could be
 found using irdb-get(1) or lirc-setup(1). It's also possible to
 generate a config file using irrecord(1)
 
 .SH OPTIONS
 Common options:
+.TP 4
+\fB-O, --options-file\fR <\fIpath\fR>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
 .TP 4
 \fB-d, --device\fR <\fIdevice\fR>
 Select the character device which lircd should read from. The default
@@ -47,13 +51,13 @@ The driver to use.  Using
 lists all available drivers, see DRIVER LOADING below.
 .TP
 \fB-h, --help\fR
-Displays short help message.
-.P
+Displays short thelp message.
+.IP "" 0
 Other options:
 .TP 4
 \fB-a, --allow-simulate\fR
-Enable the SIMULATE command which can be issued using irsend(1) or
-the client API. This will allow simulating arbitrary IR events
+Enable the SIMULATE command which can
+be issued using irsend(1). This will allow simulating arbitrary IR events
 from the command line. Use this option with caution because it will give all
 users with access to the lircd socket wide control over the system.
 E.g., if you have configured your system to shut down by a button press
@@ -61,9 +65,9 @@ on your remote control, everybody will be able to shut down
 your system from the command line.
 .TP 4
 \fB-c, --connect\fR [\fIhost[:port]][,[host[:port]]\fR]
-Connects to other lircd servers that provide a network
-socket at the given host and port number (see \fI--listen\fR). The
-number of such connections is currently limited to 100.
+Allows you to connect to other lircd servers that provide a network
+socket at the given host and port number. The number
+of such connections is currently limited to 100.
 The connecting lircd instance will receive IR events from the lircd
 instance it connects to. To connect to multiple servers, add them as a
 comma separated list.
@@ -71,6 +75,16 @@ comma separated list.
 \fB-e, --effective-user\fR <\fIuid\fR>
 If started as user root, lircd drops it privileges and runs as user <uid>
 after opening files etc.
+.TP 4
+\fB-D, --loglevel\fR [\fIlevel\fR]
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+.IP
+The level can also be an integer in the range 3 (almost no messages) to
+10.
 .TP 4
 \fB-A, --driver-options\fR \fIkey:value[|key:value...]\fR
 Set one or more options for the driver. The argument is a list of
@@ -98,25 +112,11 @@ Select the lircd daemon log file. logfile is either the string 'syslog'
 indicating that syslog(1) should be used or a log file path. The default
 is to use syslog.
 .TP 4
-\fB-D, --loglevel\fR [\fIlevel\fR]
-Determine the amount of logging information. \fIlevel\fR can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'.
-.IP
-The level can also be an integer in the range 3 (almost no messages) to
-10.
-.TP 4
-\fB-O, --options-file\fR <\fIpath\fR>
-File containing default values for all options. A relative path is
-interpreted from current directory. See [FILES] below.
-.TP 4
 \fB-o, --output\fR <\fIoutput socket\fR>
 Select Unix domain socket, which lircd will write remote key codes to.
 The default currently is /var/run/lirc/lircd.
 .TP 4
-.B \-p, \-\-permission
+\fB\-p, \-\-permission\fR <\fIperm\fR>
 Gives the file permission of /var/run/lirc/lircd if it has to be
 created in octal representation. See chmod(1).
 If no \-\-permission option is given when the
@@ -127,8 +127,8 @@ the socket already exists this option has no effect.
 \fB-p, --pidfile\fR <\fIpath\fR>
 Select the lircd daemon pid file, defaults to /var/run/lirc/lircd.pid.
 .TP
-\fB-U --plugindir\fR <\fIpath\fR>
-Sets the directory from which lircd loads it's
+\fB-U --plugindir\fR
+The --plugindir option sets the directory from which lircd loads it's
 userspace drivers. These are *.so files, by default found as described
 under DRIVER LOADING. The argument is a :-separated search path.
 .TP 4
@@ -242,36 +242,41 @@ The log is printable lines as defined in mode2(1) describing pulse/space
 durations.
 Without a path, current logfile is closed and the logging is stopped.
 .TP
-.B DRV_OPTION \fIkey\fR \fIvalue\fR
-Make lircd invoke the drvctl_func(DRVCTL_SET_OPTION, option) with
-option being made up by the parsed key and value.
-The return package reflects the outcome of the drvctl_func call.
+\fB-Y, --dynamic-codes  [EXPERIMENTAL]\fR
+Allows one to use codes which have been decoded for one remote but
+are not defined in lircd.conf.  New codes are dynamically
+created  with a default name. This feature is experimental and subject
+to all sorts of changes. It has not ben tested thoroughly.
 .TP
-.B -e, --effective-user <uid>
+\fB-e, --effective-user\fR <\fIuid\fR>
 If started as user root, lirc drops it privileges and runs as user <uid>
 after opening files etc.
 
 .SH SOCKET BROADCAST MESSAGES FORMAT
 
+.P
 When decoding a button press or receiving a SIGHUP and thus re-parsing
 the lircd.conf file lircd broadcasts messages to all connected clients.
-.PP
+.P
 For each decoded button press lircd makes a package available on the
 socket. This is printable data formatted as:
 .nf
-<code> <repeat count> <button name> <remote control name>
-.if
-.PP
-e. g.,
-.PP
+        <code> <repeat count> <button name> <remote control name>
+.fi
+.P
+e.g.,
 .nf
-0000000000f40bf0 00 KEY_UP ANIMAX
-.if
-.PP
+        0000000000f40bf0 00 KEY_UP ANIMAX
+.fi
+
+
+
+The fields are:
+
 .TP 4
 .I code
-is a 16 hexadecimal digits encoding of the IR signal.
-It's usage in applications is deprecated and it  should be ignored.
+A 16 hexadecimal digits number encoding of the IR signal.
+It's usage in applications is deprecated and it should be ignored.
 .TP 4
 .I repeat count
 shows how long the user has been holding down a button. The counter
@@ -291,10 +296,10 @@ packet to its clients indicating that its configuration might have changed.
 The sighup packet is three lines
 .PP
 .nf
-BEGIN
-SIGHUP
-END
-.if
+        BEGIN
+        SIGHUP
+        END
+.fi
 .PP
 
 .SH SOCKET COMMAND INTERFACE
@@ -376,7 +381,7 @@ The format of the reply packet is
   n
   n lines of data]
   END
-.if
+.fi
 .PP
 If the command was successful, data is only sent for the commands that
 return some information. Note that a packet containing 0 lines of data
