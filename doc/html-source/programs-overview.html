@@ -1,0 +1,158 @@
+    <A NAME="programs-overview"></A>
+    <H2 ALIGN="CENTER">LIRC manpages and user-space drivers overview</H2>
+    <p>
+    LIRC contains a quite large number of tools.  This chapter tries to
+    provide an overview.
+
+
+    <h3>User programs</h3>
+    <ul>
+      <li>
+         <a href="irsend.html">irsend</a> sends data using
+         lirc from the command line.</li>
+      <li>
+         <a href="irpty.html">irpty</a> emulates keyboard
+         input from a tty using a remote. </li>
+      <li>
+         <a href="irrecord.html">irrecord</a> can create a new
+         lircd.conf for a remote which isn't available in the database.</li>
+    </ul>
+    <h3>Daemons</h3>
+     <ul>
+      <li>
+         <a href="lircd.html">lircd</a> is the main LIRC daemon and runs
+         as a systemd service. It usually reads from a kernel device like
+         /dev/lirc0 or /dev/ttyACM0 and presents the decoded data on an
+         output socket like /var/run/lirc/lircd.</li>
+      <li>
+         <a href="lircrcd.html">lircrcd</a> is a helper daemon which
+         coordinates the LIRC state as defined in lircrc in different
+         clients. It's managed, started  and stopped by lircd.</li>
+      <li>
+         <a href="lircmd.html">lircmd</a> runs as a systemd service.
+         It reads data from the lircd output socket and generates
+         mouse events, so that a remote can emulate a mouse.</li>
+      <li>
+         <a href="irexec.html">irexec</a> normally runs as a user
+         daemon in the session. It is used to run arbitrary commands
+         on various button presses.</li>
+    </ul>
+    <a name="config"/>
+    <h3>Configuration tools</h3>
+    <ul>
+      <li>
+         <a href="irdb-get.html">irdb-get</a> can list, search and
+         download lircd.conf remote configuration files from the
+         <a href="http://sf.net/p/lirc-remotes">remotes database</a>.</li>
+      <li>
+         <a href="lirc-setup.html">lirc-setup</a> is a GUI tool
+         which can create the different configuration files after some
+         user dialogs.</li>
+      <li>
+         <a href="lirc-lsplugins.html">lirc-lsplugins</a> lists the plugins
+         and drivers which are actually available in an installation. It
+         also provides info on the drivers, including drivers that can't be
+         loaded.</li>
+      <li>
+         <a href="lirc-lsremotes.html">lirc-lsremotes</a> can parse
+         lircd.conf configuration files and act as a static checker. It is
+         also used to provide dense, parseable keyword information about
+         remote config files.</li>
+      <li>
+         <a href="lirc-config-tool.html">lirc-config-tool</a> can generate
+         a first shot for lircrc configuration file for some applications.
+         It can also be used to sanitize old lircd.conf files which does
+         not use symbols from the official namespace.</li>
+    </ul>
+
+    <h3>Test and debug tools</h3>
+    <ul>
+      <li> <a href="mode2.html">mode2</a> can monitor the data sent from
+         the kernel to lircd. It displays either timing information or, if
+         the hardware decodes the signals, the decoded values.</li>
+      <li>
+         <a href="irw.html">irw</a> can monitor the data sent from lircd to
+         the applications, normally in the /var/run/lirc/lircd socket. Since
+         this socket supports multiple connections  it can be used together
+         with other user programs. </li>
+      <li>
+         <a href="ircat.html">ircat</a> connects to same socket as irw. However,
+         it displays the application strings delivered to the application after
+         mapping the lircd output using the lircrc file. </li>
+      <li>
+         <a href="irpipe.html">irpipe</a> works together with the irpipe kernel
+         driver. It can be used to feed data to lircd which it can read on
+         /dev/irpipe0. This device works the same way as /dev/lirc0 as seen
+         from lircd. </li>
+      <li>
+         <a href="irsimsend.html">irsimsend</a> can "send" data using a
+         lircd.conf configuration file and store the data (pulse/space
+         durations) in a file. This file can be used with irpipe to send
+         the same data to lircd.</li>
+      <li>
+         <a href="irtestcase.html">irtestcase</a> can log the data from
+         a remote together with the decoded symbols. It can also send the
+         data to lircd and check that the decoded symbols matches the
+         logged ones. </li>
+     </ul>
+    <a name="drivers"/>
+    <h3>User-space drivers</h3>
+    <p>
+    Note that many drivers lacks documentation. Use
+    <a href="lirc-lsplugins.html">lirc-lsplugins</a>
+    to generate the complete list of drivers with some basic info.</p>
+    <ul>
+      <li>
+         <a href="alsa-usb_driver.html">alsa-usb</a> can receive IR data
+         over the microphone input, using the alsa drivers.</li>
+      <li>
+         <a href="atilibusb_driver.html">atilibusb</a> can receive RF data
+         with various hardware using the X10 chip.</li>
+      <li>
+         <a href="atwf83_driver.html">atwf83</a> can receive IR data using
+          Aureal ATWF@83 ESKY chip.</li>
+      <li>
+         <a href="audio_driver.html">audio</a> can send IR data using
+         standard audio hardware.</li>
+      <li>
+         <a href="default_driver.html">default</a> can send and receive IR
+         data using any device supported by the kernel.
+      <li>
+         <a href="devinput_driver.html">devinput</a> can receive IR data
+         from any remote supported by ir-keytable(1) with a minimum of
+         configuration.</li>
+      <li>
+         <a href="file_driver.html">file driver</a> can log data (pulse durations)
+         otherwise sent, and also be used to "receive" simulated data on
+         file.</li>
+      <li>
+         <a href="imon-24g_driver.html">imon-24g</a> can handle data from
+         the iMON 2.4G DT/LT remote.</li>
+      <li>
+         <a href="imon_driver.html">imon</a> can handle data from various
+         iMON remotes.</li>
+      <li>
+         <a href="iguanair_driver.html">iguanair</a> can receive and send
+         IR data using the IguanaIR devices.</li>
+      <li>
+         <a href="irtoy_driver.html">irtoy</a> can recieve and send IR data
+         using the Dangerous Prototypes IrToy device.</li>
+      <li>
+         <a href="srm7500atilibusb_driver.html">srm7500atilibusb</a> can
+         receive RF data using a Philips SRM-7500 capture device.</li>
+      <li>
+         <a href="tira_driver.html">tira</a> can send and receive IR data
+         using the Home Electronics Ira/Tira capture device.</li>
+      <li>
+         <a href="udp_driver.html">udp</a> can  receive data over a network
+         UDP port using a specific protocol.</li>
+    </ul>
+    <h3>Devices and data formats</h3>
+    <ul>
+      <li>
+         <a href="lirc.html">lirc</a>: data formats and ioctl
+          commands for the <em>/dev/lirc[0-9]</em> devices. </li>
+      <li>
+         <a href="lircd.conf.html">lircd.conf</a>: the
+         <em>lircd.conf</em> format. </li>
+    </ul>

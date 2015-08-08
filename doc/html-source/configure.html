@@ -37,113 +37,55 @@
     </P>
 
     <P>
-      lircmd can basically be used with two applications: X11 and gpm<BR>
+      lircmd can basically be used with two applications: X11 and gpm
+      Using gpm makes no sense with a modern X installation since this
+      supports multiple mouses natively.</p>
 
-      Configuration of both is described here:
-    </P>
 
     <H3>X11</H3>
 
-    <H4>3.x</H4>
-    <P>
-      Just put this section in your XF86Config file to use the mouse
-      in addition to your normal one.
-    </P>
-
-    <PRE>
-    Section &quot;XInput&quot;
-        Subsection &quot;Mouse&quot;
-            Protocol    &quot;IntelliMouse&quot;
-            Device      &quot;/var/run/lirc/lircm&quot;
-            DeviceName  &quot;Remote&quot;
-            AlwaysCore
-        EndSubsection
-    EndSection</PRE>
-    <P>
-      Additionally you might have to add
-    </P>
-    <PRE>
-        Buttons 5</PRE>
-    <P>
-      to your normal &quot;Pointer&quot; Section in order to make the
-      wheel buttons work. Of course you have to replace IntelliMouse
-      with IMPS/2 or MouseSystems if you really want to use one of
-      this protocols. Colas Nahaboo's <A
-      HREF="http://colas.nahaboo.net/mouse-wheel-scroll/">X
-      mouse wheel scroll page</A> gives you further information how to
-      make use of your new wheel mouse.
-    </P>
 
     <P>
-      Make sure you use a current version of X11. There seems to be a
-      bug in X version 3.3 that can make X crash if you use both mouse
-      and remote control mouse simultaneously. At least I couldn't
-      reproduce this with other versions. I also received some notes
-      that lircmd does not work with certain X11 versions. But almost
-      always at least one of the protocols did work. So try them all
-      before trying another X11 version. But always remember that you
-      have to modify both XF86Config and lircmd.conf so they use the
-      same protocol.
+      Put this section in your Xorg.conf file to use the lircmd
+      emulated mouse in addition to your normal one.
     </P>
+    <PRE>
+             Section &quot;InputDevice&quot;
+                     Identifier  &quot;LIRC-Mouse&quot;
+                     Driver      &quot;mouse&quot;
+                     Option      &quot;Protocol&quot; &quot;IntelliMouse&quot;
+                     Option      &quot;SendCoreEvents&quot;
+                     Option      &quot;Buttons&quot; &quot;5&quot;
+                     Option      &quot;ZAxisMapping&quot; &quot;4 5&quot;
+             EndSection</PRE>
+     <p>
+    If your distribution does not have uinput enabled by default
+    (i. e., there is a /dev/uinput device) add to the file /etc/modules
+    the entry: </p>
+<pre>
+             uinput
+</pre>
+    To make this device writable for regular users
+    create a new file /etc/udev/rules.d/55-uinput with one line
+<pre>
+             KERNEL=="uinput", MODE="0666"
+</pre>
+    This has security implications. The alternative is to run lircmd as
+    root. In this case this udev rule is not required.
+    <p>
+    Finally, run lircmd with the --uinput option (which can be set in
+    lirc_options.conf).</p>
 
-    <H4>4.x</H4>
-    <P>
-      Put this section in your XF86Config-4 file to use the mouse in
-      addition to your normal one.
-    </P>
-    <PRE>
-Section &quot;InputDevice&quot;
-        Identifier  &quot;LIRC-Mouse&quot;
-        Driver      &quot;mouse&quot;
-        Option      &quot;Device&quot; &quot;/var/run/lirc/lircm&quot;
-        Option      &quot;Protocol&quot; &quot;IntelliMouse&quot;
-        Option      &quot;SendCoreEvents&quot;
-        Option      &quot;Buttons&quot; &quot;5&quot;
-        Option      &quot;ZAxisMapping&quot; &quot;4 5&quot;
-EndSection</PRE>
+    <H3>systemd</H3>
+    LIRC ships with systemd support files. To start lircmd, use
+<pre>
+             # systemd start lircmd.service
+</pre>
+    To make it start at boot time use:
+<pre>
+             # systemd enable lircmd.service
+</pre>
 
-    <P>
-      And add a line to the ServerLayout section like this:
-    </P>
-    <PRE>
-Section &quot;ServerLayout&quot;
-        ...
-        InputDevice    &quot;LIRC-Mouse&quot;           &lt;-- add this line
-EndSection</PRE>
-
-    <H3>gpm</H3>
-
-    <P>
-      You can also e.g. use <em>multimouse</em> (available at <A
-      HREF="ftp://sunsite.unc.edu/">ftp://sunsite.unc.edu/</A> or
-      mirrors) or <em>gpm</em> to use it parallel to your normal
-      mouse. With:
-    </P>
-    <PRE>
-    gpm -t ps2 -R -M -m /var/run/lirc/lircm -t ms3</PRE>
-    <p>or</p>
-    <PRE>
-    gpm -t ps2 -R -M -m /var/run/lirc/lircm -t imps2</PRE>
-    <p>or</p>
-    <PRE>
-    gpm -t ps2 -R -M -m /var/run/lirc/lircm -t msc</PRE>
-    <P>
-      I can use my usual PS/2 mouse and my remote control
-      (IntelliMouse, IMPS/2 or MouseSystems protocol) at the same time
-      to control the mouse pointer.
-    </P>
-
-    <P>
-      <B>Note:</B> If you update lircmd.conf you can send the HUP
-      signal to lircmd:
-    </P>
-    <PRE>
-    killall -HUP lircmd</PRE>
-    <P>
-      This instructs lircmd to reread its config file. The same is
-      true for lircd if you change lircd.conf. lircd will also reopen
-      its log file on SIGHUP.
-    </P>
 
     <!-- lircmd.conf fileformat ++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -249,23 +191,27 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
     <!-- .lircrc file format ++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="lircrc_format"></A><HR>
-    <H1 ALIGN="CENTER">The .lircrc file format</H1>
+    <H1 ALIGN="CENTER">The <em>lircrc</em> file format</H1>
 
     <P>
-      At this point all you need are the tools, which react on the
-      signals decoded by lircd. To do this you need a file called
-      <em>.lircrc</em>. It should be placed in your home
-      directory. Optionally you can create a system-wide configuration
-      file located in /etc/lirc/lircrc, which will be used when no
-      .lircrc file can be found in the user's home directory. The idea
+      The <em>lircrc</em> file is used to map the key symbols defined
+      in <em>lircd.conf</em> to application-specific strings. Thus,
+      this file cannot be configured until lircd has been
+      configured to provide proper key symbols as displayed by
+      <a href="irw.html">irw</a>.</p>
+    <p>
+      The <em>lircrc</em> file should be placed in the home
+      directory as <em>~/.config/lircrc</em>. Optionally you
+      can create a system-wide configuration file located in
+      <em>/etc/lirc/lircrc</em> which will be used when no
+      <em>lircrc</em>file can be found in the user's home directory. The idea
       is to have configuration information of all clients in one
       place. That lets you keep a better overview of clients and
       simplifies the use of modes explained later.
     </P>
     <P>
-      First I will explain the syntax of the .lircrc file itself.  The
-      config file for LIRC tools consists of one or more of the
-      following constructions:
+      First I will explain the syntax of the <em>lircrc</em>file itself.
+      The file consists of one or more of the following constructions:
     </P>
     <PRE>
     begin
@@ -287,7 +233,7 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
       <em>flags</em>) if you press a certain button (<em>remote</em>,
       <em>button</em>) a specified time (<em>repeat</em>,
       <em>delay</em>). By default for each remote signal received the
-      <em>.lircrc </em> config file is read from top to bottom and
+      <em>lircrc</em> config file is read from top to bottom and
       each matching configuration is executed in order of appearance.
     </P>
     <DL>
@@ -427,7 +373,7 @@ end</PRE>
     </DL>
 
     <P>
-      If you press a button on your remote the .lircrc is searched
+      If you press a button on your remote the <em>lircrc</em> is searched
       from top to bottom for matching configurations. Be aware that
       the search is not stopped by a match unless you have specified
       the <em>quit</em> flag in the matching configuration. You should
@@ -444,7 +390,7 @@ end</PRE>
       to read the specified file before resuming the current one:
     </P>
     <PRE>
-include ~/.lirc/xawtv</PRE>
+include ~/.config/lirc/xawtv</PRE>
     <P>
       If the specified filename begins with &quot;~/&quot;,
       &quot;~&quot; will be substituted with the content of the
@@ -453,12 +399,12 @@ include ~/.lirc/xawtv</PRE>
       the C preprocessor do not have special meanings.
     </P>
     <P>
-      Ok, now a simple example for a <em>.lircrc</em> file (supposed
-      you use an AnimaX remote and use the sample files for this
-      remote from the remotes/ directory. If you have another remote
+      A simple example for a <em>lircrc</em> file (supposing
+      you using an AnimaX remote and use the sample files for this
+      remote from the remotes database. If you have another remote
       change <em>remote=</em> and <em>button=</em> according to your
-      remote [this definitions are made in the <em>lircd.conf</em>
-      file] )
+      remote [t definitions are made in the <em>lircd.conf</em>
+      file]):
     </P>
 
     <PRE>
@@ -470,8 +416,8 @@ include ~/.lirc/xawtv</PRE>
         config = echo &quot;Hello world!&quot;
     end</PRE>
     <P>
-      If you have saved this as <em>.lircrc</em> in your home
-      directory, start <em>irexec</em>. Press the button which is
+      If you have saved this as <em>~/.config/lircrc</em> , start
+      <em>irexec</em>. Press the button which is
       selected in the <em>button=</em> line and you will see a 'Hello
       world!' on your screen. As you can see irexec is a simple
       program launcher. Of course you can do a lot more than just
@@ -482,8 +428,8 @@ include ~/.lirc/xawtv</PRE>
     </P>
 
     <P>
-      Differences in the order of configurations in .lircrc can lead to
-      completely different results, as this example shows:
+      Differences in the order of configurations in <em>lircrc</em> can
+      lead to completely different results, as this example shows:
     </P>
     <PRE>
       begin order
@@ -516,10 +462,10 @@ include ~/.lirc/xawtv</PRE>
     <P>
       Both configs are executed, even though the second is outside the mode;
       the quit flag has no effect  - no other config is following it in
-      the .lircrc file.
+      the <em>lircrc</em> file.
     </P>
     <P>
-      Changing the order within the .lircrc to
+      Changing the order within the <em>lircrc</em> to
     </P>
     <PRE>
       begin
@@ -552,18 +498,19 @@ include ~/.lirc/xawtv</PRE>
     </P>
 
     <P>
-      If you start a LIRC client program, it reads your ~/.config/lircrc
+      If you start a LIRC client program, it reads your
+      <em>~/.config/lircrc</em>
       and reacts only on prog= entries which point to itself. All programs
       should give you the possibility to use an alternative config
       file. If you have included more than one program in your
-      .lircrc, then start all these programs, they react only to their
-      according entries in .lircrc. This also leads to a disadvantage
+      <em>lircrc</em>, then start all these programs, they react only to their
+      according entries in <em>lircrc</em>. This also leads to a disadvantage
       of the mode concept. If you don't start all client programs at a
       time the mode they currently are in may differ between
       applications. Also key sequences might not be recognized equally
       because all programs then don't have the same starting point. In
-      order to solve this problem there is the <A
-      HREF="lircrcd.html">lircrcd</A> program since version
+      order to solve this problem there is the
+      <a HREF="lircrcd.html">lircrcd</A> program since version
       0.8.0. lircrcd's purpose is to synchronise all clients and
       maintain a common mode for all applications. In order to use the
       lircrcd feature you have to explicitly enable it by adding the

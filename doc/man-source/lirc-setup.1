@@ -1,11 +1,14 @@
-.TH LIRC-SETUP "1" "Last change: Oct 2014" "lirc-setup @version@" "User Commands"
+.TH LIRC-SETUP "1" "Last change: Aug 2015" "lirc-setup @version@" "User Commands"
 .SH NAME
-lirc-setup - Interactive lirc setup tool
+.P
+\fBlirc-setup\fR - Interactive lirc setup tool
 .SH SYNOPSIS
-.B lirc-setup
-[\fIoutput directory\fR]
+.P
+\fBlirc-setup\fR [\fIoutput directory\fR]
+
 .SH DESCRIPTION
-A simple tool which creates a lirc configuration after
+.P
+A simple GUI tool which creates a lirc configuration after
 some user dialogs which defines driver, device, modprobe
 actions, etc. The results are written as separate files
 in the output directory which defaults to lirc-setup.conf.d
@@ -23,7 +26,7 @@ See the configs/README.
 The output directory. On normal exits this contains at least a
 lircd.conf and lirc_options.conf file. Optional files lirc-modprobe.conf
 and lircmd.conf
-.TP 0
+.P
 Several other support files are downloaded from the lirc website
 as part of the configuration process.
 

@@ -1,28 +1,25 @@
-.TH LIRC-LSPLUGINS "1" "Last change: Sep 2014" "lirc-lsplugins @VERSION" "User Commands"
+.TH LIRC-LSPLUGINS "1" "Last change: Aug 2015" "lirc-lsplugins @VERSION" "User Commands"
 .SH NAME
-lirc-lsplugins - print dynamic modules info
+.P
+\fBlirc-lsplugins\fR - Print dynamic modules info
 .SH SYNOPSIS
-.B lirc-lsplugins
-\fI[-l] [-q] [-U plugindir]\fR
-\fI[drivers]\fR
-.br
-.B lirc-lsplugins
-\fI-e [-q] [-U plugindir]\fR
-.br
-.B lirc-lsplugins
-\fI-e [-q|-p|-h|-v]\fR
+.P
+\fBlirc-lsplugins\fR [\fI-l\fR] [\fI-q\fR] [\fI-U plugindir\fR] [\fIdrivers\fR]
+.P
+\fBlirc-lsplugins\fR -e [\fI-q\fR] [\fI-U plugindir\fR]
+
 .SH DESCRIPTION
 Tool which writes a simple list with info for each driver found. In
 particular, it writes info if a plugin can't be loaded e. g., due to
 unresolved references.
 .P
 The
-\fI[drivers]\fR
+\fIdrivers\fR
 argument is an optional selector which limits the output to matching drivers.
 The match is a glob-type match as done by fnmatch()
 .SH OPTIONS
 .TP
-\fB\-U\fR \fB\-\-plugindir <path>\fR
+\fB\-U\fR \fB\-\-plugindir\fR <\fIpath\fR>
 Use <path> to search for plugins. The path is a':'-separated search path
 similar to e. g., $PATH.
 .TP

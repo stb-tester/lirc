@@ -1,12 +1,18 @@
-.TH irsimsend "1" "Last change: March 2009" "irsimsend @version@" "User Commands"
+.TH irsimsend "1" "Last change: Aug 2015" "irsimsend @version@" "User Commands"
 .SH NAME
-irsimsend- send simulated IR data.
+.P
+\fBirsimsend\fR - Send simulated IR data.
 .SH SYNOPSIS
-.B irsimsend [-v|-h|-c <count>|-U plugindir] irsimsend <configfile>
+.P
+\fBirsimsend\fR [\fI\-v\fR |\fI\-h\fR |\-c \fIcount\fR | \-U \fIplugindir\fR]
+.P
+\fBirsimsend\fR <\fIconfigfile\fR>
 
 .SH DESCRIPTION
-irsimsend is a simple test tool which given a configuration file will
-send all keys defined in that file or the keys listed in another file.
+.P
+\fBirsimsend\fR is a simple test tool which given a lircd configuration
+file will send all keys defined in that file or the keys listed in
+another file.
 The program uses the file driver to log all sent data (pulses/spaces
 durations) into a file 'simsend.out'. The symbols sent are printed on
 stdout.
@@ -14,27 +20,26 @@ stdout.
 .SH OPTIONS
 
 .TP 4
-.B -c, --count  <count>
+\fB-c, --count\fR  \fI<count>\fR
 Repeat each sent signal <count> times.
 
 .TP 4
-.B -U, --plugindir <path>
+\fB-U, --plugindir\fB \fI<path>\fR
 Load drivers from <path>, a ':' separated search path similar to $PATH.
 
 .TP 4
-.B -l,--listfile <path>
+\fB-l,--listfile\fR  \fI<path>\fR
 Send symbols listed in file instead of just the symbols in the config
 file. The file could either be listing a single key symbol per line,
 or have a complete code string like
-.I 000000000000a123 01 KEY_POWER brand
-on each line.
+\fI000000000000a123 01 KEY_POWER brand\fR on each line.
 
 .TP 4
-.B -v , --version
+\fB-v , --version\fR
 Print version and exit.
 
 .TP 4
-.B -h , --help
+\fB.B -h , --help\fR
 Print help message.
 .SH FILES
 
@@ -44,7 +49,7 @@ Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/irsimsend.log
 
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+.P
+The documentation for \fBlirc\fR
 is maintained as html pages. They are located under html/ in the
 documentation directory.

@@ -1,15 +1,18 @@
-.TH irtestcase "1" "Last change: March 2009" "irtestcase @version@" "User Commands"
+.TH irtestcase "1" "Last change: Aug 2015" "irtestcase @version@" "User Commands"
 .SH NAME
-irtestcase - create or check decoding testcases.
+.P
+\fBirtestcas\fRe - Create or check decoding testcases.
 .SH SYNOPSIS
-.B irtestcase [-l lircrc-file -p prog] <socket>
-.br
-.B irtestcase [-l lircrc-file -p prog] -t testdata <socket>
-.br
-.B irtestcase [-v|-h|
+.P
+\fBirtestcase\fR [\fI-l lircrc-file -p prog\fR] <\fIsocket\fR>
+.P
+\fBirtestcase\fR [\fI-l lircrc-file -p prog\fR] -t \fItestdata\fR <\fIsocket\fR>
+.P
+\fBirtestcase\fR [\fI-v\fR|\fI-h\fR]
 
 .SH DESCRIPTION
-irtestcase is a tool which can record keypresses from a remote together
+.P
+\fBirtestcase\fR is a tool which can record keypresses from a remote together
 with the decoded values. Given output from another session, it can
 also verify that the decoding still works as expected.
 .P
@@ -29,26 +32,26 @@ default value (usually /var/run/lirc/lircd).
 .SH OPTIONS
 
 .TP 4
-.B -l, --lircrc  <lircrc config file>
+\fB-l, --lircrc\fR  \fI<lircrc config file>\fR
 Log also applications strings (as ircat(1)) using lircrc type config file.
 
 .TP 4
-.B -p, --prog <program id>
+\fB-p, --prog\fR \fI<program id>\fR
 When using -l/--lircrc, the program name matching the PROG = entries
 in lircrc
 
 .TP 4
-.B -t, --testdata
+\fB-t, --testdata\fR
 Use data i file instead of "live" input from the remote. This can be
 the durations.log file from a previous run, see FILES. It can also
 be logged output from mode2(1).
 
 .TP 4
-.B -v , --version
+\fB-v , --version\fR
 Print version and exit.
 
 .TP 4
-.B -h , --help
+\fB-h , --help\fR
 Print help message.
 
 .SH FILES
@@ -73,7 +76,7 @@ Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/irtestcase.log
 
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+.P
+The documentation for \fBlirc\fR
 is maintained as html pages. They are located under html/ in the
 documentation directory.

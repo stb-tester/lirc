@@ -1,14 +1,17 @@
 .TH IRPIPE "1" "Last change: Aug 2015" "irpipe @version@" "User Commands"
 .SH NAME
-irpipe - tool to send data to lircd over /dev/irpipe kernel device.
+.P
+\fBirpipe\fR - tool to send data to lircd over /dev/irpipe kernel device.
 .SH SYNOPSIS
-irpipe [\fIoptions\fR] <file
-.br
-irpipe --read [\fIoptions\fR] >file
-.br
-irpipe --filter [\fIoptions\fR] <infile >outfile
+.P
+\fBirpipe\fR [\fIoptions\fR] <file
+.P
+\fBirpipe\fR --read [\fIoptions\fR] >file
+.P
+\fBirpipe\fR --filter [\fIoptions\fR] <infile >outfile
 
 .SH DESCRIPTION
+.P
 irpipe is designed to feed data to lircd(8) over a /dev/irpipe device. It's a tool
 to enter test data to lircd in a way which is identical to real data from /dev/lirc
 devices.

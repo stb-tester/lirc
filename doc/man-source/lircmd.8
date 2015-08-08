@@ -1,8 +1,10 @@
 .TH LIRCMD "8" "Last change: Aug 2015" "lircmd @version@" "System Administration Utilities"
 .SH NAME
-lircmd - LIRC mouse daemon translates infrared signals into mouse events
+.P
+\fBlircmd\fR - Translate infrared signals into mouse events.
 .SH SYNOPSIS
-.B lircmd [\fIoptions\fR] [\fIconfig-file\fR]
+.P
+\fBlircmd\fR [\fIoptions\fR] [\fIconfig-file\fR]
 .SH DESCRIPTION
 This daemon can simulate a MouseSystems, IntelliMouse or IMPS/2 type mouse. It
 gets the received buttons from lircd and converts them to mouse events. To
@@ -23,7 +25,7 @@ Display version.
 \fB\-n\fR \fB\-\-nodaemon\fR
 Don't fork to background.
 .TP
-\fB\-s\fR \fB\-\-socket\fR <socket path>
+\fB\-s\fR \fB\-\-socket\fR <\fIsocket path\fR>
 Use alternate lircd socket path.
 .TP
 \fB\-O\fR \fB\-\-options\-file\fR=\fIfile\fR
@@ -36,7 +38,7 @@ of Linux input events. lircmd will open /dev/input/uinput and inject
 the simulated mouse events into the Linux kernel rather than creating
 the /dev/lircm device.
 .TP
-\fB\-D\fR \fB\-\-loglevel\fR
+\fB\-D\fR \fB\-\-loglevel\fR=[\fIlevel\fR]
 Determine the amount of logging information. [level] can be a symbolic
 syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
 also defines three additional levels 'trace', 'trace1' and 'trace2' which
@@ -70,12 +72,13 @@ Byte 4 and 5: 0.
 .SH FILES
 lircmd will use syslogd to output error messages. It depends on your
 system configuration where they will show up.
-
+.P
 The options file is by default /etc/lirc/lirc_options.conf; lircmd handles
 the values under the [lircmd] section in this file. The location can
 be changed using the -O/--options-file command-line option or using the
 environment variable LIRC_OPTIONS_PATH. The values here are used as
 defaults for any option not present on command line.
+.P
 
 .SH DAEMONS
 lircmd is a  daemon. You should start it in some init script
@@ -84,12 +87,13 @@ installed by default there are also example scripts for other distros
 and init systems in the contrib directory. lircmd has to be started after
 lircd as it connects to the socket lircd provides.
 
+.P
 If you start lircd or lircmd from your shell prompt you will usually get
 back immediately to the prompt. This is not an error, daemons always run
 in background.
 
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+.P
+The documentation for \fBlirc\fR
 is also maintained as html pages. They are located under html/ in the
 documentation directory.

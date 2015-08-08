@@ -1,9 +1,9 @@
-.TH IRCAT "1" "Last change: Jun 2015" "ircat @VERSION" "User Commands"
+.TH IRCAT "1" "Last change: Aug 2015" "ircat @VERSION" "User Commands"
 .SH NAME
 ircat - print strings when pressing buttons
 .SH SYNOPSIS
 .B ircat
-[\fIoptions\fR] \fI<prog>\fR
+[\fIoptions\fR] <\fIprog\fR>
 .SH DESCRIPTION
 This program prints config strings to standard output. It can be used
 to provide remote control input to scripts and to debug your .lircrc
@@ -13,13 +13,13 @@ The argument to the program is the program name, as it
 appears in the prog entries in .lircrc.
 .TP
 \fB\-h\fR \fB\-\-help\fR
-display usage summary
+Display usage summary.
 .TP
 \fB\-v\fR \fB\-\-version\fR
-display version
+Display version.
 .TP
-\fB\-c\fR \fB\-\-config=\fR<file>
-set config file
+\fB\-c\fR \fB\-\-config=\fR<\fIfile\fR>
+Set config file.
 .SH EXAMPLES
 If .lircrc contains:
 
@@ -40,6 +40,7 @@ $ ircat myprog
 will print "next_file" (followed by newline) every time the
 button bound to KEY_CHANNELUP is pressed.
 .SH "SEE ALSO"
+.P
 The documentation for
 .B lirc
 is maintained as html pages. They are located under html/ in the

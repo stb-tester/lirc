@@ -41,7 +41,14 @@ dist_website_html_DATA  = $(generated_html) \
                           html-source/lirc.css \
                           lirc.org/parallel.html \
                           lirc.org/receivers.html \
-                          lirc.org/transmitters.html
+                          lirc.org/transmitters.html \
+                          lirc.org/ir-audio.html \
+                          lirc.org/audio-alsa.html \
+                          lirc.org/faq.html \
+                          lirc.org/favicon.ico \
+                          lirc.org/pictures.html \
+                          lirc.org/pinout_TRM1038.txt \
+                          lirc.org/improved_transmitter.html
 
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
@@ -51,10 +58,8 @@ website_imagedir        = $(docdir)/lirc.org/images
 dist_website_image_DATA = $(dist_image_DATA)
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html) \
-                          lirc.org/parallel.html \
-                          lirc.org/receivers.html \
-                          lirc.org/transmitters.html
+nodist_html_DATA        = $(generated_html)
+
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
 endif
@@ -76,9 +81,29 @@ dist_image_DATA         = images/atwf83.jpg \
                           images/audio_transmitter.png \
                           images/audio_wave.png \
                           images/diode.gif \
+                          lirc.org/images/ir-audio.png \
                           images/lirc.gif \
                           images/marb18.jpg \
-			  images/banner_en_1.gif
+			  images/banner_en_1.gif \
+                          lirc.org/images/d.jpg \
+                          lirc.org/images/front.jpg \
+                          lirc.org/favicon.ico \
+                          lirc.org/images/top3.jpg \
+                          lirc.org/images/IR-mouse1.jpg \
+                          lirc.org/images/IR-mouse2.jpg \
+                          lirc.org/images/lirclogo.gif \
+                          lirc.org/images/lirc1.jpg \
+                          lirc.org/images/lirc2.jpg \
+                          lirc.org/images/lirc3.jpg \
+                          lirc.org/images/better_transmitter.gif \
+                          lirc.org/images/improved_transmitter.gif \
+                          lirc.org/images/simple_transmitter.gif \
+                          lirc.org/images/schematics.gif \
+                          lirc.org/images/screenshot.gif \
+                          lirc.org/images/screenshot.jpg \
+                          lirc.org/images/screenshot1.gif \
+                          lirc.org/images/tsop173x.png \
+                          lirc.org/images/irrcv_board.gif
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -86,12 +111,17 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 install-data-hook: install-api-docs
 	ln -sf ../images $(DESTDIR)/$(htmldir)/images
+	ln -sf ../lirc.org $(DESTDIR)/$(htmldir)/lirc.org
+	ln -sf ../api-docs/html/index.html \
+	     $(DESTDIR)$(website_htmldir)/api-docs
+	@rm -f $(DESTDIR)$(website_htmldir)/lirc.org
+	ln -sf .. $(DESTDIR)$(website_htmldir)/lirc.org
 
 install-api-docs:
 if HAVE_DOXYGEN
 	cd $(DESTDIR)$(websitedir); \
 	    tar xzf api-docs.tar.gz && rm api-docs.tar.gz
-	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(docdir)/api-docs
+	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(htmldir)/api-docs
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(docdir)/api-docs
 endif
@@ -120,17 +150,23 @@ $(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
 $(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
-	-test -d man-html || mkdir man-html
+	@mkdir man-html 2>/dev/null || :
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
-	    man2html -M ../html/index.html $${src}.[1-8] | \
-	        sed '1,/^$$/d' | xsltproc --html $(srcdir)/manpage.xsl - > $@
+	    man2html -M index.html -r $${src}.[1-8] | \
+		sed -e '1,/^$$/d' \
+		    -e '/This document was created/i \
+                        <p>'  \
+		    -e '/^Time:/a \
+                        </p>'  \
+		    -e '/HREF/s|".*man[1-9]/\(.*\)[0-9]\.html|"\1html|' | \
+			 xsltproc --html $(srcdir)/manpage.xsl - | \
+			    sed '/href="\.\.\/index.html"/s|\.\./||' >$@
 
 $(nodist_man_MANS): $(man_sources)
-	-test -d man || mkdir man
+	@mkdir man 2>/dev/null || :
 	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
-	    cp $$src $@
-	$(SED) -i "s/@version@/$(VERSION)/" $@
+	    $(SED) "s/@version@/$(VERSION)/" <$$src >$@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
@@ -179,10 +215,12 @@ html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
                            $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
+                           $(srcdir)/html-source/iguanair_driver.html \
                            $(srcdir)/html-source/irtoy_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/no-api-docs.html \
                            $(srcdir)/html-source/programs.html \
+                           $(srcdir)/html-source/programs-overview.html \
                            $(srcdir)/html-source/pronto2lirc.html \
                            $(srcdir)/html-source/srm7500atilibusb_driver.html \
                            $(srcdir)/html-source/technical.html \
@@ -217,6 +255,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/irpipe.html \
                            man-html/irpty.html \
                            man-html/irrecord.html \
+                           man-html/irsimreceive.html \
                            man-html/irsimsend.html \
                            man-html/irsend.html \
                            man-html/irtestcase.html \
@@ -233,9 +272,10 @@ manpage_html            += man-html/ircat.html \
                            man-html/mode2.html
 
 generated_html          =  html/alsa-usb_driver.html \
-                           html/audio-alsa_driver.html \
+                           html/api-general.html \
                            html/atilibusb_driver.html \
                            html/atwf83_driver.html \
+                           html/audio-alsa_driver.html \
                            html/audio_driver.html \
                            html/configuration-guide.html \
                            html/configure.html \
@@ -248,10 +288,12 @@ generated_html          =  html/alsa-usb_driver.html \
                            html/imon_driver.html \
                            html/index.html \
                            html/install.html \
+                           html/iguanair_driver.html \
                            html/irtoy_driver.html \
                            html/lirc_client.html \
                            html/no-api-docs.html \
                            html/programs.html \
+                           html/programs-overview.html \
                            html/pronto2lirc.html \
                            html/srm7500atilibusb_driver.html \
                            html/technical.html \
@@ -276,6 +318,7 @@ website_files           =  lirc.org/cir.html \
                            lirc.org/pictures.html \
                            lirc.org/pinout_TRM1038.txt \
                            lirc.org/receivers.html \
+                           lirc.org/Remote-Control-XMMS.pdf \
                            lirc.org/robots.txt \
                            lirc.org/software.html \
                            lirc.org/transmitters.html \

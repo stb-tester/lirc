@@ -1,14 +1,17 @@
 .TH MODE2 "1" "Last change: Aug 2015" "mode2 @version@" "User Commands"
 .SH NAME
-mode2 - shows pulse/space length or decoded input from infrared drivers
+.P
+\fBmode2\fR - shows pulse/space length or decoded input from infrared drivers
 
 .SH SYNOPSIS
-.B mode2 --driver <driver> --device <device>
+.P
+\fBmode2\fR --driver <\fIdriver\fR> --device <\fIdevice\fR>
 [\fIother options\fR]
-.br
-.B mode2 --raw --device <device>
-[\fIother options\fR]
+.P
+\fBmode2\fR --raw --device <\fIdevice\fR> [\fIother options\fR]
+
 .SH DESCRIPTION
+.P
 The main purpose of these programs is to check operation of your
 home-brew LIRC receiver hardware and to see the IR waveform of the
 remote controller without an expensive oscilloscope. Very useful for
@@ -33,18 +36,18 @@ Read from given device.
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
 Use given driver.
 .TP
-\fB\-m\fR \fB\-\-mode=mode\fR
+\fB\-m\fR \fB\-\-mode\fR=\fImode\fR
 Write pulse/space data as raw config files. Does not affect
 LIRCCODE drivers.
 .TP
-\fB\-s\fR \fB\-\-scope=time\fR
+\fB\-s\fR \fB\-\-scope\fR=\fItime\fR
 Enable 'scope like display with time us per char. Does not
 affect lirccode drivers.
 .TP
 \fB\-k\fR \fB\-\-keep-root\fR
 Don't drop root privileges after opening device. See RUNNING AS ROOT.
 .TP
-\fB\-g\fR \fB\-\-gap=time\fR
+\fB\-g\fR \fB\-\-gap\fR=\fItime\fR
 Treat spaces longer than time as the gap. Time is in microseconds.
 .TP
 \fB\-r\fR \fB\-\-raw\fR
@@ -52,10 +55,10 @@ Access device directly. This is primarely intended to be used with kernel
 drivers i.e., when accessing /dev/lirc* devices. Using other devices might
 work, but is in general undefined.
 .TP
-\fB\-A\fR \fB\-\-driver\-options=key:value[|key:value...]\fR
+\fB\-A\fR \fB\-\-driver\-options\fR=\fIkey:value[|key:value...]\fR
 Set driver-specific option named key to given value.
 .TP
-\fB\-U\fR \fB\-\-plugindir=directory\fR
+\fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
 Load drivers from directory. See DRIVER LOADING.
 .TP
 \fB\-h\fR \fB\-\-help\fR

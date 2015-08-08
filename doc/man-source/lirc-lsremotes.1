@@ -1,10 +1,12 @@
-.TH lirc-lsremotes "1" "Last change: Feb 2015" "lirc-lsremotes @version@" "User Commands"
+.TH lirc-lsremotes "1" "Last change: Aug 2015" "lirc-lsremotes @version@" "User Commands"
 .SH NAME
-lirc-lsremotes - parse lirc configuration files.
+.P
+\fBlirc-lsremotes\fR - parse lirc configuration files.
 .SH SYNOPSIS
-.B  lirc-lsremotes [options] <directory>
-.br
-.B  lirc-lsremotes [options] <file>
+.P
+\fBlirc-lsremotes\fR [\fIoptions\fR] <directory>
+.P
+\fBlirc-lsremotes\fR [\fIoptions\fR] <file>
 
 
 .SH DESCRIPTION
@@ -32,7 +34,7 @@ Print version info
 Print help message.
 .SH EXAMPLES
 Print a status line and possible diagnostics for a file:
-.IP
+.IP "" 4
 .nf
 $ lirc-lsremotes  remotes/hitachi/RM-466E.lircd.conf
 .br
@@ -43,8 +45,10 @@ hitachi;RM-466E.lircd.conf;no_lircmd;no_photo;RM-466E;timing;no_raw
 .P
 List a status line for all remotes under remotes, saving diagnostics into
 a file:
-.IP
+.IP "" 4
+.nf
 $ lirc-lsremotes  remotes > remotes.list 2>warnings.txt
+.fi
 .
 
 .SH "SEE ALSO"

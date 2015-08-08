@@ -1,24 +1,25 @@
-.TH IRW "1" "Last change: Jul 2015" "irw @version@" "User Commands"
+.TH IRW "1" "Last change: Aug 2015" "irw @version@" "User Commands"
 .SH NAME
-irw - sends data from Unix domain socket to stdout
+.P
+\fBirw\fR - Send data from Unix domain socket to stdout
 .SH SYNOPSIS
-.B irw
-[\fIsocket\fR]
+.P
+\fBirw\fR [\fIsocket\fR]
 .SH DESCRIPTION
 
 irw will connect to any Unix domain socket and will print the data that it
 receives to stdout. If you don't give it a socket name argument it will watch
 \//var/run/lirc/lircd. Useful for debugging.
 .TP
-\fB\-h\fR \fB\-\-help\fR
+\fB\-h\fR \fI\-\-help\fR
 display usage summary
 .TP
-\fB\-v\fR \fB\-\-version\fR
+\fB\-v\fR \fI\-\-version\fR
 display version
 .SH SIGNALS
 On receiving SIGUSR1 irw makes a clean exit.
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+.P
+The documentation for \fBlirc\fR
 is maintained as html pages. They are located under html/ in the
 documentation directory.

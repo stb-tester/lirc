@@ -1,6 +1,7 @@
-.TH IREXEC "1" "Last change: Jan 2015" "irexec @version@" "User Commands"
+.TH IREXEC "1" "Last change: Aug 2015" "irexec @version@" "User Commands"
 .SH NAME
-irexec - run programs with one button press
+.P
+\fBirexe\fRc - run programs with one button press
 .SH SYNOPSIS
 .B irexec
 [\fIoptions\fR] [\fIconfig_file\fR]
@@ -36,14 +37,14 @@ Make irexec fork to background. That way you can easily start irexec
 from an init script. In this case you should specify a config file on the
 command line as irexec won't be able to find your home directory.
 .TP 4
-.B -D, --loglevel [level]
+\fB-D, --loglevel\fR [\fIlevel\fR]
 Determine the amount of logging information. [level] can be a symbolic
 syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
 also defines three additional levels 'trace', 'trace1' and 'trace2' which
 gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'. By default, no logging is done.
 .TP 4
-.B -n, --name <name>
+\fB-n, --name\fR <\fIname\fR>
 Use this program name instead of the default 'irexec' as identifier in
 the lircd.conf file.
 .SH ENVIRONMENT
@@ -73,6 +74,7 @@ desktops. If you need to run run restricted commands such as powering
 off the machine, you can use sudo to allow regular users to run specific
 commands. See the Configuration Guide in the html documentation.
 .SH "SEE ALSO"
+.P
 The documentation for
 .B lirc
 is maintained as html pages. They are located under html/ in the
