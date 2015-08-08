@@ -1,11 +1,12 @@
 .TH LIRCRCD "8" "Last change: Aug 2015" "lircrcd @version@" "System Manager Manual"
 .SH NAME
-lircrcd - daemon to handle consistent .lircrc state among client applications
+.P
+\fBlircrcd\fR - Synchronize lircrc state among client applications.
 .SH SYNOPSIS
-.B lircrcd
-[\fIoptions\fR] \fIconfig-file\fR
+.P
+\fBlircrcd\fR [\fIoptions\fR] \fIconfig-file\fR
 .SH DESCRIPTION
-
+.P
 .B lircrcd
 reads the given .lircrc config file and synchronises the mode
 that the LIRC clients such as (\fBirexec\fR(1), \fBirxevent\fR(1) ,
@@ -76,6 +77,7 @@ lircrcd creates its socket(s) in the VARRUNDIR directory, usually
 /var/run/lirc.  The socket basename includes the user UID and the
 string from the lircrc_class option.
 .SH "SEE ALSO"
+.P
 The documentation for
 .B lirc
 is maintained as html pages. They are located under html/ in the

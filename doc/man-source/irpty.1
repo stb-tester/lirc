@@ -1,18 +1,19 @@
-.TH IRPTY "1" "Last change: August 2009" "irpty @version@" "User Commands"
+.TH IRPTY "1" "Last change: Aug 2015" "irpty @version@" "User Commands"
 .SH NAME
-irpty - pseudo tty driver
+.P
+\fBirpty\fR - Pseudo tty driver.
 .SH SYNOPSIS
 .B irpty
 [\fIoptions\fR] \fIconfig_file -- program \fR[\fIargs \fR...]
 .SH DESCRIPTION
-
+.P
 irpty connects to lircd to receive infrared codes and converts them to
 key strokes. E.g. type irpty ~/.config/lircrc \-\- workbone to control the
 CD-player program workbone. Of course you will have to create an
 appropriate config file for this purpose first. The config string will
 be passed to the desired application. Note that you can use escape
-sequences to specify non printable characters. Have a look at the\
- .lircrc file format description for details.
+sequences to specify non printable characters. Have a look at
+the .lircrc file format description for details.
 .SH OPTIONS
 .TP
 \fB\-h\fR \fB\-\-help\fR
@@ -33,7 +34,7 @@ force non\-interactive mode
 \fB\-v\fR \fB\-\-verbose\fR
 verbose mode
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+.P
+The documentation for \fBlirc\fR
 is maintained as html pages. They are located under html/ in the
 documentation directory.

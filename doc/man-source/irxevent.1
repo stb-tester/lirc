@@ -1,32 +1,35 @@
-.TH IRXEVENT "1" "Last change: Feb 2015" "irxevent @version@" "User Commands"
+.TH IRXEVENT "1" "Last change: Aug 2015" "irxevent @version@" "User Commands"
 .SH NAME
-irxevent - infrared X-event sender
+.P
+\fBirxevent\fR - infrared X-event sender
 .SH SYNOPSIS
-.B irxevent
-[\fIoption\fR]... [\fIconfig file\fR]
+.P
+\fBirxevent\fR [\fIoption\fR]... [\fIconfig file\fR]
 .SH DESCRIPTION
-Irxevent is a program that I wrote to send button clicks and key presses to X
+.P
+Irxevent is a program to send button clicks and key presses to X
 applications triggered by a LIRC driven remote control. You can control your
-favorite CD/MP3 player or your TV tuner program or any other X application
+favorite CD/MP3 player, your TV tuner program or any other X application
 that responds to keyboard or mouse input. If you like to you can send emacs
 ^X^S from your armchair.
 
-Irxevent is a complement to irexec and irpty.
+Irxevent is a complement to irexec(1) and irpty(1).
 .SH OPTIONS
 .TP
 \fB\-d\fR \fB\-\-daemon\fR
-fork and run in background
+Fork and run in background
 .TP
 \fB\-h\fR \fB\-\-help\fR
-display usage summary
+Display usage summary
 .TP
 \fB\-V\fR \fB\-\-version\fR
-display version
+Display version
 .SH FILES
+.P
 Irxevent works with the same config file as irexec and irpty
 (~/.config/lircrc). For a complete sample lircrc look at examples/lircrc.
-
-.B Part of your .lircrc could look like this:
+.P
+Part of your .lircrc could look like this:
 
 .nf
 begin
@@ -72,7 +75,7 @@ begin
 end
 .fi
 
-.B Simply said \fIconfig\fB =  lines may look like this:
+Simply said \fIconfig\fR =  lines may look like this:
 
 .nf
 config = Key [shift\-][ctrl\-][alt\-]<key> [Focus] <windowname>
@@ -83,7 +86,7 @@ config = xy_Key <x> <y> [shift\-][ctrl\-][alt\-]<key> [Focus]
         <windowname> | WindowID id | CurrentWindow | RootWindow
 .fi
 
-.B some more examples:
+Some more examples:
 
 .nf
 config = Key Up xawtv
@@ -94,7 +97,7 @@ config = Key ctrl\-c mpg123
 config = Key shift\-Page_Up rxvt
 .fi
 
-.B In BNF this looks like:
+In BNF this looks like:
 
 .RS 3
 .nf
@@ -208,9 +211,15 @@ Placing this line into your .xemacs\-options file should have the same result.
 
 If you have problems sending events please drop me an email.
 .SH AUTHOR
+.P
 Written by Heinrich Langos <heinrich@mad.scientist.com>.
 .SH "SEE ALSO"
-The documentation for
-.B lirc
+
+.TP
+.B xdotool(1)
+invoked from irexec(1), xdotool provides a more flexible alternative
+to irxevent.
+.P
+The documentation for \fBlirc\fR
 is maintained as html pages. They are located under html/ in the
 documentation directory.

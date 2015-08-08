@@ -1,10 +1,12 @@
-.TH IRSEND "1" "Last change: Feb 2015" "irsend @version@" "User Commands"
+.TH IRSEND "1" "Last change: Aug 2015" "irsend @version@" "User Commands"
 .SH NAME
-irsend - basic LIRC program to send infra-red commands
+.P
+\fBirsend\fR - basic LIRC program to send infra-red commands
 .SH SYNOPSIS
-.B irsend
-[\fIoptions\fR] \fIDIRECTIVE REMOTE CODE \fR[\fICODE\fR...]
+.P
+\fBirsend\fR [\fIoptions\fR] \fIDIRECTIVE REMOTE CODE \fR[\fICODE\fR...]
 .SH DESCRIPTION
+.P
 Asks the \fBlircd\fR daemon to send one or more CIR
 (Consumer Infra-Red) commands. This is intended for remote control
 of electronic devices such as TV boxes, HiFi sets, etc.
@@ -42,7 +44,7 @@ can be empty:
 
 .PP
 The \fBSIMULATE\fR command only works if it has been explicitly
-enabled in lircd.
+enabled in lircd using the --allow-simulate option.
 .SH OPTIONS
 .TP
 \fB\-h\fR \fB\-\-help\fR
@@ -73,6 +75,7 @@ remotes, their infra-red codes and the corresponding timing and
 waveform details.
 
 .SH DIAGNOSTICS
+.P
 If \fBlircd\fR is not running (or /var/run/lirc/lircd lacks write
 permissions) \fBirsend\fR aborts with the following diagnostics:
 .nf
@@ -100,4 +103,12 @@ The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .SH "SEE ALSO"
-.B lircd(8), mode2(1), xmode2(1), irrecord(1), irw(1)
+lircd(8),
+.br
+mode2(1),
+.br
+xmode2(1),
+.br
+irrecord(1),
+.br
+irw(1)

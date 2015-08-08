@@ -1,17 +1,15 @@
-.TH lirc-config-tool "1" "November 2011" "User Commands"
+.TH lirc-config-tool "1" "Aug 2015" "User Commands"
 .SH NAME
-lirc-config-tool \- tool to scan and generate lirc config files
+.P
+\fBlirc-config-tool\fR \- tool to scan and generate lirc config files
 .SH SYNOPSIS
+.P
+\fBlirc-config-tool \fR  \fI\-s\fR|\fI-u\fR [\fI -c FILE\fR]
+.P
+\fBlirc-config-tool \fR [\fI-o DIR\fR] [\fI-d\fR] [\fI-c FILE\fR] [\fIFILES\fR]
 .br
-.B
-lirc-config-tool \fR  \-s|-u [ -c FILE]
-.br
-.B
-lirc-config-tool \fR [-o DIR] [-d] [-c FILE] [FILES]
-.br
-.B
-lirc-config-tool \fR  \-l
-.br
+.P
+\fBlirc-config-tool \fR  \fI\-l\fR
 .SH OPTIONS
 Without options, generates all available application specific lircrc
 files  in ~/.config/lirc. The optional [files] is a list of files to
@@ -29,10 +27,10 @@ List available files to generate.
 \fB\-d\fR
 Dump file templates usable as stdin on stdout.
 .TP
-\fB\-o \<dir\>\fR
+\fB\-o\fR \fI \<dir\>\fR
 Output directory, defaults to ~/.config/lirc
 .TP
-\fB\-c \<lircd-filename\>\fR
+\fB\-c\fR \fI \<lircd-filename\>\fR
 lircd(8) config file, defaults to /etc/lirc/lircd.conf
 .TP
 \fB\-h\fR
@@ -116,7 +114,7 @@ converted file thus guarantees that any key symbol starting with
 KEY_ is a legal symbol.
 
 All known numeric keys such as '1', 'KEY_1', 'KEY_KP_1', 'KEY_NUMERIC_1
- are converted to KEY_1.
+are converted to KEY_1.
 
 All modifications are marked by comments in file.
 
@@ -192,8 +190,8 @@ translates to:
 .ft
 
 .SH COPYRIGHT
+.P
 License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
-.br
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH "SEE ALSO"

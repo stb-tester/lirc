@@ -1,27 +1,28 @@
-.TH irdb-get "1" "Last change: Jan 2015" "irdb-get @version@" "User Commands"
+.TH irdb-get "1" "Last change: Aug 2015" "irdb-get @version@" "User Commands"
 .SH NAME
-irdb-get - list, search and download lirc configuration files.
+.P
+\fBirdb-get\fR - list, search and download lirc configuration files.
 .SH SYNOPSIS
-.B  irdb-get update
-.br
-.B  irdb-get find  <string>
-.br
-.B  irdb-get info  <id>
-.br
-.B  irdb-get download <id>
-.br
-.B  irdb-get list [pattern]
-.br
-.B  irdb-get find-driver  <string>
-
+\fBirdb-get\fR update
+.P
+\fBirdb-get\fR find  <\fIstring\fR>
+.P
+\fBirdb-get\fR info  <\fIid\fR>
+.P
+\fBirdb-get\fR download <\fIid\fR>
+.P
+\fBirdb-get\fR list [\fIpattern\fR]
+.P
+\fBirdb-get\fR find-driver  <\fIstring\fR>
 
 .SH DESCRIPTION
-irdb-get can list, search and download lirc remote configuration files.
-It works by downloading an index file, making all operations besides
-the actual download local.
 .P
-Entries in the index are identified by an <id>. Such an id is on the
-form
+\fBirdb-get\fR can list, search and download lirc remote configuration
+files.  It works by downloading an index file, making all operations
+besides the actual download local.
+.P
+Entries in the index are identified by an \fIid\fR. Such an \fIid\fR
+is on the form
 .I dir/remote
 e. g.,
 .I x10/ati_remote_wonder_III
@@ -31,22 +32,22 @@ e. g.,
 .B update
 Download the index from the remote repository.
 .TP 4
-.B  find <string>
+\fBfind\fR <\fIstring\fR>
 List all entries in the index file matching <string>. Matching is done
 using regular shell match syntax (i. e., not regex).
 .TP 4
-.B  find-driver <string>
+\fBfind-driver\fR <\fIstring\fR>
 List all entries in the index with a given driver. The matching is
 exact, no wildcards.
 .TP 4
-.B info <id>
+\fBinfo\fR <\fIid\fR>
 Print some more info about a given entry.
 .TP 4
-.B download <id>
+\fBdownload\fR <\fIid\fR>
 Download the configuration file for a given entry. The filename is printed
 on stdout.
 .TP 4
-.B list <pattern>
+\fBlist\fR <\fIpattern\fR>
 List entries matching <pattern>. <pattern> is on the form dir/remote e. g.,
 .I x10/ati*
 or
@@ -65,7 +66,7 @@ remote has a lircmd config file.
 remote has a photo
 .RE
 .TP 4
-.B -h , --help
+.\fB-h\fR , \fB--help\fR
 Print help message.
 
 .SH FILES

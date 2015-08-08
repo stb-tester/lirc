@@ -52,8 +52,7 @@
                         Can I use my home-brew receiver and transmitter on
                         the same serial port?<BR>
                         <BR>
-                        Yes, just make sure that you enable transmitter
-                        support during configuration of LIRC.<BR>
+                        Yes.
                         <BR>
                       </LI>
                       <LI>
@@ -113,37 +112,23 @@
                         <BR>
                         No, unless somebody writes a driver that merges
                         the functionality of the kernel serial port driver
-                        and the LIRC lirc_serial driver. This is not
-                        trivial. I don't have any plans to do it.<BR>
+                        and the lirc_serial driver. This is not
+                        trivial.<BR>
                         <BR>
                       </LI>
-                      <!-- LI>
-                        Does LIRC support the Creative Infra CD-ROM?<BR>
+                      <LI>
+                      I need a IR transmitter device to control my
+                      TV/VCR/Settop box. But I'd rather buy a device than
+                      <A HREF="transmitters.html">solder my own</A>.
+                      Where can I buy LIRC compatible transmitters?<BR>
+                      <BR>
+                      Check the driver documentation in the
+                        <a href="html/configuration-guide.html">
+                        configuration guide</a>.
+                        Here is several commercially available devices
+                        including IrToy, IguanaIR and Tira.
                         <BR>
-                        Yes, current CVS snapshots will support this device.<BR>
-                        <BR>
-                      </LI -->
-                      <!-- LI>
-                        Does LIRC support the Hauppauge DVB-s card?<BR>
-                        <BR>
-                        Yes, you need the DVB driver from <A HREF="http://www.linuxtv.org/download/dvb/">linuxtv.org</A>.<BR>
-                        <BR>
-                      </LI -->
-                      <!-- AD --><LI>
-                        <!-- AD -->I need a IR transmitter device to
-                        <!-- AD -->control my TV/VCR/Settop box. But I'd
-                        <!-- AD -->rather buy a device than
-                        <!-- AD --><A HREF="transmitters.html">solder my own</A>.
-                        <!-- AD -->Where can I buy LIRC compatible
-                        <!-- AD -->transmitters?<BR>
-                        <!-- AD --><BR>
-                        <!-- AD -->You can buy serial port or USB
-                        <!-- AD -->transceivers at
-                        <!-- AD --><A HREF="http://www.irtrans.de/">www.irtrans.de</A>.
-                        <!-- AD -->They provide a LIRC compatible socket
-                        <!-- AD -->interface.<BR>
-                        <!-- AD --><BR>
-                        <!-- AD --></LI>
+                       </LI>
                     </OL>
                     <H1>Software setup</H1>
                     <OL>
@@ -161,7 +146,7 @@
                         hardware?<BR>
                         <BR>
                         The documentation contains a detailed <A
-                        HREF="http://www.lirc.org/html/table.html">list</A>
+                        HREF="html/table.html">list</A>
                         how to setup the various devices supported by
                         LIRC.<BR>
                         <BR>
@@ -170,14 +155,14 @@
                         When I run irrecord or mode2 I get an error
                         message like this:
                         <PRE>
-mode2: error opening /dev/lirc
+mode2: error opening /dev/lirc0
 mode2: Device or resource busy
                         </PRE>
                         Another application is probably already accessing
-                        /dev/lirc. Only one process can use the device at
+                        /dev/lirc0. Only one process can use the device at
                         a time. You can find out which process uses the
                         device by calling (as root) <em>fuser
-                          /dev/lirc</em>.<BR>
+                          /dev/lirc0</em>.<BR>
                         <BR>
                       </LI>
                       <LI>
@@ -233,48 +218,12 @@ mode2: Device or resource busy
                         <PRE>
     irexec: could not connect to socket
                         </PRE>
-                        You have to change the file permissions of
-                        /dev/lircd. Usually it should be safe to give
-                        everyone read and write permissions. I try to make
-                        the daemon as secure as possible. You can also
-                        create a special group for this purpose.
-                        <PRE>
-    chmod 666 /dev/lircd
-                        </PRE>
-                        <BR>
-                      </LI>
-                      <!-- LI>
-                        I'm running Mandrake 9.0 and I can't get LIRC
-                        working.<BR>
-                        <BR>
-                        Mandrake comes with pre-compiled LIRC kernel
-                        modules in
-                        /lib/modules/2.4.19-16mdk/kernel/3rdparty/lirc/.
-                        Unfortunately it seems that they are broken. Make
-                        sure that these kernel modules are not loaded
-                        instead of the modules you have compiled
-                        yourself.<BR>
-                        <BR>
-                      </LI -->
-                      <LI>
-                        I'm running Mandrake 9.2 and the LIRC applications
-                        all report:
-                        <PRE>
-could not connect to socket
-connection refused
-                        </PRE>
-                        <BR>
-                        These applications expect the lircd socket in /tmp
-                        (blame Mandrake).
-                        The following command will fix the problem.
-                        <PRE>
-ln -s /dev/lircd /tmp/.lircd
-                        </PRE>
-                        Please note that you might have to execute this
-                        command on every system startup as /tmp usually is
-                        cleaned up during startup.<BR>
-                        <BR>
-                      </LI>
+                        Check the permission of the lircd output socket,
+                        usually /var/run/lirc/lircd. These permissions
+                        are defined in lirc_options.conf, the
+                        <em>permissions</em> option. You might need to
+                        remove the device and restart lircd for this to
+                        be effective.
                     </OL>
                     <H1>Misc</H1>
                     <OL>
@@ -290,9 +239,7 @@ ln -s /dev/lircd /tmp/.lircd
                       <LI>
                         Do you speak German?<BR>
                         <BR>
-                        <!-- Yes, I will answer mails in German,
-                        English, Polish and French. -->Please only
-                        use English when sending emails.<BR>
+                        Please only use English when sending emails.<BR>
                         <BR>
                       </LI>
                       <LI>
@@ -316,7 +263,7 @@ ln -s /dev/lircd /tmp/.lircd
                     <H1>HOWTOs</H1>
                     <UL>
                       <LI>
-                        <A HREF="Remote Control XMMS.pdf">Learn how to
+                        <A HREF="Remote-Control-XMMS.pdf">Learn how to
                           control everyone's favourite XMMS with a TV
                           remote</A> - PDF (2348 kB)
                       </LI>

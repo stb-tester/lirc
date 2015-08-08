@@ -1,14 +1,17 @@
-.TH IRRECORD "1" "Last change: Feb 2015" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: Aug 2015" "irrecord @version@" "User Commands"
 .SH NAME
-irrecord - application for recording IR-codes for usage with LIRC
+.P
+\fBirrecord\fR - IR-codes recording tool for usage with LIRC
 .SH SYNOPSIS
-.B irrecord [-f] [-n] [-H driver] [-d device] [file]
-.br
-.B irrecord -a <file>
-.br
-.B irrecord -l
-.br
-.B irrecord --help | --version
+.P
+\fBirrecord\fR [\fI-f\fR] [\fI-n\fR] [\fI-H driver\fR] [\fI-d device\fR] [\fIfile\fR]
+.P
+\fBirrecord\fR -a <\fIfile\fR>
+.P
+\fBirrecord\fR -l
+.P
+\fBirrecord\fR \--help | --version
+
 .SH DESCRIPTION
 This program will record the signals from your remote control and create
 a config file for lircd. A proper config file for lircd is maybe the
