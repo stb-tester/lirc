@@ -67,7 +67,7 @@
     <H1 ALIGN="CENTER">Kernel</H1>
 
     <P>
-      As of 0.9.0+, lirc uses the kernel modules from the
+      As of 0.9.0+, lirc uses the kernel modules from the official
       kernel. Some of these are formerly lirc modules which are
       now part of the kernel. Thus, building lirc does not involve
       building any kernel modules (as it used to).  </P>
@@ -95,14 +95,6 @@
       information the bttv module gives us. This means that you should
       pay attention that your TV card is detected correctly by bttv.
     </P>
-    <p>
-      <b>kernel driver conflicts</b>. Some LIRC user-space drivers
-     conflicts with the kernel drivers. Running:
-<pre>
-     grep conflicts configs/*.conf
-</pre>
-     creates a list of conflicting drivers.
-
 
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
