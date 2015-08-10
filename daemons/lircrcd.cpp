@@ -182,7 +182,7 @@ inline int write_socket_len(int fd, const char* buf)
 inline int read_timeout(int fd, char* buf, int len, int timeout_us)
 {
 	int ret, n;
-	struct pollfd  pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+	struct pollfd  pfd = {fd, POLLIN, 0}; // fd, events, revents
 
 	/* CAVEAT: (from libc documentation)
 	 * Any signal will cause `select' to return immediately.  So if your

@@ -79,8 +79,9 @@ static void copy_loop(int ptym, int ignoreeof)
 	char buf[BUFFSIZE];
 	struct sigaction act;
 	struct pollfd pfd[2] = {
-		{.fd = lsock, .events = POLLIN, .revents = 0},
-		{.fd = STDIN_FILENO, .events = POLLIN, .revents = 0}
+		{lsock, POLLIN, 0},
+		{STDIN_FILENO, POLLIN, 0}
+                // fd, events, revents
 	};;
 
 	if ((child = fork()) < 0) {
