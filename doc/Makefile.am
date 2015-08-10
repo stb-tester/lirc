@@ -143,7 +143,7 @@ lirc.hwdb:
 driver-toc.xsl: .phony
 	$(srcdir)/make-driver-toc.sh > $@
 
-$(generated_html): $(html_sources) $(srcdir)/docpage.xsl driver-toc.xsl
+$(generated_html): $(html_sources) docpage.xsl driver-toc.xsl
 	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
