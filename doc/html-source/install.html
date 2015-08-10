@@ -140,6 +140,16 @@
         as well as other documentation are assuming that ./configure ran
         with the <em>--prefix=/usr</em> option, installing in /etc/lirc,
         /usr/bin etc.</li>
+      <li>
+        The build system supports VPATH builds which does not
+        clutter the source tree. To use this do something like:
+<pre>
+            mkdir _build; cd _build;
+            ../configure
+            make
+            sudo make install
+</pre>
+        </li>
     </ul>
     <A NAME="check"></A><HR>
     <H1 ALIGN="CENTER">Checking the build</H1>
