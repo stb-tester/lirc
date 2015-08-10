@@ -333,7 +333,7 @@ int write_socket_len(int fd, const char* buf)
 int read_timeout(int fd, char* buf, int len, int timeout)
 {
 	int ret, n;
-	struct pollfd  pfd = { .fd = fd, .events = POLLIN, .revents = 0 };
+	struct pollfd  pfd = {fd, POLLIN, 0}; // fd, events, revents
 
 
 	/* CAVEAT: (from libc documentation)
