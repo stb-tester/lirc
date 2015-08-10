@@ -91,8 +91,8 @@ endif
 clean-local:
 	rm -rf $(DISTCLEANFILES)
 
-uninstall-hook:
-	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
+uninstall-local:
+	rm -rf $(DESTDIR)$(websitedir)/api-docs
 
 table.html: driver-toc.xsl
 	$(PYTHON) $(srcdir)/data2table  | \
