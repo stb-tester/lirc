@@ -134,10 +134,8 @@ plugin_LTLIBRARIES          += zotac.la
 zotac_la_SOURCES            = zotac.c
 endif
 
-
-dist-hook:
-	$(srcdir)/make-pluginlist.sh > pluginlist.am
-
+$(srcdir)/pluginlist.am:
+	cd $(srcdir); ./make-pluginlist.sh > pluginlist.am
 
 include pluginlist.am
 
