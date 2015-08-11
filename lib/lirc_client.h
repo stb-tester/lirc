@@ -376,7 +376,7 @@ int lirc_send_one(int fd, const char* remote, const char* keysym);
  *     lirc_get_local_socket() or lirc_get_remote_socket() instead.
  * @param remote Name of remote, the 'name' attribute in the config file.
  * @param keysym The code to send, as defined in the config file.
- * @param scancode The code bound the keysym in teh config file.
+ * @param scancode The code bound the keysym in the config file.
  * @param repeat Number indicating how many times this code has been
  *     repeated, starts at 0, increased for each repetition.
  * @return -1 on errors, else 0.
