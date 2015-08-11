@@ -88,29 +88,23 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Try `%s --help' for more information.\n", progname);
 		return EXIT_FAILURE;
 	}
-
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd == -1) {
 		perror("socket");
 		exit(errno);
 	}
-	;
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		perrorf("Cannot connnect to socket %s", addr.sun_path);
 		exit(errno);
 	}
-	;
-
 	for (;; ) {
 		i = read(fd, buf, 128);
 		if (i == -1) {
 			perror("read");
 			exit(errno);
 		}
-		;
 		if (!i)
 			exit(0);
 		chk_write(STDOUT_FILENO, buf, i);
 	}
-	;
 }
