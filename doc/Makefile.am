@@ -132,6 +132,11 @@ clean-local:
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(websitedir)/api-docs
+	rm -f $(DESTDIR)$(htmldir)/api-docs \
+	      $(DESTDIR)$(htmldir)/images \
+	      $(DESTDIR)$(htmldir)/lirc.org
+	rm -f $(DESTDIR)$(website_htmldir)/api-docs \
+	      $(DESTDIR)$(website_htmldir)/lirc.org
 
 table.html: driver-toc.xsl
 	$(PYTHON) $(srcdir)/data2table  | \

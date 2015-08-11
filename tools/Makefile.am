@@ -116,6 +116,10 @@ install-data-hook:
 	    $(DESTDIR)$(pkgdatadir)/configs \
 	    $(DESTDIR)$(pkgpythondir)/configs
 
+uninstall-hook:
+	rm -f $(DESTDIR)/$(bindir)/lirc-setup \
+	      $(DESTDIR)/$(pkgpythondir)/configs
+
 checkfiles:
 	../git-tools/checkfiles $(SOURCES)
 
