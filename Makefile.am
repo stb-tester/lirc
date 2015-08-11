@@ -45,6 +45,9 @@ install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 
+uninstall-hook:
+	rm -rf $(pkgdatadir) $(pkgpythondir)
+
 dist-hook: ChangeLog
 
 
