@@ -46,7 +46,7 @@
 	"# s:\tSend: The driver can send data.\n"
 
 #define LONG_LEGEND \
-	"# Feature flags:\n" \
+	"# Feature flags (see lirc(4)):\n" \
 	"#    R: LIRC_CAN_SEND_RAW\t\tr: LIRC_CAN_REC_RAW\n" \
 	"#    P: LIRC_CAN_SEND_PULSE\t\tp: LIRC_CAN_REC_PULSE\n" \
 	"#    M: LIRC_CAN_SEND_MODE2\t\tm: LIRC_CAN_REC_MODE2\n" \
