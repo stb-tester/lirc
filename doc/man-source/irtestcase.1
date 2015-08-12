@@ -54,6 +54,10 @@ Print version and exit.
 \fB-h , --help\fR
 Print help message.
 
+.SH ENVIRONMENT
+irtestcase respects LIRC_SOCKET_PATH which if defined holds the
+path to the lircd output socket to listen to.
+
 .SH FILES
 irtestcase creates files in /tmp/irtestcase (hardcoded, sorry). After a
 successful run here is:
