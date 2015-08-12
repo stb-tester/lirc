@@ -29,15 +29,21 @@
       <li>Compilation and linking requires the GNU toolchain
           including <em>make</em>, <em>gcc</em>, <em>g++</em>
           and <em>ld</em>.</li>
-      <li>The build requires python3.</li>
-      <li>Several scripts need the python3 PyYaml package at
-          http://pyyaml.org/wiki/PyYAML.</li>
+      <li>The build requires python3. If the installed package does
+          not provide a python3 link (e. g., just python3.3)
+          the <em>--enable-python3-fix</em>  installs a
+          wrapper.</li>
+      <li>Building without kernel headers is not tested, and might
+          cause all sorts of problems. </li>
       <li>xsltproc </li>
      </ul>
      <p><b>Optional dependencies</b></p>
      If these are missing, ./configure can cope with it and still
      build LIRC in a more or less limited way.
      <ul>
+      <li>Several scripts need the python3 PyYaml package at
+          http://pyyaml.org/wiki/PyYAML. Building without
+          this is possible but not recommended.</li>
       <li>Generating the HTML manpages requires man2html. </li>
       <li>Generating the API documentation requires Doxygen. </li>
       <li>The <em>lirc-setup</em> GUI configuration tool
@@ -45,6 +51,8 @@
           libs. These are not required for the build, though. </li>
       <li>Building the X11 GUI tools like <em>irxevent</em> and
           <em>xmode2</em> requires the X11 header files. </li>
+      <li> The audio drivers needs the alsa  and portaudio libs
+           (libraries and headers). </li>
        <li>
           The <em>Irman (=UIR)</em> driver requires libirman available at
          <A HREF="http://www.lirc.org/software/snapshots/"> <em>libirman</em>
@@ -68,7 +76,7 @@
     <H1 ALIGN="CENTER">Kernel</H1>
 
     <P>
-      As of 0.9.0+, lirc uses the kernel modules from the official
+      As of 0.9.0+, lirc uses the kernel modules from the
       kernel. Some of these are formerly lirc modules which are
       now part of the kernel. Thus, building lirc does not involve
       building any kernel modules (as it used to).  </P>
@@ -82,20 +90,6 @@
       There are example and test kernel modules in the drivers/
       directory. None of these are required for regular LIRC use, but
       they are supposed to be helpful while testing or writing drivers.</P>
-    <P>
-      If you want to use a home-brew receiver, an Anir Multimedia
-      Magic, a Packard Bell receiver, the IRdeo or if you want to use
-      the SIR IrDA driver, I suggest that you use the lirc_serial
-      or lirc_sir kernel module. </p>
-    <P>
-      <B>TV cards:</B> To use any remote control receivers connected
-      directly to a bttv based TV card you will need a working bttv
-      setup in your kernel. For most TV cards we rely on bttv
-      autodetection. That way you don't have to give any parameters to
-      the module as they are selected internally depending on the
-      information the bttv module gives us. This means that you should
-      pay attention that your TV card is detected correctly by bttv.
-    </P>
 
     <!-- Compiling +++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
@@ -171,8 +165,6 @@
       0.9.1+ the configuration is instead done after the build. The
       configuration steps for the main lircd program involves:
     <ul>
-        <li> Selecting the driver and device for your capture device.</li>
-        <li> Selecting configuration file for your remote.</li>
         <li> In some cases e. g., serial devices setting up kernel module
              options in /etc/modprobe.d. </li>
         <li> Selecting the driver and kernel device for your capture
@@ -199,6 +191,7 @@
       <LI>Remove the config files, if you don't need them anymore:<BR>
         <BR>
         <em>rm -rf /etc/lirc/</em><BR>
+        <em>rm -f ~/.config/lircrc</em><BR>
         <BR>
         You might also want to check /etc/modprobe.d for left-overs.
       </LI>

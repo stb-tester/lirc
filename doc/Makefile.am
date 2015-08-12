@@ -39,17 +39,8 @@ endif
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
                           $(manpage_html) \
-                          html-source/lirc.css \
-                          lirc.org/parallel.html \
-                          lirc.org/receivers.html \
-                          lirc.org/transmitters.html \
-                          lirc.org/ir-audio.html \
-                          lirc.org/audio-alsa.html \
-                          lirc.org/faq.html \
-                          lirc.org/favicon.ico \
-                          lirc.org/pictures.html \
-                          lirc.org/pinout_TRM1038.txt \
-                          lirc.org/improved_transmitter.html
+                          html-source/lirc.css
+nodist_website_html_DATA = NEWS.txt
 
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
@@ -58,7 +49,9 @@ endif
 website_imagedir        = $(docdir)/lirc.org/images
 
 htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html)
+nodist_html_DATA        = $(generated_html) NEWS.txt
+
+imagedir                = $(docdir)/images
 
 if HAVE_MAN2HTML
 nodist_html_DATA        += $(manpage_html)
@@ -75,35 +68,6 @@ nodist_pkgdata_DATA     = lirc.hwdb
 endif
 
 dist_noinst_DATA        = $(man_sources) $(html_sources)
-
-imagedir                = $(docdir)/images
-dist_image_DATA         = images/atwf83.jpg \
-                          images/audio_transmitter.png \
-                          images/audio_wave.png \
-                          images/diode.gif \
-                          lirc.org/images/ir-audio.png \
-                          images/lirc.gif \
-                          images/marb18.jpg \
-			  images/banner_en_1.gif \
-                          lirc.org/images/d.jpg \
-                          lirc.org/images/front.jpg \
-                          lirc.org/favicon.ico \
-                          lirc.org/images/top3.jpg \
-                          lirc.org/images/IR-mouse1.jpg \
-                          lirc.org/images/IR-mouse2.jpg \
-                          lirc.org/images/lirclogo.gif \
-                          lirc.org/images/lirc1.jpg \
-                          lirc.org/images/lirc2.jpg \
-                          lirc.org/images/lirc3.jpg \
-                          lirc.org/images/better_transmitter.gif \
-                          lirc.org/images/improved_transmitter.gif \
-                          lirc.org/images/simple_transmitter.gif \
-                          lirc.org/images/schematics.gif \
-                          lirc.org/images/screenshot.gif \
-                          lirc.org/images/screenshot.jpg \
-                          lirc.org/images/screenshot1.gif \
-                          lirc.org/images/tsop173x.png \
-                          lirc.org/images/irrcv_board.gif
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -130,13 +94,8 @@ endif
 clean-local:
 	rm -rf $(DISTCLEANFILES)
 
-uninstall-local:
-	rm -rf $(DESTDIR)$(websitedir)/api-docs
-	rm -f $(DESTDIR)$(htmldir)/api-docs \
-	      $(DESTDIR)$(htmldir)/images \
-	      $(DESTDIR)$(htmldir)/lirc.org
-	rm -f $(DESTDIR)$(website_htmldir)/api-docs \
-	      $(DESTDIR)$(website_htmldir)/lirc.org
+uninstall-hook:
+	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
 table.html: driver-toc.xsl
 	$(PYTHON) $(srcdir)/data2table  | \
@@ -147,6 +106,9 @@ lirc.hwdb:
 
 driver-toc.xsl: .phony
 	$(srcdir)/make-driver-toc.sh > $@
+
+NEWS.txt: $(top_srcdir)/NEWS
+	cp -a $< $@
 
 $(generated_html): $(html_sources) docpage.xsl driver-toc.xsl
 	@mkdir html 2>/dev/null || :

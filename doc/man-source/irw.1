@@ -14,12 +14,23 @@ received data to stdout. Without a \fIsocket\fR argument it will watch
 Options:
 .TP
 \fB\-h\fR \fI\-\-help\fR
-display usage summary
+Display usage summary
 .TP
 \fB\-v\fR \fI\-\-version\fR
-display version
+Display version
 .SH SIGNALS
-On receiving SIGUSR1 irw makes a clean exit.
+.P
+On receiving SIGUSR1 \fBirw\fR makes a clean exit.
+.SH NOTES
+.P
+\fBirw\fR does nothing more than dumps a unix-domain socket, a task which
+many standard tools also can do. E. g., the ncat(1) tool can be
+used instead of irw to provide more flexibility (but without any sane default
+socket):
+.nf
+    ncat -U /var/run/lirc/lircd
+.fi
+
 .SH "SEE ALSO"
 .P
 The documentation for \fBlirc\fR

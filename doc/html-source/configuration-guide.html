@@ -203,9 +203,9 @@ remote | kernel |   devinput v        |
             /dev/lirc0, /dev/ttyS0 or /dev/input/eventXX.</li>
        <li> Data from the kernel is then caught by LIRC using a
             lircd driver.</li>
-       <li> In the next step, <em>lircd</em> converts the IR pulse data
-            from the lirc  driver to key symbols using the lircd.conf
-            file.  The key symbols are presented on the output socket,
+       <li> In the next step, <em>lircd</em> converts the kernel data
+            from the lirc driver to key symbols using the lircd.conf
+            file. The key symbols are presented on the output socket,
             by default /var/run/lirc/lircd.</li>
        <li> In the next step the key symbols are converted
             to application-specific strings using the ~/.config/lircrc file
@@ -682,17 +682,22 @@ remote | kernel |   devinput v        |
      up as dmesg output about not being able to open the involved device,
      plus various other symptoms.  </p>
      <p>
-     If required, the kernel driver configuration can be done using the
-     interfaces under /sys/class/rc or using a udev rule. Conflicting kernel
-     drivers must be blacklisted. Conflicts on serial ports can be handled by
-     disabling the kernel serial driver for that port.</p>
+     If required, the <i>default</i> driver configuration can be done
+     <a href="#sys_class_rc_config">using /sys/class/rc interfaces </a>
+     or <a href="#udev-rules">using a udev rule</a>. Conflicting kernel
+     drivers must be <a href="#blacklisting-modules">blacklisted</a>.
+     Conflicts on serial ports can be handled by
+     <a href = "#serial_port_reservation">disabling the kernel serial</a>
+     driver for that port.</p>
      <p>
      When using serial or parallel port hardware the proper kernel
      module must be loaded with correct options. This requires
-     <em>modprobe(1)</em> configuration.</p>
+     <a href = "#modprobe_config">modprobe(1) configurationi</a>.</p>
+     <p>
+     Using TV-cards requires some extra <a href="#tv_cards">attention</a>.</p>
 
-   <A NAME="kernel-driver-configuration"></A>
-    <h4 align="center"> Kernel driver configuration.</h4>
+   <A NAME="sys_class_rc_config"></A>
+    <h4 align="center"> Kernel IR driver configuration.</h4>
     <p>
     The builtin ir driver subsystem is aware of LIRC, and is capable to send
     all data through /dev/lirc0. If lircd fails to configure this
@@ -741,6 +746,26 @@ remote | kernel |   devinput v        |
     creates a list of conflicting drivers from this info. It is far from
     complete, though.
 
+    <A NAME="permissions"></A>
+    <h4 align="center">Adjusting kernel device permissions</h4>
+     <p>
+     When lircd not runs as root, it needs read and write access to the
+     kernel device it communicates with. Since devices in Linux are
+     handled by udev this is handled by udev rules.</p>
+     <p>
+     In the contrib directory is an example file for the <em>/dev/lirc</em>
+     devices called 60-lirc-rules.conf containing</p>
+<pre>
+        KERNEL=="lirc[0-9]*", SUBSYSTEM=="lirc", GROUP="lirc", MODE="0660
+</pre>
+     <p>
+     The file should be stored in <em>/etc/udev/rules.d/60-lirc.rules</em>
+     This example giver users in the group <em>lirc</em> full permissions.
+     It should be simple to adopt to other users (USER=),
+     usernames and devices. Refer to more generic udev docs.</p>
+
+
+
     <A NAME="serial_port_reservation"></A>
     <h4 align="center">Disabling kernel serial port reservation</h4>
     <p>
@@ -748,17 +773,19 @@ remote | kernel |   devinput v        |
       auto-detects as soon as it is loaded and the LIRC modules won't
       be able to use any of them.  </p>
     <P>
-      There are two solutions for this problem. Either you load the
-      LIRC module before the kernel serial port driver is loaded
-      or you call <em>setserial /dev/ttySx uart none</em> to release
-      the according port. setserial usually is already called during
-      boot-up in some init script whose location depends on the
-      distribution you use. You should check your setserial
-      configuration to only configure available ports. Debian users
-      should adjust their <em>/etc/serial.conf</em>.
-    </P>
+      This needs to be resolved using the setserial(1) tool. An example
+      how to load a lirc_serial module on /dev/ttyS0:</p>
+<pre>
+        setserial /dev/ttyS0 uart none
+        modprobe lirc_serial
+</pre>
+    <p>
+      This could be added to the systemd service files as ExecStartPre
+      statements. Debian users should adjust their <em>/etc/serial.conf</em>.
+      Note that lirc_serial probably needs some modprobe setup, see below.</p>
+
     <A NAME="modprobe_config"></A>
-    <h4 align="center">Serial and parallel hardware configuration</h4>
+    <h4 align="center">modprobe configuration</h4>
      <p>
      The kernel loads the appropriate driver for most modern, USB-based
      using udev hotplugging - as soon as the device is connected the
@@ -772,6 +799,18 @@ remote | kernel |   devinput v        |
      <em>/etc/modprobe.d</em> files in such cases. <em>modinfo(1)</em>
      also provides useful info. In any case, the proper kernel module
      must be loaded with correct options before lircd is started.</p>
+    <P>
+    <A NAME="tv_cards"></A>
+    <h4 align="center">TV cards</h4>
+     <p>
+     To use any remote control receivers connected
+     directly to a bttv based TV card you will need a working bttv
+     setup in your kernel. For most TV cards we rely on bttv
+     autodetection. That way you don't have to give any parameters to
+     the module as they are selected internally depending on the
+     information the bttv module gives us. This means that you should
+     pay attention that your TV card is detected correctly by bttv,
+     as can be checked using dmesg(1).  </P>
 
     <A NAME="appendix-2"></A>
     <h3 align="center"> A2: Finding the event device</h3>
