@@ -165,7 +165,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "%s: not enough arguments\n", prog);
 		return EXIT_FAILURE;
 	}
-
 	if (lircd == NULL)
 		lircd = LIRCD;
 	if (address == NULL)
@@ -173,11 +172,11 @@ int main(int argc, char** argv)
 	else
 		fd = lirc_get_remote_socket(address, port, 0);
 	if (fd < 0) {
-		fprintf(stderr, "%s: could not open socket: %s\n",
-			prog, strerror(-fd));
+		lircd = lircd ? lircd : getenv("LIRC_SOCKET_PATH");
+		lircd = lircd ? lircd : LIRCD;
+		perrorf("Cannot open socket %s", lircd);
 		exit(EXIT_FAILURE);
 	}
-	;
 	if (address)
 		free(address);
 	address = NULL;

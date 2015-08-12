@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		exit(errno);
 	}
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		perror("connect");
+		perrorf("Cannot connnect to socket %s", addr.sun_path);
 		exit(errno);
 	}
 	for (;; ) {
