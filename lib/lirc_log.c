@@ -233,6 +233,18 @@ loglevel_t string2loglevel(const char* s)
 }
 
 
+void perrorf(const char* format, ...)
+{
+	char buff[256];
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(buff, sizeof(buff), format, ap);
+	va_end(ap);
+	perror(buff);
+}
+
+
 /**
  * Prints the log request to the log, if the priority fits.
  * @param prio Priority of log request
