@@ -287,8 +287,7 @@ void add_client(int sock)
 	clilen = sizeof(client_addr);
 	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
-		logprintf(LIRC_ERROR, "accept() failed for new client");
-		logperror(LIRC_ERROR, "");
+		logperror(LIRC_ERROR, "accept() failed for new client");
 		return;
 	}
 	;
@@ -332,8 +331,7 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 	/* create socket */
 	sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sockfd == -1) {
-		fprintf(stderr, "%s: could not create socket\n", progname);
-		perror(progname);
+		perror("could not create socket");
 		return -1;
 	}
 
@@ -344,8 +342,8 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 	 */
 	ret = stat(addr->sun_path, &s);
 	if (ret == -1 && errno != ENOENT) {
-		fprintf(stderr, "%s: could not get file information for %s\n", progname, addr->sun_path);
-		perror(progname);
+		perrorf("could not get file information for %s",
+			addr->sun_path);
 		goto opensocket_failed;
 	}
 
@@ -353,16 +351,14 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 		new_socket = 0;
 		ret = unlink(addr->sun_path);
 		if (ret == -1) {
-			fprintf(stderr, "%s: could not delete %s\n", progname, addr->sun_path);
-			perror(progname);
+			perrorf("could not delete %s", addr->sun_path);
 			goto opensocket_failed;
 		}
 	}
 
 	addr->sun_family = AF_UNIX;
 	if (bind(sockfd, (struct sockaddr*)addr, sizeof(*addr)) == -1) {
-		fprintf(stderr, "%s: could not assign address to socket\n", progname);
-		perror(progname);
+		perror("could not assign address to socket");
 		goto opensocket_failed;
 	}
 
@@ -370,8 +366,7 @@ static int opensocket(const char* socket_id, const char* socketname, mode_t perm
 	    chmod(addr->sun_path, permission) :
 	    (chmod(addr->sun_path, s.st_mode) == -1 || chown(addr->sun_path, s.st_uid, s.st_gid) == -1)
 	    ) {
-		fprintf(stderr, "%s: could not set file permissions\n", progname);
-		perror(progname);
+		perrorf("could not set file permissions on %s", addr->sun_path);
 		goto opensocket_failed;
 	}
 
@@ -863,8 +858,7 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 	if (daemon(0, 0) == -1) {
-		fprintf(stderr, "%s: daemon() failed\n", progname);
-		perror(progname);
+		perror("daemon() failed");
 		shutdown(socket, 2);
 		close(socket);
 		lirc_deinit();

@@ -259,8 +259,7 @@ void dohup(void)
 void daemonize(void)
 {
 	if (daemon(0, 0) == -1) {
-		fprintf(stderr, "%s: daemon() failed\n", progname);
-		perror(progname);
+		perror("daemon() failed");
 		exit(EXIT_FAILURE);
 	}
 	umask(0);
@@ -280,8 +279,7 @@ int setup_uinputfd(const char* name)
 		if (fd == -1) {
 			fd = open("/dev/misc/uinput", O_RDWR);
 			if (fd == -1) {
-				fprintf(stderr, "could not open %s\n", "uinput");
-				perror(NULL);
+				perrorf("could not open %s", "uinput");
 				return -1;
 			}
 		}
@@ -308,8 +306,7 @@ int setup_uinputfd(const char* name)
 	return fd;
 
 setup_error:
-	fprintf(stderr, "could not setup %s\n", "uinput");
-	perror(NULL);
+	perrorf("could not setup %s", "uinput");
 	close(fd);
 #endif
 	return -1;
@@ -884,8 +881,7 @@ int main(int argc, char** argv)
 	/* connect to lircd */
 	lircd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (lircd == -1) {
-		fprintf(stderr, "%s: could not open socket\n", progname);
-		perror(progname);
+		perror("could not open socket");
 		exit(EXIT_FAILURE);
 	};
 	addr.sun_family = AF_UNIX;
@@ -893,9 +889,7 @@ int main(int argc, char** argv)
 		options_getstring("lircmd:socket"),
 		sizeof(addr.sun_path) - 1);
 	if (connect(lircd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		fprintf(stderr, "%s: could not connect to socket: %s\n",
-			progname, addr.sun_path);
-		perror(progname);
+		perrorf("could not connect to socket: %s", addr.sun_path);
 		exit(EXIT_FAILURE);
 	};
 
@@ -911,16 +905,14 @@ int main(int argc, char** argv)
 
 		if (mkfifo(LIRCM, 0644) == -1) {
 			if (errno != EEXIST) {
-				fprintf(stderr, "%s: could not create fifo\n", progname);
-				perror(progname);
+				perrorf("could not create fifo %s", LIRCM);
 				exit(EXIT_FAILURE);
 			}
 		}
 
 		lircm = open(LIRCM, O_RDWR | O_NONBLOCK);
 		if (lircm == -1) {
-			fprintf(stderr, "%s: could not open fifo\n", progname);
-			perror(progname);
+			perror("could not open fifo");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -939,8 +931,7 @@ int main(int argc, char** argv)
 		errno = save_errno;
 	}
 	if (fd == NULL) {
-		fprintf(stderr, "%s: could not open config file\n", progname);
-		perror(progname);
+		perrorf("could not open config file %s", filename);
 		exit(EXIT_FAILURE);
 	}
 	configfile = filename;
