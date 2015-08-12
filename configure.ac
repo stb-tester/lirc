@@ -34,7 +34,7 @@ AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 AC_PROG_LN_S
 LT_INIT([disable-static])
-AM_PATH_PYTHON([3.1],,[:])
+AM_PATH_PYTHON([3.1],,)
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ""])
 LIBUSB_CONFIG="pkg-config libusb"
 
