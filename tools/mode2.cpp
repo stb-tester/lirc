@@ -178,7 +178,8 @@ int open_device(int opt_raw_access, const char* device)
 	if (opt_raw_access) {
 		fd = open(device, O_RDONLY);
 		if (fd == -1) {
-			perror("Error while opening device");
+			device = device ? device : "(Null)";
+			perrorf("Error while opening device: %s", device);
 			exit(EXIT_FAILURE);
 		}
 		;

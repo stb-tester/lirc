@@ -303,8 +303,7 @@ int main(int argc, char** argv)
 	} else if (use_raw_access) {
 		fd = open(device, O_RDONLY);
 		if (fd == -1) {
-			fprintf(stderr, "%s: error opening %s\n", progname, device);
-			perror(progname);
+			perrorf("Error opening %s", device ? device : "Null");
 			exit(EXIT_FAILURE);
 		}
 		;
