@@ -6,23 +6,22 @@
 .B irexec
 [\fIoptions\fR] [\fIconfig_file\fR]
 .SH DESCRIPTION
+.P
 This program lets you execute arbitrary commands on an IR signal decoded
 by lircd, the LIRC daemon. You can give irexec a command line parameter
 which has to be a name of a valid config file. If no command line
 parameters are given irexec reads the default config file which is
 usually ~/.config/lircrc.
-
-For version up to 0.9.2 irexec will wait until the executed program
+.P
+For version up to 0.9.1 irexec will wait until the executed program
 terminates. So append a '&' to the command string if you don't want that.
-
-For version 0.9.3+ irexec does
-.B not
-wait for the executed program to terminate. In fact, the executed code
-is completely disconnected from irexec. So, for 0.9.3+ the trailing
-& is not required, and there is no way to make irexec wait for the
-executed code.
-
-The config string consists of the command to be run. Potential
+.P
+For version 0.9.2+ irexec does \fBnot\fR wait for the executed program to
+terminate. In fact, the executed code is completely disconnected from irexec.
+So, for 0.9.2+ the trailing & is not required, and there is no way to make
+irexec wait for the executed code.
+.P
+The config string consists of the shell command to be run. Potential
 uses are shutting down the computer, starting a dial-up connection etc.
 .SH OPTIONS
 .TP 4
@@ -61,12 +60,12 @@ file to $XDG_CACHE_HOME/irexec.log
 
 
 .SH NOTE
-
+.P
 If you start irexec, it reads your ~/.config/lircrc and reacts only on
 prog= entries that point to irexec. If you have included more than one
 program in your .lircrc, then start all these programs, they react
 itself only to their according entries in .lircrc.
-
+.P
 irexec should run as a service. The contrib directory contains a .desktop
 file which could be dropped in ~/.local/autostart. Doing so creates a
 service which can be handled by regular desktop tools on all major
@@ -75,7 +74,5 @@ off the machine, you can use sudo to allow regular users to run specific
 commands. See the Configuration Guide in the html documentation.
 .SH "SEE ALSO"
 .P
-The documentation for
-.B lirc
-is maintained as html pages. They are located under html/ in the
-documentation directory.
+The documentation for \fBlirc\fR is maintained as html pages. They are
+located under html/ in the documentation directory.

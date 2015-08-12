@@ -32,6 +32,7 @@ doc/api-docs
 doc/man-html
 doc/man/*.[1-9]
 doc/html
+doc/NEWS*
 doc/lirc.hwdb
 doc/table.html
 doc/driver-toc.xsl

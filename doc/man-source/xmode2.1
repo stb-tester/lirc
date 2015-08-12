@@ -12,7 +12,7 @@ home-brew LIRC receiver hardware and to see the IR waveform of the
 remote controller without an expensive oscilloscope. Very useful for
 debugging. Of course this program won't work with hardware that decodes
 the signals itself like e.g. TV cards or the Irman i. e., it only
-works with LIRC_MODE2 type drivers.
+works with LIRC_MODE_MODE2 type drivers.
 .P
 \fBxmode2\fR prints a simple graphics display of the pulse/space lengths. It
 accepts a few commands including time base changes; see the xmode2 -h output.
@@ -80,7 +80,7 @@ A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .SH FILES
 
 .TP 4
-.B ~/.cache/mode2.log
+.B ~/.cache/xmode2.log
 Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log
 

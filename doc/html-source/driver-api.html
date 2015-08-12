@@ -410,7 +410,7 @@ lirc
 </pre>
 <p>
 The driver code has been described all over in this document. There is
-also plenty oof examples in the plugins/ directory. The compiled .so
+also plenty of examples in the plugins/ directory. The compiled .so
 file could just be dropped into a directory in the -U/--plugins
 search path which basically could be anywhere.</p>
 <p>
@@ -444,22 +444,8 @@ See the Makefile in Appendix 2.</p>
     In the current code, no semantic difference between the first three can be inferred.
     For the meaning of the last, see above ("Two flavors of drivers").</p>
 
-<p>There are a number of "features" that a driver can have or not have:</p>
-    <dl>
-        <dt>LIRC_CAN_SEND_RAW</dt><dd>The driver is capable of sending using "LIRC_MODE_RAW"</dd>
-        <dt>LIRC_CAN_SEND_PULSE</dt><dd>The driver is capable of sending using "LIRC_MODE_PULSE"</dd>
-        <dt>LIRC_CAN_SEND_MODE2</dt><dd>The driver is capable of sending using "LIRC_MODE_MODE"</dd>
-        <dt>LIRC_CAN_SEND_LIRCCODE</dt><dd>The driver is capable of sending using "LIRC_MODE_LIRCCODE"</dd>
-        <dt>LIRC_CAN_REC_RAW</dt><dd>The driver is capable of receiving using "LIRC_MODE_RAW"</dd>
-        <dt>LIRC_CAN_REC_PULSE</dt><dd>The driver is capable of receiving using "LIRC_MODE_PULSE"</dd>
-        <dt>LIRC_CAN_REC_MODE2</dt><dd>The driver is capable of receiving using "LIRC_MODE_MODE2"</dd>
-        <dt>LIRC_CAN_REC_LIRCCODE</dt><dd>The driver is capable of receiving using "LIRC_MODE_RAW"</dd>
-        <dt>LIRC_CAN_SET_SEND_CARRIER</dt><dd>The driver is capable of setting the sending modulaton frequency</dd>
-        <dt>LIRC_CAN_SET_SEND_DUTY_CYCLE</dt><dd>The driver is capable of setting the sending duty cycle</dd>
-        <dt>LIRC_CAN_SET_TRANSMITTER_MASK</dt><dd>The driver is capable of setting a transmitter mask, determining which transmitter is invokend when sending</dd>
-        <dt>LIRC_CAN_MEASURE_CARRIER</dt><dd>The driver is capable of measuring the modulation frequency when receiving</dd>
-        <dt>LIRC_CAN_NOTIFY_DECODE</dt><dd>Unknown. Not present on any current driver.</dd>
-    </dl>
+<p>There are a number of "features" that a driver can have or not have.
+These are documented in the <a href="lirc.html">lirc(4)</a> manpage.</p>
 
 <h1>Appendix 2. Generic Makefile</h1>
 <pre>

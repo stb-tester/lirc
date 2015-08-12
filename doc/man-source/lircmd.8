@@ -70,7 +70,7 @@ Byte 4 and 5: 0.
 
 
 .SH FILES
-lircmd will use syslogd to output error messages. It depends on your
+\fBlircmd\fR will use syslogd to output error messages. It depends on your
 system configuration where they will show up.
 .P
 The options file is by default /etc/lirc/lirc_options.conf; lircmd handles
@@ -81,8 +81,8 @@ defaults for any option not present on command line.
 .P
 
 .SH DAEMONS
-lircmd is a  daemon. You should start it in some init script
-depending on your system. Besides the preferred systemd setup which is
+\fBlircmd\fR is a  daemon. You should start it in some init script
+depending on your system. Besides the systemd setup which is
 installed by default there are also example scripts for other distros
 and init systems in the contrib directory. lircmd has to be started after
 lircd as it connects to the socket lircd provides.
