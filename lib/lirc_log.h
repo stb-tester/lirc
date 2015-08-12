@@ -52,6 +52,9 @@ typedef enum {
 /** Mix loglevel (for validation). */
 #define LIRC_MIN_LOGLEVEL LIRC_ERROR
 
+/** Adds printf-style arguments to perror(3). */
+void perrorf(const char* format, ...);
+
 /** The actual loglevel. Should not be changed directly by external code.*/
 extern loglevel_t loglevel;
 
