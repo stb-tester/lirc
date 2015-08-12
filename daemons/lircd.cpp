@@ -519,8 +519,8 @@ void config(void)
 			errno = save_errno;
 	}
 	if (fd == NULL) {
-		logprintf(LIRC_ERROR, "could not open config file '%s'", filename);
-		logperror(LIRC_ERROR, NULL);
+		logperror(LIRC_ERROR,
+			  "could not open config file '%s'", filename);
 		return;
 	}
 	configfile = filename;
@@ -674,8 +674,7 @@ int setup_uinputfd(const char* name)
 		if (fd == -1) {
 			fd = open("/dev/misc/uinput", O_RDWR);
 			if (fd == -1) {
-				fprintf(stderr, "could not open %s\n", "uinput");
-				perror(NULL);
+				perrorf("could not open %s", "uinput");
 				return -1;
 			}
 		}
@@ -696,8 +695,7 @@ int setup_uinputfd(const char* name)
 	return fd;
 
 setup_error:
-	fprintf(stderr, "could not setup %s\n", "uinput");
-	perror(NULL);
+	perrorf("could not setup %s", "uinput");
 	close(fd);
 #endif
 	return -1;
@@ -749,8 +747,7 @@ void add_client(int sock)
 	clilen = sizeof(client_addr);
 	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
-		logprintf(LIRC_ERROR, "accept() failed for new client");
-		logperror(LIRC_ERROR, NULL);
+		logperror(LIRC_ERROR, "accept() failed for new client");
 		dosigterm(SIGTERM);
 	}
 	;
@@ -877,8 +874,7 @@ void connect_to_peers(void)
 			addr.sin_addr = *((struct in_addr*)host->h_addr);
 			addr.sin_port = htons(peers[i]->port);
 			if (connect(peers[i]->socket, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-				logprintf(LIRC_ERROR, "failure connecting to %s", peers[i]->host);
-				logperror(LIRC_ERROR, NULL);
+				logperror(LIRC_ERROR, "failure connecting to %s", peers[i]->host);
 				peers[i]->connection_failure++;
 				gettimeofday(&peers[i]->reconnect, NULL);
 				peers[i]->reconnect.tv_sec += 5 * peers[i]->connection_failure;
@@ -949,8 +945,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	if (fd > 0)
 		pidf = fdopen(fd, "r+");
 	if (fd == -1 || pidf == NULL) {
-		fprintf(stderr, "%s: can't open or create %s\n", progname, pidfile);
-		perror(progname);
+		perrorf("%s: can't open or create %s", pidfile);
 		exit(EXIT_FAILURE);
 	}
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
@@ -988,8 +983,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	if (sockfd == -1) {
 		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (sockfd == -1) {
-			fprintf(stderr, "%s: could not create socket\n", progname);
-			perror(progname);
+			perror("Could not create socket");
 			goto start_server_failed0;
 		}
 		do_shutdown = 1;
@@ -1001,16 +995,15 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		 */
 		ret = stat(lircdfile, &s);
 		if (ret == -1 && errno != ENOENT) {
-			fprintf(stderr, "%s: could not get file information for %s\n", progname, lircdfile);
-			perror(progname);
+			perrorf("Could not get file information for %s\n",
+				lircdfile);
 			goto start_server_failed1;
 		}
 		if (ret != -1) {
 			new_socket = 0;
 			ret = unlink(lircdfile);
 			if (ret == -1) {
-				fprintf(stderr, "%s: could not delete %s\n", progname, lircdfile);
-				perror(NULL);
+				perrorf("Could not delete %s", lircdfile);
 				goto start_server_failed1;
 			}
 		}
@@ -1018,16 +1011,14 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		serv_addr.sun_family = AF_UNIX;
 		strcpy(serv_addr.sun_path, lircdfile);
 		if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-			fprintf(stderr, "%s: could not assign address to socket\n", progname);
-			perror(progname);
+			perrorf("Could not assign address to socket%s", lircdfile);
 			goto start_server_failed1;
 		}
 
 		if (new_socket ? chmod(lircdfile, permission)
 		    : (chmod(lircdfile, s.st_mode) == -1 || chown(lircdfile, s.st_uid, s.st_gid) == -1)
 		    ) {
-			fprintf(stderr, "%s: could not set file permissions\n", progname);
-			perror(progname);
+			perrorf("Could not set file permissions on %s", lircdfile);
 			goto start_server_failed1;
 		}
 
@@ -1044,8 +1035,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		/* create socket */
 		sockinet = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
 		if (sockinet == -1) {
-			fprintf(stderr, "%s: could not create TCP/IP socket\n", progname);
-			perror(progname);
+			perror("Could not create TCP/IP socket");
 			goto start_server_failed1;
 		}
 		(void)setsockopt(sockinet, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
@@ -1054,8 +1044,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		serv_addr_in.sin_port = htons(port);
 
 		if (bind(sockinet, (struct sockaddr*)&serv_addr_in, sizeof(serv_addr_in)) == -1) {
-			fprintf(stderr, "%s: could not assign address to socket\n", progname);
-			perror(progname);
+			perror("could not assign address to socket");
 			goto start_server_failed2;
 		}
 
@@ -1080,8 +1069,7 @@ start_server_failed0:
 void daemonize(void)
 {
 	if (daemon(0, 0) == -1) {
-		logprintf(LIRC_ERROR, "daemon() failed");
-		logperror(LIRC_ERROR, NULL);
+		logperror(LIRC_ERROR, "daemon() failed");
 		dosigterm(SIGTERM);
 	}
 	umask(0);
@@ -1754,8 +1742,7 @@ void input_message(const char* message, const char* remote_name, const char* but
 		event.code = input_code;
 		event.value = release ? 0 : (reps > 0 ? 2 : 1);
 		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logprintf(LIRC_ERROR, "writing to uinput failed");
-			logperror(LIRC_ERROR, NULL);
+			logperror(LIRC_ERROR, "writing to uinput failed");
 		}
 
 		/* Need to write sync event */
@@ -1764,8 +1751,7 @@ void input_message(const char* message, const char* remote_name, const char* but
 		event.code = SYN_REPORT;
 		event.value = 0;
 		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logprintf(LIRC_ERROR, "writing EV_SYN to uinput failed");
-			logperror(LIRC_ERROR, NULL);
+			logperror(LIRC_ERROR, "writing EV_SYN to uinput failed");
 		}
 	} else {
 		logprintf(LIRC_DEBUG,
@@ -1987,8 +1973,7 @@ static int mywaitfordata(unsigned long maxusec)
 				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
 
 			if (ret == -1 && errno != EINTR) {
-				logprintf(LIRC_ERROR, "poll()() failed");
-				logperror(LIRC_ERROR, NULL);
+				logperror(LIRC_ERROR, "poll()() failed");
 				raise(SIGTERM);
 				continue;
 			}
