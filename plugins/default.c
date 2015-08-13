@@ -12,12 +12,13 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -50,6 +51,7 @@ static int default_send(struct ir_remote* remote, struct ir_ncode* code);
 static char* default_rec(struct ir_remote* remotes);
 static int default_ioctl(unsigned int cmd, void* arg);
 static lirc_t default_readdata(lirc_t timeout);
+static int my_open(const char* path);
 
 
 
@@ -62,7 +64,7 @@ static const const struct driver hw_default = {
 	.code_length	= 0,
 	.init_func	= default_init,
 	.deinit_func	= default_deinit,
-	.open_func	= default_open,
+	.open_func	= my_open,
 	.close_func	= default_close,
 	.send_func	= default_send,
 	.rec_func	= default_rec,
@@ -85,6 +87,93 @@ const struct driver* hardwares[] = { &hw_default, (const struct driver*)NULL };
 **********************************************************************/
 
 static int write_send_buffer(int lirc);
+
+/***************************************************
+*
+* /sys/class/rc  stuff.
+*
+****************************************************/
+
+static int is_rc(const char* s)
+{
+	if (s == NULL)
+		return -1;
+	return s[0] == 'r' && s[1] == 'c' && s[2] >= '0' && s[2] <= '9';
+}
+
+
+/*
+ * Given a directory in /sys/class/rc, check if it contains
+ * a file called device. If so, write "lirc" to the protocols
+ * file in same directory.
+ *
+ * rc_dir: directory specification like rc0, rc1, etc.
+ * device: Device given to lirc,  like 'lirc0' (or /dev/lirc0).
+ * Returns: 0 if OK, else -1.
+ *
+ */
+static int visit_rc(const char* rc_dir, const char* device)
+{
+	char path[64];
+	int fd;
+
+	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
+	if (access(path, F_OK) != 0) {
+		logprintf(LIRC_NOTICE, "Cannot open rc directory: %s", path);
+		return -1;
+	}
+	snprintf(path, sizeof(path), "/sys/class/rc/%s/%s", rc_dir, device);
+	if (access(path, F_OK) != 0) {
+		logprintf(LIRC_DEBUG, "No device found: %s", path);
+		return -1;
+	}
+	snprintf(path, sizeof(path), "/sys/class/rc/%s/protocols", rc_dir);
+	fd = open(path, O_WRONLY);
+	if (fd < 0) {
+		logprintf(LIRC_DEBUG, "Cannot open protocol file: %s", path);
+		return -1;
+	}
+	chk_write(fd, "lirc\n", 5);
+	logprintf(LIRC_NOTICE, "'lirc' written to protocols file %s", path);
+	close(fd);
+	return 0;
+}
+
+/*
+ * Try to set the 'lirc' protocol for the device  we are using. Returns
+ * 0 on success for at least one device, otherwise -1.
+ */
+static int set_rc_protocol(const char* device)
+{
+	struct dirent* ent;
+	DIR* dir;
+	int r = -1;
+
+	if (strrchr(device, '/') != NULL)
+		device = strrchr(device, '/') + 1;
+	dir = opendir("/sys/class/rc");
+	if (dir == NULL) {
+		logprintf(LIRC_NOTICE, "Cannot open /sys/class/rc\n");
+		return -1;
+	}
+	while ((ent = readdir(dir)) != NULL) {
+		if (!is_rc(ent->d_name))
+			continue;
+		if (visit_rc(ent->d_name, device) == 0)
+			r = 0;
+	}
+	closedir(dir);
+	return r;
+}
+
+
+int my_open(const char* path)
+{
+	default_open(path);
+	set_rc_protocol(drv.device);
+	return 0;
+}
+
 
 /**********************************************************************
 *
@@ -130,6 +219,10 @@ int default_init(void)
 	/* FIXME: other modules might need this, too */
 	rec_buffer_init();
 	send_buffer_init();
+
+	if (set_rc_protocol(drv.device) != 0)
+		logprintf(LIRC_INFO, "Cannot configure the rc device for %s",
+			  drv.device);
 
 	if (stat(drv.device, &s) == -1) {
 		logprintf(LIRC_ERROR, "could not get file information for %s", drv.device);
