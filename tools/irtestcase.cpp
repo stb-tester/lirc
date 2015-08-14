@@ -246,7 +246,10 @@ int main(int argc, char* argv[])
 	}
 
 	init_testdir();
-	fd_cmd = lirc_get_local_socket(NULL, 1);
+	socketpath = argc == optind + 1 ? argv[optind] : NULL;
+	socketpath = socketpath ? socketpath : getenv("LIRC_SOCKET_PATH");
+	socketpath = socketpath ? socketpath : LIRCD;
+	fd_cmd = lirc_get_local_socket(socketpath, 1);
 	if (fd_cmd < 0) {
 		fputs("Cannot open lircd socket.\n", stderr);
 		exit(3);
@@ -259,8 +262,7 @@ int main(int argc, char* argv[])
 	lirc_log_set_file(path);
 	lirc_log_open("irtestcase", 1, LIRC_NOTICE);
 
-	socketpath = argc == optind + 1 ? argv[optind] : LIRCD;
-	setenv("LIRC_SOCKET_PATH", socketpath, 0);
+	setenv("LIRC_SOCKET_PATH", socketpath, 1);
 	fd_io = lirc_init(opt_prog, 1);
 	if (fd_io < 0) {
 		fputs("Cannot run lirc_init.\n", stderr);
