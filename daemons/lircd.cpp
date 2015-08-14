@@ -330,10 +330,12 @@ int write_socket_len(int fd, const char* buf)
 	return 1;
 }
 
-int read_timeout(int fd, char* buf, int len, int timeout)
+
+int read_timeout(int fd, char* buf, int len, int timeout_us)
 {
 	int ret, n;
 	struct pollfd  pfd = {fd, POLLIN, 0}; // fd, events, revents
+	int timeout = timeout_us > 0 ? timeout_us/1000 : -1;
 
 
 	/* CAVEAT: (from libc documentation)
@@ -348,7 +350,7 @@ int read_timeout(int fd, char* buf, int len, int timeout)
 	 * waiting as long as there are EINTR.
 	 */
 	do
-		ret = poll(&pfd, 1, timeout * 1000);
+		ret = poll(&pfd, 1, timeout);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
 		logperror(LIRC_ERROR, "read_timeout: poll() failed");
@@ -1970,7 +1972,7 @@ static int mywaitfordata(unsigned long maxusec)
 					    POLLFDS_SIZE,
 					    tv.tv_sec * 1000 + tv.tv_usec / 1000);
 			else
-				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, 0);
+				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, -1);
 
 			if (ret == -1 && errno != EINTR) {
 				logperror(LIRC_ERROR, "poll()() failed");
