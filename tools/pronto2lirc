@@ -49,7 +49,7 @@ class CodeSequence:           # Handles codesequences parsing and conversion
     def AnalyzeCode(self,sCodeName,sHexCodes):
 
         # sHexTable=sHexCodes.split()
-        s=string.join(sHexCodes.split(),'') # Remove whitespace formatting between sequences
+        s="".join(sHexCodes.split()) # Remove whitespace formatting between sequences
 
         sHexTable=[]
 
