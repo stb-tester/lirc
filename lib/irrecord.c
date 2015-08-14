@@ -11,6 +11,7 @@
 #define _GNU_SOURCE
 
 #include <unistd.h>
+#include <poll.h>
 
 #include "lirc_private.h"
 #include "irrecord.h"
@@ -503,37 +504,17 @@ void for_each_remote(struct ir_remote* remotes, remote_func func)
 
 static int mywaitfordata(__u32 maxusec)
 {
-	fd_set fds;
 	int ret;
-	struct timeval tv;
+	struct pollfd pfd = {
+		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
+	int timeout = maxusec > 0 ? maxusec / 1000 : -1;
 
-	while (1) {
-		FD_ZERO(&fds);
-		FD_SET(curr_driver->fd, &fds);
-		do {
-			do {
-				if (maxusec > 0) {
-					tv.tv_sec = maxusec / 1000000;
-					tv.tv_usec = maxusec % 1000000;
-					ret = select(curr_driver->fd + 1,
-						     &fds, NULL, NULL, &tv);
-					if (ret == 0)
-						return 0;
-				} else {
-					ret = select(curr_driver->fd + 1,
-						     &fds, NULL, NULL, NULL);
-				}
-			} while (ret == -1 && errno == EINTR);
-			if (ret == -1) {
-				logperror(LIRC_ERROR, "select() failed");
-				continue;
-			}
-		} while (ret == -1);
-
-		if (FD_ISSET(curr_driver->fd, &fds))
-			/* we will read later */
-			return 1;
-	}
+	do {
+		ret = poll(&pfd, 1, timeout);
+		if (ret == -1 && errno != EINTR)
+			logperror(LIRC_ERROR, "poll() failed");
+	} while (ret == -1 && errno == EINTR);
+	return (pfd.revents & POLLIN) != 0;
 }
 
 
