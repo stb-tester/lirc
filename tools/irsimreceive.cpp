@@ -15,6 +15,20 @@
 #include "lirc_client.h"
 
 
+static void add_defaults(void)
+{
+	static char plugindir[128];
+        const static char* defaults[] = {
+		"lircd:plugindir",	plugindir,
+		(const char*)NULL,	(const char*)NULL
+	};
+	const char* s = getenv("LIRC_PLUGIN_PATH");
+
+	strncpy(plugindir, s != NULL ? s : PLUGINDIR, sizeof(plugindir) - 1);
+	options_add_defaults(defaults);
+}
+
+
 static const char* const USAGE =
 	"Usage: irsimreceive [options]  <configfile>  <datafile>\n\n"
 	"<configfile> is a lircd.conf type configuration.\n"
@@ -30,6 +44,38 @@ static struct option options[] = {
 	{ "pluginpath", required_argument, NULL, 'U' },
 	{ 0,		0,		   0,	 0   }
 };
+
+
+static void parse_options(int argc, char** const argv)
+{
+	long c;
+
+	add_defaults();
+
+	while ((c = getopt_long(argc, argv, "hvU:", options, NULL))
+	       != EOF) {
+		switch (c) {
+		case 'h':
+			fputs(USAGE, stdout);
+			exit(EXIT_SUCCESS);
+		case 'v':
+			printf("%s\n", "irw " VERSION);
+			exit(EXIT_SUCCESS);
+		case 'U':
+			options_set_opt("lircd:plugindir", optarg);
+			break;
+		case '?':
+			fprintf(stderr, "unrecognized option: -%c\n", optopt);
+			fputs("Try `irsimsend -h' for more information.\n",
+			      stderr);
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (argc != optind + 2) {
+		fputs(USAGE, stderr);
+		exit(EXIT_FAILURE);
+	}
+}
 
 
 static void setup(const char* path)
@@ -130,36 +176,14 @@ int simreceive(struct ir_remote* remotes)
 
 int main(int argc, char* argv[])
 {
-	long c;
 	struct ir_remote* remotes;
 	char path[128];
 
-	while ((c = getopt_long(argc, argv, "hvc:U:", options, NULL))
-	       != EOF) {
-		switch (c) {
-		case 'h':
-			fputs(USAGE, stdout);
-			return EXIT_SUCCESS;
-		case 'v':
-			printf("%s\n", "irw " VERSION);
-			return EXIT_SUCCESS;
-		case 'U':
-			options_set_opt("lircd:pluginpath", optarg);
-			break;
-		case '?':
-			fprintf(stderr, "unrecognized option: -%c\n", optopt);
-			fputs("Try `irsimsend -h' for more information.\n",
-			      stderr);
-			return EXIT_FAILURE;
-		}
-	}
-	if (argc != optind + 2) {
-		fputs(USAGE, stderr);
-		return EXIT_FAILURE;
-	}
 	lirc_log_get_clientlog("irsimreceive", path, sizeof(path));
 	lirc_log_set_file(path);
 	lirc_log_open("irsimreceive", 1, LIRC_ERROR);
+
+	options_load(argc, argv, NULL, parse_options);
 	setup(argv[optind + 1]);
 	remotes = read_lircd_conf(argv[optind]);
 	return simreceive(remotes);
