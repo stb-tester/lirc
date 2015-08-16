@@ -184,12 +184,15 @@ int default_readdata(lirc_t timeout)
 {
 	int data, ret;
 
+	static int last_data = PULSE_BIT; // See kernel bug below
+
 	if (!waitfordata((long)timeout))
 		return 0;
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logperror(LIRC_ERROR, "error reading from %s (ret %d, expected %d)",
+		logperror(LIRC_ERROR,
+			  "error reading from %s (ret %d, expected %d)",
 			  drv.device, ret, sizeof(data));
 		default_deinit();
 
@@ -200,11 +203,20 @@ int default_readdata(lirc_t timeout)
 		static int data_warning = 1;
 
 		if (data_warning) {
-			logprintf(LIRC_WARNING, "read invalid data from device %s", drv.device);
+			logprintf(LIRC_WARNING,
+				  "read invalid data from device %s",
+				  drv.device);
 			data_warning = 0;
 		}
 		data = 1;
 	}
+	// FIXME: https://bugzilla.kernel.org/show_bug.cgi?id=102971 fix.
+	if (is_space(data) && is_space(last_data)) {
+		last_data = data;
+		return  default_readdata(timeout);
+	}
+	last_data = data;
+
 	return data;
 }
 
