@@ -24,8 +24,8 @@
     testSuite->addTest(new CppUnit::TestCaller<DrvAdminTest>( \
                        id,  &DrvAdminTest::func))
 
-static const int DRIVER_COUNT = 55;  // Total numbers of drivers.
-static const int PLUGIN_COUNT = 45;  // Total numbers of drivers.
+static const int DRIVER_COUNT = 53;  // Total numbers of drivers.
+static const int PLUGIN_COUNT = 43;  // Total numbers of drivers.
 
 using namespace std;
 
@@ -83,7 +83,7 @@ class DrvAdminTest : public CppUnit::TestFixture
             int count = 0;
             setenv("LD_LIBRARY_PATH", "../lib/.libs", 1);
             for_each_driver(drv_guest_counter, (void*)&count);
-            if (getenv("LIRC_TEST_DEBUG")) 
+            if (getenv("LIRC_TEST_DEBUG"))
                 cout << "Driver count: " << count << "\n";
             CPPUNIT_ASSERT( count == DRIVER_COUNT );
         }
@@ -92,7 +92,7 @@ class DrvAdminTest : public CppUnit::TestFixture
         {
             int count = 0;
             for_each_plugin(listPlugins, (void*)&count);
-            if (getenv("LIRC_TEST_DEBUG")) 
+            if (getenv("LIRC_TEST_DEBUG"))
                 cout << "Plugin count: " << count << "\n";
             CPPUNIT_ASSERT(count == PLUGIN_COUNT );
         }
