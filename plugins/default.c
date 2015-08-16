@@ -184,6 +184,8 @@ int default_readdata(lirc_t timeout)
 {
 	int data, ret;
 
+	static int last_data = PULSE_BIT; // See kernel bug below
+
 	if (!waitfordata((long)timeout))
 		return 0;
 
@@ -208,6 +210,13 @@ int default_readdata(lirc_t timeout)
 		}
 		data = 1;
 	}
+	// FIXME: https://bugzilla.kernel.org/show_bug.cgi?id=102971 fix.
+	if (is_space(data) && is_space(last_data)) {
+		last_data = data;
+		return  default_readdata(timeout);
+	}
+	last_data = data;
+
 	return data;
 }
 
