@@ -137,7 +137,7 @@ static const char* const MSG_NO_BUTTONS =
 	"you can add button definitions to it next time you run irrecord.\n";
 
 static const char* const MSG_TOO_FEW_BUTTONS =
-	"You have only recorded one button in a non-raw configuraton file.\n"
+	"You have only recorded one button in a non-raw configuration file.\n"
 	"This file doesn't really make much sense, you should record at\n"
 	"least two or three buttons to get meaningful results. You can add\n"
 	"more buttons next time you run irrecord.\n";
@@ -439,8 +439,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		remote.last_code = NULL;
 		remote.next = NULL;
 		if (!opts->update
-		    && remote.pre_p == 0 && remote.pre_s == 0 && remote.post_p == 0
-		    && remote.post_s == 0) {
+		    && remote.pre_p == 0 && remote.pre_s == 0
+		    && remote.post_p == 0 && remote.post_s == 0) {
 			remote.bits = bit_count(&remote);
 			remote.pre_data_bits = 0;
 			remote.post_data_bits = 0;
@@ -450,7 +450,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 				"Only first remote definition in file \"%s\" used\n",
 				opts->filename);
 		}
-		snprintf(filename_new, sizeof(filename_new), "%s", opts->filename);
+		snprintf(filename_new,
+			 sizeof(filename_new), "%s", opts->filename);
 		opts->filename = strdup(filename_new);
 	} else {
 		if (opts->analyse) {
@@ -492,7 +493,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	}
 	drop_sudo_root(seteuid);
 
-	aeps = ((int) curr_driver->resolution > aeps ? curr_driver->resolution : aeps);
+	aeps = ((int) curr_driver->resolution > aeps ?
+		curr_driver->resolution : aeps);
 	if (curr_driver->rec_mode != LIRC_MODE_MODE2
 	    && curr_driver->rec_mode != LIRC_MODE_LIRCCODE) {
 		fclose(state->fout);
@@ -502,7 +504,8 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 		return STS_INIT_BAD_MODE;
 	}
 	flags = fcntl(curr_driver->fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+	if (flags == -1 ||
+	    fcntl(curr_driver->fd, F_SETFL, flags | O_NONBLOCK) == -1) {
 		fputs("Could not set O_NONBLOCK flag\n", stderr);
 		fclose(state->fout);
 		unlink(opts->tmpfile);
@@ -514,7 +517,10 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 }
 
 
-static int get_options(int argc, char** argv, const char* filename, struct opts* options)
+static int get_options(int argc,
+		       char** argv,
+		       const char* filename,
+		       struct opts* options)
 {
 	options->force = 0;
 	options_load(argc, argv, NULL, parse_options);
@@ -523,11 +529,13 @@ static int get_options(int argc, char** argv, const char* filename, struct opts*
 	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
 	options->driver = options_getstring("irrecord:driver");
 	options->force = options_getboolean("irrecord:force");
-	options->disable_namespace = options_getboolean("irrecord:disable-namespace");
+	options->disable_namespace =
+		options_getboolean("irrecord:disable-namespace");
 	options->dynamic_codes = options_getboolean("lircd:dynamic-codes");
 	options->get_pre = options_getboolean("irrecord:pre");
 	options->get_post = options_getboolean("irrecord:post");
-	options->list_namespace = options_getboolean("irrecord:list-namespace");
+	options->list_namespace =
+		options_getboolean("irrecord:list-namespace");
 	options->test = options_getboolean("irrecord:test");
 	options->invert = options_getboolean("irrecord:invert");
 	options->trail = options_getboolean("irrecord:trail");
@@ -538,10 +546,12 @@ static int get_options(int argc, char** argv, const char* filename, struct opts*
 
 
 /** View part of get_toggle_bit_mask(). */
-static void do_get_toggle_bit_mask(struct ir_remote* remote, struct main_state* state,
+static void do_get_toggle_bit_mask(struct ir_remote* remote,
+				   struct main_state* state,
 				   const struct opts* opts)
 {
-	const char* const MISSING_MASK_MSG = "But I know for sure that RC6 has a toggle bit!";
+	const char* const MISSING_MASK_MSG =
+		"But I know for sure that RC6 has a toggle bit!";
 	enum toggle_status sts;
 	struct toggle_state tgl_state;
 
@@ -562,9 +572,11 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote, struct main_state* 
 			sts = STS_TGL_AGAIN;
 			continue;
 		case STS_TGL_FOUND:
-			printf("\nToggle bit mask is 0x%llx.\n", (__u64)remote->toggle_bit_mask);
+			printf("\nToggle bit mask is 0x%llx.\n",
+			       (__u64)remote->toggle_bit_mask);
 			if (is_rc6(remote))
-				printf("RC6 mask is 0x%llx.\n", (__u64)remote->rc6_mask);
+				printf("RC6 mask is 0x%llx.\n",
+				       (__u64)remote->rc6_mask);
 			fflush(stdout);
 			return;
 		case STS_TGL_NOT_FOUND:
@@ -597,7 +609,8 @@ static void do_init(struct opts* opts, struct main_state* state)
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	case STS_INIT_NO_DRIVER:
-		fputs("irrecord does not make sense without hardware\n", stderr);
+		fputs("irrecord does not make sense without hardware\n",
+		      stderr);
 		exit(EXIT_FAILURE);
 	case STS_INIT_FORCE_TMPL:
 		fprintf(stderr,
@@ -605,16 +618,19 @@ static void do_init(struct opts* opts, struct main_state* state)
 			opts->filename);
 		exit(EXIT_FAILURE);
 	case STS_INIT_BAD_FILE:
-		fprintf(stderr, "Could not parse config file %s\n", opts->filename);
+		fprintf(stderr, "Could not parse config file %s\n",
+			opts->filename);
 		exit(EXIT_FAILURE);
 	case STS_INIT_TESTED:
 		exit(0);
 	case STS_INIT_FOPEN:
-		fprintf(stderr, "Could not open new config file %s\n", opts->filename);
+		fprintf(stderr,
+			"Could not open new config file %s\n", opts->filename);
 
 	case STS_INIT_HW_FAIL:
 		fputs("Could not init hardware"
-		      " (lircd running ? --> close it, check permissions)\n", stderr);
+		      " (lircd running ? --> close it, check permissions)\n",
+		      stderr);
 		exit(EXIT_FAILURE);
 	case STS_INIT_BAD_MODE:
 		fputs("Mode not supported\n", stderr);
@@ -640,7 +656,8 @@ static int printf_signal_func(struct ir_ncode* ncode, void* arg)
 
 /** View part: Record data for one button. */
 static enum button_status get_button_data(struct button_state* btn_state,
-					  struct main_state* state, const struct opts* opts)
+					  struct main_state* state,
+					  const struct opts* opts)
 {
 	const char* const MSG_BAD_STS = "Bad status in get_button_data: %d\n";
 	const char* const MSG_BAD_RETURN = "Bad return from  get_button_data";
@@ -654,7 +671,8 @@ static enum button_status get_button_data(struct button_state* btn_state,
 	while (retries > 0) {
 		switch (sts) {
 		case STS_BTN_INIT_DATA:
-			printf("\nNow hold down button \"%s\".\n", btn_state->buffer);
+			printf("\nNow hold down button \"%s\".\n",
+			       btn_state->buffer);
 			fflush(stdout);
 			flushhw();
 			break;
@@ -675,7 +693,8 @@ static enum button_status get_button_data(struct button_state* btn_state,
 				printf("Try using the -f option.\n");
 				break;
 			}
-			printf("Please try again. (%d retries left)\n", retries - 1);
+			printf("Please try again. (%d retries left)\n",
+			       retries - 1);
 			sts = STS_BTN_INIT_DATA;
 			continue;
 		case STS_BTN_BUTTON_DONE:
@@ -786,6 +805,7 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 	}
 }
 
+
 /** Check that there is not "too" much ambient light & noise. */
 void check_ambient_light(const struct opts* opts)
 {
@@ -817,16 +837,35 @@ void check_ambient_light(const struct opts* opts)
 		puts(MSG_TOO_MUCH_NOISE);
 		getchar();
 	}
+}
 
 
-
+/** Report remote data to user and log it. */
+static void remote_report(struct ir_remote* remote)
+{
+	printf("Signals are %s encoded.\n",
+	       is_biphase(remote) ? "biphase" : "pulse");
+	printf("Signal length is %d\n", remote->bits);
+	if (is_rc5(remote)) printf("RC5 encoding\n");
+	else if (is_rc6(remote)) printf("RC6 encoding\n");
+	else if (is_rcmm(remote)) printf("RCMM encoding\n");
+	else if (is_goldstar(remote)) printf("GOLDSTAR encoding\n");
+	else if (is_grundig(remote)) printf("GRUNDIG encoding\n");
+	else if (is_bo(remote)) printf("Bang & Olufsen encoding\n");
+	else printf("Unknown encoding\n");
+	logprintf(LIRC_DEBUG, "%d %u %u %u %u %u %d %d %d %u\n",
+		  remote->bits, (__u32)remote->pone, (__u32)remote->sone,
+		  (__u32)remote->pzero, (__u32)remote->szero,
+		  (__u32)remote->ptrail, remote->flags, remote->eps,
+		  remote->aeps, (__u32)remote->gap);
 }
 
 
 /** View part of get_lengths. */
 static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 {
-	const char* const MSG_AGAIN = "\nPlease keep on pressing buttons like described above.";
+	const char* const MSG_AGAIN =
+		"\nPlease keep on pressing buttons like described above.";
 	enum lengths_status sts = STS_LEN_AGAIN;
 	struct lengths_state lengths_state;
 	int debug = lirc_log_is_enabled_for(LIRC_TRACE);
@@ -842,7 +881,10 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 		sts = STS_LEN_AGAIN;
 		lengths_state_init(&lengths_state);
 		while (sts == STS_LEN_AGAIN) {
-			sts = get_lengths(&lengths_state, &remote, opts->force, debug);
+			sts = get_lengths(&lengths_state,
+					  &remote,
+					  opts->force,
+					  debug);
 			switch (sts) {
 			case STS_LEN_OK:
 				puts("");
@@ -876,12 +918,13 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 				remote.aeps = aeps;
 				break;
 			case STS_LEN_AGAIN_INFO:
-				printf("\nGot gap (%d us) ", remote.gap);
+				printf("\nGot gap (%d us)}\n", remote.gap);
 				puts(MSG_AGAIN);
 				sts = STS_LEN_AGAIN;
 				continue;
 			case STS_LEN_AGAIN:
-				diff = lengths_state.keypresses - lengths_state.keypresses_done;
+				diff = lengths_state.keypresses -
+					lengths_state.keypresses_done;
 				for (i = 0; i < diff; i += 1)
 					printf(".");
 				fflush(stdout);
@@ -892,10 +935,7 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 		}
 		free_all_lengths();
 	}
-	logprintf(LIRC_DEBUG, "%d %u %u %u %u %u %d %d %d %u\n",
-		  remote.bits, (__u32)remote.pone, (__u32)remote.sone,
-		  (__u32)remote.pzero, (__u32)remote.szero,
-		  (__u32)remote.ptrail, remote.flags, remote.eps, remote.aeps, (__u32)remote.gap);
+	remote_report(&remote);
 	return sts;
 }
 
@@ -1058,7 +1098,8 @@ int main(int argc, char** argv)
 		fprint_namespace(stdout);
 		exit(EXIT_SUCCESS);
 	}
-	get_commandline(argc, argv, opts.commandline, sizeof(opts.commandline));
+	get_commandline(argc, argv,
+			opts.commandline, sizeof(opts.commandline));
 	if (geteuid() == 0)
 		drop_root_cli(seteuid);
 	do_init(&opts, &state);
