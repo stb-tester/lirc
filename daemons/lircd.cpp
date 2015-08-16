@@ -30,6 +30,7 @@
 # include <config.h>
 #endif
 
+#include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -119,7 +120,7 @@ static const char* const help =
 #       if defined(__linux__)
 	"\t -u --uinput\t\t\tgenerate Linux input events\n"
 #       endif
-	"\t -e --effective-uid=uid\t\tRun as uid after init as root\n"
+	"\t -e --effective-user=uid\t\tRun as uid after init as root\n"
 	"\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
 
 
@@ -143,7 +144,7 @@ static const struct option lircd_options[] = {
 	{ "allow-simulate", no_argument,       NULL, 'a' },
 	{ "dynamic-codes",  no_argument,       NULL, 'Y' },
 	{ "driver-options", required_argument, NULL, 'A' },
-	{ "effective-uid",  required_argument, NULL, 'e' },
+	{ "effective-user", required_argument, NULL, 'e' },
 #        if defined(__linux__)
 	{ "uinput",	    no_argument,       NULL, 'u' },
 #        endif
@@ -716,7 +717,12 @@ void drop_privileges(void)
 {
 	const char* user;
 	struct passwd* pw;
+	gid_t groups[32];
+	int group_cnt = sizeof(groups)/sizeof(gid_t);
+	char groupnames[256] = {0};
+	char buff[12];
 	int r;
+	int i;
 
 	if (getuid() != 0)
 		return;
@@ -730,12 +736,27 @@ void drop_privileges(void)
 		logperror(LIRC_WARNING, "Illegal effective uid: %s", user);
 		return;
 	}
+	r = getgrouplist(user, pw->pw_gid, groups, &group_cnt);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot get supplementary groups");
+		return;
+	}
+	r = setgroups(group_cnt, groups);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot set supplementary groups");
+		return;
+	}
 	r = setuid(pw->pw_uid);
 	if (r == -1) {
 		logperror(LIRC_WARNING, "Cannot change UID");
 		return;
 	}
 	logprintf(LIRC_NOTICE, "Running as user %s", user);
+	for (i = 0; i < group_cnt; i += 1) {
+		snprintf(buff, 5, " %d", groups[i]);
+		strcat(groupnames, buff);
+	}
+	logprintf(LIRC_DEBUG, "Supplementary groups: %s", groupnames);
 }
 
 
