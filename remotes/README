@@ -1,3 +1,0 @@
-From 0.9.2+ this directory is obsolete. The new configuration tools uses the
-remotes database at http://sf.net/p/lirc-remotes. However, these configs are
-still used for regression tests.
