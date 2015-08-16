@@ -746,6 +746,11 @@ void drop_privileges(void)
 		logperror(LIRC_WARNING, "Cannot set supplementary groups");
 		return;
 	}
+	r = setgid(pw->pw_gid);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot set GID");
+		return;
+	}
 	r = setuid(pw->pw_uid);
 	if (r == -1) {
 		logperror(LIRC_WARNING, "Cannot change UID");
@@ -756,7 +761,7 @@ void drop_privileges(void)
 		snprintf(buff, 5, " %d", groups[i]);
 		strcat(groupnames, buff);
 	}
-	logprintf(LIRC_DEBUG, "Supplementary groups: %s", groupnames);
+	logprintf(LIRC_DEBUG, "Groups: [%d]:%s", pw->pw_gid, groupnames);
 }
 
 
