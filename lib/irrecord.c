@@ -569,10 +569,8 @@ static lirc_t emulation_readdata(lirc_t timeout)
 			sum += data & PULSE_MASK;
 		}
 	}
-	/*
-	 * printf("delivering: %c%u\n", data&PULSE_BIT ? 'p':'s',
-	 * data&PULSE_MASK);
-	 */
+	logprintf(LIRC_DEBUG, "delivering: %c%u\n",
+		  data & PULSE_BIT ? 'p':'s', data & PULSE_MASK);
 	return data;
 }
 
@@ -736,6 +734,11 @@ static void merge_lengths(struct lengths* first)
 }
 
 
+/**
+ *  Scan the list first for the item with highest count value.
+ *  Returns pointer to highest item. Also updates *sump
+ *  (if non-null) to the sum of all count values in list.
+ */
 static struct lengths* get_max_length(struct lengths*	first,
 				      unsigned int*	sump)
 {
@@ -1484,17 +1487,17 @@ enum lengths_status get_lengths(struct lengths_state* state,
 		}
 		if (is_const(remote))
 			state->remaining_gap =
-				remote->gap > state->sum ? remote->gap -
-				state->sum : 0;
+				remote->gap > state->sum ?
+					remote->gap - state->sum : 0;
 		else
 			state->remaining_gap = remote->gap;
 		state->sum += state->data & PULSE_MASK;
 
 		if (state->count > 2
-		    && ((state->data & PULSE_MASK) >=
-			state->remaining_gap * (100 - eps) / 100
-			|| (state->data &
-			    PULSE_MASK) >= state->remaining_gap - aeps)) {
+			&& ((state->data & PULSE_MASK) >=
+				state->remaining_gap * (100 - eps) / 100
+			    || (state->data & PULSE_MASK) >=
+				state->remaining_gap - aeps)) {
 			if (is_space(state->data)) {
 				/* signal complete */
 				state->keypresses += 1;

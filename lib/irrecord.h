@@ -200,10 +200,12 @@ struct lengths_state {
 				/** Number of counted button presses. */
 	int			keypresses;
 	int			retval;
+				/** Number of processed data items. */
 	int			count;
 	lirc_t			data;
 	lirc_t			average;
 	lirc_t			maxspace;
+				/** Number of bits accounted for in signal.*/
 	lirc_t			sum;
 	lirc_t			remaining_gap;
 	lirc_t			header;
