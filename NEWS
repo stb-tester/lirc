@@ -1,4 +1,4 @@
-0.9.4
+0.9.3
 
   * The select() calls in lircd, lircrcd and library routines have
     been replaced with poll() to avoid crashes when file descriptors
@@ -6,9 +6,17 @@
   * The documentation is heavily revised. Old obsolete text is
     removed, the manual is reorganized, some info is moved to
     manpages and a lot of minor updates and bugfixes.
-  * The remotes/ directory is not used any more, removed.
   * Set supplementary groups using effective-user (RH bz 1253907).
   * Work around kernel bug in /dev/lirc0 output (#119).
+  * Create log directory if required (#124).
+  * The remotes/ directory is not used any more, removed.
+  * The lircd.simsend and lircd.simreceive tools have been removed,
+    superseeded by irsimsend and irsimreceive.
+  * Minor fixes to lirc-setup (bbd4ccf, e384375).
+  * Minor fixes to irrecord-ui including -k option parsing fixed.
+  * Hardcoded CFLAGS in Makefiles fixed (#124).
+  * Enhanced pkg-config support for drivers compiled out-of-tree
+    (see driver-api in the manual).
 
 0.9.3pre2 1/08/15
 
@@ -29,13 +37,10 @@
 
 0.9.3pre1 30/06/15
 
+  * New build dependency: xsltproc (sometimes coming with libxml).
   * The irexec semantics have been changed so that the invoked
     programs run disconnected from the main irexec process.
     See irexec(1) (#92).
-  * mode2 has been updated to handle also LIRCCODE devices (#94)
-    and the --driver-options switch
-  * xmode2 has been updated to handle udp driver, the new
-    --driver-options switch + some general overhaul.
   * irrecord has got some love:
      + It handles multiple definitions of same symbol OK (#78)
      + Warns about single-key config files (#77)
@@ -43,6 +48,13 @@
      + New option allows updating of existing template file.
      + Template handling bug fixed
      + -l --list-namespace option parsing bug fixed (#101).
+  * mode2 has been updated
+     +  handle also LIRCCODE devices (#94),
+     +  Drop root privileges (#91)
+     +  Add  new scope-like display
+     +  Handle the--driver-options switch
+  * xmode2 has been updated to handle udp driver, the new
+    --driver-options switch + some general overhaul.
   * irrecord has been split into a library and a cli interface
     (#36). The library interface is unstable.
   * lircmd: Several option parsing bugs fixed, one of which
@@ -56,7 +68,6 @@
     layout and updated git hook. See CONTRIBUTE.md
   * The compiler has been switched to c++, and filenames are
     updated to *.cpp (#79)
-  * New build dependency: xsltproc (usually coming with libxml).
   * Unlinked and hard to find driver docs and manpages have
     been linked.
   * Build: now uses parallell make by default.

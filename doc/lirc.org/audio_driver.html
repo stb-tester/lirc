@@ -104,33 +104,30 @@ amplifier outputs its full voltage without clipping.
 </p>
 <h2>Setting up:</h2>
 <p>
-Compile LIRC with the audio driver (not the IR diode or alsa ones) and
-install it as usual. Connect the circuit to the sound-card and set the
-volume to the maximum level. Start lircd, the -d flag can be used to
-select the audio device and/or sample-rate, the syntax is
-<code>api:device[@samplerate[:latency]]</code> or
-<code>@samplerate[:latency]</code>.
-</p>
+Install lirc as usual. Configure lirc_options.conf with driver = audio.
+The device = can be used to select the audio device and/or sample-rate,
+the syntax is <code>api:device[@samplerate[:latency]]</code> or
+<code>@samplerate[:latency]</code>.  </p>
 <p>
-Examples:
-</p>
+Examples: </p>
 
+<p>
 <code>
-lircd -d ALSA:default<br>
-lircd -d ALSA:default@48000<br>
-lircd -d ALSA:default@48000:0.02<br>
-lircd -d @48000<br>
-lircd -d @48000:0.05<br>
-</code>
+            lircd -d ALSA:default
+            lircd -d ALSA:default@48000
+            lircd -d ALSA:default@48000:0.02
+            lircd -d @48000
+            lircd -d @48000:0.05
+</code></p>
 
 <p>
-Use irsend to test if it works.
-</p>
+Connect the circuit to the sound-card and set the
+volume to the maximum level. Start lircd,
+Use irsend to test if it works.</p>
 <p>
 A samplerate of 48 kHz is about the bare minimum needed to make a
 modulated 19 khz sine, if your soundcard supports 96 kHz, you should
-use that.
-</p>
+use that.</p>
 
 <h2>Choosing an audio device:</h2>
 

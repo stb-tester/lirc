@@ -25,7 +25,8 @@
 
     <ul>
       <li>Building directly from the git source tree requires
-          <em>autoconf</em> and <em>automake</em>.</li>
+          <em>autoconf</em>,<em>automake</em> and
+          <em>libtool</em>>.</li>
       <li>Compilation and linking requires the GNU toolchain
           including <em>make</em>, <em>gcc</em>, <em>g++</em>
           and <em>ld</em>.</li>
@@ -51,16 +52,16 @@
           libs. These are not required for the build, though. </li>
       <li>Building the X11 GUI tools like <em>irxevent</em> and
           <em>xmode2</em> requires the X11 header files. </li>
-      <li> The audio drivers needs the alsa  and portaudio libs
+      <li> The audio drivers needs the alsa and portaudio libs
            (libraries and headers). </li>
        <li>
           The <em>Irman (=UIR)</em> driver requires libirman available at
-         <A HREF="http://www.lirc.org/software/snapshots/"> <em>libirman</em>
-         </A>To build, the irman library must exist as a dynamic .so module.
-           At the time of writing this is true for the Fedora package, but
-           not for Debian. You can build and install the
-           library locally directly from the sources
-           to walk around problems with the packaged version. </li>
+         <A HREF="http://www.lirc.org/software/snapshots/"><em>libirman</em>
+         </A>. To build, the irman library must exist as a dynamic .so module.
+         At the time of writing this is true for the Fedora package, but
+         not for Debian. You can build and install the library locally
+         directly from the sources to walk around problems with the
+         packaged version. </li>
        <li>
          The <em>ftdi</em> driver requires libftdi from
          <a href="http://www.intra2net.com/de/produkte/opensource/ftdi/">
