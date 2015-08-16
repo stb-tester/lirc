@@ -23,6 +23,9 @@ Display version
 On receiving SIGUSR1 \fBirw\fR makes a clean exit.
 .SH NOTES
 .P
+Since the lircd socket supports multiple clients, \fBirw\fR can run in
+parallell with other applications.
+.P
 \fBirw\fR does nothing more than dumps a unix-domain socket, a task which
 many standard tools also can do. E. g., the ncat(1) tool can be
 used instead of irw to provide more flexibility (but without any sane default

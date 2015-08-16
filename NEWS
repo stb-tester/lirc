@@ -1,16 +1,21 @@
-0.9.3pre3 1/08/15
-
+0.9.3
   * The select() calls in lircd, lircrcd and library routines have
     been replaced with poll() to avoid crashes when file descriptors
     becomes > 1024 (#109).
   * The documentation is heavily revised. Old obsolete text is
     removed, the manual is reorganized, some info is moved to
     manpages and a lot of minor updates and bugfixes.
-  * Set groups when using effective-user (RH bz 1253907).
+  * Set supplementary groups using effective-user (RH bz 1253907).
   * Work around kernel bug in /dev/lirc0 output (#119).
+  * Create log directory if required (#124).
   * The remotes/ directory is not used any more, removed.
   * The lircd.simsend and lircd.simreceive tools have been removed,
     superseeded by irsimsend and irsimreceive.
+  * Minor fixes to lirc-setup (bbd4ccf, e384375).
+  * Minor fixes to irrecord-ui including -k option parsing fixed.
+  * Hardcoded CFLAGS in Makefiles fixed (#124).
+  * Enhanced pkg-config support for drivers compiled out-of-tree
+    (see driver-api in the manual).
 
 0.9.3pre2 1/08/15
 

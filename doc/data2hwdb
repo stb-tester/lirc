@@ -14,8 +14,8 @@ HEADER = '''
 #
 # This file lists all the remote controls supported by LIRC
 # in a parseable form. It's legacy file kept for compatiblity.
-# The current file hardware.yaml should be a better source in
-# most cases.
+# The current yaml files configs/*.conf should be a better
+# source in most cases.
 #
 # The format is:
 #
