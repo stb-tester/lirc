@@ -188,8 +188,8 @@ class Controller(object):
         if not config:
             return
         if self.model.config['driver'] != config['driver'] or \
-            self.model.config['device'] != config['device']:
-                self.configure_device(config, next_state)
+                self.model.config['device'] != config['device']:
+            self.configure_device(config, next_state)
 
     def select_remote(self, pattern):
         ''' User has entered a search pattern, handle it. '''
