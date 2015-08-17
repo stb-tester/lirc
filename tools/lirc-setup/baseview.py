@@ -47,7 +47,7 @@ class Baseview(object):
             return treeview
         treeview.set_vscroll_policy(Gtk.ScrollablePolicy.NATURAL)
         types = [str for c in columns]
-        treeview.set_model(Gtk.ListStore(*types))  # pylint: disable=star-args
+        treeview.set_model(Gtk.ListStore(*types))
         renderers = {}
         for i, colname in enumerate(columns):
             renderers[colname] = Gtk.CellRendererText()
