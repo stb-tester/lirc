@@ -30,7 +30,7 @@ bin_PROGRAMS            = ircat \
                           irsimsend \
                           irtestcase \
                           irw \
-                          lirc_lsremotes \
+                          lirc-lsremotes \
                           mode2 \
                           @x_progs@
 
