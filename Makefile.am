@@ -35,6 +35,9 @@ endif
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
+plugindocsdir           = $(pkgdatadir)/plugindocs
+dist_plugindocs_DATA    = plugindocs/README
+
 nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
 
 headerdir               = $(includedir)/lirc

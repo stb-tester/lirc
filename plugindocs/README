@@ -1,0 +1,7 @@
+LIRC plugindocs README
+======================
+
+This directory is a dumping ground where plugins compiled out-of-tree can
+store documentation. It's not used in any particular way by the main
+lirc installation, but is exported using the pkg-config 'plugindocs'
+variable.
