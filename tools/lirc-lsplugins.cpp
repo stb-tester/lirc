@@ -396,6 +396,7 @@ void lsplugins(const char* pluginpath, const char* which)
 int main(int argc, char** argv)
 {
 	const char* pluginpath;
+	char path [128];
 	const char* which;
 	int c;
 
@@ -439,8 +440,12 @@ int main(int argc, char** argv)
 		exit(2);
 	}
 	which = (argc - optind == 1 ?  argv[argc - 1] : "*");
-	lirc_log_set_file("lirc-check-plugins.log");
-	lirc_log_open("lirc-check-plugins", 1, LIRC_DEBUG);
+
+	lirc_log_get_clientlog("lirc-lsplugins", path, sizeof(path));
+	unlink(path);
+	lirc_log_set_file(path);
+	lirc_log_open("lirc-lsplugins", 1, LIRC_DEBUG);
+
 	lsplugins(pluginpath, which);
 	return sum_errors == 0 ? 0 : 1;
 }
