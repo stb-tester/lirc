@@ -9,8 +9,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
 
-CFLAGS="${CFLAGS--O2 -g -Wall}"
-
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
