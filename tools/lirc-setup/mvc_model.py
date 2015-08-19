@@ -180,7 +180,7 @@ def write_results(config, result_dir, view):
             options.add_section('lircd')
         if not _hasitem(config, 'lircd_conf'):
             log += 'Warning: No lircd.conf found, requierd by lircd.\n'
-        for opt in ['device', 'lircd_conf', 'lircmd_conf']:
+        for opt in ['device', 'lircd_conf', 'lircmd_conf', 'driver']:
             if not _hasitem(config, opt):
                 continue
             if not inited:
