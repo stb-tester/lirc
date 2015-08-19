@@ -39,7 +39,7 @@ try the following commands:
 
 sudo cp lircd_options.conf /etc/lirc/lircd_options.conf
 sudo cp lirc-modinit.conf /etc/modprobe.d
-sudo cp lircd.conf /etc/lirc/lircd.conf
+sudo cp lircd.conf /etc/lirc/lircd.conf.d
 sudo cp lircmd.conf /etc/lirc/lircmd.conf
 
 Of course, if you already have a working configuration don't forget to
@@ -274,7 +274,7 @@ def check_modules(config):
 
     s = ''
     for m in modules:
-        cmd = ['sh -c "find /lib/modules/$(uname -r) -name %s.ko"' % m]
+        cmd = ['sh -c "find /lib/modules/$(uname -r) -name %s.ko*"' % m]
         try:
             found = subprocess.check_output(cmd, shell=True).decode('utf-8')
         except (OSError, subprocess.CalledProcessError):
