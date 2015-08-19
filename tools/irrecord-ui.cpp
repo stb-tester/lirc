@@ -301,7 +301,7 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fnlO:pPtiTU:uvY";
+	const char* const optstring = "had:D:H:fknlO:pPtiTU:uvY";
 
 	add_defaults();
 	optind = 1;
