@@ -21,6 +21,7 @@
 
 static const int NOISE_LIMIT = 500;
 static const int NOISE_TIMEOUT_US = 3000000;
+static const int DEFAULT_GAP = 50000;
 
 
 #define USAGE       "Usage: irrecord [options] [config file]\n" \
@@ -146,6 +147,13 @@ static const char* const MSG_DONT_FORCE_UNLESS_UPDATE =
 	"File \"%s\" already exists\n"
 	"You cannot use the --force option together with a template file\n"
 	"unless also using --update";
+
+static const char* const MSG_NO_GAP_FOUND_WARNING =
+	"Cannot find any gap, using an arbitrary 50 ms one. If you have a\n"
+        "regular remote for e. g., a TV or such this is probably a point\n"
+        "where you hit control-C. However, technical hardware like air \n"
+	"condition gear often works without any gap. If you think it's\n"
+	"reasonable that your remote lacks gap you can proceed. ";
 
 /** Result code from init(). */
 enum init_status {
@@ -914,13 +922,9 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 				      stderr);
 				exit(EXIT_FAILURE);
 			case STS_LEN_NO_GAP_FOUND:
-				fputs("Gap not found, can't continue\n",
-				      stderr);
-				fclose(state->fout);
-				unlink(opts->tmpfile);
-				if (curr_driver->deinit_func)
-					curr_driver->deinit_func();
-				exit(EXIT_FAILURE);
+				puts(MSG_NO_GAP_FOUND_WARNING);
+				remote.gap = DEFAULT_GAP;
+				return 1;
 			case STS_LEN_TOO_LONG:
 				fputs("Signal too long\n", stderr);
 				puts("Creating config file in raw mode.");
