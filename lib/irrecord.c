@@ -496,25 +496,17 @@ void for_each_remote(struct ir_remote* remotes, remote_func func)
 
 static int mywaitfordata(__u32 maxusec)
 {
+	int ret;
 	struct pollfd pfd  = {
 		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
-	int ret;
 
-	while (1) {
-		do {
-			do {
-				ret = poll(&pfd, 1, maxusec / 1000);
-			} while (ret == -1 && errno == EINTR);
-			if (ret == -1) {
-				logperror(LIRC_ERROR,
-					  "mywaitfordata: poll() failed");
-				continue;
-			}
-		} while (ret == -1);
-		if (pfd.revents & POLLIN)
-			/* we will read later */
-			return 1;
-	}
+	do {
+		ret = poll(&pfd, 1, maxusec / 1000);
+	} while (ret == -1 && errno == EINTR);
+
+	if (ret == -1 && errno != EINTR)
+		logperror(LIRC_ERROR, "mywaitfordata: poll() failed");
+	return (pfd.revents & POLLIN) != 0;
 }
 
 
