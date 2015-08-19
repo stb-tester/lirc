@@ -154,7 +154,7 @@ class RemoteFilesParser:
 import sys
 import xml.parsers.expat
 
-if len(sys.argv)!=2:
+if len(sys.argv)!=2 or sys.argv[1] == '-h' or sys.argv[1] == '--help':
 	print("Pronto codes converter to lircd.conf format (version 1.11)")
 	print()
 	print("Usage:   pronto2lirc.py inputfile")
