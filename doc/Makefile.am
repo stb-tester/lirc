@@ -104,7 +104,7 @@ table.html: driver-toc.xsl
 lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-driver-toc.xsl: .phony
+driver-toc.xsl: $(html_sources)
 	$(srcdir)/make-driver-toc.sh > $@
 
 NEWS.txt: $(top_srcdir)/NEWS
