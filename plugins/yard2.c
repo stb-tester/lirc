@@ -87,10 +87,10 @@ const struct driver hw_yard2 = {
 	.drvctl_func	= default_drvctl,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.open_func	= default_open,
 	.close_func	= default_close,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "Driver for the yard2 DIY assembly kit." \
 			  "See: " YARD2_URL
 };

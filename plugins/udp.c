@@ -310,7 +310,7 @@ const struct driver hw_udp = {
 	.readdata	=	udp_readdata,
 	.resolution	=	61,
 	.api_version	=	2,
-	.driver_version =	"0.9.2",
+	.driver_version =	"0.9.3",
 	.info		=	"UDP driver receives IR mark and space time measurements on a UDP port and"
 				"converts them to LIRC mode2 format."
 };

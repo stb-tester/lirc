@@ -636,7 +636,7 @@ const struct driver hw_audio = {
 	.drvctl_func	= NULL,
 	.readdata	= audio_readdata,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available."
 };
 
