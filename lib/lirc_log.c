@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <ctype.h>
+#include <syslog.h>
 
 #include "lirc/lirc_log.h"
 
@@ -324,24 +325,32 @@ int lirc_log_get_clientlog(const char* basename, char* buffer, ssize_t size)
 	const char* home;
 	struct passwd* pw;
 	const char* user;
+	int r;
 
 	if (getenv("XDG_CACHE_HOME") != NULL) {
 		strncpy(buffer, getenv("XDG_CACHE_HOME"), size);
 		buffer[size - 1] = '\0';
-		strncat(buffer, "/", size - strlen(buffer) - 1);
 	} else if (getenv("SUDO_USER") != NULL && geteuid() == 0) {
 		user = getenv("SUDO_USER");
 		if (user == NULL)
 			user = "root";
 		pw = getpwnam(user);
-		snprintf(buffer, size, "%s/.cache/", pw->pw_dir);
+		snprintf(buffer, size, "%s/.cache", pw->pw_dir);
 	} else {
 		home = getenv("HOME");
-		home = home != NULL ? home : "/";
-		strncpy(buffer, home, size);
-		buffer[size - 1] = '\0';
-		strncat(buffer, "/.cache/", size - strlen(buffer) - 1);
+		home = home != NULL ? home : "/tmp";
+		snprintf(buffer, size, "%s/.cache", home);
 	}
+	if (access(buffer, F_OK) != 0) {
+		r = mkdir(buffer, 0777);
+		if (r != 0) {
+			syslog(LOG_WARNING,
+			       "Cannot create log directory %s", buffer);
+			syslog(LOG_WARNING, "Falling back to using /tmp");
+			strcpy(buffer, "/tmp");
+		}
+	}
+	strncat(buffer, "/", size - strlen(buffer) - 1);
 	strncat(buffer, basename, size - strlen(buffer) - 1);
 	strncat(buffer, ".log", size - strlen(buffer) - 1);
 	return 0;
