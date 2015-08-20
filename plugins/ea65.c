@@ -71,7 +71,7 @@ const struct driver hw_ea65 = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available"
 };
 

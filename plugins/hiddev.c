@@ -112,7 +112,7 @@ const struct driver hw_asusdh = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available"
 };
 
@@ -135,7 +135,7 @@ const struct driver hw_sb0540 = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2"
+	.driver_version = "0.9.3"
 };
 #endif
 
@@ -157,7 +157,7 @@ const struct driver hw_macmini = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available"
 };
 
@@ -180,7 +180,7 @@ const struct driver hw_samsung = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2"
+	.driver_version = "0.9.3"
 };
 #endif
 
@@ -202,7 +202,7 @@ const struct driver hw_sonyir = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available"
 };
 

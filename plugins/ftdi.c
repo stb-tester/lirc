@@ -502,7 +502,7 @@ const struct driver hw_ftdi = {
 	.drvctl_func	= hwftdi_ioctl,
 	.readdata	= hwftdi_readdata,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "No info available"
 };
 

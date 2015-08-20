@@ -89,7 +89,7 @@ const struct driver hw_sony_osx = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 2,
-	.driver_version = "0.9.2",
+	.driver_version = "0.9.3",
 	.info		= "MacOSX driver for hiddev devices"
 };
 
