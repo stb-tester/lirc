@@ -1,0 +1,62 @@
+#
+#  This file is a static file reflecting some kernel drivers. There
+#  are two reasons to list a driver here. The first is if it is in
+#  the staging area and thus might be missing on a system. The second
+#  is if it needs manual configuration hints (modinit, modprobe).
+#
+
+drivers:
+    default:
+        device_hint:     /dev/lirc*
+        type:            mode2
+        can_send:        yes
+
+    igorplugusb:
+        device_hint:     /dev/lirc*
+        type:            mode2
+        can_send:        yes
+        modinit:         modprobe igorplugusb
+
+    ati_remote:
+        device_hint:     /dev/lirc*
+        modinit:         modprobe ati_remote
+        type:            code
+        can_send:        no
+
+    lirc_bt829:
+        device_hint:     /dev/lirc*
+        modinit:         modprobe lirc_bt829
+        type:            code
+        can_send:        no
+
+    lirc_parallel:
+        device_hint:     /dev/lirc*
+        modinit:         modprobe lirc_parallel
+        type:            mode2
+        can_send:        yes
+
+    lirc_sasem:
+        id:              sasem
+        device_hint:     /dev/lirc*
+        modinit:         modprobe lirc_sasem
+        type:            mode2
+        can_send:        yes
+
+    lirc_serial:
+        device_hint:     /dev/lirc*
+        type:            mode2
+        modinit:         modprobe lirc_serial
+        can_send:        yes
+
+    lirc_sir:
+        id:              sir
+        device_hint:     /dev/lirc*
+        modinit:         modprobe lirc_sir
+        type:            mode2
+        can_send:        yes
+
+    lirc_gpio:
+        device_hint:     /dev/lirc*
+        modinit:         modprobe gpio-ir-recv
+        type:            mode2
+        can_send:        no

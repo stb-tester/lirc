@@ -31,6 +31,7 @@ confs_by_driver.yaml
 
 # lirc-setup cruft
 lirc-setup.conf.d
+kernel-drivers.yaml
 
 doc/api-docs
 doc/man-html
