@@ -105,7 +105,9 @@ python3:
 	chmod 755 $@
 
 install-exec-hook:
-	$(SED) -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+	$(SED) -i -e 's/@version@/$(VERSION)/' \
+	    $(DESTDIR)$(bindir)/lirc-config-tool \
+	    $(DESTDIR)$(bindir)/irdb-get
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \
