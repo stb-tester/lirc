@@ -1,64 +1,112 @@
 # lirc setup configuration files README.
 
+Overview
+--------
+
 This README file lives in the same directory as a large number of
-configuration files. Each of these represent an entry in the
-setup dialog user can select. If selected, it will configure
-a specific capture device, possibly running some dialogs.
+configuration files. Here is a number of more or less static
+*.yaml files and the more dynamic *.conf files.
 
-The config files are parsed as a YAML documents, see
-http://pyyaml.org/wiki/PyYAMLDocumentation#YAMLsyntax
+The original configuration data comes from different sources:
 
-The fields:
+  - User-space drivers has compiled configuration hints.
+    This reflected in the file drivers.yaml.
+  - The kernel drivers has a static file kernel-drivers.dist
+    which provides the same info for some of the the kernel
+    drivers.
+  - lircd.conf files for LIRCCODE type hardware sometimes
+    has a 'driver' attribute describing the required driver
+    for this file. This is reflected in the conf_by_driver.yaml
+    file.
+  - The *.conf files in configs/ describes entries a user
+    can select.
 
-id:     Mandatory, unique identifier (no spaces allowed).
 
-label:  User visible description (mandatory).
+drivers.yaml and kernel-driver.yaml
+-----------------------------------
 
-menu:   The menu this option is presented in, mandatory.
-        One of home_brew, irda, other, other_serial, pda, soundcard,
-        tv_card, usb.
+The kernel-drivers.dist file  is a static file  describing some
+of the built-in kernel drivers which either needs manual configuration
+or might be abscent. It has the same format as drivers.yaml.
+kernel-driver.yaml is created from kernel-drivers.dist by
+'lirc-kerneldrivers' which checks available drivers.
 
-driver: The configured driver, mandatory.
+The drivers.yaml file is created  using 'lirc-lsplugins --yaml'
+which retrieves data from the driver configuration hints.  It
+describes the driver configuration:
 
-device: <device> [default device], optional, defaults to 'None'. <device>
-        is a glob pattern.  User can select between matches, configuration
-        fails if nothing matches. If there is a single match this is
-        silently selected without user interaction.  There is specific
-        support for:
-            - /dev/tty*. User can select an available tty.
-            - /dev/usb/* User can select a serial tty connected over USB.
-            - /dev/event/* User can select a /dev/input/event/* device.
-            - 'udp_port' [default port]. User can select an udp port
-            - 'None'. No device option is configured.
-            - 'auto'. No configuration, but a message is displayed.
+  - id:   Mandatory, unique identifier (no spaces allowed).
 
-lircd_conf:
-        Path to lircd.conf, multiple choice, optional, defaults to 'any'.
-           - Path for a supported lircd.conf file
-           - 'any' indicating that this capture device can be used with any
-             lircd.conf file which has timing information.
+  - device_hint <device>:
+          optional, defaults to 'None'. <device> is a glob pattern.  User
+          can select between matches, configuration fails if nothing
+          matches.  If there is a single match this is silently selected
+          without user interaction.  There is specific support for:
 
-supports:
-        Supported lircd.conf files, multiple choice, optional, defaults to
-        'timing':
-           - 'timing' indicating a generic device  supporting any remote
-             with timing information.
-           - 'lirccode' indicating that this capture device only supports
-             remotes with a driver attribute being this one.
+              - /dev/tty*. User can select an available tty.
+              - /dev/event/* User can select a /dev/input/event/* device.
+              - 'udp_port' [default port]. User can select an udp port
+              - /bin/sh .... shell command which lists possible devices.
+              - 'None'. No device option is configured.
+              - 'auto'. No configuration, but a message is displayed.
 
-note:   Message displayed when selecting this capture device, optional.
+  - modprobe;
+         Required modprobe configuration. Note that the device_hint in
+         some cases e. g., serial ports alse ends up in modprobe config.
 
-modules:
-        List of kernel module names required by this capture device, optional.
+  - modinit:
+         Shell commands needed to set up the device (runs as root).
+	 Supported substitutions commands string:
+           - @device@: Device selected by user (based on device_hint)
+           - @rc_dir@: The /sys/class/rc/rcX directory corresponding to
+             the selected device, or "" no such dir is found.
+	   - @set_lirc_protocol@: The canonical
+             "echo lirc > /sys/class/rc/rcX/protocols" for given device.
 
-modinit:
-        Required kernel module init, multiple choice,  optional.
-        - 'run_select_lpt_port' <default port> <module>. User selects a
-           parallel port for a kernel module.
-        - 'run_select_module_tty' <default port> <module>. User
-           selects IRQ and IO base address for a serial 5250 driver module,
-           possibly with customized options.
+  - type:
+         'mode2' or 'code', reflects the overall mode. Derived from the
+         driver features masked with
+         LIRC_CAN_REC_RAW | LIRC_CAN_REC_PULSE | LIRC_CAN_REC_MODE2
 
-product_driver:
-        Capture device USB vendorId and productId on the form 1781:0938.
+  - can_send:
+         'yes' or 'no'. derived from driver features masked with
+         LIRC_CAN_SEND_RAW | LIRC_CAN_SEND_PULSE | LIRC_CAN_SEND_MODE2
 
+
+confs_by_driver.
+----------------
+
+The conf_by_driver.yaml file is created using *irdb-get yaml-config*.
+It maps driver names to a list of lircd.conf files which can
+be used with this (type code) driver.
+
+
+*.conf files.
+-------------
+
+The *.conf files represent a configuration entry i. e., what a
+user selects.  If selected, it will configure a specific capture
+device, possibly running some dialogs. Different config entries
+might configurate the same driver, effectively creating different
+names and remote config files for a generic driver. Files contains:
+
+  - id:     Mandatory, unique identifier (no spaces allowed).
+
+  - label:  User visible description (mandatory).
+
+  - menu:   The menu this option is presented in, mandatory.  One of
+            home_brew, irda, other, other_serial, pda, soundcard, tv_card,
+            usb.
+
+  - note:   Message displayed when selecting this capture device, optional.
+
+  - driver: The configured driver, mandatory. Must match a driver id in
+            drivers.yaml or kernel-drivers.yaml
+
+  - lircd_conf:
+            Proposed lircd.conf files for this entry. The config files
+            for current driver in conf_by_driver are implicitly added.
+
+  - lircmd_conf:
+            Proposed lircmd.conf files for this entry. Files in
+            conf_by_driver are implicitly added to this list.
