@@ -87,11 +87,11 @@ static struct timeval start, end, last;
 static lirc_t signal_length;
 
 //Forwards:
-int slinke_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
-int slinke_init(void);
-int slinke_deinit(void);
-char* slinke_rec(struct ir_remote* remotes);
-lirc_t slinke_readdata(lirc_t timetout);
+static int slinke_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int slinke_init(void);
+static int slinke_deinit(void);
+static char* slinke_rec(struct ir_remote* remotes);
+static lirc_t slinke_readdata(lirc_t timetout);
 
 
 const struct driver hw_slinke = {
@@ -324,7 +324,7 @@ static void set_IR_timeout_period(unsigned samples)
 	tx_bytes(d, sizeof(d));
 }                               /* set_IR_timeout_period */
 
-static void get_version()
+static void get_version(void)
 {
 	unsigned char d[2];
 
@@ -347,7 +347,8 @@ int slinke_init(void)
 		return 0;
 	}
 	/* if */
-	if ((drv.fd = open(drv.device, O_RDWR | O_NOCTTY)) < 0) {
+	drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
+	if (drv.fd  < 0) {
 		logprintf(LIRC_ERROR, "could not open %s", drv.device);
 		logperror(LIRC_ERROR, "slinke_init()");
 		tty_delete_lock();
@@ -451,7 +452,7 @@ lirc_t slinke_readdata(int timeout)
 	return result;
 }                               /* readdata */
 
-static void reset_signal_queue()
+static void reset_signal_queue(void)
 {
 	if (signal_queue_buf == NULL) {
 		signal_queue_bufsize = 32;
@@ -490,7 +491,7 @@ static void app_signal(int is_pulse, int period_len)
 	signal_queue_buf[signal_queue_length++] = signal;
 }                               /* app_signal */
 
-static void end_of_signals()
+static void end_of_signals(void)
 {
 	if (signal_queue_buf == NULL)
 		return;
@@ -504,7 +505,7 @@ static void end_of_signals()
 	}                                                               /* if */
 }                                                                       /* end_of_signals */
 
-static char* signal_queue_to_string()
+static char* signal_queue_to_string(void)
 {
 	static char buf[10 * QUEUE_BUF_MAX_SIZE];
 	char s[30];
@@ -538,10 +539,12 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 		int i;
 		int curr_period_len = 0;
 		int curr_period_is_pulse = 1;
+
 		reset_signal_queue();
 		for (i = 0; i < len; i++) {
 			int len = buf[i] & 0x7f;
 			int is_pulse = ((buf[i] & 0x80) != 0);
+
 			if (is_pulse == curr_period_is_pulse) {
 				curr_period_len += len;
 			} else {
@@ -576,6 +579,7 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 	case MSG_ID_VERSION_EQUALS: {
 		if (len == 1) {
 			char s[10];
+
 			sprintf(s, "%d.%d", (unsigned)((buf[0] >> 4) & 0xf)
 				, (unsigned)(buf[0] & 0xf));
 			if (slinke_settings.version != NULL)

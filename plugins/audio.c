@@ -366,7 +366,6 @@ static void audio_parsedevicestr(char* api, char* device, int* rate, double* lat
 static void audio_choosedevice(PaStreamParameters* streamparameters, int input, char* api, char* device,
 			       double latency)
 {
-	char* direction = input ? "input" : "output";
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
 	const char* devicetype = "custom";
@@ -374,6 +373,8 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 	int nrdevices = Pa_GetDeviceCount();
 	int chosendevice = -1;
 	int i;
+
+	char* direction = input ? "input" : "output";
 
 	for (i = 0; i < nrdevices; i++) {
 		deviceinfo = Pa_GetDeviceInfo(i);
