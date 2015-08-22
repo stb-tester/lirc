@@ -61,9 +61,10 @@ const struct driver hw_atilibusb = {
 	.decode_func	= receive_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available."
+	.info		= "No info available.",
+	.device_hint    = "auto",
 };
 
 const struct driver* hardwares[] = { &hw_atilibusb, (const struct driver*)NULL };

@@ -72,9 +72,10 @@ const struct driver hw_creative_infracd = {
 	.decode_func	= creative_infracd_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/sg*",
 };
 
 const struct driver* hardwares[] = { &hw_creative_infracd, (const struct driver*)NULL };

@@ -309,10 +309,12 @@ const struct driver hw_udp = {
 	.drvctl_func	=	udp_drvctl_func,
 	.readdata	=	udp_readdata,
 	.resolution	=	61,
-	.api_version	=	2,
+	.api_version	=	3,
 	.driver_version =	"0.9.3",
-	.info		=	"UDP driver receives IR mark and space time measurements on a UDP port and"
-				" converts them to LIRC mode2 format."
+	.info		=	"UDP driver receives IR mark and space time"
+				" measurements on a UDP port and"
+				" converts them to LIRC mode2 format.",
+	.device_hint    = "udp_port",
 };
 
 const struct driver* hardwares[] = { &hw_udp, (const struct driver*)NULL };

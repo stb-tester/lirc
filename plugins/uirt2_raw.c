@@ -82,9 +82,10 @@ const struct driver hw_uirt2_raw = {
 	.decode_func	= uirt2_raw_decode,
 	.drvctl_func	= NULL,
 	.readdata	= uirt2_raw_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/tty[0-9]*",
 };
 
 const struct driver hw_usb_uirt_raw = {
@@ -103,9 +104,10 @@ const struct driver hw_usb_uirt_raw = {
 	.decode_func	= uirt2_raw_decode,
 	.drvctl_func	= NULL,
 	.readdata	= uirt2_raw_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/tty[0-9]*",
 };
 
 const struct driver* hardwares[] = { &hw_usb_uirt_raw, &hw_uirt2_raw, NULL };

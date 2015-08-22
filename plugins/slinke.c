@@ -110,9 +110,10 @@ const struct driver hw_slinke = {
 	.decode_func	= slinke_decode,
 	.drvctl_func	= NULL,
 	.readdata	= slinke_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/tty[0-9]*",
 };
 
 const struct driver* hardwares[] = { &hw_slinke, (const struct driver*)NULL };
@@ -420,17 +421,17 @@ int slinke_deinit(void)
 
 /*****************************************************************************/
 char* msgIdReprs[] = {
-	"unknown",			       "port receive",			     "port disabled",	      "port enabled",
-	"transmission timeout",		       "illegal command",		     "receive error",
-	"sampling period equals",	       "carrier period equals",		     "timeout period equals",
+	"unknown",			       "port receive",		"port disabled",	      "port enabled",
+	"transmission timeout",		       "illegal command",	"receive error",
+	"sampling period equals",	       "carrier period equals",	"timeout period equals",
 	"minimum message length equals",       "transmit ports equal",
 	"receive ports equal",		       "last receive port equals",
 	"receive port polarities equal",       "ir routing table equals",
 	"invalid sample period",	       "handshaking mode equals",
 	"configuration direction equals",      "baud rate equals",
 	"serial port receive buffer overflow", "serial port receive buffer overrun",
-	"serial port receive framing error",   "baud rate illegal",		     "version equals",
-	"defaults loaded",		       "defaults saved",		     "serial number equals",
+	"serial port receive framing error",   "baud rate illegal",	"version equals",
+	"defaults loaded",		       "defaults saved",	"serial number equals",
 	"seeprom write error",
 };
 char* slinkePorts[] = { "SL0", "SL1", "SL2", "SL3", "IR0", "PAR", "SER", "SYS" };
@@ -497,6 +498,7 @@ static void end_of_signals(void)
 		return;
 	if (signal_queue_length > 0) {
 		int last_signal_idx = signal_queue_length - 1;
+
 		if (is_space(signal_queue_buf[last_signal_idx]))
 			signal_queue_buf[last_signal_idx] = PULSE_MASK;
 		else

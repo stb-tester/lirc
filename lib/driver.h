@@ -193,6 +193,21 @@ struct driver {
 	const char*	info;                   /**< Free text driver info. */
 
 	int (*const close_func)(void);          /**< Hard closing, returns 0 on OK.*/
+
+/* API version 3 addons: */
+	/**
+	 *  device_hint is a mean for config tools to autodetect devices.
+	 *    - /dev/tty*     User selects a tty.
+	 *    - /dev/usb/\*   Denotes serial, USB-connectd port.
+	 *    - /dev/event\*  A devinput device
+	 *    - /dev/foo\*    A wildcard listing possible devices, general
+	 *                    fallback.
+	 *    - /bin/sh ...   Shell command listing possible devices.
+	 *    - None          No device is silently configured.
+	 *    - Auto          No device configured, but a message is
+	 *                    displayed.
+	 */
+	const char* const  device_hint;
 };
 
 /** @} */

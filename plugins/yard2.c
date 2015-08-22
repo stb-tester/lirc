@@ -86,13 +86,14 @@ const struct driver hw_yard2 = {
 	.decode_func	= yard2_decode,
 	.drvctl_func	= default_drvctl,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.open_func	= default_open,
 	.close_func	= default_close,
 	.driver_version = "0.9.3",
 	.info		= "Driver for the yard2 DIY assembly kit." \
-			  "See: " YARD2_URL
+			  "See: " YARD2_URL,
+	.device_hint    = "/tmp/yardsrv_sock",
 };
 const struct driver* hardwares[] = { &hw_yard2, (const struct driver*)NULL };
 

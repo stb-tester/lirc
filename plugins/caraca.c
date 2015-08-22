@@ -62,9 +62,10 @@ const struct driver hw_caraca = {
 	.decode_func			= caraca_decode
 					  .drvctl_func	   = NULL,
 	.readdata			= NULL,
-	.api_version			= 2,
+	.api_version			= 3,
 	.driver_version			= "0.9.3",
-	.info				= "No info available."
+	.info				= "No info available.",
+	.device_hint                    = "auto",
 };
 
 const struct driver* hardwares[] = { &hw_caraca, (const struct driver*)NULL };

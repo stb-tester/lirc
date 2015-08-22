@@ -543,9 +543,10 @@ const struct driver hw_audio_alsa = {
 	.decode_func	= audio_alsa_decode,
 	.drvctl_func	= NULL,
 	.readdata	= audio_alsa_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available."
+	.info		= "No info available.",
+	.device_hint    = "default",
 };
 
 const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };

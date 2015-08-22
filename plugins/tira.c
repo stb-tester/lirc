@@ -95,9 +95,10 @@ const struct driver hw_tira = {
 	.decode_func	= tira_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 const struct driver hw_tira_raw = {
@@ -116,9 +117,10 @@ const struct driver hw_tira_raw = {
 	.decode_func	= tira_decode,
 	.drvctl_func	= NULL,
 	.readdata	= tira_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
 };
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
 
