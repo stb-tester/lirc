@@ -57,7 +57,8 @@ const struct driver hw_dvico = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 
 static int dvico_repeat_mask = 0x8000;
@@ -92,7 +93,11 @@ const struct driver hw_bw6130 = {
 	.rec_func	= hiddev_rec,
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
-	.readdata	= NULL
+	.readdata	= NULL,
+	.api_version	= 3,
+	.driver_version = "0.9.3",
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 
 const struct driver hw_asusdh = {
@@ -111,9 +116,10 @@ const struct driver hw_asusdh = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -134,8 +140,10 @@ const struct driver hw_sb0540 = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
-	.driver_version = "0.9.3"
+	.api_version	= 3,
+	.driver_version = "0.9.3",
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 #endif
 
@@ -156,9 +164,10 @@ const struct driver hw_macmini = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -179,8 +188,10 @@ const struct driver hw_samsung = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
-	.driver_version = "0.9.3"
+	.api_version	= 3,
+	.driver_version = "0.9.3",
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 #endif
 
@@ -201,9 +212,10 @@ const struct driver hw_sonyir = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 
 

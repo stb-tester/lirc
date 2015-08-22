@@ -79,9 +79,10 @@ const struct driver hw_zotac = {
 	.decode_func	= zotac_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/usb/hiddev*",
 };
 #endif
 

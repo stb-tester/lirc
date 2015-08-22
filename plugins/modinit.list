@@ -1,0 +1,1 @@
+i2cuser.c:	.modinit        = "modprobe lirc_i2c",

@@ -140,9 +140,10 @@ const struct driver hw_srm7500libusb = {
 	.decode_func	= srm7500_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 const struct driver* hardwares[] = { &hw_srm7500libusb, NULL };

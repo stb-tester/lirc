@@ -78,10 +78,11 @@ const struct driver drv_test = {
 	.decode_func	= decode_func,
 	.drvctl_func	= drvctl_func,
 	.readdata	= readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "test driver which logs received data to file, and"
-			  " optionally sends data from an input file."
+			  " optionally sends data from an input file.",
+	.device_hint    = "/tmp/*",
 };
 
 

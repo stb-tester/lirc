@@ -217,11 +217,12 @@ const struct driver hw_mplay = {
 	.decode_func	= mplayfamily_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Zalman"
-			  " Hd135 case."
+			  " Hd135 case.",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 /**
@@ -244,11 +245,12 @@ const struct driver hw_mplay2 = {
 	.decode_func	= mplayfamily_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Moneual"
-			  " Moncaso 312 case"
+			  " Moncaso 312 case",
+	.device_hint    = "/dev/ttyUSB*",
 };
 const struct driver* hardwares[] = { &hw_mplay, &hw_mplay2, NULL };
 

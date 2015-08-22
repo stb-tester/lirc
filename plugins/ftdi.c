@@ -501,9 +501,10 @@ const struct driver hw_ftdi = {
 	.decode_func	= receive_decode,
 	.drvctl_func	= hwftdi_ioctl,
 	.readdata	= hwftdi_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 const struct driver* hardwares[] = { &hw_ftdi, (const struct driver*)NULL };
