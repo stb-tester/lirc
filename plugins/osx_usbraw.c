@@ -40,10 +40,10 @@
 #include "lirc_driver.h"
 
 
-static int sonyir_init();
+static int sonyir_init(void);
 static int sonyir_deinit(void);
 static char* sonyir_rec(struct ir_remote* remotes);
-int sonyir_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int sonyir_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 
 
 enum {
@@ -94,18 +94,19 @@ const struct driver hw_sony_osx = {
 };
 
 
-int osx_iousb_open();
-void osx_iousb_shutdown();
+static int osx_iousb_open(void);
+static void osx_iousb_shutdown(void);
 
 static int
-sonyir_init()
+sonyir_init(void)
 {
 	logprintf(LIRC_INFO, "Initializing via 'osx_iousb_open()'...");
 
 	// Launch thread to communicate with USB device using kIOUSBDevice class.
 	// Needed since OSX doesn't have the hidraw device.
 	drv.fd = osx_iousb_open();
-	if (drv.fd < 0) return 0;
+	if (drv.fd < 0)
+		return 0;
 
 	return 1;
 }
@@ -174,7 +175,8 @@ int
 sony_ds_remap(uint8_t* msg)
 {
 	// Filter flaky 0x99 (HID report issue?)
-	if (msg[3] == 0x99) return 0;
+	if (msg[3] == 0x99)
+		return 0;
 
 #if DEBUG
 	if (msg[0] || msg[1] || msg[2] || msg[3])
@@ -183,45 +185,64 @@ sony_ds_remap(uint8_t* msg)
 #endif
 
 	// Left stick
-	if (msg[3] & 0x01) return KEY_UP;
-	else if (msg[3] & 0x04) return KEY_DOWN;
-	else if (msg[3] & 0x02) return KEY_RIGHT;
-	else if (msg[3] & 0x08) return KEY_LEFT;
+	if (msg[3] & 0x01)
+		return KEY_UP;
+	else if (msg[3] & 0x04)
+		return KEY_DOWN;
+	else if (msg[3] & 0x02)
+		return KEY_RIGHT;
+	else if (msg[3] & 0x08)
+		return KEY_LEFT;
 
 	// Left pad
-	else if (msg[0] & 0x10) return KEY_UP;
-	else if (msg[0] & 0x20) return KEY_DOWN;
-	else if (msg[0] & 0x40) return KEY_RIGHT;
-	else if (msg[0] & 0x80) return KEY_LEFT;
-
-	else if (msg[0] & 0x02) return KEY_RED;
-	else if (msg[0] & 0x04) return KEY_BLUE;
+	else if (msg[0] & 0x10)
+		return KEY_UP;
+	else if (msg[0] & 0x20)
+		return KEY_DOWN;
+	else if (msg[0] & 0x40)
+		return KEY_RIGHT;
+	else if (msg[0] & 0x80)
+		 return KEY_LEFT;
+	else if (msg[0] & 0x02)
+		return KEY_RED;
+	else if (msg[0] & 0x04)
+		return KEY_BLUE;
 
 	// Trigger
-	else if (msg[1] & 0x40) return KEY_ENTER;
-	else if (msg[1] & 0x20) return X_KEY_RETURN;
-	else if (msg[1] & 0x10) return KEY_MENU;
-	else if (msg[1] & 0x80) return KEY_DISPLAY;
+	else if (msg[1] & 0x40)
+		return KEY_ENTER;
+	else if (msg[1] & 0x20)
+		return X_KEY_RETURN;
+	else if (msg[1] & 0x10)
+		return KEY_MENU;
+	else if (msg[1] & 0x80)
+		return KEY_DISPLAY;
 
 	// Volume
-	else if (msg[1] & 0x08) return KEY_VOLUMEUP;
-	else if (msg[1] & 0x04) return KEY_VOLUMEDOWN;
+	else if (msg[1] & 0x08)
+		return KEY_VOLUMEUP;
+	else if (msg[1] & 0x04)
+		return KEY_VOLUMEDOWN;
 
 	// Pause
-	else if (msg[0] & 0x08) return KEY_PAUSE;
+	else if (msg[0] & 0x08)
+		return KEY_PAUSE;
 
 	// Power
-	else if (msg[2] & 0x01) return KEY_POWER;
-	else if (msg[0] & 0x01) return X_KEY_SAT_POWER;
+	else if (msg[2] & 0x01)
+		return KEY_POWER;
+	else if (msg[0] & 0x01)
+		return X_KEY_SAT_POWER;
 
 	// Not currently mapped
-	else return 0;
+	else
+		return 0;
 }
 
 
 
 // [Only difference with hiddev_decode is reading of length delimiter.]
-char* sonyir_rec(struct ir_remote* remotes)
+static char* sonyir_rec(struct ir_remote* remotes)
 {
 	struct hiddev_event ev;
 	int rd;
@@ -233,7 +254,8 @@ char* sonyir_rec(struct ir_remote* remotes)
 	// Read length delimiter from socket. If we were accessing the device
 	// directly, this would be a bit easier.
 	rd = read(drv.fd, &rd_len, 1);
-	if (rd != 1) return 0;
+	if (rd != 1)
+		return 0;
 
 	// Sony IR receiver has 3 reports:
 	//   0x01 - 5B
@@ -246,12 +268,14 @@ char* sonyir_rec(struct ir_remote* remotes)
 	// Sony DS3 - 4B manufactured report
 	case 0x4:
 		ev.value = sony_ds_remap(msg);
-		if (ev.value == 0) return 0;
+		if (ev.value == 0)
+			return 0;
 		break;
 
 	// Sony IR Receiver - 6B report
 	case 0x6:
-		if (msg[0] != 0x1) return 0;
+		if (msg[0] != 0x1)
+			return 0;
 
 		// Ignore release message
 		if ((msg[2] & 0x80) == 0x80)
@@ -288,11 +312,14 @@ struct device_params {
 };
 
 
+static IOHIDDeviceRef setup_hid_thread(struct device_params* params);
 
-IOHIDDeviceRef setup_hid_thread(struct device_params* params);
-void* osx_usb_thread(void* data);
+static void* osx_usb_thread(void* data);
 
-void usb_hid_report_callback(void* context, IOReturn result, void* sender, IOHIDReportType report_type, uint32_t report_id, uint8_t* report_data, CFIndex report_length);
+static void usb_hid_report_callback(void* context, IOReturn result,
+				    void* sender, IOHIDReportType report_type,
+				    uint32_t report_id, uint8_t* report_data,
+				    CFIndex report_length);
 
 
 // Message buffer
@@ -330,6 +357,10 @@ osx_iousb_shutdown()
 int
 osx_iousb_open()
 {
+	int result;
+	int threadError;
+	int returnVal;
+
 	if (!child_run_loop_mutex_inited) {
 		pthread_mutex_init(&child_run_loop_mutex, NULL);
 		child_run_loop_mutex_inited = true;
@@ -344,7 +375,7 @@ osx_iousb_open()
 	pthread_mutex_unlock(&child_run_loop_mutex);
 
 	// Create a pipe
-	int result = pipe(fds);
+	result = pipe(fds);
 	if (result < 0) {
 		logprintf(LIRC_ERROR, "pipe() returned %d\n", result);
 		return result;
@@ -353,14 +384,13 @@ osx_iousb_open()
 	// Launch a new thread
 	pthread_attr_t attr;
 	pthread_t posixThreadID;
-	int returnVal;
 
 	returnVal = pthread_attr_init(&attr);
 	assert(!returnVal);
 	returnVal = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	assert(!returnVal);
 
-	int threadError = pthread_create(&posixThreadID, &attr, osx_usb_thread, NULL);
+	threadError = pthread_create(&posixThreadID, &attr, osx_usb_thread, NULL);
 	if (threadError != 0) {
 		logprintf(LIRC_ERROR, "thread error???\n");
 		return threadError;
@@ -381,6 +411,7 @@ osx_usb_thread(void* data)
 {
 	IOHIDDeviceRef irr_device = NULL;
 	IOHIDDeviceRef ds3_device = NULL;
+	bool do_run;
 
 	struct device_params sony_irr_params;
 	struct device_params sony_ds3_params;
@@ -396,7 +427,7 @@ osx_usb_thread(void* data)
 	ds3_device = setup_hid_thread(&sony_ds3_params);
 
 	// Launch run loop
-	bool do_run = false;
+	do_run = false;
 	pthread_mutex_lock(&child_run_loop_mutex);
 	if (child_run_state == STATE_RUN) {
 		do_run = true;
@@ -404,13 +435,16 @@ osx_usb_thread(void* data)
 	}
 	pthread_mutex_unlock(&child_run_loop_mutex);
 
-	if (do_run) CFRunLoopRun();
+	if (do_run)
+		CFRunLoopRun();
 
 	logprintf(LIRC_INFO, "USB thread exiting...\n");
 
 	// Close devices
-	if (irr_device) IOHIDDeviceClose(irr_device, kIOHIDOptionsTypeNone);
-	if (ds3_device) IOHIDDeviceClose(ds3_device, kIOHIDOptionsTypeNone);
+	if (irr_device)
+		IOHIDDeviceClose(irr_device, kIOHIDOptionsTypeNone);
+	if (ds3_device)
+		IOHIDDeviceClose(ds3_device, kIOHIDOptionsTypeNone);
 
 	close(WRITE_FD);
 
@@ -423,8 +457,12 @@ my_create_matching_dictionary(SInt32 vendor, SInt32 device)
 {
 	CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
 
-	CFDictionarySetValue(dict, CFSTR(kIOHIDVendorIDKey), CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vendor));
-	CFDictionarySetValue(dict, CFSTR(kIOHIDProductIDKey), CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &device));
+	CFDictionarySetValue(dict, CFSTR(kIOHIDVendorIDKey),
+			     CFNumberCreate(kCFAllocatorDefault,
+			     kCFNumberIntType, &vendor));
+	CFDictionarySetValue(dict, CFSTR(kIOHIDProductIDKey),
+			     CFNumberCreate(kCFAllocatorDefault,
+			     kCFNumberIntType, &device));
 	return dict;
 }
 
@@ -450,11 +488,17 @@ get_int_property(IOHIDDeviceRef device, CFStringRef key)
 IOHIDDeviceRef
 setup_hid_thread(struct device_params* params)
 {
+	int i;
+	IOReturn ret_value;
+	IOReturn result;
 	CFArrayRef matches = NULL;
 	CFSetRef deviceCFSetRef = NULL;
 	IOHIDManagerRef manager = NULL;
 	IOHIDDeviceRef* hid_device_refs = NULL;
 	CFIndex device_count = 0;
+	IOHIDDeviceRef device;
+	IOHIDDeviceRef my_device;
+	UInt16 VID, PID, REL;
 
 	// Set up device matching dictionary
 	CFMutableDictionaryRef dict_usb_hid = my_create_matching_dictionary(params->vendor_id, params->device_id);
@@ -473,7 +517,7 @@ setup_hid_thread(struct device_params* params)
 	IOHIDManagerSetDeviceMatchingMultiple(manager, matches);
 
 	// Open HID manager
-	IOReturn ret_value = IOHIDManagerOpen(manager, kIOHIDOptionsTypeNone);
+	ret_value = IOHIDManagerOpen(manager, kIOHIDOptionsTypeNone);
 	if (ret_value != 0) {
 		logprintf(LIRC_ERROR, "IOHIDManagerOpen() returned %x\n", ret_value);
 		goto error;
@@ -499,10 +543,9 @@ setup_hid_thread(struct device_params* params)
 	CFRelease(deviceCFSetRef);
 	deviceCFSetRef = NULL;
 
-	int i;
 	for (i = 0; i < device_count; i++) {
-		UInt16 VID, PID, REL = 0;
-		IOHIDDeviceRef my_device = hid_device_refs[i];
+		REL = 0;
+		my_device = hid_device_refs[i];
 		VID = get_int_property(my_device, CFSTR(kIOHIDVendorIDKey));
 		PID = get_int_property(my_device, CFSTR(kIOHIDProductIDKey));
 		REL = get_int_property(my_device, CFSTR(kIOHIDVersionNumberKey));
@@ -510,8 +553,8 @@ setup_hid_thread(struct device_params* params)
 	}
 
 	// Open 1st device
-	IOHIDDeviceRef device = hid_device_refs[0];
-	IOReturn result = IOHIDDeviceOpen(device, kIOHIDOptionsTypeSeizeDevice);
+	device = hid_device_refs[0];
+	result = IOHIDDeviceOpen(device, kIOHIDOptionsTypeSeizeDevice);
 	if (result) {
 		logprintf(LIRC_ERROR, "IOHIDDeviceOpen() returned %d\n", result);
 		goto error;
@@ -521,13 +564,17 @@ setup_hid_thread(struct device_params* params)
 
 	IOHIDDeviceScheduleWithRunLoop(device, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
 
-	if (hid_device_refs) free(hid_device_refs);
+	if (hid_device_refs)
+		free(hid_device_refs);
 	return device;
 
 error:
-	if (matches) CFRelease(matches);
-	if (deviceCFSetRef) CFRelease(deviceCFSetRef);
-	if (hid_device_refs) free(hid_device_refs);
+	if (matches)
+		 CFRelease(matches);
+	if (deviceCFSetRef)
+		CFRelease(deviceCFSetRef);
+	if (hid_device_refs)
+		free(hid_device_refs);
 	return NULL;
 }
 
@@ -544,14 +591,18 @@ sixaxis_hysteresis(uint8_t x, uint8_t* last_x)
 {
 	switch (*last_x) {
 	case H_MED:
-		if (x >= H_H0) return *last_x = H_H0;
-		if (x <= H_L0) return *last_x = H_L0;
+		if (x >= H_H0)
+			return *last_x = H_H0;
+		if (x <= H_L0)
+			return *last_x = H_L0;
 		break;
 	case H_H0:
-		if (x < H_H1) return *last_x = H_MED;
+		if (x < H_H1)
+			return *last_x = H_MED;
 		break;
 	case 0x40:
-		if (x > H_L1) return *last_x = H_MED;
+		if (x > H_L1)
+			return *last_x = H_MED;
 		break;
 	}
 	return *last_x;
@@ -562,15 +613,24 @@ sixaxis_encode(uint8_t lx, uint8_t ly, uint8_t rx, uint8_t ry)
 {
 	uint8_t code = 0;
 
-	if (ly == H_L0) code |= 0x1;
-	if (lx == H_H0) code |= 0x2;
-	if (ly == H_H0) code |= 0x4;
-	if (lx == H_L0) code |= 0x8;
+	if (ly == H_L0)
+			code |= 0x1;
+	if (lx == H_H0)
 
-	if (ry == H_L0) code |= 0x10;
-	if (rx == H_H0) code |= 0x20;
-	if (ry == H_H0) code |= 0x40;
-	if (rx == H_L0) code |= 0x80;
+			code |= 0x2;
+	if (ly == H_H0)
+			code |= 0x4;
+	if (lx == H_L0)
+			code |= 0x8;
+
+	if (ry == H_L0)
+			code |= 0x10;
+	if (rx == H_H0)
+			code |= 0x20;
+	if (ry == H_H0)
+			code |= 0x40;
+	if (rx == H_L0)
+			code |= 0x80;
 
 	return code;
 }
@@ -613,12 +673,12 @@ usb_hid_report_callback(void* context, IOReturn result, void* sender, IOHIDRepor
 	}
 
 	// Only handle reports smaller than 256B
-	if (report_length > 255) return;
+	if (report_length > 255)
+		return;
 	wr_len = report_length;
 
 	write(WRITE_FD, &wr_len, 1);
 	write(WRITE_FD, report_data, wr_len);
-	return;
 }
 
 ///////////////////////////

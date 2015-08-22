@@ -78,25 +78,24 @@ static int udp_drvctl_func(unsigned int cmd, void* arg)
 	long value;
 
 	switch (cmd) {
-		case DRVCTL_SET_OPTION:
-			opt = (struct option_t*)arg;
-			if (strcmp(opt->key, "clocktick") == 0) {
-				value = strtol(opt->value, NULL, 10);
-				/* IR mark & space times are typically < 1ms */
-				if (value < 1 || 1000 < value) {
-					logprintf(LIRC_ERROR, "invalid clock period: %s", drv.device);
-					return DRV_ERR_BAD_VALUE;
-				}
-				drv.resolution = value;
-				return 0;
+	case DRVCTL_SET_OPTION:
+		opt = (struct option_t*)arg;
+		if (strcmp(opt->key, "clocktick") == 0) {
+			value = strtol(opt->value, NULL, 10);
+			/* IR mark & space times are typically < 1ms */
+			if (value < 1 || 1000 < value) {
+				logprintf(LIRC_ERROR, "invalid clock period: %s", drv.device);
+				return DRV_ERR_BAD_VALUE;
 			}
-			else {
-				return DRV_ERR_BAD_OPTION;
-			}
-			break;
+			drv.resolution = value;
+			return 0;
+		} else {
+			return DRV_ERR_BAD_OPTION;
+		}
+		break;
 
-		default:
-			return DRV_ERR_NOT_IMPLEMENTED;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
 	}
 	return 0;
 }
@@ -110,7 +109,7 @@ static int udp_drvctl_func(unsigned int cmd, void* arg)
  * \retval 1       Success.
  * \retval 0       Error.
  */
-int udp_init()
+int udp_init(void)
 {
 	int count;
 	unsigned int port;
@@ -123,8 +122,8 @@ int udp_init()
 	/* device string is "port" */
 	count = sscanf(drv.device, "%u", &port);
 	if (count != 1 || port < 1 || 65535 < port) {
-        logprintf(LIRC_ERROR, "invalid port: %s", drv.device);
-        return 0;
+		logprintf(LIRC_ERROR, "invalid port: %s", drv.device);
+	return 0;
 	}
 
 	logprintf(LIRC_NOTICE, "using UDP port: %d, resolution: %d", port, drv.resolution);
@@ -241,7 +240,8 @@ lirc_t udp_readdata(lirc_t timeout)
 		if ((bufptr + 4) > buflen) {
 			if (!waitfordata(timeout))
 				return 0;
-			if ((buflen = recv(sockfd, &buffer, sizeof(buffer), 0)) < 0) {
+			buflen = recv(sockfd, &buffer, sizeof(buffer), 0);
+			if (buflen < 0) {
 				logprintf(LOG_INFO, "Error reading from UDP socket");
 				return 0;
 			}
@@ -262,26 +262,26 @@ lirc_t udp_readdata(lirc_t timeout)
 		    | packed[0];
 	}
 	switch (drv.resolution) {
-		case 1:
-			break;
-		/*
-		 * TODO: This case handles the way the code used to be,
-		 * 1/16384-second or 61.03515625 microseconds are only
-		 * a fraction of a percent from 61us so do not really
-		 * justify special treatment.
-		 *
-		case 61:
-			* Convert 1/16384-seconds to microseconds *
-			* tmp = (tmp * 1000000) / 16384; *
-			* prevent integer overflow: *
-			tmp = (tmp * 15625) / 256;
-			break;
-		*/
-		default:
-			tmp *= drv.resolution;
+	case 1:
+		break;
+	/*
+	 * TODO: This case handles the way the code used to be,
+	 * 1/16384-second or 61.03515625 microseconds are only
+	 * a fraction of a percent from 61us so do not really
+	 * justify special treatment.
+	 *
+	case 61:
+		* Convert 1/16384-seconds to microseconds *
+		* tmp = (tmp * 1000000) / 16384; *
+		* prevent integer overflow: *
+		tmp = (tmp * 15625) / 256;
+		break;
+	*/
+	default:
+		tmp *= drv.resolution;
 	}
-    if (tmp > PULSE_MASK)
-        tmp = PULSE_MASK;
+	if (tmp > PULSE_MASK)
+		tmp = PULSE_MASK;
 
 	data |= tmp;
 
@@ -312,7 +312,7 @@ const struct driver hw_udp = {
 	.api_version	=	2,
 	.driver_version =	"0.9.2",
 	.info		=	"UDP driver receives IR mark and space time measurements on a UDP port and"
-				"converts them to LIRC mode2 format."
+				" converts them to LIRC mode2 format."
 };
 
 const struct driver* hardwares[] = { &hw_udp, (const struct driver*)NULL };

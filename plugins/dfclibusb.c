@@ -40,8 +40,8 @@
 
 static char device_path[PATH_MAX + 1] = {0};
 
-static int dfc_init();
-static int dfc_deinit();
+static int dfc_init(void);
+static int dfc_deinit(void);
 static char* dfc_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);

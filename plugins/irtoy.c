@@ -476,7 +476,7 @@ static int init_device(void)
 	}
 	rec_buffer_init();
 	send_buffer_init();
-        setPin(openPin, 1);
+	setPin(openPin, 1);
 	setPin(sendingPin, 0);
 	setPin(receivePin, 1);
 
