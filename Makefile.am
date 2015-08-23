@@ -19,7 +19,7 @@ if WITH_SYSTEMDSYSTEMUNITDIR
     SYSTEMD_DIR         = systemd
 endif
 
-SUBDIRS                 = lib daemons tools doc $(SYSTEMD_DIR) plugins
+SUBDIRS                 = lib daemons tools plugins configs doc $(SYSTEMD_DIR)
 
 if INSTALL_ETC
 
@@ -37,7 +37,8 @@ dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 plugindocsdir           = $(pkgdatadir)/plugindocs
 dist_plugindocs_DATA    = plugindocs/README
 
-nobase_dist_pkgdata_DATA = $(srcdir)/configs/* $(srcdir)/contrib/*
+nobase_dist_pkgdata_DATA = $(srcdir)/contrib/* \
+                           $(srcdir)/configs/kernel-drivers.dist
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
