@@ -755,6 +755,7 @@ function translate_key
                             *)    echo X_WTF;;
                         esac
                         ;;
+        *16:9*)         echo "16:9";;
         [a-z])          echo "KEY_${1^*}" ;;
         zero|up_zero)   echo "KEY_0" ;;
         one|up_one)     echo "KEY_1" ;;
@@ -768,6 +769,10 @@ function translate_key
         nine|up_nine)   echo "KEY_9" ;;
 
         appexit)        echo "KEY_EXIT" ;;
+        arrow*up)       echo "KEY_UP";;
+        arrow*down)     echo "KEY_DOWN";;
+        arrow*left)     echo "KEY_LEF";;
+        arrow*right)    echo "KEY_RIGHT";;
         asterisk)       echo "KEY_KPASTERISK" ;;
         audio)          echo "KEY_AUDIO" ;;
         back)           echo "KEY_BACK" ;;
@@ -790,7 +795,7 @@ function translate_key
         eject)          echo "KEY_EJECTCD" ;;
         *exit)          echo "KEY_EXIT" ;;
         end)            echo "KEY_END" ;;
-        enter)          echo "KEY_ENTER" ;;
+        enter)          echo "KEY_OK" ;;
         epg)            echo "KEY_EPG" ;;
         esc)            echo "KEY_ESC" ;;
         F[0-9])         echo $1 | sed 's/F\([0-9]\)/KEY_F\1/' ;;
@@ -801,7 +806,7 @@ function translate_key
         forward|fw|fwd|fwd_up)
                         echo "KEY_FORWARD" ;;
         green)          echo "KEY_GREEN" ;;
-        guide)          echo "KEY_INFO" ;;
+        guide)          echo "KEY_EPG" ;;
         hash)           echo "KEY_NUMERIC_POUND" ;;
         help)           echo "KEY_HELP" ;;
         home)           echo "KEY_HOME" ;;
@@ -811,6 +816,10 @@ function translate_key
         list)           echo "KEY_LIST" ;;
         live*tv)        echo "KEY_TV" ;;
         max*)           echo "KEY_MAX" ;;
+        menu*up)        echo "KEY_UP";;
+        menu*down)      echo "KEY_DOWN";;
+        menu*right)     echo "KEY_RIGHT";;
+        menu*left)      echo "KEY_LEFT";;
         menu)           echo "KEY_MENU" ;;
         minus)          echo "KEY_KPMINUS" ;;
         mode)           echo "KEY_MODE" ;;
@@ -818,18 +827,22 @@ function translate_key
         mute)           echo "KEY_MUTE" ;;
         next*|skip)     echo "KEY_NEXT" ;;
         ok)             echo "KEY_OK" ;;
+        on*demand)      echo "X_KEY_ONDEMAND";;
+        onscreen*)      echo "KEY_EPG";;
         on*)            echo "KEY_POWER" ;;
         options)        echo "KEY_OPTIONS" ;;
-        osd)            echo "KEY_MENU" ;;
+        osd)            echo "KEY_EPG" ;;
         pause)          echo "KEY_PAUSE" ;;
         phone)          echo "KEY_PHONE" ;;
         pc)             echo "KEY_PC" ;;
         pg*up)          echo "KEY_PAGEUP";;
         pg*down|pg_dn)  echo "KEY_PAGEDOWN";;
+        play*mode)      echo "X_KEY_PLAYMODE";;
+        play*list)      echo "X_KEY_PLAYLIST";;
         play*pause)     echo "KEY_PLAYPAUSE" ;;
         play*)          echo "KEY_PLAY" ;;
         power*|pwr)     echo "KEY_POWER" ;;
-        prev*ch)        echo "KEY_CHANNELDOWN" ;;
+        prev*ch)        echo "KEY_PREVIOUS" ;;
         prev)           echo "KEY_PREVIOUS" ;;
         prog*up|p+)     echo "KEY_CHANNELUP" ;;
         prog*down|p-)   echo "KEY_CHANNELDOWN" ;;
