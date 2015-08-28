@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 ## Makefile.am, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 ACLOCAL_AMFLAGS         = -I m4
-AM_MAKEFLAGS            = -j
 
 AUTOMAKE_OPTIONS        = 1.5 check-news dist-bzip2 -Wno-portability
 
