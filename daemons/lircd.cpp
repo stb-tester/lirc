@@ -973,7 +973,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	if (fd > 0)
 		pidf = fdopen(fd, "r+");
 	if (fd == -1 || pidf == NULL) {
-		perrorf("%s: can't open or create %s", pidfile);
+		perrorf("can't open or create %s", pidfile);
 		exit(EXIT_FAILURE);
 	}
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
