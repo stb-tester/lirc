@@ -1025,10 +1025,12 @@ read_config_recursive(FILE* f, const char* name, int depth)
 						/* create first remote */
 						LOGPRINTF(2, "creating first remote");
 						rem = top_rem = s_malloc(sizeof(struct ir_remote));
+						rem->freq = DEFAULT_FREQ;
 					} else {
 						/* create new remote */
 						LOGPRINTF(2, "creating next remote");
 						rem = s_malloc(sizeof(struct ir_remote));
+						rem->freq = DEFAULT_FREQ;
 						ir_remotes_append(top_rem, rem);
 					}
 				} else if (mode == ID_codes) {
