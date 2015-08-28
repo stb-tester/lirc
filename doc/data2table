@@ -7,6 +7,7 @@ import os
 import sys
 import yaml
 
+from lirc import database
 
 
 MENUS = {'home_brew': 'Home-brew serial and parallel devices',
@@ -39,53 +40,48 @@ def here(path):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
 
 
-def load_configs(configdir_arg):
-    ''' Load config files into a dict keyed by id. '''
-    configs = {}
-
-    if configdir_arg:
-        configdir = configdir_arg
-    elif os.path.exists(here('configs')):
-        configdir = here('configs')
-    elif os.path.exists(here('../configs')):
-        configdir = here('../configs')
-    else:
-        print("Cannot find the configuration files")
-        sys.exit(1)
-    configs = {}
-    for path in glob.glob(configdir + '/*.conf'):
-        if path == 'configuration.conf':
-            continue
-        with open(path) as f:
-            cf = yaml.load(f.read())
-        configs[cf['config']['id']] = cf['config']
-    return configs
-
-
-def _add_submenu(menu, configs):
+def _add_submenu(menu, configs, db):
     ''' Return all entries for a submenu as a string of html table rows. '''
 
     def getit(remote, what, _default='&nbsp;'):
         ''' Get an item from  a remote, using default if not existing. '''
         try:
-            return remote[what]
+            driver = db.drivers[remote['driver']]
         except KeyError:
-            return _default
+            driver = None
+        try:
+            value = remote[what]
+        except KeyError:
+            if not driver:
+                return _default
+            try:
+                value = driver[what]
+            except KeyError:
+                return _default
+        if isinstance(value, list):
+            return ' '.join(value)
+        return value
 
     s = '<tr><th colspan="5"><a name="%s">\n'  %  menu
     s += MENUS[menu] + '</a></th></tr> \n'
     if not configs:
         return ""
     for remote in sorted(configs, key=lambda r: getit(r, 'label', '')):
+        if remote['id'] == 'irlink':
+            pass
         s += '<tr>'
-        s += '<td>' +  getit(remote, 'label') + '</td>'
-        s += '<td>' + ' '.join(getit(remote, 'modules', ['&nbsp;'])) + '</td>'
+        s += '<td>' + getit(remote, 'label') + '</td>'
+        s += '<td>' + getit(remote, 'modinit') + '</td>'
         s += '<td>' + getit(remote, 'driver') + '</td>'
         s += '<td>'
         files = getit(remote, 'lircd_conf') + ' ' + getit(remote, 'lircmd_conf')
-        s += files.replace('run_select_any_config', '')
+        driver = remote['driver']
+        files += ' '.join(db.remotes_by_driver(driver))
+        files += ' '.join(db.lircmd_by_driver(driver))
+        s += files
         s += '</td>'
-        s += '<td>' + getit(remote, 'supports') + '</td>'
+        s += '<td>' + getit(remote, 'type') + '</td>'
+        s += '</tr>'
     return s.replace('& ', '&amp; ')
 
 
@@ -98,7 +94,7 @@ def main():
         print("Usage: data2hwdb [configuration directory]")
         sys.exit(1)
 
-    configs = load_configs(configdir)
+    db = database.Database(configdir)
     template = _TEMPLATE
 
     text = ''
@@ -107,10 +103,12 @@ def main():
             (menu, MENUS[menu])
     text += '<tr><th colspan="5"><hr></th></tr>\n'
     for menu in MENUS.keys():
-        menuconfigs = [cf for cf in configs.values() if cf['menu'] == menu]
-        text += _add_submenu(menu, menuconfigs)
+        menuconfigs = [cf for cf in db.configs.values()
+                       if cf['menu'] == menu]
+        text += _add_submenu(menu, menuconfigs, db)
 
     template = template.replace('@TABLE_ROWS@', text)
     print(template)
+
 
 main()
