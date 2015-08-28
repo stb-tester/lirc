@@ -1610,8 +1610,6 @@ static int version(int fd, char* message, char* arguments)
 {
 	char buffer[PACKET_SIZE + 1];
 
-	if (arguments != NULL)
-		return send_error(fd, message, "bad send packet\n");
 	sprintf(buffer, "1\n%s\n", VERSION);
 	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
 	      write_socket_len(fd, message) && write_socket_len(fd, protocol_string[P_SUCCESS])
