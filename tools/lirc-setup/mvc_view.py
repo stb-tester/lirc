@@ -7,7 +7,6 @@ from gi.repository import Gtk         # pylint: disable=no-name-in-module
 
 import baseview
 
-from baseview import _hasitem
 from baseview import _on_window_delete_event_cb
 
 REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
@@ -16,8 +15,8 @@ _DEBUG = 'LIRC_DEBUG' in os.environ
 NO_REMOTE_INFO = """
 If you select this option, you need to provide a lircd.conf file
 later, either by finding it elsewhere or by recording your own using
-the irrecord tool. Normally you want to install this file as
-/etc/lirc/lircd.conf."""
+the irrecord tool. Normally you want to install this file in
+/etc/lirc/lircd.conf.d."""
 
 DEVINPUT_INFO = """
 The devinput driver uses the linux kernel decoding rather than lirc's.
@@ -175,7 +174,7 @@ class View(baseview.Baseview):
         text = "(None)"
         sense_conf = False
         if self.model.has_lircd_conf():
-            text = self.model.config['lircd_conf']
+            text = self.model.config.lircd_conf
             if not self.model.is_remote_manual():
                 sense_conf = True
         self.builder.get_object('selected_remote_lbl').set_text(text)
@@ -185,7 +184,7 @@ class View(baseview.Baseview):
         text = 'Selected capture device (None)'
         sensitive = True if self.model.has_label() else False
         if sensitive:
-            text = self.model.config['label']
+            text = self.model.config.label
         self.builder.get_object('view_driver_btn').set_sensitive(sensitive)
         self.builder.get_object('selected_driver_lbl').set_text(text)
         self.builder.get_object('selected_driver_lbl').queue_draw()
@@ -194,8 +193,7 @@ class View(baseview.Baseview):
 
     def load_configs(self):
         ''' Load config files into model. -> control... '''
-        self.model.load_configs()
-        if not self.model.configs:
+        if not self.model.db:
             self.view.show_warning("Cannot find the configuration files")
 
     def show_driver(self):
@@ -203,32 +201,33 @@ class View(baseview.Baseview):
 
         def format_path(config, key):
             ''' Format a lircd.conf/lircmd.conf entry. '''
-            if not _hasitem(config, key):
+            if not hasattr(config, key) or not getattr(config, key):
                 return 'Not set'
-            return os.path.basename(config[key])
+            return os.path.basename(getattr(config, key))
 
         items = [
             ('Driver', 'driver'),
             ('lircd.conf file', 'lircd_conf'),
             ('lircmd.conf file', 'lircmd_conf'),
             ('lircd --device option', 'device'),
-            ('Kernel modules required and loaded', 'modprobe'),
-            ('Kernel module setup', 'modsetup'),
-            ('Blacklisted kernel modules', 'conflicts')
+            ('Kernel setup code', 'modinit'),
+            ('Kernel modprobe config', 'modprobe'),
         ]
         s = ''
         for label, key in items:
-            s += "%-36s: " % label
+            s += "%-24s: " % label
             if key in ['lircd_conf', 'lircmd_conf']:
                 s += format_path(self.model.config, key)
+            elif key == 'driver':
+                s += str(getattr(self.model.config, 'driver')['id'])
             else:
-                s += str(self.model.config[key]) \
-                    if key in self.model.config else 'Not set'
+                w = str(getattr(self.model.config, key))
+                s += w if w else 'Not set'
             s += "\n"
         s = "<tt>" + s + "</tt>"
         self.show_info('lirc: Driver configuration', s)
 
-    def show_select_lpt_window(self, module):
+    def show_select_lpt_window(self):
         ''' Show window for selecting lpt1, lpt2... '''
 
         ports = {'lpt1': ['7', '0x378'],
@@ -255,9 +254,8 @@ class View(baseview.Baseview):
                 else:
                     iobase = ports[btn_id][0]
                     irq = ports[btn_id][1]
-                modsetup = '%s: iobase=%s irq=%s' % (module, iobase, irq)
             button.get_toplevel().hide()
-            self.controller.modinit_done(modsetup)
+            self.model.set_lpt_parms(irq, iobase, btn_id)
 
         for btn in ports.keys():
             b = self.builder.get_object(btn + '_lpt_btn')
@@ -288,11 +286,10 @@ class View(baseview.Baseview):
                 return True
             else:
                 self.model.set_device(numtext)
-                self.controller.modinit_done(None)
-                device_dict = dict(self.model.find_config('id', 'udp'))
-                device_dict['label'] += ' ' + numtext
-                device_dict['device'] = numtext
-                self.model.set_capture_device(device_dict)
+                self.controller.modprobe_done(None)
+                config = self.model.db.configs['udp']
+                self.model.set_config(config)
+                self.model.config.device = numtext
             button.get_toplevel().hide()
 
         def on_udp_port_back_cb(button, data=None):
@@ -309,7 +306,7 @@ class View(baseview.Baseview):
         entry.set_text("8765")
         w.show_all()
 
-    def show_select_com_window(self, module):
+    def show_select_com_window(self):
         ''' Show window for selecting com1, com2... '''
 
         ports = {'com1': ['4', '0x3f8'],
@@ -333,8 +330,7 @@ class View(baseview.Baseview):
                 else:
                     iobase = ports[btn_id][1]
                     irq = ports[btn_id][0]
-                modsetup = '%s: iobase=%s irq=%s' % (module, iobase, irq)
-            self.controller.modinit_done(modsetup)
+            self.model.set_serial_parms(irq, iobase, btn_id)
             button.get_toplevel().hide()
 
         def on_com_select_back_cb(button, data=None):
@@ -406,9 +402,11 @@ class View(baseview.Baseview):
                                              on_treeview_change_cb)
             liststore = treeview.get_model()
             liststore.clear()
-            configs = self.model.get_configs()
-            labels = [configs[l]['label']
-                      for l in configs.keys() if configs[l]['menu'] == menu]
+            db = self.model.db
+            labels = [db.configs[l]['label']
+                      for l in db.configs.keys()
+                      if db.configs[l]['menu'] == menu]
+
             for l in sorted(labels):
                 liststore.append([l])
 
@@ -423,8 +421,8 @@ class View(baseview.Baseview):
         def on_preconfig_next_clicked_cb(button, data=None):
             ''' User pressed 'Next' button. '''
             label = self.builder.get_object('preconfig_select_lbl')
-            device = self.model.find_config('label', label.get_text())
-            self.model.set_capture_device(device)
+            config = self.model.db.find_config('label', label.get_text())
+            self.model.set_config(config)
             button.get_toplevel().hide()
             self.builder.get_object('preconfig_window').hide()
             self.controller.start_check()

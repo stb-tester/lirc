@@ -65,7 +65,7 @@ class Baseview(object):
                               Gtk.ButtonsType.OK,
                               header)
         if body:
-            d.format_secondary_markup(body)
+            d.format_secondary_markup(body.replace('@', ' at '))
         d.run()
         d.destroy()
         if exit_:
