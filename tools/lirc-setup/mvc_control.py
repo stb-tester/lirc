@@ -14,9 +14,9 @@ _DEBUG = 'LIRC_DEBUG' in os.environ
 _REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
 
 
-def _hasitem(dict_, key_):
+def _hasitem(dict_, key):
     ''' Test if dict contains a non-null value for key. '''
-    return key_ in dict_ and dict_[key_]
+    return key in dict_ and dict_[key] and dict_[key] != 'None'
 
 
 def _here(path):
@@ -29,8 +29,8 @@ class Controller(object):
 
     CHECK_START = 1                  # << Initial setup
     CHECK_DEVICE = 2                 # << Configure device wildcard
-    CHECK_REQUIRED = 3               # << Info in required modules
-    CHECK_INIT = 4                   # << Define module parameters
+    CHECK_INIT = 3                   # << Info on kernel setup
+    CHECK_MODPROBE = 4               # << Define module parameters
     CHECK_LIRCD_CONF = 5             # << Setup the lircd_conf
     CHECK_NOTE = 6                   # << Display the note: message
     CHECK_DONE = 7
@@ -42,87 +42,85 @@ class Controller(object):
         self.state = self.CHECK_DEVICE
         self.cli_options = {}
 
-    def check_required(self):
-        ''' Check that required modules are present. '''
-        if not _hasitem(self.model.config, 'modules'):
-            self.check(self.CHECK_INIT)
-            return
-        text = mvc_model.check_modules(self.model.config)
-        if text:
-            text = "<tt>" + text + "</tt>"
-            self.view.show_info("lirc: module check", text)
-        self.check(self.CHECK_INIT)
+    def check_modprobe(self):
+        ''' Let user define kernel module parameters. '''
+        # pylint: disable=bad-indentation
+        driver = self.model.driver['id']
+        if driver == 'lirc_serial':
+            self.state = self.CHECK_DIALOG
+            self.view.show_select_com_window()
+        elif driver == 'lirc_parallel':
+            self.state = self.CHECK_DIALOG
+            self.view.show_select_lpt_window()
+        else:
+            if 'modprobe' in self.model.driver \
+                and self.model.driver['modprobe']:
+                    self.model.config.modprobe = self.model.driver.modprobe
+            self.check(self.CHECK_LIRCD_CONF)
 
-    def modinit_done(self, modsetup):
+    def modprobe_done(self, modprobe):
         ''' Signal that kernel module GUI configuration is completed. '''
-        if modsetup:
-            self.model.config['modsetup'] = modsetup
+        if modprobe:
+            self.model.config.modprobe = modprobe
         self.check(self.CHECK_LIRCD_CONF)
 
     def check_modinit(self):
-        ''' Let user define kernel module parameters. '''
-        if not _hasitem(self.model.config, 'modinit'):
-            self.check(self.CHECK_LIRCD_CONF)
-            return
-        modinit = self.model.config['modinit'].split()
-        if modinit[0].endswith('select_module_tty'):
-            self.state = self.CHECK_DIALOG
-            self.view.show_select_com_window(modinit[2])
-        elif modinit[0].endswith('select_lpt_port'):
-            self.state = self.CHECK_DIALOG
-            self.view.show_select_lpt_window(modinit[2])
-        else:
-            self.check(self.CHECK_LIRCD_CONF)
+        ''' Check kernel setup code.'''
+        #driver = self.model.config.driver['id']
+        #if 'modinit' in self.model.db.drivers[driver]:
+        #    modinit = self.model.db.drivers[driver]['modinit']
+        #    if modinit and modinit not in [None, 'None']:
+        #        self.view.show_info("Kernel setup required",
+        #                            "Required setup: " + modinit)
+        #        self.model.set_modinit(modinit)
+        self.check(self.CHECK_MODPROBE)
 
-    def configure_device(self, config, next_state=None):
-        ''' Configure the device for a given config entry. '''
+    def configure_device(self, driver, next_state=None):
+        ''' Configure the device for a given driver entry. '''
 
         def on_select_cb(driver_id, device):
             ''' Invoked when user selected a device.'''
-            self.select_device_done(driver_id, device, next_state)
+            self.select_device_done(device, next_state)
 
-        device_list = mvc_model.device_list_factory(config, self.model)
+        if isinstance(driver, str):
+            self.model.driver = self.model.db.drivers[driver]
+        else:
+            self.model.driver = driver
+        device_list = mvc_model.device_list_factory(driver, self.model)
         if device_list.is_empty():
             self.view.show_warning(
                 "No device found",
                 'The %s driver can not be used since a suitable'
                 ' device matching  %s cannot be found.' %
-                (config['id'], config['device']))
+                (driver['id'], driver['device_hint']))
             self.check(next_state)
         elif device_list.is_direct_installable():
             device = list(device_list.label_by_device.keys())[0]
             label = device_list.label_by_device[device]
             msg = "Using the only available device %s (%s)" % (device, label)
             self.view.show_info(msg)
-            self.select_device_done(config['id'], device, next_state)
+            self.select_device_done(device, next_state)
         else:
             gui = choosers.factory(device_list, self.view, on_select_cb)
             gui.show_dialog()
 
     def check_device(self):
         ''' Check device, possibly let user select the one to use. '''
-        config = self.model.config
-        if 'device' not in config or config['device'] in [None, 'None']:
-            config['device'] = 'None'
-            self.model.set_capture_device(config)
-            self.check(self.CHECK_REQUIRED)
+        if not self.model.config.device or self.model.config.device == 'None':
+            self.model.clear_capture_device()
+            self.check(self.CHECK_INIT)
         else:
             self.state = self.CHECK_DIALOG
-            device_dict = {'id': config['driver'],
-                           'device': config['device'],
-                           'label': config['label']}
-            self.configure_device(device_dict, self.CHECK_REQUIRED)
+            self.configure_device(self.model.config.driver, self.CHECK_INIT)
 
-    def select_device_done(self, driver_id, device, next_state):
+    def select_device_done(self, device, next_state):
         ''' Callback from GUI after user selected a specific device. '''
-        config = self.view.model.find_config('id', driver_id)
-        self.model.set_capture_device(config)
         self.model.set_device(device)
         self.check(next_state)
 
     def check_lircd_conf(self):
         ''' Possibly  install a lircd.conf for this driver...'''
-        remotes = mvc_model.get_bundled_remotes(self.model.config, self.view)
+        remotes = mvc_model.get_bundled_remotes(self.model)
         if len(remotes) == 0:
             self.check(self.CHECK_NOTE)
             return
@@ -141,8 +139,8 @@ class Controller(object):
     def check_note(self):
         ''' Display the note: message in configuration file. '''
         self.state = self.CHECK_DONE
-        if _hasitem(self.model.config, 'note'):
-            self.view.show_info('Note', self.model.config['note'])
+        if self.model.config.note:
+            self.view.show_info(self.model.config.note)
 
     def check(self, new_state=None):
         ''' Main FSM entry running actual check(s). '''
@@ -152,7 +150,7 @@ class Controller(object):
             self.CHECK_NOTE: self.check_note,
             self.CHECK_INIT: self.check_modinit,
             self.CHECK_DEVICE: self.check_device,
-            self.CHECK_REQUIRED: self.check_required,
+            self.CHECK_MODPROBE: self.check_modprobe,
             self.CHECK_LIRCD_CONF: self.check_lircd_conf
         }
         if new_state:
@@ -164,16 +162,16 @@ class Controller(object):
     def show_devinput(self):
         ''' Configure the devinput driver i. e., the event device. '''
         self.model.clear_capture_device()
-        config = self.model.find_config('id', 'devinput')
-        self.model.set_capture_device(config)
-        self.configure_device(config, self.CHECK_REQUIRED)
+        config = self.model.db.configs['devinput']
+        self.model.set_config(config)
+        self.configure_device(config['driver'], self.CHECK_INIT)
 
     def show_default(self):
         ''' Configure the default driver i. e., the default device. '''
         self.model.clear_capture_device()
-        config = self.model.find_config('id', 'default')
-        self.model.set_capture_device(config)
-        self.configure_device(config, self.CHECK_REQUIRED)
+        config = self.model.db.configs['default']
+        self.model.set_config(config)
+        self.configure_device(config['driver'], self.CHECK_INIT)
 
     def start_check(self):
         ''' Run the first step of the configure dialogs. '''
@@ -181,15 +179,14 @@ class Controller(object):
 
     def set_remote(self, remote, next_state=None):
         ''' Update the remote. '''
-        config = self.model.get_bundled_driver(remote, self.view)
-        if config:
-            self.model.set_capture_device(config)
+        driver = self.model.get_bundled_driver(remote)
+        if driver:
+            self.model.set_driver(driver)
         self.model.set_remote(remote)
-        if not config:
+        if not driver:
             return
-        if self.model.config['driver'] != config['driver'] or \
-                self.model.config['device'] != config['device']:
-            self.configure_device(config, next_state)
+        if driver:
+            self.configure_device(driver, next_state)
 
     def select_remote(self, pattern):
         ''' User has entered a search pattern, handle it. '''
@@ -230,7 +227,7 @@ class Controller(object):
 
     def write_results(self):
         ''' Write configuration files into resultdir. '''
-        log = mvc_model.write_results(self.model.config,
+        log = mvc_model.write_results(self.model,
                                       self.cli_options['results_dir'],
                                       self.view)
         self.view.show_info('Installation files written', log)
@@ -244,7 +241,8 @@ class Controller(object):
                                                              errors='ignore')
         except urllib.error.URLError as ex:
             text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
-        self.view.show_text(text, 'lirc: Remote config file')
+        self.view.show_text('<tt>' + text + '</tt>',
+                            'LIRC: Remote config file')
 
 
 def main():

@@ -113,7 +113,7 @@ class DeviceSelector(baseview.Baseview):
             self.view.show_text('\n'.join(lines))
         else:
             self.view.show_text(
-                'No dmesg info found for ' + device['device'])
+                'No dmesg info found for ' + device)
 
     def on_ok_btn_clicked_cb(self, button, data=None):
         ''' User clicked OK, go ahead and select active device. '''
