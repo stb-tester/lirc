@@ -9,7 +9,7 @@
 
 This is the README file for LIRC, the Linux Infrared Remote Control
 package. The main documentation of this package is available in HTML
-format at http://lirc.org. After building the documentation is also
+format at http://lirc.sf.net. After building the documentation is also
 available at doc/html/index.html.
 
 Updated versions of lirc is available using the website http://lirc.org.
@@ -30,13 +30,11 @@ NEWS file which contains all user visible changes between
 releases. Also at least read the "Updating from lirc-x.y.z" sections
 in the main documentation.
 
-
 ## What is LIRC?
 
 LIRC is a package that allows you to decode and send infra-red signals
-of many (but not all) commonly used remote controls.
-Pre-release versions are currently available at the LIRC homepage:
-http://www.lirc.org/
+of many (but not all) commonly used remote controls. Pre-release versions
+are currently available at the LIRC homepage: http://www.lirc.org/
 
 Former versions focused on home-brew hardware connected to the serial
 or parallel port. Descriptions how to build this hardware can be found
@@ -59,13 +57,10 @@ applications are obvious: Infra-red mouse, remote control for your TV
 tuner card or CD-ROM, shutdown by remote, program your VCR and/or
 satellite tuner with your computer, etc.
 
-Adding new remotes is still problematic but since version 0.5.2 there
-is a program (irrecord)  that will try to add new remote controls
-automatically.
+Since some time some of the LIRC functionality has been moved to the
+kernel. However, LIRC still adds functionality and flexibility to the
+kernel.
 
-Don't expect much documentation. This is only a pre-release version
-and there is still much to be done before LIRC becomes easily
-configurable and usable.
-For people with a little C/C++ knowledge this should already be possible
-with this pre-release. Otherwise, wait for version 1.0.
+## Bug tracker and mailing list.
 
+See https://sourceforge.net/projects/lirc/
