@@ -1,4 +1,5 @@
-0.9.3 TBD
+0.9.3 4/9/15
+
   * Digest of 0.9.3pre1..0.9.3pre3
 
   * New build dependency: xsltproc (sometimes coming with libxml).
