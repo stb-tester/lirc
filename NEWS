@@ -1,11 +1,83 @@
-0.9.3
+0.9.4-devel
+  * TBD
+
+0.9.3  4/09/15
+  * Digest of 0.9.3pre1..0.9.3pre3
+
+  * New build dependency: xsltproc (sometimes coming with libxml).
+  * The irexec semantics have been changed so that the invoked
+    programs run disconnected from the main irexec process.
+    See irexec(1) (#92).
+  * irrecord has got some love:
+     + It handles multiple definitions of same symbol OK (#78)
+     + Warns about single-key config files (#77)
+     + Checks for ambient light disturbances (#76)
+     + New option allows updating of existing template file.
+     + Template handling bug fixed
+     + -l --list-namespace option parsing bug fixed (#101).
+     + Minor fixes to irrecord-ui including -k option parsing fixed.
+  * mode2 has been updated
+     +  handle also LIRCCODE devices (#94),
+     +  Drop root privileges (#91)
+     +  Add  new scope-like display
+     +  Handle the--driver-options switch
+  * xmode2 has been updated to handle udp driver, the new
+    --driver-options switch + some general overhaul.
+  * irrecord has been split into a library and a cli interface
+    (#36). The library interface is unstable.
 
   * The select() calls in lircd, lircrcd and library routines have
     been replaced with poll() to avoid crashes when file descriptors
     becomes > 1024 (#109).
+  * Set supplementary groups using effective-user (RH bz 1253907).
+  * Work around kernel bug in /dev/lirc0 output (#119).
+  * lircmd: Several option parsing bugs fixed, one of which
+    blocked the systemd service (#104, RH bz 1234155).
+  * lirc-lsremotes now displays logs after parsing files, making
+    more parsing warnings visible.
+  * lirc-config-tool is fixed to comply with guidelines (#105).
+  * Bug in irexec when using modes fixed (#102).
+  * Create log directory if required (#124).
+  * lirc-setup: Fixed name clash on recent python versions.
+
+  * irtoy: New support for debug LEDs. New documentation
+    file, support in lirc-setup and driver table doc added.
+  * The udp driver is patched to allow adjustable clockrates,
+    see new udp_driver.html driver doc.
+  * The mplay driver has been updated with patches which has
+    been available "out there".
+
+  * The library routines for parsing lircd.conf now warns for
+    duplicate keys and values (#107).
+  * Enhanced pkg-config support for drivers compiled out-of-tree
+    (see driver-api in the manual).
+  * Hardcoded CFLAGS in Makefiles fixed (#124).
+  * The compiler has been switched to c++, and filenames are
+    updated to *.cpp (#79)
+  * Build: now uses parallel make by default.
+  * Overall code formatting is improved with more consistent
+    layout and updated git hook. See CONTRIBUTE.md
+
+  * Unlinked and hard to find driver docs and manpages have
+    been linked.
   * The documentation is heavily revised. Old obsolete text is
     removed, the manual is reorganized, some info is moved to
     manpages and a lot of minor updates and bugfixes.
+
+  * The lircd.simsend and lircd.simreceive tools have been removed,
+    superseeded by irsimsend and irsimreceive.
+  * A new kernel driver irpipe has been added. This allows feeding data
+    from userspace to lircd, which can use the /dev/irpipeX device
+    as a clean substitute for /dev/lircX. A companion CLI tool
+    irpipe(1) is also added.
+  * Options parsing (notably -U) and just listing first remote
+    bugs in irsimsend have been fixed.
+
+
+0.9.3pre3 16/08/15
+  * The select() calls in lircd, lircrcd and library routines have
+    been replaced with poll() to avoid crashes when file descriptors
+    becomes > 1024 (#109).
   * Set supplementary groups using effective-user (RH bz 1253907).
   * Work around kernel bug in /dev/lirc0 output (#119).
   * Create log directory if required (#124).
@@ -30,10 +102,6 @@
   * Bug in irexec when using modes fixed (#102).
   * Options parsing (notably -U) and just listing first remote
     bugs in irsimsend have been fixed.
-  * A new kernel driver irpipe has been added. This allows feeding data
-    from userspace to lircd, which can use the /dev/irpipeX device
-    as a clean substitute for /dev/lircX. A companion CLI tool
-    irpipe(1) is also added.
 
 0.9.3pre1 30/06/15
 
