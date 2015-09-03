@@ -25,6 +25,10 @@ simsend.out
 var
 *.log
 
+drivers.yaml
+kernel-drivers.yaml
+confs_by_driver.yaml
+
 # lirc-setup cruft
 lirc-setup.conf.d
 
