@@ -292,7 +292,6 @@ website_files           =  lirc.org/audio-alsa.html \
                            lirc.org/pictures.html \
                            lirc.org/pinout_TRM1038.txt \
                            lirc.org/receivers.html \
-                           lirc.org/Remote-Control-XMMS.pdf \
                            lirc.org/robots.txt \
                            lirc.org/software.html \
                            lirc.org/transmitters.html \
