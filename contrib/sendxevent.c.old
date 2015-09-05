@@ -2,12 +2,12 @@
   sendxevent.c
 
   02/04/2002:  This is a quick hack to make a version of this program (irxevent)
-	       which takes its input from the commandline, rather than from a
-	       combination of an lirc config file, and an lirc ir code.
+               which takes its input from the commandline, rather than from a
+               combination of an lirc config file, and an lirc ir code.
 
   NOTE:  it also includes the more general purpose RootWindow support, which
-	 is a nice 3 line addition to the original program as well, allowing
-	 the window id field to understand RootWindow as well as CurrentWindow
+         is a nice 3 line addition to the original program as well, allowing
+         the window id field to understand RootWindow as well as CurrentWindow
 
   I compile with 'gcc -L/usr/X11R6/lib -lX11 -o sendxevent sendxevent.c'
 
@@ -76,7 +76,7 @@
  *     -added xy_Key (though xterm and xemacs still don't like me)
  *     -added compilation patch from Ben Hochstedler
  *      <benh@eeyore.moneng.mei.com> for compiling on systems
- * 	without strsep() (like some solaris)
+ *      without strsep() (like some solaris)
  *
  *
  * see http://www.wh9.tu-dresden.de/~heinrich/lirc/irxevent/irxevent.keys
@@ -111,10 +111,10 @@
 #ifdef DEBUG
 void debugprintf(char *format_str, ...)
 {
-	va_list ap;
-	va_start(ap,format_str);
-	vfprintf(stderr,format_str,ap);
-	va_end(ap);
+        va_list ap;
+        va_start(ap,format_str);
+        vfprintf(stderr,format_str,ap);
+        va_end(ap);
 }
 #else
 void debugprintf(char *format_str, ...)
@@ -124,8 +124,8 @@ void debugprintf(char *format_str, ...)
 
 
 struct keymodlist_t {
-	char *name;
-	Mask mask;
+        char *name;
+        Mask mask;
 };
 static struct keymodlist_t keymodlist[]=
 {
@@ -244,17 +244,17 @@ Window find_sub_sub_window(Window top,int *x, int *y)
   /* check if we hit a sub window and find the smallest one */
   for(;nc>0;nc--)  {
     if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y,
-		    &width, &height, &border, &depth)){
+                    &width, &height, &border, &depth)){
       if ((rel_x<=*x)&&(*x<=rel_x+width)&&(rel_y<=*y)&&(*y<=rel_y+height)){
-	debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
-	if ((width*height)<targetsize){
-	  target=children[nc-1];
-	  targetsize=width*height;
-	  new_x=*x-rel_x;
-	  new_y=*y-rel_y;
-	  /*bull's eye ...*/
-	  target=find_sub_sub_window(target,&new_x,&new_y);
-	}
+        debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
+        if ((width*height)<targetsize){
+          target=children[nc-1];
+          targetsize=width*height;
+          new_x=*x-rel_x;
+          new_y=*y-rel_y;
+          /*bull's eye ...*/
+          target=find_sub_sub_window(target,&new_x,&new_y);
+        }
       }
     }
   };
@@ -288,17 +288,17 @@ Window find_sub_window(Window top,char *name,int *x, int *y)
   /* check if we hit a sub window and find the smallest one */
   for(;nc>0;nc--)  {
     if(XGetGeometry(dpy, children[nc-1], &foo, &rel_x, &rel_y,
-		    &width, &height, &border, &depth)){
+                    &width, &height, &border, &depth)){
       if ((rel_x<=*x)&&(*x<=rel_x+width)&&(rel_y<=*y)&&(*y<=rel_y+height)){
-	debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
-	if ((width*height)<targetsize){
-	  target=children[nc-1];
-	  targetsize=width*height;
-	  new_x=*x-rel_x;
-	  new_y=*y-rel_y;
-	  /*bull's eye ...*/
-	  target=find_sub_sub_window(target,&new_x,&new_y);
-	}
+        debugprintf("found a subwindow %x +%d +%d  %d x %d   \n",children[nc-1], rel_x,rel_y,width,height);
+        if ((width*height)<targetsize){
+          target=children[nc-1];
+          targetsize=width*height;
+          new_x=*x-rel_x;
+          new_y=*y-rel_y;
+          /*bull's eye ...*/
+          target=find_sub_sub_window(target,&new_x,&new_y);
+        }
       }
     }
   };
@@ -352,12 +352,12 @@ void make_key(char *keyname,int x, int y,XKeyEvent *xev)
       //      debugprintf("-   %s \n",part);
       kmlptr=keymodlist;
       while (kmlptr->name)
-	{
-	  //	  debugprintf("--  %s %s \n", kmlptr->name, part);
-	  if (!strcasecmp(kmlptr->name, part))
-	    xev->state|=kmlptr->mask;
-	  kmlptr++;
-	}
+        {
+          //      debugprintf("--  %s %s \n", kmlptr->name, part);
+          if (!strcasecmp(kmlptr->name, part))
+            xev->state|=kmlptr->mask;
+          kmlptr++;
+        }
       //      debugprintf("--- %s \n",part);
     }
   //  debugprintf("*** %s \n",part);
@@ -473,9 +473,9 @@ int check(char *s)
 
 static struct option long_options[] =
 {
-	{"help", no_argument, NULL, 'h'},
-	{"version", no_argument, NULL, 'V'},
-	{0, 0, 0, 0}
+        {"help", no_argument, NULL, 'h'},
+        {"version", no_argument, NULL, 'V'},
+        {0, 0, 0, 0}
 };
 
 int main(int argc, char *argv[])
@@ -526,46 +526,46 @@ int main(int argc, char *argv[])
   if(2==sscanf(command,"Key %s %s\n",keyname,windowname))
     {
       if((w=find_window(root,windowname)))
-	{
-	  debugprintf("keyname: %s \t windowname: %s\n",keyname,windowname);
-	  sendkey(keyname,1,1,w,0);
-	}
+        {
+          debugprintf("keyname: %s \t windowname: %s\n",keyname,windowname);
+          sendkey(keyname,1,1,w,0);
+        }
       else
-	{
-	  debugprintf("target window '%s' not found \n",windowname);
-	}
+        {
+          debugprintf("target window '%s' not found \n",windowname);
+        }
     }
   else if(4==sscanf(command,"Button %d %d %d %s\n",
-		    &pointer_button,&pointer_x,
-		    &pointer_y,windowname))
+                    &pointer_button,&pointer_x,
+                    &pointer_y,windowname))
     {
       if((w=find_window(root,windowname)) &&
-	 (subw=find_sub_window(root,windowname,&pointer_x,&pointer_y)))
-	{
-	  if (w==subw) subw=0;
-	  debugprintf(" %s\n",command);
-	  sendbutton(pointer_button,pointer_x,pointer_y,w,subw);
-	}
+         (subw=find_sub_window(root,windowname,&pointer_x,&pointer_y)))
+        {
+          if (w==subw) subw=0;
+          debugprintf(" %s\n",command);
+          sendbutton(pointer_button,pointer_x,pointer_y,w,subw);
+        }
       else
-	{
-	  debugprintf("target window '%s' not found \n",windowname);
-	}
+        {
+          debugprintf("target window '%s' not found \n",windowname);
+        }
     }
   else if(4==sscanf(command,"xy_Key %d %d %s %s\n",
-		    &pointer_x,&pointer_y,
-		    keyname,windowname))
+                    &pointer_x,&pointer_y,
+                    keyname,windowname))
     {
 
       if((w=find_window(root,windowname))&& (subw=find_sub_window(root,windowname,&pointer_x,&pointer_y)))
-	{
-	  debugprintf(" %s\n",command);
-	  if (w==subw) subw=0;
-	  sendkey(keyname,pointer_x,pointer_y,w,subw);
-	}
+        {
+          debugprintf(" %s\n",command);
+          if (w==subw) subw=0;
+          sendkey(keyname,pointer_x,pointer_y,w,subw);
+        }
       else
-	{
-	  debugprintf("target window '%s' not found \n",windowname);
-	}
+        {
+          debugprintf("target window '%s' not found \n",windowname);
+        }
     }
   exit(0);
 }
