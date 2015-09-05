@@ -36,8 +36,13 @@ if HAVE_DOXYGEN
 dist_website_DATA       += api-docs.tar.gz
 endif
 
+plugindocsdir           = $(docdir)/plugindocs
+dist_plugindocs_DATA    = $(plugindocs) $(pluginfiles)
+
 website_htmldir         = $(docdir)/lirc.org/html
-dist_website_html_DATA  = $(generated_html) NEWS.txt html-source/lirc.css
+dist_website_html_DATA  = $(generated_html) \
+                          $(generated_plugindocs) \
+                          NEWS.txt html-source/lirc.css
 if HAVE_MAN2HTML
 dist_website_html_DATA  += $(manpage_html)
 endif
@@ -95,8 +100,8 @@ table.html: driver-toc.xsl
 lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
 
-driver-toc.xsl: $(html_sources)
-	$(srcdir)/make-driver-toc.sh > $@
+driver-toc.xsl: $(plugindocs)
+	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $< $@
@@ -106,6 +111,13 @@ $(generated_html): $(html_sources) docpage.xsl driver-toc.xsl
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
+
+$(generated_plugindocs): $(plugindocs) docpage.xsl driver-toc.xsl
+	@mkdir html 2>/dev/null || :
+	xsltproc --html docpage.xsl \
+	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|plugindocs/|') > $@
+	$(SED) -i "s/@version@/$(VERSION)/" $@
+
 
 $(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
 	@mkdir man-html 2>/dev/null || :
@@ -156,35 +168,42 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircrcd.8 \
                            $(srcdir)/man-source/mode2.1
 
-html_sources            =  $(srcdir)/html-source/alsa-usb_driver.html \
-                           $(srcdir)/html-source/api-general.html \
-                           $(srcdir)/html-source/atilibusb_driver.html \
-                           $(srcdir)/html-source/atwf83_driver.html \
-                           $(srcdir)/html-source/audio-alsa_driver.html \
-                           $(srcdir)/html-source/audio_driver.html \
+plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
+                           $(srcdir)/plugindocs/atilibusb.html \
+                           $(srcdir)/plugindocs/atwf83.html \
+                           $(srcdir)/plugindocs/audio-alsa.html \
+                           $(srcdir)/plugindocs/audio.html \
+                           $(srcdir)/plugindocs/default.html \
+                           $(srcdir)/plugindocs/devinput.html \
+                           $(srcdir)/plugindocs/file.html \
+                           $(srcdir)/plugindocs/girs.html \
+                           $(srcdir)/plugindocs/imon-24g.html \
+                           $(srcdir)/plugindocs/imon.html \
+                           $(srcdir)/plugindocs/iguanair.html \
+                           $(srcdir)/plugindocs/irtoy.html \
+                           $(srcdir)/plugindocs/srm7500atilibusb.html \
+                           $(srcdir)/plugindocs/tira.html \
+                           $(srcdir)/plugindocs/udp.html
+
+pluginfiles             =  plugindocs/Makefile \
+                           docpage.xsl.in \
+                           page.xsl \
+                           make-driver-toc.sh \
+                           html-source/programs.html
+
+html_sources            =  $(srcdir)/html-source/api-general.html \
                            $(srcdir)/html-source/configuration-guide.html \
                            $(srcdir)/html-source/configure.html \
-                           $(srcdir)/html-source/default_driver.html \
-                           $(srcdir)/html-source/devinput_driver.html \
                            $(srcdir)/html-source/driver-api.html \
-                           $(srcdir)/html-source/file_driver.html \
                            $(srcdir)/html-source/help.html \
-                           $(srcdir)/html-source/imon-24g_driver.html \
-                           $(srcdir)/html-source/imon_driver.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
-                           $(srcdir)/html-source/iguanair_driver.html \
-                           $(srcdir)/html-source/irtoy_driver.html \
-                           $(srcdir)/html-source/girs_driver.html \
                            $(srcdir)/html-source/lirc_client.html \
                            $(srcdir)/html-source/no-api-docs.html \
                            $(srcdir)/html-source/programs.html \
                            $(srcdir)/html-source/programs-overview.html \
                            $(srcdir)/html-source/pronto2lirc.html \
-                           $(srcdir)/html-source/srm7500atilibusb_driver.html \
-                           $(srcdir)/html-source/technical.html \
-                           $(srcdir)/html-source/tira_driver.html \
-                           $(srcdir)/html-source/udp_driver.html
+                           $(srcdir)/html-source/technical.html
 
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
@@ -230,35 +249,36 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircrcd.html \
                            man-html/mode2.html
 
-generated_html          =  html/alsa-usb_driver.html \
-                           html/api-general.html \
-                           html/atilibusb_driver.html \
-                           html/atwf83_driver.html \
-                           html/audio-alsa_driver.html \
-                           html/audio_driver.html \
+generated_plugindocs    =  html/alsa-usb.html \
+                           html/atilibusb.html \
+                           html/atwf83.html \
+                           html/audio-alsa.html \
+                           html/audio.html \
+                           html/default.html \
+                           html/devinput.html \
+                           html/file.html \
+                           html/girs.html \
+                           html/imon-24g.html \
+                           html/imon.html \
+                           html/iguanair.html \
+                           html/irtoy.html \
+                           html/srm7500atilibusb.html \
+                           html/tira.html \
+                           html/udp.html
+
+generated_html          =  html/api-general.html \
                            html/configuration-guide.html \
                            html/configure.html \
-                           html/default_driver.html \
-                           html/devinput_driver.html \
                            html/driver-api.html \
-                           html/file_driver.html \
                            html/help.html \
-                           html/imon-24g_driver.html \
-                           html/imon_driver.html \
                            html/index.html \
                            html/install.html \
-                           html/iguanair_driver.html \
-                           html/irtoy_driver.html \
-                           html/girs_driver.html \
                            html/lirc_client.html \
                            html/no-api-docs.html \
                            html/programs.html \
                            html/programs-overview.html \
                            html/pronto2lirc.html \
-                           html/srm7500atilibusb_driver.html \
-                           html/technical.html \
-                           html/tira_driver.html \
-                           html/udp_driver.html
+                           html/technical.html
 
 dist_image_DATA         =  lirc.org/images/atwf83.jpg \
                            lirc.org/images/marb18.jpg \

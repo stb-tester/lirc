@@ -9,7 +9,7 @@ cat << EOT
   <UL TYPE="disc">
 EOT
 
-for f in html-source/*_driver.html; do
+for f in $@; do
     basename=$(basename $f .html)
     echo "     <LI><A HREF=\"$basename.html\">${basename%%_driver}</A></LI>"
 done
