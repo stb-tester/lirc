@@ -298,6 +298,10 @@ if [ "$1" = '-c' ]; then
 	cleanup
 fi
 
+# The kernel bug walk-around in default.c must be
+# disabled here (why?)
+export LIRC_REGRESSION_TEST=1
+
 # Start the OLD lircd instance, logging on &3
 rm -f lircd.old.stdout
 mkfifo lircd.old.stdout
@@ -327,6 +331,7 @@ if [ "$1" = '-l' ]; then
 	do
 		test -n "$REPLY" && test_one $REPLY
 	done
+	find output -type d -empty -delete
 	exit 0
 fi
 
