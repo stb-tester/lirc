@@ -215,8 +215,8 @@ remote | kernel |   devinput v        |
     <ul>
         <li>
            The kernel driver occasionally needs to be configured
-           using modprobe(1). See <a href="#appendix-1">Configuring
-           the kernel</a></li>
+           using modprobe(1) or udev(7). See <a href="#appendix-1">
+           Configuring the kernel</a></li>
         <li>
            <em>lircd</em> needs to know which driver and often also kernel
            device to use. This is configured using command line options
@@ -245,6 +245,11 @@ remote | kernel |   devinput v        |
     <p>
     To use multiple capture devices you need to setup multiple lircd
     instances as described in <a href="#appendix-9">Appendix 9</a>.</p>
+    <p>
+    lircd can run as a regular user or as root. Some aspects on running
+    as a non-root user is described in
+    <a href="#appendix-14">Appendix 14</a>.</p>
+
 
     <A NAME="determine-driver-and-device"></A><HR>
     <h3 align="center">Determine driver and device</h3>
@@ -312,7 +317,7 @@ remote | kernel |   devinput v        |
     <p>
     For devices like these which not are registered as rc devices (and thus
     not recognized by ir-keytable) you might need to find out the corresponding
-    event device as described in <a href="#appendix-2">Appendix 2</a> .</p>
+    event device as described in <a href="#appendix-2">Appendix 2</a> </p>
     <p>
     Knowing the capture device name, the kernel module loaded (if any) and
     perhaps also a /dev/input device you have to select a driver:
@@ -350,8 +355,7 @@ remote | kernel |   devinput v        |
          or in the <a href="lirc-lsplugins.html">lirc-lsplugins</a> output,
          the easiest option is using the devinput driver (above). Should
          this not work you'll need to disable the usbhid driver for this
-         device using the kernel <em>/sys/bus/usb/drivers/usbhid/unbind</em>
-         interface.</li>
+         device as described in <a href="#appendix-12"> Appendix 12</a>.</li>
      </ul>
      <p>
      If you are to use the devinput driver, read on. Otherwise proceed to
@@ -500,7 +504,8 @@ remote | kernel |   devinput v        |
        search and download such files. </li>
        <li>
        You can create your own configuration using
-       the <a href="irrecord.html">irrecord</a> tool </li>
+       the <a href="irrecord.html">irrecord</a> tool  as decribed in
+       <a href="#appendix-13">Appendix 13</a></li>
        <li>
        If you already have a config file for the libirman
        package you can convert it using the <em>irman2lirc</em> script
@@ -1051,7 +1056,8 @@ remote | kernel |   devinput v        |
     instead. Since this depends on how the device is connected, you lose if you
     disconnect the device and reconnect it to another socket. With this
     limitation you can use <em>phys=*usb4/4-4/4-4:1.0*</em> in the same
-    way as name.</p>
+    way as name. However, in complicated cases like these you might be better
+    off creating a fixed device name udev rule</p>
 
     <A NAME="appendix-7"></A>
     <h3 align="center">A7 : Running irexec</h3>
@@ -1387,3 +1393,222 @@ remote | kernel |   devinput v        |
      <p>
      There is also a hardware-related section in the
      <a href="../faq.html">FAQ</a> </p>
+
+    <A NAME="appendix-12"></A>
+    <h3 align="center">A12 : Handling USB HID devices</h3>
+    <p>
+    <h4>Overview</h4>
+    <p>
+    Some remote  devices are treated like general keyboards by the kernel.
+    The typical symptom is dmesg lines like <a name="dmesg1"></p>
+<pre>
+[178998.885410] usb 1-1: new low-speed USB device number 3 using xhci_hcd
+[178999.061504] usb 1-1: New USB device found, idVendor=0471, idProduct=20cc
+[178999.061517] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[178999.061526] usb 1-1: Product: MCE USB IR Receiver- Spinel plus
+[178999.061533] usb 1-1: Manufacturer: PHILIPS
+[178999.064751] usb 1-1: ep 0x81 - rounding interval to 64 microframes, ep desc says 80 microframes
+[178999.137558] hid-generic 0003:0471:20CC.0003: input,hiddev0,hidraw2: USB
+    HID v1.00 Keyboard [PHILIPS MCE USB IR Receiver- Spinel plus] on usb-0000:00:14.0-1/input0
+</pre>
+    <p>
+    The important one is the last <i>hid-generic...</i> which basically says
+    that the HID driver has claimed the device, making it impossible for the
+    usual remote driver (mceusb in this case) to use it.</p>
+    <p>
+    As long as the HID driver manages the device it can only be used as a
+    regular keyboard.  If you want to use another driver e. g., due to need of
+    blasting (transmitting) or using irexec you must first disable the HID
+    driver and bind another low-level driver to it.</p>
+    <p>
+
+    <h4>Disabling the HID driver</h4>
+    <p>
+    Disabling the HID driver can be done in many ways including reloading
+    the kernel modules in a different order, using a usbhid quirk or
+    using xorg.conf. Here we will focus on unbinding using the kernel
+    userspace unbind interface described in
+    <a href="https://lwn.net/Articles/143397/">this article</a>,
+    <a href="http://unix.stackexchange.com/questions/13964/prevent-claiming-of-novelty-usb-device-by-usbhid-so-i-can-control-it-with-libusb">this HOWTO.</a>
+    and <a href="http://lxr.free-electrons.com/source/Documentation/ABI/testing/sysfs-bus-usb">some kernel docs</a> </p>
+    <p>
+    The basic idea is to unbind the usbhid driver using a udev rule. Such
+    a rule could be defined as</p>
+<pre>
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0471", ATTRS{idProduct}=="20cc", \
+        MODE="0660", GROUP="lirc",
+        RUN="/bin/sh -c 'echo -n $kernel:1.0 &gt; /sys/bus/usb/drivers/usbhid/unbind'"
+</pre>
+    <p>
+    The <code>ATTRS{idVendor}</code> and <code>ATTRS{idProduct}</code> could
+    be obtained from the dmesg output when inserting the device, see example
+    <a href="#dmesg1">above</a> or using lsusb(1). This rule not only
+    unbinds the usbhid driver, at also allows member of the <code>lirc</code>
+    group to access the device.</p>
+    <p>
+    Check the results by listing the driver directory. </p>
+
+    <h4>Bind the new driver.</h4>
+
+    <p>
+    First, check the driver directory for  attached devices:</p>
+<pre>
+    $ tree /sys/bus/usb/drivers/usbhid/
+    /sys/bus/usb/drivers/usbhid/
+    ├── 1-1.1:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.1/1-1.1:1.0
+    ├── 1-1.2:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.2/1-1.2:1.0
+    ├── 1-1.3:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.3/1-1.3:1.0
+    ├── bind
+    ├── module -&gt; ../../../../module/usbhid
+    ├── new_id
+    ├── remove_id
+    ├── uevent
+    └── unbind
+</pre>
+    <p>
+    Doing this with the device inserted and removed will reveal the entry
+    created when the device is inserted. Here it is <em>1-1.1:1.0</em></p>
+    <p>
+    You can manually unbind the device from the usbhid driver by using:</p>
+<pre>
+	# echo  1-1.1:1.0 &gt; /sys/bus/usb/drivers/usbhid/unbind
+</pre>
+    <p>
+    If there is another driver like mceusb which supports the device
+    you can bind it to the same device using</p>
+<pre>
+	# echo  1-1.1:1.0 &gt; /sys/bus/usb/drivers/mceusb/bind
+</pre>
+    <p>
+    An alternative is to just reload the driver using modprobe.</p>
+    <p>
+    If you have reason to believe that the driver works with the capture
+    device although the driver does not recognize it you can do
+    something like</p>
+<pre>
+	# echo  "0471 20cc" &gt; /sys/bus/usb/drivers/mceusb/new_id
+</pre>
+    <p>
+    Here, <em>0471</em> and <em>20cc</em> is the vendor and product id
+    from dmesg. Beware: this might very well halt your system!</p>
+    <p>
+    This text only defines the outlines. Refer to the references for
+    details.  </p>
+
+    <A NAME="appendix-13"></A>
+    <h3 align="center">A13 : Using irrecord</h3>
+    <h4>Overview</h4>
+    <p>
+    <a href="irrecord.html">irrecord</a> is a simple program which in most
+    cases can record the signals emitted by a remote and create a lircd.conf
+    file from this.</p>
+    <p>
+    In many cases it's OK to just start irrecord and follow the instructions.
+    However, there are a few things to be aware about including physical
+    disturbances,  protocol parameters and repeat masks.</p>
+
+    <h4>Physical disturbances.</h4>
+    <P>
+    As for physical disturbances, the primary source is fluorescent
+    light. You should not have any such light around when using irrecord.
+    It's also important to have a suitable distance between the remote and
+    the capture device, which often is smaller than in typical, normal
+    usage. However, making the distance too small might cause other problems.
+    At a first try, use a foot or two.</p>
+
+    <h4>Protocol parameters and templates.</h4>
+    <p>
+    irrecord actually works in two phases. In the first, it tries to identify
+    the protocol used by the remote. Although this often  works quite well,
+    there are advantages using an existing file as a template.</p>
+    <p>
+    One reason to use a template is when irrecord fails to recognize the
+    protocol in the beginning. In such cases, try to find an existing
+    configuration from the same vendor using something like</p>
+<pre>
+        irdb-get find motorola
+        # lots of remotes listed...
+        irdb-get download motorola/VIP_1200.lircd.conf  # Pick any
+        cp VIP_1200.lircd.conf my_remote.lircd.conf
+        irrecord my_remote.lircd.conf
+</pre>
+    <p>
+    Invoking irrecord this way re-uses the existing protocol which usually
+    works (vendors seldom changes protocol parameters).</p>
+    <p>
+    Another reason to use an existing file is to get more exact timing,
+    important when planning to also transmit (blast). In such cases, using
+    a generic template found using <i>irdb-get find generic</i> has
+    advantages since the timing values here are hand-crafted from
+    specifications. To use these, you need to know which protocol your
+    remote uses, though.</p>
+    <p>
+    If decoding of IR commands does not work reliably you can try to
+    modify the eps and aeps values in the lircd config file to adjust
+    the tolerance of signal lengths. aeps is an absolute value while
+    eps is a relative value expressed in percent.</p>
+
+    <h4>Repeat masks.</h4>
+    <p>
+    After recording some buttons with irrecord, you should check the
+    repeat masks. These are needed in order to handle repeated button
+    presses, which are very common.</p>
+    <p>
+    Using the config file, start lircd and irw. Keeping a button
+    pressed down, you should see something like:</p>
+<pre>
+        0000000000f40bf0 00 KEY_1 ANIMAX
+        0000000000f40bf0 01 KEY_1 ANIMAX
+        0000000000f40bf0 02 KEY_1 ANIMAX
+        0000000000f40bf0 03 KEY_1 ANIMAX
+        0000000000f40bf0 04 KEY_1 ANIMAX
+        0000000000f40bf0 05 KEY_1 ANIMAX
+</pre>
+    <p>
+    Note how the second field gets incremented. It is important this
+    does work correctly.</p>
+
+    <A NAME="appendix-14"></A>
+    <h3 align="center">A14 : Running lircd as a regular user</h3>
+    <p>
+    Traditionally lircd has been run as user root. However, this raises
+    both stability and security concerns, so running as a regular user is
+    the preferred option. In the following its assumed that this user is
+    called <em>lirc</em> and it's group also is named <em>lirc</em>.</p>
+    <p>
+    There are two ways to run as a regular user. One is to patch the
+    lircd.service file so the services started as the lirc user.The
+    other is to use the --effective-user option. In this mode, lircd is
+    started as root but drops privileges before actually processing
+    infrared data.</p>
+    <p>
+    Since lircd repeatedly opens/closes the input device, it always
+    needs write access to it. This can be achieved using group rights
+    and/or udev rules.</p>
+    <p>
+    In the general case the lirc user should be member of groups
+    owning tty locks, the /dev/input devices and the serial devices.
+    Examples includes the groups <em>lock</em>, <em>input</em> and
+    <em>dialout</em> but ultimately depends on the distribution.</p>
+    <p>
+    Some devices are created as accessible only by root. This
+    includes the often used <em>/dev/lirc?</em> and <em>/dev/ttyUSB*</em>
+    devices. These should be made accessible using udev rules. The
+    contrib/ directory contains some example rules for this purpose.</p>
+    <p>
+    If there is a need to run setup code as root the lirc_options.conf
+    file supports a section modinit which e. g., might look like</p>
+
+<pre>
+             [modinit]
+             code = setserial /dev/ttyS0 uart none; modprobe lirc-serial
+</pre>
+    <p>
+    The lircd-setup script which by default is run before the lircd
+    service runs this setup code as root. The code is ordinary shell
+    commands.</p>
+    <p>
+    On systems running selinux a non-root lircd will run into selinux
+    AVC denials problems. The contrib/ directory contains a lircd.te
+    selinux policy file which if compiled and installed gives lircd
+    the required permissions.</p>
