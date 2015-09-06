@@ -211,6 +211,8 @@ int default_readdata(lirc_t timeout)
 		data = 1;
 	}
 	// FIXME: https://bugzilla.kernel.org/show_bug.cgi?id=102971 fix.
+	if (getenv("LIRC_REGRESSION_TEST") != NULL)
+		return data;
 	if (is_space(data) && is_space(last_data)) {
 		last_data = data;
 		return  default_readdata(timeout);
