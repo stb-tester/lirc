@@ -344,13 +344,12 @@ struct driver* hardwares[] = { &amp;my_hardware, NULL };
          the effective-user optionn. </p>
 
 <h3>Comments</h3>
-<p>
 <ul>
     <li>Since no elements are exported, except for through the <code>hardwares</code> array,
         an associated header file (<code>.h</code>-file) is neither necessary nor desired.
         (The only exception would be special constants for usage with the drvctl function.)</li>
     <li>In the interest of portability and encapsulation, the only LIRC files that should be included are
-        <code>lirc_driver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>, i
+        <code>lirc_driver.h</code> (which includes <code>driver.h, lirc_log.h, receive.h</code>,
         and <code>transmit.h</code>) and if required also <code>serial.h</code>.
         Inclusions of other LIRC files (including <code>config.h</code>) should be avoided.</li>
     <li>The LIRC name of the driver is taken from the <code>name</code> field of the
@@ -358,7 +357,6 @@ struct driver* hardwares[] = { &amp;my_hardware, NULL };
         only one driver, it is recommended to keep
         the name of the file equal to the name of the driver (with added file extension).</li>
 </ul>
-</p>
 
 <h2>Generating console output</h2>
 <p>

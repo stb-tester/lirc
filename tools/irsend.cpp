@@ -42,7 +42,7 @@ static const char* const help =
 	"Options:\n"
 	"    -h --help\t\t\tdisplay usage summary\n"
 	"    -v --version\t\tdisplay version\n"
-	"    -d --device\t\t\tuse given lircd socket [" LIRCD "]\n"
+	"    -d --device=device\t\tuse given lircd socket [" LIRCD "]\n"
 	"    -a --address=host[:port]\tconnect to lircd at this address\n"
 	"    -# --count=n\t\tsend command n times\n";
 

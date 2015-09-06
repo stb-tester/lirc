@@ -6,6 +6,8 @@ After=network.target lircd-setup.service
 [Service]
 Type=simple
 ExecStart=/usr/sbin/lircd --nodaemon
+; User=lirc
+; Group=lirc
 
 [Install]
 WantedBy=multi-user.target
