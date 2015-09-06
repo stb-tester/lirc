@@ -17,37 +17,42 @@ Pre-requisites:
 
 Steps for a new release (pre or final)
 
-1) Checkout the release branch.
+1) Checkout the release branch form master:
 
-2) Update NEWS.
+      git checkout master
+      git checkout -b <release branch>
 
-3) Update version number in:
+2) Rebase it on release and verify that it still the same
+
+      git rebase -X theirs release
+      git diff <release branch> master
+
+3) Update NEWS.
+
+4) Update version number in:
         README, NEWS, configure.ac
    Update the news entry in README.
 
-4) Commit and push branch:
+5) Commit and push branch:
         git commit -a -s -m "Update for lirc <version> release"
 
-5) Create tarball:
+6) Create tarball:
+        git clone -b <release branch> lirc lirc-tmp
+        cd lirc-tmp
         ./autogen.sh
         ./configure
         make distcheck
 
-6) Merge release branch into the 'release' branch:
+   Make preliminary RPM package to pick up packaging errors.
+
+7) Merge release branch into the 'release' branch:
        git checkout release
-       git merge -X theirs <release branch>
+       git merge <release branch>
        git tag -a  lirc-<version> HEAD    # Using version like lirc-0_9_0
        git push --tags origin <release-branch>
    Check that the tags are present also in the release branch (no rebase
    problems):
        git log --oneline --decorate -25
-
-7) Merge release branch into master:
-       git checkout -b tmp <release-branch>
-       git rebase master
-       git checkout master
-       git merge tmp
-       git branch -d tmp
 
 8) Get tarballs to Christoph to post at http://lirc.org/software/snapshots/,
    or publish it elsewhere.
@@ -61,15 +66,6 @@ For final release:
 2) Back in master, increment <version> in the files in step 3 for the next
    version
 
-
-Send announcement email to lirc-list@lists.sourceforge.net
-
-----8<----
-Blah blah
-
-<url>
-
-Changes since last release:
-<latest release contents of NEWS>
-----8<----
+3) Send announcement email to lirc-list@lists.sourceforge.net, include top
+   of NEWS.
 
