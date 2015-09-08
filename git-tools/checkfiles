@@ -10,6 +10,7 @@ ignored="$ignored,POINTER_LOCATION"
 ignored="$ignored,SPLIT_STRING"
 ignored="$ignored,STRING_FRAGMENTS"
 ignored="$ignored,USE_NEGATIVE_ERRNO"
+ignored="$ignored,SSCANF_TO_KSTRTO"
 
 retval=0;
 
