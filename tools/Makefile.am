@@ -85,8 +85,7 @@ pkgpython_PYTHON        = lirc-setup/mvc_control.py \
                           lirc-setup/mvc_view.py \
                           lirc-setup/mvc_model.py \
                           lirc-setup/choosers.py \
-                          lirc-setup/baseview.py \
-                          lirc-setup/database.py
+                          lirc-setup/baseview.py
 dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
 dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
 endif
