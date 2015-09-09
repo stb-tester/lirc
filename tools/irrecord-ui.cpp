@@ -279,6 +279,7 @@ static void get_commandline(int argc, char** argv, char* buff, size_t size)
 	int i;
 	int j;
 	unsigned int dest = 0;
+	buff[0] = '\0';
 
 	if (size == 0)
 		return;
@@ -292,7 +293,8 @@ static void get_commandline(int argc, char** argv, char* buff, size_t size)
 			break;
 		buff[dest++] = ' ';
 	}
-	buff[--dest] = '\0';
+	if (dest > 0)
+		buff[--dest] = '\0';
 }
 
 
