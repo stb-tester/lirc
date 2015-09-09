@@ -4,6 +4,7 @@ import configparser
 import glob
 import os
 import os.path
+import shutil
 import subprocess
 import sys
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
@@ -196,9 +197,13 @@ def write_results(model, result_dir, view):
         for item in ['lircd_conf', 'lircmd_conf']:
             if not getattr(model.config, item):
                 continue
-            uri = os.path.join(_REMOTES_BASE_URI, getattr(model.config, item))
-            path = os.path.join(result_dir,
-                                os.path.basename(getattr(model.config, item)))
+            src = getattr(model.config, item)
+            if os.path.exists(src):
+                shutil.copy2(src, '.')
+                log += 'Info: Copied %s to %s\n' % (str(src), os.getcwd())
+                continue
+            uri = os.path.join(_REMOTES_BASE_URI, src)
+            path = os.path.join(result_dir, os.path.basename(src))
             try:
                 urllib.request.urlretrieve(uri + '?format=raw', path)
                 log += 'Info: Downloaded %s to %s\n' % (str(uri), str(path))
