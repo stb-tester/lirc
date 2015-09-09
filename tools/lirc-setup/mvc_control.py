@@ -1,6 +1,7 @@
 ''' Simple lirc setup tool - control part. '''
 
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
+from gi.repository import GObject     # pylint: disable=no-name-in-module
 
 import os
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
@@ -92,7 +93,7 @@ class Controller(object):
                 "No device found",
                 'The %s driver can not be used since a suitable'
                 ' device matching  %s cannot be found.' %
-                (driver['id'], driver['device_hint']))
+                (self.model.driver['id'], self.model.driver['device_hint']))
             self.check(next_state)
         elif device_list.is_direct_installable():
             device = list(device_list.label_by_device.keys())[0]
@@ -235,12 +236,18 @@ class Controller(object):
     def show_remote(self, remote):
         ''' Display remote config file in text window. '''
         # pylint: disable=no-member
-        uri = _REMOTES_BASE_URI + '/' + remote + '?format=raw'
-        try:
-            text = urllib.request.urlopen(uri).read().decode('utf-8',
-                                                             errors='ignore')
-        except urllib.error.URLError as ex:
-            text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
+        if os.path.exists(remote):
+            with open(remote, "r") as f:
+                text = ''.join(f.readlines())
+            text = GObject.markup_escape_text(text)
+        else:
+            uri = _REMOTES_BASE_URI + '/' + remote + '?format=raw'
+            try:
+                text = \
+                    urllib.request.urlopen(uri).read().decode('utf-8',
+                                                              errors='ignore')
+            except urllib.error.URLError as ex:
+                text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
         self.view.show_text('<tt>' + text + '</tt>',
                             'LIRC: Remote config file')
 

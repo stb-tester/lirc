@@ -37,6 +37,11 @@ driver lirc has specific support, often a lirc driver and/or kernel
 configuration of the standard driver(s). If you can find your device here
 it will configure this support. """
 
+LOCAL_FILE_INFO = """
+If you already have a suitable lircd.conf file at hand, you can use that
+instead of fetching one from the remotes database.
+"""
+
 MAIN_HELP = """
 
 <big>LIRC Configuration Tool Help.</big>
@@ -48,10 +53,10 @@ https://sourceforge.net/projects/lirc/!
 The tool allows you to configure lirc. This is done in three steps.
 
 In the first you should select a configuration file which corresponds to
-your remote. You can search for remotes from existing ones, browse brands
-or select to not use any pre-configured file. In the last case you
-probably wants to record your own configuration file using irrecord(1)
-later.  This is the top pane of the window
+your remote. You can search for remotes from existing ones, browse brands,
+use an existing file or select to not use any pre-configured file. In the
+last case you probably wants to record your own configuration file using
+irrecord(1) later. This is the top pane of the window
 
 In the second step you should select a driver which can handle your
 capture device e. g., a usb dongle or a DIY serial device. This is the
@@ -117,6 +122,11 @@ class View(baseview.Baseview):
             lbl = self.builder.get_object('search_config_entry')
             self.controller.select_remote(lbl.get_text())
 
+        def on_local_file_choosen_cb(btn):
+            ''' User selected a file in the Use Loca File dialog.'''
+            path = btn.get_filename()
+            self.model.set_remote(path)
+
         clicked_connects = [
             ('preconfig_device_btn', lambda b: self.show_preconfig_dialog()),
             ('view_config_btn', on_view_config_btn_cb),
@@ -135,12 +145,24 @@ class View(baseview.Baseview):
              lambda b: on_info_btn_clicked(DEVINPUT_INFO)),
             ('default_help_btn',
              lambda b: on_info_btn_clicked(DEFAULT_INFO)),
+            ('local_file_help_btn',
+             lambda b: on_info_btn_clicked(LOCAL_FILE_INFO)),
             ('main_help_btn', lambda b: on_info_btn_clicked(MAIN_HELP)),
             ('preconfig_help_btn',
              lambda b: on_info_btn_clicked(PRECONFIG_INFO))
         ]
         w = self.builder.get_object('main_window')
         w.connect('delete-event', lambda w, e: Gtk.main_quit())
+        b = self.builder.get_object("remote_choose_button");
+        f1 = Gtk.FileFilter()
+        f1.set_name('Configuration files')
+        f1.add_pattern('*lircd.conf')
+        b.add_filter(f1)
+        f2 = Gtk.FileFilter()
+        f2.set_name('All files')
+        f2.add_pattern('*')
+        b.add_filter(f2)
+        b.connect('file-set', on_local_file_choosen_cb)
         for btn_name, handler in clicked_connects:
             self.builder.get_object(btn_name).connect('clicked', handler)
 
