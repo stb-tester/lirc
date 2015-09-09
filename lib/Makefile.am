@@ -30,6 +30,7 @@ liblirc_la_SOURCES          = config_file.c \
                               transmit.c \
                               util.c
 
+libirrecord_la_LDFLAGS      = -llirc
 libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 3:0:3
