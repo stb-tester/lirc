@@ -83,7 +83,7 @@ const struct driver hw_devinput = {
 	.readdata	= NULL,
 	.api_version	= 4,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://" PLUGINDOCS "/devinput.html",
 	.device_hint    = "/dev/input/event*",
 };
 

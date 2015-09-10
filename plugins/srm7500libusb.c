@@ -144,7 +144,7 @@ const struct driver hw_srm7500libusb = {
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://" PLUGINDOCS "/srm7500atilibusb.html",
 	.device_hint    = "/dev/ttyUSB*",
 };
 

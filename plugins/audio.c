@@ -638,7 +638,7 @@ const struct driver hw_audio = {
 	.readdata	= audio_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available.",
+	.info		= "See file://" PLUGINDOCS "/audio.html",
 	.device_hint    = "default",
 };
 

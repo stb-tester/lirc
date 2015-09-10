@@ -178,8 +178,7 @@ const struct driver hw_girs = {
 	.resolution	= 50,
 	.api_version	= 3,
 	.driver_version = "2015-08-26",
-	.info		= "Driver for a Girs server "
-		"(http://www.harctoolbox.org/Girs.html) on a serial port",
+	.info		= "See file://" PLUGINDOCS "/girs.html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
 	.device_hint    = DEVICE_HINT,

@@ -74,7 +74,7 @@ const struct driver hw_atwf83 = {
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available.",
+	.info		= "See file://" PLUGINDOCS "/atwf83.html",
 	.device_hint    = "/dev/hidraw*",
 };
 

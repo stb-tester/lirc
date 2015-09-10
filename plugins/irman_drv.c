@@ -65,7 +65,7 @@ const struct driver hw_irman = {
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://" PLUGINDOCS "/irman.html",
 	.device_hint    = "/dev/tty[0-9]*",
 };
 

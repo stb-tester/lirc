@@ -80,8 +80,7 @@ const struct driver drv_test = {
 	.readdata	= readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "test driver which logs received data to file, and"
-			  " optionally sends data from an input file.",
+	.info		= "See file://" PLUGINDOCS "/file.html",
 	.device_hint    = "/tmp/*",
 };
 

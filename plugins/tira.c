@@ -99,7 +99,7 @@ const struct driver hw_tira = {
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://" PLUGINDOCS "/tira.html",
 	.device_hint    = "/dev/ttyUSB*",
 };
 
@@ -121,7 +121,7 @@ const struct driver hw_tira_raw = {
 	.readdata	= tira_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://@plugindocs@/tira.html",
 	.device_hint    = "/dev/ttyUSB*",
 };
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };

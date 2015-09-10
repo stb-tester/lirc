@@ -76,7 +76,7 @@ static const const struct driver hw_default = {
 	.readdata	= default_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available",
+	.info		= "See file://" PLUGINDOCS "/default.html",
 	.device_hint    = "/dev/lirc*",
 };
 
