@@ -65,7 +65,7 @@ const struct driver hw_atilibusb = {
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available.",
+	.info		= "See file://" PLUGINDOCS "/atilibusb.html",
 	.device_hint    = "auto",
 };
 

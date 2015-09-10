@@ -545,7 +545,7 @@ const struct driver hw_audio_alsa = {
 	.readdata	= audio_alsa_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available.",
+	.info		= "See file://" PLUGINDOCS "/audio-alsa.html",
 	.device_hint    = "default",
 };
 
