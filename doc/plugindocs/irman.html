@@ -1,0 +1,13 @@
+ <center><h1>irman driver.</h1></center>
+
+<p>
+The irman driver is originally developed for the irman devices, see
+http://www.intolect.com/irmandetail.htm. These are nowadays discontinued.
+However, some modern hardware (notably the irtoy) is able to emulate
+the irman protocol.</p>
+<p>
+The driver is a LIRC_MODE2 driver which gives timing information
+and thus can be used with most remotes. It expects a /dev/tty* type of
+device option, defaulting to /dev/ttyS0.</p>
+<p>
+The driver does not support transmitting (IR blasting).</p>
