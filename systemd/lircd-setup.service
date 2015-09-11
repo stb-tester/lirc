@@ -1,0 +1,9 @@
+[Unit]
+Description = LIRC Infrared Signal Decoder - setup as root
+
+[Service]
+Type=oneshot
+ExecStart = /usr/sbin/lircd-setup
+
+[Install]
+WantedBy = multi-user.target

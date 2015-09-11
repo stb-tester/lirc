@@ -1,6 +1,7 @@
 [Unit]
 Description=LIRC Infrared Signal Decoder
-After=network.target
+Wants=lircd-setup.service
+After=network.target lircd-setup.service
 
 [Service]
 Type=simple
