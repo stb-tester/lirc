@@ -37,10 +37,10 @@ dist_website_DATA       += api-docs.tar.gz
 endif
 
 website_htmldir         = $(docdir)/lirc.org/html
-dist_website_html_DATA  = $(generated_html) \
-                          $(manpage_html) \
-                          html-source/lirc.css
-nodist_website_html_DATA = NEWS.txt
+dist_website_html_DATA  = $(generated_html) NEWS.txt html-source/lirc.css
+if HAVE_MAN2HTML
+dist_website_html_DATA  += $(manpage_html)
+endif
 
 if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
@@ -48,16 +48,11 @@ endif
 
 website_imagedir        = $(docdir)/lirc.org/images
 
-htmldir                 = $(docdir)/html
-nodist_html_DATA        = $(generated_html) NEWS.txt
-
 imagedir                = $(docdir)/images
 
-if HAVE_MAN2HTML
-nodist_html_DATA        += $(manpage_html)
-endif
+htmldir                 = $(docdir)/html
 
-dist_html_DATA          =  html-source/lirc.css
+nodist_html_DATA        = html-source/lirc.css
 
 if HAVE_PYMOD_YAML
 nodist_html_DATA        += table.html
@@ -74,12 +69,8 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 
 install-data-hook: install-api-docs
-	ln -sf ../images $(DESTDIR)/$(htmldir)/images
-	ln -sf ../lirc.org $(DESTDIR)/$(htmldir)/lirc.org
-	ln -sf ../api-docs/html/index.html \
-	     $(DESTDIR)$(website_htmldir)/api-docs
-	@rm -f $(DESTDIR)$(website_htmldir)/lirc.org
-	ln -sf .. $(DESTDIR)$(website_htmldir)/lirc.org
+	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
+
 
 install-api-docs:
 if HAVE_DOXYGEN
