@@ -10,19 +10,24 @@
 *
 */
 
+#define _GNU_SOURCE 1
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#include <stdio.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fnmatch.h>
+#include <glob.h>
+#include <libgen.h>
+#include <limits.h>
 #include <signal.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <sys/types.h>
-#include <dirent.h>
-#include <fnmatch.h>
-#include <limits.h>
 
 #include <linux/input.h>
 #include <linux/uinput.h>
@@ -53,6 +58,7 @@ static char* devinput_rec(struct ir_remote* remotes);
 enum locate_type {
 	locate_by_name,
 	locate_by_phys,
+	locate_default
 };
 
 const struct driver hw_devinput = {
@@ -214,6 +220,41 @@ static int do_match(const char* text, const char* wild)
 }
 #endif
 
+static int locate_default_device(char* errmsg, size_t size)
+{
+
+	static char devname[256];
+
+	static const char* const DEV_PATTERN =
+		"/sys/class/rc/rc0/input[0-9]*/event[0-9]*";
+	glob_t matches;
+	int r;
+	char* event;
+
+	r = glob("/sys/class/rc/rc0/input[0-9]*/event[0-9]*",
+		 0, NULL, &matches);
+	if (r != 0) {
+		logperror(LIRC_WARNING, "Cannot run glob %s", DEV_PATTERN);
+		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
+		return 0;
+	}
+	if (matches.gl_pathc == 0) {
+		strncpy(errmsg, "No /sys/class/rc/ devices found", size - 1);
+		return 0;
+	}
+	if (matches.gl_pathc > 1) {
+		strncpy(errmsg,
+			"Multiple /sys/class/rc/ devices found",
+			size - 1);
+		return 0;
+	}
+	event = basename(strdupa(matches.gl_pathv[0]));
+	snprintf(devname, sizeof(devname), "/dev/input/%s", event);
+	drv.device = devname;
+	return 1;
+}
+
+
 static int locate_dev(const char* pattern, enum locate_type type)
 {
 	static char devname[FILENAME_MAX];
@@ -244,7 +285,8 @@ static int locate_dev(const char* pattern, enum locate_type type)
 	while ((obj = readdir(dir))) {
 		int fd;
 
-		if (obj->d_name[0] == '.' && (obj->d_name[1] == 0 || (obj->d_name[1] == '.' && obj->d_name[2] == 0)))
+		if (obj->d_name[0] == '.' && (obj->d_name[1] == 0 ||
+		    (obj->d_name[1] == '.' && obj->d_name[2] == 0)))
 			continue;       /* skip "." and ".." */
 		sprintf(devname, "/dev/input/%s", obj->d_name);
 		fd = open(devname, O_RDONLY);
@@ -270,22 +312,32 @@ static int locate_dev(const char* pattern, enum locate_type type)
 	return 1;
 }
 
+
 int devinput_init(void)
 {
+	char errmsg[256];
+
 	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
 
-	if (!strncmp(drv.device, "name=", 5)) {
+	if (strncmp(drv.device, "name=", 5) == 0) {
 		if (locate_dev(drv.device + 5, locate_by_name)) {
-			logprintf(LIRC_ERROR, "unable to find '%s'", drv.device);
+			logprintf(LIRC_ERROR,
+				  "Unable to find '%s'", drv.device);
 			return 0;
 		}
-	} else if (!strncmp(drv.device, "phys=", 5)) {
+	} else if (strncmp(drv.device, "phys=", 5) == 0) {
 		if (locate_dev(drv.device + 5, locate_by_phys)) {
-			logprintf(LIRC_ERROR, "unable to find '%s'", drv.device);
+			logprintf(LIRC_ERROR,
+				  "Unable to find '%s'", drv.device);
+			return 0;
+		}
+	} else if (strcmp(drv.device, "auto") == 0) {
+		if (locate_default_device(errmsg, sizeof(errmsg)) == 0) {
+			logprintf(LIRC_ERROR,  errmsg);
 			return 0;
 		}
 	}
-
+	logprintf(LIRC_INFO, "Using device: %s", drv.device);
 	drv.fd = open(drv.device, O_RDONLY);
 	if (drv.fd < 0) {
 		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
