@@ -105,7 +105,8 @@ static int is_rc(const char* s)
 /*
  * Given a directory in /sys/class/rc, check if it contains
  * a file called device. If so, write "lirc" to the protocols
- * file in same directory.
+ * file in same directory unless the 'lirc' protocol already
+ * is enabled.
  *
  * rc_dir: directory specification like rc0, rc1, etc.
  * device: Device given to lirc,  like 'lirc0' (or /dev/lirc0).
@@ -115,7 +116,10 @@ static int is_rc(const char* s)
 static int visit_rc(const char* rc_dir, const char* device)
 {
 	char path[64];
+	char buff[128];
+	char* enabled = NULL;
 	int fd;
+	int r;
 
 	snprintf(path, sizeof(path), "/sys/class/rc/%s", rc_dir);
 	if (access(path, F_OK) != 0) {
@@ -128,9 +132,34 @@ static int visit_rc(const char* rc_dir, const char* device)
 		return -1;
 	}
 	snprintf(path, sizeof(path), "/sys/class/rc/%s/protocols", rc_dir);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		logprintf(LIRC_DEBUG,
+			  "Cannot open protocol file: %s for read", path);
+		return -1;
+	}
+	r = read(fd, buff, sizeof(buff));
+	if (r < 0) {
+		logprintf(LIRC_DEBUG, "Cannot read from %s", path);
+		return -1;
+	}
+	if (strchr(buff, '[') != NULL) {
+		enabled = strchr(buff, '[') + 1;
+		if (strchr(buff, ']') != NULL)
+			*strchr(buff, ']') = '\0';
+		else
+			enabled = NULL;
+	}
+	if (enabled == NULL) {
+		logprintf(LIRC_WARNING, "Cannot parse protocols %s", buff);
+	} else  if (strcmp(enabled, "lirc") == 0) {
+		logprintf(LIRC_INFO, "[lirc] protocol is enabled");
+		return 0;
+	}
 	fd = open(path, O_WRONLY);
 	if (fd < 0) {
-		logprintf(LIRC_DEBUG, "Cannot open protocol file: %s", path);
+		logprintf(LIRC_DEBUG,
+			  "Cannot open protocol file for write: %s", path);
 		return -1;
 	}
 	chk_write(fd, "lirc\n", 5);
