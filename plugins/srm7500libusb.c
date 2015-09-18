@@ -248,7 +248,7 @@ static int srm7500_init(void)
 		} else if (!strncmp(op_start, "usb=", 4)) {
 			result = sscanf(op_start + 4, "%i:%i", &requested_usb_bus_number, &requested_usb_device_number);
 			if (result == 2) {
-				LOGPRINTF(1, "got usb %i:%i", requested_usb_bus_number, requested_usb_device_number);
+				logprintf(LIRC_TRACE, "got usb %i:%i", requested_usb_bus_number, requested_usb_device_number);
 			} else {
 				logprintf(LIRC_ERROR, "error parsing option usb");
 			}
@@ -582,7 +582,7 @@ static int philipsrf_input(philipsrf_incoming_t* buffer_in)
 
 	ret = usb_interrupt_read(dev_handle, dev_ep_in->bEndpointAddress, (char*)buffer_in, 64, USB_TIMEOUT);
 	if (ret > 0) {
-		LOGPRINTF(1, "in: time 0x%08x, length 0x%02x, type 0x%02x",
+		logprintf(LIRC_TRACE, "in: time 0x%08x, length 0x%02x, type 0x%02x",
 			  ((buffer_in->time[3] << 24) | (buffer_in->time[2] << 16) | (buffer_in->
 										      time[1] << 8) | (buffer_in->
 												       time[0])),
@@ -596,7 +596,7 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 {
 	int ret = 0;
 
-	LOGPRINTF(1, "out: length 0x%02x, type 0x%02x", buffer_out.length, buffer_out.type);
+	logprintf(LIRC_TRACE, "out: length 0x%02x, type 0x%02x", buffer_out.length, buffer_out.type);
 	hexdump("out data:", buffer_out.data, buffer_out.length - 1);
 
 	ret =
@@ -640,7 +640,7 @@ static char* srm7500_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	LOGPRINTF(1, "key %02x%02x, type %02x", rccode[0], rccode[1], rccode[2]);
+	logprintf(LIRC_TRACE, "key %02x%02x, type %02x", rccode[0], rccode[1], rccode[2]);
 
 	if (rccode[2] == SRM7500_KEY_REPEAT) {
 		rccode[2] = 1;
@@ -651,7 +651,7 @@ static char* srm7500_rec(struct ir_remote* remotes)
 
 	code = ((rccode[0] << 16) | (rccode[1] << 8) | rccode[2]);
 
-	LOGPRINTF(1, "code %.8llx", code);
+	logprintf(LIRC_TRACE, "code %.8llx", code);
 
 	return decode_all(remotes);
 }
@@ -881,7 +881,7 @@ static int usb_read_loop(int fd)
 			 *            04  00 00 46 02  ff 10
 			 * release: 1242  02 b59e 0027  02 b59e 4a61
 			 *            04  00 00 46 03  ff 10 */
-			LOGPRINTF(1, "MCPS_DATA_indication: "
+			logprintf(LIRC_TRACE, "MCPS_DATA_indication: "
 				  "Dest(0x%04x:%04x) Source(0x%04x:0x%04x)\n",
 				  ((packet_buffer_in.zig.DstPANId[0] << 8) |
 				   (packet_buffer_in.zig.DstPANId[1])),
@@ -916,7 +916,7 @@ static int usb_read_loop(int fd)
 
 int srm7500_decode(struct ir_remote* remote, struct decode_ctx_t* decode_ctx)
 {
-	LOGPRINTF(1, "srm7500_decode");
+	logprintf(LIRC_TRACE, "srm7500_decode");
 
 	if (!map_code(remote, decode_ctx, 0, 0, hw_srm7500libusb.code_length, code, 0, 0))
 		return 0;

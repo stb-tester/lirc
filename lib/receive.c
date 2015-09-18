@@ -83,13 +83,13 @@ static lirc_t lirc_t_max(lirc_t a, lirc_t b)
 
 static void set_pending_pulse(lirc_t deltap)
 {
-	LOGPRINTF(5, "pending pulse: %lu", deltap);
+	logprintf(LIRC_TRACE2, "pending pulse: %lu", deltap);
 	rec_buffer.pendingp = deltap;
 }
 
 static void set_pending_space(lirc_t deltas)
 {
-	LOGPRINTF(5, "pending space: %lu", deltas);
+	logprintf(LIRC_TRACE2, "pending space: %lu", deltas);
 	rec_buffer.pendings = deltas;
 }
 
@@ -105,7 +105,7 @@ static void log_input(lirc_t data)
 static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 {
 	if (rec_buffer.rptr < rec_buffer.wptr) {
-		LOGPRINTF(3, "<%c%lu", rec_buffer.data[rec_buffer.rptr] & PULSE_BIT ? 'p' : 's', (__u32)
+		logprintf(LIRC_TRACE2, "<%c%lu", rec_buffer.data[rec_buffer.rptr] & PULSE_BIT ? 'p' : 's', (__u32)
 			  rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK));
 		rec_buffer.sum += rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK);
 		return rec_buffer.data[rec_buffer.rptr++];
@@ -123,7 +123,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 		if (elapsed < maxusec)
 			data = readdata(maxusec - elapsed);
 		if (!data) {
-			LOGPRINTF(3, "timeout: %u", maxusec);
+			logprintf(LIRC_TRACE2, "timeout: %u", maxusec);
 			return 0;
 		}
 		if (data & LIRC_EOF) {
@@ -131,7 +131,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 			return data;
 		}
 		if (LIRC_IS_TIMEOUT(data)) {
-			LOGPRINTF(1, "timeout received: %lu", (__u32)LIRC_VALUE(data));
+			logprintf(LIRC_TRACE, "timeout received: %lu", (__u32)LIRC_VALUE(data));
 			if (LIRC_VALUE(data) < maxusec)
 				return get_next_rec_buffer_internal(maxusec - LIRC_VALUE(data));
 			return 0;
@@ -146,7 +146,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 				  & (PULSE_MASK);
 		rec_buffer.wptr++;
 		rec_buffer.rptr++;
-		LOGPRINTF(3, "+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (__u32)
+		logprintf(LIRC_TRACE2, "+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (__u32)
 			  rec_buffer.data[rec_buffer.rptr - 1]
 			  & (PULSE_MASK));
 		return rec_buffer.data[rec_buffer.rptr - 1];
@@ -243,7 +243,7 @@ int rec_buffer_clear(void)
 			rec_buffer.wptr = 0;
 			data = readdata(0);
 
-			LOGPRINTF(3, "c%lu", (__u32)data & (PULSE_MASK));
+			logprintf(LIRC_TRACE2, "c%lu", (__u32)data & (PULSE_MASK));
 
 			rec_buffer.data[rec_buffer.wptr] = data;
 			rec_buffer.wptr++;
@@ -258,7 +258,7 @@ int rec_buffer_clear(void)
 
 static void unget_rec_buffer(int count)
 {
-	LOGPRINTF(5, "unget: %d", count);
+	logprintf(LIRC_TRACE2, "unget: %d", count);
 	if (count == 1 || count == 2) {
 		rec_buffer.rptr -= count;
 		rec_buffer.sum -= rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK);
@@ -283,7 +283,7 @@ static lirc_t get_next_pulse(lirc_t maxusec)
 	if (data == 0)
 		return 0;
 	if (!is_pulse(data)) {
-		LOGPRINTF(2, "pulse expected");
+		logprintf(LIRC_TRACE1, "pulse expected");
 		return 0;
 	}
 	return data & (PULSE_MASK);
@@ -297,7 +297,7 @@ static lirc_t get_next_space(lirc_t maxusec)
 	if (data == 0)
 		return 0;
 	if (!is_space(data)) {
-		LOGPRINTF(2, "space expected");
+		logprintf(LIRC_TRACE1, "space expected");
 		return 0;
 	}
 	return data;
@@ -338,7 +338,7 @@ static int expectpulse(struct ir_remote* remote, int exdelta)
 	lirc_t deltap;
 	int retval;
 
-	LOGPRINTF(5, "expecting pulse: %lu", exdelta);
+	logprintf(LIRC_TRACE2, "expecting pulse: %lu", exdelta);
 	if (!sync_pending_space(remote))
 		return 0;
 
@@ -363,7 +363,7 @@ static int expectspace(struct ir_remote* remote, int exdelta)
 	lirc_t deltas;
 	int retval;
 
-	LOGPRINTF(5, "expecting space: %lu", exdelta);
+	logprintf(LIRC_TRACE2, "expecting space: %lu", exdelta);
 	if (!sync_pending_pulse(remote))
 		return 0;
 
@@ -598,17 +598,17 @@ static int get_gap(struct ir_remote* remote, lirc_t gap)
 {
 	lirc_t data;
 
-	LOGPRINTF(2, "sum: %d", rec_buffer.sum);
+	logprintf(LIRC_TRACE1, "sum: %d", rec_buffer.sum);
 	data = get_next_rec_buffer(gap - gap * remote->eps / 100);
 	if (data == 0)
 		return 1;
 	if (!is_space(data)) {
-		LOGPRINTF(2, "space expected");
+		logprintf(LIRC_TRACE1, "space expected");
 		return 0;
 	}
 	unget_rec_buffer(1);
 	if (!expect_at_least(remote, data, gap)) {
-		LOGPRINTF(1, "end of signal not found");
+		logprintf(LIRC_TRACE, "end of signal not found");
 		return 0;
 	}
 	return 1;
@@ -666,21 +666,21 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				return (ir_code) -1;
 			}
 			sum = deltap + deltas;
-			LOGPRINTF(3, "rcmm: sum %ld", (__u32)sum);
+			logprintf(LIRC_TRACE2, "rcmm: sum %ld", (__u32)sum);
 			if (expect(remote, sum, remote->pzero + remote->szero)) {
 				code |= 0;
-				LOGPRINTF(2, "00");
+				logprintf(LIRC_TRACE1, "00");
 			} else if (expect(remote, sum, remote->pone + remote->sone)) {
 				code |= 1;
-				LOGPRINTF(2, "01");
+				logprintf(LIRC_TRACE1, "01");
 			} else if (expect(remote, sum, remote->ptwo + remote->stwo)) {
 				code |= 2;
-				LOGPRINTF(2, "10");
+				logprintf(LIRC_TRACE1, "10");
 			} else if (expect(remote, sum, remote->pthree + remote->sthree)) {
 				code |= 3;
-				LOGPRINTF(2, "11");
+				logprintf(LIRC_TRACE1, "11");
 			} else {
-				LOGPRINTF(2, "no match for %d+%d=%d", deltap, deltas, sum);
+				logprintf(LIRC_TRACE1, "no match for %d+%d=%d", deltap, deltas, sum);
 				return (ir_code) -1;
 			}
 		}
@@ -703,21 +703,21 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				return (ir_code) -1;
 			}
 			sum = deltas + deltap;
-			LOGPRINTF(3, "grundig: sum %ld", (__u32)sum);
+			logprintf(LIRC_TRACE2, "grundig: sum %ld", (__u32)sum);
 			if (expect(remote, sum, remote->szero + remote->pzero)) {
 				state = 0;
-				LOGPRINTF(2, "2T");
+				logprintf(LIRC_TRACE1, "2T");
 			} else if (expect(remote, sum, remote->sone + remote->pone)) {
 				state = 1;
-				LOGPRINTF(2, "3T");
+				logprintf(LIRC_TRACE1, "3T");
 			} else if (expect(remote, sum, remote->stwo + remote->ptwo)) {
 				state = 2;
-				LOGPRINTF(2, "4T");
+				logprintf(LIRC_TRACE1, "4T");
 			} else if (expect(remote, sum, remote->sthree + remote->pthree)) {
 				state = 3;
-				LOGPRINTF(2, "6T");
+				logprintf(LIRC_TRACE2, "6T");
 			} else {
-				LOGPRINTF(2, "no match for %d+%d=%d", deltas, deltap, sum);
+				logprintf(LIRC_TRACE1, "no match for %d+%d=%d", deltas, deltap, sum);
 				return (ir_code) -1;
 			}
 			if (state == 3) {       /* 6T */
@@ -789,7 +789,7 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				origdelta = delta;
 			}
 			if (delta == 0) {
-				LOGPRINTF(1, "failed before bit %d", received + 1);
+				logprintf(LIRC_TRACE, "failed before bit %d", received + 1);
 				return (ir_code) -1;
 			}
 			pending = (space ? rec_buffer.pendings : rec_buffer.pendingp);
@@ -798,21 +798,21 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 			} else if (delta > pending) {
 				delta -= pending;
 			} else {
-				LOGPRINTF(1, "failed before bit %d", received + 1);
+				logprintf(LIRC_TRACE, "failed before bit %d", received + 1);
 				return (ir_code) -1;
 			}
 			if (pending > 0) {
 				if (stop_bit) {
-					LOGPRINTF(5, "delta: %lu", delta);
+					logprintf(LIRC_TRACE2, "delta: %lu", delta);
 					gap_delta = delta;
 					delta = 0;
 					set_pending_pulse(base);
 					set_pending_space(0);
 					stop_bit = 0;
 					space = 0;
-					LOGPRINTF(3, "stop bit found");
+					logprintf(LIRC_TRACE2, "stop bit found");
 				} else {
-					LOGPRINTF(3, "pending bit found");
+					logprintf(LIRC_TRACE2, "pending bit found");
 					set_pending_pulse(0);
 					set_pending_space(0);
 					if (delta == 0)
@@ -827,13 +827,13 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				code <<= 1;
 				code |= space;
 				parity ^= space;
-				LOGPRINTF(2, "adding %d", space);
+				logprintf(LIRC_TRACE1, "adding %d", space);
 				if (received % (remote->bits_in_byte + parity_bit) == 0) {
 					ir_code temp;
 
 					if ((remote->parity == IR_PARITY_EVEN && parity)
 					    || (remote->parity == IR_PARITY_ODD && !parity)) {
-						LOGPRINTF(1, "parity error after %d bits", received + 1);
+						logprintf(LIRC_TRACE, "parity error after %d bits", received + 1);
 						return (ir_code) -1;
 					}
 					parity = 0;
@@ -845,16 +845,16 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 										       remote->bits_in_byte);
 
 					if (space && delta == 0) {
-						LOGPRINTF(1, "failed at stop bit after %d bits", received + 1);
+						logprintf(LIRC_TRACE, "failed at stop bit after %d bits", received + 1);
 						return (ir_code) -1;
 					}
-					LOGPRINTF(3, "awaiting stop bit");
+					logprintf(LIRC_TRACE2, "awaiting stop bit");
 					set_pending_space(stop);
 					stop_bit = 1;
 				}
 			} else {
 				if (delta == origdelta) {
-					LOGPRINTF(1, "framing error after %d bits", received + 1);
+					logprintf(LIRC_TRACE, "framing error after %d bits", received + 1);
 					return (ir_code) -1;
 				}
 				delta = 0;
@@ -892,12 +892,12 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				pone = remote->pthree;
 				sone = remote->sthree;
 			}
-			LOGPRINTF(5, "%lu %lu %lu %lu", pzero, szero, pone, sone);
+			logprintf(LIRC_TRACE2, "%lu %lu %lu %lu", pzero, szero, pone, sone);
 			if (expect(remote, deltap, pzero)) {
 				if (expect(remote, deltas, szero)) {
 					code |= 0;
 					lastbit = 0;
-					LOGPRINTF(2, "0");
+					logprintf(LIRC_TRACE1, "0");
 					continue;
 				}
 			}
@@ -906,7 +906,7 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				if (expect(remote, deltas, sone)) {
 					code |= 1;
 					lastbit = 1;
-					LOGPRINTF(2, "1");
+					logprintf(LIRC_TRACE1, "1");
 					continue;
 				}
 			}
@@ -940,7 +940,7 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				logprintf(LIRC_ERROR, "failed on bit %d", done + i + 1);
 				return (ir_code) -1;
 			}
-			LOGPRINTF(1, "%d: %lx", i, n);
+			logprintf(LIRC_TRACE, "%d: %lx", i, n);
 			code |= n;
 		}
 		return code;
@@ -950,24 +950,24 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 		code = code << 1;
 		if (is_goldstar(remote)) {
 			if ((done + i) % 2) {
-				LOGPRINTF(2, "$1");
+				logprintf(LIRC_TRACE1, "$1");
 				remote->pone = remote->ptwo;
 				remote->sone = remote->stwo;
 			} else {
-				LOGPRINTF(2, "$2");
+				logprintf(LIRC_TRACE1, "$2");
 				remote->pone = remote->pthree;
 				remote->sone = remote->sthree;
 			}
 		}
 
 		if (expectone(remote, done + i)) {
-			LOGPRINTF(2, "1");
+			logprintf(LIRC_TRACE1, "1");
 			code |= 1;
 		} else if (expectzero(remote, done + i)) {
-			LOGPRINTF(2, "0");
+			logprintf(LIRC_TRACE1, "0");
 			code |= 0;
 		} else {
-			LOGPRINTF(1, "failed on bit %d", done + i + 1);
+			logprintf(LIRC_TRACE, "failed on bit %d", done + i + 1);
 			return (ir_code) -1;
 		}
 	}
@@ -984,7 +984,7 @@ static ir_code get_pre(struct ir_remote* remote)
 	pre = get_data(remote, remote->pre_data_bits, 0);
 
 	if (pre == (ir_code) -1) {
-		LOGPRINTF(1, "Failed on pre_data: cannot get it");
+		logprintf(LIRC_TRACE, "Failed on pre_data: cannot get it");
 		return (ir_code) -1;
 	}
 	if (update_mode) {
@@ -998,7 +998,7 @@ static ir_code get_pre(struct ir_remote* remote)
 		remote_pre = remote->pre_data & ~toggle_mask;
 		match_pre = pre & ~toggle_mask;
 		if (remote->pre_data != 0 && remote_pre != match_pre) {
-			LOGPRINTF(1, "Failed on pre_data: bad data: %x", pre);
+			logprintf(LIRC_TRACE, "Failed on pre_data: bad data: %x", pre);
 			return (ir_code) -1;
 		}
 	}
@@ -1023,7 +1023,7 @@ static ir_code get_post(struct ir_remote* remote)
 	post = get_data(remote, remote->post_data_bits, remote->pre_data_bits + remote->bits);
 
 	if (post == (ir_code) -1) {
-		LOGPRINTF(1, "failed on post_data");
+		logprintf(LIRC_TRACE, "failed on post_data");
 		return (ir_code) -1;
 	}
 	return post;
@@ -1055,18 +1055,18 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 		/* we should get a long space first */
 		sync = sync_rec_buffer(remote);
 		if (!sync) {
-			LOGPRINTF(1, "failed on sync");
+			logprintf(LIRC_TRACE, "failed on sync");
 			return 0;
 		}
-		LOGPRINTF(1, "sync");
+		logprintf(LIRC_TRACE, "sync");
 
 		if (has_repeat(remote) && last_remote == remote) {
 			if (remote->flags & REPEAT_HEADER && has_header(remote)) {
 				if (!get_header(remote)) {
-					LOGPRINTF(1, "failed on repeat header");
+					logprintf(LIRC_TRACE, "failed on repeat header");
 					return 0;
 				}
-				LOGPRINTF(1, "repeat header");
+				logprintf(LIRC_TRACE, "repeat header");
 			}
 			if (get_repeat(remote)) {
 				if (remote->last_code == NULL) {
@@ -1091,7 +1091,7 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 										   repeat_gap : max_gap(remote));
 				return 1;
 			}
-			LOGPRINTF(1, "no repeat");
+			logprintf(LIRC_TRACE, "no repeat");
 			rec_buffer_rewind();
 			sync_rec_buffer(remote);
 		}
@@ -1101,11 +1101,11 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			if (!get_header(remote)) {
 				header = 0;
 				if (!(remote->flags & NO_HEAD_REP && expect_at_most(remote, sync, max_gap(remote)))) {
-					LOGPRINTF(1, "failed on header");
+					logprintf(LIRC_TRACE, "failed on header");
 					return 0;
 				}
 			}
-			LOGPRINTF(1, "header");
+			logprintf(LIRC_TRACE, "header");
 		}
 	}
 
@@ -1152,7 +1152,7 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			lirc_t sum;
 			ir_code decoded = rec_buffer.decoded;
 
-			LOGPRINTF(1, "decoded: %llx", decoded);
+			logprintf(LIRC_TRACE, "decoded: %llx", decoded);
 			if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE
 			    && curr_driver->code_length != bit_count(remote))
 				return 0;
@@ -1173,41 +1173,41 @@ int receive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			sync = time_elapsed(&remote->last_send, &current) - rec_buffer.sum;
 		} else {
 			if (!get_lead(remote)) {
-				LOGPRINTF(1, "failed on leading pulse");
+				logprintf(LIRC_TRACE, "failed on leading pulse");
 				return 0;
 			}
 
 			if (has_pre(remote)) {
 				ctx->pre = get_pre(remote);
 				if (ctx->pre == (ir_code) -1) {
-					LOGPRINTF(1, "failed on pre");
+					logprintf(LIRC_TRACE, "failed on pre");
 					return 0;
 				}
-				LOGPRINTF(1, "pre: %llx", ctx->pre);
+				logprintf(LIRC_TRACE, "pre: %llx", ctx->pre);
 			}
 
 			ctx->code = get_data(remote, remote->bits, remote->pre_data_bits);
 			if (ctx->code == (ir_code) -1) {
-				LOGPRINTF(1, "failed on code");
+				logprintf(LIRC_TRACE, "failed on code");
 				return 0;
 			}
-			LOGPRINTF(1, "code: %llx", ctx->code);
+			logprintf(LIRC_TRACE, "code: %llx", ctx->code);
 
 			if (has_post(remote)) {
 				ctx->post = get_post(remote);
 				if (ctx->post == (ir_code) -1) {
-					LOGPRINTF(1, "failed on post");
+					logprintf(LIRC_TRACE, "failed on post");
 					return 0;
 				}
-				LOGPRINTF(1, "post: %llx", ctx->post);
+				logprintf(LIRC_TRACE, "post: %llx", ctx->post);
 			}
 			if (!get_trail(remote)) {
-				LOGPRINTF(1, "failed on trailing pulse");
+				logprintf(LIRC_TRACE, "failed on trailing pulse");
 				return 0;
 			}
 			if (has_foot(remote)) {
 				if (!get_foot(remote)) {
-					LOGPRINTF(1, "failed on foot");
+					logprintf(LIRC_TRACE, "failed on foot");
 					return 0;
 				}
 			}

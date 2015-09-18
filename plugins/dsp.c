@@ -72,7 +72,7 @@ lirc_t dsp_readdata(lirc_t timeout)
 			data = lastlength | (laststate ? PULSE_BIT : 0);
 			lastlength = ((1000000 / SAMPLE) * BUFSIZE);
 			laststate = state;
-			LOGPRINTF(1, "Pulse came %8x,  %8d...", data, data & ~PULSE_BIT);
+			logprintf(LIRC_TRACE, "Pulse came %8x,  %8d...", data, data & ~PULSE_BIT);
 			return data;
 		}
 

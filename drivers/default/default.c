@@ -162,7 +162,7 @@ int default_init()
 			return (0);
 		}
 
-		LOGPRINTF(1, "using unix socket lirc device");
+		logprintf(LIRC_TRACE, "using unix socket lirc device");
 		drv.features = LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE;
 		drv.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
 		drv.send_mode = LIRC_MODE_PULSE;
@@ -175,7 +175,7 @@ int default_init()
 		return (0);
 	}
 	if (S_ISFIFO(s.st_mode)) {
-		LOGPRINTF(1, "using defaults for the Irman");
+		logprintf(LIRC_TRACE, "using defaults for the Irman");
 		drv.features = LIRC_CAN_REC_MODE2;
 		drv.rec_mode = LIRC_MODE_MODE2;	/* this might change in future */
 		return (1);
@@ -200,14 +200,14 @@ int default_init()
 	}
 	else {
 		if (!(LIRC_CAN_SEND(drv.features) || LIRC_CAN_REC(drv.features))) {
-			LOGPRINTF(1, "driver supports neither sending nor receiving of IR signals");
+			logprintf(LIRC_TRACE, "driver supports neither sending nor receiving of IR signals");
 		}
 		if (LIRC_CAN_SEND(drv.features) && LIRC_CAN_REC(drv.features)) {
-			LOGPRINTF(1, "driver supports both sending and receiving");
+			logprintf(LIRC_TRACE, "driver supports both sending and receiving");
 		} else if (LIRC_CAN_SEND(drv.features)) {
-			LOGPRINTF(1, "driver supports sending");
+			logprintf(LIRC_TRACE, "driver supports sending");
 		} else if (LIRC_CAN_REC(drv.features)) {
-			LOGPRINTF(1, "driver supports receiving");
+			logprintf(LIRC_TRACE, "driver supports receiving");
 		}
 	}
 
@@ -241,7 +241,7 @@ int default_init()
 		drv.resolution = 0;
 		if ((drv.features & LIRC_CAN_GET_REC_RESOLUTION)
 		    && (default_ioctl(LIRC_GET_REC_RESOLUTION, &drv.resolution) != -1)) {
-			LOGPRINTF(1, "resolution of receiver: %d", drv.resolution);
+			logprintf(LIRC_TRACE, "resolution of receiver: %d", drv.resolution);
 		}
 
 	} else if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
@@ -277,7 +277,7 @@ int default_deinit(void)
 static int write_send_buffer(int lirc)
 {
 	if (send_buffer_length() == 0) {
-		LOGPRINTF(1, "nothing to send");
+		logprintf(LIRC_TRACE, "nothing to send");
 		return (0);
 	}
 	return (write(lirc, send_buffer_data(), send_buffer_length() * sizeof(lirc_t)));

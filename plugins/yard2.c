@@ -160,7 +160,7 @@ static int yard2_send(struct ir_remote* remote, struct ir_ncode* icode)
 		return 0;
 
 	sendir = icode->code;
-	LOGPRINTF(1, "SEND IR-Code: %llx", sendir);
+	logprintf(LIRC_TRACE, "SEND IR-Code: %llx", sendir);
 
 	buffer[0] = 0x81;       //Send IR command ID
 	buffer[1] = 255 - buffer[0];
@@ -193,7 +193,7 @@ static char* yard2_rec(struct ir_remote* remotes)
 	// Receive IR code from YARD server
 	byteCnt = read(drv.fd,
 		       (unsigned char*)&yardIrCode, sizeof(YARD_IRCODE));
-	LOGPRINTF(1, "yard2: received %d bytes !", byteCnt);
+	logprintf(LIRC_TRACE, "yard2: received %d bytes !", byteCnt);
 	if (byteCnt < sizeof(YARD_IRCODE)) {
 		logprintf(LIRC_ERROR,
 			  "yard2: Expected %d bytes - received %d bytes !",
@@ -209,7 +209,7 @@ static char* yard2_rec(struct ir_remote* remotes)
 		code <<= 8;
 		code |= yardIrCode[i];  //.abIrData[i]; //
 	}
-	LOGPRINTF(1, "Receive IR-Code: %llx", (unsigned long long)code);
+	logprintf(LIRC_TRACE, "Receive IR-Code: %llx", (unsigned long long)code);
 	m = decode_all(remotes);
 	return m;
 }

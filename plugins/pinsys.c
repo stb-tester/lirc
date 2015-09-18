@@ -165,7 +165,7 @@ int pinsys_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 		if (code & REPEAT_FLAG) {
 			ctx->repeat_flag = 1;
 
-			LOGPRINTF(1, "repeat_flag: %d\n", ctx->repeat_flag);
+			logprintf(LIRC_TRACE, "repeat_flag: %d\n", ctx->repeat_flag);
 		}
 	}
 
@@ -279,7 +279,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 	for (i = 0; i < 3; i++) {
 		if (i > 0) {
 			if (!waitfordata(20000)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				/* likely to be !=3 bytes, so flush. */
 				tcflush(drv.fd, TCIFLUSH);
 				return NULL;
@@ -291,7 +291,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 
@@ -301,7 +301,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 	code = b[2];
 #endif
 
-	LOGPRINTF(1, " -> %016lx", (__u32)code);
+	logprintf(LIRC_TRACE, " -> %016lx", (__u32)code);
 	m = decode_all(remotes);
 	return m;
 }

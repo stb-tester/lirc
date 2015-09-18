@@ -93,7 +93,7 @@ int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	if (!do_repeat)
 		ctx->repeat_flag = 0;
 
-	LOGPRINTF(1, "repeat_flagp:           %d", ctx->repeat_flag);
+	logprintf(LIRC_TRACE, "repeat_flagp:           %d", ctx->repeat_flag);
 
 	return 1;
 }

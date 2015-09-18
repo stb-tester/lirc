@@ -118,14 +118,14 @@ int bte_sendcmd(char* str, int next_state)
 	pending = next_state;
 	sprintf(prev_cmd, "AT%s\r", str);
 
-	LOGPRINTF(1, "bte_sendcmd: \"%s\"", str);
+	logprintf(LIRC_TRACE, "bte_sendcmd: \"%s\"", str);
 	if (write(drv.fd, prev_cmd, strlen(prev_cmd)) <= 0) {
 		io_failed = 1;
 		pending = 0;
 		logprintf(LIRC_ERROR, "bte_sendcmd: write failed  - %d: %s", errno, strerror(errno));
 		return 0;
 	}
-	LOGPRINTF(1, "bte_sendcmd: done");
+	logprintf(LIRC_TRACE, "bte_sendcmd: done");
 	return 1;
 }
 
@@ -133,7 +133,7 @@ int bte_connect(void)
 {
 	struct termios tattr;
 
-	LOGPRINTF(3, "bte_connect called");
+	logprintf(LIRC_TRACE2, "bte_connect called");
 
 	if (drv.fd >= 0)
 		close(drv.fd);
@@ -142,27 +142,27 @@ int bte_connect(void)
 		errno = 0;
 		drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
 		if (drv.fd == -1) {
-			LOGPRINTF(1, "could not open %s", drv.device);
+			logprintf(LIRC_TRACE, "could not open %s", drv.device);
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
 		if (tcgetattr(drv.fd, &tattr) == -1) {
-			LOGPRINTF(1, "bte_connect: tcgetattr() failed");
+			logprintf(LIRC_TRACE, "bte_connect: tcgetattr() failed");
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
-		LOGPRINTF(1, "opened %s", drv.device);
+		logprintf(LIRC_TRACE, "opened %s", drv.device);
 		LOGPERROR(1, "bte_connect");
 		cfmakeraw(&tattr);
 		tattr.c_cc[VMIN] = 1;
 		tattr.c_cc[VTIME] = 0;
 		if (tcsetattr(drv.fd, TCSAFLUSH, &tattr) == -1) {
-			LOGPRINTF(1, "bte_connect: tcsetattr() failed");
+			logprintf(LIRC_TRACE, "bte_connect: tcsetattr() failed");
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
 		if (!tty_setbaud(drv.fd, 115200)) {
-			LOGPRINTF(1, "bte_connect: could not set baud rate %s", drv.device);
+			logprintf(LIRC_TRACE, "bte_connect: could not set baud rate %s", drv.device);
 			LOGPERROR(1, "bte_connect");
 			break;
 		}
@@ -171,7 +171,7 @@ int bte_connect(void)
 
 		if (bte_sendcmd("E?", BTE_INIT))  /* Ask for echo state just to syncronise */
 			return 1;
-		LOGPRINTF(1, "bte_connect: device did not respond");
+		logprintf(LIRC_TRACE, "bte_connect: device did not respond");
 	} while (0);
 
 	//try block failed
@@ -189,7 +189,7 @@ int bte_connect(void)
 
 int bte_init(void)
 {
-	LOGPRINTF(3, "bte_init called, device %s", drv.device);
+	logprintf(LIRC_TRACE2, "bte_init called, device %s", drv.device);
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "bte_init: could not create lock file");
@@ -207,7 +207,7 @@ int bte_deinit(void)
 	bte_sendcmd("+CMER=0,0,0,0,0", 0);
 	close(drv.fd);
 	tty_delete_lock();
-	LOGPRINTF(1, "bte_deinit: OK");
+	logprintf(LIRC_TRACE, "bte_deinit: OK");
 	return 1;
 }
 
@@ -218,7 +218,7 @@ char* bte_readline(void)
 	static int n = 0;
 	int ok = 1;
 
-	LOGPRINTF(6, "bte_readline called");
+	logprintf(LIRC_TRACE2, "bte_readline called");
 
 	if (io_failed && !bte_connect())   /* try to reestablish connection */
 		return NULL;
@@ -236,7 +236,7 @@ char* bte_readline(void)
 			return NULL;
 		msg[n] = 0;
 		n = 0;
-		LOGPRINTF(1, "bte_readline: %s", msg);
+		logprintf(LIRC_TRACE2, "bte_readline: %s", msg);
 		return msg;
 	}
 	msg[n++] = c;
@@ -253,7 +253,7 @@ char* bte_automaton(void)
 	int key_release = 0;
 	int i;
 
-	LOGPRINTF(5, "bte_automaton called");
+	logprintf(LIRC_TRACE2, "bte_automaton called");
 
 	code = 0;
 
@@ -292,7 +292,7 @@ char* bte_automaton(void)
 			// release device temporarily; chance for a
 			// user to switch off mobile's bluetooth (t630)
 			close(drv.fd);
-			LOGPRINTF(3, "bte_automaton: device closed; sleeping");
+			logprintf(LIRC_TRACE2, "bte_automaton: device closed; sleeping");
 			sleep(30);
 			break;
 		}
@@ -319,7 +319,7 @@ char* bte_automaton(void)
 		key_release = msg[i + 1] == '0';
 		code |= key_release << 15;
 
-		LOGPRINTF(1, "bte_automaton: code 0x%llx", (__u64)code);
+		logprintf(LIRC_TRACE, "bte_automaton: code 0x%llx", (__u64)code);
 
 		if (key_release) {
 			code = 0;       // block key release events
@@ -329,17 +329,17 @@ char* bte_automaton(void)
 				if (filter_cancel) {
 					code = 0;
 					filter_cancel = 0;
-					LOGPRINTF(1, "bte_automaton: 'e' filtered");
+					logprintf(LIRC_TRACE, "bte_automaton: 'e' filtered");
 					break;
 				}
 				if (memo_mode) { /* MEMO mode exited */
 					memo_mode = 0;
-					LOGPRINTF(1, "bte_automaton: MEMO mode exited");
+					logprintf(LIRC_TRACE, "bte_automaton: MEMO mode exited");
 				}
 				break;
 			case 'G':       /* MEMO mode entered */
 				memo_mode = 1;
-				LOGPRINTF(1, "bte_automaton: MEMO key");
+				logprintf(LIRC_TRACE, "bte_automaton: MEMO key");
 				break;
 			// testing for 'e' triggers
 			case 'J':
@@ -352,7 +352,7 @@ char* bte_automaton(void)
 			}
 		}
 	} else {                // Unknown reply
-		LOGPRINTF(1, "bte_automaton: Unknown reply");
+		logprintf(LIRC_TRACE, "bte_automaton: Unknown reply");
 	}
 	strcat(msg, "\n");      // pad with newline
 	return msg;
@@ -360,7 +360,7 @@ char* bte_automaton(void)
 
 char* bte_rec(struct ir_remote* remotes)
 {
-	LOGPRINTF(4, "bte_rec called");
+	logprintf(LIRC_TRACE2, "bte_rec called");
 
 	if (bte_automaton())
 		return decode_all(remotes);
@@ -370,11 +370,11 @@ char* bte_rec(struct ir_remote* remotes)
 
 int bte_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(3, "bte_decode called");
+	logprintf(LIRC_TRACE2, "bte_decode called");
 	ctx->pre = pre;
 	ctx->code = code;
 	ctx->post = 0;
 
-	LOGPRINTF(1, "bte_decode: %llx", (__u64)ctx->code);
+	logprintf(LIRC_TRACE, "bte_decode: %llx", (__u64)ctx->code);
 	return 1;
 }

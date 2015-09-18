@@ -116,11 +116,11 @@ char* irman_rec(struct ir_remote* remotes)
 	gettimeofday(&end, NULL);
 	if (codestring == NULL) {
 		if (errno == IR_EDUPCODE) {
-			LOGPRINTF(1, "received \"%s\" (dup)", text ? text : "(null - bug)");
+			logprintf(LIRC_TRACE, "received \"%s\" (dup)", text ? text : "(null - bug)");
 		} else if (errno == IR_EDISABLED) {
-			LOGPRINTF(1, "irman not initialised (this is a bug)");
+			logprintf(LIRC_TRACE, "irman not initialised (this is a bug)");
 		} else {
-			LOGPRINTF(1, "error reading code: \"%s\"", ir_strerror(errno));
+			logprintf(LIRC_TRACE, "error reading code: \"%s\"", ir_strerror(errno));
 		}
 		if (errno == IR_EDUPCODE)
 			return decode_all(remotes);
@@ -128,7 +128,7 @@ char* irman_rec(struct ir_remote* remotes)
 	}
 
 	text = ir_code_to_text(codestring);
-	LOGPRINTF(1, "received \"%s\"", text);
+	logprintf(LIRC_TRACE, "received \"%s\"", text);
 
 	/* this is only historical but it's necessary for
 	 * compatibility to older versions and it's handy to

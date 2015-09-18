@@ -127,12 +127,12 @@ int sonyir_deinit(void)
 
 int sonyir_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "sonyir_decode");
+	logprintf(LIRC_TRACE, "sonyir_decode");
 
 	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0))
 		return 0;
 
-	LOGPRINTF(1, "lirc code: 0x%X", ctx->code);
+	logprintf(LIRC_TRACE, "lirc code: 0x%X", ctx->code);
 
 	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
@@ -250,7 +250,7 @@ static char* sonyir_rec(struct ir_remote* remotes)
 	unsigned char rd_len = 255;
 	unsigned char msg[16];
 
-	LOGPRINTF(1, "sonyir_rec");
+	logprintf(LIRC_TRACE, "sonyir_rec");
 
 	// Read length delimiter from socket. If we were accessing the device
 	// directly, this would be a bit easier.

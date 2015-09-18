@@ -299,10 +299,10 @@ int map_code(const struct ir_remote*	remote,
 	all >>= remote->bits;
 	ctx->pre = (all & gen_mask(remote->pre_data_bits));
 
-	LOGPRINTF(1, "pre: %llx", (__u64)(ctx->pre));
-	LOGPRINTF(1, "code: %llx", (__u64)(ctx->code));
-	LOGPRINTF(1, "post: %llx", (__u64)(ctx->post));
-	LOGPRINTF(1, "code:                   %016llx\n", code);
+	logprintf(LIRC_TRACE, "pre: %llx", (__u64)(ctx->pre));
+	logprintf(LIRC_TRACE, "code: %llx", (__u64)(ctx->code));
+	logprintf(LIRC_TRACE, "post: %llx", (__u64)(ctx->post));
+	logprintf(LIRC_TRACE, "code:                   %016llx\n", code);
 
 	return 1;
 }
@@ -371,16 +371,16 @@ void map_gap(const struct ir_remote*	remote,
 		ctx->max_remaining_gap = max_gap(remote);
 	}
 
-	LOGPRINTF(1, "repeat_flagp:           %d", (ctx->repeat_flag));
-	LOGPRINTF(1, "is_const(remote):       %d", is_const(remote));
-	LOGPRINTF(1, "remote->gap range:      %lu %lu", (__u32)min_gap(
+	logprintf(LIRC_TRACE, "repeat_flagp:           %d", (ctx->repeat_flag));
+	logprintf(LIRC_TRACE, "is_const(remote):       %d", is_const(remote));
+	logprintf(LIRC_TRACE, "remote->gap range:      %lu %lu", (__u32)min_gap(
 			  remote), (__u32)max_gap(remote));
-	LOGPRINTF(1, "remote->remaining_gap:  %lu %lu",
+	logprintf(LIRC_TRACE, "remote->remaining_gap:  %lu %lu",
 		  (__u32)remote->min_remaining_gap,
 		  (__u32)remote->max_remaining_gap);
-	LOGPRINTF(1, "signal length:          %lu", (__u32)signal_length);
-	LOGPRINTF(1, "gap:                    %lu", (__u32)gap);
-	LOGPRINTF(1, "extim. remaining_gap:   %lu %lu",
+	logprintf(LIRC_TRACE, "signal length:          %lu", (__u32)signal_length);
+	logprintf(LIRC_TRACE, "gap:                    %lu", (__u32)gap);
+	logprintf(LIRC_TRACE, "extim. remaining_gap:   %lu %lu",
 		  (__u32)(ctx->min_remaining_gap),
 		  (__u32)(ctx->max_remaining_gap));
 }
@@ -511,20 +511,20 @@ static struct ir_ncode* get_code(struct ir_remote*	remote,
 	}
 	if (has_pre(remote)) {
 		if ((pre | pre_mask) != (remote->pre_data | pre_mask)) {
-			LOGPRINTF(1, "bad pre data");
-			LOGPRINTF(2, "%llx %llx", pre, remote->pre_data);
+			logprintf(LIRC_TRACE, "bad pre data");
+			logprintf(LIRC_TRACE1, "%llx %llx", pre, remote->pre_data);
 			return 0;
 		}
-		LOGPRINTF(1, "pre");
+		logprintf(LIRC_TRACE, "pre");
 	}
 
 	if (has_post(remote)) {
 		if ((post | post_mask) != (remote->post_data | post_mask)) {
-			LOGPRINTF(1, "bad post data");
-			LOGPRINTF(2, "%llx %llx", post, remote->post_data);
+			logprintf(LIRC_TRACE, "bad post data");
+			logprintf(LIRC_TRACE1, "%llx %llx", post, remote->post_data);
 			return 0;
 		}
-		LOGPRINTF(1, "post");
+		logprintf(LIRC_TRACE, "post");
 	}
 
 	all = gen_ir_code(remote, pre, code, post);
@@ -590,7 +590,7 @@ static struct ir_ncode* get_code(struct ir_remote*	remote,
 	if (found_code && found != NULL && has_toggle_mask(remote)) {
 		if (!(remote->toggle_mask_state % 2)) {
 			remote->toggle_code = found;
-			LOGPRINTF(1, "toggle_mask_start");
+			logprintf(LIRC_TRACE, "toggle_mask_start");
 		} else {
 			if (found != remote->toggle_code) {
 				remote->toggle_code = NULL;
@@ -612,10 +612,10 @@ static __u64 set_code(struct ir_remote*		remote,
 	struct timeval current;
 	static struct ir_remote* last_decoded = NULL;
 
-	LOGPRINTF(1, "found: %s", found->name);
+	logprintf(LIRC_TRACE, "found: %s", found->name);
 
 	gettimeofday(&current, NULL);
-	LOGPRINTF(1, "%lx %lx %lx %d %d %d %d %d %d %d",
+	logprintf(LIRC_TRACE, "%lx %lx %lx %d %d %d %d %d %d %d",
 		  remote, last_remote, last_decoded,
 		  remote == last_decoded,
 		  found == remote->last_code, found->next != NULL,
@@ -630,7 +630,7 @@ static __u64 set_code(struct ir_remote*		remote,
 	if (remote->release_detected) {
 		remote->release_detected = 0;
 		if (ctx->repeat_flag)
-			LOGPRINTF(0,
+			logprintf(LIRC_TRACE,
 			  "repeat indicated although release was detected before");
 
 		ctx->repeat_flag = 0;
@@ -734,7 +734,7 @@ char* decode_all(struct ir_remote* remotes)
 	/* use remotes carefully, it may be changed on SIGHUP */
 	decoding = remote = remotes;
 	while (remote) {
-		LOGPRINTF(1, "trying \"%s\" remote", remote->name);
+		logprintf(LIRC_TRACE, "trying \"%s\" remote", remote->name);
 		if (curr_driver->decode_func(remote, &ctx)) {
 			ncode = get_code(remote,
 					 ctx.pre, ctx.code, ctx.post,
@@ -799,7 +799,7 @@ char* decode_all(struct ir_remote* remotes)
 					return message;
 				}
 			} else {
-				LOGPRINTF(1, "failed \"%s\" remote",
+				logprintf(LIRC_TRACE, "failed \"%s\" remote",
 					  remote->name);
 			}
 		}
@@ -808,7 +808,7 @@ char* decode_all(struct ir_remote* remotes)
 	}
 	decoding = NULL;
 	last_remote = NULL;
-	LOGPRINTF(1, "decoding failed for all remotes");
+	logprintf(LIRC_TRACE, "decoding failed for all remotes");
 	return NULL;
 }
 

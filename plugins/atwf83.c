@@ -81,7 +81,7 @@ const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };
 
 static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "atwf83_decode");
+	logprintf(LIRC_TRACE, "atwf83_decode");
 
 	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
@@ -247,7 +247,7 @@ static char* atwf83_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	LOGPRINTF(1, "atwf83 : %x", ev);
+	logprintf(LIRC_TRACE, "atwf83 : %x", ev);
 	// Record the code and check for repetition
 	if (main_code == ev) {
 		repeat_state = RPT_YES;

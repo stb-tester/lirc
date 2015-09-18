@@ -119,7 +119,7 @@ static int queue_put(lirc_t data)
 {
 	int next = (rec_wptr + 1) % rec_size;
 
-	LOGPRINTF(3, "queue_put: %d", data);
+	logprintf(LIRC_TRACE2, "queue_put: %d", data);
 
 	if (next != rec_rptr) {
 		rec_buf[rec_wptr] = data;
@@ -135,7 +135,7 @@ static int queue_get(lirc_t* pdata)
 	if (rec_wptr != rec_rptr) {
 		*pdata = rec_buf[rec_rptr];
 		rec_rptr = (rec_rptr + 1) % rec_size;
-		LOGPRINTF(3, "queue_get: %d", *pdata);
+		logprintf(LIRC_TRACE2, "queue_get: %d", *pdata);
 
 		return 0;
 	}
@@ -158,11 +158,11 @@ static int uirt2_raw_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	LOGPRINTF(1, "uirt2_raw_decode: enter");
+	logprintf(LIRC_TRACE, "uirt2_raw_decode: enter");
 
 	res = receive_decode(remote, ctx);
 
-	LOGPRINTF(1, "uirt2_raw_decode: %d", res);
+	logprintf(LIRC_TRACE, "uirt2_raw_decode: %d", res);
 
 	return res;
 }
@@ -175,7 +175,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout)
 		lirc_t data = uirt2_read_raw(dev, timeout);
 
 		if (!data) {
-			LOGPRINTF(1, "uirt2_raw_readdata failed");
+			logprintf(LIRC_TRACE, "uirt2_raw_readdata failed");
 			return 0;
 		}
 
@@ -184,7 +184,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout)
 
 	queue_get(&data);
 
-	LOGPRINTF(1, "uirt2_raw_readdata %d %d", !!(data & PULSE_BIT), data & PULSE_MASK);
+	logprintf(LIRC_TRACE, "uirt2_raw_readdata %d %d", !!(data & PULSE_BIT), data & PULSE_MASK);
 
 	return data;
 }
@@ -288,8 +288,8 @@ static int uirt2_raw_deinit(void)
 
 static char* uirt2_raw_rec(struct ir_remote* remotes)
 {
-	LOGPRINTF(1, "uirt2_raw_rec");
-	LOGPRINTF(1, "uirt2_raw_rec: %p", remotes);
+	logprintf(LIRC_TRACE, "uirt2_raw_rec");
+	logprintf(LIRC_TRACE, "uirt2_raw_rec: %p", remotes);
 
 	if (!rec_buffer_clear())
 		return NULL;
@@ -323,22 +323,22 @@ static int uirt2_send(struct ir_remote* remote, struct ir_ncode* code)
 	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
-		LOGPRINTF(1, "nothing to send");
+		logprintf(LIRC_TRACE, "nothing to send");
 		return 0;
 	}
 
 
-	LOGPRINTF(1, "Trying REMSTRUC1 transmission");
+	logprintf(LIRC_TRACE, "Trying REMSTRUC1 transmission");
 	res = uirt2_send_mode2_struct1(dev, remote, signals, length);
 	if (!res && (length < 48)) {
-		LOGPRINTF(1, "Using RAW transission");
+		logprintf(LIRC_TRACE, "Using RAW transission");
 		res = uirt2_send_mode2_raw(dev, remote, signals, length);
 	}
 
 	if (!res)
 		logprintf(LIRC_ERROR, "uirt2_send: remote not supported");
 	else
-		LOGPRINTF(1, "uirt2_send: succeeded");
+		logprintf(LIRC_TRACE, "uirt2_send: succeeded");
 
 	/*
 	 * Some devices send the sequence in the background.  Wait for
@@ -368,7 +368,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 	int res;
 	int repeats = 1;
 
-	LOGPRINTF(1, "uirt2_send_mode2_raw %d %p", length, buf);
+	logprintf(LIRC_TRACE, "uirt2_send_mode2_raw %d %p", length, buf);
 
 	tmp[0] = 0;
 	tmp[1] = 0;
@@ -401,7 +401,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 	if (!res)
 		return 0;
 
-	LOGPRINTF(1, "uirt2_send_mode2_raw exit");
+	logprintf(LIRC_TRACE, "uirt2_send_mode2_raw exit");
 	return 1;
 }
 
@@ -430,18 +430,18 @@ static int calc_data_bit(struct ir_remote* remote, int table[], int table_len, i
 		if (table[i] == 0) {
 			table[i] = signal / tUnit;
 
-			LOGPRINTF(2, "table[%d] = %d\n", i, table[i]);
+			logprintf(LIRC_TRACE1, "table[%d] = %d\n", i, table[i]);
 
 			return i;
 		}
 
 		if (expect(remote, signal, table[i] * tUnit)) {
-			LOGPRINTF(2, "expect %d, table[%d] = %d\n", signal / tUnit, i, table[i]);
+			logprintf(LIRC_TRACE1, "expect %d, table[%d] = %d\n", signal / tUnit, i, table[i]);
 			return i;
 		}
 	}
 
-	LOGPRINTF(2, "Couldn't find %d\n", signal / tUnit);
+	logprintf(LIRC_TRACE1, "Couldn't find %d\n", signal / tUnit);
 
 	return -1;
 }
@@ -489,7 +489,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		int len = buf[i] / tUnit;
 
 		if (len > UCHAR_MAX) {
-			LOGPRINTF(0, "signal too long for transmission %lu", (__u32)buf[i]);
+			logprintf(LIRC_TRACE, "signal too long for transmission %lu", (__u32)buf[i]);
 			return 0;
 		}
 		if (i == 0) {
@@ -534,7 +534,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		bits++;
 	}
 
-	LOGPRINTF(2, "bits %d", bits);
+	logprintf(LIRC_TRACE1, "bits %d", bits);
 
 	rem.bISDlyHi = remote->min_remaining_gap / tUnit / 256;
 	rem.bISDlyLo = (remote->min_remaining_gap / tUnit) & 255;

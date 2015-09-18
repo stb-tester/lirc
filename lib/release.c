@@ -71,7 +71,7 @@ void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode, ir_
 				  remote->max_total_signal_length - remote->min_gap_length)
 		      + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
 
-	LOGPRINTF(1, "release_gap: %lu", release_gap);
+	logprintf(LIRC_TRACE, "release_gap: %lu", release_gap);
 
 	register_input();
 }
@@ -121,7 +121,7 @@ const char* check_release_event(const char** remote_name, const char** button_na
 			return NULL;
 		}
 
-		LOGPRINTF(3, "check");
+		logprintf(LIRC_TRACE2, "check");
 		return message;
 	}
 	return NULL;
@@ -151,7 +151,7 @@ const char* trigger_release_event(const char** remote_name, const char** button_
 			logprintf(LIRC_ERROR, "message buffer overflow");
 			return NULL;
 		}
-		LOGPRINTF(3, "trigger");
+		logprintf(LIRC_TRACE2, "trigger");
 		return message;
 	}
 	return NULL;

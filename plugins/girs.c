@@ -673,38 +673,35 @@ static int init(void)
 			return 0;
 		}
 		if (!tty_create_lock(drv.device)) {
-			logprintf(LIRC_ERROR,
-				"girs: could not create lock files");
+			log_error("girs: could not create lock files");
 			return 0;
 		}
 		drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 		if (drv.fd < 0) {
-			logprintf(LIRC_ERROR,
-				"girs: could not open %s", drv.device);
+			log_error("girs: could not open %s", drv.device);
 			tty_delete_lock();
 			return 0;
 		}
 		if (!tty_reset(drv.fd)) {
-			logprintf(LIRC_ERROR, "girs: could not reset tty");
+			log_error("girs: could not reset tty");
 			close(drv.fd);
 			tty_delete_lock();
 			return 0;
 		}
 		if (!tty_setbaud(drv.fd, BAUDRATE)) {
-			logprintf(LIRC_ERROR, "girs: could not set baud rate");
+			log_error("girs: could not set baud rate");
 			close(drv.fd);
 			tty_delete_lock();
 			return 0;
 		}
 		if (!tty_setcsize(drv.fd, 8)) {
-			logprintf(LIRC_ERROR, "girs: could not set csize");
+			log_error("girs: could not set csize");
 			close(drv.fd);
 			tty_delete_lock();
 			return 0;
 		}
 		if (!tty_setrtscts(drv.fd, 0)) {
-			logprintf(LIRC_ERROR,
-				"girs: could not disable hardware flow");
+			log_error("girs: could not disable hardware flow");
 			close(drv.fd);
 			tty_delete_lock();
 			return 0;
@@ -723,15 +720,13 @@ static int init(void)
 			success = readline(buf, LONG_LINE_SIZE,
 				TIMEOUT_INITIAL);
 			if (!success)
-				logprintf(LIRC_ERROR,
-					"girs: no response from device, "
-					"giving up");
+				log_error("girs: no response from device, "
+					   "giving up");
 		}
 		if (success) {
 			success = syncronize();
 			if (!success) {
-				logprintf(LIRC_ERROR,
-					"girs: cannot syncronize");
+				log_error("girs: cannot syncronize");
 			}
 		}
 		if (success) {
@@ -743,23 +738,20 @@ static int init(void)
 				strcat(dev.driver_version, "/");
 				strcat(dev.driver_version, dev.version);
 			} else {
-				logprintf(LIRC_ERROR,
-					"girs: cannot get version");
+				log_error("girs: cannot get version");
 			}
 		}
 		if (success) {
 			success = sendcommand_answer("modules", buf,
 				LONG_LINE_SIZE);
 			if (!success) {
-				logprintf(LIRC_ERROR,
-					"girs: cannot get modules");
+				log_error("girs: cannot get modules");
 			} else
 				decode_modules(buf);
 		}
 
 		if (!success) {
-			logprintf(LIRC_ERROR,
-				"girs: Could not open Girs device at %s",
+			log_error("girs: Could not open Girs device at %s",
 				drv.device);
 			girs_close();
 			tty_delete_lock();

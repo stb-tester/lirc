@@ -381,7 +381,7 @@ int devinput_deinit(void)
 
 int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "devinput_decode");
+	logprintf(LIRC_TRACE, "devinput_decode");
 
 	if (!map_code(remote, ctx, 0, 0, hw_devinput.code_length, code, 0, 0)) {
 		static int print_warning = 1;
@@ -418,7 +418,7 @@ char* devinput_rec(struct ir_remote* remotes)
 	int rd;
 	ir_code value;
 
-	LOGPRINTF(1, "devinput_rec");
+	logprintf(LIRC_TRACE, "devinput_rec");
 
 	last = end;
 	gettimeofday(&start, NULL);
@@ -431,7 +431,7 @@ char* devinput_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	LOGPRINTF(1, "time %ld.%06ld  type %d  code %d  value %d", event.time.tv_sec, event.time.tv_usec, event.type,
+	logprintf(LIRC_TRACE, "time %ld.%06ld  type %d  code %d  value %d", event.time.tv_sec, event.time.tv_usec, event.type,
 		  event.code, event.value);
 
 	value = (unsigned)event.value;
@@ -458,13 +458,13 @@ char* devinput_rec(struct ir_remote* remotes)
 
 	code = ((ir_code)(unsigned)event.type) << 48 | ((ir_code)(unsigned)event.code) << 32 | value;
 
-	LOGPRINTF(1, "code %.8llx", code);
+	logprintf(LIRC_TRACE, "code %.8llx", code);
 
 	if (uinputfd != -1) {
 		if (event.type == EV_REL || event.type == EV_ABS
 		    || (event.type == EV_KEY && event.code >= BTN_MISC && event.code <= BTN_GEAR_UP)
 		    || event.type == EV_SYN) {
-			LOGPRINTF(1, "forwarding: %04x %04x", event.type, event.code);
+			logprintf(LIRC_TRACE, "forwarding: %04x %04x", event.type, event.code);
 			if (write(uinputfd, &event, sizeof(event)) != sizeof(event))
 				logperror(LIRC_ERROR, "writing to uinput failed");
 			return NULL;

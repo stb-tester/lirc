@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
 ** hw_atilibusb.c **********************************************************
 ****************************************************************************
 *  Userspace (libusb) driver for ATI/NVidia/X10 RF Remote.
@@ -110,7 +110,7 @@ static int ati_init(void)
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
-	LOGPRINTF(1, "initializing USB receiver");
+	logprintf(LIRC_TRACE, "initializing USB receiver");
 
 	rec_buffer_init();
 

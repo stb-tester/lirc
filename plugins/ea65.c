@@ -160,7 +160,7 @@ char* ea65_receive(struct ir_remote* remote)
 		return NULL;
 	}
 
-	LOGPRINTF(1, "EA65: data(%d): %02x %02x %02x %02x %02x", r, data[0], data[1], data[2], data[3], data[4]);
+	logprintf(LIRC_TRACE, "EA65: data(%d): %02x %02x %02x %02x %02x", r, data[0], data[1], data[2], data[3], data[4]);
 
 	if (data[0] != 0xa0)
 		return NULL;

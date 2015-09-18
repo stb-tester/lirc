@@ -189,7 +189,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		int val;
 
 		if (!waitfordata(TIMEOUT)) {
-			LOGPRINTF(0, "timeout reading byte %d", i);
+			logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 			return NULL;
 		}
 		val = read(drv.fd, &b[i], 1);
@@ -207,7 +207,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 			i = 0;
 			continue;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 		++i;
 	}
 	gettimeofday(&end, NULL);
@@ -215,7 +215,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	if (serial_input) {
 		if (((char)(b[0]) & 0x0c) != 0x0c && (char)(b[2]) == 0x3f && ((char)(b[2]) & 0x07)) {
 			code = (ir_code)(char)(b[1]) | (((char)(b[0]) & 0x03) << 6);
-			LOGPRINTF(1, "result %llx", (__u64)code);
+			logprintf(LIRC_TRACE, "result %llx", (__u64)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -225,11 +225,11 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	} else {
 		if ((char)b[2] == 0x7f) {
 			if ((char)b[0] != 0x08) {
-				LOGPRINTF(1, "Bad data");
+				logprintf(LIRC_TRACE, "Bad data");
 				return NULL;
 			}
 			code = (ir_code)b[1];
-			LOGPRINTF(1, "result %llx", (__u64)code);
+			logprintf(LIRC_TRACE, "result %llx", (__u64)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -266,15 +266,15 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		code |= 0x03;
 	if (code != 0) {
 		code |= 0x0100;
-		LOGPRINTF(1, "result %llx", (__u64)code);
+		logprintf(LIRC_TRACE, "result %llx", (__u64)code);
 		m = decode_all(remotes);
 		return m;
 	} else if (dx == 0 && dy == 0) {
 		code = 0x0800 | stat;
-		LOGPRINTF(1, "result %llx", (__u64)code);
+		logprintf(LIRC_TRACE, "result %llx", (__u64)code);
 		m = decode_all(remotes);
 		return m;
 	}
-	LOGPRINTF(1, "fallthrough is bad!%d %d %d", dx, dy, stat);
+	logprintf(LIRC_TRACE, "fallthrough is bad!%d %d %d", dx, dy, stat);
 	return NULL;
 }

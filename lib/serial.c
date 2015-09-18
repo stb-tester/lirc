@@ -51,13 +51,13 @@ int tty_reset(int fd)
 	struct termios options;
 
 	if (tcgetattr(fd, &options) == -1) {
-		LOGPRINTF(1, "tty_reset(): tcgetattr() failed");
+		logprintf(LIRC_TRACE, "tty_reset(): tcgetattr() failed");
 		LOGPERROR(1, "tty_reset()");
 		return 0;
 	}
 	cfmakeraw(&options);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		LOGPRINTF(1, "tty_reset(): tcsetattr() failed");
+		logprintf(LIRC_TRACE, "tty_reset(): tcsetattr() failed");
 		LOGPERROR(1, "tty_reset()");
 		return 0;
 	}
@@ -69,7 +69,7 @@ int tty_setrtscts(int fd, int enable)
 	struct termios options;
 
 	if (tcgetattr(fd, &options) == -1) {
-		LOGPRINTF(1, "%s: tcgetattr() failed", __func__);
+		logprintf(LIRC_TRACE, "%s: tcgetattr() failed", __func__);
 		LOGPERROR(1, __func__);
 		return 0;
 	}
@@ -78,7 +78,7 @@ int tty_setrtscts(int fd, int enable)
 	else
 		options.c_cflag &= ~CRTSCTS;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		LOGPRINTF(1, "%s: tcsetattr() failed", __func__);
+		logprintf(LIRC_TRACE, "%s: tcsetattr() failed", __func__);
 		LOGPERROR(1, __func__);
 		return 0;
 	}
@@ -90,14 +90,14 @@ int tty_setdtr(int fd, int enable)
 	int cmd, sts;
 
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
-		LOGPRINTF(1, "%s: ioctl(TIOCMGET) failed", __func__);
+		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMGET) failed", __func__);
 		LOGPERROR(1, __func__);
 		return 0;
 	}
 	if (((sts & TIOCM_DTR) == 0) && enable) {
-		LOGPRINTF(1, "%s: 0->1", __func__);
+		logprintf(LIRC_TRACE, "%s: 0->1", __func__);
 	} else if ((!enable) && (sts & TIOCM_DTR)) {
-		LOGPRINTF(1, "%s: 1->0", __func__);
+		logprintf(LIRC_TRACE, "%s: 1->0", __func__);
 	}
 	if (enable)
 		cmd = TIOCMBIS;
@@ -105,7 +105,7 @@ int tty_setdtr(int fd, int enable)
 		cmd = TIOCMBIC;
 	sts = TIOCM_DTR;
 	if (ioctl(fd, cmd, &sts) < 0) {
-		LOGPRINTF(1, "%s: ioctl(TIOCMBI(S|C)) failed", __func__);
+		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMBI(S|C)) failed", __func__);
 		LOGPERROR(1, __func__);
 		return 0;
 	}
@@ -221,26 +221,26 @@ int tty_setbaud(int fd, int baud)
 		use_custom_divisor = 1;
 		break;
 #else
-		LOGPRINTF(1, "tty_setbaud(): bad baud rate %d", baud);
+		logprintf(LIRC_TRACE, "tty_setbaud(): bad baud rate %d", baud);
 		return 0;
 #endif
 	}
 	if (tcgetattr(fd, &options) == -1) {
-		LOGPRINTF(1, "tty_setbaud(): tcgetattr() failed");
+		logprintf(LIRC_TRACE, "tty_setbaud(): tcgetattr() failed");
 		LOGPERROR(1, "tty_setbaud()");
 		return 0;
 	}
 	(void)cfsetispeed(&options, speed);
 	(void)cfsetospeed(&options, speed);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		LOGPRINTF(1, "tty_setbaud(): tcsetattr() failed");
+		logprintf(LIRC_TRACE, "tty_setbaud(): tcsetattr() failed");
 		LOGPERROR(1, "tty_setbaud()");
 		return 0;
 	}
 #if defined __linux__
 	if (use_custom_divisor) {
 		if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0) {
-			LOGPRINTF(1, "tty_setbaud(): TIOCGSERIAL failed");
+			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCGSERIAL failed");
 			LOGPERROR(1, "tty_setbaud()");
 			return 0;
 		}
@@ -248,7 +248,7 @@ int tty_setbaud(int fd, int baud)
 		serinfo.flags |= ASYNC_SPD_CUST;
 		serinfo.custom_divisor = serinfo.baud_base / baud;
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0) {
-			LOGPRINTF(1, "tty_setbaud(): TIOCSSERIAL failed");
+			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCSSERIAL failed");
 			LOGPERROR(1, "tty_setbaud()");
 			return 0;
 		}
@@ -276,18 +276,18 @@ int tty_setcsize(int fd, int csize)
 		size = CS8;
 		break;
 	default:
-		LOGPRINTF(1, "tty_setcsize(): bad csize rate %d", csize);
+		logprintf(LIRC_TRACE, "tty_setcsize(): bad csize rate %d", csize);
 		return 0;
 	}
 	if (tcgetattr(fd, &options) == -1) {
-		LOGPRINTF(1, "tty_setcsize(): tcgetattr() failed");
+		logprintf(LIRC_TRACE, "tty_setcsize(): tcgetattr() failed");
 		LOGPERROR(1, "tty_setcsize()");
 		return 0;
 	}
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= size;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		LOGPRINTF(1, "tty_setcsize(): tcsetattr() failed");
+		logprintf(LIRC_TRACE, "tty_setcsize(): tcsetattr() failed");
 		LOGPERROR(1, "tty_setcsize()");
 		return 0;
 	}
@@ -512,7 +512,7 @@ int tty_set(int fd, int rts, int dtr)
 	mask = rts ? TIOCM_RTS : 0;
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIS, &mask) == -1) {
-		LOGPRINTF(1, "tty_set(): ioctl() failed");
+		logprintf(LIRC_TRACE, "tty_set(): ioctl() failed");
 		LOGPERROR(1, "tty_set()");
 		return 0;
 	}
@@ -526,7 +526,7 @@ int tty_clear(int fd, int rts, int dtr)
 	mask = rts ? TIOCM_RTS : 0;
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIC, &mask) == -1) {
-		LOGPRINTF(1, "tty_clear(): ioctl() failed");
+		logprintf(LIRC_TRACE, "tty_clear(): ioctl() failed");
 		LOGPERROR(1, "tty_clear()");
 		return 0;
 	}
@@ -536,7 +536,7 @@ int tty_clear(int fd, int rts, int dtr)
 int tty_write(int fd, char byte)
 {
 	if (write(fd, &byte, 1) != 1) {
-		LOGPRINTF(1, "tty_write(): write() failed");
+		logprintf(LIRC_TRACE, "tty_write(): write() failed");
 		LOGPERROR(1, "tty_write()");
 		return -1;
 	}
@@ -579,7 +579,7 @@ int tty_write_echo(int fd, char byte)
 		return -1;
 	if (tty_read(fd, &reply) == -1)
 		return -1;
-	LOGPRINTF(1, "sent: A%u D%01x reply: A%u D%01x", (((unsigned int)(unsigned char)byte) & 0xf0) >> 4,
+	logprintf(LIRC_TRACE, "sent: A%u D%01x reply: A%u D%01x", (((unsigned int)(unsigned char)byte) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)byte) & 0x0f, (((unsigned int)(unsigned char)reply) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)reply) & 0x0f);
 	if (byte != reply)

@@ -540,7 +540,7 @@ int tira_init(void)
 	if (child_pid != -1)
 		tira_deinit();
 
-	LOGPRINTF(1, "Tira init");
+	logprintf(LIRC_TRACE, "Tira init");
 
 	if (!tty_create_lock(drv.device)) {
 		logprintf(LIRC_ERROR, "could not create lock files");
@@ -552,7 +552,7 @@ int tira_init(void)
 		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 		return 0;
 	}
-	LOGPRINTF(1, "device '%s' opened", drv.device);
+	logprintf(LIRC_TRACE, "device '%s' opened", drv.device);
 
 	/* We want 9600 8N1 with CTS/RTS handshaking, lets set that
 	 * up. The specs state a baud rate of 100000, looking at the
@@ -580,7 +580,7 @@ int tira_init(void)
 	default:
 		device_string = "unknown";
 	}
-	LOGPRINTF(1, "device type %s", device_string);
+	logprintf(LIRC_TRACE, "device type %s", device_string);
 
 	if (device_type == 0) {
 		tira_deinit();
@@ -628,7 +628,7 @@ char* tira_rec(struct ir_remote* remotes)
 	for (i = 0; i < 6; i++) {
 		if (i > 0) {
 			if (!waitfordata(20000)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				/* likely to be !=6 bytes, so flush. */
 				tcflush(drv.fd, TCIFLUSH);
 				return NULL;
@@ -639,7 +639,7 @@ char* tira_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 		x++;
 	}
 	gettimeofday(&end, NULL);
@@ -649,7 +649,7 @@ char* tira_rec(struct ir_remote* remotes)
 		code = code << 8;
 	}
 
-	LOGPRINTF(1, " -> %0llx", (__u64)code);
+	logprintf(LIRC_TRACE, " -> %0llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;
