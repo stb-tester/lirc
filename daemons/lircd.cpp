@@ -870,13 +870,56 @@ int add_peer_connection(const char* server_arg)
 	return 0;
 }
 
+
+void connect_to_peer(peer_connection* peer)
+{
+	int r;
+	char service[64];
+	struct addrinfo* addr;
+	struct addrinfo* tmp;
+	int enable = 1;
+
+	snprintf(service, sizeof(service), "%d", peer->port);
+	peer->socket = socket(AF_INET, SOCK_STREAM, 0);
+	r = getaddrinfo(peer->host, service, NULL, &addr);
+	if (r != 0) {
+		logprintf(LIRC_ERROR,
+			  "Name lookup failure connecting to %s",
+			  peer->host);
+		peer->connection_failure++;
+		gettimeofday(&peer->reconnect, NULL);
+		peer->reconnect.tv_sec += 5 * peer->connection_failure;
+		close(peer->socket);
+		peer->socket = -1;
+		return;
+	}
+	(void)setsockopt(peer->socket,
+			 SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
+        do {
+		r = connect(peer->socket,
+			    addr->ai_addr, sizeof(struct sockaddr));
+		tmp = addr;
+	addr = addr->ai_next;
+		freeaddrinfo(tmp);
+	} while (r < 0 && addr != NULL);
+	if (r == -1) {
+		logperror(LIRC_ERROR, "Cannot connect to %s", peer->host);
+		peer->connection_failure++;
+		gettimeofday(&peer->reconnect, NULL);
+		peer->reconnect.tv_sec += 5 * peer->connection_failure;
+		close(peer->socket);
+		peer->socket = -1;
+		return;
+	}
+	logprintf(LIRC_NOTICE, "connected to %s", peer->host);
+	peer->connection_failure = 0;
+}
+
+
 void connect_to_peers(void)
 {
 	int i;
-	struct hostent* host;
-	struct sockaddr_in addr;
 	struct timeval now;
-	int enable = 1;
 
 	gettimeofday(&now, NULL);
 	for (i = 0; i < peern; i++) {
@@ -884,37 +927,11 @@ void connect_to_peers(void)
 			continue;
 		/* some timercmp() definitions don't work with <= */
 		if (timercmp(&peers[i]->reconnect, &now, <)) {
-			peers[i]->socket = socket(AF_INET, SOCK_STREAM, 0);
-			host = gethostbyname(peers[i]->host);
-			if (host == NULL) {
-				logprintf(LIRC_ERROR, "name lookup failure connecting to %s", peers[i]->host);
-				peers[i]->connection_failure++;
-				gettimeofday(&peers[i]->reconnect, NULL);
-				peers[i]->reconnect.tv_sec += 5 * peers[i]->connection_failure;
-				close(peers[i]->socket);
-				peers[i]->socket = -1;
-				continue;
-			}
-
-			(void)setsockopt(peers[i]->socket, SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
-
-			addr.sin_family = host->h_addrtype;
-			addr.sin_addr = *((struct in_addr*)host->h_addr);
-			addr.sin_port = htons(peers[i]->port);
-			if (connect(peers[i]->socket, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-				logperror(LIRC_ERROR, "failure connecting to %s", peers[i]->host);
-				peers[i]->connection_failure++;
-				gettimeofday(&peers[i]->reconnect, NULL);
-				peers[i]->reconnect.tv_sec += 5 * peers[i]->connection_failure;
-				close(peers[i]->socket);
-				peers[i]->socket = -1;
-				continue;
-			}
-			logprintf(LIRC_NOTICE, "connected to %s", peers[i]->host);
-			peers[i]->connection_failure = 0;
+			connect_to_peer(peers[i]);
 		}
 	}
 }
+
 
 int get_peer_message(struct peer_connection* peer)
 {
