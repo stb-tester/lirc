@@ -203,14 +203,14 @@ inline int read_timeout(int fd, char* buf, int len, int timeout_us)
 		ret = poll(&pfd, 1, timeout * 1000);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		logperror(LIRC_ERROR, "read_timeout, poll() failed");
+		log_perror_err("read_timeout, poll() failed");
 		return -1;
 	};
 	if (ret == 0)
 		return 0;       /* timeout */
 	n = read(fd, buf, len);
 	if (n == -1) {
-		logperror(LIRC_ERROR, "read_timeout: read() failed");
+		log_perror_err("read_timeout: read() failed");
 		return -1;
 	}
 	return n;
@@ -290,7 +290,7 @@ void add_client(int sock)
 	clilen = sizeof(client_addr);
 	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
-		logperror(LIRC_ERROR, "accept() failed for new client");
+		log_perror_err("accept() failed for new client");
 		return;
 	}
 	;
@@ -636,7 +636,7 @@ static void loop(int sockfd, int lircdfd)
 				   POLLFDS_SIZE,
 				   0);
 			if (ret == -1 && errno != EINTR) {
-				logperror(LIRC_ERROR, "loop: poll() failed");
+				log_perror_err("loop: poll() failed");
 				raise(SIGTERM);
 				continue;
 			}

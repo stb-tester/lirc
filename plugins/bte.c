@@ -183,7 +183,7 @@ int bte_connect(void)
 	drv.fd = open("/dev/zero", O_RDONLY);
 	if (drv.fd == -1) {
 		log_error("could not open /dev/zero/");
-		logperror(LIRC_ERROR, "bte_init()");
+		log_perror_err("bte_init()");
 	}
 	sleep(1);
 	return 0;

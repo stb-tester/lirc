@@ -110,7 +110,7 @@ int silitek_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "silitek_init()");
+		log_perror_err("silitek_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -149,7 +149,7 @@ char* silitek_rec(struct ir_remote* remotes)
 
 	if (!silitek_read(drv.fd, &b[0], TIMEOUT)) {
 		log_error("reading of byte 0 failed");
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		return NULL;
 	}
 
@@ -166,13 +166,13 @@ char* silitek_rec(struct ir_remote* remotes)
 
 	if (!silitek_read(drv.fd, &b[1], TIMEOUT)) {
 		log_error("reading of byte 1 failed");
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		return NULL;
 	}
 
 	if (!silitek_read(drv.fd, &b[2], TIMEOUT)) {
 		log_error("reading of byte 2 failed");
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		return NULL;
 	}
 

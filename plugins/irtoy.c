@@ -153,6 +153,7 @@ int send3(unsigned char cmd, unsigned int data)
 {
 	unsigned char array[3];
 	int res;
+
 	array[0] = cmd;
 	array[1] = (unsigned char) ((data >> 8) & 0xff);
 	array[2] = (unsigned char) (data & 0xff);
@@ -170,6 +171,7 @@ static int setIOData(void)
 static int setPin(unsigned int pin, int state)
 {
 	unsigned int mask = 1 << pin;
+
 	IOdirections &= ~mask;
 	if (state)
 		IOdata |= mask;
@@ -298,8 +300,7 @@ static int irtoy_getversion(irtoy_t* dev)
 	res = write(dev->fd, buf, 1);
 
 	if (res != 1) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_getversion: couldn't write command");
+		log_error("irtoy_getversion: couldn't write command");
 		return 0;
 	}
 
@@ -307,10 +308,8 @@ static int irtoy_getversion(irtoy_t* dev)
 				IRTOY_LEN_VERSION,
 				IRTOY_TIMEOUT_VERSION);
 	if (res != IRTOY_LEN_VERSION) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_getversion: couldn't read version");
-		logprintf(LIRC_ERROR,
-			  "please make sure you are using firmware v20" \
+		log_error("irtoy_getversion: couldn't read version");
+		log_error("please make sure you are using firmware v20" \
 			  " or higher");
 		return 0;
 	}
@@ -320,10 +319,8 @@ static int irtoy_getversion(irtoy_t* dev)
 	log_trace("irtoy_getversion: Got version %s", buf);
 
 	if (buf[0] != IRTOY_REPLY_VERSION) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_getversion: invalid response %02X", buf[0]);
-		logprintf(LIRC_ERROR,
-			  "please make sure you are using firmware v20" \
+		log_error("irtoy_getversion: invalid response %02X", buf[0]);
+		log_error("please make sure you are using firmware v20" \
 			  " or higher");
 		return 0;
 	}
@@ -363,8 +360,7 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 	res = write(dev->fd, buf, 1);
 
 	if (res != 1) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_enter_samplemode: couldn't write command");
+		log_error("irtoy_enter_samplemode: couldn't write command");
 		return 0;
 	}
 
@@ -372,15 +368,13 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 				IRTOY_LEN_SAMPLEMODEPROTO,
 				IRTOY_TIMEOUT_SMODE_ENTER);
 	if (res != IRTOY_LEN_SAMPLEMODEPROTO) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_enter_samplemode: Can't read command result");
+		log_error("irtoy_enter_samplemode: Can't read command result");
 		return 0;
 	}
 
 	buf[IRTOY_LEN_SAMPLEMODEPROTO] = 0;
 	if (buf[0] != IRTOY_REPLY_SAMPLEMODEPROTO) {
-		logprintf(LIRC_ERROR,
-			  "irtoy_enter_samplemode: invalid response %02X",
+		log_error("irtoy_enter_samplemode: invalid response %02X",
 			  buf[0]);
 		return 0;
 	}
@@ -459,8 +453,7 @@ static int init_device(void)
 	}
 	dev = irtoy_hw_init(drv.fd);
 	if (dev == NULL) {
-		logprintf(LIRC_ERROR,
-			  "irtoy: No USB Irtoy device found at %s",
+		log_error("irtoy: No USB Irtoy device found at %s",
 			  drv.device);
 		close(drv.fd);
 		tty_delete_lock();
@@ -469,8 +462,7 @@ static int init_device(void)
 	log_trace("Version hw %d, sw %d, protocol %d",
 		  dev->hwVersion, dev->swVersion, dev->protoVersion);
 	if (dev->swVersion < IRTOY_MINFWVERSION) {
-		logprintf(LIRC_ERROR,
-			  "irtoy: Need firmware V%02d or higher, " \
+		log_error("irtoy: Need firmware V%02d or higher, " \
 			  "this firmware: %02d",
 			  IRTOY_MINFWVERSION,
 			  dev->swVersion);

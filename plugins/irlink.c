@@ -265,7 +265,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 			}
 		} else {
 			log_error("error reading from %s", drv.device);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			irlink_deinit();
 		}
 	}

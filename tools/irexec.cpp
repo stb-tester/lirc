@@ -67,21 +67,21 @@ static void run_command(const char* cmd)
 
 	pid1 = fork();
 	if (pid1 < 0) {
-		logperror(LIRC_ERROR, "Cannot fork");
+		log_perror_err("Cannot fork");
 		perror("Cannot fork()");
 		exit(EXIT_FAILURE);
 	}
 	if (pid1 == 0) {
 		pid2 = fork();
 		if (pid2 < 0) {
-			logperror(LIRC_ERROR, "Cannot do secondary fork()");
+			log_perror_err("Cannot do secondary fork()");
 			exit(EXIT_FAILURE);
 		}
 		if (pid2 == 0) {
 			log_debug("Execing command \"%s\"", cmd);
 			execvp(SH_PATH, vp);
 			/* not reached */
-			logperror(LIRC_ERROR, "execvp failed");
+			log_perror_err("execvp failed");
 			fputs("execvp failed\n", stderr);
 		} else {
 			waitpid(pid2, NULL, WNOHANG);

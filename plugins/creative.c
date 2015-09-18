@@ -93,7 +93,7 @@ int creative_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "creative_init()");
+		log_perror_err("creative_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -137,7 +137,7 @@ char* creative_rec(struct ir_remote* remotes)
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logperror(LIRC_ERROR, "reading of byte %d failed", i);
+			log_perror_err("reading of byte %d failed", i);
 			return NULL;
 		}
 		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */) {

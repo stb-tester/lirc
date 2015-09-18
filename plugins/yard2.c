@@ -197,8 +197,7 @@ static char* yard2_rec(struct ir_remote* remotes)
 		       (unsigned char*)&yardIrCode, sizeof(YARD_IRCODE));
 	log_trace("yard2: received %d bytes !", byteCnt);
 	if (byteCnt < sizeof(YARD_IRCODE)) {
-		logprintf(LIRC_ERROR,
-			  "yard2: Expected %d bytes - received %d bytes !",
+		log_error("yard2: Expected %d bytes - received %d bytes !",
 			  sizeof(YARD_IRCODE), byteCnt);
 		return NULL;
 	}

@@ -100,7 +100,7 @@ static int alsa_error(const char* errstr, int errcode)
 {
 	if (errcode < 0) {
 		log_error("ALSA function snd_pcm_%s returned error: %s", errstr, snd_strerror(errcode));
-		logperror(LIRC_ERROR, errstr);
+		log_perror_err(errstr);
 		return -1;
 	}
 	return 0;
@@ -179,7 +179,7 @@ int audio_alsa_init(void)
 	unlink(tmp_name);
 	if (mknod(tmp_name, S_IFIFO | S_IRUSR | S_IWUSR, 0)) {
 		log_error("could not create FIFO %s", tmp_name);
-		logperror(LIRC_ERROR, "audio_alsa_init ()");
+		log_perror_err("audio_alsa_init ()");
 		return 0;
 	}
 	/* Phew, we won the race ... */
@@ -188,7 +188,7 @@ int audio_alsa_init(void)
 	drv.fd = open(tmp_name, O_RDWR);
 	if (drv.fd < 0) {
 		log_error("could not open pipe %s", tmp_name);
-		logperror(LIRC_ERROR, "audio_alsa_init ()");
+		log_perror_err("audio_alsa_init ()");
 error:          unlink(tmp_name);
 		audio_alsa_deinit();
 		return 0;
@@ -226,8 +226,7 @@ error:          unlink(tmp_name);
 			else if (stereo_channel[1] == 'r')
 				alsa_hw.channel = 1;
 			else
-				logperror(LIRC_WARNING,
-					  "dont understand which channel to use - defaulting to left\n");
+				log_warn("dont understand which channel to use - defaulting to left\n");
 		}
 
 		/* Remove the sample rate from device name (and
@@ -243,7 +242,7 @@ error:          unlink(tmp_name);
 	err = snd_pcm_open(&alsa_hw.handle, tmp_name, SND_PCM_STREAM_CAPTURE, SND_PCM_NONBLOCK);
 	if (err < 0) {
 		log_error("could not open audio device %s: %s", drv.device, snd_strerror(err));
-		logperror(LIRC_ERROR, "audio_alsa_init ()");
+		log_perror_err("audio_alsa_init ()");
 		goto error;
 	}
 
@@ -511,7 +510,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	ret = read(drv.fd, &data, sizeof(data));
 
 	if (ret != sizeof(data)) {
-		logperror(LIRC_ERROR, "Error reading from lirc device");
+		log_perror_err("Error reading from lirc device");
 		raise(SIGTERM);
 		return 0;
 	}

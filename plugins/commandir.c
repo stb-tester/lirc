@@ -1698,8 +1698,7 @@ static int commandir_read(void)
 					if (read_retval == -19) {
 						log_error("Read Error - CommandIR probably unplugged");
 					} else {
-						logprintf(LIRC_ERROR,
-							  "Didn't receive a full packet from a CommandIR II! - err %d .",
+						log_error("Didn't receive a full packet from a CommandIR II! - err %d .",
 							  read_retval);
 					}
 					hardware_disconnect(pcd);
@@ -1764,8 +1763,7 @@ static int commandir_read(void)
 					if (read_retval == -19) {
 						log_error("Read Error - CommandIR probably unplugged");
 					} else {
-						logprintf(LIRC_ERROR,
-							  "Didn't receive a full packet from a Mini! - err %d .",
+						log_error("Didn't receive a full packet from a Mini! - err %d .",
 							  read_retval);
 					}
 					hardware_disconnect(pcd);

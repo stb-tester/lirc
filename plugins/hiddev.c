@@ -302,7 +302,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 	rd = read(drv.fd, &event, sizeof(event));
 	if (rd != sizeof(event)) {
 		log_error("error reading '%s'", drv.device);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		hiddev_deinit();
 		return 0;
 	}
@@ -512,7 +512,7 @@ char* sb0540_rec(struct ir_remote* remotes)
 	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
 		log_error("error reading '%s'", drv.device);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		hiddev_deinit();
 		return 0;
 	}
@@ -656,7 +656,7 @@ char* samsung_rec(struct ir_remote* remotes)
 	rd = read(drv.fd, &uref, sizeof(uref));
 	if (rd < 0) {
 		log_error("error reading '%s'", drv.device);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		hiddev_deinit();
 		return 0;
 	}

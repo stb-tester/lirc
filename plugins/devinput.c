@@ -123,7 +123,8 @@ static int setup_uinputfd(const char* name, int source)
 		if (fd == -1) {
 			fd = open("/dev/misc/uinput", O_RDWR);
 			if (fd == -1) {
-				logperror(LIRC_WARNING, "could not open %s\n", "uinput");
+				log_perror_warn("could not open %s\n",
+						"uinput");
 				return -1;
 			}
 		}
@@ -187,7 +188,7 @@ static int setup_uinputfd(const char* name, int source)
 	return fd;
 
 setup_error:
-	logperror(LIRC_ERROR, "could not setup %s\n", "uinput");
+	log_perror_err("could not setup %s\n", "uinput");
 	close(fd);
 	return -1;
 }
@@ -239,7 +240,7 @@ static int locate_default_device(char* errmsg, size_t size)
 	r = glob("/sys/class/rc/rc0/input[0-9]*/event[0-9]*",
 		 0, NULL, &matches);
 	if (r != 0) {
-		logperror(LIRC_WARNING, "Cannot run glob %s", DEV_PATTERN);
+		log_perror_warn("Cannot run glob %s", DEV_PATTERN);
 		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
 		return 0;
 	}
@@ -326,14 +327,12 @@ int devinput_init(void)
 
 	if (strncmp(drv.device, "name=", 5) == 0) {
 		if (locate_dev(drv.device + 5, locate_by_name)) {
-			logprintf(LIRC_ERROR,
-				  "Unable to find '%s'", drv.device);
+			log_error("Unable to find '%s'", drv.device);
 			return 0;
 		}
 	} else if (strncmp(drv.device, "phys=", 5) == 0) {
 		if (locate_dev(drv.device + 5, locate_by_phys)) {
-			logprintf(LIRC_ERROR,
-				  "Unable to find '%s'", drv.device);
+			log_error("Unable to find '%s'", drv.device);
 			return 0;
 		}
 	} else if (strcmp(drv.device, "auto") == 0) {
@@ -469,7 +468,7 @@ char* devinput_rec(struct ir_remote* remotes)
 		    || event.type == EV_SYN) {
 			log_trace("forwarding: %04x %04x", event.type, event.code);
 			if (write(uinputfd, &event, sizeof(event)) != sizeof(event))
-				logperror(LIRC_ERROR, "writing to uinput failed");
+				log_perror_err("writing to uinput failed");
 			return NULL;
 		}
 	}

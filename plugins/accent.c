@@ -242,7 +242,7 @@ char* accent_rec(struct ir_remote* remotes)
 		}
 		// Some data available to read.
 		if (read(drv.fd, &b[i], 1) == -1) {
-			logperror(LIRC_ERROR, "read() failed at byte %d", i);
+			log_perror_err("read() failed at byte %d", i);
 			return NULL;
 		}
 		log_trace("read() byte %d: %02x", i, b[i]);
@@ -356,13 +356,13 @@ int accent_open_serial_port(const char* device)
 	// Open the serial device.
 	fd = open(device, O_RDWR | O_NONBLOCK | O_NOCTTY | O_SYNC);
 	if (fd  < 0) {
-		logperror(LIRC_ERROR, "Could not open the serial port");
+		log_perror_err("Could not open the serial port");
 		return -1;
 	}
 	// Get the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
 		log_error("Could not get serial port attributes");
-		logperror(LIRC_ERROR, "tcgetattr() failed");
+		log_perror_err("tcgetattr() failed");
 		return -1;
 	}
 	// Set the line in raw mode (no control chars, etc.)
@@ -371,13 +371,13 @@ int accent_open_serial_port(const char* device)
 	// Discard input before the change is made.
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
 		log_error("Could not set serial port with cfmakeraw()");
-		logperror(LIRC_ERROR, "tcsetattr() failed");
+		log_perror_err("tcsetattr() failed");
 		return -1;
 	}
 	// Gets the parameters associated with the serial line.
 	if (tcgetattr(fd, &options) < 0) {
 		log_error("Could not get serial port attributes");
-		logperror(LIRC_ERROR, "tcgetattr() failed");
+		log_perror_err("tcgetattr() failed");
 		return -1;
 	}
 	// Set input and output baud rate to 1200.
@@ -395,13 +395,13 @@ int accent_open_serial_port(const char* device)
 	options.c_cflag &= ~PARENB;
 	if (tcsetattr(fd, TCSAFLUSH, &options) < 0) {
 		log_error("Could not set serial port line discipline");
-		logperror(LIRC_ERROR, "tcsetattr() failed");
+		log_perror_err("tcsetattr() failed");
 		return -1;
 	}
 	// Discards data received but not read.
 	if (tcflush(fd, TCIFLUSH) < 0) {
 		log_error("Could not flush input buffer");
-		logperror(LIRC_ERROR, "tcflush() failed");
+		log_perror_err("tcflush() failed");
 		return -1;
 	}
 

@@ -108,7 +108,7 @@ static int atwf83_init(void)
 	/* Create pipe so that events sent by the repeat thread will
 	 * trigger main thread */
 	if (pipe(fd_pipe) != 0) {
-		logperror(LIRC_ERROR, "couldn't open pipe");
+		log_error("couldn't open pipe");
 		close(fd_hidraw);
 		return 0;
 	}
@@ -173,8 +173,7 @@ static void* atwf83_repeat(void* arg)
 
 			if (rd == -1) {
 				// Error
-				logprintf(LIRC_ERROR,
-					  "(%s) Could not read %s",
+				log_error("(%s) Could not read %s",
 					   __func__, drv.device);
 				goto exit_loop;
 			}
@@ -204,8 +203,7 @@ static void* atwf83_repeat(void* arg)
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR,
-				  "(%s) poll() failed", __func__);
+			log_error("(%s) poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe

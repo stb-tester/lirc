@@ -94,7 +94,7 @@ int pcmak_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "pcmak_init()");
+		log_perror_err("pcmak_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -137,7 +137,7 @@ char* pcmak_rec(struct ir_remote* remotes)
 
 		if (read(drv.fd, &b, 1) != 1) {
 			log_error("reading of byte %d failed", i);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return NULL;
 		}
 		log_trace("byte %d: %02x", i, b);

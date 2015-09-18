@@ -55,13 +55,13 @@ int tty_reset(int fd)
 
 	if (tcgetattr(fd, &options) == -1) {
 		log_trace("tty_reset(): tcgetattr() failed");
-		logperror(LIRC_DEBUG, "tty_reset()");
+		log_perror_debug("tty_reset()");
 		return 0;
 	}
 	cfmakeraw(&options);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		log_trace("tty_reset(): tcsetattr() failed");
-		logperror(LIRC_DEBUG, "tty_reset()");
+		log_perror_debug("tty_reset()");
 		return 0;
 	}
 	return 1;
@@ -73,7 +73,7 @@ int tty_setrtscts(int fd, int enable)
 
 	if (tcgetattr(fd, &options) == -1) {
 		log_trace("%s: tcgetattr() failed", __func__);
-		logperror(LIRC_DEBUG, __func__);
+		log_perror_debug(__func__);
 		return 0;
 	}
 	if (enable)
@@ -82,7 +82,7 @@ int tty_setrtscts(int fd, int enable)
 		options.c_cflag &= ~CRTSCTS;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		log_trace("%s: tcsetattr() failed", __func__);
-		logperror(LIRC_DEBUG, __func__);
+		log_perror_debug(__func__);
 		return 0;
 	}
 	return 1;
@@ -94,7 +94,7 @@ int tty_setdtr(int fd, int enable)
 
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
 		log_trace("%s: ioctl(TIOCMGET) failed", __func__);
-		logperror(LIRC_DEBUG, __func__);
+		log_perror_debug(__func__);
 		return 0;
 	}
 	if (((sts & TIOCM_DTR) == 0) && enable) {
@@ -109,7 +109,7 @@ int tty_setdtr(int fd, int enable)
 	sts = TIOCM_DTR;
 	if (ioctl(fd, cmd, &sts) < 0) {
 		log_trace("%s: ioctl(TIOCMBI(S|C)) failed", __func__);
-		logperror(LIRC_DEBUG, __func__);
+		log_perror_debug(__func__);
 		return 0;
 	}
 	return 1;
@@ -230,21 +230,21 @@ int tty_setbaud(int fd, int baud)
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		log_trace("tty_setbaud(): tcgetattr() failed");
-		logperror(LIRC_DEBUG, "tty_setbaud()");
+		log_perror_debug("tty_setbaud()");
 		return 0;
 	}
 	(void)cfsetispeed(&options, speed);
 	(void)cfsetospeed(&options, speed);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		log_trace("tty_setbaud(): tcsetattr() failed");
-		logperror(LIRC_DEBUG, "tty_setbaud()");
+		log_perror_debug("tty_setbaud()");
 		return 0;
 	}
 #if defined __linux__
 	if (use_custom_divisor) {
 		if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0) {
 			log_trace("tty_setbaud(): TIOCGSERIAL failed");
-			logperror(LIRC_DEBUG, "tty_setbaud()");
+			log_perror_debug("tty_setbaud()");
 			return 0;
 		}
 		serinfo.flags &= ~ASYNC_SPD_MASK;
@@ -252,7 +252,7 @@ int tty_setbaud(int fd, int baud)
 		serinfo.custom_divisor = serinfo.baud_base / baud;
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0) {
 			log_trace("tty_setbaud(): TIOCSSERIAL failed");
-			logperror(LIRC_DEBUG, "tty_setbaud()");
+			log_perror_debug("tty_setbaud()");
 			return 0;
 		}
 	}
@@ -284,14 +284,14 @@ int tty_setcsize(int fd, int csize)
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		log_trace("tty_setcsize(): tcgetattr() failed");
-		logperror(LIRC_DEBUG, "tty_setcsize()");
+		log_perror_debug("tty_setcsize()");
 		return 0;
 	}
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= size;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		log_trace("tty_setcsize(): tcsetattr() failed");
-		logperror(LIRC_DEBUG, "tty_setcsize()");
+		log_perror_debug("tty_setcsize()");
 		return 0;
 	}
 	return 1;
@@ -330,7 +330,7 @@ tty_create_lock_retry:
 	}
 	lock = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
 	if (lock == -1) {
-		logperror(LIRC_ERROR, "could not create lock file \"%s\"", filename);
+		log_perror_err("could not create lock file \"%s\"", filename);
 		lock = open(filename, O_RDONLY);
 		if (lock != -1) {
 			pid_t otherpid;
@@ -345,7 +345,7 @@ tty_create_lock_retry:
 						log_warn("stale lockfile removed");
 						goto tty_create_lock_retry;
 					} else {
-						logperror(LIRC_ERROR,
+						log_perror_err(
 							  "could not remove stale lockfile");
 					}
 					return 0;
@@ -359,17 +359,17 @@ tty_create_lock_retry:
 		return 0;
 	}
 	if (write(lock, id, len) != len) {
-		logperror(LIRC_ERROR, "could not write pid to lock file");
+		log_perror_err("could not write pid to lock file");
 		close(lock);
 		if (unlink(filename) == -1)
-			logperror(LIRC_ERROR, "could not delete file \"%s\"", filename);
+			log_perror_err("could not delete file \"%s\"", filename);
 		/* FALLTHROUGH */
 		return 0;
 	}
 	if (close(lock) == -1) {
-		logperror(LIRC_ERROR, "could not close lock file");
+		log_perror_err("could not close lock file");
 		if (unlink(filename) == -1)
-			logperror(LIRC_ERROR, "could not delete file \"%s\"", filename);
+			log_perror_err("could not delete file \"%s\"", filename);
 		/* FALLTHROUGH */
 		return 0;
 	}
@@ -377,10 +377,10 @@ tty_create_lock_retry:
 	len = readlink(name, symlink, FILENAME_MAX);
 	if (len == -1) {
 		if (errno != EINVAL) {  /* symlink */
-			logperror(LIRC_ERROR, "readlink() failed for \"%s\"", name);
+			log_perror_err("readlink() failed for \"%s\"", name);
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR,
-					  "could not delete file \"%s\"", filename);
+				log_perror_err("could not delete file \"%s\"",
+					       filename);
 				/* FALLTHROUGH */
 			}
 			return 0;
@@ -392,9 +392,9 @@ tty_create_lock_retry:
 			char dirname[FILENAME_MAX + 1];
 
 			if (getcwd(cwd, FILENAME_MAX) == NULL) {
-				logperror(LIRC_ERROR, "getcwd() failed");
+				log_perror_err("getcwd() failed");
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR,
+					log_perror_err(
 						  "could not delete file \"%s\"",
 						  filename);
 					/* FALLTHROUGH */
@@ -405,10 +405,10 @@ tty_create_lock_retry:
 			strcpy(dirname, name);
 			dirname[strlen(name) - strlen(last)] = 0;
 			if (chdir(dirname) == -1) {
-				logperror(LIRC_ERROR,
+				log_perror_err(
 					  "chdir() to \"%s\" failed", dirname);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR,
+					log_perror_err(
 						  "could not delete file \"%s\"",
 						  filename);
 					/* FALLTHROUGH */
@@ -418,7 +418,7 @@ tty_create_lock_retry:
 		}
 		if (tty_create_lock(symlink) == -1) {
 			if (unlink(filename) == -1) {
-				logperror(LIRC_ERROR,
+				log_perror_err(
 					  "could not delete file \"%s\"", filename);
 				/* FALLTHROUGH */
 			}
@@ -426,9 +426,9 @@ tty_create_lock_retry:
 		}
 		if (last) {
 			if (chdir(cwd) == -1) {
-				logperror(LIRC_ERROR, "chdir() to \"%s\" failed", cwd);
+				log_perror_err("chdir() to \"%s\" failed", cwd);
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR,
+					log_perror_err(
 						  "could not delete file \"%s\"",
 						  filename);
 					/* FALLTHROUGH */
@@ -490,7 +490,7 @@ int tty_delete_lock(void)
 			}
 			if (pid == getpid()) {
 				if (unlink(filename) == -1) {
-					logperror(LIRC_ERROR,
+					log_perror_err(
 						  "could not delete file \"%s\"",
 						  filename);
 					retval = 0;
@@ -514,7 +514,7 @@ int tty_set(int fd, int rts, int dtr)
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIS, &mask) == -1) {
 		log_trace("tty_set(): ioctl() failed");
-		logperror(LIRC_WARNING, "tty_set()");
+		log_perror_warn("tty_set()");
 		return 0;
 	}
 	return 1;
@@ -527,7 +527,7 @@ int tty_clear(int fd, int rts, int dtr)
 	mask = rts ? TIOCM_RTS : 0;
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIC, &mask) == -1) {
-		logperror(LIRC_DEBUG, "tty_clear()");
+		log_perror_debug("tty_clear()");
 		log_trace("tty_clear(): ioctl() failed");
 		return 0;
 	}
@@ -538,7 +538,7 @@ int tty_write(int fd, char byte)
 {
 	if (write(fd, &byte, 1) != 1) {
 		log_trace("tty_write(): write() failed");
-		logperror(LIRC_DEBUG, "tty_write()");
+		log_perror_debug("tty_write()");
 		return -1;
 	}
 	/* wait until the stop bit of Control Byte is sent
@@ -562,11 +562,11 @@ int tty_read(int fd, char* byte)
 		log_error("tty_read(): timeout");
 		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
-		logperror(LIRC_DEBUG, "tty_read(): poll() failed");
+		log_perror_debug("tty_read(): poll() failed");
 		return -1;
 	}
 	if (read(fd, byte, 1) != 1) {
-		logperror(LIRC_DEBUG, "tty_read(): read() failed");
+		log_perror_debug("tty_read(): read() failed");
 		return -1;
 	}
 	return 1;

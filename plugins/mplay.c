@@ -374,7 +374,7 @@ static unsigned char mplayfamily_get_wheel(
 
 	/* Read status of angle sensor */
 	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0) {
-		logperror(LOG_ERR, "mplay listener ioctl failed");
+		log_perror_err("mplay listener ioctl failed");
 		return MPLAY_CODE_ERROR;
 	}
 	/* Evaluate wheel status */
@@ -420,7 +420,7 @@ static unsigned char mplayfamily_get_wheel(
 				 * busy period has expired. */
 				if (!mplayfamily_set_listener_period(fd,
 								     MPLAY_LISTENER_PERIOD_BUSY)) {
-					logperror(LOG_ERR,
+					log_perror_err(
 						  "mplay listener could not set "
 						  "listener period");
 				}
@@ -490,7 +490,7 @@ static unsigned char mplayfamily_get_button(int fd, unsigned int* counter)
 					if (!mplayfamily_set_listener_period(
 						    fd, MPLAY_LISTENER_PERIOD_BUSY)
 					    ) {
-						logperror(LOG_ERR,
+						log_perror_err(
 							  "mplay listener could "
 							  "not set listener "
 							  "period");
@@ -512,7 +512,7 @@ static unsigned char mplayfamily_get_button(int fd, unsigned int* counter)
 	else if (len < 0) {
 		/* Check if actually an error has occurred */
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
-			logperror(LOG_ERR,
+			log_perror_err(
 				  "mplay listener serial port read error");
 			code = MPLAY_CODE_ERROR;
 		}
@@ -574,7 +574,7 @@ static void* mplayfamily_listen(void* arg)
 
 	/* Read status of rotation sensor for the first time */
 	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0)
-		logperror(LIRC_WARNING, "mplay listener ioctl failed");
+		log_perror_warn("mplay listener ioctl failed");
 	sensor = MPLAY_GRAY_TO_BIN(MPLAY_STATUS_TO_GRAY(status));
 	absolute = sensor;
 	turned = absolute;
@@ -583,7 +583,7 @@ static void* mplayfamily_listen(void* arg)
 	/* Create periodic timer for polling loop */
 	fd = timerfd_create(CLOCK_MONOTONIC, 0);
 	if (fd < 0) {
-		logperror(LOG_ERR, "mplay listener could not create timer");
+		log_perror_err("mplay listener could not create timer");
 		return NULL;
 	}
 	pthread_cleanup_push(mplayfamily_listen_cleanup, (void*)(intptr_t)fd);
@@ -596,8 +596,7 @@ static void* mplayfamily_listen(void* arg)
 			if (counter == 0) {
 				if (!mplayfamily_set_listener_period(fd,
 								     MPLAY_LISTENER_PERIOD_IDLE)) {
-					logperror(LOG_ERR,
-						  "mplay listener could not set "
+					log_perror_err("mplay listener could not set "
 						  "listener period");
 				}
 				log_trace1("mplay polls with idle rate");
@@ -605,7 +604,7 @@ static void* mplayfamily_listen(void* arg)
 		}
 		/* Wait for next event of periodic polling timer */
 		if (read(fd, &expired, sizeof(uint64_t)) != sizeof(uint64_t)) {
-			logperror(LOG_ERR, "mplay listener timer failed");
+			log_perror_err("mplay listener timer failed");
 			goto poll_exit;
 		}
 		/* Evaluate wheel status */
@@ -615,8 +614,7 @@ static void* mplayfamily_listen(void* arg)
 			/* Pass wheel event to LIRC framework via pipe */
 			if (write(mplayfamily_local_data.pipefd[1],
 				  &code_wheel, sizeof(code_wheel)) < 0) {
-				logperror(LOG_ERR,
-					  "mplay listener pipe write error");
+				log_perror_err("mplay listener pipe write error");
 				goto poll_exit;
 			} else if (code_wheel == MPLAY_CODE_ERROR) {
 				goto poll_exit;
@@ -629,11 +627,12 @@ static void* mplayfamily_listen(void* arg)
 			/* Pass button event to LIRC framework via pipe */
 			if (write(mplayfamily_local_data.pipefd[1],
 				  &code_button,
-				  sizeof(code_button)) < 0)
-				logperror(LOG_ERR,
-					  "mplay listener pipe write error");
-			else if (code_button == MPLAY_CODE_ERROR)
+				  sizeof(code_button)) < 0) {
+				log_perror_err(
+					"mplay listener pipe write error");
+			} else if (code_button == MPLAY_CODE_ERROR) {
 				goto poll_exit;
+			}
 		}
 	}
 
@@ -686,13 +685,12 @@ static int mplayfamily_init(int (*init_receiver)(void), int baud)
 
 	/* Creation of pipe between this driver and LIRC framework */
 	if (!nowheel && pipe(mplayfamily_local_data.pipefd) == -1) {
-		logprintf(LOG_ERR, "Could not create pipe");
+		log_error("Could not create pipe");
 		result = 0;
 	}
 	/* Creation of a lock file for serial port */
 	else if (!tty_create_lock(device)) {
-		logprintf(LOG_ERR, "Could not create lock file for '%s'",
-			  device);
+		log_error("Could not create lock file for '%s'", device);
 		result = 0;
 	}
 	/* Try to open serial port */
@@ -700,33 +698,32 @@ static int mplayfamily_init(int (*init_receiver)(void), int baud)
 		mplayfamily_local_data.fd =
 			 open(device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 		if (mplayfamily_local_data.fd < 0) {
-			logprintf(LOG_ERR,
-				  "Could not open serial port '%s'", device);
+			log_error("Could not open serial port '%s'", device);
 			result = 0;
 		}
 	}
 	/* Serial port configuration */
 	else if (!tty_reset(mplayfamily_local_data.fd) ||
 		 !tty_setbaud(mplayfamily_local_data.fd, baud)) {
-		logprintf(LOG_ERR, "Couldn't configure serial port '%s'",
+		log_error("Couldn't configure serial port '%s'",
 			  device);
 		result = 0;
 	}
 	/* Initialise a receiver of the mplay family */
 	else if (!init_receiver()) {
-		logprintf(LOG_ERR, "Could not initialise device");
+		log_error("Could not initialise device");
 		result = 0;
 	}
 	/* Install serial port listener */
 	else if (!nowheel && pthread_create(&mplayfamily_local_data.tid, NULL,
 					    mplayfamily_listen, NULL)) {
-		logprintf(LOG_ERR, "Could not create \"listener thread\"");
+		log_error("Could not create \"listener thread\"");
 		return 0;
 	}
 
 	/* Clean up if an error has occured */
 	if (result == 0) {
-		logperror(LOG_ERR, "mplayfamily_init()");
+		log_perror_err("mplayfamily_init()");
 		mplayfamily_deinit();
 	}
 
@@ -772,7 +769,7 @@ int mplayfamily_deinit(void)
 	log_trace("Entering mplayfamily_deinit()");
 	if (mplayfamily_local_data.tid != -1) {
 		if (pthread_cancel(mplayfamily_local_data.tid) < 0) {
-			logperror(LOG_ERR, "mplay could not cancel listener");
+			log_perror_err("mplay could not cancel listener");
 			return 0;
 		}
 		pthread_join(mplayfamily_local_data.tid, NULL);

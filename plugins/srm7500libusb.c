@@ -295,13 +295,13 @@ static int srm7500_init(void)
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logperror(LIRC_ERROR, "could not open pipe");
+		log_perror_err("could not open pipe");
 		return 0;
 	}
 
 	child = fork();
 	if (child == -1) {
-		logperror(LIRC_ERROR, "could not fork child process");
+		log_perror_err("could not fork child process");
 		close(pipe_fd[0]);
 		close(pipe_fd[1]);
 		return 0;
@@ -373,19 +373,19 @@ static int srm7500_initialize_usbdongle(void)
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		logperror(LIRC_ERROR, "could not open USB receiver");
+		log_perror_err("could not open USB receiver");
 		return 0;
 	}
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
 	if ((res < 0) && (res != -ENODATA) && (res != -EINVAL)) {
-		logperror(LIRC_ERROR, "could not detach kernel driver");
+		log_perror_err("could not detach kernel driver");
 		return 0;
 	}
 #endif
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
-		logperror(LIRC_ERROR, "could not claim USB interface");
+		log_perror_err("could not claim USB interface");
 		return 0;
 	}
 
@@ -902,7 +902,7 @@ static int usb_read_loop(int fd)
 						write(fd, packet_buffer_in.zig.data + pos,
 						      packet_buffer_in.zig.msduLength - pos);
 					if (bytes_w < 0) {
-						logperror(LIRC_ERROR, "could not write to pipe");
+						log_perror_err("could not write to pipe");
 						return 0;
 					}
 				}

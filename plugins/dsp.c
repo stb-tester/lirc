@@ -59,7 +59,7 @@ lirc_t dsp_readdata(lirc_t timeout)
 
 	while (1) {
 		if (read(myfd, buf, BUFSIZE * 2) != BUFSIZE * 2)
-			logperror(LIRC_ERROR, "could not read in simple...");
+			log_perror_err("could not read in simple...");
 
 		for (i = 0; i < BUFSIZE - 1; i++)
 			energy += ((double)buf[i] - buf[i + 1]) * ((double)buf[i] - buf[i + 1]);
@@ -96,28 +96,28 @@ int dsp_init(void)
 	drv.fd = open(drv.device, O_RDONLY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "dsp_init()");
+		log_perror_err("dsp_init()");
 		return 0;
 	}
 
 	if (ioctl(drv.fd, SNDCTL_DSP_SPEED, &speed) < 0) {
 		log_error("could not ioctl(SPEED) on %s", drv.device);
-		logperror(LIRC_ERROR, "dsp_init()");
+		log_perror_err("dsp_init()");
 		return 0;
 	}
 	if (speed != SAMPLE) {
 		log_error("wrong speed handshaked on %s", drv.device);
-		logperror(LIRC_ERROR, "dsp_init()");
+		log_perror_err("dsp_init()");
 		return 0;
 	}
 	if (ioctl(drv.fd, SNDCTL_DSP_SETFMT, &fmt) < 0) {
 		log_error("could not ioctl(SETFMT) on %s", drv.device);
-		logperror(LIRC_ERROR, "dsp_init()");
+		log_perror_err("dsp_init()");
 		return 0;
 	}
 	if (fmt != AFMT_S16_LE) {
 		log_error("wrong format handshaked on %s", drv.device);
-		logperror(LIRC_ERROR, "dsp_init()");
+		log_perror_err("dsp_init()");
 		return 0;
 	}
 	myfd = drv.fd;
