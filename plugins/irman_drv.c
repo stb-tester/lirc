@@ -31,6 +31,8 @@
 #include "lirc/serial.h"
 
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 unsigned char* codestring;
 struct timeval start, end, last;
 lirc_t gap;
@@ -83,12 +85,12 @@ int irman_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 int irman_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = ir_init((char*)drv.device);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "irman_init()");
 		tty_delete_lock();
 		return 0;
@@ -116,11 +118,11 @@ char* irman_rec(struct ir_remote* remotes)
 	gettimeofday(&end, NULL);
 	if (codestring == NULL) {
 		if (errno == IR_EDUPCODE) {
-			logprintf(LIRC_TRACE, "received \"%s\" (dup)", text ? text : "(null - bug)");
+			log_trace("received \"%s\" (dup)", text ? text : "(null - bug)");
 		} else if (errno == IR_EDISABLED) {
-			logprintf(LIRC_TRACE, "irman not initialised (this is a bug)");
+			log_trace("irman not initialised (this is a bug)");
 		} else {
-			logprintf(LIRC_TRACE, "error reading code: \"%s\"", ir_strerror(errno));
+			log_trace("error reading code: \"%s\"", ir_strerror(errno));
 		}
 		if (errno == IR_EDUPCODE)
 			return decode_all(remotes);
@@ -128,7 +130,7 @@ char* irman_rec(struct ir_remote* remotes)
 	}
 
 	text = ir_code_to_text(codestring);
-	logprintf(LIRC_TRACE, "received \"%s\"", text);
+	log_trace("received \"%s\"", text);
 
 	/* this is only historical but it's necessary for
 	 * compatibility to older versions and it's handy to

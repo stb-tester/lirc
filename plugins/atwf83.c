@@ -29,6 +29,8 @@ static char* atwf83_rec(struct ir_remote* remotes);
 static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static void* atwf83_repeat(void*);
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 /** Max number of repetitions */
 const unsigned max_repeat_count = 500;
 /** Code that triggers key release */
@@ -81,7 +83,7 @@ const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };
 
 static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	logprintf(LIRC_TRACE, "atwf83_decode");
+	log_trace("atwf83_decode");
 
 	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
@@ -95,10 +97,10 @@ static int atwf83_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 
 static int atwf83_init(void)
 {
-	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
+	log_info("initializing '%s'", drv.device);
 	fd_hidraw = open(drv.device, O_RDONLY);
 	if (fd_hidraw < 0) {
-		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
+		log_error("unable to open '%s'", drv.device);
 		return 0;
 	}
 	drv.fd = fd_hidraw;
@@ -113,7 +115,7 @@ static int atwf83_init(void)
 	drv.fd = fd_pipe[0];
 	/* Create thread to simulate repetitions */
 	if (pthread_create(&repeat_thread, NULL, atwf83_repeat, NULL)) {
-		logprintf(LIRC_ERROR, "Could not create \"repeat thread\"");
+		log_error("Could not create \"repeat thread\"");
 		return 0;
 	}
 	return 1;
@@ -124,7 +126,7 @@ static int atwf83_deinit(void)
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
 		// Close device if it is open
-		logprintf(LIRC_INFO, "closing '%s'", drv.device);
+		log_info("closing '%s'", drv.device);
 		close(fd_hidraw);
 		fd_hidraw = -1;
 	}
@@ -192,7 +194,7 @@ static void* atwf83_repeat(void* arg)
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR, "(%s) too many repetitions", __func__);
+				log_error("(%s) too many repetitions", __func__);
 
 				goto exit_loop;
 			}
@@ -232,7 +234,7 @@ static char* atwf83_rec(struct ir_remote* remotes)
 
 	if (rd == -1) {
 		// Error
-		logprintf(LIRC_ERROR, "(%s) could not read pipe", __func__);
+		log_error("(%s) could not read pipe", __func__);
 		atwf83_deinit();
 		return 0;
 	}
@@ -247,7 +249,7 @@ static char* atwf83_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	logprintf(LIRC_TRACE, "atwf83 : %x", ev);
+	log_trace("atwf83 : %x", ev);
 	// Record the code and check for repetition
 	if (main_code == ev) {
 		repeat_state = RPT_YES;

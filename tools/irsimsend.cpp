@@ -18,6 +18,7 @@
 #include "lirc_private.h"
 #include "lirc_client.h"
 
+static const logchannel_t logchannel = LOG_APP;
 
 static const char* const USAGE =
 	"Send key symbols durations to fixed file 'simsend.out'.\n\n"

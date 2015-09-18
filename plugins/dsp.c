@@ -37,6 +37,7 @@
 
 #include "lirc_driver.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
 
 /*
  * decoding stuff
@@ -72,7 +73,7 @@ lirc_t dsp_readdata(lirc_t timeout)
 			data = lastlength | (laststate ? PULSE_BIT : 0);
 			lastlength = ((1000000 / SAMPLE) * BUFSIZE);
 			laststate = state;
-			logprintf(LIRC_TRACE, "Pulse came %8x,  %8d...", data, data & ~PULSE_BIT);
+			log_trace("Pulse came %8x,  %8d...", data, data & ~PULSE_BIT);
 			return data;
 		}
 
@@ -90,32 +91,32 @@ int dsp_init(void)
 {
 	int speed = SAMPLE, fmt = AFMT_S16_LE;
 
-	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
+	log_info("Initializing %s...", drv.device);
 	rec_buffer_init();
 	drv.fd = open(drv.device, O_RDONLY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;
 	}
 
 	if (ioctl(drv.fd, SNDCTL_DSP_SPEED, &speed) < 0) {
-		logprintf(LIRC_ERROR, "could not ioctl(SPEED) on %s", drv.device);
+		log_error("could not ioctl(SPEED) on %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;
 	}
 	if (speed != SAMPLE) {
-		logprintf(LIRC_ERROR, "wrong speed handshaked on %s", drv.device);
+		log_error("wrong speed handshaked on %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;
 	}
 	if (ioctl(drv.fd, SNDCTL_DSP_SETFMT, &fmt) < 0) {
-		logprintf(LIRC_ERROR, "could not ioctl(SETFMT) on %s", drv.device);
+		log_error("could not ioctl(SETFMT) on %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;
 	}
 	if (fmt != AFMT_S16_LE) {
-		logprintf(LIRC_ERROR, "wrong format handshaked on %s", drv.device);
+		log_error("wrong format handshaked on %s", drv.device);
 		logperror(LIRC_ERROR, "dsp_init()");
 		return 0;
 	}

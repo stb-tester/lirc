@@ -95,6 +95,8 @@ typedef enum {
 #define IRLINK_PERIOD(value, timescale) \
 	(((1000000 * ((unsigned int)value)) / timescale) & PULSE_MASK)
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int is_long_pause = 0;
 static int is_long_pulse = 0;
 static struct timeval last_time = { 0 };
@@ -117,12 +119,12 @@ static int irlink_open(const char* portName)
 	int port = -1;
 
 	if (!tty_create_lock((char*)portName)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return -1;
 	}
 	port = open(portName, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (port < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		tty_delete_lock();
 		return -1;
 	}
@@ -206,7 +208,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 			break;
 		}
 		if (timeout < time_delta) {
-			logprintf(LIRC_ERROR, "timeout < time_delta");
+			log_error("timeout < time_delta");
 			break;
 		}
 		if (!waitfordata(timeout - time_delta))
@@ -262,7 +264,7 @@ lirc_t irlink_readdata(lirc_t timeout)
 				break;
 			}
 		} else {
-			logprintf(LIRC_ERROR, "error reading from %s", drv.device);
+			log_error("error reading from %s", drv.device);
 			logperror(LIRC_ERROR, NULL);
 			irlink_deinit();
 		}
@@ -274,12 +276,12 @@ int irlink_init(void)
 {
 	drv.fd = irlink_open(drv.device);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
+		log_error("Could not open the '%s' device", drv.device);
 	} else {
 		if (irlink_detect(drv.fd) == 0) {
 			return 1;
 		}
-		logprintf(LIRC_ERROR, "Failed to detect IRLink on '%s' device", drv.device);
+		log_error("Failed to detect IRLink on '%s' device", drv.device);
 		irlink_deinit();
 	}
 	return 0;

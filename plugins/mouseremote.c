@@ -38,6 +38,8 @@
 #define TIMEOUT 50000
 
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static struct timeval start, end, last;
 static lirc_t signal_length;
 static ir_code pre, code;
@@ -116,28 +118,28 @@ int mouseremote_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_init()");
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset tty");
+		log_error("could not reset tty");
 		mouseremote_deinit();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LIRC_ERROR, "could not set baud rate");
+		log_error("could not set baud rate");
 		mouseremote_deinit();
 		return 0;
 	}
 	if (!tty_setcsize(drv.fd, 7)) {
-		logprintf(LIRC_ERROR, "could not set character size");
+		log_error("could not set character size");
 		mouseremote_deinit();
 		return 0;
 	}
@@ -150,12 +152,12 @@ int mouseremote_ps2_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mouseremote_ps2_init()");
 		tty_delete_lock();
 		return 0;
@@ -189,12 +191,12 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		int val;
 
 		if (!waitfordata(TIMEOUT)) {
-			logprintf(LIRC_TRACE, "timeout reading byte %d", i);
+			log_trace("timeout reading byte %d", i);
 			return NULL;
 		}
 		val = read(drv.fd, &b[i], 1);
 		if (val != 1) {
-			logprintf(LIRC_ERROR, "reading of byte %d (%d) failed", i, val);
+			log_error("reading of byte %d (%d) failed", i, val);
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
@@ -207,7 +209,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 			i = 0;
 			continue;
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 		++i;
 	}
 	gettimeofday(&end, NULL);
@@ -215,7 +217,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	if (serial_input) {
 		if (((char)(b[0]) & 0x0c) != 0x0c && (char)(b[2]) == 0x3f && ((char)(b[2]) & 0x07)) {
 			code = (ir_code)(char)(b[1]) | (((char)(b[0]) & 0x03) << 6);
-			logprintf(LIRC_TRACE, "result %llx", (__u64)code);
+			log_trace("result %llx", (__u64)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -225,11 +227,11 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	} else {
 		if ((char)b[2] == 0x7f) {
 			if ((char)b[0] != 0x08) {
-				logprintf(LIRC_TRACE, "Bad data");
+				log_trace("Bad data");
 				return NULL;
 			}
 			code = (ir_code)b[1];
-			logprintf(LIRC_TRACE, "result %llx", (__u64)code);
+			log_trace("result %llx", (__u64)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -266,15 +268,15 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		code |= 0x03;
 	if (code != 0) {
 		code |= 0x0100;
-		logprintf(LIRC_TRACE, "result %llx", (__u64)code);
+		log_trace("result %llx", (__u64)code);
 		m = decode_all(remotes);
 		return m;
 	} else if (dx == 0 && dy == 0) {
 		code = 0x0800 | stat;
-		logprintf(LIRC_TRACE, "result %llx", (__u64)code);
+		log_trace("result %llx", (__u64)code);
 		m = decode_all(remotes);
 		return m;
 	}
-	logprintf(LIRC_TRACE, "fallthrough is bad!%d %d %d", dx, dy, stat);
+	log_trace("fallthrough is bad!%d %d %d", dx, dy, stat);
 	return NULL;
 }

@@ -23,6 +23,8 @@
 
 #include "livedrive_common.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 char* livedrive_rec_midi(struct ir_remote* remotes)
 {
 	int i;

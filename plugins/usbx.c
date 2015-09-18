@@ -52,6 +52,8 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static unsigned char b[6];
 static ir_code code;
 
@@ -100,28 +102,28 @@ int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	ctx->min_remaining_gap = min_gap(remote);
 	ctx->max_remaining_gap = max_gap(remote);
 
-	logprintf(LIRC_TRACE, "repeat_flagp: %d", ctx->repeat_flag);
-	logprintf(LIRC_TRACE, "remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
-	logprintf(LIRC_TRACE, "rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
+	log_trace("repeat_flagp: %d", ctx->repeat_flag);
+	log_trace("remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
+	log_trace("rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
 	return 1;
 }
 
 int usbx_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files for '%s'", drv.device);
+		log_error("could not create lock files for '%s'", drv.device);
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		tty_delete_lock();
-		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
+		log_error("Could not open the '%s' device", drv.device);
 		return 0;
 	}
-	logprintf(LIRC_TRACE, "device '%s' opened", drv.device);
+	log_trace("device '%s' opened", drv.device);
 
 	if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, 300000) || !tty_setrtscts(drv.fd, 1)) {
-		logprintf(LIRC_ERROR, "could not configure the serial port for '%s'", drv.device);
+		log_error("could not configure the serial port for '%s'", drv.device);
 		usbx_deinit();
 		return 0;
 	}
@@ -146,16 +148,16 @@ char* usbx_rec(struct ir_remote* remotes)
 	for (i = 0; i < 6; i++) {
 		if (i > 0) {
 			if (!waitfordata(20000)) {
-				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
+				log_trace("timeout reading byte %d", i);
 				break;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LIRC_TRACE, "reading of byte %d failed.", i);
+			log_trace("reading of byte %d failed.", i);
 			usbx_deinit();
 			return NULL;
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 		x++;
 	}
 	code = 0;
@@ -164,7 +166,7 @@ char* usbx_rec(struct ir_remote* remotes)
 		code |= ((ir_code)b[i]);
 	}
 
-	logprintf(LIRC_TRACE, " -> %0llx", (__u64)code);
+	log_trace(" -> %0llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;

@@ -33,6 +33,7 @@
 #define NUMBYTES 6
 #define TIMEOUT 20000
 
+static const logchannel_t logchannel = LOG_DRIVER;
 
 unsigned char b[NUMBYTES];
 struct timeval start, end, last;
@@ -86,23 +87,23 @@ int creative_init(void)
 	signal_length = 108000;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "creative_init()");
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset tty");
+		log_error("could not reset tty");
 		creative_deinit();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 2400)) {
-		logprintf(LIRC_ERROR, "could not set baud rate");
+		log_error("could not set baud rate");
 		creative_deinit();
 		return 0;
 	}
@@ -131,7 +132,7 @@ char* creative_rec(struct ir_remote* remotes)
 	for (i = 0; i < NUMBYTES; i++) {
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LIRC_ERROR, "timeout reading byte %d", i);
+				log_error("timeout reading byte %d", i);
 				return NULL;
 			}
 		}
@@ -140,16 +141,16 @@ char* creative_rec(struct ir_remote* remotes)
 			return NULL;
 		}
 		if (b[0] != 0x4d || b[1] != 0x05 /* || b[4]!=0xac || b[5]!=0x21 */) {
-			logprintf(LIRC_ERROR, "bad envelope");
+			log_error("bad envelope");
 			return NULL;
 		}
 		if (i == 5) {
 			if (b[2] != ((~b[3]) & 0xff)) {
-				logprintf(LIRC_ERROR, "bad checksum");
+				log_error("bad checksum");
 				return NULL;
 			}
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 

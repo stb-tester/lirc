@@ -27,6 +27,8 @@
 #include "lirc/receive.h"
 #include "lirc/lirc_log.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 static struct timeval release_time;
 static struct ir_remote* release_remote;
 static struct ir_ncode* release_ncode;
@@ -71,7 +73,7 @@ void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode, ir_
 				  remote->max_total_signal_length - remote->min_gap_length)
 		      + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
 
-	logprintf(LIRC_TRACE, "release_gap: %lu", release_gap);
+	log_trace("release_gap: %lu", release_gap);
 
 	register_input();
 }
@@ -117,11 +119,11 @@ const char* check_release_event(const char** remote_name, const char** button_na
 		release_code2 = 0;
 
 		if (len >= PACKET_SIZE + 1) {
-			logprintf(LIRC_ERROR, "message buffer overflow");
+			log_error("message buffer overflow");
 			return NULL;
 		}
 
-		logprintf(LIRC_TRACE2, "check");
+		log_trace2("check");
 		return message;
 	}
 	return NULL;
@@ -148,10 +150,10 @@ const char* trigger_release_event(const char** remote_name, const char** button_
 		release_code = 0;
 
 		if (len >= PACKET_SIZE + 1) {
-			logprintf(LIRC_ERROR, "message buffer overflow");
+			log_error("message buffer overflow");
 			return NULL;
 		}
-		logprintf(LIRC_TRACE2, "trigger");
+		log_trace2("trigger");
 		return message;
 	}
 	return NULL;
@@ -165,7 +167,7 @@ const char* release_map_remotes(struct ir_remote* old, struct ir_remote* new, co
 
 	if (release_remote2 != NULL) {
 		/* should not happen */
-		logprintf(LIRC_ERROR, "release_remote2 still in use");
+		log_error("release_remote2 still in use");
 		release_remote2 = NULL;
 	}
 	if (release_remote && is_in_remotes(old, release_remote)) {

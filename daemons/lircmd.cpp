@@ -68,6 +68,8 @@ typedef uint64_t __u64;
 	"Level could be ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE, TRACE1,\n" \
 	" TRACE2 or a number in the range 3..10.\n"
 
+static const logchannel_t logchannel = LOG_APP;
+
 static int uinputfd = -1;
 static int useuinput = 0;
 static loglevel_t loglevel_opt = LIRC_NOLOG;

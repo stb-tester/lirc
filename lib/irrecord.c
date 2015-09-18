@@ -18,6 +18,8 @@
 
 /*    -------------------------- C file -------------------------------- */
 
+static const logchannel_t logchannel = LOG_LIB;
+
 // forwards
 static lirc_t emulation_readdata(lirc_t timeout);
 
@@ -159,7 +161,7 @@ int resethw(void)
 
 	if (getresuid_uid() == 0)
 		if (seteuid(0) == -1)
-			logprintf(LIRC_ERROR, "Cannot reset root uid");
+			log_error("Cannot reset root uid");
 	if (curr_driver->deinit_func)
 		curr_driver->deinit_func();
 	if (curr_driver->init_func) {
@@ -525,8 +527,7 @@ static lirc_t emulation_readdata(lirc_t timeout)
 		sum = 0;
 	} else {
 		if (current_code->name == NULL) {
-			logprintf(LIRC_WARNING,
-				  "%s: no data found", emulation_data->name);
+			log_warn("%s: no data found", emulation_data->name);
 			data = 0;
 		}
 		if (current_index >= current_code->length) {
@@ -561,7 +562,7 @@ static lirc_t emulation_readdata(lirc_t timeout)
 			sum += data & PULSE_MASK;
 		}
 	}
-	logprintf(LIRC_DEBUG, "delivering: %c%u\n",
+	log_debug("delivering: %c%u\n",
 		  data & PULSE_BIT ? 'p':'s', data & PULSE_MASK);
 	return data;
 }
@@ -605,7 +606,7 @@ void unlink_length(struct lengths** first, struct lengths* remove)
 		last = scan;
 		scan = scan->next;
 	}
-	logprintf(LIRC_ERROR, "unlink_length(): report this bug!");
+	log_error("unlink_length(): report this bug!");
 }
 
 
@@ -719,7 +720,7 @@ static void merge_lengths(struct lengths* first)
 		l = l->next;
 	}
 	for (l = first; l != NULL; l = l->next) {
-		logprintf(LIRC_DEBUG, "%d x %u [%u,%u]",
+		log_debug("%d x %u [%u,%u]",
 			  l->count, (__u32)calc_signal(l),
 			  (__u32)l->min, (__u32)l->max);
 	}
@@ -744,14 +745,14 @@ static struct lengths* get_max_length(struct lengths*	first,
 	sum = first->count;
 
 	if (first->count > 0)
-		logprintf(LIRC_DEBUG, "%u x %u", first->count,
+		log_debug("%u x %u", first->count,
 			  (__u32)calc_signal(first));
 	scan = first->next;
 	while (scan) {
 		if (scan->count > max_length->count)
 			max_length = scan;
 		sum += scan->count;
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "%u x %u",
 			  scan->count,
 			  (__u32)calc_signal(scan));
@@ -773,16 +774,16 @@ int get_trail_length(struct ir_remote* remote, int interactive)
 
 	max_length = get_max_length(first_trail, &sum);
 	max_count = max_length->count;
-	logprintf(LIRC_DEBUG,
+	log_debug(
 		  "get_trail_length(): sum: %u, max_count %u",
 		  sum, max_count);
 	if (max_count >= sum * TH_TRAIL / 100) {
-		logprintf(LIRC_DEBUG, "Found trail pulse: %lu",
+		log_debug("Found trail pulse: %lu",
 			  (__u32)calc_signal(max_length));
 		remote->ptrail = calc_signal(max_length);
 		return 1;
 	}
-	logprintf(LIRC_DEBUG, "No trail pulse found.");
+	log_debug("No trail pulse found.");
 	return 1;
 }
 
@@ -803,11 +804,11 @@ int get_lead_length(struct ir_remote* remote, int interactive)
 	first_lead = has_header(remote) ? first_3lead : first_1lead;
 	max_length = get_max_length(first_lead, &sum);
 	max_count = max_length->count;
-	logprintf(LIRC_DEBUG,
+	log_debug(
 		  "get_lead_length(): sum: %u, max_count %u",
 		  sum, max_count);
 	if (max_count >= sum * TH_LEAD / 100) {
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "Found lead pulse: %lu",
 			  (__u32)calc_signal(max_length));
 		remote->plead = calc_signal(max_length);
@@ -826,13 +827,13 @@ int get_lead_length(struct ir_remote* remote, int interactive)
 		b = swap;
 	}
 	if (abs(2 * a - b) < b * eps / 100 || abs(2 * a - b) < aeps) {
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "Found hidden lead pulse: %lu",
 			  (__u32)a);
 		remote->plead = a;
 		return 1;
 	}
-	logprintf(LIRC_DEBUG, "No lead pulse found.");
+	log_debug("No lead pulse found.");
 	return 1;
 }
 
@@ -848,38 +849,38 @@ int get_header_length(struct ir_remote* remote, int interactive)
 		max_plength = get_max_length(first_headerp, &sum);
 		max_count = max_plength->count;
 	} else {
-		logprintf(LIRC_DEBUG, "No header data.");
+		log_debug("No header data.");
 		return 1;
 	}
-	logprintf(LIRC_DEBUG,
+	log_debug(
 		  "get_header_length(): sum: %u, max_count %u",
 		  sum, max_count);
 
 	if (max_count >= sum * TH_HEADER / 100) {
 		max_slength = get_max_length(first_headers, &sum);
 		max_count = max_slength->count;
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "get_header_length(): sum: %u, max_count %u",
 			  sum, max_count);
 		if (max_count >= sum * TH_HEADER / 100) {
 			headerp = calc_signal(max_plength);
 			headers = calc_signal(max_slength);
 
-			logprintf(LIRC_DEBUG,
+			log_debug(
 				  "Found possible header: %lu %lu",
 				  (__u32)headerp,
 				  (__u32)headers);
 			remote->phead = headerp;
 			remote->shead = headers;
 			if (first_lengths < second_lengths) {
-				logprintf(LIRC_DEBUG,
+				log_debug(
 					  "Header is not being repeated.");
 				remote->flags |= NO_HEAD_REP;
 			}
 			return 1;
 		}
 	}
-	logprintf(LIRC_DEBUG, "No header found.");
+	log_debug("No header found.");
 	return 1;
 }
 
@@ -895,28 +896,28 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 	      (count_5repeats > SAMPLES / 2 ? 1 : 0))) {
 		if (count_3repeats > SAMPLES / 2
 		    || count_5repeats > SAMPLES / 2) {
-			logprintf(LIRC_WARNING, "Repeat inconsistency.");
+			log_warn("Repeat inconsistency.");
 			return 0;
 		}
-		logprintf(LIRC_DEBUG, "No repeat code found.");
+		log_debug("No repeat code found.");
 		return 1;
 	}
 
 	max_plength = get_max_length(first_repeatp, &sum);
 	max_count = max_plength->count;
-	logprintf(LIRC_DEBUG,
+	log_debug(
 		  "get_repeat_length(): sum: %u, max_count %u",
 		  sum, max_count);
 	if (max_count >= sum * TH_REPEAT / 100) {
 		max_slength = get_max_length(first_repeats, &sum);
 		max_count = max_slength->count;
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "get_repeat_length(): sum: %u, max_count %u",
 			  sum, max_count);
 		if (max_count >= sum * TH_REPEAT / 100) {
 			if (count_5repeats > count_3repeats
 			    && !has_header(remote)) {
-				logprintf(LIRC_WARNING,
+				log_warn(
 					  "Repeat code has header,"
 					  " but no header found!");
 				return 0;
@@ -927,7 +928,7 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 			repeatp = calc_signal(max_plength);
 			repeats = calc_signal(max_slength);
 
-			logprintf(LIRC_DEBUG,
+			log_debug(
 				  "Found repeat code: %lu %lu",
 				  (__u32)repeatp,
 				  (__u32)repeats);
@@ -937,7 +938,7 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 				max_slength = get_max_length(first_repeat_gap,
 							     NULL);
 				repeat_gap = calc_signal(max_slength);
-				logprintf(LIRC_DEBUG,
+				log_debug(
 					  "Found repeat gap: %lu",
 					  (__u32)repeat_gap);
 				remote->repeat_gap = repeat_gap;
@@ -945,7 +946,7 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 			return 1;
 		}
 	}
-	logprintf(LIRC_DEBUG, "No repeat header found.");
+	log_debug("No repeat header found.");
 	return 1;
 }
 
@@ -963,18 +964,18 @@ void get_scheme(struct ir_remote* remote, int interactive)
 			length = i;
 		sum += lengths[i];
 		if (lengths[i] > 0)
-			logprintf(LIRC_DEBUG, "%u: %u", i, lengths[i]);
+			log_debug("%u: %u", i, lengths[i]);
 	}
-	logprintf(LIRC_DEBUG, "get_scheme(): sum: %u length: %u signals: %u"
+	log_debug("get_scheme(): sum: %u length: %u signals: %u"
 		  " first_lengths: %u second_lengths: %u\n",
 		  sum, length + 1, lengths[length],
 		  first_lengths, second_lengths);
 	/* FIXME !!! this heuristic is too bad */
 	if (lengths[length] >= TH_SPACE_ENC * sum / 100) {
 		length++;
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "Space/pulse encoded remote control found.");
-		logprintf(LIRC_DEBUG, "Signal length is %u.", length);
+		log_debug("Signal length is %u.", length);
 		/* this is not yet the number of bits */
 		remote->bits = length;
 		set_protocol(remote, SPACE_ENC);
@@ -1004,16 +1005,16 @@ void get_scheme(struct ir_remote* remote, int interactive)
 			|| calc_signal(max2p) < TH_RC6_SIGNAL)
 		    && (calc_signal(maxs) < TH_RC6_SIGNAL
 			|| calc_signal(max2s) < TH_RC6_SIGNAL)) {
-			logprintf(LIRC_DEBUG, "RC-6 remote control found.");
+			log_debug("RC-6 remote control found.");
 			set_protocol(remote, RC6);
 		} else {
-			logprintf(LIRC_DEBUG, "RC-5 remote control found.");
+			log_debug("RC-5 remote control found.");
 			set_protocol(remote, RC5);
 		}
 		return;
 	}
 	length++;
-	logprintf(LIRC_DEBUG, "Suspicious data length: %u.", length);
+	log_debug("Suspicious data length: %u.", length);
 	/* this is not yet the number of bits */
 	remote->bits = length;
 	set_protocol(remote, SPACE_ENC);
@@ -1031,7 +1032,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 
 	max_plength = get_max_length(first_pulse, &sum);
 	max_count = max_plength->count;
-	logprintf(LIRC_DEBUG, "get_data_length(): sum: %u, max_count %u",
+	log_debug("get_data_length(): sum: %u, max_count %u",
 		  sum, max_count);
 
 	if (max_count >= sum * TH_IS_BIT / 100) {
@@ -1041,17 +1042,17 @@ int get_data_length(struct ir_remote* remote, int interactive)
 		if (max2_plength != NULL)
 			if (max2_plength->count < max_count * TH_IS_BIT / 100)
 				max2_plength = NULL;
-		logprintf(LIRC_DEBUG, "Pulse candidates: ");
-		logprintf(LIRC_DEBUG, "%u x %u", max_plength->count,
+		log_debug("Pulse candidates: ");
+		log_debug("%u x %u", max_plength->count,
 			  (__u32)calc_signal(max_plength));
 		if (max2_plength)
-			logprintf(LIRC_DEBUG, ", %u x %u",
+			log_debug(", %u x %u",
 				  max2_plength->count,
 				  (__u32)calc_signal(max2_plength));
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
-		logprintf(LIRC_DEBUG,
+		log_debug(
 			  "get_data_length(): sum: %u, max_count %u",
 			  sum, max_count);
 		if (max_count >= sum * TH_IS_BIT / 100) {
@@ -1063,14 +1064,13 @@ int get_data_length(struct ir_remote* remote, int interactive)
 				    max_count * TH_IS_BIT / 100)
 					max2_slength = NULL;
 			if (max_count >= sum * TH_IS_BIT / 100) {
-				logprintf(LIRC_DEBUG, "Space candidates: ");
-				logprintf(LIRC_DEBUG,
+				log_debug("Space candidates: ");
+				log_debug(
 					  "%u x %u",
 					  max_slength->count,
 					  (__u32)calc_signal(max_slength));
 				if (max2_slength) {
-					logprintf(
-						LIRC_DEBUG,
+					log_debug(
 						"%u x %u",
 						max2_slength->count,
 						(__u32)calc_signal(max2_slength));
@@ -1081,11 +1081,11 @@ int get_data_length(struct ir_remote* remote, int interactive)
 			if (is_biphase(remote)) {
 				if (max2_plength == NULL
 				    || max2_slength == NULL) {
-					logprintf(LIRC_NOTICE,
+					log_notice(
 						  "Unknown encoding found.");
 					return 0;
 				}
-				logprintf(LIRC_DEBUG,
+				log_debug(
 					  "Signals are biphase encoded.");
 				p1 = calc_signal(max_plength);
 				p2 = calc_signal(max2_plength);
@@ -1101,12 +1101,12 @@ int get_data_length(struct ir_remote* remote, int interactive)
 			} else {
 				if (max2_plength == NULL
 				    && max2_slength == NULL) {
-					logprintf(LIRC_NOTICE,
+					log_notice(
 						  "No encoding found");
 					return 0;
 				}
 				if (max2_plength && max2_slength) {
-					logprintf(LIRC_NOTICE,
+					log_notice(
 						  "Unknown encoding found.");
 					return 0;
 				}
@@ -1114,9 +1114,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 				s1 = calc_signal(max_slength);
 				if (max2_plength) {
 					p2 = calc_signal(max2_plength);
-					logprintf(
-						LIRC_DEBUG,
-						"Signals are pulse encoded.");
+					log_debug("Signals are pulse encoded.");
 					remote->pone = max(p1, p2);
 					remote->sone = s1;
 					remote->pzero = min(p1, p2);
@@ -1127,9 +1125,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 						remote->ptrail = 0;
 				} else {
 					s2 = calc_signal(max2_slength);
-					logprintf(
-						LIRC_DEBUG,
-						"Signals are space encoded.");
+					log_debug("Signals are space encoded.");
 					remote->pone = p1;
 					remote->sone = max(s1, s2);
 					remote->pzero = p1;
@@ -1153,7 +1149,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 						      remote->szero)))) {
 					remote->phead = remote->shead = 0;
 					remote->flags &= ~NO_HEAD_REP;
-					logprintf(LIRC_DEBUG,
+					log_debug(
 						  "Removed header.");
 				}
 				if (is_biphase(remote)
@@ -1163,7 +1159,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 					remote->plead = remote->phead;
 					remote->phead = remote->shead = 0;
 					remote->flags &= ~NO_HEAD_REP;
-					logprintf(LIRC_DEBUG,
+					log_debug(
 						  "Removed header.");
 				}
 			}
@@ -1190,7 +1186,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 					 (has_header(remote) ? 2 : 0) + 1 -
 					 (remote->ptrail > 0 ? 2 : 0)) / 2;
 			}
-			logprintf(LIRC_DEBUG,
+			log_debug(
 				  "Signal length is %d",
 				  remote->bits);
 			free_lengths(&max_plength);
@@ -1199,7 +1195,7 @@ int get_data_length(struct ir_remote* remote, int interactive)
 		}
 		free_lengths(&max_plength);
 	}
-	logprintf(LIRC_NOTICE, "Could not find data lengths.");
+	log_notice("Could not find data lengths.");
 	return 0;
 }
 
@@ -1353,7 +1349,7 @@ static struct lengths* scan_gap1(struct lengths_state*	state,
 			remote->gap = calc_signal(scan);
 			remote->flags |= CONST_LENGTH;
 			state->mode = MODE_HAVE_GAP;
-			logprintf(LIRC_DEBUG, "Found gap: %u", remote->gap);
+			log_debug("Found gap: %u", remote->gap);
 			*again = STS_LEN_AGAIN_INFO;
 			break;
 		}
@@ -1374,7 +1370,7 @@ static struct lengths* scan_gap2(struct lengths_state*	state,
 		if (scan->count > SAMPLES) {
 			remote->gap = calc_signal(scan);
 			state->mode = MODE_HAVE_GAP;
-			logprintf(LIRC_DEBUG, "Found gap: %u", remote->gap);
+			log_debug("Found gap: %u", remote->gap);
 			*again = STS_LEN_AGAIN_INFO;
 			break;
 		}
@@ -1559,7 +1555,7 @@ enum toggle_status get_toggle_bit_mask(struct toggle_state*	state,
 			return STS_TGL_NOT_FOUND;
 		if (state->seq > 0) {
 			remote->min_repeat = state->repeats / state->seq;
-			logprintf(LIRC_DEBUG, "min_repeat=%d",
+			log_debug("min_repeat=%d",
 				  remote->min_repeat);
 		}
 		return STS_TGL_FOUND;
@@ -1638,19 +1634,19 @@ int analyse_get_lengths(struct lengths_state* lengths_state)
 		case STS_LEN_OK:
 			break;
 		case STS_LEN_FAIL:
-			logprintf(LIRC_ERROR, "get_lengths() failure");
+			log_error("get_lengths() failure");
 			return 0;
 		case STS_LEN_RAW_OK:
-			logprintf(LIRC_ERROR, "raw analyse result?!");
+			log_error("raw analyse result?!");
 			return 0;
 		case STS_LEN_TIMEOUT:
-			logprintf(LIRC_ERROR, "analyse timeout?!");
+			log_error("analyse timeout?!");
 			return 0;
 		case STS_LEN_NO_GAP_FOUND:
-			logprintf(LIRC_ERROR, "analyse, no gap?!");
+			log_error("analyse, no gap?!");
 			return 0;
 		case STS_LEN_TOO_LONG:
-			logprintf(LIRC_ERROR, "analyse, signal too long?!");
+			log_error("analyse, signal too long?!");
 			return 0;
 		default:
 			logprintf(LIRC_ERROR,
@@ -1704,7 +1700,7 @@ int analyse_remote(struct ir_remote* raw_data, const struct opts* opts)
 
 	new_codes = malloc(new_codes_count * sizeof(*new_codes));
 	if (new_codes == NULL) {
-		logprintf(LIRC_ERROR, "Out of memory");
+		log_error("Out of memory");
 		return 0;
 	}
 	memset(new_codes, 0, new_codes_count * sizeof(*new_codes));
@@ -1719,7 +1715,7 @@ int analyse_remote(struct ir_remote* raw_data, const struct opts* opts)
 
 		ret = receive_decode(&remote, &decode_ctx);
 		if (!ret) {
-			logprintf(LIRC_WARNING,
+			log_warn(
 				  "Decoding of %s failed", codes->name);
 		} else {
 			if (new_index + 1 >= new_codes_count) {
@@ -1987,10 +1983,9 @@ enum button_status record_buttons(struct button_state*	btn_state,
 				}
 			} else {
 				if (raw_data_ok(btn_state)) {
-					logprintf(LIRC_INFO, "Got it.\n");
-					logprintf(LIRC_INFO,
-						  "Signal length is %d\n",
-						  btn_state->count - 1);
+					log_info("Got it.\n");
+					log_info("Signal length is %d\n",
+						 btn_state->count - 1);
 					if (btn_state->count % 2) {
 						btn_state_set_message(
 							btn_state,

@@ -13,6 +13,8 @@
 #include	"config.h"
 #include	"lirc_log.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 /**
  * The global driver data that drivers etc are accessing.
  * Set by hw_choose_driver().
@@ -36,7 +38,7 @@ int default_open(const char* path)
 		strncpy(buff, path, sizeof(buff) - 1);
 		drv.device = buff;
 	}
-	logprintf(LIRC_INFO, "Initial device: %s", drv.device);
+	log_info("Initial device: %s", drv.device);
 	return 0;
 }
 

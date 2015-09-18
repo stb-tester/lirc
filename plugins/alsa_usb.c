@@ -17,6 +17,8 @@
 
 #include "lirc_driver.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int init(void);
 static int deinit(void);
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
@@ -96,37 +98,37 @@ static int init(void)
 	if (!device || !*device) {
 		device = search_device();
 		if (!device) {
-			logprintf(LIRC_ERROR, "device not found");
+			log_error("device not found");
 			return 0;
 		}
 		drv.device = device;
 	}
 	err = snd_hwdep_open(&hwdep, device, SND_HWDEP_OPEN_READ);
 	if (err < 0) {
-		logprintf(LIRC_ERROR, "cannot open %s: %s", device, snd_strerror(err));
+		log_error("cannot open %s: %s", device, snd_strerror(err));
 		return 0;
 	}
 	snd_hwdep_info_alloca(&info);
 	err = snd_hwdep_info(hwdep, info);
 	if (err < 0) {
 		snd_hwdep_close(hwdep);
-		logprintf(LIRC_ERROR, "cannot get hwdep info: %s", snd_strerror(err));
+		log_error("cannot get hwdep info: %s", snd_strerror(err));
 		return 0;
 	}
 	if (snd_hwdep_info_get_iface(info) != SND_HWDEP_IFACE_SB_RC) {
 		snd_hwdep_close(hwdep);
-		logprintf(LIRC_ERROR, "%s is not a Sound Blaster remote control device", device);
+		log_error("%s is not a Sound Blaster remote control device", device);
 		return 0;
 	}
 	err = snd_hwdep_poll_descriptors(hwdep, &pollfd, 1);
 	if (err < 0) {
 		snd_hwdep_close(hwdep);
-		logprintf(LIRC_ERROR, "cannot get file descriptor: %s", snd_strerror(err));
+		log_error("cannot get file descriptor: %s", snd_strerror(err));
 		return 0;
 	}
 	if (err != 1) {
 		snd_hwdep_close(hwdep);
-		logprintf(LIRC_ERROR, "invalid number of file descriptors (%d): %s", err, snd_strerror(err));
+		log_error("invalid number of file descriptors (%d): %s", err, snd_strerror(err));
 		return 0;
 	}
 	drv.fd = pollfd.fd;
@@ -156,8 +158,8 @@ static char* rec(struct ir_remote* remotes)
 	repeat_flag = code == last_code && current.tv_sec - last_time.tv_sec <= 2
 		      && time_elapsed(&last_time, &current) <= 350000;
 	last_time = current;
-	logprintf(LIRC_TRACE, "code: %llx", (__u64)code);
-	logprintf(LIRC_TRACE, "repeat_flag: %d", repeat_flag);
+	log_trace("code: %llx", (__u64)code);
+	log_trace("repeat_flag: %d", repeat_flag);
 	return decode_all(remotes);
 }
 

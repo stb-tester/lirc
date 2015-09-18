@@ -411,6 +411,8 @@ struct detected_commandir {
 	struct detected_commandir*	next;
 };
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int child_pipe_write = 0;
 static char haveInited = 0;
 
@@ -464,14 +466,14 @@ static int commandir_init(void)
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logprintf(LIRC_ERROR, "couldn't open pipe 1");
+		log_error("couldn't open pipe 1");
 		return 0;
 	}
 
 	drv.fd = pipe_fd[0];    // the READ end of the Pipe
 
 	if (pipe(pipe_tochild) != 0) {
-		logprintf(LIRC_ERROR, "couldn't open pipe 1");
+		log_error("couldn't open pipe 1");
 		return 0;
 	}
 
@@ -480,14 +482,14 @@ static int commandir_init(void)
 
 	fd_flags = fcntl(pipe_tochild[0], F_GETFL);
 	if (fcntl(pipe_tochild[0], F_SETFL, fd_flags | O_NONBLOCK) == -1) {
-		logprintf(LIRC_ERROR, "can't set pipe to non-blocking");
+		log_error("can't set pipe to non-blocking");
 		return 0;
 	}
 
 	signal(SIGTERM, shutdown_usb);  // Set early so child can catch this
 	child_pid = fork();
 	if (child_pid == -1) {
-		logprintf(LIRC_ERROR, "couldn't fork child process");
+		log_error("couldn't fork child process");
 		return 0;
 	} else if (child_pid == 0) {
 		child_pipe_write = pipe_fd[1];
@@ -498,7 +500,7 @@ static int commandir_init(void)
 	signal(SIGTERM, SIG_IGN);
 	haveInited = 1;
 
-	logprintf(LIRC_ERROR, "CommandIR driver initialized");
+	log_error("CommandIR driver initialized");
 	return 1;
 }
 
@@ -510,11 +512,11 @@ static int commandir_deinit(void)
 		static char deinit_char[3] = { 3, 0, DEINIT_HEADER_LIRC };
 
 		chk_write(tochild_write, deinit_char, 3);
-		logprintf(LIRC_ERROR, "LIRC_deinit but keeping warm");
+		log_error("LIRC_deinit but keeping warm");
 	} else {
 		if (tochild_read >= 0) {
 			if (close(tochild_read) < 0) {
-				logprintf(LIRC_ERROR, "Error closing pipe2");
+				log_error("Error closing pipe2");
 			}
 			tochild_read = tochild_write = -1;
 		}
@@ -522,7 +524,7 @@ static int commandir_deinit(void)
 		if (haveInited) {
 			// shutdown all USB
 			if (child_pid > 0) {
-				logprintf(LIRC_ERROR, "Closing child process");
+				log_error("Closing child process");
 				kill(child_pid, SIGTERM);
 				waitpid(child_pid, NULL, 0);
 				child_pid = -1;
@@ -532,11 +534,11 @@ static int commandir_deinit(void)
 
 		if (drv.fd >= 0) {
 			if (close(drv.fd) < 0)
-				logprintf(LIRC_ERROR, "Error closing pipe");
+				log_error("Error closing pipe");
 			drv.fd = -1;
 		}
 
-		logprintf(LIRC_ERROR, "commandir_deinit()");
+		log_error("commandir_deinit()");
 	}
 	return 1;
 }
@@ -583,7 +585,7 @@ static int commandir_send(struct ir_remote* remote, struct ir_ncode* code)
 	memcpy(&send_signals[4], signals, sizeof(lirc_t) * length);
 
 	if (write(tochild_write, send_signals, send_signals[0] + send_signals[1] * 256) < 0)
-		logprintf(LIRC_ERROR, "Error writing to child_write");
+		log_error("Error writing to child_write");
 
 	free(send_signals);
 	return length;
@@ -617,7 +619,7 @@ static int commandir_ioctl(unsigned int cmd, void* arg)
 		return 0;
 
 	default:
-		logprintf(LIRC_ERROR, "Unknown ioctl - %d", cmd);
+		log_error("Unknown ioctl - %d", cmd);
 		return -1;
 	}
 
@@ -672,7 +674,7 @@ static void commandir_child_init(void)
 	//emitter_set_test[2] = 5;	// 1100
 	//emitter_set_test[3] = 6;
 
-	logprintf(LIRC_ERROR, "Child Initializing CommandIR Hardware");
+	log_error("Child Initializing CommandIR Hardware");
 
 	first_commandir_device = NULL;
 
@@ -746,7 +748,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 	new_commandir->cmdir_udev = usb_open(dev);
 
 	if (new_commandir->cmdir_udev == NULL) {
-		logprintf(LIRC_ERROR, "Error opening commandir - bus %d, device %d.", bus_num, devnum);
+		log_error("Error opening commandir - bus %d, device %d.", bus_num, devnum);
 		free(new_commandir);
 		return FALSE;
 	}
@@ -757,8 +759,8 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 
 	if (r < 0) {
 		free(new_commandir);
-		logprintf(LIRC_ERROR, "Unable to claim CommandIR (error %d) - Is it already busy?", r);
-		logprintf(LIRC_ERROR, "Try 'rmmod commandir' or check for other lircds");
+		log_error("Unable to claim CommandIR (error %d) - Is it already busy?", r);
+		log_error("Try 'rmmod commandir' or check for other lircds");
 		return FALSE;
 	}
 
@@ -772,7 +774,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 
 	switch (dev->descriptor.iProduct) {
 	case 3:
-		logprintf(LIRC_ERROR, "Product identified as CommandIR III");
+		log_error("Product identified as CommandIR III");
 
 		for (i = 0; i < ainterface->bNumEndpoints; i++) {
 			new_commandir->endpoint_max[(ainterface->endpoint[i].bEndpointAddress >= 0x80)
@@ -794,7 +796,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 		break;
 
 	case 2:
-		logprintf(LIRC_INFO, "Product identified as CommandIR II");
+		log_info("Product identified as CommandIR II");
 		new_commandir->hw_type = HW_COMMANDIR_2;
 		new_commandir->hw_revision = 0;
 		new_commandir->hw_subversion = 0;
@@ -827,7 +829,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 			send_status = usb_bulk_write(new_commandir->cmdir_udev, 2,      // endpoint2
 						     get_version, 2, 1500);
 			if (send_status < 0) {
-				logprintf(LIRC_ERROR, "Unable to write version request - Is CommandIR busy? Error %d",
+				log_error("Unable to write version request - Is CommandIR busy? Error %d",
 					  send_status);
 				break;
 			}
@@ -837,7 +839,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 					      new_commandir->endpoint_max[1], 1500);
 
 			if (send_status < 0) {
-				logprintf(LIRC_ERROR, "Unable to read version request - Is CommandIR busy? Error %d",
+				log_error("Unable to read version request - Is CommandIR busy? Error %d",
 					  send_status);
 				usb_release_interface(new_commandir->cmdir_udev, new_commandir->interface);
 				usb_close(new_commandir->cmdir_udev);
@@ -849,7 +851,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 					// Sending back version information.
 					new_commandir->hw_revision = commandir_data_buffer[1];
 					new_commandir->hw_subversion = commandir_data_buffer[2];
-					logprintf(LIRC_ERROR, "Hardware revision is %d.%d.", commandir_data_buffer[1],
+					log_error("Hardware revision is %d.%d.", commandir_data_buffer[1],
 						  commandir_data_buffer[2]);
 					break;
 				}
@@ -859,7 +861,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 		break;
 
 	default:
-		logprintf(LIRC_ERROR, "Product identified as Original CommandIR Mini");
+		log_error("Product identified as Original CommandIR Mini");
 		new_commandir->hw_type = HW_COMMANDIR_MINI;
 		new_commandir->num_transmitters = 4;
 		new_commandir->num_receivers = 1;
@@ -881,7 +883,7 @@ static int claim_and_setup_commandir(unsigned int bus_num, int devnum, struct us
 	}
 
 	if (new_commandir->hw_type == HW_COMMANDIR_UNKNOWN) {
-		logprintf(LIRC_ERROR, "Product UNKNOWN - cleanup");
+		log_error("Product UNKNOWN - cleanup");
 		usb_release_interface(new_commandir->cmdir_udev, new_commandir->interface);
 		usb_close(new_commandir->cmdir_udev);
 		free(new_commandir);
@@ -961,7 +963,7 @@ static void hardware_scan(void)
 
 	if (!located)
 		// Have we already printed this message recently?  TODO
-		logprintf(LIRC_ERROR, "No CommandIRs found");
+		log_error("No CommandIRs found");
 
 	/* Check if any we currently know about have been removed
 	 * (Usually, we get a read/write error first)
@@ -984,7 +986,7 @@ static void hardware_scan(void)
 
 		if (!found) {
 			// We no longer detect this CommandIR:
-			logprintf(LIRC_ERROR, "Commandir removed from [%d][%d].", a->busnum, a->devnum);
+			log_error("Commandir removed from [%d][%d].", a->busnum, a->devnum);
 			hardware_disconnect(a);
 			disconnect++;
 			commandir_rx_num = -1;
@@ -1109,9 +1111,9 @@ static void hardware_setorder(void)
 	int emitters = 1;
 
 	if (first_commandir_device && first_commandir_device->next_commandir_device) {
-		logprintf(LIRC_INFO, "Re-ordered Multiple CommandIRs:");
+		log_info("Re-ordered Multiple CommandIRs:");
 		for (pcd = first_commandir_device; pcd; pcd = pcd->next_commandir_device) {
-			logprintf(LIRC_INFO, " CommandIR Index: %d (Type: %d, Revision: %d), Emitters #%d-%d",
+			log_info(" CommandIR Index: %d (Type: %d, Revision: %d), Emitters #%d-%d",
 				  CommandIR_Num, pcd->hw_type, pcd->hw_revision, emitters,
 				  emitters + pcd->num_transmitters - 1);
 			CommandIR_Num++;
@@ -1488,11 +1490,11 @@ static void shutdown_usb(int arg)
 	for (a = first_commandir_device; a; a = a->next_commandir_device) {
 		if (a->next_tx_signal) {
 			shutdown_pending++;
-			logprintf(LIRC_ERROR, "Waiting for signals to finish transmitting before shutdown");
+			log_error("Waiting for signals to finish transmitting before shutdown");
 			return;
 		}
 	}
-	logprintf(LIRC_ERROR, "No more signal for transmitting, CHILD _EXIT()");
+	log_error("No more signal for transmitting, CHILD _EXIT()");
 	_exit(EXIT_SUCCESS);
 }
 
@@ -1540,19 +1542,19 @@ static int check_irsend_commandir(unsigned char* command)
 		break;
 	case 0x09:
 	case 0x0A:
-		logprintf(LIRC_ERROR, "Re-selecting RX not implemented yet");
+		log_error("Re-selecting RX not implemented yet");
 		break;
 	case 0xe6:              //      disable-fast-decode
-		logprintf(LIRC_ERROR, "Fast decoding disabled");
+		log_error("Fast decoding disabled");
 		insert_fast_zeros = 0;
 		break;
 	case 0xe7:              //      enable-fast-decode
 	case 0xe9:              //      force-fast-decode-2
-		logprintf(LIRC_ERROR, "Fast decoding enabled");
+		log_error("Fast decoding enabled");
 		insert_fast_zeros = 2;
 		break;
 	case 0xe8:              //      force-fast-decode-1
-		logprintf(LIRC_ERROR, "Fast decoding enabled (1)");
+		log_error("Fast decoding enabled (1)");
 		insert_fast_zeros = 1;
 		break;
 	default:
@@ -1618,7 +1620,7 @@ static void lirc_pipe_write(lirc_t* one_item)
 
 	bytes_w = write(child_pipe_write, one_item, sizeof(lirc_t));
 	if (bytes_w < 0)
-		logprintf(LIRC_ERROR, "Can't write to LIRC pipe! %d", child_pipe_write);
+		log_error("Can't write to LIRC pipe! %d", child_pipe_write);
 }
 
 static int commandir_read(void)
@@ -1661,11 +1663,12 @@ static int commandir_read(void)
 					pcd->flush_buffer--;
 
 				if (read_retval < 1) {
-					if (read_retval == -19)
-						logprintf(LIRC_ERROR, "Read Error - CommandIR probably unplugged");
-					else
-						logprintf(LIRC_ERROR, "Error %d trying to read %d bytes", read_retval,
+					if (read_retval == -19) {
+						log_error("Read Error - CommandIR probably unplugged");
+					} else {
+						log_error("Error %d trying to read %d bytes", read_retval,
 							  pcd->endpoint_max[3]);
+					}
 					hardware_disconnect(pcd);
 					software_disconnects();
 					hardware_scan();
@@ -1693,7 +1696,7 @@ static int commandir_read(void)
 			if (read_retval < 1) {
 				if (read_retval < 0) {
 					if (read_retval == -19) {
-						logprintf(LIRC_ERROR, "Read Error - CommandIR probably unplugged");
+						log_error("Read Error - CommandIR probably unplugged");
 					} else {
 						logprintf(LIRC_ERROR,
 							  "Didn't receive a full packet from a CommandIR II! - err %d .",
@@ -1759,7 +1762,7 @@ static int commandir_read(void)
 
 				if (!(read_retval == MAX_HW_MINI_PACKET)) {
 					if (read_retval == -19) {
-						logprintf(LIRC_ERROR, "Read Error - CommandIR probably unplugged");
+						log_error("Read Error - CommandIR probably unplugged");
 					} else {
 						logprintf(LIRC_ERROR,
 							  "Didn't receive a full packet from a Mini! - err %d .",
@@ -1777,7 +1780,7 @@ static int commandir_read(void)
 					if (conv_retval > 0)
 						read_received += commandir_data_buffer[1];
 					else
-						logprintf(LIRC_NOTICE, "Read error");
+						log_notice("Read error");
 
 					if (commandir_data_buffer[1] < 20)
 						break;
@@ -1914,7 +1917,7 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 		float fPCAFOM = 0.0;
 
 		if (pcd->next_tx_signal->raw_signal_len / sizeof(lirc_t) > 255) {
-			logprintf(LIRC_ERROR, "Error: signal over max size");
+			log_error("Error: signal over max size");
 			break;
 		}
 
@@ -2020,7 +2023,7 @@ static void commandir_2_transmit_next(struct commandir_device* pcd)
 		}               // while unsent data
 		break;
 	default:
-		logprintf(LIRC_ERROR, "Unknown hardware: %d", pcd->hw_type);
+		log_error("Unknown hardware: %d", pcd->hw_type);
 	}
 
 	ptx = pcd->next_tx_signal->next;
@@ -2045,7 +2048,7 @@ static void recalc_tx_available(struct commandir_device* pcd)
 	if (pcd->lastSendSignalID != pcd->commandir_last_signal_id) {
 		if (failsafe++ < 1000)
 			return;
-		logprintf(LIRC_ERROR, "Error: required the failsafe %d != %d", pcd->lastSendSignalID,
+		log_error("Error: required the failsafe %d != %d", pcd->lastSendSignalID,
 			  pcd->commandir_last_signal_id);
 	}
 
@@ -2131,7 +2134,7 @@ static int cmdir_convert_RX(unsigned char* orig_rxbuffer)
 	bytes_w = write(child_pipe_write, lirc_data_buffer, sizeof(lirc_t) * num_data_values);
 
 	if (bytes_w < 0) {
-		logprintf(LIRC_ERROR, "Can't write to LIRC pipe! %d", child_pipe_write);
+		log_error("Can't write to LIRC pipe! %d", child_pipe_write);
 		goto done;
 	}
 
@@ -2162,12 +2165,12 @@ static void commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 		//packet_number = rxBuffer[0];
 		expectingBytes = rxBuffer[1] + rxBuffer[2] * 256;
 		if (numNewValues != (expectingBytes + 5))
-			logprintf(LIRC_ERROR, "MCU top is now: %d (a change of: %d)\n", rxBuffer[3] + rxBuffer[4] * 256,
+			log_error("MCU top is now: %d (a change of: %d)\n", rxBuffer[3] + rxBuffer[4] * 256,
 				  (rxBuffer[3] + rxBuffer[4] * 256) - mcu_rx_top_location);
 		mcu_rx_top_location = rxBuffer[3] + rxBuffer[4] * 256;
 
 		if (numNewValues != (expectingBytes + 5))
-			logprintf(LIRC_ERROR, "USB received: %d, expectingBytes: %d. Hex data (headers: %d %d %d):\t",
+			log_error("USB received: %d, expectingBytes: %d. Hex data (headers: %d %d %d):\t",
 				numNewValues, expectingBytes, rxBuffer[0], rxBuffer[1], rxBuffer[2]);
 		for (i = 5; i < expectingBytes + 5; i++) {
 			/* if(numNewValues != (expectingBytes + 5))
@@ -2210,7 +2213,7 @@ static void commandir3_convert_RX(unsigned char* rxBuffer, int numNewValues)
 				mySize = 0;
 				break;
 			default:
-				logprintf(LIRC_ERROR, "Unknown struct identifier: %02x at %d\n",
+				log_error("Unknown struct identifier: %02x at %d\n",
 					  incomingBuffer[incomingBuffer_Read], incomingBuffer_Read);
 				mySize = 0;
 				break;
@@ -2337,7 +2340,7 @@ static int commandir2_convert_RX(unsigned short* bufferrx, unsigned char numvalu
 	bytes_w = write(child_pipe_write, lirc_data_buffer, sizeof(lirc_t) * i);
 
 	if (bytes_w < 0) {
-		logprintf(LIRC_ERROR, "Can't write to LIRC pipe! %d", child_pipe_write);
+		log_error("Can't write to LIRC pipe! %d", child_pipe_write);
 		return 0;
 	}
 	return bytes_w;
@@ -2448,5 +2451,5 @@ static void raise_event(unsigned int eventid)
 	bytes_w = write(child_pipe_write, event_data, sizeof(lirc_t) * 17);
 
 	if (bytes_w < 0)
-		logprintf(LIRC_ERROR, "Can't write to LIRC pipe! %d", child_pipe_write);
+		log_error("Can't write to LIRC pipe! %d", child_pipe_write);
 }

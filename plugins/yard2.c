@@ -59,6 +59,8 @@
 
 #define YARD2_URL   "https://www.assembla.com/code/yard2srvd/git/nodes"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 typedef unsigned char YARD_IRCODE[6];
 
 /* Variables */
@@ -120,12 +122,12 @@ static int yard2_init(void)
 
 	drv.fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "yard2: Can't create socket !");
+		log_error("yard2: Can't create socket !");
 		return 0;
 	}
 
 	if (connect(drv.fd, (struct sockaddr*)&srvAddr, srvAddrLen) < 0) {
-		logprintf(LIRC_ERROR, "yard2: Can't connect to yardsrv !");
+		log_error("yard2: Can't connect to yardsrv !");
 		return 0;
 	}
 
@@ -133,7 +135,7 @@ static int yard2_init(void)
  *      // Register IR code notification
  *      if ( !yard_sendSrvCmd(SRVCMD_IRREG) )
  *      {
- *              logprintf(LIRC_ERROR, "yard2: Can't register IR code notification !");
+ *              log_error("yard2: Can't register IR code notification !");
  *              return 0;
  *      }
  */
@@ -160,7 +162,7 @@ static int yard2_send(struct ir_remote* remote, struct ir_ncode* icode)
 		return 0;
 
 	sendir = icode->code;
-	logprintf(LIRC_TRACE, "SEND IR-Code: %llx", sendir);
+	log_trace("SEND IR-Code: %llx", sendir);
 
 	buffer[0] = 0x81;       //Send IR command ID
 	buffer[1] = 255 - buffer[0];
@@ -193,7 +195,7 @@ static char* yard2_rec(struct ir_remote* remotes)
 	// Receive IR code from YARD server
 	byteCnt = read(drv.fd,
 		       (unsigned char*)&yardIrCode, sizeof(YARD_IRCODE));
-	logprintf(LIRC_TRACE, "yard2: received %d bytes !", byteCnt);
+	log_trace("yard2: received %d bytes !", byteCnt);
 	if (byteCnt < sizeof(YARD_IRCODE)) {
 		logprintf(LIRC_ERROR,
 			  "yard2: Expected %d bytes - received %d bytes !",
@@ -209,7 +211,7 @@ static char* yard2_rec(struct ir_remote* remotes)
 		code <<= 8;
 		code |= yardIrCode[i];  //.abIrData[i]; //
 	}
-	logprintf(LIRC_TRACE, "Receive IR-Code: %llx", (unsigned long long)code);
+	log_trace("Receive IR-Code: %llx", (unsigned long long)code);
 	m = decode_all(remotes);
 	return m;
 }

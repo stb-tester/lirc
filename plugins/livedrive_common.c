@@ -36,6 +36,8 @@
 
 #include "livedrive_common.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 struct timeval start, end, last;
 ir_code pre, code;
 
@@ -43,7 +45,7 @@ int livedrive_init(void)
 {
 	drv.fd = open(drv.device, O_RDONLY, 0);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		return 0;
 	}
 
@@ -75,8 +77,8 @@ int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			ctx->repeat_flag = 0;
 	}
 
-	logprintf(LIRC_TRACE, "repeat_flag: %d", ctx->repeat_flag);
-	logprintf(LIRC_TRACE, "gap: %lu", (__u32)gap);
+	log_trace("repeat_flag: %d", ctx->repeat_flag);
+	log_trace("gap: %lu", (__u32)gap);
 
 	return 1;
 }

@@ -47,6 +47,8 @@
 #define NUMBYTES 6
 #define TIMEOUT 20000
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 static ir_code code;
@@ -94,33 +96,33 @@ static int uirt2_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 static int uirt2_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "uirt2: could not create lock files");
+		log_error("uirt2: could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "uirt2: could not open %s", drv.device);
+		log_error("uirt2: could not open %s", drv.device);
 		logperror(LIRC_ERROR, "uirt2: ");
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "uirt2: could not reset tty");
+		log_error("uirt2: could not reset tty");
 		uirt2_deinit();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 115200)) {
-		logprintf(LIRC_ERROR, "uirt2: could not set baud rate");
+		log_error("uirt2: could not set baud rate");
 		uirt2_deinit();
 		return 0;
 	}
 	if (!tty_setcsize(drv.fd, 8)) {
-		logprintf(LIRC_ERROR, "uirt2: could not set csize");
+		log_error("uirt2: could not set csize");
 		uirt2_deinit();
 		return 0;
 	}
 	if (!tty_setrtscts(drv.fd, 1)) {
-		logprintf(LIRC_ERROR, "uirt2: could not enable hardware flow");
+		log_error("uirt2: could not enable hardware flow");
 		uirt2_deinit();
 		return 0;
 	}
@@ -144,16 +146,16 @@ static char* uirt2_rec(struct ir_remote* remotes)
 	for (i = 0; i < NUMBYTES; i++) {
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LIRC_ERROR, "uirt2: timeout reading byte %d", i);
+				log_error("uirt2: timeout reading byte %d", i);
 				return NULL;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LIRC_ERROR, "uirt2: reading of byte %d failed", i);
+			log_error("uirt2: reading of byte %d failed", i);
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 
@@ -173,7 +175,7 @@ static char* uirt2_rec(struct ir_remote* remotes)
 	code = code << 8;
 	code |= ((ir_code)b[5]);
 
-	logprintf(LIRC_TRACE, "code: %llx", (__u64)code);
+	log_trace("code: %llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;

@@ -31,6 +31,8 @@
 #include "lirc_log.h"
 #include "lirc_client.h"
 
+static const logchannel_t logchannel = LOG_APP;
+
 static const char* const help =
 	"\nSynopsis:\n"
 	"    irsend [options] SEND_ONCE remote code [code...]\n"

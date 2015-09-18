@@ -26,6 +26,8 @@
 #include "lirc_options.h"
 #include "lirc_log.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 dictionary* lirc_options = NULL;
 
 /* Environment variable which if set enables some debug output. */
@@ -52,8 +54,7 @@ loglevel_t options_set_loglevel(const char* optarg)
 void options_set_opt(const char* key, const char* value)
 {
 	if (dictionary_set(lirc_options, key, value) != 0)
-		logprintf(LIRC_WARNING,
-			  "Cannot set option %s to %s\n", key, value);
+		log_warn("Cannot set option %s to %s\n", key, value);
 }
 
 
@@ -114,8 +115,7 @@ void options_load(int argc, char** const argv,
 	const char* path = path_arg;
 
 	if (depth > 1) {
-		logprintf(LIRC_WARNING,
-			  "Error:Cowardly refusing to process"
+		log_warn("Error:Cowardly refusing to process"
 			  " options-file option within a file\n");
 		return;
 	}
@@ -136,13 +136,12 @@ void options_load(int argc, char** const argv,
 	if (access(path, R_OK) == 0) {
 		lirc_options = ciniparser_load(path);
 		if (lirc_options == NULL) {
-			logprintf(LIRC_WARNING,
-				  "Cannot load options file %s\n", path);
+			log_warn("Cannot load options file %s\n", path);
 			lirc_options = dictionary_new(0);
 		}
 	} else {
 		fprintf(stderr, "Warning: cannot open %s\n", path);
-		logprintf(LIRC_WARNING, "Cannot open %s\n", path);
+		log_warn("Cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}
 	if (parse_options != NULL)

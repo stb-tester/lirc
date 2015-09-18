@@ -102,6 +102,8 @@
 // Define if the device sends \r\n as line ending.
 #define CRLF_FROM_DEVICE
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 typedef struct {
 	int fd;
 	int read_pending;
@@ -230,14 +232,13 @@ static int drvctl(unsigned int cmd, void* arg)
 {
 	if (cmd == LIRC_SET_TRANSMITTER_MASK) {
 		if (!dev.transmitters) {
-			logprintf(LIRC_ERROR,
-				"girs: Current firmware does not support "
-				"setting transmitter mask.");
+			log_error("girs: Current firmware does not support "
+				  "setting transmitter mask.");
 			return DRV_ERR_NOT_IMPLEMENTED;
 		}
-		logprintf(LIRC_WARNING, "setting of transmitter mask accepted, "
-		"but not yet implemented: 0x%x, ignored.",
-			*(unsigned int*) arg);
+		log_warn("setting of transmitter mask accepted, "
+			 "but not yet implemented: 0x%x, ignored.",
+			 *(unsigned int*) arg);
 		dev.transmitter_mask = *(unsigned int*) arg;
 		return 0;
 	} else if (cmd == DRVCTL_SET_OPTION) {
@@ -245,7 +246,7 @@ static int drvctl(unsigned int cmd, void* arg)
 		long value = strtol(opt->value, NULL, 10);
 		if (strcmp(opt->key, "command_names_on_lcd") == 0) {
 			if (value < 0 || value > 1) {
-				logprintf(LIRC_ERROR,
+				log_error(
 					"invalid command_names_on_lcd: %d, ignored.",
 					value);
 				return DRV_ERR_BAD_VALUE;
@@ -253,7 +254,7 @@ static int drvctl(unsigned int cmd, void* arg)
 			dev.command_names_on_lcd = value;
 		} else if (strcmp(opt->key, "substitute_0_frequency") == 0) {
 			if (value < 0) {
-				logprintf(LIRC_ERROR,
+				log_error(
 					"invalid substitute_0_frequency: %d, ignored.",
 					value);
 				return DRV_ERR_BAD_VALUE;
@@ -261,40 +262,36 @@ static int drvctl(unsigned int cmd, void* arg)
 			dev.substitute_0_frequency = value;
 		} else if (strcmp(opt->key, "connectled") == 0) {
 			if (value < 0 || value > 8) {
-				logprintf(LIRC_ERROR,
-					"invalid connectled: %d, ignored.",
-					value);
+				log_error("invalid connectled: %d, ignored.",
+					  value);
 				return DRV_ERR_BAD_VALUE;
 			}
 			dev.connectled = value;
 		} else if (strcmp(opt->key, "initedled") == 0) {
 			if (value < 0 || value > 8) {
-				logprintf(LIRC_ERROR,
-					"invalid initedled: %d, ignored.",
-					value);
+				log_error("invalid initedled: %d, ignored.",
+					  value);
 				return DRV_ERR_BAD_VALUE;
 			}
 			dev.initedled = value;
 
 		} else if (strcmp(opt->key, "transmitled") == 0) {
 			if (value < 0 || value > 8) {
-				logprintf(LIRC_ERROR,
-					"invalid transmitled: %d, ignored.",
-					value);
+				log_error("invalid transmitled: %d, ignored.",
+					  value);
 				return DRV_ERR_BAD_VALUE;
 			}
 			dev.transmitled = value;
 		} else if (strcmp(opt->key, "drop_dtr_when_initing") == 0) {
 			if (value < 0 || value > 1) {
-				logprintf(LIRC_ERROR,
-					"invalid drop_dtr_when_initing: %d, ignored.",
-					value);
+				log_error("invalid drop_dtr_when_initing: %d, ignored.",
+					  value);
 				return DRV_ERR_BAD_VALUE;
 			}
 			dev.drop_dtr_when_initing = value;
 		} else {
-			logprintf(LIRC_ERROR, "unknown key \"%s\", ignored.",
-				opt->key);
+			log_error("unknown key \"%s\", ignored.",
+				  opt->key);
 			return DRV_ERR_BAD_OPTION;
 		}
 		return 0;
@@ -354,16 +351,14 @@ static int readline(char* buf, size_t size, long timeout)
 				if (timeout == 0)
 					continue;
 				else {
-					logprintf(LIRC_WARNING,
-						"girs: timeout with partially "
-						"read string \"%s\", discarded",
-						buf);
+					log_warn("girs: timeout with partially "
+						 "read string \"%s\", discarded",
+						 buf);
 					buf[0] = '\0';
 					break;
 				}
 			} else {
-				logprintf(LIRC_DEBUG,
-					"girs: timeout in readline");
+				log_debug("girs: timeout in readline");
 				break;
 			}
 		}
@@ -378,8 +373,8 @@ static int readline(char* buf, size_t size, long timeout)
 				continue;
 			else {
 				buf[min(noread, size - 1)] = '\0';
-				logprintf(LIRC_TRACE,
-					"girs: readline returned \"%s\"", buf);
+				log_trace("girs: readline returned \"%s\"",
+					  buf);
 				break;
 			}
 		}
@@ -393,9 +388,8 @@ static int readline(char* buf, size_t size, long timeout)
 				buf[noread] = c;
 			} else if (noread == size - 1) {
 				buf[noread] = '\0';
-				logprintf(LIRC_ERROR,
-					"girs: realine buffer full: \"%s\"",
-					buf);
+				log_error("girs: realine buffer full: \"%s\"",
+					  buf);
 				// but we keep on looking for an end-of-line
 			} else
 				;
@@ -409,9 +403,9 @@ static int readline(char* buf, size_t size, long timeout)
 static void readflush(void)
 {
 	char c;
-	logprintf(LIRC_TRACE, "girs: flushing the input");
+	log_trace("girs: flushing the input");
 	while (read_with_timeout(&c, 1, TIMEOUT_FLUSH) == 1)
-		logprintf(LIRC_TRACE1, "girs: flushing \"%c\"", c);
+		log_trace1("girs: flushing \"%c\"", c);
 }
 
 static int sendcommand(const char *command)
@@ -419,13 +413,12 @@ static int sendcommand(const char *command)
 	if (command[0] != '\0') {
 		int nbytes = write(dev.fd, command, strlen(command)); // FIXME
 		if (nbytes != strlen(command)) {
-			logprintf(LIRC_ERROR,
-				"girs: could not write command \"%s\"",
-				command);
+			log_error("girs: could not write command \"%s\"",
+				  command);
 			return 0;
 		}
 		logprintf(nbytes > 1 ? LIRC_TRACE : LIRC_TRACE1,
-			"girs: written command \"%s\"", command);
+			  "girs: written command \"%s\"", command);
 	}
 	return 1;
 }
@@ -456,17 +449,17 @@ static int sendcommand_answer(const char *command, char *buf, int len)
  */
 static int sendcommand_ok(const char *command)
 {
-	logprintf(LIRC_TRACE1, "girs: sendcommand_ok \"%s\"", command);
+	log_trace1("girs: sendcommand_ok \"%s\"", command);
 	char answer[LONG_LINE_SIZE];
 	int success = sendcommand_answer(command, answer, LONG_LINE_SIZE);
 	if (success) {
-		logprintf(LIRC_DEBUG, "girs: command \"%s\" returned \"%s\"",
-			command, answer);
+		log_debug("girs: command \"%s\" returned \"%s\"",
+			  command, answer);
 		return strncmp(answer, SUCCESS_RESPONSE,
 			strlen(SUCCESS_RESPONSE)) == 0;
 	} else {
-		logprintf(LIRC_DEBUG, "girs: command \"%s\" returned error",
-			command);
+		log_debug("girs: command \"%s\" returned error",
+			  command);
 		return -1;
 	}
 }
@@ -477,7 +470,7 @@ static int sendcommand_ok(const char *command)
  */
 static int syncronize(void)
 {
-	logprintf(LIRC_DEBUG, "girs: syncronizing");
+	log_debug("girs: syncronizing");
 	dev.read_pending = 0;
 	dev.send_pending = 0;
 	int i;
@@ -486,12 +479,12 @@ static int syncronize(void)
 		//if (res == -1)
 			//return 0;
 		if (res == 1) {
-			logprintf(LIRC_DEBUG, "girs: syncronized!");
+			log_debug("girs: syncronized!");
 			return 1;
 		}
 	}
-	logprintf(LIRC_TRACE, "girs: failed syncronizing after "
-		STR(NO_SYNCRONIZE_ATTEMPTS) " attempts");
+	log_trace("girs: failed syncronizing after "
+		  STR(NO_SYNCRONIZE_ATTEMPTS) " attempts");
 	return 0;
 }
 
@@ -523,15 +516,14 @@ static int enable_receive(void)
 		readflush();
 		dev.read_pending = 1;
 	} else {
-		logprintf(LIRC_ERROR, "girs: sending " RECEIVE_COMMAND
-			" failed");
+		log_error("girs: sending " RECEIVE_COMMAND " failed");
 	}
 	return success;
 }
 
 static void drop_dtr(void)
 {
-	logprintf(LIRC_DEBUG, "girs: dropping DTR to reset the device");
+	log_debug("girs: dropping DTR to reset the device");
 	tty_setdtr(drv.fd, 0);
 	usleep(DTR_WAIT * 1000);
 	// turn on DTR
@@ -548,13 +540,13 @@ static lirc_t readdata(lirc_t timeout)
 		// this should not happen
 		return 0;
 
-	logprintf(LIRC_TRACE, "girs readdata, timeout = %d", timeout);
+	log_trace("girs readdata, timeout = %d", timeout);
 	if (data_length == data_ptr/* && timeout > 0*/) {
 		// Nothing to deliver, try to read some new data
 		if (!dev.read_pending) {
 			int success = enable_receive();
 			if (!success) {
-				logprintf(LIRC_DEBUG, "readdata FAILED");
+				log_debug("readdata FAILED");
 				return 0;
 			}
 
@@ -564,7 +556,7 @@ static lirc_t readdata(lirc_t timeout)
 			int success = readline(buf, 5 * MAXDATA, timeout);
 
 			if (!success) {
-				logprintf(LIRC_DEBUG, "readdata 0 (timeout)");
+				log_debug("readdata 0 (timeout)");
 				// no need to restart receive
 				return 0;
 			}
@@ -574,8 +566,7 @@ static lirc_t readdata(lirc_t timeout)
 				// Got something that is not timeout; go on
 				break;
 
-			logprintf(LIRC_DEBUG,
-				"readdata timeout from hardware, continuing");
+			log_debug("readdata timeout from hardware, continuing");
 			enable_receive();
 		}
 
@@ -589,9 +580,8 @@ static lirc_t readdata(lirc_t timeout)
 				unsigned int x;
 				int status = sscanf(token, "%u", &x);
 				if (status != 1 || errno) {
-					logprintf(LIRC_ERROR,
-						"Could not parse %s as unsigned",
-						token);
+					log_error("Could not parse %s as unsigned",
+					  	  token);
 					enable_receive();
 					return 0;
 				}
@@ -619,8 +609,8 @@ static lirc_t readdata(lirc_t timeout)
 	if (data_ptr == data_length)
 		x |= LIRC_EOF;
 
-	logprintf(LIRC_DEBUG, "readdata %d %d",
-		!!(x & PULSE_BIT), x & PULSE_MASK);
+	log_debug("readdata %d %d",
+		  !!(x & PULSE_BIT), x & PULSE_MASK);
 	return (lirc_t) x;
 }
 
@@ -632,29 +622,29 @@ static void decode_modules(char* buf)
 	drv.features = 0;
 	for (token = strtok(buf, " "); token; token = strtok(NULL, " ")) {
 		if (strcasecmp(token, "receive") == 0) {
-			logprintf(LIRC_INFO, "girs: receive module found");
+			log_info("girs: receive module found");
 			dev.receive = 1;
 			drv.rec_mode = LIRC_MODE_MODE2;
 			drv.features |= LIRC_CAN_REC_MODE2;
 		} else if (strcasecmp(token, "transmit") == 0) {
-			logprintf(LIRC_INFO, "girs: transmit module found");
+			log_info("girs: transmit module found");
 			dev.transmit = 1;
 			drv.send_mode = LIRC_MODE_PULSE;
 			drv.features |= LIRC_CAN_SEND_PULSE
 				| LIRC_CAN_SET_SEND_CARRIER;
 		} else if (strcasecmp(token, "led") == 0) {
-			logprintf(LIRC_INFO, "girs: LED module found");
+			log_info("girs: LED module found");
 			dev.led = 1;
 		} else if (strcasecmp(token,
 			"lcd") == 0) {
-			logprintf(LIRC_INFO, "girs: LCD module found");
+			log_info("girs: LCD module found");
 			dev.lcd = 1;
 		} else if (strcasecmp(token, "transmitters") == 0) {
-			logprintf(LIRC_INFO, "girs: transmitters module found");
+			log_info("girs: transmitters module found");
 			dev.transmitters = 1;
 			drv.features |= LIRC_CAN_SET_TRANSMITTER_MASK;
 		} else {
-			logprintf(LIRC_DEBUG, "girs: unknown module \"%s", token);
+			log_debug( "girs: unknown module \"%s", token);
 		}
 	}
 }
@@ -663,13 +653,13 @@ static int init(void)
 {
 	char buf[LONG_LINE_SIZE];
 
-	logprintf(LIRC_TRACE, "girs: init");
+	log_trace1("girs: init");
 	if (is_valid()) {
 		drv.fd = dev.fd;
 	} else {
 		if (access(drv.device, R_OK) != 0) {
-			logprintf(LIRC_DEBUG, "girs: cannot access %s",
-				drv.device);
+			log_debug("girs: cannot access %s",
+				  drv.device);
 			return 0;
 		}
 		if (!tty_create_lock(drv.device)) {
@@ -713,9 +703,8 @@ static int init(void)
 
 		int success = readline(buf, LONG_LINE_SIZE, TIMEOUT_INITIAL);
 		if (!success) {
-			logprintf(LIRC_WARNING,
-				"girs: no response from device, "
-				"making another try");
+			log_warn("girs: no response from device, "
+				 "making another try");
 			drop_dtr();
 			success = readline(buf, LONG_LINE_SIZE,
 				TIMEOUT_INITIAL);
@@ -757,7 +746,7 @@ static int init(void)
 			tty_delete_lock();
 			return 0;
 		}
-		logprintf(LIRC_INFO, "Version \"%s\"", dev.version);
+		log_info("Version \"%s\"", dev.version);
 	}
 	drv.driver_version = dev.driver_version;
 	setLcd("Lirc connected");
@@ -780,13 +769,13 @@ static int girs_open(const char* path)
 		strncpy(buff, path, sizeof(buff) - 1);
 		drv.device = buff;
 	}
-	logprintf(LIRC_INFO, "girs_open: Initial device: %s", drv.device);
+	log_info("girs_open: Initial device: %s", drv.device);
 	return 0;
 }
 
 static int deinit(void)
 {
-	logprintf(LIRC_DEBUG, "girs: deinit");
+	log_debug( "girs: deinit");
 	if (is_valid()) {
 		syncronize(); // interrupts reception
 		//setLcd("Sleeping...");
@@ -808,7 +797,7 @@ static char* receive(struct ir_remote* remotes) // FIXME
 		// probably should not happen
 		return NULL;
 
-	logprintf(LIRC_DEBUG, "girs_receive");
+	log_debug("girs_receive");
 	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);

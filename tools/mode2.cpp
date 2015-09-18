@@ -40,6 +40,8 @@
 
 #include "lirc_private.h"
 
+static const logchannel_t logchannel = LOG_APP;
+
 static char* opt_device = NULL;
 static int opt_dmode = 0;
 static int t_div = 500;

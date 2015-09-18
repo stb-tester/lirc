@@ -137,6 +137,8 @@
 /** Convert gray code to binary.  */
 #define MPLAY_GRAY_TO_BIN(g) ((g) ^ ((g) >> 1))
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 //Forwards:
 static int mplayfamily_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int mplay_init(void);
@@ -303,7 +305,7 @@ static int mplay2_retrieve_init_response(void)
 	}
 	/* Restore non-blocking behaviour */
 	fcntl(mplayfamily_local_data.fd, F_SETFL, FNDELAY);
-	logprintf(LIRC_TRACE, "Device initialisation response: %s", response);
+	log_trace("Device initialisation response: %s", response);
 
 	return 1;
 }
@@ -384,28 +386,28 @@ static unsigned char mplayfamily_get_wheel(
 			unsigned int direction =
 				(new - *sensor + MPLAY_ANGLE_PERIOD)
 				% MPLAY_ANGLE_PERIOD;
-			logprintf(LIRC_TRACE2, "mplay wheel reports angle %d", new);
+			log_trace2("mplay wheel reports angle %d", new);
 			if (direction > MPLAY_ANGLE_PERIOD / 2) {
 				(*absolute)--;
-				logprintf(LIRC_TRACE2, "mplay wheel turned left");
+				log_trace2("mplay wheel turned left");
 			} else if (direction < MPLAY_ANGLE_PERIOD / 2) {
 				(*absolute)++;
-				logprintf(LIRC_TRACE2, "mplay wheel turned right");
+				log_trace2("mplay wheel turned right");
 			} else {
 				*absolute += (*absolute - new)
 					     % MPLAY_ANGLE_PERIOD;
-				logprintf(LIRC_TRACE2, "mplay wheel turn skipped");
+				log_trace2("mplay wheel turn skipped");
 			}
 			diff = *absolute - *event;
-			logprintf(LIRC_TRACE2, "mplay wheel absolute %u, diff %d",
+			log_trace2("mplay wheel absolute %u, diff %d",
 				  *absolute, diff);
 			if (diff % MPLAY_ANGLE_PERIOD == 0) {
 				if (diff > 0) {
-					logprintf(LIRC_TRACE1, "mplay wheel clockwise");
+					log_trace1("mplay wheel clockwise");
 					*event = *absolute;
 					code = MPLAY_CODE_TURN_RIGHT;
 				} else if (diff < 0) {
-					logprintf(LIRC_TRACE1, "mplay wheel counter "
+					log_trace1("mplay wheel counter "
 						  "clockwise");
 					*event = *absolute;
 					code = MPLAY_CODE_TURN_LEFT;
@@ -422,7 +424,7 @@ static unsigned char mplayfamily_get_wheel(
 						  "mplay listener could not set "
 						  "listener period");
 				}
-				logprintf(LIRC_TRACE1, "mplay polls with busy rate, "
+				log_trace1("mplay polls with busy rate, "
 					  "wheel has been turned");
 			}
 			/* Stay alert for a while, enter busy phase */
@@ -432,7 +434,7 @@ static unsigned char mplayfamily_get_wheel(
 
 	if (code != MPLAY_CODE_NOP) {
 		mplayfamily_local_data.latest_action = MPLAY_ACTION_WHEEL;
-		logprintf(LIRC_TRACE2,
+		log_trace2(
 			  "get wheel: latest action %u, latest button 0x%02x",
 			  mplayfamily_local_data.latest_action,
 			  mplayfamily_local_data.latest_button);
@@ -462,11 +464,11 @@ static unsigned char mplayfamily_get_button(int fd, unsigned int* counter)
 	/* Read any pressed button from IR receiver */
 	len = read(mplayfamily_local_data.fd, &code, sizeof(code));
 	if (len == sizeof(code)) {
-		logprintf(LIRC_TRACE1, "mplay listener received 0x%02x", code);
+		log_trace1("mplay listener received 0x%02x", code);
 		if (code == MPLAY_CODE_REPEAT) {
 			if (mplayfamily_local_data.latest_action
 			    == MPLAY_ACTION_WHEEL) {
-				logprintf(LIRC_TRACE1, "mplay replaces code by 0x%02x",
+				log_trace1("mplay replaces code by 0x%02x",
 					  code);
 				code = mplayfamily_local_data.latest_button;
 				mplayfamily_local_data.latest_action =
@@ -493,7 +495,7 @@ static unsigned char mplayfamily_get_button(int fd, unsigned int* counter)
 							  "not set listener "
 							  "period");
 					}
-					logprintf(LIRC_TRACE1,
+					log_trace1(
 						  "mplay polls with busy rate, "
 						  "knob has been pressed");
 				}
@@ -501,7 +503,7 @@ static unsigned char mplayfamily_get_button(int fd, unsigned int* counter)
 				*counter = MPLAY_LISTENER_COUNTER_WAIT_BUTTON;
 			}
 		}
-		logprintf(LIRC_TRACE2, "mplay get button: latest action %u, "
+		log_trace2("mplay get button: latest action %u, "
 			  "latest button 0x%02x",
 			  mplayfamily_local_data.latest_action,
 			  mplayfamily_local_data.latest_button);
@@ -568,7 +570,7 @@ static void* mplayfamily_listen(void* arg)
 	/* controls duration of idle and busy polling phase */
 	unsigned int counter = 1;
 
-	logprintf(LIRC_TRACE, "Entering mplayfamily_listen()");
+	log_trace("Entering mplayfamily_listen()");
 
 	/* Read status of rotation sensor for the first time */
 	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0)
@@ -576,7 +578,7 @@ static void* mplayfamily_listen(void* arg)
 	sensor = MPLAY_GRAY_TO_BIN(MPLAY_STATUS_TO_GRAY(status));
 	absolute = sensor;
 	turned = absolute;
-	logprintf(LIRC_TRACE2, "mplay sensor %u", sensor);
+	log_trace2("mplay sensor %u", sensor);
 
 	/* Create periodic timer for polling loop */
 	fd = timerfd_create(CLOCK_MONOTONIC, 0);
@@ -598,7 +600,7 @@ static void* mplayfamily_listen(void* arg)
 						  "mplay listener could not set "
 						  "listener period");
 				}
-				logprintf(LIRC_TRACE1, "mplay polls with idle rate");
+				log_trace1("mplay polls with idle rate");
 			}
 		}
 		/* Wait for next event of periodic polling timer */
@@ -637,7 +639,7 @@ static void* mplayfamily_listen(void* arg)
 
 poll_exit:
 	pthread_cleanup_pop(1);
-	logprintf(LIRC_TRACE, "Leaving mplayfamily_listen()");
+	log_trace("Leaving mplayfamily_listen()");
 	return NULL;
 }
 
@@ -665,20 +667,20 @@ static int mplayfamily_init(int (*init_receiver)(void), int baud)
 	int nowheel = 0;
 	int result = 1;
 
-	logprintf(LIRC_TRACE, "Entering mplayfamily_init()");
+	log_trace("Entering mplayfamily_init()");
 
 	/* Extract device name and option */
-	logprintf(LIRC_TRACE, "Device string '%s'", drv.device);
+	log_trace("Device string '%s'", drv.device);
 	strncpy(device, drv.device, sizeof(device));
 	device[sizeof(device) - 1] = 0;
 	/* A comma announces an option. */
 	separator = strchr(device, ',');
 	if (separator != NULL) {
-		logprintf(LIRC_TRACE, "Found option string '%s'", separator + 1);
+		log_trace("Found option string '%s'", separator + 1);
 		*separator = 0;
 		nowheel = strcmp(separator + 1, "nowheel") == 0;
 	}
-	logprintf(LIRC_TRACE,
+	log_trace(
 		  "Using device path '%s' (wheel disabled state is %d)",
 		  device, nowheel);
 
@@ -744,7 +746,7 @@ static int mplayfamily_init(int (*init_receiver)(void), int baud)
  */
 int mplay_init(void)
 {
-	logprintf(LIRC_TRACE, "Entering mplay_init()");
+	log_trace("Entering mplay_init()");
 	return mplayfamily_init(mplay_init_receiver, MPLAY_BAUD_RATE);
 }
 
@@ -757,7 +759,7 @@ int mplay_init(void)
  */
 int mplay2_init(void)
 {
-	logprintf(LIRC_TRACE, "Entering mplay2_init()");
+	log_trace("Entering mplay2_init()");
 	return mplayfamily_init(mplay2_init_receiver, MPLAY2_BAUD_RATE);
 }
 
@@ -767,7 +769,7 @@ int mplay2_init(void)
  */
 int mplayfamily_deinit(void)
 {
-	logprintf(LIRC_TRACE, "Entering mplayfamily_deinit()");
+	log_trace("Entering mplayfamily_deinit()");
 	if (mplayfamily_local_data.tid != -1) {
 		if (pthread_cancel(mplayfamily_local_data.tid) < 0) {
 			logperror(LOG_ERR, "mplay could not cancel listener");
@@ -801,26 +803,26 @@ char* mplayfamily_rec_handle_repetition(struct ir_remote*	remotes,
 					struct timeval*		current_time)
 {
 	if (mplayfamily_local_data.timeout_repetition_flag == 1) {
-		logprintf(LIRC_TRACE1, "Ignored received repetition code (timeout)");
+		log_trace1("Ignored received repetition code (timeout)");
 		/* We ignore the repetition */
 		return NULL;
 	} else if (MAX_TIME_BETWEEN_TWO_REPETITION_CODE >= time_elapsed(
 			   &mplayfamily_local_data.last_reception_time,
 			   current_time)) {
-		logprintf(LIRC_TRACE1, "Accepted received repetition code");
+		log_trace1("Accepted received repetition code");
 		/* This reception is a repeat */
 		mplayfamily_local_data.repeat_flag = 1;
 		/* We save the reception time */
 		mplayfamily_local_data.last_reception_time = *current_time;
-		logprintf(LIRC_TRACE, "code: 0x%02x",
+		log_trace("code: 0x%02x",
 			  (unsigned int)mplayfamily_local_data.rc_code);
-		logprintf(LIRC_TRACE, "repeat_flag: %d",
+		log_trace("repeat_flag: %d",
 			  mplayfamily_local_data.repeat_flag);
-		logprintf(LIRC_TRACE, "current_time: %li sec %li usec",
+		log_trace("current_time: %li sec %li usec",
 			  current_time->tv_sec, current_time->tv_usec);
 		return decode_all(remotes);
 	}
-	logprintf(LIRC_TRACE1, "Received invalid repetition code (timeout)");
+	log_trace1("Received invalid repetition code (timeout)");
 	/* Too much time between repetitions, the receiver has probably
 	 * missed a valide key code. We ignore the repetition. */
 	mplayfamily_local_data.timeout_repetition_flag = 1;
@@ -837,7 +839,7 @@ char* mplayfamily_rec_handle_new(struct ir_remote* remotes,
 {
 	if (rc_code != MPLAY_CODE_KNOB) {
 		/* Any button other than knob */
-		logprintf(LIRC_TRACE1, "Accepted new received code");
+		log_trace1("Accepted new received code");
 		mplayfamily_local_data.repeat_flag = 0;
 		mplayfamily_local_data.rc_code = rc_code;
 		mplayfamily_local_data.timeout_repetition_flag = 0;
@@ -848,13 +850,13 @@ char* mplayfamily_rec_handle_new(struct ir_remote* remotes,
 			   current_time) > MIN_TIME_BETWEEN_PRESSES) {
 		/* Knob has been pressed after sufficiently large amount of
 		 * time */
-		logprintf(LIRC_TRACE1, "Accepted new knob code");
+		log_trace1("Accepted new knob code");
 		if (mplayfamily_local_data.rc_code == MPLAY_CODE_KNOB &&
 		    time_elapsed(
 			    &mplayfamily_local_data.last_reception_time,
 			    current_time) <
 		    MAX_TIME_KNOB_PRESS_IS_REPETITION) {
-			logprintf(LIRC_TRACE1,
+			log_trace1(
 				  "Interpret knob code as repeated knob code");
 			mplayfamily_local_data.repeat_flag = 1;
 		} else {
@@ -867,15 +869,15 @@ char* mplayfamily_rec_handle_new(struct ir_remote* remotes,
 		/* This seems to be a spurious knob press, so ignore it. It has
 		 * been received too shortly after the last received knob
 		 * press. */
-		logprintf(LIRC_TRACE1,
+		log_trace1(
 			  "Ignored spurious code 0x%02x at %li sec %li usec",
 			  rc_code, current_time->tv_sec, current_time->tv_usec);
 		return NULL;
 	}
-	logprintf(LIRC_TRACE, "code: 0x%02x",
+	log_trace("code: 0x%02x",
 		  (unsigned int)mplayfamily_local_data.rc_code);
-	logprintf(LIRC_TRACE, "repeat_flag: %d", mplayfamily_local_data.repeat_flag);
-	logprintf(LIRC_TRACE1, "current_time: %li sec %li usec", current_time->tv_sec,
+	log_trace("repeat_flag: %d", mplayfamily_local_data.repeat_flag);
+	log_trace1("current_time: %li sec %li usec", current_time->tv_sec,
 		  current_time->tv_usec);
 	return decode_all(remotes);
 }
@@ -893,13 +895,13 @@ char* mplayfamily_rec(struct ir_remote* remotes)
 	signed int len;
 	struct timeval current_time;
 
-	logprintf(LIRC_TRACE, "Entering mplayfamily_rec()");
+	log_trace("Entering mplayfamily_rec()");
 	len = read(drv.fd, &rc_code, 1);
 	gettimeofday(&current_time, NULL);
 	if (len != 1) {
 		/* Something went wrong during the read, we close the device
 		 * to prevent endless looping when the device is disconnected */
-		logprintf(LIRC_TRACE, "Reading error in mplayfamily_rec()");
+		log_trace("Reading error in mplayfamily_rec()");
 		mplayfamily_deinit();
 		return NULL;
 	}
@@ -928,7 +930,7 @@ char* mplayfamily_rec(struct ir_remote* remotes)
  */
 int mplayfamily_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	logprintf(LIRC_TRACE, "Entering mplayfamily_decode(), code=0x%02x\n",
+	log_trace("Entering mplayfamily_decode(), code=0x%02x\n",
 		  (unsigned int)mplayfamily_local_data.rc_code);
 
 	if (!map_code(remote, ctx, 0, 0, MPLAY_CODE_LENGTH,

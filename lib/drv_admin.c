@@ -22,6 +22,8 @@
 
 #include "driver.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 static const char* const PLUGIN_FILE_EXTENSION  = "so";
 
 
@@ -87,7 +89,7 @@ static struct driver* add_hw_name(struct driver* hw, void* arg)
 	char_array* a = (char_array*)arg;
 
 	if (a->size >= MAX_PLUGINS) {
-		logprintf(LIRC_ERROR, "Too many plugins(%d)", MAX_PLUGINS);
+		log_error("Too many plugins(%d)", MAX_PLUGINS);
 		return hw;
 	}
 	a->array[a->size] = strdup(hw->name);
@@ -119,18 +121,16 @@ visit_plugin(const char* path, drv_guest_func func, void* arg)
 		dlclose(last_plugin);
 	last_plugin = dlopen(path, RTLD_NOW);
 	if (last_plugin == NULL) {
-		logprintf(LIRC_ERROR, dlerror());
+		log_error(dlerror());
 		return result;
 	}
 	drivers = (struct driver**)dlsym(last_plugin, "hardwares");
 	if (drivers == (struct driver**)NULL) {
-		logprintf(LIRC_WARNING,
-			  "No hardwares entrypoint found in %s", path);
+		log_warn("No hardwares entrypoint found in %s", path);
 	} else {
 		for (; *drivers; drivers++) {
 			if ((*drivers)->name == NULL) {
-				logprintf(LIRC_WARNING,
-					  "No driver name in %s", path);
+				log_warn("No driver name in %s", path);
 				continue;
 			}
 			result = (*func)(*drivers, arg);
@@ -156,7 +156,7 @@ static struct driver* for_each_plugin_in_dir(const char*	dirpath,
 
 	dir = opendir(dirpath);
 	if (dir == NULL) {
-		logprintf(LIRC_INFO, "Cannot open plugindir %s", dirpath);
+		log_info("Cannot open plugindir %s", dirpath);
 		return (struct driver*)NULL;
 	}
 	while ((ent = readdir(dir)) != NULL) {

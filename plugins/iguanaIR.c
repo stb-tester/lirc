@@ -31,6 +31,8 @@
 #include "lirc_driver.h"
 
 #include "iguanaIR.h"
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int sendConn = -1;
 static pid_t child = 0;
 static int recvDone = 0;
@@ -72,7 +74,7 @@ static void recv_loop(int fd, int notify)
 				if (iguanaResponseIsError(response)) {
 					/* be quiet during exit */
 					if (!recvDone)
-						logprintf(LIRC_ERROR, "error response: %s\n", strerror(errno));
+						log_error("error response: %s\n", strerror(errno));
 					break;
 				} else if (iguanaCode(response) == IG_DEV_RECV) {
 					uint32_t* code;
@@ -143,12 +145,12 @@ static int iguana_init(void)
 	rec_buffer_init();
 
 	if (pipe(recv_pipe) != 0) {
-		logprintf(LIRC_ERROR, "couldn't open pipe: %s", strerror(errno));
+		log_error("couldn't open pipe: %s", strerror(errno));
 	} else {
 		int notify[2];
 
 		if (pipe(notify) != 0) {
-			logprintf(LIRC_ERROR, "couldn't open pipe: %s", strerror(errno));
+			log_error("couldn't open pipe: %s", strerror(errno));
 			close(recv_pipe[0]);
 			close(recv_pipe[1]);
 		} else {
@@ -156,7 +158,7 @@ static int iguana_init(void)
 
 			child = fork();
 			if (child == -1) {
-				logprintf(LIRC_ERROR, "couldn't fork child process: %s", strerror(errno));
+				log_error("couldn't fork child process: %s", strerror(errno));
 			} else if (child == 0) {
 				close(recv_pipe[0]);
 				close(notify[0]);
@@ -171,11 +173,12 @@ static int iguana_init(void)
 				chk_read(notify[0], &dummy, 1);
 				close(notify[0]);
 				sendConn = iguanaConnect(drv.device);
-				if (sendConn == -1)
-					logprintf(LIRC_ERROR, "couldn't open connection to iguanaIR daemon: %s",
+				if (sendConn == -1) {
+					log_error("couldn't open connection to iguanaIR daemon: %s",
 						  strerror(errno));
-				else
+				} else {
 					retval = 1;
+				}
 			}
 		}
 	}
