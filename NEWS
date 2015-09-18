@@ -1,5 +1,11 @@
 0.9.4-devel
-  * TBD
+  * Fix a crash in irrecord when invoked without options.
+  * Add an "auto" device to devinput driver for single-device
+    usecase (#134).
+  * Don't require write access if not needed in  default.c (#133).
+  * Add lircd--setup tool (#121).
+  * Clean up docs, remove circular links (#136). Documentation is
+    now only in lirc.org/html.
 
 0.9.3  4/09/15
   * Digest of 0.9.3pre1..0.9.3pre3
