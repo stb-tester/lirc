@@ -261,8 +261,7 @@ lirc_t audio_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logprintf(LIRC_TRACE, "error reading from lirc");
-		LOGPERROR(1, NULL);
+		logperror(LIRC_DEBUG, "error reading from lirc");
 		raise(SIGTERM);
 		return 0;
 	}

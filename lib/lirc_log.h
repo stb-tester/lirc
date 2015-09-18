@@ -72,24 +72,6 @@ extern char progname[128];
 #endif
 
 /**
- *  Compatibility log message stuff.. Accepts level 1..3 which are mapped to
- *  LIRC_TRACE..LIRC_TRACE2.
- */
-#define LOGPRINTF(level, fmt, args ...) \
-	if (level + 7 <= loglevel) \
-		logprintf(logmax(level + 7), fmt, ## args)
-
-/**
- *  Compatibility perror(3) wrapper Accepts level 1..3 which are mapped to
- *  LIRC_TRACE..LIRC_TRACE2.
- */
-#define LOGPERROR(level, s) \
-	if (level + 7 <= loglevel) \
-		logperror(logmax(level + 7), s)
-
-
-
-/**
  * Convert a string, either a number or 'info', 'trace1', error etc.
  * to a loglevel.
  */
