@@ -63,6 +63,8 @@ struct hiddev_event {
 #define USB_DEVICE_ID_SONY_DS3           0x0268
 
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 // Variables copied from hiddev.c
 int pre_code_length = 32;
 int main_code_length = 32;
@@ -101,7 +103,7 @@ static void osx_iousb_shutdown(void);
 static int
 sonyir_init(void)
 {
-	logprintf(LIRC_INFO, "Initializing via 'osx_iousb_open()'...");
+	log_info("Initializing via 'osx_iousb_open()'...");
 
 	// Launch thread to communicate with USB device using kIOUSBDevice class.
 	// Needed since OSX doesn't have the hidraw device.
@@ -116,7 +118,7 @@ sonyir_init(void)
 int sonyir_deinit(void)
 {
 	if (drv.fd != -1) {
-		logprintf(LIRC_INFO, "Closing sonyir...");
+		log_info("Closing sonyir...");
 		osx_iousb_shutdown();
 
 		close(drv.fd);
@@ -127,12 +129,12 @@ int sonyir_deinit(void)
 
 int sonyir_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	logprintf(LIRC_TRACE, "sonyir_decode");
+	log_trace("sonyir_decode");
 
 	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0))
 		return 0;
 
-	logprintf(LIRC_TRACE, "lirc code: 0x%X", ctx->code);
+	log_trace("lirc code: 0x%X", ctx->code);
 
 	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
@@ -250,7 +252,7 @@ static char* sonyir_rec(struct ir_remote* remotes)
 	unsigned char rd_len = 255;
 	unsigned char msg[16];
 
-	logprintf(LIRC_TRACE, "sonyir_rec");
+	log_trace("sonyir_rec");
 
 	// Read length delimiter from socket. If we were accessing the device
 	// directly, this would be a bit easier.
@@ -378,7 +380,7 @@ osx_iousb_open()
 	// Create a pipe
 	result = pipe(fds);
 	if (result < 0) {
-		logprintf(LIRC_ERROR, "pipe() returned %d\n", result);
+		log_error("pipe() returned %d\n", result);
 		return result;
 	}
 
@@ -393,7 +395,7 @@ osx_iousb_open()
 
 	threadError = pthread_create(&posixThreadID, &attr, osx_usb_thread, NULL);
 	if (threadError != 0) {
-		logprintf(LIRC_ERROR, "thread error???\n");
+		log_error("thread error???\n");
 		return threadError;
 	}
 
@@ -439,7 +441,7 @@ osx_usb_thread(void* data)
 	if (do_run)
 		CFRunLoopRun();
 
-	logprintf(LIRC_INFO, "USB thread exiting...\n");
+	log_info("USB thread exiting...\n");
 
 	// Close devices
 	if (irr_device)
@@ -510,7 +512,7 @@ setup_hid_thread(struct device_params* params)
 
 	manager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
 	if (manager == 0) {
-		logprintf(LIRC_ERROR, "IOHidManagerCreate() failed\n");
+		log_error("IOHidManagerCreate() failed\n");
 		goto error;
 	}
 
@@ -520,7 +522,7 @@ setup_hid_thread(struct device_params* params)
 	// Open HID manager
 	ret_value = IOHIDManagerOpen(manager, kIOHIDOptionsTypeNone);
 	if (ret_value != 0) {
-		logprintf(LIRC_ERROR, "IOHIDManagerOpen() returned %x\n", ret_value);
+		log_error("IOHIDManagerOpen() returned %x\n", ret_value);
 		goto error;
 	}
 
@@ -536,7 +538,7 @@ setup_hid_thread(struct device_params* params)
 	// Get references
 	hid_device_refs = (IOHIDDeviceRef*)malloc(sizeof(IOHIDDeviceRef) * device_count);
 	if (hid_device_refs == NULL) {
-		logprintf(LIRC_ERROR, "malloc failed\n");
+		log_error("malloc failed\n");
 		goto error;
 	}
 
@@ -550,14 +552,14 @@ setup_hid_thread(struct device_params* params)
 		VID = get_int_property(my_device, CFSTR(kIOHIDVendorIDKey));
 		PID = get_int_property(my_device, CFSTR(kIOHIDProductIDKey));
 		REL = get_int_property(my_device, CFSTR(kIOHIDVersionNumberKey));
-		logprintf(LIRC_INFO, "Found device VID 0x%04X, PID 0x%04X, release %d\n", VID, PID, REL);
+		log_info("Found device VID 0x%04X, PID 0x%04X, release %d\n", VID, PID, REL);
 	}
 
 	// Open 1st device
 	device = hid_device_refs[0];
 	result = IOHIDDeviceOpen(device, kIOHIDOptionsTypeSeizeDevice);
 	if (result) {
-		logprintf(LIRC_ERROR, "IOHIDDeviceOpen() returned %d\n", result);
+		log_error("IOHIDDeviceOpen() returned %d\n", result);
 		goto error;
 	}
 

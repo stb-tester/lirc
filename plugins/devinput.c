@@ -49,6 +49,9 @@
 #define LONG(x) ((x) / BITS_PER_LONG)
 #define test_bit(bit, array)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 
+
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int devinput_init(void);
 static int devinput_init_fwd(void);
 static int devinput_deinit(void);
@@ -319,7 +322,7 @@ int devinput_init(void)
 {
 	char errmsg[256];
 
-	logprintf(LIRC_INFO, "initializing '%s'", drv.device);
+	log_info("initializing '%s'", drv.device);
 
 	if (strncmp(drv.device, "name=", 5) == 0) {
 		if (locate_dev(drv.device + 5, locate_by_name)) {
@@ -335,21 +338,21 @@ int devinput_init(void)
 		}
 	} else if (strcmp(drv.device, "auto") == 0) {
 		if (locate_default_device(errmsg, sizeof(errmsg)) == 0) {
-			logprintf(LIRC_ERROR,  errmsg);
+			log_error(errmsg);
 			return 0;
 		}
 	}
-	logprintf(LIRC_INFO, "Using device: %s", drv.device);
+	log_info("Using device: %s", drv.device);
 	drv.fd = open(drv.device, O_RDONLY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
+		log_error("unable to open '%s'", drv.device);
 		return 0;
 	}
 #ifdef EVIOCGRAB
 	exclusive = 1;
 	if (ioctl(drv.fd, EVIOCGRAB, 1) == -1) {
 		exclusive = 0;
-		logprintf(LIRC_WARNING, "can't get exclusive access to events coming from `%s' interface", drv.device);
+		log_warn("can't get exclusive access to events coming from `%s' interface", drv.device);
 	}
 #endif
 	return 1;
@@ -368,7 +371,7 @@ int devinput_init_fwd(void)
 
 int devinput_deinit(void)
 {
-	logprintf(LIRC_INFO, "closing '%s'", drv.device);
+	log_info("closing '%s'", drv.device);
 	if (uinputfd != -1) {
 		ioctl(uinputfd, UI_DEV_DESTROY);
 		close(uinputfd);
@@ -381,7 +384,7 @@ int devinput_deinit(void)
 
 int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	logprintf(LIRC_TRACE, "devinput_decode");
+	log_trace("devinput_decode");
 
 	if (!map_code(remote, ctx, 0, 0, hw_devinput.code_length, code, 0, 0)) {
 		static int print_warning = 1;
@@ -390,8 +393,8 @@ int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			return 0;
 		if (print_warning) {
 			print_warning = 0;
-			logprintf(LIRC_WARNING, "you are using an obsolete devinput config file");
-			logprintf(LIRC_WARNING,
+			log_warn("you are using an obsolete devinput config file");
+			log_warn(
 				  "get the new version at http://lirc.sourceforge.net/remotes/devinput/lircd.conf.devinput");
 		}
 	}
@@ -418,20 +421,20 @@ char* devinput_rec(struct ir_remote* remotes)
 	int rd;
 	ir_code value;
 
-	logprintf(LIRC_TRACE, "devinput_rec");
+	log_trace("devinput_rec");
 
 	last = end;
 	gettimeofday(&start, NULL);
 
 	rd = read(drv.fd, &event, sizeof(event));
 	if (rd != sizeof(event)) {
-		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		log_error("error reading '%s'", drv.device);
 		if (rd <= 0 && errno != EINTR)
 			devinput_deinit();
 		return 0;
 	}
 
-	logprintf(LIRC_TRACE, "time %ld.%06ld  type %d  code %d  value %d", event.time.tv_sec, event.time.tv_usec, event.type,
+	log_trace("time %ld.%06ld  type %d  code %d  value %d", event.time.tv_sec, event.time.tv_usec, event.type,
 		  event.code, event.value);
 
 	value = (unsigned)event.value;
@@ -458,13 +461,13 @@ char* devinput_rec(struct ir_remote* remotes)
 
 	code = ((ir_code)(unsigned)event.type) << 48 | ((ir_code)(unsigned)event.code) << 32 | value;
 
-	logprintf(LIRC_TRACE, "code %.8llx", code);
+	log_trace("code %.8llx", code);
 
 	if (uinputfd != -1) {
 		if (event.type == EV_REL || event.type == EV_ABS
 		    || (event.type == EV_KEY && event.code >= BTN_MISC && event.code <= BTN_GEAR_UP)
 		    || event.type == EV_SYN) {
-			logprintf(LIRC_TRACE, "forwarding: %04x %04x", event.type, event.code);
+			log_trace("forwarding: %04x %04x", event.type, event.code);
 			if (write(uinputfd, &event, sizeof(event)) != sizeof(event))
 				logperror(LIRC_ERROR, "writing to uinput failed");
 			return NULL;

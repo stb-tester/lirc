@@ -54,6 +54,8 @@
 #define REPEAT_FLAG ((ir_code)0x000040)
 #define REPEAT_MASK ((ir_code)0x00e840)
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static unsigned char b[3];
 static struct timeval start, end, last;
 static lirc_t signal_length;
@@ -130,7 +132,7 @@ int autodetect(void)
 			continue;
 		port = open("/dev/ttyS0", O_RDONLY | O_NOCTTY);
 		if (port < 0) {
-			logprintf(LIRC_WARNING, "couldn't open %s", device);
+			log_warn("couldn't open %s", device);
 			tty_delete_lock();
 			continue;
 		} else {
@@ -165,7 +167,7 @@ int pinsys_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 		if (code & REPEAT_FLAG) {
 			ctx->repeat_flag = 1;
 
-			logprintf(LIRC_TRACE, "repeat_flag: %d\n", ctx->repeat_flag);
+			log_trace("repeat_flag: %d\n", ctx->repeat_flag);
 		}
 	}
 
@@ -177,7 +179,7 @@ int pinsys_init(void)
 	signal_length = (drv.code_length + (drv.code_length / BITS_COUNT) * 2) * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
@@ -187,7 +189,7 @@ int pinsys_init(void)
 		static char auto_lirc_device[] = "/dev/ttyS_";
 
 		tty_delete_lock();
-		logprintf(LIRC_WARNING, "could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
+		log_warn("could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
 		logperror(LIRC_WARNING, "pinsys_init()");
 		/* it can also mean you compiled serial support as a
 		 * module and it isn't inserted, but that's unlikely
@@ -196,7 +198,7 @@ int pinsys_init(void)
 		detected = autodetect();
 
 		if (detected == -1) {
-			logprintf(LIRC_ERROR, "no device found on /dev/ttyS[0-3]");
+			log_error("no device found on /dev/ttyS[0-3]");
 			tty_delete_lock();
 			return 0;
 		}
@@ -206,25 +208,25 @@ int pinsys_init(void)
 		drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 		if (drv.fd  < 0) {
 			/* unlikely, but hey. */
-			logprintf(LIRC_ERROR, "couldn't open autodetected device \"%s\"", drv.device);
+			log_error("couldn't open autodetected device \"%s\"", drv.device);
 			logperror(LIRC_ERROR, "pinsys_init()");
 			tty_delete_lock();
 			return 0;
 		}
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset tty");
+		log_error("could not reset tty");
 		pinsys_deinit();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LIRC_ERROR, "could not set baud rate");
+		log_error("could not set baud rate");
 		pinsys_deinit();
 		return 0;
 	}
 	/* set RTS, clear DTR */
 	if (!tty_set(drv.fd, 1, 0) || !tty_clear(drv.fd, 0, 1)) {
-		logprintf(LIRC_ERROR, "could not set modem lines (DTR/RTS)");
+		log_error("could not set modem lines (DTR/RTS)");
 		pinsys_deinit();
 		return 0;
 	}
@@ -235,7 +237,7 @@ int pinsys_init(void)
 	 * it's an indication that it gets fixed.  still... */
 
 	if (tcflush(drv.fd, TCIFLUSH) < 0) {
-		logprintf(LIRC_ERROR, "could not flush input buffer");
+		log_error("could not flush input buffer");
 		pinsys_deinit();
 		return 0;
 	}
@@ -279,7 +281,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 	for (i = 0; i < 3; i++) {
 		if (i > 0) {
 			if (!waitfordata(20000)) {
-				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
+				log_trace("timeout reading byte %d", i);
 				/* likely to be !=3 bytes, so flush. */
 				tcflush(drv.fd, TCIFLUSH);
 				return NULL;
@@ -287,11 +289,11 @@ char* pinsys_rec(struct ir_remote* remotes)
 		}
 
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			log_error("reading of byte %d failed", i);
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 
@@ -301,7 +303,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 	code = b[2];
 #endif
 
-	logprintf(LIRC_TRACE, " -> %016lx", (__u32)code);
+	log_trace(" -> %016lx", (__u32)code);
 	m = decode_all(remotes);
 	return m;
 }

@@ -36,6 +36,8 @@ static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static void* zotac_repeat(void* arg);
 static int zotac_getcode(void);
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 /** Max number of repetitions */
 const unsigned max_repeat_count = 500;
 /** Code that triggers key release */
@@ -90,7 +92,7 @@ const struct driver* hardwares[] = { &hw_zotac, (const struct driver*)NULL };
 
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	logprintf(LIRC_TRACE, "zotac_decode");
+	log_trace("zotac_decode");
 
 	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
@@ -112,7 +114,7 @@ static int zotac_getcode(void)
 
 	rd = read(fd_hidraw, &uref, sizeof(uref));
 	if (rd < 0) {
-		logprintf(LIRC_ERROR, "error reading '%s'", drv.device);
+		log_error("error reading '%s'", drv.device);
 		logperror(LIRC_ERROR, NULL);
 		zotac_deinit();
 		error_state = 1;
@@ -131,7 +133,7 @@ static int zotac_getcode(void)
 		case 1: /* USB standard keyboard usage page */
 		{
 			/* This page reports cursor keys */
-			logprintf(LIRC_TRACE2, "Keyboard (standard)\n");
+			log_trace2("Keyboard (standard)\n");
 
 			/* check for special codes */
 			uref.field_index = 0;
@@ -153,17 +155,17 @@ static int zotac_getcode(void)
 			ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
 			/* now we have the key */
 
-			logprintf(LIRC_TRACE2, "usage: %x   value: %x   shift: %d\n", uref.usage_code, uref.value, shift);
+			log_trace2("usage: %x   value: %x   shift: %d\n", uref.usage_code, uref.value, shift);
 
 			/* now we have the key */
 			if (uref.value) {
 				probe_code = (uref.usage_code | uref.value);
 				if (shift)
 					probe_code |= 0x10000000;
-				logprintf(LIRC_TRACE2, "Main code 1: %x\n", probe_code);
+				log_trace2("Main code 1: %x\n", probe_code);
 				return 1;
 			}
-			logprintf(LIRC_TRACE2, "rel button\n");
+			log_trace2("rel button\n");
 			probe_code = release_code;
 			return 2;
 		}
@@ -176,7 +178,7 @@ static int zotac_getcode(void)
 			/* This page reports power key
 			 * (via SystemControl SLEEP)
 			 */
-			logprintf(LIRC_TRACE2, "Generic desktop (standard)\n");
+			log_trace2("Generic desktop (standard)\n");
 
 
 			/* traverse report descriptor */
@@ -199,7 +201,7 @@ static int zotac_getcode(void)
 						ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 						if (uref.value != 0) {
-							logprintf(LIRC_TRACE2,
+							log_trace2(
 								  "field: %d, idx: %d, usage: %x   value: %x\n", i, j,
 								  uref.usage_code, uref.value);
 							probe_code = uref.usage_code;
@@ -218,14 +220,14 @@ static int zotac_getcode(void)
 			 * Should not happen because remaining reports
 			 * from report descriptor seem to be unused by remote.
 			 */
-			logprintf(LIRC_ERROR, "Unexpected report id %d", uref.report_id);
+			log_error("Unexpected report id %d", uref.report_id);
 			break;
 		}
 	} else {
 		/* This page reports power key
 		 * (via SystemControl SLEEP)
 		 */
-		logprintf(LIRC_TRACE2, "Same Event ...\n");
+		log_trace2("Same Event ...\n");
 
 		/* traverse report descriptor */
 		rinfo.report_type = HID_REPORT_TYPE_INPUT;
@@ -247,7 +249,7 @@ static int zotac_getcode(void)
 					ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 					if (uref.value != 0) {
-						logprintf(LIRC_TRACE2, "usage: %x   value: %x\n", uref.usage_code, uref.value);
+						log_trace2("usage: %x   value: %x\n", uref.usage_code, uref.value);
 						//probe_code = uref.usage_code;
 						return 0;
 					}
@@ -263,10 +265,10 @@ static int zotac_getcode(void)
 
 static int zotac_init(void)
 {
-	logprintf(LIRC_INFO, "zotac initializing '%s'", drv.device);
+	log_info("zotac initializing '%s'", drv.device);
 	fd_hidraw = open(drv.device, O_RDONLY);
 	if (fd_hidraw < 0) {
-		logprintf(LIRC_ERROR, "unable to open '%s'", drv.device);
+		log_error("unable to open '%s'", drv.device);
 		return 0;
 	}
 	int flags = HIDDEV_FLAG_UREF | HIDDEV_FLAG_REPORT;
@@ -285,7 +287,7 @@ static int zotac_init(void)
 	drv.fd = fd_pipe[0];
 	/* Create thread to simulate repetitions */
 	if (pthread_create(&repeat_thread, NULL, zotac_repeat, NULL)) {
-		logprintf(LIRC_ERROR, "Could not create \"repeat thread\"");
+		log_error("Could not create \"repeat thread\"");
 		return 0;
 	}
 	return 1;
@@ -296,7 +298,7 @@ static int zotac_deinit(void)
 	pthread_cancel(repeat_thread);
 	if (fd_hidraw != -1) {
 		// Close device if it is open
-		logprintf(LIRC_INFO, "closing '%s'", drv.device);
+		log_info("closing '%s'", drv.device);
 		close(fd_hidraw);
 		fd_hidraw = -1;
 	}
@@ -342,7 +344,7 @@ static void* zotac_repeat(void* arg)
 
 			if (ret < 0) {
 				// Error
-				logprintf(LIRC_ERROR, "(%s) Could not read %s", __func__, drv.device);
+				log_error("(%s) Could not read %s", __func__, drv.device);
 				goto exit_loop;
 			}
 			if (ret == 1) {
@@ -363,7 +365,7 @@ static void* zotac_repeat(void* arg)
 			repeat_count++;
 			if (repeat_count >= max_repeat_count) {
 				// Too many repetitions, something must have gone wrong
-				logprintf(LIRC_ERROR, "(%s) too many repetitions", __func__);
+				log_error("(%s) too many repetitions", __func__);
 				goto exit_loop;
 			}
 			// Timeout : send current_code again to main
@@ -372,7 +374,7 @@ static void* zotac_repeat(void* arg)
 			break;
 		default:
 			// Error
-			logprintf(LIRC_ERROR, "(%s) poll() failed", __func__);
+			log_error("(%s) poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe
@@ -401,7 +403,7 @@ static char* zotac_rec(struct ir_remote* remotes)
 
 	if (rd == -1) {
 		// Error
-		logprintf(LIRC_ERROR, "(%s) could not read pipe", __func__);
+		log_error("(%s) could not read pipe", __func__);
 		zotac_deinit();
 		return 0;
 	}
@@ -416,7 +418,7 @@ static char* zotac_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	logprintf(LIRC_TRACE, "zotac : %x", ev);
+	log_trace("zotac : %x", ev);
 	// Record the code and check for repetition
 	if (main_code == ev) {
 		repeat_state = RPT_YES;

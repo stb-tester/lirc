@@ -44,6 +44,8 @@
 
 #define NUMBYTES 6
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static uirt2_t* dev;
 static lirc_t rec_buf[200];
 static int rec_rptr;
@@ -119,14 +121,14 @@ static int queue_put(lirc_t data)
 {
 	int next = (rec_wptr + 1) % rec_size;
 
-	logprintf(LIRC_TRACE2, "queue_put: %d", data);
+	log_trace2("queue_put: %d", data);
 
 	if (next != rec_rptr) {
 		rec_buf[rec_wptr] = data;
 		rec_wptr = next;
 		return 0;
 	}
-	logprintf(LIRC_ERROR, "uirt2_raw: queue full");
+	log_error("uirt2_raw: queue full");
 	return -1;
 }
 
@@ -135,11 +137,11 @@ static int queue_get(lirc_t* pdata)
 	if (rec_wptr != rec_rptr) {
 		*pdata = rec_buf[rec_rptr];
 		rec_rptr = (rec_rptr + 1) % rec_size;
-		logprintf(LIRC_TRACE2, "queue_get: %d", *pdata);
+		log_trace2("queue_get: %d", *pdata);
 
 		return 0;
 	}
-	logprintf(LIRC_ERROR, "uirt2_raw: queue empty");
+	log_error("uirt2_raw: queue empty");
 	return -1;
 }
 
@@ -158,11 +160,11 @@ static int uirt2_raw_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	logprintf(LIRC_TRACE, "uirt2_raw_decode: enter");
+	log_trace("uirt2_raw_decode: enter");
 
 	res = receive_decode(remote, ctx);
 
-	logprintf(LIRC_TRACE, "uirt2_raw_decode: %d", res);
+	log_trace("uirt2_raw_decode: %d", res);
 
 	return res;
 }
@@ -175,7 +177,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout)
 		lirc_t data = uirt2_read_raw(dev, timeout);
 
 		if (!data) {
-			logprintf(LIRC_TRACE, "uirt2_raw_readdata failed");
+			log_trace("uirt2_raw_readdata failed");
 			return 0;
 		}
 
@@ -184,7 +186,7 @@ static lirc_t uirt2_raw_readdata(lirc_t timeout)
 
 	queue_get(&data);
 
-	logprintf(LIRC_TRACE, "uirt2_raw_readdata %d %d", !!(data & PULSE_BIT), data & PULSE_MASK);
+	log_trace("uirt2_raw_readdata %d %d", !!(data & PULSE_BIT), data & PULSE_MASK);
 
 	return data;
 }
@@ -194,19 +196,19 @@ static int uirt2_raw_init(void)
 	int version;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not create lock files");
+		log_error("uirt2_raw: could not create lock files");
 		return 0;
 	}
 
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not open %s", drv.device);
+		log_error("uirt2_raw: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not reset tty");
+		log_error("uirt2_raw: could not reset tty");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
@@ -216,21 +218,21 @@ static int uirt2_raw_init(void)
 	usleep(100 * 1000);
 
 	if (!tty_setbaud(drv.fd, 115200)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not set baud rate");
+		log_error("uirt2_raw: could not set baud rate");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_setcsize(drv.fd, 8)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not set csize");
+		log_error("uirt2_raw: could not set csize");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_setrtscts(drv.fd, 1)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not enable hardware flow");
+		log_error("uirt2_raw: could not enable hardware flow");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
@@ -238,14 +240,14 @@ static int uirt2_raw_init(void)
 
 	dev = uirt2_init(drv.fd);
 	if (dev == NULL) {
-		logprintf(LIRC_ERROR, "uirt2_raw: No UIRT2 device found at %s", drv.device);
+		log_error("uirt2_raw: No UIRT2 device found at %s", drv.device);
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (uirt2_setmoderaw(dev) < 0) {
-		logprintf(LIRC_ERROR, "uirt2_raw: could not set raw mode");
+		log_error("uirt2_raw: could not set raw mode");
 		uirt2_raw_deinit();
 		return 0;
 	}
@@ -256,7 +258,7 @@ static int uirt2_raw_init(void)
 	}
 	if (version >= 0x0905) {
 		if (!tty_setdtr(drv.fd, 0)) {
-			logprintf(LIRC_ERROR, "uirt2_raw: could not set DTR");
+			log_error("uirt2_raw: could not set DTR");
 			uirt2_raw_deinit();
 			return 0;
 		}
@@ -288,8 +290,8 @@ static int uirt2_raw_deinit(void)
 
 static char* uirt2_raw_rec(struct ir_remote* remotes)
 {
-	logprintf(LIRC_TRACE, "uirt2_raw_rec");
-	logprintf(LIRC_TRACE, "uirt2_raw_rec: %p", remotes);
+	log_trace("uirt2_raw_rec");
+	log_trace("uirt2_raw_rec: %p", remotes);
 
 	if (!rec_buffer_clear())
 		return NULL;
@@ -323,23 +325,23 @@ static int uirt2_send(struct ir_remote* remote, struct ir_ncode* code)
 	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
-		logprintf(LIRC_TRACE, "nothing to send");
+		log_trace("nothing to send");
 		return 0;
 	}
 
 
-	logprintf(LIRC_TRACE, "Trying REMSTRUC1 transmission");
+	log_trace("Trying REMSTRUC1 transmission");
 	res = uirt2_send_mode2_struct1(dev, remote, signals, length);
 	if (!res && (length < 48)) {
-		logprintf(LIRC_TRACE, "Using RAW transission");
+		log_trace("Using RAW transission");
 		res = uirt2_send_mode2_raw(dev, remote, signals, length);
 	}
 
-	if (!res)
-		logprintf(LIRC_ERROR, "uirt2_send: remote not supported");
-	else
-		logprintf(LIRC_TRACE, "uirt2_send: succeeded");
-
+	if (!res) {
+		log_error("uirt2_send: remote not supported");
+	} else {
+		log_trace("uirt2_send: succeeded");
+	}
 	/*
 	 * Some devices send the sequence in the background.  Wait for
 	 * the sequence to complete before returning in order to avoid
@@ -368,7 +370,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 	int res;
 	int repeats = 1;
 
-	logprintf(LIRC_TRACE, "uirt2_send_mode2_raw %d %p", length, buf);
+	log_trace("uirt2_send_mode2_raw %d %p", length, buf);
 
 	tmp[0] = 0;
 	tmp[1] = 0;
@@ -387,7 +389,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 				val = 0;
 			}
 			if (dest - 2 > 48) {
-				logprintf(LIRC_ERROR, "uirt2_raw: too long RAW transmission %d > 48", dest - 2);
+				log_error("uirt2_raw: too long RAW transmission %d > 48", dest - 2);
 				return 0;
 			}
 		}
@@ -401,7 +403,7 @@ static int uirt2_send_mode2_raw(uirt2_t*		dev,
 	if (!res)
 		return 0;
 
-	logprintf(LIRC_TRACE, "uirt2_send_mode2_raw exit");
+	log_trace("uirt2_send_mode2_raw exit");
 	return 1;
 }
 
@@ -430,18 +432,18 @@ static int calc_data_bit(struct ir_remote* remote, int table[], int table_len, i
 		if (table[i] == 0) {
 			table[i] = signal / tUnit;
 
-			logprintf(LIRC_TRACE1, "table[%d] = %d\n", i, table[i]);
+			log_trace1("table[%d] = %d\n", i, table[i]);
 
 			return i;
 		}
 
 		if (expect(remote, signal, table[i] * tUnit)) {
-			logprintf(LIRC_TRACE1, "expect %d, table[%d] = %d\n", signal / tUnit, i, table[i]);
+			log_trace1("expect %d, table[%d] = %d\n", signal / tUnit, i, table[i]);
 			return i;
 		}
 	}
 
-	logprintf(LIRC_TRACE1, "Couldn't find %d\n", signal / tUnit);
+	log_trace1("Couldn't find %d\n", signal / tUnit);
 
 	return -1;
 }
@@ -471,7 +473,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 	res = uirt2_getversion(dev, &version);
 	if (res < 0)
 		return res;
-	logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x", version);
+	log_info("uirt2_raw: UIRT version %04x", version);
 	freq = remote->freq;
 	if (freq == 0)
 		freq = DEFAULT_FREQ;
@@ -489,7 +491,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		int len = buf[i] / tUnit;
 
 		if (len > UCHAR_MAX) {
-			logprintf(LIRC_TRACE, "signal too long for transmission %lu", (__u32)buf[i]);
+			log_trace("signal too long for transmission %lu", (__u32)buf[i]);
 			return 0;
 		}
 		if (i == 0) {
@@ -524,7 +526,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		}
 
 		if (i - 2 > UIRT2_MAX_BITS) {
-			logprintf(LIRC_ERROR, "uirt2_raw: UIRT tried to send %d bits, max is %d", length - 2,
+			log_error("uirt2_raw: UIRT tried to send %d bits, max is %d", length - 2,
 				  UIRT2_MAX_BITS);
 
 			return 0;
@@ -534,7 +536,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		bits++;
 	}
 
-	logprintf(LIRC_TRACE1, "bits %d", bits);
+	log_trace1("bits %d", bits);
 
 	rem.bISDlyHi = remote->min_remaining_gap / tUnit / 256;
 	rem.bISDlyLo = (remote->min_remaining_gap / tUnit) & 255;

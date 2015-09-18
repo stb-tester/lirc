@@ -44,6 +44,8 @@ static struct usb_device* find_usb_device(void);
 static int find_device_endpoints(struct usb_device* dev);
 static char device_path[PATH_MAX + 1] = {0};
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 const struct driver hw_atilibusb = {
 	.name		= "atilibusb",
 	.device		= NULL,
@@ -110,7 +112,7 @@ static int ati_init(void)
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
-	logprintf(LIRC_TRACE, "initializing USB receiver");
+	log_trace("initializing USB receiver");
 
 	rec_buffer_init();
 
@@ -129,12 +131,12 @@ static int ati_init(void)
 		 usb_dev->bus->dirname, usb_dev->filename);
 	drv.device = device_path;
 	if (usb_dev == NULL) {
-		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
+		log_error("couldn't find a compatible USB device");
 		return 0;
 	}
 
 	if (!find_device_endpoints(usb_dev)) {
-		logprintf(LIRC_ERROR, "couldn't find device endpoints");
+		log_error("couldn't find device endpoints");
 		return 0;
 	}
 
@@ -153,11 +155,15 @@ static int ati_init(void)
 	if ((usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, init1, sizeof(init1), 100) != sizeof(init1))
 	    || (usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, init2, sizeof(init2), 100) !=
 		sizeof(init2))) {
-		logprintf(LIRC_ERROR, "couldn't initialize USB receiver: %s", errno ? strerror(errno) : "short write");
+		log_error("couldn't initialize USB receiver: %s", errno ? strerror(errno) : "short write");
 		goto fail;
 	}
 
-	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	log_debug("atilibusb: using device: %s", device_path);
 	child = fork();
 	if (child == -1) {
 		logperror(LIRC_ERROR, "couldn't fork child process");

@@ -34,6 +34,8 @@
 #define TIMEOUT 50000
 
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 static lirc_t signal_length;
@@ -86,23 +88,23 @@ int mp3anywhere_init(void)
 	signal_length = drv.code_length * 1000000 / 9600;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "mp3anywhere_init()");
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset tty");
+		log_error("could not reset tty");
 		mp3anywhere_deinit();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 9600)) {
-		logprintf(LIRC_ERROR, "could not set baud rate");
+		log_error("could not set baud rate");
 		mp3anywhere_deinit();
 		return 0;
 	}
@@ -132,25 +134,25 @@ char* mp3anywhere_rec(struct ir_remote* remotes)
 	while (b[i] != 0xAD) {
 		i++;
 		if (i >= NUMBYTES) {
-			logprintf(LIRC_TRACE, "buffer overflow at byte %d", i);
+			log_trace("buffer overflow at byte %d", i);
 			break;
 		}
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
+				log_trace("timeout reading byte %d", i);
 				return NULL;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			logprintf(LIRC_ERROR, "reading of byte %d failed", i);
+			log_error("reading of byte %d failed", i);
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
 		if (b[1] != 0xd5 || b[2] != 0xaa || b[3] != 0xee || b[5] != 0xad) {
-			logprintf(LIRC_ERROR, "bad envelope");
+			log_error("bad envelope");
 			return NULL;
 		}
-		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
+		log_trace("byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 

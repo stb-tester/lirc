@@ -46,6 +46,17 @@ typedef enum {
 	LIRC_BADLEVEL = -1
 } loglevel_t;
 
+/**
+ * Log channels used to filter messages.
+ */
+
+typedef enum {
+	LOG_DRIVER = 1,
+	LOG_LIB = 4,
+	LOG_APP = 8,
+	LOG_ALL = 255
+} logchannel_t;
+
 /** Max loglevel (for validation). */
 #define LIRC_MAX_LOGLEVEL LIRC_TRACE2
 
@@ -57,6 +68,9 @@ void perrorf(const char* format, ...);
 
 /** The actual loglevel. Should not be changed directly by external code.*/
 extern loglevel_t loglevel;
+
+/** The actual logchannel. Should not be changed directly by external code.*/
+extern logchannel_t logged_channels;
 
 /* Set by lirc_log_open, convenience copy for clients. */
 extern char progname[128];
@@ -70,6 +84,56 @@ extern char progname[128];
 #else
 #define logmax(l) (l > LIRC_DEBUG ? LIRC_DEBUG : l)
 #endif
+
+/**
+ * Compatibility perror(3) wrapper Accepts level 1..3 which are mapped to
+ * LIRC_TRACE..LIRC_TRACE2.
+ */
+#define LOGPERROR(level, s) \
+	if (level + 7 <= loglevel) \
+		logperror(logmax(level + 7), s)
+
+
+/** Log an error message. */
+#define log_error(fmt, ...) \
+	{ if ((logchannel & logged_channels) && LIRC_ERROR <= loglevel) \
+		{ logprintf(LIRC_ERROR, fmt, ##__VA_ARGS__); } }
+
+/** Log a warning message. */
+#define log_warn(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_WARNING <= loglevel) \
+		{ logprintf(LIRC_WARNING, fmt, ##__VA_ARGS__); } }
+
+/** Log an info message. */
+#define log_info(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_INFO <= loglevel) \
+		{ logprintf(LIRC_INFO, fmt, ##__VA_ARGS__); } }
+
+/** Log a notice message. */
+#define log_notice(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_NOTICE <= loglevel) \
+		{ logprintf(LIRC_NOTICE, fmt, ##__VA_ARGS__); } }
+
+/** Log a debug message. */
+#define log_debug(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_DEBUG <= loglevel) \
+		{ logprintf(LIRC_DEBUG, fmt, ##__VA_ARGS__); } }
+
+/** Log a trace message. */
+#define log_trace(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_TRACE <= loglevel) \
+		{ logprintf(LIRC_TRACE, fmt, ##__VA_ARGS__); } }
+
+/** Log a trace1 message. */
+#define log_trace1(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_TRACE1 <= loglevel) \
+		{ logprintf(LIRC_TRACE1, fmt, ##__VA_ARGS__); } }
+
+/** Log a trace2 message. */
+#define log_trace2(fmt, ...)  \
+	{ if ((logchannel & logged_channels) && LIRC_TRACE2 <= loglevel) \
+		{ logprintf(LIRC_TRACE2, fmt, ##__VA_ARGS__); } }
+
 
 /**
  * Convert a string, either a number or 'info', 'trace1', error etc.

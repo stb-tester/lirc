@@ -44,6 +44,8 @@
 #define TIMEOUT     60000
 #define CODE_LENGTH 24
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 struct timeval start, end, last;
 ir_code code;
 
@@ -104,28 +106,28 @@ int ea65_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 
 int ea65_init(void)
 {
-	logprintf(LIRC_INFO, "EA65: device %s", drv.device);
+	log_info("EA65: device %s", drv.device);
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "EA65: could not create lock files");
+		log_error("EA65: could not create lock files");
 		return 0;
 	}
 
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "EA65: could not open %s", drv.device);
+		log_error("EA65: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "EA65: could not reset tty");
+		log_error("EA65: could not reset tty");
 		ea65_release();
 		return 0;
 	}
 
 	if (!tty_setbaud(drv.fd, 9600)) {
-		logprintf(LIRC_ERROR, "EA65: could not set baud rate");
+		log_error("EA65: could not set baud rate");
 		ea65_release();
 		return 0;
 	}
@@ -150,17 +152,17 @@ char* ea65_receive(struct ir_remote* remote)
 	gettimeofday(&start, NULL);
 
 	if (!waitfordata(TIMEOUT)) {
-		logprintf(LIRC_ERROR, "EA65: timeout reading code data");
+		log_error("EA65: timeout reading code data");
 		return NULL;
 	}
 
 	r = read(drv.fd, data, sizeof(data));
 	if (r < 4) {
-		logprintf(LIRC_ERROR, "EA65: read failed. %s(%d)", strerror(r), r);
+		log_error("EA65: read failed. %s(%d)", strerror(r), r);
 		return NULL;
 	}
 
-	logprintf(LIRC_TRACE, "EA65: data(%d): %02x %02x %02x %02x %02x", r, data[0], data[1], data[2], data[3], data[4]);
+	log_trace("EA65: data(%d): %02x %02x %02x %02x %02x", r, data[0], data[1], data[2], data[3], data[4]);
 
 	if (data[0] != 0xa0)
 		return NULL;
@@ -176,7 +178,7 @@ char* ea65_receive(struct ir_remote* remote)
 		code = (0xff << 16) | (data[2] << 8) | data[3];
 		break;
 	}
-	logprintf(LIRC_INFO, "EA65: receive code: %llx", (__u64)code);
+	log_info("EA65: receive code: %llx", (__u64)code);
 
 	gettimeofday(&end, NULL);
 

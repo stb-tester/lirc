@@ -118,6 +118,8 @@ typedef struct {
 	u_int16_t	product;
 } usb_device_id;
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 /* table of compatible remotes -- from lirc_awusb */
 static usb_device_id usb_remote_id_table[] = {
 	/* Awox RF/Infrared Transciever */
@@ -138,7 +140,7 @@ static int awlibusb_init(void)
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
-	logprintf(LIRC_TRACE, "initializing USB receiver");
+	log_trace("initializing USB receiver");
 
 	rec_buffer_init();
 
@@ -153,12 +155,12 @@ static int awlibusb_init(void)
 
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
-		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
+		log_error("couldn't find a compatible USB device");
 		goto fail;
 	}
 
 	if (!find_device_endpoints(usb_dev)) {
-		logprintf(LIRC_ERROR, "couldn't find device endpoints");
+		log_error("couldn't find device endpoints");
 		goto fail;
 	}
 
@@ -177,7 +179,7 @@ static int awlibusb_init(void)
 		 "/dev/bus/usb/%s/%s",
 		 usb_dev->bus->dirname, usb_dev->filename);
 	drv.device = device_path;
-	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
+	log_debug("atilibusb: using device: %s", device_path);
 
 	child = fork();
 	if (child == -1) {
@@ -187,7 +189,7 @@ static int awlibusb_init(void)
 		usb_read_loop(pipe_fd[1]);
 	}
 
-	logprintf(LIRC_TRACE, "USB receiver initialized");
+	log_trace("USB receiver initialized");
 	return 1;
 
 fail:

@@ -34,10 +34,15 @@
 #include "lirc/lirc_log.h"
 
 #define HOSTNAME_LEN 128
+
+static const logchannel_t logchannel = LOG_LIB;
+
 char hostname[HOSTNAME_LEN + 1];
 FILE* lf = NULL;
 
 loglevel_t loglevel = LIRC_NOLOG;
+
+logchannel_t logged_channels = LOG_ALL;
 
 static int use_syslog = 1;
 
@@ -113,6 +118,9 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 		}
 		gethostname(hostname, HOSTNAME_LEN);
 	}
+	if (getenv("LIRC_LOGCHANNEL") != NULL) {
+		logged_channels = atoi(getenv("LIRC_LOGCHANNEL"));    // FIXME...
+	}
 	return 0;
 }
 
@@ -138,7 +146,7 @@ int lirc_log_reopen(void)
 		/* Don't need to do anything; this is syslogd's task */
 		return 0;
 
-	logprintf(LIRC_INFO, "closing logfile");
+	log_info("closing logfile");
 	if (-1 == fstat(fileno(lf), &s)) {
 		perror("Invalid logfile!");
 		return -1;
@@ -150,9 +158,9 @@ int lirc_log_reopen(void)
 		perror("Can't open logfile");
 		return -1;
 	}
-	logprintf(LIRC_INFO, "reopened logfile");
+	log_info("reopened logfile");
 	if (-1 == fchmod(fileno(lf), s.st_mode)) {
-		logprintf(LIRC_WARNING, "could not set file permissions");
+		log_warn("could not set file permissions");
 		logperror(LIRC_WARNING, NULL);
 	}
 	return 0;
@@ -383,5 +391,5 @@ void hexdump(char* prefix, unsigned char* buf, int len)
 	} else {
 		strncpy(str + pos, "NO DATA", sizeof(str));
 	}
-	logprintf(LIRC_TRACE, "%s", str);
+	log_trace("%s", str);
 }

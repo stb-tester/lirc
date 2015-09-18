@@ -26,6 +26,8 @@
 #include "lirc/lirc_log.h"
 #include "lirc/transmit.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 /**
  * Struct for the global sending buffer.
  */
@@ -59,7 +61,7 @@ void send_buffer_init(void)
 
 static void clear_send_buffer(void)
 {
-	logprintf(LIRC_TRACE2, "clearing transmit buffer");
+	log_trace2("clearing transmit buffer");
 	send_buffer.wptr = 0;
 	send_buffer.too_long = 0;
 	send_buffer.is_biphase = 0;
@@ -71,7 +73,7 @@ static void clear_send_buffer(void)
 static void add_send_buffer(lirc_t data)
 {
 	if (send_buffer.wptr < WBUF_SIZE) {
-		logprintf(LIRC_TRACE2, "adding to transmit buffer: %u", data);
+		log_trace2("adding to transmit buffer: %u", data);
 		send_buffer.sum += data;
 		send_buffer._data[send_buffer.wptr] = data;
 		send_buffer.wptr++;
@@ -96,7 +98,7 @@ static void send_pulse(lirc_t data)
 static void send_space(lirc_t data)
 {
 	if (send_buffer.wptr == 0 && send_buffer.pendingp == 0) {
-		logprintf(LIRC_TRACE, "first signal is a space!");
+		log_trace("first signal is a space!");
 		return;
 	}
 	if (send_buffer.pendings > 0) {
@@ -124,15 +126,15 @@ static int check_send_buffer(void)
 	int i;
 
 	if (send_buffer.wptr == 0) {
-		logprintf(LIRC_TRACE, "nothing to send");
+		log_trace("nothing to send");
 		return 0;
 	}
 	for (i = 0; i < send_buffer.wptr; i++) {
 		if (send_buffer.data[i] == 0) {
 			if (i % 2) {
-				logprintf(LIRC_TRACE, "invalid space: %d", i);
+				log_trace("invalid space: %d", i);
 			} else {
-				logprintf(LIRC_TRACE, "invalid pulse: %d", i);
+				log_trace("invalid pulse: %d", i);
 			}
 			return 0;
 		}
@@ -202,7 +204,7 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 	if (is_rcmm(remote)) {
 		mask = 1 << (all_bits - 1 - done);
 		if (bits % 2 || done % 2) {
-			logprintf(LIRC_ERROR, "invalid bit number.");
+			log_error("invalid bit number.");
 			return;
 		}
 		for (i = 0; i < bits; i += 2, mask >>= 2) {
@@ -230,7 +232,7 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 		return;
 	} else if (is_xmp(remote)) {
 		if (bits % 4 || done % 4) {
-			logprintf(LIRC_ERROR, "invalid bit number.");
+			log_error("invalid bit number.");
 			return;
 		}
 		for (i = 0; i < bits; i += 4) {
@@ -385,7 +387,7 @@ static int init_send_or_sim(struct ir_remote* remote, struct ir_ncode* code, int
 
 	if (is_grundig(remote) || is_goldstar(remote) || is_serial(remote) || is_bo(remote)) {
 		if (!sim)
-			logprintf(LIRC_ERROR, "sorry, can't send this protocol yet");
+			log_error("sorry, can't send this protocol yet");
 		return 0;
 	}
 	clear_send_buffer();
@@ -431,7 +433,7 @@ init_send_loop:
 		} else {
 			if (code->signals == NULL) {
 				if (!sim)
-					logprintf(LIRC_ERROR, "no signals for raw send");
+					log_error("no signals for raw send");
 				return 0;
 			}
 			if (send_buffer.wptr > 0) {
@@ -447,7 +449,7 @@ init_send_loop:
 	sync_send_buffer();
 	if (bad_send_buffer()) {
 		if (!sim)
-			logprintf(LIRC_ERROR, "buffer too small");
+			log_error("buffer too small");
 		return 0;
 	}
 	if (sim)
@@ -461,7 +463,7 @@ init_send_loop:
 			remote->min_remaining_gap = min_gap(remote) - send_buffer.sum;
 			remote->max_remaining_gap = max_gap(remote) - send_buffer.sum;
 		} else {
-			logprintf(LIRC_ERROR, "too short gap: %u", remote->gap);
+			log_error("too short gap: %u", remote->gap);
 			remote->min_remaining_gap = min_gap(remote);
 			remote->max_remaining_gap = max_gap(remote);
 			return 0;
@@ -486,7 +488,7 @@ init_send_loop:
 			lirc_t* signals;
 			int n;
 
-			logprintf(LIRC_TRACE, "unrolling raw signal optimisation");
+			log_trace("unrolling raw signal optimisation");
 			signals = send_buffer.data;
 			n = send_buffer.wptr;
 			send_buffer.data = send_buffer._data;
@@ -494,7 +496,7 @@ init_send_loop:
 
 			send_signals(signals, n);
 		}
-		logprintf(LIRC_TRACE, "concatenating low gap signals");
+		log_trace("concatenating low gap signals");
 		if (code->next == NULL || code->transmit_state == NULL)
 			remote->repeat_countdown--;
 		send_space(remote->min_remaining_gap);
@@ -504,13 +506,13 @@ init_send_loop:
 		repeat = 1;
 		goto init_send_loop;
 	}
-	logprintf(LIRC_TRACE2, "transmit buffer ready");
+	log_trace2("transmit buffer ready");
 
 final_check:
 	if (!check_send_buffer()) {
 		if (!sim) {
-			logprintf(LIRC_ERROR, "invalid send buffer");
-			logprintf(LIRC_ERROR, "this remote configuration cannot be used to transmit");
+			log_error("invalid send buffer");
+			log_error("this remote configuration cannot be used to transmit");
 		}
 		return 0;
 	}

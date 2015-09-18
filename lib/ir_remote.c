@@ -35,6 +35,8 @@
 #include "lirc/release.h"
 #include "lirc/lirc_log.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 /** Const data sent for EOF condition.  */
 static struct ir_ncode NCODE_EOF = {
 	"__EOF", LIRC_EOF, 1, NULL, NULL, NULL, 0
@@ -299,10 +301,10 @@ int map_code(const struct ir_remote*	remote,
 	all >>= remote->bits;
 	ctx->pre = (all & gen_mask(remote->pre_data_bits));
 
-	logprintf(LIRC_TRACE, "pre: %llx", (__u64)(ctx->pre));
-	logprintf(LIRC_TRACE, "code: %llx", (__u64)(ctx->code));
-	logprintf(LIRC_TRACE, "post: %llx", (__u64)(ctx->post));
-	logprintf(LIRC_TRACE, "code:                   %016llx\n", code);
+	log_trace("pre: %llx", (__u64)(ctx->pre));
+	log_trace("code: %llx", (__u64)(ctx->code));
+	log_trace("post: %llx", (__u64)(ctx->post));
+	log_trace("code:                   %016llx\n", code);
 
 	return 1;
 }
@@ -371,16 +373,16 @@ void map_gap(const struct ir_remote*	remote,
 		ctx->max_remaining_gap = max_gap(remote);
 	}
 
-	logprintf(LIRC_TRACE, "repeat_flagp:           %d", (ctx->repeat_flag));
-	logprintf(LIRC_TRACE, "is_const(remote):       %d", is_const(remote));
-	logprintf(LIRC_TRACE, "remote->gap range:      %lu %lu", (__u32)min_gap(
+	log_trace("repeat_flagp:           %d", (ctx->repeat_flag));
+	log_trace("is_const(remote):       %d", is_const(remote));
+	log_trace("remote->gap range:      %lu %lu", (__u32)min_gap(
 			  remote), (__u32)max_gap(remote));
-	logprintf(LIRC_TRACE, "remote->remaining_gap:  %lu %lu",
+	log_trace("remote->remaining_gap:  %lu %lu",
 		  (__u32)remote->min_remaining_gap,
 		  (__u32)remote->max_remaining_gap);
-	logprintf(LIRC_TRACE, "signal length:          %lu", (__u32)signal_length);
-	logprintf(LIRC_TRACE, "gap:                    %lu", (__u32)gap);
-	logprintf(LIRC_TRACE, "extim. remaining_gap:   %lu %lu",
+	log_trace("signal length:          %lu", (__u32)signal_length);
+	log_trace("gap:                    %lu", (__u32)gap);
+	log_trace("extim. remaining_gap:   %lu %lu",
 		  (__u32)(ctx->min_remaining_gap),
 		  (__u32)(ctx->max_remaining_gap));
 }
@@ -511,20 +513,20 @@ static struct ir_ncode* get_code(struct ir_remote*	remote,
 	}
 	if (has_pre(remote)) {
 		if ((pre | pre_mask) != (remote->pre_data | pre_mask)) {
-			logprintf(LIRC_TRACE, "bad pre data");
-			logprintf(LIRC_TRACE1, "%llx %llx", pre, remote->pre_data);
+			log_trace("bad pre data");
+			log_trace1("%llx %llx", pre, remote->pre_data);
 			return 0;
 		}
-		logprintf(LIRC_TRACE, "pre");
+		log_trace("pre");
 	}
 
 	if (has_post(remote)) {
 		if ((post | post_mask) != (remote->post_data | post_mask)) {
-			logprintf(LIRC_TRACE, "bad post data");
-			logprintf(LIRC_TRACE1, "%llx %llx", post, remote->post_data);
+			log_trace("bad post data");
+			log_trace1("%llx %llx", post, remote->post_data);
 			return 0;
 		}
-		logprintf(LIRC_TRACE, "post");
+		log_trace("post");
 	}
 
 	all = gen_ir_code(remote, pre, code, post);
@@ -590,7 +592,7 @@ static struct ir_ncode* get_code(struct ir_remote*	remote,
 	if (found_code && found != NULL && has_toggle_mask(remote)) {
 		if (!(remote->toggle_mask_state % 2)) {
 			remote->toggle_code = found;
-			logprintf(LIRC_TRACE, "toggle_mask_start");
+			log_trace("toggle_mask_start");
 		} else {
 			if (found != remote->toggle_code) {
 				remote->toggle_code = NULL;
@@ -612,10 +614,10 @@ static __u64 set_code(struct ir_remote*		remote,
 	struct timeval current;
 	static struct ir_remote* last_decoded = NULL;
 
-	logprintf(LIRC_TRACE, "found: %s", found->name);
+	log_trace("found: %s", found->name);
 
 	gettimeofday(&current, NULL);
-	logprintf(LIRC_TRACE, "%lx %lx %lx %d %d %d %d %d %d %d",
+	log_trace("%lx %lx %lx %d %d %d %d %d %d %d",
 		  remote, last_remote, last_decoded,
 		  remote == last_decoded,
 		  found == remote->last_code, found->next != NULL,
@@ -630,7 +632,7 @@ static __u64 set_code(struct ir_remote*		remote,
 	if (remote->release_detected) {
 		remote->release_detected = 0;
 		if (ctx->repeat_flag)
-			logprintf(LIRC_TRACE,
+			log_trace(
 			  "repeat indicated although release was detected before");
 
 		ctx->repeat_flag = 0;
@@ -734,7 +736,7 @@ char* decode_all(struct ir_remote* remotes)
 	/* use remotes carefully, it may be changed on SIGHUP */
 	decoding = remote = remotes;
 	while (remote) {
-		logprintf(LIRC_TRACE, "trying \"%s\" remote", remote->name);
+		log_trace("trying \"%s\" remote", remote->name);
 		if (curr_driver->decode_func(remote, &ctx)) {
 			ncode = get_code(remote,
 					 ctx.pre, ctx.code, ctx.post,
@@ -745,8 +747,7 @@ char* decode_all(struct ir_remote* remotes)
 				int reps;
 
 				if (ncode == &NCODE_EOF) {
-					logprintf(LIRC_DEBUG,
-						  "decode all: returning EOF");
+					log_debug("decode all: returning EOF");
 					strncpy(message,
 						PACKET_EOF, sizeof(message));
 					return message;
@@ -799,7 +800,7 @@ char* decode_all(struct ir_remote* remotes)
 					return message;
 				}
 			} else {
-				logprintf(LIRC_TRACE, "failed \"%s\" remote",
+				log_trace("failed \"%s\" remote",
 					  remote->name);
 			}
 		}
@@ -808,7 +809,7 @@ char* decode_all(struct ir_remote* remotes)
 	}
 	decoding = NULL;
 	last_remote = NULL;
-	logprintf(LIRC_TRACE, "decoding failed for all remotes");
+	log_trace("decoding failed for all remotes");
 	return NULL;
 }
 

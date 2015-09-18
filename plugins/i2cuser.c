@@ -67,6 +67,8 @@
 /* The time that a key must be held down before it repeats (in seconds). */
 #define REPEAT_TIME 0.3
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int i2cuser_init(void);
 static int i2cuser_deinit(void);
 static void i2cuser_read_loop(int fd);
@@ -115,7 +117,7 @@ static int open_i2c_device(void)
 
 	dir = opendir(adapter_dir);
 	if (dir == NULL) {
-		logprintf(LIRC_ERROR, "Cannot list i2c-adapter dir %s", adapter_dir);
+		log_error("Cannot list i2c-adapter dir %s", adapter_dir);
 		return -1;
 	}
 	found = -1;
@@ -142,20 +144,20 @@ static int open_i2c_device(void)
 			f = fopen(s, "r");
 		}
 		if (f == NULL) {
-			logprintf(LIRC_ERROR, "Cannot open i2c name file %s", s);
+			log_error("Cannot open i2c name file %s", s);
 			return -1;
 		}
 		memset(s, 0, sizeof(s));
 		if (fread(s, 1, sizeof(s), f) != sizeof(s)) {
 			if (ferror(f))
-				logprintf(LIRC_WARNING,
+				log_warn(
 					  "Error reading i2c device");
 		}
 		fclose(f);
 
 		if (strncmp(s, "bt878", 5) == 0) {
 			if (strncmp(de->d_name, "i2c-", 4) != 0) {
-				logprintf(LIRC_ERROR, "i2c adapter dir %s has unexpected name", de->d_name);
+				log_error("i2c adapter dir %s has unexpected name", de->d_name);
 				return -1;
 			}
 			found = atoi(de->d_name + 4);
@@ -165,12 +167,12 @@ static int open_i2c_device(void)
 
 	closedir(dir);
 	if (found == -1) {
-		logprintf(LIRC_ERROR, "Cannot find i2c adapter");
+		log_error("Cannot find i2c adapter");
 		return -1;
 	}
 
 	snprintf(device_name, sizeof(device_name), "/dev/i2c-%d", found);
-	logprintf(LIRC_INFO, "Using i2c device %s", device_name);
+	log_info("Using i2c device %s", device_name);
 	drv.device = device_name;
 	return open(device_name, O_RDWR);
 }
@@ -180,25 +182,25 @@ static int i2cuser_init(void)
 	int pipe_fd[2] = { -1, -1 };
 
 	if (pipe(pipe_fd) != 0) {
-		logprintf(LIRC_ERROR, "Couldn't open pipe: %s", strerror(errno));
+		log_error("Couldn't open pipe: %s", strerror(errno));
 		return 0;
 	}
 	drv.fd = pipe_fd[0];
 
 	i2c_fd = open_i2c_device();
 	if (i2c_fd == -1) {
-		logprintf(LIRC_ERROR, "i2c device cannot be opened");
+		log_error("i2c device cannot be opened");
 		goto fail;
 	}
 
 	if (ioctl(i2c_fd, I2C_SLAVE, IR_ADDR) < 0) {
-		logprintf(LIRC_ERROR, "Cannot set i2c address %02x", IR_ADDR);
+		log_error("Cannot set i2c address %02x", IR_ADDR);
 		goto fail;
 	}
 
 	child = fork();
 	if (child == -1) {
-		logprintf(LIRC_ERROR, "Cannot fork child process: %s", strerror(errno));
+		log_error("Cannot fork child process: %s", strerror(errno));
 		goto fail;
 	} else if (child == 0) {
 		close(pipe_fd[0]);
@@ -206,7 +208,7 @@ static int i2cuser_init(void)
 	}
 	close(pipe_fd[1]);
 
-	logprintf(LIRC_INFO, "i2cuser driver: i2c device found and ready to go");
+	log_info("i2cuser driver: i2c device found and ready to go");
 	return 1;
 
 fail:
@@ -260,7 +262,7 @@ static void i2cuser_read_loop(int out_fd)
 			nanosleep(&ts, NULL);
 			rc = read(i2c_fd, &buf, sizeof(buf));
 			if (rc < 0 && errno != EREMOTEIO) {
-				logprintf(LIRC_ERROR, "Error reading from i2c device: %s", strerror(errno));
+				log_error("Error reading from i2c device: %s", strerror(errno));
 				goto fail;
 			} else if (rc != sizeof(buf)) {
 				continue;
@@ -280,7 +282,7 @@ static void i2cuser_read_loop(int out_fd)
 				continue;
 		}
 
-		logprintf(LIRC_INFO, "Read input code: %08x", new_code);
+		log_info("Read input code: %08x", new_code);
 		last_time = new_time;
 		last_code = new_code;
 
@@ -289,7 +291,7 @@ static void i2cuser_read_loop(int out_fd)
 			new_code >>= 8;
 		}
 		if (write(out_fd, code_buf, CODE_SIZE) != CODE_SIZE) {
-			logprintf(LIRC_ERROR, "Write to i2cuser pipe failed: %s", strerror(errno));
+			log_error("Write to i2cuser pipe failed: %s", strerror(errno));
 			goto fail;
 		}
 	}

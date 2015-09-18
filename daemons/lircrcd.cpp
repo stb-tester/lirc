@@ -37,6 +37,8 @@
 #define MAX_CLIENTS 100
 #define WHITE_SPACE " \t"
 
+static const logchannel_t logchannel = LOG_APP;
+
 struct config_info {
 	char*			config_string;
 	struct config_info*	next;
@@ -271,7 +273,7 @@ static void remove_client(int i)
 		free(clis[i].pending_code);
 	free_event_info(clis[i].first_event);
 
-	logprintf(LIRC_TRACE, "removed client");
+	log_trace("removed client");
 
 	clin--;
 	for (; i < clin; i++)
@@ -294,7 +296,7 @@ void add_client(int sock)
 	;
 
 	if (clin >= MAX_CLIENTS) {
-		logprintf(LIRC_ERROR, "connection rejected");
+		log_error("connection rejected");
 		shutdown(fd, 2);
 		close(fd);
 		return;
@@ -303,7 +305,7 @@ void add_client(int sock)
 	flags = fcntl(fd, F_GETFL, 0);
 	if (flags != -1)
 		fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-        logprintf(LIRC_TRACE2,  "accepted new client");
+        log_trace2( "accepted new client");
 	clis[clin].fd = fd;
 	clis[clin].ident_string = NULL;
 	clis[clin].first_event = NULL;
@@ -396,15 +398,15 @@ static int code_func(int fd, char* message, char* arguments)
 	if (clis[index].pending_code != NULL)
 		return send_error(fd, message, "protocol error\n");
 
-	logprintf(LIRC_TRACE2, "%s asking for code -%s-", clis[index].ident_string, arguments);
+	log_trace2("%s asking for code -%s-", clis[index].ident_string, arguments);
 
 	ei = clis[index].first_event;
 	if (ei != NULL) {
-		logprintf(LIRC_TRACE2, "compare: -%s- -%s-", ei->code, arguments);
+		log_trace2("compare: -%s- -%s-", ei->code, arguments);
 		if (strcmp(ei->code, arguments) == 0) {
 			ci = ei->first;
 			if (ci != NULL) {
-				logprintf(LIRC_TRACE2, "result: -%s-", ci->config_string);
+				log_trace2("result: -%s-", ci->config_string);
 				ret = send_result(fd, message, ci->config_string);
 				ei->first = ci->next;
 				free(ci->config_string);
@@ -432,7 +434,7 @@ static int ident_func(int fd, char* message, char* arguments)
 
 	if (arguments == NULL)
 		return send_error(fd, message, "protocol error\n");
-	logprintf(LIRC_TRACE1, "IDENT %s", arguments);
+	log_trace1("IDENT %s", arguments);
 	index = get_client_index(fd);
 	if (clis[index].ident_string != NULL)
 		return send_error(fd, message, "protocol error\n");
@@ -440,7 +442,7 @@ static int ident_func(int fd, char* message, char* arguments)
 	if (clis[index].ident_string == NULL)
 		return send_error(fd, message, "out of memory\n");
 
-	logprintf(LIRC_TRACE, "%s connected", clis[index].ident_string);
+	log_trace("%s connected", clis[index].ident_string);
 	return send_success(fd, message);
 }
 
@@ -448,7 +450,7 @@ static int getmode_func(int fd, char* message, char* arguments)
 {
 	if (arguments != NULL)
 		return send_error(fd, message, "protocol error\n");
-	logprintf(LIRC_TRACE1, "GETMODE");
+	log_trace1("GETMODE");
 	if (lirc_getmode(config))
 		return send_result(fd, message, lirc_getmode(config));
 	return send_success(fd, message);
@@ -458,7 +460,7 @@ static int setmode_func(int fd, char* message, char* arguments)
 {
 	const char* mode = NULL;
 
-	logprintf(LIRC_TRACE1, arguments != NULL ? "SETMODE %s" : "SETMODE", arguments);
+	log_trace1(arguments != NULL ? "SETMODE %s" : "SETMODE", arguments);
 	mode = lirc_setmode(config, arguments);
 	if (mode)
 		return send_result(fd, message, mode);
@@ -509,8 +511,8 @@ static int send_error(int fd, char* message, const char* format_str, ...)
 		s1[0] = 0;
 	if (s2 != NULL)
 		s2[0] = 0;
-	logprintf(LIRC_ERROR, "error processing command: %s", message);
-	logprintf(LIRC_ERROR, "%s", buffer);
+	log_error("error processing command: %s", message);
+	log_error("%s", buffer);
 	if (s1 != NULL)
 		s1[0] = '\n';
 	if (s2 != NULL)
@@ -547,12 +549,12 @@ static int get_command(int fd)
 		buffer[length] = 0;
 		end = strchr(buffer, '\n');
 		if (end == NULL) {
-			logprintf(LIRC_ERROR, "bad send packet: \"%s\"", buffer);
+			log_error("bad send packet: \"%s\"", buffer);
 			/* remove clients that behave badly */
 			return 0;
 		}
 		end[0] = 0;
-		logprintf(LIRC_TRACE, "received command: \"%s\"", buffer);
+		log_trace("received command: \"%s\"", buffer);
 		packet_length = strlen(buffer) + 1;
 
 		strcpy(backup, buffer);
@@ -614,7 +616,7 @@ static void loop(int sockfd, int lircdfd)
 		do {
 			/* handle signals */
 			if (term) {
-				logprintf(LIRC_NOTICE, "caught signal");
+				log_notice("caught signal");
 				return;
 			}
 			memset(&poll_fds, 0, sizeof(poll_fds));
@@ -629,7 +631,7 @@ static void loop(int sockfd, int lircdfd)
 				poll_fds.byname.clis[i].fd = clis[i].fd;
 				poll_fds.byname.clis[i].events = POLLIN;
 			}
-			logprintf(LIRC_TRACE2, "poll");
+			log_trace2("poll");
 			ret = poll((struct pollfd*) &poll_fds.byindex,
 				   POLLFDS_SIZE,
 				   0);
@@ -647,21 +649,21 @@ static void loop(int sockfd, int lircdfd)
 					remove_client(i);
 					i--;
 					if (clin == 0) {
-						logprintf(LIRC_INFO, "last client disconnected, shutting down");
+						log_info("last client disconnected, shutting down");
 						return;
 					}
 				}
 			}
 		}
 		if (poll_fds.byname.sockfd.revents & POLLIN) {
-			logprintf(LIRC_TRACE, "registering local client");
+			log_trace("registering local client");
 			add_client(sockfd);
 		}
 		if (poll_fds.byname.lircdfd.revents & POLLIN) {
 			if (!handle_input()) {
 				while (clin > 0)
 					remove_client(0);
-				logprintf(LIRC_ERROR, "connection lost");
+				log_error("connection lost");
 				return;
 			}
 		}
@@ -674,7 +676,7 @@ static int schedule(int index, char* config_string)
 	struct config_info* c;
 	struct config_info* n;
 
-	logprintf(LIRC_TRACE1, "schedule(%s): -%s-", clis[index].ident_string, config_string);
+	log_trace1("schedule(%s): -%s-", clis[index].ident_string, config_string);
 
 	e = clis[index].first_event;
 	while (e->next)
@@ -714,7 +716,7 @@ static int handle_input(void)
 	struct event_info* n;
 	int i;
 
-	logprintf(LIRC_TRACE, "input from lircd");
+	log_trace("input from lircd");
 	if (lirc_nextcode(&code) != 0)
 		return 0;
 
@@ -746,11 +748,11 @@ static int handle_input(void)
 		else
 			e->next = n;
 	}
-	logprintf(LIRC_TRACE2, "input from lircd: \"%s\"", code);
+	log_trace2("input from lircd: \"%s\"", code);
 	while ((ret = lirc_code2charprog(config, code, &config_string, &prog)) == 0 && config_string != NULL) {
 		int i;
 
-		logprintf(LIRC_TRACE2, "%s: -%s-", prog, config_string);
+		log_trace2("%s: -%s-", prog, config_string);
 		for (i = 0; i < clin; i++) {
 			if (strcmp(prog, clis[i].ident_string) == 0)
 				if (!schedule(i, config_string))
@@ -762,7 +764,7 @@ static int handle_input(void)
 			char message[strlen(clis[i].pending_code) + 1];
 			char* backup;
 
-			logprintf(LIRC_TRACE2, "pending_code(%s): -%s-", clis[i].ident_string, clis[i].pending_code);
+			log_trace2("pending_code(%s): -%s-", clis[i].ident_string, clis[i].pending_code);
 			backup = clis[i].pending_code;
 			clis[i].pending_code = NULL;
 
@@ -879,7 +881,7 @@ int main(int argc, char** argv)
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGHUP, &act, NULL);
 
-	logprintf(LIRC_NOTICE, "%s started", progname);
+	log_notice("%s started", progname);
 	loop(socket, lircdfd);
 
 	closelog();

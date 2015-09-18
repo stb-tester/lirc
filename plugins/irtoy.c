@@ -89,6 +89,8 @@ struct tag_irtoy_t {
 
 typedef struct tag_irtoy_t irtoy_t;
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static irtoy_t* dev = NULL;
 
 static unsigned char rawSB[WBUF_SIZE * 2 + 2];
@@ -135,11 +137,11 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	logprintf(LIRC_TRACE, "decode: enter");
+	log_trace("decode: enter");
 
 	res = receive_decode(remote, ctx);
 
-	logprintf(LIRC_TRACE, "decode: %d", res);
+	log_trace("decode: %d", res);
 
 	return res;
 }
@@ -156,7 +158,7 @@ int send3(unsigned char cmd, unsigned int data)
 	array[2] = (unsigned char) (data & 0xff);
 	res = write(dev->fd, array, 3);
 	if (res != 3)
-		logprintf(LIRC_ERROR, "irtoy_setIOData: couldn't write command");
+		log_error("irtoy_setIOData: couldn't write command");
 	return res == 3;
 }
 
@@ -246,23 +248,23 @@ static lirc_t irtoy_read(irtoy_t* dev, lirc_t timeout)
 	// LONGSPACE <firstpulse><signal>AA
 
 	if (dev->awaitingNewSig) {
-		logprintf(LIRC_TRACE, "new signal after large space");
+		log_trace("new signal after large space");
 		dev->pulse = 1;
 		dev->awaitingNewSig = 0;
 		return IRTOY_LONGSPACE;
 	}
 	res = read_with_timeout(dev->fd, dur, 2, 0);
 	if (res != 2) {
-		logprintf(LIRC_ERROR, "irtoy_read: could not get 2 bytes");
+		log_error("irtoy_read: could not get 2 bytes");
 		return 0;
 	}
-	logprintf(LIRC_TRACE2, "read_raw %02x%02x", dur[0], dur[1]);
+	log_trace2("read_raw %02x%02x", dur[0], dur[1]);
 	if (dur[0] == 0xff && dur[1] == 0xff) {
 		dev->awaitingNewSig = 1;
 		return IRTOY_LONGSPACE;
 	}
 	data = (lirc_t)(IRTOY_UNIT * (double)(256 * dur[0] + dur[1]));
-	logprintf(LIRC_TRACE2, "read_raw %d", data);
+	log_trace2("read_raw %d", data);
 
 	if (dev->pulse)
 		data = data | PULSE_BIT;
@@ -277,7 +279,7 @@ static lirc_t readdata(lirc_t timeout)
 	lirc_t data = irtoy_read(dev, timeout);
 
 	if (data)
-		logprintf(LIRC_TRACE, "readdata %d %d",
+		log_trace("readdata %d %d",
 			  !!(data & PULSE_BIT), data & PULSE_MASK);
 	return data;
 }
@@ -315,7 +317,7 @@ static int irtoy_getversion(irtoy_t* dev)
 
 	buf[IRTOY_LEN_VERSION] = 0;
 
-	logprintf(LIRC_TRACE, "irtoy_getversion: Got version %s", buf);
+	log_trace("irtoy_getversion: Got version %s", buf);
 
 	if (buf[0] != IRTOY_REPLY_VERSION) {
 		logprintf(LIRC_ERROR,
@@ -342,7 +344,7 @@ static int irtoy_reset(irtoy_t* dev)
 	res = write(dev->fd, buf, 1);
 
 	if (res != 1) {
-		logprintf(LIRC_ERROR, "irtoy_reset: couldn't write command");
+		log_error("irtoy_reset: couldn't write command");
 		return 0;
 	}
 
@@ -383,7 +385,7 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		return 0;
 	}
 
-	logprintf(LIRC_TRACE, "irtoy_reset: Got protocol %s", buf);
+	log_trace("irtoy_reset: Got protocol %s", buf);
 	dev->protoVersion = atoi(buf + 1);
 	return 1;
 }
@@ -394,7 +396,7 @@ static irtoy_t* irtoy_hw_init(int fd)
 	irtoy_t* dev = (irtoy_t*)malloc(sizeof(irtoy_t));
 
 	if (dev == NULL) {
-		logprintf(LIRC_ERROR, "init: out of memory");
+		log_error("init: out of memory");
 		return NULL;
 	}
 
@@ -418,39 +420,39 @@ static irtoy_t* irtoy_hw_init(int fd)
 static int init_device(void)
 {
 	if (access(drv.device, R_OK) != 0) {
-		logprintf(LIRC_DEBUG, "irtoy: cannot access %s", drv.device);
+		log_debug("irtoy: cannot access %s", drv.device);
 		return 0;
 	}
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "irtoy: could not create lock files");
+		log_error("irtoy: could not create lock files");
 		return 0;
 	}
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "irtoy: could not open %s", drv.device);
+		log_error("irtoy: could not open %s", drv.device);
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "irtoy: could not reset tty");
+		log_error("irtoy: could not reset tty");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_setbaud(drv.fd, 115200)) {
-		logprintf(LIRC_ERROR, "irtoy: could not set baud rate");
+		log_error("irtoy: could not set baud rate");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_setcsize(drv.fd, 8)) {
-		logprintf(LIRC_ERROR, "irtoy: could not set csize");
+		log_error("irtoy: could not set csize");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
 	}
 	if (!tty_setrtscts(drv.fd, 1)) {
-		logprintf(LIRC_ERROR, "irtoy: could not enable hardware flow");
+		log_error("irtoy: could not enable hardware flow");
 		close(drv.fd);
 		tty_delete_lock();
 		return 0;
@@ -464,7 +466,7 @@ static int init_device(void)
 		tty_delete_lock();
 		return 0;
 	}
-	logprintf(LIRC_TRACE, "Version hw %d, sw %d, protocol %d",
+	log_trace("Version hw %d, sw %d, protocol %d",
 		  dev->hwVersion, dev->swVersion, dev->protoVersion);
 	if (dev->swVersion < IRTOY_MINFWVERSION) {
 		logprintf(LIRC_ERROR,
@@ -497,7 +499,7 @@ static int init(void)
 	const char* const MSG_FOUND = "irtoy device found on %s";
 
 	if (drv.device == NULL) {
-		logprintf(LIRC_ERROR, "irtoy: NULL device.");
+		log_error("irtoy: NULL device.");
 		return 0;
 	}
 	if (strcmp(drv.device, "auto") != 0)
@@ -507,14 +509,14 @@ static int init(void)
 			sprintf(tmp, "/dev/ttyACM%d", i);
 			drv.device = tmp;
 			if (init_device())
-				logprintf(LIRC_WARNING, MSG_MORE_DEVICES, tmp);
+				log_warn(MSG_MORE_DEVICES, tmp);
 			drv.device = _devname;
 		} else {
 			sprintf(_devname, "/dev/ttyACM%d", i);
 			drv.device = _devname;
 			found = init_device();
 			if (found)
-				logprintf(LIRC_INFO, MSG_FOUND, _devname);
+				log_info(MSG_FOUND, _devname);
 		}
 	}
 	return found;
@@ -551,7 +553,7 @@ static int deinit(void)
 
 static char* receive(struct ir_remote* remotes)
 {
-	logprintf(LIRC_TRACE, "irtoy_raw_rec");
+	log_trace("irtoy_raw_rec");
 	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);
@@ -569,24 +571,24 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 	int irtoyXmit;
 
 	if (dev == NULL) {
-		logprintf(LIRC_ERROR, "irtoy_send: irtoy not initialized");
+		log_error("irtoy_send: irtoy not initialized");
 		return 0;
 	}
 	res = write(dev->fd, IRTOY_COMMAND_TXSTART, sizeof(IRTOY_COMMAND_TXSTART));
 
 	if (res != sizeof(IRTOY_COMMAND_TXSTART)) {
-		logprintf(LIRC_ERROR, "irtoy_send: couldn't write command");
+		log_error("irtoy_send: couldn't write command");
 		return 0;
 	}
 
 	res = read_with_timeout(dev->fd, &irToyBufLen, 1, IRTOY_TIMEOUT_READYFORDATA);
 
 	if (res != 1) {
-		logprintf(LIRC_ERROR, "irtoy_send: couldn't read command result");
+		log_error("irtoy_send: couldn't read command result");
 		return -1;
 	}
 
-	logprintf(LIRC_TRACE, "irtoy ready for %d bytes", irToyBufLen);
+	log_trace("irtoy ready for %d bytes", irToyBufLen);
 
 	txPtr = signals;
 
@@ -595,7 +597,7 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 		res = write(dev->fd, txPtr, numThisTime);
 
 		if (res != numThisTime) {
-			logprintf(LIRC_ERROR, "irtoy_send: couldn't write command");
+			log_error("irtoy_send: couldn't write command");
 			return 0;
 		}
 
@@ -606,36 +608,36 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 		res = read_with_timeout(dev->fd, &irToyBufLen, 1, IRTOY_TIMEOUT_READYFORDATA);
 
 		if (res != 1) {
-			logprintf(LIRC_ERROR, "irtoy_send: couldn't read command result");
+			log_error("irtoy_send: couldn't read command result");
 			return -1;
 		}
 
-		logprintf(LIRC_TRACE, "irtoy ready for %d bytes", irToyBufLen);
+		log_trace("irtoy ready for %d bytes", irToyBufLen);
 	}
 
 
 	res = read_with_timeout(dev->fd, reply, IRTOY_LEN_XMITRES, IRTOY_TIMEOUT_READYFORDATA);
 
 	if (res != IRTOY_LEN_XMITRES) {
-		logprintf(LIRC_ERROR, "irtoy_send: couldn't read command result");
+		log_error("irtoy_send: couldn't read command result");
 		return -1;
 	}
 
-	logprintf(LIRC_TRACE, "%c %02X %02X %c\n", reply[0], reply[1], reply[2], reply[3]);
+	log_trace("%c %02X %02X %c\n", reply[0], reply[1], reply[2], reply[3]);
 
 	if (reply[0] != IRTOY_REPLY_XMITCOUNT) {
-		logprintf(LIRC_ERROR, "irtoy_send: invalid byte count indicator received: %02X", reply[0]);
+		log_error("irtoy_send: invalid byte count indicator received: %02X", reply[0]);
 		return 0;
 	}
 
 	irtoyXmit = (reply[1] << 8) | reply[2];
 	if (length != irtoyXmit) {
-		logprintf(LIRC_ERROR, "irtoy_send: incorrect byte count received: %d expected: %d", irtoyXmit, length);
+		log_error("irtoy_send: incorrect byte count received: %d expected: %d", irtoyXmit, length);
 		return 0;
 	}
 
 	if (reply[3] != IRTOY_REPLY_XMITSUCCESS) {
-		logprintf(LIRC_ERROR, "irtoy_send: received error status %02X", reply[3]);
+		log_error("irtoy_send: received error status %02X", reply[3]);
 		return 0;
 	}
 

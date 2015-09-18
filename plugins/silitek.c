@@ -35,6 +35,8 @@
 #define TIMEOUT 20000
 
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 unsigned char b[NUMBYTES];
 ir_code code;
 struct timeval current, last;
@@ -93,7 +95,7 @@ int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	if (!do_repeat)
 		ctx->repeat_flag = 0;
 
-	logprintf(LIRC_TRACE, "repeat_flagp:           %d", ctx->repeat_flag);
+	log_trace("repeat_flagp:           %d", ctx->repeat_flag);
 
 	return 1;
 }
@@ -101,26 +103,26 @@ int silitek_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 int silitek_init(void)
 {
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 
 	drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "silitek_init()");
 		tty_delete_lock();
 		return 0;
 	}
 
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset %s", drv.device);
+		log_error("could not reset %s", drv.device);
 		silitek_deinit();
 		return 0;
 	}
 
 	if (!tty_setbaud(drv.fd, 1200)) {
-		logprintf(LIRC_ERROR, "could not set baud rate on %s", drv.device);
+		log_error("could not set baud rate on %s", drv.device);
 		silitek_deinit();
 		return 0;
 	}
@@ -146,7 +148,7 @@ char* silitek_rec(struct ir_remote* remotes)
 	do_repeat = 1;
 
 	if (!silitek_read(drv.fd, &b[0], TIMEOUT)) {
-		logprintf(LIRC_ERROR, "reading of byte 0 failed");
+		log_error("reading of byte 0 failed");
 		logperror(LIRC_ERROR, NULL);
 		return NULL;
 	}
@@ -163,13 +165,13 @@ char* silitek_rec(struct ir_remote* remotes)
 	last = current;
 
 	if (!silitek_read(drv.fd, &b[1], TIMEOUT)) {
-		logprintf(LIRC_ERROR, "reading of byte 1 failed");
+		log_error("reading of byte 1 failed");
 		logperror(LIRC_ERROR, NULL);
 		return NULL;
 	}
 
 	if (!silitek_read(drv.fd, &b[2], TIMEOUT)) {
-		logprintf(LIRC_ERROR, "reading of byte 2 failed");
+		log_error("reading of byte 2 failed");
 		logperror(LIRC_ERROR, NULL);
 		return NULL;
 	}

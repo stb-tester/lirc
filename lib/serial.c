@@ -22,6 +22,7 @@
 #define LIRC_LOCKDIR "/var/lock/lockdev"
 #endif
 
+
 #include <limits.h>
 #include <poll.h>
 #include <stdio.h>
@@ -46,18 +47,20 @@
 
 #include "lirc/lirc_log.h"
 
+static const logchannel_t logchannel = LOG_LIB;
+
 int tty_reset(int fd)
 {
 	struct termios options;
 
 	if (tcgetattr(fd, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_reset(): tcgetattr() failed");
+		log_trace("tty_reset(): tcgetattr() failed");
 		logperror(LIRC_DEBUG, "tty_reset()");
 		return 0;
 	}
 	cfmakeraw(&options);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_reset(): tcsetattr() failed");
+		log_trace("tty_reset(): tcsetattr() failed");
 		logperror(LIRC_DEBUG, "tty_reset()");
 		return 0;
 	}
@@ -69,7 +72,7 @@ int tty_setrtscts(int fd, int enable)
 	struct termios options;
 
 	if (tcgetattr(fd, &options) == -1) {
-		logprintf(LIRC_TRACE, "%s: tcgetattr() failed", __func__);
+		log_trace("%s: tcgetattr() failed", __func__);
 		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
@@ -78,7 +81,7 @@ int tty_setrtscts(int fd, int enable)
 	else
 		options.c_cflag &= ~CRTSCTS;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		logprintf(LIRC_TRACE, "%s: tcsetattr() failed", __func__);
+		log_trace("%s: tcsetattr() failed", __func__);
 		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
@@ -90,14 +93,14 @@ int tty_setdtr(int fd, int enable)
 	int cmd, sts;
 
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
-		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMGET) failed", __func__);
+		log_trace("%s: ioctl(TIOCMGET) failed", __func__);
 		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
 	if (((sts & TIOCM_DTR) == 0) && enable) {
-		logprintf(LIRC_TRACE, "%s: 0->1", __func__);
+		log_trace("%s: 0->1", __func__);
 	} else if ((!enable) && (sts & TIOCM_DTR)) {
-		logprintf(LIRC_TRACE, "%s: 1->0", __func__);
+		log_trace("%s: 1->0", __func__);
 	}
 	if (enable)
 		cmd = TIOCMBIS;
@@ -105,7 +108,7 @@ int tty_setdtr(int fd, int enable)
 		cmd = TIOCMBIC;
 	sts = TIOCM_DTR;
 	if (ioctl(fd, cmd, &sts) < 0) {
-		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMBI(S|C)) failed", __func__);
+		log_trace("%s: ioctl(TIOCMBI(S|C)) failed", __func__);
 		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
@@ -221,26 +224,26 @@ int tty_setbaud(int fd, int baud)
 		use_custom_divisor = 1;
 		break;
 #else
-		logprintf(LIRC_TRACE, "tty_setbaud(): bad baud rate %d", baud);
+		log_trace("tty_setbaud(): bad baud rate %d", baud);
 		return 0;
 #endif
 	}
 	if (tcgetattr(fd, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_setbaud(): tcgetattr() failed");
+		log_trace("tty_setbaud(): tcgetattr() failed");
 		logperror(LIRC_DEBUG, "tty_setbaud()");
 		return 0;
 	}
 	(void)cfsetispeed(&options, speed);
 	(void)cfsetospeed(&options, speed);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_setbaud(): tcsetattr() failed");
+		log_trace("tty_setbaud(): tcsetattr() failed");
 		logperror(LIRC_DEBUG, "tty_setbaud()");
 		return 0;
 	}
 #if defined __linux__
 	if (use_custom_divisor) {
 		if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0) {
-			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCGSERIAL failed");
+			log_trace("tty_setbaud(): TIOCGSERIAL failed");
 			logperror(LIRC_DEBUG, "tty_setbaud()");
 			return 0;
 		}
@@ -248,7 +251,7 @@ int tty_setbaud(int fd, int baud)
 		serinfo.flags |= ASYNC_SPD_CUST;
 		serinfo.custom_divisor = serinfo.baud_base / baud;
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0) {
-			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCSSERIAL failed");
+			log_trace("tty_setbaud(): TIOCSSERIAL failed");
 			logperror(LIRC_DEBUG, "tty_setbaud()");
 			return 0;
 		}
@@ -276,18 +279,18 @@ int tty_setcsize(int fd, int csize)
 		size = CS8;
 		break;
 	default:
-		logprintf(LIRC_TRACE, "tty_setcsize(): bad csize rate %d", csize);
+		log_trace("tty_setcsize(): bad csize rate %d", csize);
 		return 0;
 	}
 	if (tcgetattr(fd, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_setcsize(): tcgetattr() failed");
+		log_trace("tty_setcsize(): tcgetattr() failed");
 		logperror(LIRC_DEBUG, "tty_setcsize()");
 		return 0;
 	}
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= size;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
-		logprintf(LIRC_TRACE, "tty_setcsize(): tcsetattr() failed");
+		log_trace("tty_setcsize(): tcsetattr() failed");
 		logperror(LIRC_DEBUG, "tty_setcsize()");
 		return 0;
 	}
@@ -314,7 +317,7 @@ int tty_create_lock(const char* name)
 		s = name;
 
 	if (strlen(filename) + strlen(s) > FILENAME_MAX) {
-		logprintf(LIRC_ERROR, "invalid filename \"%s%s\"", filename, s);
+		log_error("invalid filename \"%s%s\"", filename, s);
 		return 0;
 	}
 	strcat(filename, s);
@@ -322,7 +325,7 @@ int tty_create_lock(const char* name)
 tty_create_lock_retry:
 	len = snprintf(id, 10 + 1 + 1, "%10d\n", getpid());
 	if (len == -1) {
-		logprintf(LIRC_ERROR, "invalid pid \"%d\"", getpid());
+		log_error("invalid pid \"%d\"", getpid());
 		return 0;
 	}
 	lock = open(filename, O_CREAT | O_EXCL | O_WRONLY, 0644);
@@ -336,10 +339,10 @@ tty_create_lock_retry:
 			if (read(lock, id, 10 + 1) == 10 + 1 && read(lock, id, 1) == 0
 			    && sscanf(id, "%d\n", &otherpid) > 0) {
 				if (kill(otherpid, 0) == -1 && errno == ESRCH) {
-					logprintf(LIRC_WARNING, "detected stale lockfile %s", filename);
+					log_warn("detected stale lockfile %s", filename);
 					close(lock);
 					if (unlink(filename) != -1) {
-						logprintf(LIRC_WARNING, "stale lockfile removed");
+						log_warn("stale lockfile removed");
 						goto tty_create_lock_retry;
 					} else {
 						logperror(LIRC_ERROR,
@@ -347,9 +350,9 @@ tty_create_lock_retry:
 					}
 					return 0;
 				}
-				logprintf(LIRC_ERROR, "%s is locked by PID %d", name, otherpid);
+				log_error("%s is locked by PID %d", name, otherpid);
 			} else {
-				logprintf(LIRC_ERROR, "invalid lockfile %s encountered", filename);
+				log_error("invalid lockfile %s encountered", filename);
 			}
 			close(lock);
 		}
@@ -462,8 +465,7 @@ int tty_delete_lock(void)
 			}
 			strcat(filename, ep->d_name);
 			if (strstr(filename, "LCK..") == NULL) {
-				logprintf(LIRC_DEBUG,
-					  "Ignoring non-LCK.. logfile %s",
+				log_debug("Ignoring non-LCK.. logfile %s",
 					  filename);
 				retval = 0;
 				continue;
@@ -481,8 +483,7 @@ int tty_delete_lock(void)
 			}
 			pid = strtol(id, NULL, 10);
 			if (pid == LONG_MIN || pid == LONG_MAX || pid == 0) {
-				logprintf(LIRC_DEBUG,
-					  "Can't parse lockfile %s (ignored)",
+				log_debug("Can't parse lockfile %s (ignored)",
 					  filename);
 				retval = 0;
 				continue;
@@ -499,7 +500,7 @@ int tty_delete_lock(void)
 		}
 		closedir(dp);
 	} else {
-		logprintf(LIRC_ERROR, "could not open directory \"" LIRC_LOCKDIR "\"");
+		log_error("could not open directory \"" LIRC_LOCKDIR "\"");
 		return 0;
 	}
 	return retval;
@@ -512,8 +513,8 @@ int tty_set(int fd, int rts, int dtr)
 	mask = rts ? TIOCM_RTS : 0;
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIS, &mask) == -1) {
-		logprintf(LIRC_TRACE, "tty_set(): ioctl() failed");
-		logperror(LIRC_DEBUG, "tty_set()");
+		log_trace("tty_set(): ioctl() failed");
+		logperror(LIRC_WARNING, "tty_set()");
 		return 0;
 	}
 	return 1;
@@ -526,8 +527,8 @@ int tty_clear(int fd, int rts, int dtr)
 	mask = rts ? TIOCM_RTS : 0;
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIC, &mask) == -1) {
-		logprintf(LIRC_TRACE, "tty_clear(): ioctl() failed");
 		logperror(LIRC_DEBUG, "tty_clear()");
+		log_trace("tty_clear(): ioctl() failed");
 		return 0;
 	}
 	return 1;
@@ -536,7 +537,7 @@ int tty_clear(int fd, int rts, int dtr)
 int tty_write(int fd, char byte)
 {
 	if (write(fd, &byte, 1) != 1) {
-		logprintf(LIRC_TRACE, "tty_write(): write() failed");
+		log_trace("tty_write(): write() failed");
 		logperror(LIRC_DEBUG, "tty_write()");
 		return -1;
 	}
@@ -558,7 +559,7 @@ int tty_read(int fd, char* byte)
 
 	ret = poll(&pfd, 1, 1000); /* 1 second timeout. */
 	if (ret == 0) {
-		logprintf(LIRC_ERROR, "tty_read(): timeout");
+		log_error("tty_read(): timeout");
 		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
 		logperror(LIRC_DEBUG, "tty_read(): poll() failed");
@@ -579,10 +580,10 @@ int tty_write_echo(int fd, char byte)
 		return -1;
 	if (tty_read(fd, &reply) == -1)
 		return -1;
-	logprintf(LIRC_TRACE, "sent: A%u D%01x reply: A%u D%01x", (((unsigned int)(unsigned char)byte) & 0xf0) >> 4,
+	log_trace("sent: A%u D%01x reply: A%u D%01x", (((unsigned int)(unsigned char)byte) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)byte) & 0x0f, (((unsigned int)(unsigned char)reply) & 0xf0) >> 4,
 		  ((unsigned int)(unsigned char)reply) & 0x0f);
 	if (byte != reply)
-		logprintf(LIRC_ERROR, "Command mismatch.");
+		log_error("Command mismatch.");
 	return 1;
 }

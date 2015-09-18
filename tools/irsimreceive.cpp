@@ -14,6 +14,7 @@
 #include "lirc_private.h"
 #include "lirc_client.h"
 
+static const logchannel_t logchannel = LOG_APP;
 
 static void add_defaults(void)
 {
@@ -122,19 +123,19 @@ struct ir_remote* read_lircd_conf(const char* configfile)
 	filename = configfile == NULL ? LIRCDCFGFILE : configfile;
 	f = fopen(filename, "r");
 	if (f == NULL) {
-		logprintf(LIRC_ERROR, "could not open config file '%s'", filename);
+		log_error("could not open config file '%s'", filename);
 		logperror(LIRC_ERROR, NULL);
 		exit(EXIT_FAILURE);
 	}
 	remotes = read_config(f, configfile);
 	fclose(f);
 	if (remotes == (void*)-1) {
-		logprintf(LIRC_ERROR, "reading of config file failed");
+		log_error("reading of config file failed");
 		exit(EXIT_FAILURE);
 	} else {
-		logprintf(LIRC_DEBUG, "config file read");
+		log_debug("config file read");
 		if (remotes == NULL) {
-			logprintf(LIRC_ERROR, "config file contains no valid remote control definition");
+			log_error("config file contains no valid remote control definition");
 			exit(EXIT_FAILURE);
 		}
 	}

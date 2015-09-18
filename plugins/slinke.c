@@ -36,12 +36,14 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 void* slinke_malloc(size_t size)
 {
 	void* ptr = malloc(size);
 
 	if (ptr == NULL) {
-		logprintf(LIRC_ERROR, "slinke_malloc: out of memory");
+		log_error("slinke_malloc: out of memory");
 		return NULL;
 	}
 	memset(ptr, 0, size);
@@ -54,7 +56,7 @@ void* slinke_realloc(void* optr, size_t size)
 
 	nptr = realloc(optr, size);
 	if (nptr == NULL) {
-		logprintf(LIRC_ERROR, "realloc: out of memory");
+		log_error("realloc: out of memory");
 		return NULL;
 	} else {
 		return nptr;
@@ -276,7 +278,7 @@ static int signal_to_int(lirc_t signal)
 /*****************************************************************************/
 static void tx_bytes(unsigned char* b, int n)
 {
-	logprintf(LIRC_TRACE2, "sending %s", to_byte_string(b, n));
+	log_trace2("sending %s", to_byte_string(b, n));
 	chk_write(drv.fd, b, n);
 }                               /* tx_bytes */
 
@@ -340,30 +342,30 @@ int slinke_init(void)
 {
 	int i;
 
-	logprintf(LIRC_INFO, "slinke_init");
+	log_info("slinke_init");
 	signal_length = drv.code_length * 1000000 / 1200;
 
 	if (!tty_create_lock(drv.device)) {
-		logprintf(LIRC_ERROR, "could not create lock files");
+		log_error("could not create lock files");
 		return 0;
 	}
 	/* if */
 	drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
 	if (drv.fd  < 0) {
-		logprintf(LIRC_ERROR, "could not open %s", drv.device);
+		log_error("could not open %s", drv.device);
 		logperror(LIRC_ERROR, "slinke_init()");
 		tty_delete_lock();
 		return 0;
 	}
 	/* if */
 	if (!tty_reset(drv.fd)) {
-		logprintf(LIRC_ERROR, "could not reset tty");
+		log_error("could not reset tty");
 		slinke_deinit();
 		return 0;
 	}
 	/* if */
 	if (!tty_setbaud(drv.fd, 19200)) {
-		logprintf(LIRC_ERROR, "could not set baud rate");
+		log_error("could not set baud rate");
 		slinke_deinit();
 		return 0;
 	}
@@ -380,7 +382,7 @@ int slinke_init(void)
 		queue[i].bufsize = QUEUE_BUF_INIT_SIZE;
 		queue[i].buf = (unsigned char*)slinke_malloc(QUEUE_BUF_INIT_SIZE);
 		if (queue[i].buf == NULL) {
-			logprintf(LIRC_ERROR, "could not create port queue buffer");
+			log_error("could not create port queue buffer");
 			slinke_deinit();
 			return 0;
 		}               /* if */
@@ -449,7 +451,7 @@ lirc_t slinke_readdata(int timeout)
 		result = 0;
 	/* if */
 
-	logprintf(LIRC_TRACE2, "readdata: %d @ %d", signal_to_int(result), signal_queue_rd_idx);
+	log_trace2("readdata: %d @ %d", signal_to_int(result), signal_queue_rd_idx);
 	return result;
 }                               /* readdata */
 
@@ -459,7 +461,7 @@ static void reset_signal_queue(void)
 		signal_queue_bufsize = 32;
 		signal_queue_buf = (lirc_t*)slinke_malloc(signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
-			logprintf(LIRC_ERROR, "could not create signal queue buffer");
+			log_error("could not create signal queue buffer");
 			return;
 		}                               /* if */
 	}                                       /* if */
@@ -485,7 +487,7 @@ static void app_signal(int is_pulse, int period_len)
 		signal_queue_bufsize *= 2;
 		signal_queue_buf = (lirc_t*)slinke_realloc(signal_queue_buf, signal_queue_bufsize * sizeof(lirc_t));
 		if (signal_queue_buf == NULL) {
-			logprintf(LIRC_ERROR, "could not enlarge signal queue buffer");
+			log_error("could not enlarge signal queue buffer");
 			return;
 		}               /* if */
 	}                       /* if */
@@ -533,8 +535,8 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 	unsigned char* buf = q->buf;
 	int len = q->length;
 
-	logprintf(LIRC_TRACE1, "port #%d: %s", q->port_id, to_byte_string(buf, len));
-	logprintf(LIRC_TRACE1, "%s (0x%02x %s) len = %d", slinkePorts[q->port_id], q->msg_id, msgIdReprs[q->msg_id], len);
+	log_trace1("port #%d: %s", q->port_id, to_byte_string(buf, len));
+	log_trace1("%s (0x%02x %s) len = %d", slinkePorts[q->port_id], q->msg_id, msgIdReprs[q->msg_id], len);
 
 	switch (q->msg_id) {
 	case MSG_ID_PORT_RECEIVE: {
@@ -559,7 +561,7 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 			app_signal(curr_period_is_pulse, curr_period_len);
 		end_of_signals();
 
-		logprintf(LIRC_TRACE1, "%d signals: %s", signal_queue_length, signal_queue_to_string());
+		log_trace1("%d signals: %s", signal_queue_length, signal_queue_to_string());
 
 		resp = decode_all(remotes);
 	}
@@ -567,14 +569,14 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 	case MSG_ID_SAMPLING_PERIOD_EQUALS: {
 		if (len == 2) {
 			slinke_settings.sample_period = (buf[0] << 8) | (buf[1]);
-			logprintf(LIRC_INFO, "sample period %d * 1/5 usec", slinke_settings.sample_period);
+			log_info("sample period %d * 1/5 usec", slinke_settings.sample_period);
 		}               /* if */
 	}
 	break;
 	case MSG_ID_TIMEOUT_PERIOD_EQUALS: {
 		if (len == 2) {
 			slinke_settings.timeout_samples = (buf[0] << 8) | (buf[1]);
-			logprintf(LIRC_INFO, "timeout %d samples", slinke_settings.timeout_samples);
+			log_info("timeout %d samples", slinke_settings.timeout_samples);
 		}               /* if */
 	}
 	break;
@@ -587,10 +589,11 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 			if (slinke_settings.version != NULL)
 				free(slinke_settings.version);
 			slinke_settings.version = strdup(s);
-			if (slinke_settings.version == NULL)
-				logprintf(LIRC_ERROR, "could not allocate version string");
-			else
-				logprintf(LIRC_INFO, "Slink-e version %s", slinke_settings.version);
+			if (slinke_settings.version == NULL) {
+				log_error("could not allocate version string");
+			} else {
+				log_info("Slink-e version %s", slinke_settings.version);
+			}
 			/* if */
 		}               /* if */
 	}
@@ -609,7 +612,7 @@ static void enqueue_byte(struct port_queue_rec* q, unsigned char b)
 	if (q->length > q->bufsize) {
 		if (q->bufsize >= QUEUE_BUF_MAX_SIZE) {
 			if (q->bufsize == QUEUE_BUF_MAX_SIZE)
-				logprintf(LIRC_TRACE, "maximum port queue buffer size reached");
+				log_trace("maximum port queue buffer size reached");
 			/* if */
 			return;
 		}
@@ -617,7 +620,7 @@ static void enqueue_byte(struct port_queue_rec* q, unsigned char b)
 		q->bufsize *= 2;
 		q->buf = (unsigned char*)slinke_realloc(q->buf, q->bufsize);
 		if (q->buf == NULL) {
-			logprintf(LIRC_ERROR, "could not enlarge port queue buffer");
+			log_error("could not enlarge port queue buffer");
 			return;
 		}               /* if */
 	}                       /* if */
@@ -633,7 +636,7 @@ static char* accept_rx_byte(unsigned char rch, struct ir_remote* remotes)
 	static struct port_queue_rec* curr_queue;
 	char* resp = NULL;
 
-	logprintf(LIRC_TRACE2, "accept_rx_byte %02x", rch);
+	log_trace2("accept_rx_byte %02x", rch);
 	switch (state) {
 	case RX_STATE_IDLE:
 		port_id = (rch >> 5) & 7;
@@ -782,17 +785,17 @@ char* slinke_rec(struct ir_remote* remotes)
 
 	do {
 		if (!waitfordata(TIMEOUT)) {
-			logprintf(LIRC_TRACE, "timeout reading byte %d", byteNo);
+			log_trace("timeout reading byte %d", byteNo);
 			return NULL;
 		}
 		/* if */
 		if (read(drv.fd, &rch, 1) != 1) {
-			logprintf(LIRC_TRACE, "reading of byte %d failed", byteNo);
+			log_trace("reading of byte %d failed", byteNo);
 			return NULL;
 		}               /* if */
 		byteNo++;
 
-		logprintf(LIRC_TRACE2, "byte %d: %02x", byteNo, rch);
+		log_trace2("byte %d: %02x", byteNo, rch);
 	} while ((resp = accept_rx_byte(rch, remotes)) == NULL);
 	gettimeofday(&end, NULL);
 	last = end;

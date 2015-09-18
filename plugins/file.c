@@ -90,6 +90,8 @@ const struct driver* hardwares[] = { &drv_test, (const struct driver*)NULL };
 
 // private data
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static FILE* infile = NULL;
 static int outfile_fd = -1;
 static int lineno = 1;
@@ -99,9 +101,9 @@ static int decode_func(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	logprintf(LIRC_TRACE, "decode: enter");
+	log_trace("decode: enter");
 	res = receive_decode(remote, ctx);
-	logprintf(LIRC_TRACE, "decode: %d", res);
+	log_trace("decode: %d", res);
 	return res;
 }
 
@@ -116,7 +118,7 @@ static lirc_t readdata(lirc_t timeout)
 		"# Closing infile file after %d lines (data still pending...)\n";
 
 	if (infile == NULL || fgets(line, sizeof(line), infile) == NULL) {
-		logprintf(LIRC_TRACE, "No more input, timeout: %d", timeout);
+		log_trace("No more input, timeout: %d", timeout);
 		if (timeout > 0)
 			usleep(timeout);
 		if (infile != NULL) {
@@ -127,7 +129,7 @@ static lirc_t readdata(lirc_t timeout)
 		chk_write(outfile_fd, line, strlen(line));
 		drv.fd = -1;
 		at_eof = 1;
-		logprintf(LIRC_DEBUG, "Closing infile after  %d lines", lineno);
+		log_debug("Closing infile after  %d lines", lineno);
 		lineno = 0;
 		return LIRC_EOF | LIRC_MODE2_TIMEOUT | timeout;
 	}
@@ -147,12 +149,12 @@ static int open_func(const char* device)
 	if (device == NULL)
 		device = drv.device;
 	if (device == NULL) {
-		logprintf(LIRC_ERROR, "Attempt to open NULL sink file");
+		log_error("Attempt to open NULL sink file");
 		return 0;
 	}
 	outfile_fd = open(device, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	if (outfile_fd == -1) {
-		logprintf(LIRC_WARNING,
+		log_warn(
 			  "Cannot open path %s for write", drv.device);
 		return 0;
 	}
@@ -179,12 +181,12 @@ static char* receive_func(struct ir_remote* remotes)
 	static char* EOF_PACKET = "0000000008000000 00 __EOF lirc";
 
 	if (at_eof) {
-		logprintf(LIRC_TRACE, "file.c: At eof");
+		log_trace("file.c: At eof");
 		at_eof = 0;
 		return EOF_PACKET;
 	}
 	if (!rec_buffer_clear()) {
-		logprintf(LIRC_TRACE, "file.c: At !rec_buffer_clear");
+		log_trace("file.c: At !rec_buffer_clear");
 		if (at_eof) {
 			at_eof = 0;
 			return EOF_PACKET;
@@ -203,7 +205,7 @@ static void write_line(const char* type, int duration)
 	snprintf(buffer, sizeof(buffer), "%s %d\n", type, duration);
 	chk_write(outfile_fd, buffer, strlen(buffer));
 	if (duration & LIRC_EOF) {
-		logprintf(LIRC_NOTICE, "Exiting on input EOF");
+		log_notice("Exiting on input EOF");
 		raise(SIGUSR1);
 	}
 }
@@ -213,10 +215,10 @@ static int send_func(struct ir_remote* remote, struct ir_ncode* code)
 {
 	int i;
 
-	logprintf(LIRC_TRACE, "file.c: sending, code: %s", code->name);
+	log_trace("file.c: sending, code: %s", code->name);
 
 	if (!send_buffer_put(remote, code)) {
-		logprintf(LIRC_DEBUG, "file.c: Cannot make send_buffer_put");
+		log_debug("file.c: Cannot make send_buffer_put");
 		return 0;
 	}
 	for (i = 0;; ) {

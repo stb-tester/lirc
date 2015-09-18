@@ -30,6 +30,7 @@
 #include "lirc_client.h"
 #include "lirc_log.h"
 
+static const logchannel_t logchannel = LOG_APP;
 
 static const char* const USAGE =
 	"Usage: irexec [options] [lircrc config_file]\n"
@@ -77,7 +78,7 @@ static void run_command(const char* cmd)
 			exit(EXIT_FAILURE);
 		}
 		if (pid2 == 0) {
-			logprintf(LIRC_DEBUG, "Execing command \"%s\"", cmd);
+			log_debug("Execing command \"%s\"", cmd);
 			execvp(SH_PATH, vp);
 			/* not reached */
 			logperror(LIRC_ERROR, "execvp failed");

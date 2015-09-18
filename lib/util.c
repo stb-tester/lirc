@@ -23,6 +23,7 @@
 #include "lirc/lirc_log.h"
 #include "util.h"
 
+static const logchannel_t logchannel = LOG_LIB;
 
 const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 {
@@ -66,12 +67,12 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 		return "";
 	}
 	setenv("HOME", pw->pw_dir, 1);
-	logprintf(LIRC_NOTICE, "Running as user %s", user);
+	log_notice("Running as user %s", user);
 	for (i = 0; i < group_cnt; i += 1) {
 		snprintf(buff, 5, " %d", groups[i]);
 		strcat(groupnames, buff);
 	}
-	logprintf(LIRC_DEBUG, "Groups: [%d]:%s", pw->pw_gid, groupnames);
+	log_debug("Groups: [%d]:%s", pw->pw_gid, groupnames);
 
 	return pw->pw_name;
 }

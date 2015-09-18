@@ -23,6 +23,8 @@
 #include "lirc_private.h"
 #include "lirc_client.h"
 
+static const logchannel_t logchannel = LOG_APP;
+
 static int opt_silent = 0;
 static int opt_dump = 0;
 
@@ -96,7 +98,7 @@ void get_photo(const char* path, char* buff, ssize_t size)
 		return;
 	}
 	if (globbuf.gl_pathc > 1)
-		logprintf(LIRC_WARNING, "Multiple photos for %s", buff);
+		log_warn("Multiple photos for %s", buff);
 	strncpy(buff, basename(globbuf.gl_pathv[0]), size);
 }
 

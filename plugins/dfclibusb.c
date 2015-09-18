@@ -38,6 +38,9 @@
 #define CODE_BYTES 6
 #define USB_TIMEOUT (5000)
 
+
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static char device_path[PATH_MAX + 1] = {0};
 
 static int dfc_init(void);
@@ -93,7 +96,7 @@ static int dfc_init(void)
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
-	logprintf(LIRC_TRACE, "initializing USB receiver");
+	log_trace("initializing USB receiver");
 
 	rec_buffer_init();
 
@@ -103,7 +106,7 @@ static int dfc_init(void)
 		 usb_dev->bus->dirname, usb_dev->filename);
 	drv.device = device_path;
 	if (usb_dev == NULL) {
-		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
+		log_error("couldn't find a compatible USB device");
 		return 0;
 	}
 
@@ -122,7 +125,11 @@ static int dfc_init(void)
 		goto fail;
 	}
 
-	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
+	log_debug("atilibusb: using device: %s", device_path);
 
 	child = fork();
 	if (child == -1) {
@@ -132,7 +139,7 @@ static int dfc_init(void)
 		usb_read_loop(pipe_fd[1]);
 	}
 
-	logprintf(LIRC_TRACE, "USB receiver initialized");
+	log_trace("USB receiver initialized");
 	return 1;
 
 fail:
@@ -243,7 +250,7 @@ static void usb_read_loop(int fd)
 		if (bytes_r < 0) {
 			if (errno == EAGAIN || errno == ETIMEDOUT)
 				continue;
-			logprintf(LIRC_ERROR, "can't read from USB device: %s", strerror(errno));
+			log_error("can't read from USB device: %s", strerror(errno));
 			err = 1;
 			goto done;
 		}
@@ -256,7 +263,7 @@ static void usb_read_loop(int fd)
 					for (pos = 0; pos < ptr; pos += bytes_w) {
 						bytes_w = write(fd, rcv_code + pos, ptr - pos);
 						if (bytes_w < 0) {
-							logprintf(LIRC_ERROR,
+							log_error(
 								  "can't write to pipe: %s", strerror(errno));
 							err = 1;
 							goto done;

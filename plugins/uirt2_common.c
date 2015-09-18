@@ -43,7 +43,7 @@
 #include "uirt2_common.h"
 
 #define PRINT_TIME(a) \
-	logprintf(LIRC_TRACE, "time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)
+	log_trace("time: %s %li %li", #a, (a)->tv_sec, (a)->tv_usec)
 
 struct tag_uirt2_t {
 	int		fd;
@@ -54,6 +54,8 @@ struct tag_uirt2_t {
 	struct timeval	pre_time;
 	int		new_signal;
 };
+
+static const logchannel_t logchannel = LOG_DRIVER;
 
 const int unit = UIRT2_UNIT;
 
@@ -145,7 +147,7 @@ static int command_ext(uirt2_t* dev, const byte_t* in, byte_t* out)
 			timersub(&dev->pre_delay, &diff, &delay);
 			PRINT_TIME(&delay);
 
-			logprintf(LIRC_TRACE, "udelay %lu %lu", delay.tv_sec, delay.tv_usec);
+			log_trace("udelay %lu %lu", delay.tv_sec, delay.tv_usec);
 			sleep(delay.tv_sec);
 			usleep(delay.tv_usec);
 		}
@@ -155,39 +157,39 @@ static int command_ext(uirt2_t* dev, const byte_t* in, byte_t* out)
 
 	uirt2_readflush(dev, 0);
 
-	logprintf(LIRC_TRACE, "writing command %02x", buf[0]);
+	log_trace("writing command %02x", buf[0]);
 
 	hexdump("Command: ", tmp, len + 2);
 	res = write(dev->fd, tmp, len + 2);
 
 	if (res < len + 2) {
-		logprintf(LIRC_ERROR, "uirt2_raw: couldn't write command");
+		log_error("uirt2_raw: couldn't write command");
 		return -1;
 	}
 
-	logprintf(LIRC_TRACE, "wrote %d", res);
+	log_trace("wrote %d", res);
 
 	if (!mywaitfordata(dev, (long)1000000)) {
-		logprintf(LIRC_ERROR, "uirt2_raw: did not receive results");
+		log_error("uirt2_raw: did not receive results");
 		return -1;
 	}
 
 	res = readagain(dev->fd, out + 1, out[0]);
 
 	if (res < out[0]) {
-		logprintf(LIRC_ERROR, "uirt2_raw: couldn't read command result");
+		log_error("uirt2_raw: couldn't read command result");
 		return -1;
 	}
 
-	logprintf(LIRC_TRACE, "cmd res %d:", res);
+	log_trace("cmd res %d:", res);
 	hexdump("Result: ", out + 1, out[0]);
-	logprintf(LIRC_TRACE, "");
+	log_trace("");
 
 	if (out[0] > 1) {
 		int check = checksum(out + 1, out[0]);
 
 		if (check != 0) {
-			logprintf(LIRC_ERROR, "uirt2_raw: checksum error");
+			log_error("uirt2_raw: checksum error");
 			return -1;
 		}
 	}
@@ -249,7 +251,7 @@ static __u32 calc_struct1_length(int repeat, remstruct1_data_t* buf)
 	int bHdr = unit * (buf->bHdr1 + buf->bHdr0);
 	__u32 bBitLength = calc_bits_length(buf);
 
-	logprintf(LIRC_TRACE, "bBitLength %lu repeat %d", bBitLength, repeat);
+	log_trace("bBitLength %lu repeat %d", bBitLength, repeat);
 
 	return (repeat + 1) * (bISDly + bHdr + bBitLength);
 }
@@ -262,7 +264,7 @@ uirt2_t* uirt2_init(int fd)
 	uirt2_t* dev = (uirt2_t*)malloc(sizeof(uirt2_t));
 
 	if (dev == NULL) {
-		logprintf(LIRC_ERROR, "uirt2_raw: out of memory");
+		log_error("uirt2_raw: out of memory");
 		return NULL;
 	}
 
@@ -280,11 +282,11 @@ uirt2_t* uirt2_init(int fd)
 		return NULL;
 	}
 
-	if (dev->version < 0x0104)
-		logprintf(LIRC_WARNING, "uirt2_raw: Old UIRT hardware");
-	else
-		logprintf(LIRC_INFO, "uirt2_raw: UIRT version %04x ok", dev->version);
-
+	if (dev->version < 0x0104) {
+		log_warn("uirt2_raw: Old UIRT hardware");
+	} else {
+		log_info("uirt2_raw: UIRT version %04x ok", dev->version);
+	}
 	return dev;
 }
 
@@ -305,7 +307,7 @@ int uirt2_setmode(uirt2_t* dev, int mode)
 	byte_t cmd;
 
 	if (uirt2_getmode(dev) == mode) {
-		logprintf(LIRC_TRACE, "uirt2_setmode: already in requested mode");
+		log_trace("uirt2_setmode: already in requested mode");
 		return 0;
 	}
 
@@ -320,14 +322,14 @@ int uirt2_setmode(uirt2_t* dev, int mode)
 		cmd = UIRT2_SETMODESTRUC;
 		break;
 	default:
-		logprintf(LIRC_ERROR, "uirt2_raw: bad mode");
+		log_error("uirt2_raw: bad mode");
 		return -1;
 	}
 
 	buf[0] = cmd;
 
 	if (command(dev, buf, 0) < 0) {
-		logprintf(LIRC_ERROR, "uirt2_raw: setmode failed");
+		log_error("uirt2_raw: setmode failed");
 		return -1;
 	}
 
@@ -375,8 +377,8 @@ int uirt2_getversion(uirt2_t* dev, int* version)
 	 * protocol, which sends extended information when
 	 * the version is requested.
 	 */
-	logprintf(LIRC_TRACE, "uirt2: detection of uirt2 failed");
-	logprintf(LIRC_TRACE, "uirt2: trying to detect newer uirt firmware");
+	log_trace("uirt2: detection of uirt2 failed");
+	log_trace("uirt2: trying to detect newer uirt firmware");
 	uirt2_readflush(dev, 200000);
 
 	out[0] = 8;
@@ -489,7 +491,7 @@ int uirt2_read_uir(uirt2_t* dev, byte_t* buf, int length)
 	int res;
 
 	if (uirt2_getmode(dev) != UIRT2_MODE_UIR) {
-		logprintf(LIRC_ERROR, "uirt2_raw: Not in UIR mode");
+		log_error("uirt2_raw: Not in UIR mode");
 		return -1;
 	}
 
@@ -514,7 +516,7 @@ lirc_t uirt2_read_raw(uirt2_t* dev, lirc_t timeout)
 	static int pulse = 0;
 
 	if (uirt2_getmode(dev) != UIRT2_MODE_RAW) {
-		logprintf(LIRC_ERROR, "uirt2_raw: Not in RAW mode");
+		log_error("uirt2_raw: Not in RAW mode");
 		return -1;
 	}
 
@@ -530,7 +532,7 @@ lirc_t uirt2_read_raw(uirt2_t* dev, lirc_t timeout)
 		if (res == -1)
 			return 0;
 
-		logprintf(LIRC_TRACE2, "read_raw %02x", b);
+		log_trace2("read_raw %02x", b);
 
 		if (b == 0xff) {
 			dev->new_signal = 1;
@@ -541,7 +543,7 @@ lirc_t uirt2_read_raw(uirt2_t* dev, lirc_t timeout)
 			byte_t isdly[2];
 
 			isdly[0] = b;
-			logprintf(LIRC_TRACE, "dev->new_signal");
+			log_trace("dev->new_signal");
 
 			res = readagain(dev->fd, &isdly[1], 1);
 
@@ -614,7 +616,7 @@ int uirt2_send_struct1(uirt2_t* dev, int freq, int bRepeatCount, remstruct1_data
 	dev->pre_delay.tv_sec = delay / 1000000;
 	dev->pre_delay.tv_usec = delay % 1000000;
 
-	logprintf(LIRC_TRACE, "set dev->pre_delay %lu %lu", dev->pre_delay.tv_sec, dev->pre_delay.tv_usec);
+	log_trace("set dev->pre_delay %lu %lu", dev->pre_delay.tv_sec, dev->pre_delay.tv_usec);
 
 	return res;
 }

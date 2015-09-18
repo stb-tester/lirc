@@ -45,6 +45,9 @@
 #define SCSI_TUR_CMD_LEN       6
 #define SCSI_SEN_CMD_LEN       10
 
+
+static const logchannel_t logchannel = LOG_DRIVER;
+
 static int creative_infracd_init(void);
 static int creative_infracd_deinit(void);
 static int creative_infracd_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
@@ -101,11 +104,11 @@ int is_my_device(int fd, const char* name)
 
 	/* Just to be safe, check we have a sg device wigh version > 3 */
 	if ((ioctl(fd, SG_GET_VERSION_NUM, &k) < 0) || (k < 30000)) {
-		logprintf(LIRC_TRACE, "%s isn't sg device version > 3", name);
+		log_trace("%s isn't sg device version > 3", name);
 		return 0;
 	}
 	usleep(10);
-	logprintf(LIRC_TRACE, "%s is valid sg device - checking what it is", name);
+	log_trace("%s is valid sg device - checking what it is", name);
 
 	/* Prepare INQUIRY command */
 	memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
@@ -120,18 +123,18 @@ int is_my_device(int fd, const char* name)
 	io_hdr.timeout = 2000;
 
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
-		logprintf(LIRC_ERROR, "INQUIRY SG_IO ioctl error");
+		log_error("INQUIRY SG_IO ioctl error");
 		return 0;
 	}
 	usleep(10);
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-		logprintf(LIRC_ERROR, "INQUIRY: SCSI status=0x%x host_status=0x%x driver_status=0x%x", io_hdr.status,
+		log_error("INQUIRY: SCSI status=0x%x host_status=0x%x driver_status=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
 		return 0;
 	}
 	/* check INQUIRY returned string */
 	if (strncmp(Buff + 8, "CREATIVE", 8) > 0)
-		logprintf(LIRC_ERROR, "%s is %s (vendor isn't Creative)", name, Buff + 8);
+		log_error("%s is %s (vendor isn't Creative)", name, Buff + 8);
 
 	/* now run sense_mode_10 for page 0 to see if this is really it */
 	if (test_device_command(fd) < 0)
@@ -163,12 +166,12 @@ int test_device_command(int fd)
 	memset(Buff, 0, MAX_SCSI_REPLY_LEN);
 
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
-		logprintf(LIRC_TRACE, "MODE_SENSE_10 SG_IO ioctl error");
+		log_trace("MODE_SENSE_10 SG_IO ioctl error");
 		return -1;
 	}
 
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-		logprintf(LIRC_TRACE, "MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
+		log_trace("MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
 		return -1;
 	}
@@ -210,7 +213,7 @@ int init_device(void)
 	if (drv.device) {
 		fd = open(drv.device, O_RDWR);
 		if (fd < 0) {
-			logprintf(LIRC_TRACE, "Init: open of %s failed", drv.device);
+			log_trace("Init: open of %s failed", drv.device);
 			return 0;
 		}
 		/* open ok, test device */
@@ -222,7 +225,7 @@ int init_device(void)
 		sprintf(dev_name, "/dev/sg%c", c);
 		fd = open(dev_name, O_RDWR);
 		if (fd < 0) {
-			logprintf(LIRC_TRACE, "Probing: open of %s failed", dev_name);
+			log_trace("Probing: open of %s failed", dev_name);
 			continue;
 		}
 		/* open ok, test device */
@@ -238,7 +241,7 @@ int creative_infracd_init(void)
 {
 	int fd;
 
-	logprintf(LIRC_TRACE, "Creative iNFRA driver: begin search for device");
+	log_trace("Creative iNFRA driver: begin search for device");
 
 	fd = init_device();
 	if (fd) {
@@ -255,22 +258,22 @@ int creative_infracd_init(void)
 			return 0;
 		}
 		int_fd = fd;
-		logprintf(LIRC_TRACE, "Probing: %s is my device", drv.device);
+		log_trace("Probing: %s is my device", drv.device);
 		return 1;
 	}
 
 	/* probing failed - simple sanity check why */
 	fd = open("/proc/scsi/scsi", O_RDONLY);
 	if (fd < 0) {
-		logprintf(LIRC_TRACE, "Probing: unable to open /proc/scsi/scsi");
+		log_trace("Probing: unable to open /proc/scsi/scsi");
 	} else {
 		close(fd);
 		fd = open("/proc/scsi/ide-scsi/0", O_RDONLY);
 		if (fd < 0) {
-			logprintf(LIRC_TRACE, "Probing: scsi support present but ide-scsi is not loaded");
+			log_trace("Probing: scsi support present but ide-scsi is not loaded");
 		} else {
 			close(fd);
-			logprintf(LIRC_TRACE,
+			log_trace(
 				  "Probing: scsi in kernel, ide-scsi is loaded. Bad configuration or "
 				  "device not present");
 		}

@@ -70,6 +70,8 @@ const struct driver hw_caraca = {
 
 const struct driver* hardwares[] = { &hw_caraca, (const struct driver*)NULL };
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
 
 int caraca_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_code* postp, int* repeat_flagp,
 		  lirc_t* min_remaining_gapp, lirc_t* max_remaining_gapp)
@@ -91,7 +93,7 @@ int caraca_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_co
 
 	*min_remaining_gapp = 0;
 	*max_remaining_gapp = 0;
-	logprintf(LIRC_TRACE, "code: %llx", (__u64) *codep);
+	log_trace("code: %llx", (__u64) *codep);
 	return 1;
 }
 
@@ -100,13 +102,13 @@ int caraca_init(void)
 	signal_length = drv.code_length * 1000000 / 1200;
 	drv.fd = caraca_open(PACKAGE);
 	if (drv.fd < 0) {
-		logprintf(LIRC_ERROR, "could not open lirc");
+		log_error("could not open lirc");
 		logperror(LIRC_ERROR, "caraca_init()");
 		return 0;
 	}
 	/*accept IR-Messages (16 : RC5 key code) for all nodes on the bus */
 	if (set_filter(drv.fd, 0x400, 0x7c0, 0) <= 0) {
-		logprintf(LIRC_ERROR, "could not set filter for IR-Messages");
+		log_error("could not set filter for IR-Messages");
 		caraca_deinit();
 		return 0;
 	}
@@ -130,10 +132,10 @@ char* caraca_rec(struct ir_remote* remotes)
 	i = read(drv.fd, msg, NUMBYTES);
 	gettimeofday(&end, NULL);
 
-	logprintf(LIRC_TRACE, "caraca_rec: %s", msg);
+	log_trace("caraca_rec: %s", msg);
 	i = sscanf(msg, "%d.%d:%d", &node, &t, &ir);
 	if (i != 3)
-		logprintf(LIRC_WARNING,
+		log_warn(
 			  "caraca: Cannot decode input message (!)");
 
 	/* transmit the node address as first byte, so we have

@@ -18,6 +18,7 @@
 #include "lirc_private.h"
 #include "irrecord.h"
 
+static const logchannel_t logchannel = LOG_APP;
 
 static const int NOISE_LIMIT = 500;
 static const int NOISE_TIMEOUT_US = 3000000;
@@ -491,7 +492,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	}
 	if (getresuid_uid() == 0) {
 		if (seteuid(0) == -1)
-			logprintf(LIRC_ERROR, "Cannot reset root uid");
+			log_error("Cannot reset root uid");
 	}
 	curr_driver->open_func(opts->device);
 	if (curr_driver->init_func) {
@@ -863,7 +864,7 @@ static void remote_report(struct ir_remote* remote)
 	else if (is_grundig(remote)) printf("GRUNDIG encoding\n");
 	else if (is_bo(remote)) printf("Bang & Olufsen encoding\n");
 	else printf("Unknown encoding\n");
-	logprintf(LIRC_DEBUG, "%d %u %u %u %u %u %d %d %d %u\n",
+	log_debug("%d %u %u %u %u %u %d %d %d %u\n",
 		  remote->bits, (__u32)remote->pone, (__u32)remote->sone,
 		  (__u32)remote->pzero, (__u32)remote->szero,
 		  (__u32)remote->ptrail, remote->flags, remote->eps,
