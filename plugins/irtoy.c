@@ -135,11 +135,11 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	LOGPRINTF(1, "decode: enter");
+	logprintf(LIRC_TRACE, "decode: enter");
 
 	res = receive_decode(remote, ctx);
 
-	LOGPRINTF(1, "decode: %d", res);
+	logprintf(LIRC_TRACE, "decode: %d", res);
 
 	return res;
 }
@@ -246,7 +246,7 @@ static lirc_t irtoy_read(irtoy_t* dev, lirc_t timeout)
 	// LONGSPACE <firstpulse><signal>AA
 
 	if (dev->awaitingNewSig) {
-		LOGPRINTF(1, "new signal after large space");
+		logprintf(LIRC_TRACE, "new signal after large space");
 		dev->pulse = 1;
 		dev->awaitingNewSig = 0;
 		return IRTOY_LONGSPACE;
@@ -256,13 +256,13 @@ static lirc_t irtoy_read(irtoy_t* dev, lirc_t timeout)
 		logprintf(LIRC_ERROR, "irtoy_read: could not get 2 bytes");
 		return 0;
 	}
-	LOGPRINTF(3, "read_raw %02x%02x", dur[0], dur[1]);
+	logprintf(LIRC_TRACE2, "read_raw %02x%02x", dur[0], dur[1]);
 	if (dur[0] == 0xff && dur[1] == 0xff) {
 		dev->awaitingNewSig = 1;
 		return IRTOY_LONGSPACE;
 	}
 	data = (lirc_t)(IRTOY_UNIT * (double)(256 * dur[0] + dur[1]));
-	LOGPRINTF(3, "read_raw %d", data);
+	logprintf(LIRC_TRACE2, "read_raw %d", data);
 
 	if (dev->pulse)
 		data = data | PULSE_BIT;
@@ -277,7 +277,7 @@ static lirc_t readdata(lirc_t timeout)
 	lirc_t data = irtoy_read(dev, timeout);
 
 	if (data)
-		LOGPRINTF(1, "readdata %d %d",
+		logprintf(LIRC_TRACE, "readdata %d %d",
 			  !!(data & PULSE_BIT), data & PULSE_MASK);
 	return data;
 }
@@ -315,7 +315,7 @@ static int irtoy_getversion(irtoy_t* dev)
 
 	buf[IRTOY_LEN_VERSION] = 0;
 
-	LOGPRINTF(1, "irtoy_getversion: Got version %s", buf);
+	logprintf(LIRC_TRACE, "irtoy_getversion: Got version %s", buf);
 
 	if (buf[0] != IRTOY_REPLY_VERSION) {
 		logprintf(LIRC_ERROR,
@@ -383,7 +383,7 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		return 0;
 	}
 
-	LOGPRINTF(1, "irtoy_reset: Got protocol %s", buf);
+	logprintf(LIRC_TRACE, "irtoy_reset: Got protocol %s", buf);
 	dev->protoVersion = atoi(buf + 1);
 	return 1;
 }
@@ -464,7 +464,7 @@ static int init_device(void)
 		tty_delete_lock();
 		return 0;
 	}
-	LOGPRINTF(1, "Version hw %d, sw %d, protocol %d",
+	logprintf(LIRC_TRACE, "Version hw %d, sw %d, protocol %d",
 		  dev->hwVersion, dev->swVersion, dev->protoVersion);
 	if (dev->swVersion < IRTOY_MINFWVERSION) {
 		logprintf(LIRC_ERROR,
@@ -551,7 +551,7 @@ static int deinit(void)
 
 static char* receive(struct ir_remote* remotes)
 {
-	LOGPRINTF(1, "irtoy_raw_rec");
+	logprintf(LIRC_TRACE, "irtoy_raw_rec");
 	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);
@@ -586,7 +586,7 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 		return -1;
 	}
 
-	LOGPRINTF(1, "irtoy ready for %d bytes", irToyBufLen);
+	logprintf(LIRC_TRACE, "irtoy ready for %d bytes", irToyBufLen);
 
 	txPtr = signals;
 
@@ -610,7 +610,7 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 			return -1;
 		}
 
-		LOGPRINTF(1, "irtoy ready for %d bytes", irToyBufLen);
+		logprintf(LIRC_TRACE, "irtoy ready for %d bytes", irToyBufLen);
 	}
 
 
@@ -621,7 +621,7 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 		return -1;
 	}
 
-	LOGPRINTF(1, "%c %02X %02X %c\n", reply[0], reply[1], reply[2], reply[3]);
+	logprintf(LIRC_TRACE, "%c %02X %02X %c\n", reply[0], reply[1], reply[2], reply[3]);
 
 	if (reply[0] != IRTOY_REPLY_XMITCOUNT) {
 		logprintf(LIRC_ERROR, "irtoy_send: invalid byte count indicator received: %02X", reply[0]);

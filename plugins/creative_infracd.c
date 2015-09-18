@@ -101,11 +101,11 @@ int is_my_device(int fd, const char* name)
 
 	/* Just to be safe, check we have a sg device wigh version > 3 */
 	if ((ioctl(fd, SG_GET_VERSION_NUM, &k) < 0) || (k < 30000)) {
-		LOGPRINTF(1, "%s isn't sg device version > 3", name);
+		logprintf(LIRC_TRACE, "%s isn't sg device version > 3", name);
 		return 0;
 	}
 	usleep(10);
-	LOGPRINTF(1, "%s is valid sg device - checking what it is", name);
+	logprintf(LIRC_TRACE, "%s is valid sg device - checking what it is", name);
 
 	/* Prepare INQUIRY command */
 	memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
@@ -163,12 +163,12 @@ int test_device_command(int fd)
 	memset(Buff, 0, MAX_SCSI_REPLY_LEN);
 
 	if (ioctl(fd, SG_IO, &io_hdr) < 0) {
-		LOGPRINTF(1, "MODE_SENSE_10 SG_IO ioctl error");
+		logprintf(LIRC_TRACE, "MODE_SENSE_10 SG_IO ioctl error");
 		return -1;
 	}
 
 	if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
-		LOGPRINTF(1, "MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
+		logprintf(LIRC_TRACE, "MODE_SENSE_10: status=0x%x host=0x%x driver=0x%x", io_hdr.status,
 			  io_hdr.host_status, io_hdr.driver_status);
 		return -1;
 	}
@@ -210,7 +210,7 @@ int init_device(void)
 	if (drv.device) {
 		fd = open(drv.device, O_RDWR);
 		if (fd < 0) {
-			LOGPRINTF(1, "Init: open of %s failed", drv.device);
+			logprintf(LIRC_TRACE, "Init: open of %s failed", drv.device);
 			return 0;
 		}
 		/* open ok, test device */
@@ -222,7 +222,7 @@ int init_device(void)
 		sprintf(dev_name, "/dev/sg%c", c);
 		fd = open(dev_name, O_RDWR);
 		if (fd < 0) {
-			LOGPRINTF(1, "Probing: open of %s failed", dev_name);
+			logprintf(LIRC_TRACE, "Probing: open of %s failed", dev_name);
 			continue;
 		}
 		/* open ok, test device */
@@ -238,7 +238,7 @@ int creative_infracd_init(void)
 {
 	int fd;
 
-	LOGPRINTF(1, "Creative iNFRA driver: begin search for device");
+	logprintf(LIRC_TRACE, "Creative iNFRA driver: begin search for device");
 
 	fd = init_device();
 	if (fd) {
@@ -255,22 +255,22 @@ int creative_infracd_init(void)
 			return 0;
 		}
 		int_fd = fd;
-		LOGPRINTF(1, "Probing: %s is my device", drv.device);
+		logprintf(LIRC_TRACE, "Probing: %s is my device", drv.device);
 		return 1;
 	}
 
 	/* probing failed - simple sanity check why */
 	fd = open("/proc/scsi/scsi", O_RDONLY);
 	if (fd < 0) {
-		LOGPRINTF(1, "Probing: unable to open /proc/scsi/scsi");
+		logprintf(LIRC_TRACE, "Probing: unable to open /proc/scsi/scsi");
 	} else {
 		close(fd);
 		fd = open("/proc/scsi/ide-scsi/0", O_RDONLY);
 		if (fd < 0) {
-			LOGPRINTF(1, "Probing: scsi support present but ide-scsi is not loaded");
+			logprintf(LIRC_TRACE, "Probing: scsi support present but ide-scsi is not loaded");
 		} else {
 			close(fd);
-			LOGPRINTF(1,
+			logprintf(LIRC_TRACE,
 				  "Probing: scsi in kernel, ide-scsi is loaded. Bad configuration or "
 				  "device not present");
 		}

@@ -99,9 +99,9 @@ static int decode_func(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	int res;
 
-	LOGPRINTF(1, "decode: enter");
+	logprintf(LIRC_TRACE, "decode: enter");
 	res = receive_decode(remote, ctx);
-	LOGPRINTF(1, "decode: %d", res);
+	logprintf(LIRC_TRACE, "decode: %d", res);
 	return res;
 }
 

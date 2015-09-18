@@ -49,11 +49,11 @@ class LogTest : public CppUnit::TestFixture
             lirc_log_open("IrRemoteTest", 0, LIRC_TRACE2);
 
             lirc_log_setlevel(LIRC_TRACE1);
-            LOGPRINTF(2, "Testing LIRC_TRACE1: %s", "TRACE1 arg");
-            LOGPRINTF(3, "Testing LIRC_TRACE2 (disabled): %s", "TRACE2 arg");
+            logprintf(LIRC_TRACE1, "Testing LIRC_TRACE1: %s", "TRACE1 arg");
+            logprintf(LIRC_TRACE2, "Testing LIRC_TRACE2 (disabled): %s", "TRACE2 arg");
 
             lirc_log_setlevel(LIRC_TRACE);
-            LOGPRINTF(2, "Testing LIRC_TRACE: %s", "TRACE arg");
+            logprintf(LIRC_TRACE1, "Testing LIRC_TRACE: %s", "TRACE arg");
             logprintf(LIRC_INFO, "Testing enabled TRACE");
 
             lirc_log_setlevel(LIRC_WARNING);

@@ -1,4 +1,4 @@
-/****************************************************************************
+/******************************************************************
 ** transmit.c **************************************************************
 ****************************************************************************
 *
@@ -59,7 +59,7 @@ void send_buffer_init(void)
 
 static void clear_send_buffer(void)
 {
-	LOGPRINTF(3, "clearing transmit buffer");
+	logprintf(LIRC_TRACE2, "clearing transmit buffer");
 	send_buffer.wptr = 0;
 	send_buffer.too_long = 0;
 	send_buffer.is_biphase = 0;
@@ -71,7 +71,7 @@ static void clear_send_buffer(void)
 static void add_send_buffer(lirc_t data)
 {
 	if (send_buffer.wptr < WBUF_SIZE) {
-		LOGPRINTF(3, "adding to transmit buffer: %u", data);
+		logprintf(LIRC_TRACE2, "adding to transmit buffer: %u", data);
 		send_buffer.sum += data;
 		send_buffer._data[send_buffer.wptr] = data;
 		send_buffer.wptr++;
@@ -96,7 +96,7 @@ static void send_pulse(lirc_t data)
 static void send_space(lirc_t data)
 {
 	if (send_buffer.wptr == 0 && send_buffer.pendingp == 0) {
-		LOGPRINTF(1, "first signal is a space!");
+		logprintf(LIRC_TRACE, "first signal is a space!");
 		return;
 	}
 	if (send_buffer.pendings > 0) {
@@ -124,15 +124,15 @@ static int check_send_buffer(void)
 	int i;
 
 	if (send_buffer.wptr == 0) {
-		LOGPRINTF(1, "nothing to send");
+		logprintf(LIRC_TRACE, "nothing to send");
 		return 0;
 	}
 	for (i = 0; i < send_buffer.wptr; i++) {
 		if (send_buffer.data[i] == 0) {
 			if (i % 2) {
-				LOGPRINTF(1, "invalid space: %d", i);
+				logprintf(LIRC_TRACE, "invalid space: %d", i);
 			} else {
-				LOGPRINTF(1, "invalid pulse: %d", i);
+				logprintf(LIRC_TRACE, "invalid pulse: %d", i);
 			}
 			return 0;
 		}
@@ -486,7 +486,7 @@ init_send_loop:
 			lirc_t* signals;
 			int n;
 
-			LOGPRINTF(1, "unrolling raw signal optimisation");
+			logprintf(LIRC_TRACE, "unrolling raw signal optimisation");
 			signals = send_buffer.data;
 			n = send_buffer.wptr;
 			send_buffer.data = send_buffer._data;
@@ -494,7 +494,7 @@ init_send_loop:
 
 			send_signals(signals, n);
 		}
-		LOGPRINTF(1, "concatenating low gap signals");
+		logprintf(LIRC_TRACE, "concatenating low gap signals");
 		if (code->next == NULL || code->transmit_state == NULL)
 			remote->repeat_countdown--;
 		send_space(remote->min_remaining_gap);
@@ -504,7 +504,7 @@ init_send_loop:
 		repeat = 1;
 		goto init_send_loop;
 	}
-	LOGPRINTF(3, "transmit buffer ready");
+	logprintf(LIRC_TRACE2, "transmit buffer ready");
 
 final_check:
 	if (!check_send_buffer()) {

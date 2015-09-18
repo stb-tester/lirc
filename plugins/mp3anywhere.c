@@ -132,12 +132,12 @@ char* mp3anywhere_rec(struct ir_remote* remotes)
 	while (b[i] != 0xAD) {
 		i++;
 		if (i >= NUMBYTES) {
-			LOGPRINTF(0, "buffer overflow at byte %d", i);
+			logprintf(LIRC_TRACE, "buffer overflow at byte %d", i);
 			break;
 		}
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				return NULL;
 			}
 		}
@@ -150,7 +150,7 @@ char* mp3anywhere_rec(struct ir_remote* remotes)
 			logprintf(LIRC_ERROR, "bad envelope");
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 

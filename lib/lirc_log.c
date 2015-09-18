@@ -383,5 +383,5 @@ void hexdump(char* prefix, unsigned char* buf, int len)
 	} else {
 		strncpy(str + pos, "NO DATA", sizeof(str));
 	}
-	LOGPRINTF(1, "%s", str);
+	logprintf(LIRC_TRACE, "%s", str);
 }

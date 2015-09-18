@@ -90,7 +90,7 @@ const struct driver* hardwares[] = { &hw_zotac, (const struct driver*)NULL };
 
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "zotac_decode");
+	logprintf(LIRC_TRACE, "zotac_decode");
 
 	if (!map_code(remote, ctx, 0, 0, main_code_length, main_code, 0, 0))
 		return 0;
@@ -131,7 +131,7 @@ static int zotac_getcode(void)
 		case 1: /* USB standard keyboard usage page */
 		{
 			/* This page reports cursor keys */
-			LOGPRINTF(3, "Keyboard (standard)\n");
+			logprintf(LIRC_TRACE2, "Keyboard (standard)\n");
 
 			/* check for special codes */
 			uref.field_index = 0;
@@ -153,17 +153,17 @@ static int zotac_getcode(void)
 			ioctl(fd_hidraw, HIDIOCGUSAGE, &uref, sizeof(uref));
 			/* now we have the key */
 
-			LOGPRINTF(3, "usage: %x   value: %x   shift: %d\n", uref.usage_code, uref.value, shift);
+			logprintf(LIRC_TRACE2, "usage: %x   value: %x   shift: %d\n", uref.usage_code, uref.value, shift);
 
 			/* now we have the key */
 			if (uref.value) {
 				probe_code = (uref.usage_code | uref.value);
 				if (shift)
 					probe_code |= 0x10000000;
-				LOGPRINTF(3, "Main code 1: %x\n", probe_code);
+				logprintf(LIRC_TRACE2, "Main code 1: %x\n", probe_code);
 				return 1;
 			}
-			LOGPRINTF(3, "rel button\n");
+			logprintf(LIRC_TRACE2, "rel button\n");
 			probe_code = release_code;
 			return 2;
 		}
@@ -176,7 +176,7 @@ static int zotac_getcode(void)
 			/* This page reports power key
 			 * (via SystemControl SLEEP)
 			 */
-			LOGPRINTF(3, "Generic desktop (standard)\n");
+			logprintf(LIRC_TRACE2, "Generic desktop (standard)\n");
 
 
 			/* traverse report descriptor */
@@ -199,7 +199,7 @@ static int zotac_getcode(void)
 						ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 						if (uref.value != 0) {
-							LOGPRINTF(3,
+							logprintf(LIRC_TRACE2,
 								  "field: %d, idx: %d, usage: %x   value: %x\n", i, j,
 								  uref.usage_code, uref.value);
 							probe_code = uref.usage_code;
@@ -225,7 +225,7 @@ static int zotac_getcode(void)
 		/* This page reports power key
 		 * (via SystemControl SLEEP)
 		 */
-		LOGPRINTF(3, "Same Event ...\n");
+		logprintf(LIRC_TRACE2, "Same Event ...\n");
 
 		/* traverse report descriptor */
 		rinfo.report_type = HID_REPORT_TYPE_INPUT;
@@ -247,7 +247,7 @@ static int zotac_getcode(void)
 					ioctl(fd_hidraw, HIDIOCGUSAGE, &uref);
 
 					if (uref.value != 0) {
-						LOGPRINTF(3, "usage: %x   value: %x\n", uref.usage_code, uref.value);
+						logprintf(LIRC_TRACE2, "usage: %x   value: %x\n", uref.usage_code, uref.value);
 						//probe_code = uref.usage_code;
 						return 0;
 					}
@@ -416,7 +416,7 @@ static char* zotac_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	LOGPRINTF(1, "zotac : %x", ev);
+	logprintf(LIRC_TRACE, "zotac : %x", ev);
 	// Record the code and check for repetition
 	if (main_code == ev) {
 		repeat_state = RPT_YES;

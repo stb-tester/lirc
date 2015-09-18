@@ -256,7 +256,7 @@ error:          unlink(tmp_name);
 	if (alsa_set_hwparams())
 		goto error;
 
-	LOGPRINTF(1, "hw_audio_alsa: Using device '%s', sampling rate %dHz\n", tmp_name, alsa_hw.rate);
+	logprintf(LIRC_TRACE, "hw_audio_alsa: Using device '%s', sampling rate %dHz\n", tmp_name, alsa_hw.rate);
 
 	/* Start sampling data */
 	if (alsa_error("start", snd_pcm_start(alsa_hw.handle)))
@@ -473,7 +473,7 @@ var_reset:                      /* Reset variables */
 				 */
 				if ((x > 20000) && signal_state) {
 					signal_state = 0;
-					LOGPRINTF(1, "Pulse/space desynchronization fixed - len %u", x);
+					logprintf(LIRC_TRACE, "Pulse/space desynchronization fixed - len %u", x);
 				}
 
 				x |= signal_state;
@@ -509,7 +509,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	ret = read(drv.fd, &data, sizeof(data));
 
 	if (ret != sizeof(data)) {
-		LOGPRINTF(1, "error reading from lirc device");
+		logprintf(LIRC_TRACE, "error reading from lirc device");
 		LOGPERROR(1, NULL);
 		raise(SIGTERM);
 		return 0;

@@ -261,7 +261,7 @@ lirc_t audio_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		LOGPRINTF(1, "error reading from lirc");
+		logprintf(LIRC_TRACE, "error reading from lirc");
 		LOGPERROR(1, NULL);
 		raise(SIGTERM);
 		return 0;
@@ -285,7 +285,7 @@ int audio_send(struct ir_remote* remote, struct ir_ncode* code)
 	signals = send_buffer_data();
 
 	if (length <= 0 || signals == NULL) {
-		LOGPRINTF(1, "nothing to send");
+		logprintf(LIRC_TRACE, "nothing to send");
 		return 0;
 	}
 
@@ -449,7 +449,7 @@ int audio_init(void)
 	char device[1024];
 	double latency;
 
-	LOGPRINTF(1, "hw_audio_init()");
+	logprintf(LIRC_TRACE, "hw_audio_init()");
 
 	//
 	logprintf(LIRC_INFO, "Initializing %s...", drv.device);
@@ -531,7 +531,7 @@ int audio_init(void)
 	if (flags != -1)
 		fcntl(ptyfd, F_SETFL, flags | O_NONBLOCK);
 
-	LOGPRINTF(1, "PTY name: %s", ptyName);
+	logprintf(LIRC_TRACE, "PTY name: %s", ptyName);
 
 	drv.fd = ptyfd;
 
@@ -574,7 +574,7 @@ int audio_deinit(void)
 {
 	PaError err;
 
-	LOGPRINTF(1, "hw_audio_deinit()");
+	logprintf(LIRC_TRACE, "hw_audio_deinit()");
 
 	logprintf(LIRC_INFO, "Deinitializing %s...", drv.device);
 

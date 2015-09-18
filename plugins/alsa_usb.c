@@ -156,8 +156,8 @@ static char* rec(struct ir_remote* remotes)
 	repeat_flag = code == last_code && current.tv_sec - last_time.tv_sec <= 2
 		      && time_elapsed(&last_time, &current) <= 350000;
 	last_time = current;
-	LOGPRINTF(1, "code: %llx", (__u64)code);
-	LOGPRINTF(1, "repeat_flag: %d", repeat_flag);
+	logprintf(LIRC_TRACE, "code: %llx", (__u64)code);
+	logprintf(LIRC_TRACE, "repeat_flag: %d", repeat_flag);
 	return decode_all(remotes);
 }
 

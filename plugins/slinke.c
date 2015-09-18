@@ -276,7 +276,7 @@ static int signal_to_int(lirc_t signal)
 /*****************************************************************************/
 static void tx_bytes(unsigned char* b, int n)
 {
-	LOGPRINTF(3, "sending %s", to_byte_string(b, n));
+	logprintf(LIRC_TRACE2, "sending %s", to_byte_string(b, n));
 	chk_write(drv.fd, b, n);
 }                               /* tx_bytes */
 
@@ -449,7 +449,7 @@ lirc_t slinke_readdata(int timeout)
 		result = 0;
 	/* if */
 
-	LOGPRINTF(3, "readdata: %d @ %d", signal_to_int(result), signal_queue_rd_idx);
+	logprintf(LIRC_TRACE2, "readdata: %d @ %d", signal_to_int(result), signal_queue_rd_idx);
 	return result;
 }                               /* readdata */
 
@@ -533,8 +533,8 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 	unsigned char* buf = q->buf;
 	int len = q->length;
 
-	LOGPRINTF(2, "port #%d: %s", q->port_id, to_byte_string(buf, len));
-	LOGPRINTF(2, "%s (0x%02x %s) len = %d", slinkePorts[q->port_id], q->msg_id, msgIdReprs[q->msg_id], len);
+	logprintf(LIRC_TRACE1, "port #%d: %s", q->port_id, to_byte_string(buf, len));
+	logprintf(LIRC_TRACE1, "%s (0x%02x %s) len = %d", slinkePorts[q->port_id], q->msg_id, msgIdReprs[q->msg_id], len);
 
 	switch (q->msg_id) {
 	case MSG_ID_PORT_RECEIVE: {
@@ -559,7 +559,7 @@ static char* process_rx_bytes(struct port_queue_rec* q, struct ir_remote* remote
 			app_signal(curr_period_is_pulse, curr_period_len);
 		end_of_signals();
 
-		LOGPRINTF(2, "%d signals: %s", signal_queue_length, signal_queue_to_string());
+		logprintf(LIRC_TRACE1, "%d signals: %s", signal_queue_length, signal_queue_to_string());
 
 		resp = decode_all(remotes);
 	}
@@ -609,7 +609,7 @@ static void enqueue_byte(struct port_queue_rec* q, unsigned char b)
 	if (q->length > q->bufsize) {
 		if (q->bufsize >= QUEUE_BUF_MAX_SIZE) {
 			if (q->bufsize == QUEUE_BUF_MAX_SIZE)
-				LOGPRINTF(1, "maximum port queue buffer size reached");
+				logprintf(LIRC_TRACE, "maximum port queue buffer size reached");
 			/* if */
 			return;
 		}
@@ -633,7 +633,7 @@ static char* accept_rx_byte(unsigned char rch, struct ir_remote* remotes)
 	static struct port_queue_rec* curr_queue;
 	char* resp = NULL;
 
-	LOGPRINTF(3, "accept_rx_byte %02x", rch);
+	logprintf(LIRC_TRACE2, "accept_rx_byte %02x", rch);
 	switch (state) {
 	case RX_STATE_IDLE:
 		port_id = (rch >> 5) & 7;
@@ -782,17 +782,17 @@ char* slinke_rec(struct ir_remote* remotes)
 
 	do {
 		if (!waitfordata(TIMEOUT)) {
-			LOGPRINTF(0, "timeout reading byte %d", byteNo);
+			logprintf(LIRC_TRACE, "timeout reading byte %d", byteNo);
 			return NULL;
 		}
 		/* if */
 		if (read(drv.fd, &rch, 1) != 1) {
-			LOGPRINTF(0, "reading of byte %d failed", byteNo);
+			logprintf(LIRC_TRACE, "reading of byte %d failed", byteNo);
 			return NULL;
 		}               /* if */
 		byteNo++;
 
-		LOGPRINTF(4, "byte %d: %02x", byteNo, rch);
+		logprintf(LIRC_TRACE2, "byte %d: %02x", byteNo, rch);
 	} while ((resp = accept_rx_byte(rch, remotes)) == NULL);
 	gettimeofday(&end, NULL);
 	last = end;

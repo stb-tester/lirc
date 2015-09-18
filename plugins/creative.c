@@ -149,7 +149,7 @@ char* creative_rec(struct ir_remote* remotes)
 				return NULL;
 			}
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 

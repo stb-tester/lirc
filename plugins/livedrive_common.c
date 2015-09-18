@@ -75,8 +75,8 @@ int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			ctx->repeat_flag = 0;
 	}
 
-	LOGPRINTF(1, "repeat_flag: %d", ctx->repeat_flag);
-	LOGPRINTF(1, "gap: %lu", (__u32)gap);
+	logprintf(LIRC_TRACE, "repeat_flag: %d", ctx->repeat_flag);
+	logprintf(LIRC_TRACE, "gap: %lu", (__u32)gap);
 
 	return 1;
 }

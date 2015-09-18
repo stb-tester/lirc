@@ -91,7 +91,7 @@ int caraca_decode(struct ir_remote* remote, ir_code* prep, ir_code* codep, ir_co
 
 	*min_remaining_gapp = 0;
 	*max_remaining_gapp = 0;
-	LOGPRINTF(1, "code: %llx", (__u64) *codep);
+	logprintf(LIRC_TRACE, "code: %llx", (__u64) *codep);
 	return 1;
 }
 
@@ -130,7 +130,7 @@ char* caraca_rec(struct ir_remote* remotes)
 	i = read(drv.fd, msg, NUMBYTES);
 	gettimeofday(&end, NULL);
 
-	LOGPRINTF(1, "caraca_rec: %s", msg);
+	logprintf(LIRC_TRACE, "caraca_rec: %s", msg);
 	i = sscanf(msg, "%d.%d:%d", &node, &t, &ir);
 	if (i != 3)
 		logprintf(LIRC_WARNING,

@@ -128,7 +128,7 @@ char* pcmak_rec(struct ir_remote* remotes)
 		i++;
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				return NULL;
 			}
 		}
@@ -138,7 +138,7 @@ char* pcmak_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b);
 		if (b == 0xAA) {
 			repeat_counter = 0;
 		} else {

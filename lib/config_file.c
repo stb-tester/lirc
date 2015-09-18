@@ -358,7 +358,7 @@ struct ir_ncode* defineCode(char* key, char* val, struct ir_ncode* code)
 	memset(code, 0, sizeof(*code));
 	code->name = s_strdup(key);
 	code->code = s_strtocode(val);
-	LOGPRINTF(3, "      %-20s 0x%016llX", code->name, code->code);
+	logprintf(LIRC_TRACE2, "      %-20s 0x%016llX", code->name, code->code);
 	return code;
 }
 
@@ -373,7 +373,7 @@ struct ir_code_node* defineNode(struct ir_ncode* code, const char* val)
 	node->code = s_strtocode(val);
 	node->next = NULL;
 
-	LOGPRINTF(3, "                           0x%016llX", node->code);
+	logprintf(LIRC_TRACE2, "                           0x%016llX", node->code);
 
 	if (code->current == NULL) {
 		code->next = node;
@@ -413,7 +413,7 @@ int parseFlags(char* val)
 					return 0;
 				}
 				flags = flags | flaglptr->flag;
-				LOGPRINTF(3, "flag %s recognized", flaglptr->name);
+				logprintf(LIRC_TRACE2, "flag %s recognized", flaglptr->name);
 				break;
 			}
 			flaglptr++;
@@ -426,7 +426,7 @@ int parseFlags(char* val)
 		}
 		flag = help;
 	}
-	LOGPRINTF(2, "flags value: %d", flags);
+	logprintf(LIRC_TRACE1, "flags value: %d", flags);
 
 	return flags;
 }
@@ -945,7 +945,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 
 	line = 0;
 	parse_error = 0;
-	LOGPRINTF(2, "parsing '%s'", name);
+	logprintf(LIRC_TRACE1, "parsing '%s'", name);
 
 	while (fgets(buf, LINE_LEN, f) != NULL) {
 		line++;
@@ -976,7 +976,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 		val = strtok(NULL, whitespace);
 		if (val != NULL) {
 			val2 = strtok(NULL, whitespace);
-			LOGPRINTF(3, "Tokens: \"%s\" \"%s\" \"%s\"", key, val, (val2 == NULL ? "(null)" : val));
+			logprintf(LIRC_TRACE2, "Tokens: \"%s\" \"%s\" \"%s\"", key, val, (val2 == NULL ? "(null)" : val));
 			if (strcasecmp("include", key) == 0) {
 				int save_line = line;
 
@@ -988,7 +988,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 			} else if (strcasecmp("begin", key) == 0) {
 				if (strcasecmp("codes", val) == 0) {
 					/* init codes mode */
-					LOGPRINTF(2, "    begin codes");
+					logprintf(LIRC_TRACE1, "    begin codes");
 					if (!checkMode(mode, ID_remote, "begin codes"))
 						break;
 					if (rem->codes) {
@@ -1002,7 +1002,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 					mode = ID_codes;
 				} else if (strcasecmp("raw_codes", val) == 0) {
 					/* init raw_codes mode */
-					LOGPRINTF(2, "    begin raw_codes");
+					logprintf(LIRC_TRACE1, "    begin raw_codes");
 					if (!checkMode(mode, ID_remote, "begin raw_codes"))
 						break;
 					if (rem->codes) {
@@ -1017,18 +1017,18 @@ read_config_recursive(FILE* f, const char* name, int depth)
 					mode = ID_raw_codes;
 				} else if (strcasecmp("remote", val) == 0) {
 					/* create new remote */
-					LOGPRINTF(1, "parsing remote");
+					logprintf(LIRC_TRACE, "parsing remote");
 					if (!checkMode(mode, ID_none, "begin remote"))
 						break;
 					mode = ID_remote;
 					if (!top_rem) {
 						/* create first remote */
-						LOGPRINTF(2, "creating first remote");
+						logprintf(LIRC_TRACE1, "creating first remote");
 						rem = top_rem = s_malloc(sizeof(struct ir_remote));
 						rem->freq = DEFAULT_FREQ;
 					} else {
 						/* create new remote */
-						LOGPRINTF(2, "creating next remote");
+						logprintf(LIRC_TRACE1, "creating next remote");
 						rem = s_malloc(sizeof(struct ir_remote));
 						rem->freq = DEFAULT_FREQ;
 						ir_remotes_append(top_rem, rem);
@@ -1058,14 +1058,14 @@ read_config_recursive(FILE* f, const char* name, int depth)
 			} else if (strcasecmp("end", key) == 0) {
 				if (strcasecmp("codes", val) == 0) {
 					/* end Codes mode */
-					LOGPRINTF(2, "    end codes");
+					logprintf(LIRC_TRACE1, "    end codes");
 					if (!checkMode(mode, ID_codes, "end codes"))
 						break;
 					rem->codes = get_void_array(&codes_list);
 					mode = ID_remote;       /* switch back */
 				} else if (strcasecmp("raw_codes", val) == 0) {
 					/* end raw codes mode */
-					LOGPRINTF(2, "    end raw_codes");
+					logprintf(LIRC_TRACE1, "    end raw_codes");
 
 					if (mode == ID_raw_name) {
 						raw_code.signals = get_void_array(&signals);
@@ -1085,7 +1085,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 					mode = ID_remote;       /* switch back */
 				} else if (strcasecmp("remote", val) == 0) {
 					/* end remote mode */
-					LOGPRINTF(2, "end remote");
+					logprintf(LIRC_TRACE1, "end remote");
 					/* print_remote(rem); */
 					if (!checkMode(mode, ID_remote, "end remote"))
 						break;
@@ -1156,7 +1156,7 @@ read_config_recursive(FILE* f, const char* name, int depth)
 				case ID_raw_codes:
 				case ID_raw_name:
 					if (strcasecmp("name", key) == 0) {
-						LOGPRINTF(3, "Button: \"%s\"", val);
+						logprintf(LIRC_TRACE2, "Button: \"%s\"", val);
 						if (mode == ID_raw_name) {
 							raw_code.signals = get_void_array(&signals);
 							raw_code.length = signals.nr_items;
@@ -1396,7 +1396,7 @@ void calculate_signal_lengths(struct ir_remote* remote)
 		remote->min_total_signal_length = min_signal_length + remote->min_gap_length;
 		remote->max_total_signal_length = max_signal_length + remote->max_gap_length;
 	}
-	LOGPRINTF(1, "lengths: %lu %lu %lu %lu", remote->min_total_signal_length, remote->max_total_signal_length,
+	logprintf(LIRC_TRACE, "lengths: %lu %lu %lu %lu", remote->min_total_signal_length, remote->max_total_signal_length,
 		  remote->min_gap_length, remote->max_gap_length);
 }
 

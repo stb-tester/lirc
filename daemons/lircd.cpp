@@ -532,7 +532,7 @@ void config(void)
 	if (config_remotes == (void*)-1) {
 		logprintf(LIRC_ERROR, "reading of config file failed");
 	} else {
-		LOGPRINTF(1, "config file read");
+		logprintf(LIRC_TRACE, "config file read");
 		if (config_remotes == NULL) {
 			logprintf(LIRC_WARNING,
 				  "config file %s contains no valid remote control definition",
@@ -570,7 +570,7 @@ void remove_client(int fd)
 			return;
 		}
 	}
-	LOGPRINTF(1, "internal error in remove_client: no such fd");
+	logprintf(LIRC_TRACE, "internal error in remove_client: no such fd");
 }
 
 
@@ -952,12 +952,12 @@ int get_peer_message(struct peer_connection* peer)
 		end++;          /* include the \n */
 		end[0] = 0;
 		length = strlen(buffer);
-		LOGPRINTF(1, "received peer message: \"%s\"", buffer);
+		logprintf(LIRC_TRACE, "received peer message: \"%s\"", buffer);
 		for (i = 0; i < clin; i++) {
 			/* don't relay messages to remote clients */
 			if (cli_type[i] == CT_REMOTE)
 				continue;
-			LOGPRINTF(1, "writing to client %d", i);
+			logprintf(LIRC_TRACE, "writing to client %d", i);
 			if (write_socket(clis[i], buffer, length) < length) {
 				remove_client(clis[i]);
 				i--;
@@ -1096,7 +1096,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		listen(sockinet, 3);
 		nolinger(sockinet);
 	}
-	LOGPRINTF(1, "started server socket");
+	logprintf(LIRC_TRACE, "started server socket");
 	return;
 
 start_server_failed2:
@@ -1445,7 +1445,7 @@ void broadcast_message(const char* message)
 	len = strlen(message);
 
 	for (i = 0; i < clin; i++) {
-		LOGPRINTF(1, "writing to client %d: %s", i, message);
+		logprintf(LIRC_TRACE, "writing to client %d: %s", i, message);
 		if (write_socket(clis[i], message, len) < len) {
 			remove_client(clis[i]);
 			i--;
@@ -1706,7 +1706,7 @@ int get_command(int fd)
 			return 0;
 		}
 		end[0] = 0;
-		LOGPRINTF(1, "received command: \"%s\"", buffer);
+		logprintf(LIRC_TRACE, "received command: \"%s\"", buffer);
 		packet_length = strlen(buffer) + 1;
 
 		strcpy(backup, buffer);
@@ -1889,7 +1889,7 @@ void free_old_remotes(void)
 		free_config(free_remotes);
 		free_remotes = NULL;
 	} else {
-		LOGPRINTF(1, "free_remotes still in use");
+		logprintf(LIRC_TRACE, "free_remotes still in use");
 	}
 }
 
@@ -2081,12 +2081,12 @@ static int mywaitfordata(unsigned long maxusec)
 
 		if (poll_fds.byname.sockfd.revents & POLLIN) {
 			poll_fds.byname.sockfd.revents = 0;
-			LOGPRINTF(1, "registering local client");
+			logprintf(LIRC_TRACE, "registering local client");
 			add_client(sockfd);
 		}
 		if (poll_fds.byname.sockinet.revents & POLLIN) {
 			poll_fds.byname.sockinet.revents = 0;
-			LOGPRINTF(1, "registering inet client");
+			logprintf(LIRC_TRACE, "registering inet client");
 			add_client(sockinet);
 		}
 		if (use_hw() && curr_driver->rec_mode != 0

@@ -153,7 +153,7 @@ static char* uirt2_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 	}
 	gettimeofday(&end, NULL);
 
@@ -173,7 +173,7 @@ static char* uirt2_rec(struct ir_remote* remotes)
 	code = code << 8;
 	code |= ((ir_code)b[5]);
 
-	LOGPRINTF(1, "code: %llx", (__u64)code);
+	logprintf(LIRC_TRACE, "code: %llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;

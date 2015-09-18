@@ -100,9 +100,9 @@ int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	ctx->min_remaining_gap = min_gap(remote);
 	ctx->max_remaining_gap = max_gap(remote);
 
-	LOGPRINTF(1, "repeat_flagp: %d", ctx->repeat_flag);
-	LOGPRINTF(1, "remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
-	LOGPRINTF(1, "rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
+	logprintf(LIRC_TRACE, "repeat_flagp: %d", ctx->repeat_flag);
+	logprintf(LIRC_TRACE, "remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
+	logprintf(LIRC_TRACE, "rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
 	return 1;
 }
 
@@ -118,7 +118,7 @@ int usbx_init(void)
 		logprintf(LIRC_ERROR, "Could not open the '%s' device", drv.device);
 		return 0;
 	}
-	LOGPRINTF(1, "device '%s' opened", drv.device);
+	logprintf(LIRC_TRACE, "device '%s' opened", drv.device);
 
 	if (!tty_reset(drv.fd) || !tty_setbaud(drv.fd, 300000) || !tty_setrtscts(drv.fd, 1)) {
 		logprintf(LIRC_ERROR, "could not configure the serial port for '%s'", drv.device);
@@ -146,16 +146,16 @@ char* usbx_rec(struct ir_remote* remotes)
 	for (i = 0; i < 6; i++) {
 		if (i > 0) {
 			if (!waitfordata(20000)) {
-				LOGPRINTF(1, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				break;
 			}
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
-			LOGPRINTF(1, "reading of byte %d failed.", i);
+			logprintf(LIRC_TRACE, "reading of byte %d failed.", i);
 			usbx_deinit();
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 		x++;
 	}
 	code = 0;
@@ -164,7 +164,7 @@ char* usbx_rec(struct ir_remote* remotes)
 		code |= ((ir_code)b[i]);
 	}
 
-	LOGPRINTF(1, " -> %0llx", (__u64)code);
+	logprintf(LIRC_TRACE, " -> %0llx", (__u64)code);
 
 	m = decode_all(remotes);
 	return m;

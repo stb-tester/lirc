@@ -151,15 +151,15 @@ const struct driver* hardwares[] = { &hw_accent, (const struct driver*)NULL };
 //-------------------------------------------------------------------------
 int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "Entering accent_decode(), code = %016llx\n", code);
+	logprintf(LIRC_TRACE, "Entering accent_decode(), code = %016llx\n", code);
 
-	LOGPRINTF(1, "accent_decode() is calling map_code()");
+	logprintf(LIRC_TRACE, "accent_decode() is calling map_code()");
 	if (!map_code(remote, ctx, 0, 0, ACCENT_CODE_LENGTH, code, 0, 0))
 		return 0;
 
 	map_gap(remote, ctx, &start, &last, signal_length);
 
-	LOGPRINTF(1, "Exiting accent_decode()");
+	logprintf(LIRC_TRACE, "Exiting accent_decode()");
 
 	return 1;
 }
@@ -172,7 +172,7 @@ int accent_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 //-------------------------------------------------------------------------
 int accent_init(void)
 {
-	LOGPRINTF(1, "Entering accent_init()");
+	logprintf(LIRC_TRACE, "Entering accent_init()");
 
 	// Calculate the time length of a remote signal (in microseconds):
 	// (bits + total_stop_bits) * 1000000 / bitrate
@@ -196,7 +196,7 @@ int accent_init(void)
 //-------------------------------------------------------------------------
 int accent_deinit(void)
 {
-	LOGPRINTF(1, "Entering accent_deinit()");
+	logprintf(LIRC_TRACE, "Entering accent_deinit()");
 	close(drv.fd);
 	tty_delete_lock();
 	return 1;
@@ -212,7 +212,7 @@ char* accent_rec(struct ir_remote* remotes)
 	char* m;
 	int i, j;
 
-	LOGPRINTF(1, "Entering accent_rec()");
+	logprintf(LIRC_TRACE, "Entering accent_rec()");
 
 	// Timestamp of the last pressed key.
 	last = end;
@@ -234,7 +234,7 @@ char* accent_rec(struct ir_remote* remotes)
 			if (waitfordata(45000) == 0) {
 				// waitfordata() timed out: the
 				// sequence is complete.
-				LOGPRINTF(1, "waitfordata() timeout waiting for byte %d", i);
+				logprintf(LIRC_TRACE, "waitfordata() timeout waiting for byte %d", i);
 				break;
 			}
 		}
@@ -243,14 +243,14 @@ char* accent_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, "read() failed at byte %d", i);
 			return NULL;
 		}
-		LOGPRINTF(1, "read() byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "read() byte %d: %02x", i, b[i]);
 	}                       // End for
 
 	// Timestamp of key press end.
 	gettimeofday(&end, NULL);
 
 	// The bytes sequence is complete, check its validity.
-	LOGPRINTF(1, "Received a sequence of %d bytes", i);
+	logprintf(LIRC_TRACE, "Received a sequence of %d bytes", i);
 
 	// Just one byte with zero value: repeated keypress?
 	if (i == 1 && b[0] == 0) {
@@ -263,7 +263,7 @@ char* accent_rec(struct ir_remote* remotes)
 			m = decode_all(remotes);
 			return m;
 		}
-		LOGPRINTF(1, "Previos code not set, invalid repeat key");
+		logprintf(LIRC_TRACE, "Previos code not set, invalid repeat key");
 		last_code = 0;
 		return NULL;
 	}
@@ -304,7 +304,7 @@ char* accent_rec(struct ir_remote* remotes)
 			code <<= 8;
 			code |= b[6];
 		}
-		LOGPRINTF(1, "sizeof(code) = %d", sizeof(code));
+		logprintf(LIRC_TRACE, "sizeof(code) = %d", sizeof(code));
 		logprintf(1, "Received code -> 0x%016llx", code);
 		last_code = code;
 		tcflush(drv.fd, TCIFLUSH);
@@ -335,7 +335,7 @@ char* accent_rec(struct ir_remote* remotes)
 	// Should never reach this point.
 	logprintf(LIRC_NOTICE, "Received an invalid sequence");
 	for (j = 0; j < i; j++)
-		LOGPRINTF(1, " b[%d] = %02x", j, b[j]);
+		logprintf(LIRC_TRACE, " b[%d] = %02x", j, b[j]);
 	last_code = 0;
 	return NULL;
 }

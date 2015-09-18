@@ -127,12 +127,12 @@ char* logitech_rec(struct ir_remote* remotes)
 	while (b[i] != 0xAA) {
 		i++;
 		if (i >= NUMBYTES) {
-			LOGPRINTF(0, "buffer overflow at byte %d", i);
+			logprintf(LIRC_TRACE, "buffer overflow at byte %d", i);
 			break;
 		}
 		if (i > 0) {
 			if (!waitfordata(TIMEOUT)) {
-				LOGPRINTF(0, "timeout reading byte %d", i);
+				logprintf(LIRC_TRACE, "timeout reading byte %d", i);
 				return NULL;
 			}
 		}
@@ -141,12 +141,12 @@ char* logitech_rec(struct ir_remote* remotes)
 			logperror(LIRC_ERROR, NULL);
 			return NULL;
 		}
-		LOGPRINTF(1, "byte %d: %02x", i, b[i]);
+		logprintf(LIRC_TRACE, "byte %d: %02x", i, b[i]);
 		if (b[i] >= 0x40 && b[i] <= 0x6F) {
 			mouse_event = b[i];
 			b[1] = 0xA0;
 			b[2] = mouse_event;
-			LOGPRINTF(1, "mouse event: %02x", mouse_event);
+			logprintf(LIRC_TRACE, "mouse event: %02x", mouse_event);
 			break;
 		}
 	}

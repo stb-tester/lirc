@@ -138,7 +138,7 @@ static int awlibusb_init(void)
 	struct usb_device* usb_dev;
 	int pipe_fd[2] = { -1, -1 };
 
-	LOGPRINTF(1, "initializing USB receiver");
+	logprintf(LIRC_TRACE, "initializing USB receiver");
 
 	rec_buffer_init();
 
@@ -187,7 +187,7 @@ static int awlibusb_init(void)
 		usb_read_loop(pipe_fd[1]);
 	}
 
-	LOGPRINTF(1, "USB receiver initialized");
+	logprintf(LIRC_TRACE, "USB receiver initialized");
 	return 1;
 
 fail:

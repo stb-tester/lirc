@@ -256,12 +256,12 @@ int hiddev_deinit(void)
 
 int hiddev_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	LOGPRINTF(1, "hiddev_decode");
+	logprintf(LIRC_TRACE, "hiddev_decode");
 
 	if (!map_code(remote, ctx, pre_code_length, pre_code, main_code_length, main_code, 0, 0))
 		return 0;
 
-	LOGPRINTF(1, "lirc code: 0x%X", ctx->code);
+	logprintf(LIRC_TRACE, "lirc code: 0x%X", ctx->code);
 
 	map_gap(remote, ctx, &start, &last, 0);
 	/* override repeat */
@@ -293,7 +293,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 	int y_direction = 0;
 	int i;
 
-	LOGPRINTF(1, "hiddev_rec");
+	logprintf(LIRC_TRACE, "hiddev_rec");
 
 	last = end;
 	gettimeofday(&start, NULL);
@@ -305,7 +305,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 		return 0;
 	}
 
-	LOGPRINTF(1, "hid 0x%X  value 0x%X", event.hid, event.value);
+	logprintf(LIRC_TRACE, "hid 0x%X  value 0x%X", event.hid, event.value);
 
 	pre_code = event.hid;
 	main_code = event.value;
@@ -327,7 +327,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 		 * use it to obtain the remote code.
 		 */
 
-		LOGPRINTF(1, "This is another type Dvico - sends two codes");
+		logprintf(LIRC_TRACE, "This is another type Dvico - sends two codes");
 		if (!waitfordata(TIMEOUT)) {
 			logprintf(LIRC_ERROR, "timeout reading next event");
 			return NULL;
@@ -365,7 +365,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 		}
 		time_of_last_code = now;
 
-		LOGPRINTF(1, "main 0x%X  repeat state 0x%X", main_code, repeat_state);
+		logprintf(LIRC_TRACE, "main 0x%X  repeat state 0x%X", main_code, repeat_state);
 		return decode_all(remotes);
 #if 0
 		/* the following code could be used to recreate the
@@ -388,7 +388,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 	}
 	/* Asus DH remote specific code */
 	else if (event.hid == 0xFF000000) {
-		LOGPRINTF(1, "This is an asus P5 DH remote, we read the other events");
+		logprintf(LIRC_TRACE, "This is an asus P5 DH remote, we read the other events");
 		asus_events[0] = event;
 		for (i = 1; i < 8; i++) {
 			if (!waitfordata(TIMEOUT)) {
@@ -402,7 +402,7 @@ char* hiddev_rec(struct ir_remote* remotes)
 			}
 		}
 		for (i = 0; i < 8; i++)
-			LOGPRINTF(1, "Event number %d hid 0x%X  value 0x%X", i, asus_events[i].hid,
+			logprintf(LIRC_TRACE, "Event number %d hid 0x%X  value 0x%X", i, asus_events[i].hid,
 				  asus_events[i].value);
 		pre_code = asus_events[1].hid;
 		main_code = asus_events[1].value;
@@ -497,7 +497,7 @@ char* sb0540_rec(struct ir_remote* remotes)
 	ssize_t rd;
 	struct hiddev_usage_ref uref;
 
-	LOGPRINTF(1, "sb0540_rec");
+	logprintf(LIRC_TRACE, "sb0540_rec");
 
 	pre_code_length = 16;
 	main_code_length = 16;
@@ -567,7 +567,7 @@ char* macmini_rec(struct ir_remote* remotes)
 	int rd;
 	int i;
 
-	LOGPRINTF(1, "macmini_rec");
+	logprintf(LIRC_TRACE, "macmini_rec");
 
 	last = end;
 	gettimeofday(&start, NULL);
@@ -642,7 +642,7 @@ char* samsung_rec(struct ir_remote* remotes)
 	ssize_t rd;
 	struct hiddev_usage_ref uref;
 
-	LOGPRINTF(1, "samsung_rec");
+	logprintf(LIRC_TRACE, "samsung_rec");
 
 	pre_code_length = 0;
 	main_code_length = 32;
@@ -668,7 +668,7 @@ char* samsung_rec(struct ir_remote* remotes)
 		 *
 		 */
 
-		LOGPRINTF(2,
+		logprintf(LIRC_TRACE1,
 			  "hiddev event: reptype %d, repid %d, field" " idx %d, usage idx %x, usage code %x, val %d\n",
 			  uref.report_type, uref.report_id, uref.field_index, uref.usage_index, uref.usage_code,
 			  uref.value);
@@ -677,7 +677,7 @@ char* samsung_rec(struct ir_remote* remotes)
 		case 1: /* USB standard keyboard usage page */
 		{
 			/* This page reports cursor keys */
-			LOGPRINTF(3, "Keyboard (standard)\n");
+			logprintf(LIRC_TRACE2, "Keyboard (standard)\n");
 
 			/* populate required field number */
 			uref.field_index = 1;
@@ -692,7 +692,7 @@ char* samsung_rec(struct ir_remote* remotes)
 			main_code = (uref.usage_code & 0xffff0000)
 				    | uref.value;
 
-			LOGPRINTF(3, "Main code: %x\n", main_code);
+			logprintf(LIRC_TRACE2, "Main code: %x\n", main_code);
 			return decode_all(remotes);
 		}
 		break;
@@ -702,7 +702,7 @@ char* samsung_rec(struct ir_remote* remotes)
 			/* This page reports power key
 			 * (via SystemControl SLEEP)
 			 */
-			LOGPRINTF(3, "Generic desktop (standard)\n");
+			logprintf(LIRC_TRACE2, "Generic desktop (standard)\n");
 
 			/* populate required field number */
 			uref.field_index = 0;
@@ -717,7 +717,7 @@ char* samsung_rec(struct ir_remote* remotes)
 			main_code = (uref.usage_code & 0xffff0000)
 				    | uref.value;
 
-			LOGPRINTF(3, "Main code: %x\n", main_code);
+			logprintf(LIRC_TRACE2, "Main code: %x\n", main_code);
 			return decode_all(remotes);
 		}
 		break;
@@ -732,7 +732,7 @@ char* samsung_rec(struct ir_remote* remotes)
 			 */
 			int maxbit, i;
 
-			LOGPRINTF(3, "Samsung usage (proprietary)\n");
+			logprintf(LIRC_TRACE2, "Samsung usage (proprietary)\n");
 			/* According to tests, at most one of the
 			 * 48 key bits can be set.
 			 * Due to the required kernel patch, the
@@ -783,7 +783,7 @@ char* samsung_rec(struct ir_remote* remotes)
 				}
 			}
 
-			LOGPRINTF(3, "Main code: %x\n", main_code);
+			logprintf(LIRC_TRACE2, "Main code: %x\n", main_code);
 
 			/* decode combined key value */
 			return decode_all(remotes);
@@ -826,7 +826,7 @@ char* sonyir_rec(struct ir_remote* remotes)
 	int rd;
 	unsigned char msg[16];
 
-	LOGPRINTF(1, "sonyir_rec");
+	logprintf(LIRC_TRACE, "sonyir_rec");
 
 	// Sony IR receiver has 3 reports:
 	//   0x01 - 5B
