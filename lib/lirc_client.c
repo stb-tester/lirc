@@ -2049,24 +2049,28 @@ int lirc_get_local_socket(const char* path, int quiet)
 
 int lirc_get_remote_socket(const char* address, int port, int quiet)
 {
-	struct sockaddr_in addr_in;
-	struct hostent* hostInfo;
+	struct addrinfo* host;
+	struct addrinfo* tmp;
+	char service[64];
+	int r;
 
-	hostInfo = gethostbyname(address);
-	if (hostInfo == NULL) {
+	snprintf(service, sizeof(service),
+		 "%d", port > 0 ? port : LIRC_INET_PORT);
+	r = getaddrinfo(address, service, NULL, &host);
+	if (r < 0) {
 		if (!quiet)
 			fprintf(stderr, "get_remote_socket: host %s unknown\n",
 				address);
 		return -EADDRNOTAVAIL;
 	}
-	addr_in.sin_family = hostInfo->h_addrtype;
-	memcpy((char*)&addr_in.sin_addr.s_addr,
-	       hostInfo->h_addr_list[0],
-	       hostInfo->h_length);
-	addr_in.sin_port = htons(port > 0 ? port : LIRC_INET_PORT);
-	return do_connect(hostInfo->h_addrtype,
-			  (struct sockaddr*)&addr_in,
-			  sizeof(addr_in),
-			  quiet);
-	return 0;
+	do {
+		r = do_connect(host->ai_family,
+			       host->ai_addr,
+			       sizeof(host->ai_addr),
+			       quiet);
+		tmp = host;
+		host = host->ai_next;
+		freeaddrinfo(tmp);
+	} while (r < 0 && host != NULL);
+	return r;
 }
