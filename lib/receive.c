@@ -169,7 +169,7 @@ int waitfordata(__u32 maxusec)
 				ret = poll(&pfd, 1, maxusec * 1000);
 			} while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				logperror(LIRC_ERROR, "poll() failed");
+				log_perror_err("poll() failed");
 				continue;
 			}
 		} while (ret == -1);

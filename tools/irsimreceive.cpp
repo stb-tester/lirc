@@ -123,8 +123,7 @@ struct ir_remote* read_lircd_conf(const char* configfile)
 	filename = configfile == NULL ? LIRCDCFGFILE : configfile;
 	f = fopen(filename, "r");
 	if (f == NULL) {
-		log_error("could not open config file '%s'", filename);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err("could not open config file '%s'", filename);
 		exit(EXIT_FAILURE);
 	}
 	remotes = read_config(f, configfile);

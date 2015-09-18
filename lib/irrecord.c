@@ -116,7 +116,7 @@ int availabledata(void)
 			ret = poll(&pfd, 1, 0);
 		} while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
-			logperror(LIRC_ERROR, "availabledata: poll() failed");
+			log_perror_err("availabledata: poll() failed");
 			continue;
 		}
 	} while (ret == -1);
@@ -507,7 +507,7 @@ static int mywaitfordata(__u32 maxusec)
 	} while (ret == -1 && errno == EINTR);
 
 	if (ret == -1 && errno != EINTR)
-		logperror(LIRC_ERROR, "mywaitfordata: poll() failed");
+		log_perror_err("mywaitfordata: poll() failed");
 	return (pfd.revents & POLLIN) != 0;
 }
 
@@ -1649,8 +1649,7 @@ int analyse_get_lengths(struct lengths_state* lengths_state)
 			log_error("analyse, signal too long?!");
 			return 0;
 		default:
-			logprintf(LIRC_ERROR,
-				  "Cannot read raw data (%d)",
+			log_error("Cannot read raw data (%d)",
 				  status);
 			return 0;
 		}
@@ -1673,8 +1672,7 @@ int analyse_remote(struct ir_remote* raw_data, const struct opts* opts)
 	int ret;
 
 	if (!is_raw(raw_data)) {
-		logprintf(LIRC_ERROR,
-			  "remote %s not in raw mode, ignoring",
+		log_error("remote %s not in raw mode, ignoring",
 			  raw_data->name);
 		return 0;
 	}
@@ -1727,8 +1725,7 @@ int analyse_remote(struct ir_remote* raw_data, const struct opts* opts)
 						new_codes_count *
 						sizeof(*new_codes));
 				if (renew_codes == NULL) {
-					logprintf(LIRC_ERROR,
-						 "Out of memory");
+					log_error("Out of memory");
 					free(new_codes);
 					return 0;
 				}
@@ -1789,8 +1786,7 @@ int do_analyse(const struct opts* opts, struct main_state* state)
 	}
 	for (; r != NULL; r = r->next) {
 		if (!is_raw(r)) {
-			logprintf(LIRC_ERROR,
-				  "remote %s not in raw mode, ignoring",
+			log_error("remote %s not in raw mode, ignoring",
 				  r->name);
 			continue;
 		}
@@ -2098,10 +2094,8 @@ void config_file_setup(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->tmpfile, "w");
 	if (state->fout == NULL) {
-		logprintf(LIRC_ERROR,
-			  "Could not open new config file %s",
-			  tmpfile);
-		logperror(LIRC_ERROR, "While opening temporary file for write");
+		log_error("Could not open new config file %s", tmpfile);
+		log_perror_err("While opening temporary file for write");
 		return;
 	}
 	fprint_copyright(state->fout);
@@ -2117,9 +2111,8 @@ int config_file_finish(struct main_state* state, const struct opts* opts)
 {
 	state->fout = fopen(opts->filename, "w");
 	if (state->fout == NULL) {
-		logperror(LIRC_ERROR,
-			  "While opening \"%s\" for write",
-			  opts->filename);
+		log_perror_err("While opening \"%s\" for write",
+			       opts->filename);
 		return 0;
 	}
 	fprint_copyright(state->fout);

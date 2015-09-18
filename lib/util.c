@@ -43,27 +43,27 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 		return "root";
 	pw = getpwnam(user);
 	if (pw == NULL) {
-		logperror(LIRC_ERROR, "Can't run getpwnam() for %s", user);
+		log_perror_err("Can't run getpwnam() for %s", user);
 		return "";
 	}
 	r = getgrouplist(user, pw->pw_gid, groups, &group_cnt);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot get supplementary groups");
+		log_perror_warn("Cannot get supplementary groups");
 		return "";
 	}
 	r = setgroups(group_cnt, groups);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot set supplementary groups");
+		log_perror_warn("Cannot set supplementary groups");
 		return "";
 	}
 	r = setgid(pw->pw_gid);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot set GID");
+		log_perror_warn("Cannot set GID");
 		return "";
 	}
 	r = set_some_uid(pw->pw_uid);
 	if (r == -1) {
-		logperror(LOG_WARNING, "Cannot change UID to %d", pw->pw_uid);
+		log_perror_warn("Cannot change UID to %d", pw->pw_uid);
 		return "";
 	}
 	setenv("HOME", pw->pw_dir, 1);

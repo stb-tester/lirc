@@ -224,8 +224,7 @@ int default_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logperror(LIRC_ERROR,
-			  "error reading from %s (ret %d, expected %d)",
+		log_perror_err("error reading from %s (ret %d, expected %d)",
 			  drv.device, ret, sizeof(data));
 		default_deinit();
 
@@ -273,7 +272,7 @@ int default_init(void)
 
 	if (stat(drv.device, &s) == -1) {
 		log_error("could not get file information for %s", drv.device);
-		logperror(LIRC_ERROR, "default_init()");
+		log_perror_err("default_init()");
 		return 0;
 	}
 
@@ -287,13 +286,13 @@ int default_init(void)
 		drv.fd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (drv.fd == -1) {
 			log_error("could not create socket");
-			logperror(LIRC_ERROR, "default_init()");
+			log_perror_err("default_init()");
 			return 0;
 		}
 
 		if (connect(drv.fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 			log_error("could not connect to unix socket %s", drv.device);
-			logperror(LIRC_ERROR, "default_init()");
+			log_perror_err("default_init()");
 			default_deinit();
 			close(drv.fd);
 			return 0;
@@ -308,7 +307,7 @@ int default_init(void)
 	drv.fd = open(drv.device, O_RDWR);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "default_init()");
+		log_perror_err("default_init()");
 		return 0;
 	}
 	if (S_ISFIFO(s.st_mode)) {
@@ -319,7 +318,7 @@ int default_init(void)
 	} else if (!S_ISCHR(s.st_mode)) {
 		default_deinit();
 		log_error("%s is not a character device!!!", drv.device);
-		logperror(LIRC_ERROR, "something went wrong during installation");
+		log_perror_err("something went wrong during installation");
 		return 0;
 	} else if (default_ioctl(LIRC_GET_FEATURES, &drv.features) == -1) {
 		log_error("could not get hardware features");
@@ -378,7 +377,7 @@ int default_init(void)
 	} else if (drv.rec_mode == LIRC_MODE_LIRCCODE) {
 		if (default_ioctl(LIRC_GET_LENGTH, (void*)&drv.code_length) == -1) {
 			log_error("could not get code length");
-			logperror(LIRC_ERROR, "default_init()");
+			log_perror_err("default_init()");
 			default_deinit();
 			return 0;
 		}
@@ -425,7 +424,7 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 		freq = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 		if (default_ioctl(LIRC_SET_SEND_CARRIER, &freq) == -1) {
 			log_error("could not set modulation frequency");
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return 0;
 		}
 	}
@@ -435,7 +434,7 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 		duty_cycle = remote->duty_cycle == 0 ? 50 : remote->duty_cycle;
 		if (default_ioctl(LIRC_SET_SEND_DUTY_CYCLE, &duty_cycle) == -1) {
 			log_error("could not set duty cycle");
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return 0;
 		}
 	}
@@ -443,7 +442,7 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 		return 0;
 	if (write_send_buffer(drv.fd) == -1) {
 		log_error("write failed");
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		return 0;
 	}
 	return 1;

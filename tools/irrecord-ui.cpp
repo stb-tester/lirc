@@ -474,13 +474,13 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	strcpy(filename_new, "irrecord-tmp-XXXXXX");
 	fd = mkstemp(filename_new);
 	if (fd == -1) {
-		logperror(LIRC_WARNING, "Cannot open tmpfile");
+		log_perror_warn("Cannot open tmpfile");
 		return STS_INIT_FOPEN;
 	}
 	opts->tmpfile = strdup(filename_new);
 	state->fout = fdopen(fd, "w");
 	if (state->fout == NULL) {
-		logperror(LIRC_WARNING, "Cannot fdopen tmpfile");
+		log_perror_warn("Cannot fdopen tmpfile");
 		return STS_INIT_FOPEN;
 	}
 	if (opts->update) {

@@ -793,8 +793,7 @@ char* decode_all(struct ir_remote* remotes)
 						    reps);
 				decoding = NULL;
 				if (len >= PACKET_SIZE + 1) {
-					logprintf(LIRC_ERROR,
-						  "message buffer overflow");
+					log_error("message buffer overflow");
 					return NULL;
 				} else {
 					return message;

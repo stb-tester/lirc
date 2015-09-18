@@ -124,7 +124,7 @@ int mouseremote_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "mouseremote_init()");
+		log_perror_err("mouseremote_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -158,7 +158,7 @@ int mouseremote_ps2_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "mouseremote_ps2_init()");
+		log_perror_err("mouseremote_ps2_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -197,7 +197,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		val = read(drv.fd, &b[i], 1);
 		if (val != 1) {
 			log_error("reading of byte %d (%d) failed", i, val);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return NULL;
 		}
 		if (i == 0 && ((serial_input && (b[i] & 0xC0) != 0x40) || (!serial_input && (b[i] & 0x0C) != 0x08)))

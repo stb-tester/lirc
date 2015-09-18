@@ -263,7 +263,7 @@ lirc_t audio_readdata(lirc_t timeout)
 
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
-		logperror(LIRC_DEBUG, "error reading from lirc");
+		log_perror_debug("error reading from lirc");
 		raise(SIGTERM);
 		return 0;
 	}
@@ -311,7 +311,7 @@ int audio_send(struct ir_remote* remote, struct ir_ncode* code)
 
 	/* write signals to sendpipe */
 	if (write(sendPipe[1], signals, length * sizeof(lirc_t)) == -1) {
-		logperror(LIRC_ERROR, "write failed");
+		log_perror_err("write failed");
 		return 0;
 	}
 
@@ -353,8 +353,7 @@ static void audio_parsedevicestr(char* api, char* device, int* rate, double* lat
 			return;
 		}
 
-		logprintf(LIRC_ERROR,
-			  "malformed device string %s, syntax is api:device[@rate[:latency]] or @rate[:latency]",
+		log_error("malformed device string %s, syntax is api:device[@rate[:latency]] or @rate[:latency]",
 			  drv.device);
 	}
 
@@ -510,14 +509,14 @@ int audio_init(void)
 	/* open pty */
 	if (openpty(&master, &ptyfd, ptyName, 0, 0) == -1) {
 		log_error("openpty failed");
-		logperror(LIRC_ERROR, "openpty()");
+		log_perror_err("openpty()");
 		goto error;
 	}
 
 	/* regular device file */
 	if (tcgetattr(master, &t) < 0) {
 		log_error("tcgetattr failed");
-		logperror(LIRC_ERROR, "tcgetattr()");
+		log_perror_err("tcgetattr()");
 	}
 
 	cfmakeraw(&t);
@@ -525,7 +524,7 @@ int audio_init(void)
 	/* apply file descriptor options */
 	if (tcsetattr(master, TCSANOW, &t) < 0) {
 		log_error("tcsetattr failed");
-		logperror(LIRC_ERROR, "tcsetattr()");
+		log_perror_err("tcsetattr()");
 	}
 
 	flags = fcntl(ptyfd, F_GETFL, 0);
@@ -541,7 +540,7 @@ int audio_init(void)
 	 * was sent */
 	if (pipe(sendPipe) == -1 || pipe(completedPipe) == -1) {
 		log_error("pipe failed");
-		logperror(LIRC_ERROR, "pipe()");
+		log_perror_err("pipe()");
 	}
 
 	/* make the readable end non-blocking */
@@ -550,7 +549,7 @@ int audio_init(void)
 		fcntl(sendPipe[0], F_SETFL, flags | O_NONBLOCK);
 	} else {
 		log_error("fcntl failed");
-		logperror(LIRC_ERROR, "fcntl()");
+		log_perror_err("fcntl()");
 	}
 
 	err = Pa_StartStream(stream);

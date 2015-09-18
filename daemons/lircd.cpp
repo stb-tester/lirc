@@ -356,14 +356,14 @@ int read_timeout(int fd, char* buf, int len, int timeout_us)
 		ret = poll(&pfd, 1, timeout);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		logperror(LIRC_ERROR, "read_timeout: poll() failed");
+		log_perror_err("read_timeout: poll() failed");
 		return -1;
 	};
 	if (ret == 0)
 		return 0;       /* timeout */
 	n = read(fd, buf, len);
 	if (n == -1) {
-		logperror(LIRC_ERROR, "read_timeout: read() failed");
+		log_perror_err("read_timeout: read() failed");
 		return -1;
 	}
 	return n;
@@ -383,7 +383,7 @@ static int setup_frequency(void)
 	if (curr_driver->features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
 		if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
 			log_error("could not set receive carrier");
-			logperror(LIRC_ERROR, __func__);
+			log_perror_err(__func__);
 			return 0;
 		}
 		freq = setup_max_freq;
@@ -392,7 +392,7 @@ static int setup_frequency(void)
 	}
 	if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER, &freq) == -1) {
 		log_error("could not set receive carrier");
-		logperror(LIRC_ERROR, __func__);
+		log_perror_err(__func__);
 		return 0;
 	}
 	return 1;
@@ -428,7 +428,7 @@ static int setup_timeout(void)
 
 	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
 		log_error("could not set timeout");
-		logperror(LIRC_ERROR, __func__);
+		log_perror_err(__func__);
 		return 0;
 	}
 	curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT_REPORTS, &enable);
@@ -450,7 +450,7 @@ static int setup_filter(void)
 	    || curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
 	    || curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
 		log_error("could not get filter range");
-		logperror(LIRC_ERROR, __func__);
+		log_perror_err(__func__);
 	}
 
 	if (setup_min_pulse > max_pulse_supported)
@@ -470,7 +470,7 @@ static int setup_filter(void)
 		    drvctl_func(LIRC_SET_REC_FILTER,
 				setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
 			log_error("could not set filter");
-			logperror(LIRC_ERROR, __func__);
+			log_perror_err(__func__);
 			return 0;
 		}
 	}
@@ -524,8 +524,7 @@ void config(void)
 			errno = save_errno;
 	}
 	if (fd == NULL) {
-		logperror(LIRC_ERROR,
-			  "could not open config file '%s'", filename);
+		log_perror_err("could not open config file '%s'", filename);
 		return;
 	}
 	configfile = filename;
@@ -734,27 +733,27 @@ void drop_privileges(void)
 	}
 	pw = getpwnam(user);
 	if (pw == NULL) {
-		logperror(LIRC_WARNING, "Illegal effective uid: %s", user);
+		log_perror_warn("Illegal effective uid: %s", user);
 		return;
 	}
 	r = getgrouplist(user, pw->pw_gid, groups, &group_cnt);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot get supplementary groups");
+		log_perror_warn("Cannot get supplementary groups");
 		return;
 	}
 	r = setgroups(group_cnt, groups);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot set supplementary groups");
+		log_perror_warn("Cannot set supplementary groups");
 		return;
 	}
 	r = setgid(pw->pw_gid);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot set GID");
+		log_perror_warn("Cannot set GID");
 		return;
 	}
 	r = setuid(pw->pw_uid);
 	if (r == -1) {
-		logperror(LIRC_WARNING, "Cannot change UID");
+		log_perror_warn("Cannot change UID");
 		return;
 	}
 	log_notice("Running as user %s", user);
@@ -776,7 +775,7 @@ void add_client(int sock)
 	clilen = sizeof(client_addr);
 	fd = accept(sock, (struct sockaddr*)&client_addr, &clilen);
 	if (fd == -1) {
-		logperror(LIRC_ERROR, "accept() failed for new client");
+		log_perror_err("accept() failed for new client");
 		dosigterm(SIGTERM);
 	}
 	;
@@ -903,7 +902,7 @@ void connect_to_peer(peer_connection* peer)
 		freeaddrinfo(tmp);
 	} while (r < 0 && addr != NULL);
 	if (r == -1) {
-		logperror(LIRC_ERROR, "Cannot connect to %s", peer->host);
+		log_perror_err("Cannot connect to %s", peer->host);
 		peer->connection_failure++;
 		gettimeofday(&peer->reconnect, NULL);
 		peer->reconnect.tv_sec += 5 * peer->connection_failure;
@@ -1010,7 +1009,7 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	(void)fprintf(pidf, "%d\n", getpid());
 	(void)fflush(pidf);
 	if (ftruncate(fileno(pidf), ftell(pidf)) != 0)
-		logperror(LIRC_WARNING, "lircd: ftruncate()");
+		log_perror_warn("lircd: ftruncate()");
 	ir_remote_init(options_getboolean("lircd:dynamic-codes"));
 
 	/* create socket */
@@ -1114,7 +1113,7 @@ start_server_failed0:
 void daemonize(void)
 {
 	if (daemon(0, 0) == -1) {
-		logperror(LIRC_ERROR, "daemon() failed");
+		log_perror_err("daemon() failed");
 		dosigterm(SIGTERM);
 	}
 	umask(0);
@@ -1122,7 +1121,7 @@ void daemonize(void)
 	fprintf(pidf, "%d\n", getpid());
 	fflush(pidf);
 	if (ftruncate(fileno(pidf), ftell(pidf)) != 0)
-		logperror(LIRC_WARNING, "lircd: ftruncate()");
+		log_perror_warn("lircd: ftruncate()");
 	daemonized = 1;
 }
 
@@ -1784,7 +1783,7 @@ void input_message(const char* message, const char* remote_name, const char* but
 		event.code = input_code;
 		event.value = release ? 0 : (reps > 0 ? 2 : 1);
 		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logperror(LIRC_ERROR, "writing to uinput failed");
+			log_perror_err("writing to uinput failed");
 		}
 
 		/* Need to write sync event */
@@ -1793,7 +1792,7 @@ void input_message(const char* message, const char* remote_name, const char* but
 		event.code = SYN_REPORT;
 		event.value = 0;
 		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			logperror(LIRC_ERROR, "writing EV_SYN to uinput failed");
+			log_perror_err("writing EV_SYN to uinput failed");
 		}
 	} else {
 		log_debug(
@@ -2015,7 +2014,7 @@ static int mywaitfordata(unsigned long maxusec)
 				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, -1);
 
 			if (ret == -1 && errno != EINTR) {
-				logperror(LIRC_ERROR, "poll()() failed");
+				log_perror_err("poll()() failed");
 				raise(SIGTERM);
 				continue;
 			}

@@ -103,7 +103,7 @@ int caraca_init(void)
 	drv.fd = caraca_open(PACKAGE);
 	if (drv.fd < 0) {
 		log_error("could not open lirc");
-		logperror(LIRC_ERROR, "caraca_init()");
+		log_perror_err("caraca_init()");
 		return 0;
 	}
 	/*accept IR-Messages (16 : RC5 key code) for all nodes on the bus */

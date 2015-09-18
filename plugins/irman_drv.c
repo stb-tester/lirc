@@ -91,7 +91,7 @@ int irman_init(void)
 	drv.fd = ir_init((char*)drv.device);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "irman_init()");
+		log_perror_err("irman_init()");
 		tty_delete_lock();
 		return 0;
 	}

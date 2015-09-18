@@ -120,7 +120,7 @@ static int ati_init(void)
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logperror(LIRC_ERROR, "couldn't open pipe");
+		log_perror_err("couldn't open pipe");
 		return 0;
 	}
 	drv.fd = pipe_fd[0];
@@ -142,12 +142,12 @@ static int ati_init(void)
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		logperror(LIRC_ERROR, "couldn't open USB receiver");
+		log_perror_err("couldn't open USB receiver");
 		goto fail;
 	}
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
-		logperror(LIRC_ERROR, "couldn't claim USB interface");
+		log_perror_err("couldn't claim USB interface");
 		goto fail;
 	}
 
@@ -166,7 +166,7 @@ static int ati_init(void)
 	log_debug("atilibusb: using device: %s", device_path);
 	child = fork();
 	if (child == -1) {
-		logperror(LIRC_ERROR, "couldn't fork child process");
+		log_perror_err("couldn't fork child process");
 		goto fail;
 	} else if (child == 0) {
 		usb_read_loop(pipe_fd[1]);
@@ -318,7 +318,7 @@ static void usb_read_loop(int fd)
 			if (errno == EAGAIN || errno == ETIMEDOUT)
 				continue;
 
-			logperror(LIRC_ERROR, "can't read from USB device");
+			log_perror_err("can't read from USB device");
 			err = 1;
 			goto done;
 		}
@@ -342,7 +342,7 @@ static void usb_read_loop(int fd)
 		for (pos = 0; pos < bytes_r; pos += bytes_w) {
 			bytes_w = write(fd, buf + pos, bytes_r - pos);
 			if (bytes_w < 0) {
-				logperror(LIRC_ERROR, "can't write to pipe");
+				log_perror_err("can't write to pipe");
 				err = 1;
 				goto done;
 			}

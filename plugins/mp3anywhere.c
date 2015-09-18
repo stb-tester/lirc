@@ -94,7 +94,7 @@ int mp3anywhere_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NONBLOCK | O_NOCTTY);
 	if (drv.fd < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "mp3anywhere_init()");
+		log_perror_err("mp3anywhere_init()");
 		tty_delete_lock();
 		return 0;
 	}
@@ -145,7 +145,7 @@ char* mp3anywhere_rec(struct ir_remote* remotes)
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
 			log_error("reading of byte %d failed", i);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return NULL;
 		}
 		if (b[1] != 0xd5 || b[2] != 0xaa || b[3] != 0xee || b[5] != 0xad) {

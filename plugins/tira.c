@@ -205,8 +205,7 @@ int child_process(int pipe_w, int oldprotocol)
 		if (tmp == 0)
 			continue;
 		if (tmp < 0) {
-			logperror(LIRC_ERROR,
-				  "child_process: Error  in poll()");
+			log_perror_err("child_process: Error  in poll()");
 			return 0;
 		}
 
@@ -215,7 +214,7 @@ int child_process(int pipe_w, int oldprotocol)
 		readsize = read(drv.fd, &tirabuffer[tirabuflen], sizeof(tirabuffer) - tirabuflen);
 		if (readsize <= 0) {
 			log_error("Error reading from Tira");
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return 0;
 		}
 		if (readsize == 0)
@@ -317,13 +316,13 @@ int tira_setup_timing(int oldprotocol)
 	pulse_space = 1;        //pulse
 	/* Allocate a pipe for lircd to read from */
 	if (pipe(pipe_fd) == -1) {
-		logperror(LIRC_ERROR, "unable to create pipe");
+		log_perror_err("unable to create pipe");
 		goto fail;
 	}
 
 	fd_flags = fcntl(pipe_fd[0], F_GETFL);
 	if (fcntl(pipe_fd[0], F_SETFL, fd_flags | O_NONBLOCK) == -1) {
-		logperror(LIRC_ERROR, "can't set pipe to non-blocking");
+		log_perror_err("can't set pipe to non-blocking");
 		goto fail;
 	}
 
@@ -331,7 +330,7 @@ int tira_setup_timing(int oldprotocol)
 
 	child_pid = fork();
 	if (child_pid == -1) {
-		logperror(LIRC_ERROR, "unable to fork child process");
+		log_perror_err("unable to fork child process");
 		goto fail;
 	} else if (child_pid == 0) {
 		close(pipe_fd[0]);
@@ -639,7 +638,7 @@ char* tira_rec(struct ir_remote* remotes)
 		}
 		if (read(drv.fd, &b[i], 1) != 1) {
 			log_error("reading of byte %d failed.", i);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return NULL;
 		}
 		log_trace("byte %d: %02x", i, b[i]);
@@ -809,7 +808,7 @@ lirc_t tira_readdata(lirc_t timeout)
 	ret = read(drv.fd, &data, sizeof(data));
 	if (ret != sizeof(data)) {
 		log_error("error reading from %s", drv.device);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		tira_deinit();
 		return 0;
 	}

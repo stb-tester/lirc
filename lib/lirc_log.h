@@ -93,6 +93,20 @@ extern char progname[128];
 	if (level + 7 <= loglevel) \
 		logperror(logmax(level + 7), s)
 
+/** perror wrapper logging with level LIRC_ERROR. */
+#define log_perror_err(fmt, ...) \
+	{ if ((logchannel & logged_channels) && LIRC_ERROR <= loglevel) \
+		{ logperror(LIRC_ERROR, fmt, ##__VA_ARGS__); } }
+
+/** perror wrapper logging with level LIRC_WARNING. */
+#define log_perror_warn(fmt, ...) \
+	{ if ((logchannel & logged_channels) && LIRC_WARNING <= loglevel) \
+		{ logperror(LIRC_WARNING, fmt, ##__VA_ARGS__); } }
+
+/** perror wrapper logging with level LIRC_DEBUG. */
+#define log_perror_debug(fmt, ...) \
+	{ if ((logchannel & logged_channels) && LIRC_DEBUG <= loglevel) \
+		{ logperror(LIRC_WARNING, fmt, ##__VA_ARGS__); } }
 
 /** Log an error message. */
 #define log_error(fmt, ...) \

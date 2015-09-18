@@ -190,7 +190,7 @@ int pinsys_init(void)
 
 		tty_delete_lock();
 		log_warn("could not open %s, autodetecting on /dev/ttyS[0-3]", drv.device);
-		logperror(LIRC_WARNING, "pinsys_init()");
+		log_perror_warn("pinsys_init()");
 		/* it can also mean you compiled serial support as a
 		 * module and it isn't inserted, but that's unlikely
 		 * unless you're me. */
@@ -209,7 +209,7 @@ int pinsys_init(void)
 		if (drv.fd  < 0) {
 			/* unlikely, but hey. */
 			log_error("couldn't open autodetected device \"%s\"", drv.device);
-			logperror(LIRC_ERROR, "pinsys_init()");
+			log_perror_err("pinsys_init()");
 			tty_delete_lock();
 			return 0;
 		}
@@ -290,7 +290,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 
 		if (read(drv.fd, &b[i], 1) != 1) {
 			log_error("reading of byte %d failed", i);
-			logperror(LIRC_ERROR, NULL);
+			log_perror_err(NULL);
 			return NULL;
 		}
 		log_trace("byte %d: %02x", i, b[i]);

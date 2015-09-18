@@ -114,14 +114,14 @@ static int dfc_init(void)
 	 * receiver and write it to a pipe. drv.fd is set to the readable
 	 * end of this pipe. */
 	if (pipe(pipe_fd) != 0) {
-		logperror(LIRC_ERROR, "couldn't open pipe");
+		log_perror_err("couldn't open pipe");
 		return 0;
 	}
 	drv.fd = pipe_fd[0];
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		logperror(LIRC_ERROR, "couldn't open USB receiver");
+		log_perror_err("couldn't open USB receiver");
 		goto fail;
 	}
 
@@ -133,7 +133,7 @@ static int dfc_init(void)
 
 	child = fork();
 	if (child == -1) {
-		logperror(LIRC_ERROR, "couldn't fork child process");
+		log_perror_err("couldn't fork child process");
 		goto fail;
 	} else if (child == 0) {
 		usb_read_loop(pipe_fd[1]);

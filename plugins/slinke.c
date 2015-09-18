@@ -353,7 +353,7 @@ int slinke_init(void)
 	drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
 	if (drv.fd  < 0) {
 		log_error("could not open %s", drv.device);
-		logperror(LIRC_ERROR, "slinke_init()");
+		log_perror_err("slinke_init()");
 		tty_delete_lock();
 		return 0;
 	}

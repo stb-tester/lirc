@@ -168,7 +168,7 @@ static int close_func(void)
 	if (drv.fd == -1)
 		return 1;
 	if (close(drv.fd) == -1) {
-		logperror(LIRC_WARNING, "deinit: Cannot close");
+		log_perror_warn("deinit: Cannot close");
 		return 0;
 	}
 	drv.fd = -1;

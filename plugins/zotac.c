@@ -115,7 +115,7 @@ static int zotac_getcode(void)
 	rd = read(fd_hidraw, &uref, sizeof(uref));
 	if (rd < 0) {
 		log_error("error reading '%s'", drv.device);
-		logperror(LIRC_ERROR, NULL);
+		log_perror_err(NULL);
 		zotac_deinit();
 		error_state = 1;
 		return -1;
@@ -280,7 +280,7 @@ static int zotac_init(void)
 	/* Create pipe so that events sent by the repeat thread will
 	 * trigger main thread */
 	if (pipe(fd_pipe) != 0) {
-		logperror(LIRC_ERROR, "couldn't open pipe");
+		log_perror_err("couldn't open pipe");
 		close(fd_hidraw);
 		return 0;
 	}

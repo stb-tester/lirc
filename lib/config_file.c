@@ -625,8 +625,7 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 	path = path != NULL ? path : "unknown file";
 
 	if (!rem->name) {
-		logprintf(LIRC_ERROR,
-			  "%s: %s: Missing remote name", path, rem);
+		log_error("%s: %s: Missing remote name", path, rem);
 		return 0;
 	}
 	if (rem->gap == 0) {
@@ -634,8 +633,7 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 			  path, rem->name);
 	}
 	if (has_repeat_gap(rem) && is_const(rem)) {
-		logprintf(LIRC_WARNING,
-			  "%s: %s: Repeat_gap ignored (CONST_LENGTH is set)",
+		log_warn("%s: %s: Repeat_gap ignored (CONST_LENGTH is set)",
 			  path, rem->name);
 	}
 
