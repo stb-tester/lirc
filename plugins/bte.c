@@ -143,27 +143,27 @@ int bte_connect(void)
 		drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
 		if (drv.fd == -1) {
 			logprintf(LIRC_TRACE, "could not open %s", drv.device);
-			LOGPERROR(1, "bte_connect");
+			logperror(LIRC_WARNING, "bte_connect");
 			break;
 		}
 		if (tcgetattr(drv.fd, &tattr) == -1) {
 			logprintf(LIRC_TRACE, "bte_connect: tcgetattr() failed");
-			LOGPERROR(1, "bte_connect");
+			logperror(LIRC_WARNING, "bte_connect");
 			break;
 		}
 		logprintf(LIRC_TRACE, "opened %s", drv.device);
-		LOGPERROR(1, "bte_connect");
+		logperror(LIRC_WARNING, "bte_connect");
 		cfmakeraw(&tattr);
 		tattr.c_cc[VMIN] = 1;
 		tattr.c_cc[VTIME] = 0;
 		if (tcsetattr(drv.fd, TCSAFLUSH, &tattr) == -1) {
 			logprintf(LIRC_TRACE, "bte_connect: tcsetattr() failed");
-			LOGPERROR(1, "bte_connect");
+			logperror(LIRC_WARNING, "bte_connect");
 			break;
 		}
 		if (!tty_setbaud(drv.fd, 115200)) {
 			logprintf(LIRC_TRACE, "bte_connect: could not set baud rate %s", drv.device);
-			LOGPERROR(1, "bte_connect");
+			logperror(LIRC_WARNING, "bte_connect");
 			break;
 		}
 		logprintf(LIRC_ERROR, "bte_connect: connection established");

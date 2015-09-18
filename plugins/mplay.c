@@ -572,7 +572,7 @@ static void* mplayfamily_listen(void* arg)
 
 	/* Read status of rotation sensor for the first time */
 	if (ioctl(mplayfamily_local_data.fd, TIOCMGET, &status) < 0)
-		LOGPERROR(LOG_ERR, "mplay listener ioctl failed");
+		logperror(LIRC_WARNING, "mplay listener ioctl failed");
 	sensor = MPLAY_GRAY_TO_BIN(MPLAY_STATUS_TO_GRAY(status));
 	absolute = sensor;
 	turned = absolute;

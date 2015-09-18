@@ -52,13 +52,13 @@ int tty_reset(int fd)
 
 	if (tcgetattr(fd, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_reset(): tcgetattr() failed");
-		LOGPERROR(1, "tty_reset()");
+		logperror(LIRC_DEBUG, "tty_reset()");
 		return 0;
 	}
 	cfmakeraw(&options);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_reset(): tcsetattr() failed");
-		LOGPERROR(1, "tty_reset()");
+		logperror(LIRC_DEBUG, "tty_reset()");
 		return 0;
 	}
 	return 1;
@@ -70,7 +70,7 @@ int tty_setrtscts(int fd, int enable)
 
 	if (tcgetattr(fd, &options) == -1) {
 		logprintf(LIRC_TRACE, "%s: tcgetattr() failed", __func__);
-		LOGPERROR(1, __func__);
+		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
 	if (enable)
@@ -79,7 +79,7 @@ int tty_setrtscts(int fd, int enable)
 		options.c_cflag &= ~CRTSCTS;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		logprintf(LIRC_TRACE, "%s: tcsetattr() failed", __func__);
-		LOGPERROR(1, __func__);
+		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
 	return 1;
@@ -91,7 +91,7 @@ int tty_setdtr(int fd, int enable)
 
 	if (ioctl(fd, TIOCMGET, &sts) < 0) {
 		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMGET) failed", __func__);
-		LOGPERROR(1, __func__);
+		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
 	if (((sts & TIOCM_DTR) == 0) && enable) {
@@ -106,7 +106,7 @@ int tty_setdtr(int fd, int enable)
 	sts = TIOCM_DTR;
 	if (ioctl(fd, cmd, &sts) < 0) {
 		logprintf(LIRC_TRACE, "%s: ioctl(TIOCMBI(S|C)) failed", __func__);
-		LOGPERROR(1, __func__);
+		logperror(LIRC_DEBUG, __func__);
 		return 0;
 	}
 	return 1;
@@ -227,21 +227,21 @@ int tty_setbaud(int fd, int baud)
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_setbaud(): tcgetattr() failed");
-		LOGPERROR(1, "tty_setbaud()");
+		logperror(LIRC_DEBUG, "tty_setbaud()");
 		return 0;
 	}
 	(void)cfsetispeed(&options, speed);
 	(void)cfsetospeed(&options, speed);
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_setbaud(): tcsetattr() failed");
-		LOGPERROR(1, "tty_setbaud()");
+		logperror(LIRC_DEBUG, "tty_setbaud()");
 		return 0;
 	}
 #if defined __linux__
 	if (use_custom_divisor) {
 		if (ioctl(fd, TIOCGSERIAL, &serinfo) < 0) {
 			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCGSERIAL failed");
-			LOGPERROR(1, "tty_setbaud()");
+			logperror(LIRC_DEBUG, "tty_setbaud()");
 			return 0;
 		}
 		serinfo.flags &= ~ASYNC_SPD_MASK;
@@ -249,7 +249,7 @@ int tty_setbaud(int fd, int baud)
 		serinfo.custom_divisor = serinfo.baud_base / baud;
 		if (ioctl(fd, TIOCSSERIAL, &serinfo) < 0) {
 			logprintf(LIRC_TRACE, "tty_setbaud(): TIOCSSERIAL failed");
-			LOGPERROR(1, "tty_setbaud()");
+			logperror(LIRC_DEBUG, "tty_setbaud()");
 			return 0;
 		}
 	}
@@ -281,14 +281,14 @@ int tty_setcsize(int fd, int csize)
 	}
 	if (tcgetattr(fd, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_setcsize(): tcgetattr() failed");
-		LOGPERROR(1, "tty_setcsize()");
+		logperror(LIRC_DEBUG, "tty_setcsize()");
 		return 0;
 	}
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= size;
 	if (tcsetattr(fd, TCSAFLUSH, &options) == -1) {
 		logprintf(LIRC_TRACE, "tty_setcsize(): tcsetattr() failed");
-		LOGPERROR(1, "tty_setcsize()");
+		logperror(LIRC_DEBUG, "tty_setcsize()");
 		return 0;
 	}
 	return 1;
@@ -513,7 +513,7 @@ int tty_set(int fd, int rts, int dtr)
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIS, &mask) == -1) {
 		logprintf(LIRC_TRACE, "tty_set(): ioctl() failed");
-		LOGPERROR(1, "tty_set()");
+		logperror(LIRC_DEBUG, "tty_set()");
 		return 0;
 	}
 	return 1;
@@ -527,7 +527,7 @@ int tty_clear(int fd, int rts, int dtr)
 	mask |= dtr ? TIOCM_DTR : 0;
 	if (ioctl(fd, TIOCMBIC, &mask) == -1) {
 		logprintf(LIRC_TRACE, "tty_clear(): ioctl() failed");
-		LOGPERROR(1, "tty_clear()");
+		logperror(LIRC_DEBUG, "tty_clear()");
 		return 0;
 	}
 	return 1;
@@ -537,7 +537,7 @@ int tty_write(int fd, char byte)
 {
 	if (write(fd, &byte, 1) != 1) {
 		logprintf(LIRC_TRACE, "tty_write(): write() failed");
-		LOGPERROR(1, "tty_write()");
+		logperror(LIRC_DEBUG, "tty_write()");
 		return -1;
 	}
 	/* wait until the stop bit of Control Byte is sent
@@ -561,11 +561,11 @@ int tty_read(int fd, char* byte)
 		logprintf(LIRC_ERROR, "tty_read(): timeout");
 		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
-		LOGPERROR(1, "tty_read(): poll() failed");
+		logperror(LIRC_DEBUG, "tty_read(): poll() failed");
 		return -1;
 	}
 	if (read(fd, byte, 1) != 1) {
-		LOGPERROR(1, "tty_read(): read() failed");
+		logperror(LIRC_DEBUG, "tty_read(): read() failed");
 		return -1;
 	}
 	return 1;
