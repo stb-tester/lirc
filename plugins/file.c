@@ -130,7 +130,7 @@ static lirc_t readdata(lirc_t timeout)
 		lineno = 0;
 		return LIRC_EOF | LIRC_MODE2_TIMEOUT | timeout;
 	}
-	count = sscanf(line, "%16s %d", what, &data);
+	count = sscanf(line, "%15s %d", what, &data);
 	if (count != 2)
 		return 0;
 	data &= PULSE_MASK;
