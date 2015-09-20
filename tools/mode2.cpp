@@ -259,6 +259,7 @@ static void setup_log(void)
 unsigned int get_codelength(int fd, int use_raw_access)
 {
 	unsigned int code_length;
+	int r = 1;
 
 	if (use_raw_access) {
 		if (ioctl(fd, LIRC_GET_LENGTH, &code_length) == -1) {
@@ -266,15 +267,14 @@ unsigned int get_codelength(int fd, int use_raw_access)
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
-	} else {
+		return code_length;
+	}
+	if (curr_driver->drvctl_func) {
+		r = curr_driver->drvctl_func(DRVCTL_GET_RAW_CODELENGTH,
+					     &code_length);
+	}
+	if (r != 0)
 		code_length = curr_driver->code_length;
-	}
-	if (code_length > sizeof(ir_code) * CHAR_BIT) {
-		fprintf(stderr, "Cannot handle %u bit codes\n",
-			code_length);
-		close(fd);
-		exit(EXIT_FAILURE);
-	}
 	return code_length;
 }
 
@@ -341,14 +341,49 @@ void print_lirccode_data(char* buffer, size_t count)
 }
 
 
+/**
+ * Process next button press and print a dump, return boolean OK/FAIL.
+ */
+int next_press(int fd, int mode, int bytes)
+{
+	char buffspace[bytes];
+	int r;
+        union {
+		char* buffer;
+		lirc_t data;
+	} input;
+
+	input.buffer = buffspace;
+	if (opt_raw_access || mode != LIRC_MODE_MODE2) {
+		r = read(fd, input.buffer, bytes);
+		if (r == -1)
+			perrorf("read() error on %s", opt_device);
+		else if (r != (int)bytes)
+			fprintf(stderr, "Partial read %d bytes on %s",
+				r, opt_device);
+		if (r != (int)bytes)
+			return 0;
+		if (mode == LIRC_MODE_MODE2)
+			print_mode2_data(input.data);
+		else
+			print_lirccode_data(input.buffer, bytes);
+	} else {
+		input.data = curr_driver->readdata(0);
+		if (input.data == 0) {
+			fputs("readdata() failed\n", stderr);
+			return 0;
+		}
+		print_mode2_data(input.data);
+	}
+	return 1;
+}
+
+
 int main(int argc, char** argv)
 {
 	int fd;
-	char buffer[sizeof(ir_code)];
-	lirc_t data;
 	__u32 mode;
-	size_t count = sizeof(lirc_t);
-	int result;
+	size_t bytes = sizeof(lirc_t);
 	/**
 	 * Was hard coded to 50000 but this is too long, the shortest gap in the
 	 * supplied .conf files is 10826, the longest space defined for any one,
@@ -365,30 +400,9 @@ int main(int argc, char** argv)
 	mode = curr_driver->rec_mode;
 	if (mode == LIRC_MODE_LIRCCODE) {
 		code_length = get_codelength(fd, opt_raw_access);
-		count = (code_length + CHAR_BIT - 1) / CHAR_BIT;
+		bytes = (code_length + CHAR_BIT - 1) / CHAR_BIT;
 	}
-	while (1) {
-		if (opt_raw_access || mode != LIRC_MODE_MODE2) {
-			result = read(fd,
-				      (mode == LIRC_MODE_MODE2 ?
-				       (void*)&data : buffer),
-				      count);
-			if (result != (int)count) {
-				fputs("read() failed\n", stderr);
-				break;
-			}
-			if (mode == LIRC_MODE_MODE2)
-				print_mode2_data(data);
-			else
-				print_lirccode_data(buffer, count);
-		} else {
-			data = curr_driver->readdata(0);
-			if (data == 0) {
-				fputs("readdata() failed\n", stderr);
-				break;
-			}
-			print_mode2_data(data);
-		}
-	}
+	while (next_press(fd, mode, bytes))
+		;
 	return EXIT_SUCCESS;
 }
