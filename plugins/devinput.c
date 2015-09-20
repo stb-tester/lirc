@@ -54,6 +54,7 @@ static int devinput_init_fwd(void);
 static int devinput_deinit(void);
 static int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static char* devinput_rec(struct ir_remote* remotes);
+static int drvctl(unsigned int fd, void* arg);
 
 enum locate_type {
 	locate_by_name,
@@ -75,7 +76,7 @@ const struct driver hw_devinput = {
 	.send_func	= NULL,
 	.rec_func	= devinput_rec,
 	.decode_func	= devinput_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl,
 	.readdata	= NULL,
 	.api_version	= 2,
 	.driver_version = "0.9.3",
@@ -475,4 +476,16 @@ char* devinput_rec(struct ir_remote* remotes)
 
 	gettimeofday(&end, NULL);
 	return decode_all(remotes);
+}
+
+
+static int drvctl(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_RAW_CODELENGTH:
+		*(unsigned int*)arg = sizeof(struct input_event) * 8;
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
 }
