@@ -124,10 +124,10 @@ static int ati_init(void)
 	drv.fd = pipe_fd[0];
 
 	usb_dev = find_usb_device();
-	if (!usb_dev || !usb_dev->bus || !usb_dev->filename) {
-		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
-		return 0;
-	}
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
 	if (usb_dev == NULL) {
 		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
 		return 0;
@@ -157,10 +157,6 @@ static int ati_init(void)
 		goto fail;
 	}
 
-	snprintf(device_path, sizeof(device_path),
-		 "/dev/bus/usb/%s/%s",
-		 usb_dev->bus->dirname, usb_dev->filename);
-	drv.device = device_path;
 	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 	child = fork();
 	if (child == -1) {
