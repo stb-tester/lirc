@@ -61,6 +61,12 @@ int drv_handle_options(const char* options);
 /** Drvctl cmd: Set driver options. Arg is   *struct option_t. */
 #define DRVCTL_SET_OPTION               3
 
+/**
+* Drvctl cmd: get raw length to read, if different than codelength.
+* Arg is an unsigned int* which is updated on successfull return.
+*/
+#define DRVCTL_GET_RAW_CODELENGTH       4
+
 /** Last well-known command. Remaining is used in driver-specific controls.*/
 #define  DRVCTL_MAX                     128
 
