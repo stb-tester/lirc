@@ -99,6 +99,7 @@ static int init(void)
 			logprintf(LIRC_ERROR, "device not found");
 			return 0;
 		}
+		drv.device = device;
 	}
 	err = snd_hwdep_open(&hwdep, device, SND_HWDEP_OPEN_READ);
 	if (err < 0) {
