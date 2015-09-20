@@ -9,6 +9,7 @@
  * @brief Utilities.
  */
 
+#include <grp.h>
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +28,12 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 {
 	struct passwd* pw;
 	char* user;
+	gid_t groups[32];
+	int group_cnt = sizeof(groups)/sizeof(gid_t);
+	char groupnames[256] = {0};
+	char buff[12];
 	int r;
+	int i;
 
 	if (getuid() != 0)
 		return "";
@@ -39,13 +45,34 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 		logperror(LIRC_ERROR, "Can't run getpwnam() for %s", user);
 		return "";
 	}
+	r = getgrouplist(user, pw->pw_gid, groups, &group_cnt);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot get supplementary groups");
+		return "";
+	}
+	r = setgroups(group_cnt, groups);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot set supplementary groups");
+		return "";
+	}
+	r = setgid(pw->pw_gid);
+	if (r == -1) {
+		logperror(LIRC_WARNING, "Cannot set GID");
+		return "";
+	}
 	r = set_some_uid(pw->pw_uid);
 	if (r == -1) {
 		logperror(LOG_WARNING, "Cannot change UID to %d", pw->pw_uid);
 		return "";
 	}
 	setenv("HOME", pw->pw_dir, 1);
-	logprintf(LOG_NOTICE, "Running as user %s", pw->pw_name);
+	logprintf(LIRC_NOTICE, "Running as user %s", user);
+	for (i = 0; i < group_cnt; i += 1) {
+		snprintf(buff, 5, " %d", groups[i]);
+		strcat(groupnames, buff);
+	}
+	logprintf(LIRC_DEBUG, "Groups: [%d]:%s", pw->pw_gid, groupnames);
+
 	return pw->pw_name;
 }
 
