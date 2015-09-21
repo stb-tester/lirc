@@ -1,4 +1,6 @@
 0.9.4-devel
+  * Several patches to make mode2 work with most (all?) drivers.
+  * Fix gid and supplementary groups in CLI apps dropping root.
   * Fix a crash in irrecord when invoked without options.
   * Add an "auto" device to devinput driver for single-device
     usecase (#134).
