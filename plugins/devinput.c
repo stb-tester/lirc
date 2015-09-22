@@ -68,7 +68,7 @@ const struct driver hw_devinput = {
 	.features	= LIRC_CAN_REC_LIRCCODE,
 	.send_mode	= 0,
 	.rec_mode	= LIRC_MODE_LIRCCODE,
-	.code_length	= 64,
+	.code_length	= sizeof(struct input_event) * 8,
 	.init_func	= devinput_init_fwd,
 	.deinit_func	= devinput_deinit,
 	.open_func	= default_open,
@@ -78,9 +78,10 @@ const struct driver hw_devinput = {
 	.decode_func	= devinput_decode,
 	.drvctl_func	= drvctl,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 4,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/input/event*",
 };
 
 

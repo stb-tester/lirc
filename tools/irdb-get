@@ -9,14 +9,26 @@ import fnmatch
 import os
 import os.path
 import sys
+import time
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
-REMOTES_LIST_DIR = os.path.expanduser('~/.cache')
+if 'XDG_CACHE_HOME' in os.environ:
+    REMOTES_LIST_DIR = os.environ['XDG_CACHE_HOME']
+else:
+    REMOTES_LIST_DIR = os.path.expanduser('~/.cache')
 REMOTES_LIST = os.path.join(REMOTES_LIST_DIR, 'remotes.list')
 
-REMOTE_CODEBASE = "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree"
-REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
+if 'LIRC_REMOTES_URL' in os.environ:
+    REMOTE_CODEBASE = os.environ['LIRC_REMOTES_URL']
+else:
+    REMOTE_CODEBASE = \
+        "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree"
+
+if 'LIRC_REMOTES_LIST' in os.environ:
+    REMOTES_LIST_URL = os.environ['LIRC_REMOTES_LIST']
+else:
+    REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
 
 USAGE = """
 Usage:
@@ -26,6 +38,8 @@ Usage:
     irdb-get find-driver <string>
     irdb-get download <id>
     irdb-get list [pattern]
+    irdb-get yaml-config
+    irdb-get <-h | --help | -v | --version>
 """
 
 
@@ -37,7 +51,7 @@ def here(path):
 def download_file(url, path):
     ''' Download url to a file. '''
     if not os.path.exists(REMOTES_LIST_DIR):
-        os.mkdir(REMOTES_LIST_DIR)
+        os.makedirs(REMOTES_LIST_DIR)
     try:
         urllib.request.urlretrieve(url, path)
     except urllib.error.HTTPError as ex:
@@ -143,6 +157,50 @@ def do_find_driver():
         print(tokens[0] + "/" + tokens[1])
 
 
+def print_yaml_dict(_dict):
+    ''' Print a single-level dictionary as a yaml snippet. '''
+    for key in sorted(_dict.keys()):
+        print("\n    %s:" % key, end='')
+        to_print = ["\n" + (8 * ' ') + '- ' + p
+                    for p in sorted(list(set(_dict[key])))]
+        print(" ".join(to_print))
+
+
+def do_yaml_config():
+    ''' Write a yaml file mappinng drivers to list of lircd.conf. '''
+
+    if len(sys.argv) != 2:
+        print("yaml-config: No arguments are allowed.")
+        print(USAGE)
+        sys.exit(1)
+    lines = get_list_lines()
+    lircd_by_driver = {}
+    lircmd_by_driver = {}
+    for l in lines:
+        tokens = l.split(";")
+        if len(tokens) < 8:
+            continue
+        driver = tokens[7]
+        if (not driver) or driver == "no_driver" or driver == 'unknown':
+            continue
+        if driver not in lircd_by_driver:
+            lircd_by_driver[driver] = []
+        lircd_by_driver[driver].append("%s/%s" % (tokens[0], tokens[1]))
+        if tokens[2] == 'no_lircmd':
+            continue
+        if driver not in lircmd_by_driver:
+            lircmd_by_driver[driver] = []
+        lircmd_by_driver[driver].append("%s/%s" % (tokens[0], tokens[2]))
+
+    print("#")
+    print("# Created by 'irdb-get yaml-config' at " + time.ctime())
+    print("#")
+    print("\nlircd_by_driver:")
+    print_yaml_dict(lircd_by_driver)
+    print("\nlircmd_by_driver:")
+    print_yaml_dict(lircmd_by_driver)
+
+
 def do_find():
     ''' Find files containing pattern in sys.argv[2]. '''
     if len(sys.argv) < 3:
@@ -162,6 +220,8 @@ def do_find():
 
 def do_update():
     ''' Download the directory from website. '''
+    if os.path.exists(REMOTES_LIST):
+        os.unlink(REMOTES_LIST)
     download_file(REMOTES_LIST_URL, REMOTES_LIST)
 
 
@@ -184,8 +244,12 @@ def main():
         do_show()
     elif sys.argv[1] == 'list':
         do_list()
+    elif sys.argv[1] == 'yaml-config':
+        do_yaml_config()
     elif sys.argv[1] == '-h' or sys.argv[1] == '--help':
         print(USAGE)
+    elif sys.argv[1] == '-v' or sys.argv[1] == '--version':
+        print("irdb-get @version@")
     else:
         print("Illegal command: " + sys.argv[1])
         print(USAGE)

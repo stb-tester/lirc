@@ -79,14 +79,15 @@ dist_bin_SCRIPTS        += python3
 endif
 
 if HAVE_PYTHON
-dist_bin_SCRIPTS        += pronto2lirc irdb-get
+dist_bin_SCRIPTS        += pronto2lirc irdb-get lirc-kerneldrivers
 dist_sbin_SCRIPTS       = lircd-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
 pkgpython_PYTHON        = lirc-setup/mvc_control.py \
                           lirc-setup/mvc_view.py \
                           lirc-setup/mvc_model.py \
                           lirc-setup/choosers.py \
-                          lirc-setup/baseview.py
+                          lirc-setup/baseview.py \
+                          lirc-setup/database.py
 dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
 dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
 endif
@@ -105,7 +106,9 @@ python3:
 	chmod 755 $@
 
 install-exec-hook:
-	$(SED) -i 's/@version@/$(VERSION)/' $(DESTDIR)$(bindir)/lirc-config-tool
+	$(SED) -i -e 's/@version@/$(VERSION)/' \
+	    $(DESTDIR)$(bindir)/lirc-config-tool \
+	    $(DESTDIR)$(bindir)/irdb-get
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup
 	$(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \

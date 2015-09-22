@@ -14,6 +14,10 @@
 \fBirdb-get\fR list [\fIpattern\fR]
 .P
 \fBirdb-get\fR find-driver  <\fIstring\fR>
+.P
+\fBirdb-get\fR yaml-config
+.P
+\fBirdb-get\fR  <\fI\-h\fR|\fI\-\-help\fR|\fI\-v\fR|\fI\-\-version\fR>
 
 .SH DESCRIPTION
 .P
@@ -56,18 +60,49 @@ or
 The first word in the list is something like -RL- where the letters represent:
 .RS 4
 .IP R 4
-raw configuration.
+Raw configuration.
 .IP T 4
-remote has timing information i. e., it can be used with generic
+Remote has timing information i. e., it can be used with generic
 capture devices.
 .IP L 4
-remote has a lircmd config file.
+Remote has a lircmd config file.
 .IP P 4
-remote has a photo
+Remote has a photo.
 .RE
+
+.TP 4
+\fByaml-config\fR
+Prints a YAML file on stdout which maps drivers to remote files with
+corresponding \fIdriver\fR attribute. The format is unstable and primarely
+used by lirc-setup(1).
+
+.SH OPTIONS
+
 .TP 4
 \fB-h\fR , \fB--help\fR
 Print help message.
+
+.TP 4
+\fB-v\fR , \fB--version\fR
+Print version info.
+
+.SH ENVIRONMENT
+
+.TP 4
+\fBLIRC_REMOTES_URL\fR
+The  base URL used when downloading config files, defaults to
+\fIhttps://sourceforge.net/p/lirc-remotes/code/ci/master/tree\fR.
+
+.TP 4
+\fBLIRC_REMOTES_LIST\fR
+URL to a file listing all remotes, as created by lirc-lsremotes(1).
+Defaults to  \fIhttp://lirc-remotes.sourceforge.net/remotes.list\fR.
+
+.TP 4
+\fBXDG_CACHE_HOME\fR
+If defined, relocates the cached, downloaded remotes listing file to
+\fI$XDG_CACHE_HOME/remotes.list\fR, see FILES.
+
 
 .SH FILES
 .TP 4

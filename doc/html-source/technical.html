@@ -115,14 +115,26 @@ W | +------------------------+ +----------+ +-------------------------+
       commands, not just to send IR data.</p>
 
     <A NAME="config"></A><HR>
-    <H1 ALIGN="CENTER">Note for configuration application developers</H1>
+    <H1 ALIGN="CENTER">Writing LIRC configuration tools</H1>
 
     <P>
-      If you want to make a configuration application, lirc provides
-      a  parseable database of the drivers in the configs/ directory.
-      See configs/README for documentation of the format. The lirc-setup
-      tool has example code for parsing the files in configs/.
-    </P>
+      For the kernel-setup and related stuff such as available drivers
+      and remotes there are a number of YAML files in the configs/
+      directory. Here is also a large number of *.conf files which represents
+      a configuration a user can choose. The formats are described in
+      configs/README.</p>
+    <p>
+      The lirc-setup tool contains a self-contained module database.py
+      which provides a python interface to these files.</p>
+    <p>
+      The information in the lircd.conf files can be parsed by the library
+      routine <code>read_config()</code>.Here is also code to dump modified
+      data to a new file.  However, this is only available in the lirc_private
+      interface which by definition is unstable.</p>
+    <p>
+      The lircrc file is parsed using the <code>lirc_readconfig()</code> in
+      the lirc_client interface. There is no code to write modified data to
+      a new file.</p>
 
     <!-- New remotes++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 

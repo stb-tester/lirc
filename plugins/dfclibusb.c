@@ -62,9 +62,10 @@ const struct driver hw_dfclibusb = {
 	.decode_func	= receive_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 const struct driver* hardwares[] = { &hw_dfclibusb, (const struct driver*)NULL };
@@ -97,6 +98,10 @@ static int dfc_init(void)
 	rec_buffer_init();
 
 	usb_dev = find_usb_device();
+	snprintf(device_path, sizeof(device_path),
+		 "/dev/bus/usb/%s/%s",
+		 usb_dev->bus->dirname, usb_dev->filename);
+	drv.device = device_path;
 	if (usb_dev == NULL) {
 		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
 		return 0;
@@ -117,10 +122,6 @@ static int dfc_init(void)
 		goto fail;
 	}
 
-	snprintf(device_path, sizeof(device_path),
-		 "/dev/bus/usb/%s/%s",
-		 usb_dev->bus->dirname, usb_dev->filename);
-	drv.device = device_path;
 	logprintf(LIRC_DEBUG, "atilibusb: using device: %s", device_path);
 
 	child = fork();

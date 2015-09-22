@@ -1,0 +1,7 @@
+# This rule gives write access for the 'lirc' group for all USB
+# devices. Substituting the stars with actual values for vendor
+# and product confines the rule to specific vendors and/or devices.
+
+ACTION=="add", SUBSYSTEM=="usb", \
+   ATTR{idVendor}=="*", ATTR{idProduct}=="*", \
+   MODE="664",  GROUP="lirc"

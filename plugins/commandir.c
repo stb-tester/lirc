@@ -390,9 +390,10 @@ const struct driver hw_commandir = {
 	.decode_func	= commandir_receive_decode,
 	.drvctl_func	= commandir_ioctl,
 	.readdata	= commandir_readdata,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available."
+	.info		= "No info available.",
+	.device_hint    = "/dev/ttyUSB*",
 };
 
 const struct driver* hardwares[] = { &hw_commandir, NULL };

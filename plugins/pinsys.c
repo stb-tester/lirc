@@ -86,9 +86,10 @@ const struct driver hw_pinsys = {
 	.decode_func	= pinsys_decode,
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
-	.api_version	= 2,
+	.api_version	= 3,
 	.driver_version = "0.9.3",
-	.info		= "No info available"
+	.info		= "No info available",
+	.device_hint    = "/dev/tty[0-9]*",
 };
 
 const struct driver* hardwares[] = { &hw_pinsys, (const struct driver*)NULL };
