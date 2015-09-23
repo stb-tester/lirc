@@ -197,12 +197,33 @@ static void print_folded_item(const char* arg)
 static void line_print_yaml(const line_t* line)
 // Print line as a yaml 'driver' definition.
 {
+        size_t src;
+	char next;
+
 	printf("\n    %s:\n", line->name);
-	printf("        %-16s%s\n", "device_hint:",
-	       line->device_hint ? line->device_hint : "None");
 	printf("        %-16s%s\n", "type:", line->type );
 	printf("        %-16s%s\n", "can_send:", line->can_send);
+	printf("        %-16s'%s'\n",
 
+	       "info:", line->info ? line->info : "None");
+	if (!line->device_hint) {
+		printf("        %-16s%s\n", "device_hint:","None");
+	} else {
+		printf("        %-16s\n", "device_hint: |");
+		fputs("            \"", stdout);
+		for(src = 0; line->device_hint[src] != '\0'; src += 1) {
+			next = line->device_hint[src];
+			if (next == '\n' && src != 0)
+				printf("\"\n            \"");
+			else if (next == '"')
+				printf("\\\"");
+			else if (next == '\\')
+				printf("\\\\");
+			else
+				putc(next, stdout);
+		}
+		fputs("\"\n", stdout);
+	}
 }
 
 
