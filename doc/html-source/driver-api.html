@@ -362,9 +362,12 @@ struct driver* hardwares[] = { &amp;my_hardware, NULL };
 <p>
     It is possible to generate console output in any way; writing on <code>stdout</code> or <code>stderr</code>,
     using e.g. stdio or C++ streams. However, to conform with the working of the rest of LIRC,
-    it is recommended to use only the functions
-    <code>void logprintf(int prio,  const char *format_str, ...)</code>
-    and <code>void logperror (int prio, const char *s)</code>, which are declared in the header <code>lirc_log.h</code>.</p>
+    it is recommended to use only the various
+    <code>void log_(const char *format_str, ...)</code>
+    and <code>void log_perror_ (const char *format, ...)</code>  which are declared
+    in the header <code>lirc_log.h</code>. The normal set of<code> log_error(), log_warn(),
+    log_notice() ...</code> and <code>log_perror_err(), log_perror_warn(),
+    log_perror_debug() </code> etc.  are available </p>
 
 <h2>Timing issues</h2>
 <h3>Sending</h3>
