@@ -90,6 +90,12 @@ static struct {
 /* Return the absolute difference between two unsigned 8-bit samples */
 #define U8_ABSDIFF(s1, s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
 
+/** Command to list available alsa hw devices. */
+#define LIST_DEVICES \
+" aplay -l | sed -n" \
+" -e '/^card/s/card \\([0-9]\\)\\([^,]*\\),[^:]*\\([0-9]\\)/hw:\\1,\\3 /'" \
+" -e 's/ : .*//p'"
+
 /* Forward declarations */
 static int audio_alsa_deinit(void);
 static void alsa_sig_io(snd_async_handler_t* h);
@@ -546,7 +552,7 @@ const struct driver hw_audio_alsa = {
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/audio-alsa.html",
-	.device_hint    = "default",
+	.device_hint    = "/bin/sh " LIST_DEVICES,
 };
 
 const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };

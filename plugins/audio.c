@@ -45,6 +45,18 @@ static int ptyfd;               /* the pty */
 #define NUM_CHANNELS           (2)
 #define PI           (3.141592654)
 
+#define LIST_DEVICES \
+"exec 2>/dev/null\n \
+python -b - << EOF\n\
+import pyaudio\n\
+p = pyaudio.PyAudio()\n\
+print(\"label_by_device:\")\n\
+for i in range(p.get_device_count()):\n\
+    d = p.get_device_info_by_index(i)\n\
+    print(\"    '%s:%s':  '%s'\" % (d['hostApi'], d['index'], d['name']))\n\
+EOF\n"
+
+
 /* Select sample format. */
 #define PA_SAMPLE_TYPE  paUInt8
 typedef unsigned char SAMPLE;
@@ -368,6 +380,7 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 {
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
+
 	const char* devicetype = "custom";
 	const char* latencytype = "custom";
 	int nrdevices = Pa_GetDeviceCount();
@@ -639,7 +652,7 @@ const struct driver hw_audio = {
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/audio.html",
-	.device_hint    = "default",
+	.device_hint    = "/bin/sh " LIST_DEVICES,
 };
 
 const struct driver* hardwares[] = { &hw_audio, (const struct driver*)NULL };
