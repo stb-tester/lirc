@@ -42,7 +42,8 @@
 
 static const logchannel_t logchannel = LOG_APP;
 
-static char* opt_device = NULL;
+static const char* opt_device = NULL;
+static const char* opt_driver = NULL;
 static int opt_dmode = 0;
 static int t_div = 500;
 static unsigned int opt_gap = 10000;
@@ -50,22 +51,25 @@ static int opt_raw_access = 0;
 
 static const char* const help =
 	"Usage: mode2 [options]\n"
-	"\t -d --device=device\tread from given device\n"
-	"\t -H --driver=driver\tuse given driver\n"
-	"\t -U --plugindir=path\tLoad plugins from path.\n"
-	"\t -k --keep-root\t\tkeep root privileges\n"
-	"\t -m --mode\t\tenable column display mode\n"
-	"\t -r --raw\t\taccess device directly\n"
-	"\t -g --gap=time\t\ttreat spaces longer than time as the gap\n"
-	"\t -s --scope=time\t'scope like display with time us per char.\n"
-	"\t -h --help\t\tdisplay usage summary\n"
-	"\t -v --version\t\tdisplay version\n"
+	"\t -d --device=device\tRead from given device\n"
+	"\t -H --driver=driver\tUse given driver\n"
+	"\t -U --plugindir=path\tLoad plugins from path\n"
+	"\t -k --keep-root\t\tKeep root privileges\n"
+	"\t -m --mode\t\tEnable column display mode\n"
+	"\t -r --raw\t\tAccess device directly without driver\n"
+	"\t -g --gap=time\t\tTreat spaces longer than time as the gap\n"
+	"\t -s --scope=time\t'Scope' like display with time us per char\n"
 	"\t -A --driver-options=key:value[|key:value...]\n"
-	"\t\t\t\tSet driver options\n";
+	"\t\t\t\tSet driver options\n"
+	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
+	"\t -O --options-file\tUse alternative lirc_options.conf file\n"
+	"\t -h --help\t\tDisplay usage summary\n"
+	"\t -v --version\t\tDisplay version\n";
 
 
 static const struct option options[] = {
 	{"help",           no_argument,       NULL, 'h'},
+	{"debug",          required_argument, NULL, 'D'},
 	{"version",        no_argument,       NULL, 'v'},
 	{"device",         required_argument, NULL, 'd'},
 	{"driver",         required_argument, NULL, 'H'},
@@ -93,17 +97,34 @@ const char* const USE_RAW_MSG =
 
 static void add_defaults(void)
 {
-	char level[4];
+	const char* const device = options_getstring("lircd:device");
+	const char* const driver = options_getstring("lircd:driver");
+	const char* const plugindir = options_getstring("lircd:plugindir");
+	const char* const lircd_level = options_getstring("lircd:debug");
+	const char* const env_level = getenv("LIRC_LOGELEVL");
+	char level[12];
 
-	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
-
+	if (env_level != NULL) {
+		if (string2loglevel(env_level) == LIRC_BADLEVEL) {
+			fprintf(stderr,
+			        "Bad debug level: %s in LIRC_LOGLEVEL\n",
+			        env_level);
+			exit(EXIT_FAILURE);
+		}
+		strncpy(level, env_level, sizeof(level) - 1);
+	} else if (lircd_level != NULL) {
+		strncpy(level, lircd_level, sizeof(level) - 1);
+	} else {
+		snprintf(level, sizeof(level), " %d", lirc_log_defaultlevel());
+	}
 	const char* const defaults[] = {
-		"mode2:driver",	    "default",
+		"mode2:driver",     driver ? driver : "default",
 		"mode2:lircdfile",  LIRCD,
 		"lircd:logfile",    "syslog",
-		"lircd:debug",	    level,
-		"lircd:plugindir",  PLUGINDIR,
+		"mode2:plugindir",  plugindir ? plugindir : PLUGINDIR,
 		"lircd:configfile", LIRCDCFGFILE,
+		"mode2:debug",	    level,
+		"mode2:device",     device ? device : LIRC_DRIVER_DEVICE,
 		(const char*)NULL,  (const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -113,30 +134,35 @@ static void add_defaults(void)
 static void parse_options(int argc, char** argv)
 {
 	int c;
-	static const char* const optstring = "hvd:H:mkrg:s:U:A:";
-	char driver[64];
+	static const char* const optstring = "hvD:d:H:mkrg:s:U:A:";
 
-	strcpy(driver, "default");
 	add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
+		case 'D':
+			if (string2loglevel(optarg) == LIRC_BADLEVEL) {
+				fprintf(stderr, "Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			options_set_opt("mode2:debug", optarg);
+			break;
 		case 'h':
 			puts(help);
 			exit(EXIT_SUCCESS);
 		case 'H':
-			strncpy(driver, optarg, sizeof(driver) - 1);
+			options_set_opt("mode2:driver", optarg);
 			break;
 		case 'v':
 			printf("%s %s\n", "mode2 ", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'U':
-			options_set_opt("lircd:plugindir", optarg);
+			options_set_opt("mode2:plugindir", optarg);
 			break;
 		case 'k':
 			unsetenv("SUDO_USER");
 			break;
 		case 'd':
-			opt_device = optarg;
+			options_set_opt("mode2:device", optarg);
 			break;
 		case 's':
 			opt_dmode = 2;
@@ -167,8 +193,12 @@ static void parse_options(int argc, char** argv)
 		fprintf(stderr, "The --raw option requires a --device\n");
 		exit(EXIT_FAILURE);
 	}
-	if (hw_choose_driver(driver) != 0) {
-		fprintf(stderr, "Driver `%s' not found.", driver);
+	opt_device = options_getstring("mode2:device");
+	options_set_opt("lircd:plugindir",
+			options_getstring("mode2:plugindir"));
+	opt_driver = options_getstring("mode2:driver");
+	if (hw_choose_driver(opt_driver) != 0) {
+		fprintf(stderr, "Driver `%s' not found.", opt_driver);
 		fputs(" (Missing -U/--plugins option?)\n", stderr);
 		fputs("Available drivers:\n", stderr);
 		hw_print_drivers(stderr);
@@ -186,6 +216,7 @@ int open_device(int opt_raw_access, const char* device)
 	int fd;
 	const char* opt;
 
+	log_info("Opening device: %s", device);
 	if (opt_raw_access) {
 		fd = open(device, O_RDONLY);
 		if (fd == -1) {
@@ -243,25 +274,6 @@ int open_device(int opt_raw_access, const char* device)
 	}
 	fprintf(stderr, "Using device: %s\n", curr_driver->device);
 	return fd;
-}
-
-
-/** Define loglevel and open the log file. */
-static void setup_log(void)
-{
-	char path[128];
-	const char* loglevel;
-
-	loglevel = getenv("LIRC_LOGLEVEL");
-	if (loglevel == NULL) {
-		loglevel = "DEBUG";
-	} else if (string2loglevel(loglevel) == LIRC_BADLEVEL) {
-		fprintf(stderr, "Bad LIRC_LOGLEVEL: %s\n", loglevel);
-		loglevel = "DEBUG";
-	}
-	lirc_log_get_clientlog("mode2", path, sizeof(path));
-	lirc_log_set_file(path);
-	lirc_log_open("mode2", 1, string2loglevel(loglevel));
 }
 
 
@@ -394,6 +406,8 @@ int main(int argc, char** argv)
 	int fd;
 	__u32 mode;
 	size_t bytes = sizeof(lirc_t);
+	char logpath[256];
+	const char* loglevel;
 	/**
 	 * Was hard coded to 50000 but this is too long, the shortest gap in the
 	 * supplied .conf files is 10826, the longest space defined for any one,
@@ -403,7 +417,20 @@ int main(int argc, char** argv)
 
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
-	setup_log();
+
+	lirc_log_get_clientlog("mode2", logpath, sizeof(logpath));
+	(void)unlink(logpath);
+	lirc_log_set_file(logpath);
+	loglevel = options_getstring("mode2:debug");
+	lirc_log_open("mode2", 1, string2loglevel(loglevel));
+
+        if (opt_raw_access) {
+		printf("Using raw access on device %s\n", opt_device);
+	} else {
+		printf("Using driver %s on device %s\n",
+		       options_getstring("mode2:driver"),
+		       opt_device);
+	}
 	fd = open_device(opt_raw_access, opt_device);
 	if (geteuid() == 0)
 		drop_root_cli(setuid);

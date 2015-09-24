@@ -1,4 +1,4 @@
-/****************************************************************************
+/***************************************************************************
 ** xmode2.c ****************************************************************
 ****************************************************************************
 *
@@ -65,7 +65,16 @@ const char* const  MSG_USE_RAW =
 
 const char* const MSG_BAD_DRIVER =
 	"This program does not work for this driver and hardware.\n"
-	"(the driver is not a LIRC_MODE2 type driver)";
+	"(the driver is not a LIRC_MODE2 type driver)\n"
+	" You can test this receiver using mode2(1).";
+
+const char* const MSG_MODE2_DRIVER =
+	"This program is only intended for receivers supporting the\n"
+	" pulse/space layer. Note that this is no error, but this program\n"
+	" simply makes no sense for your receiver.\n"
+	" You can test this receiver using mode2(1).";
+
+static const logchannel_t logchannel = LOG_APP;
 
 Display* d1;
 Window w0, w1;			/*w0 = root */
@@ -98,16 +107,17 @@ static const char* device = "";
 static char* geometry = NULL;
 
 static struct option options[] = {
-	{"help",      no_argument,	 NULL, 'h'},
-	{"version",   no_argument,	 NULL, 'v'},
-	{"device",    required_argument, NULL, 'd'},
-	{"driver",    required_argument, NULL, 'H'},
-	{"keep-root", required_argument, NULL, 'k'},
-	{"geometry", required_argument, NULL, 'g'},
-	{"timediv", required_argument, NULL, 't'},
-	{"mode", no_argument, NULL, 'm'},
-	{"raw", no_argument, NULL, 'r'},
-	{"plugindir", required_argument, NULL, 'U'},
+	{"help",           no_argument,	      NULL, 'h'},
+	{"version",        no_argument,	      NULL, 'v'},
+	{"debug",          required_argument, NULL, 'D'},
+	{"device",         required_argument, NULL, 'd'},
+	{"driver",         required_argument, NULL, 'H'},
+	{"keep-root",      required_argument, NULL, 'k'},
+	{"geometry",       required_argument, NULL, 'g'},
+	{"timediv",        required_argument, NULL, 't'},
+	{"mode",           no_argument,       NULL, 'm'},
+	{"raw",            no_argument,       NULL, 'r'},
+	{"plugindir",      required_argument, NULL, 'U'},
 	{"driver-options", required_argument, NULL, 'A'},
 	{0, 0, 0, 0}
 };
@@ -116,38 +126,49 @@ static struct option options[] = {
 static const char* const help =
 	"\nUsage: xmode2 [options]\n"
 	"\nOptions:\n"
-	"    -d --device=device\t\tread from given device\n"
-	"    -H --driver=driver\t\tuse given driver\n"
+	"    -d --device=device\t\tRead from given device\n"
+	"    -H --driver=driver\t\tUse given driver\n"
 	"    -U --plugindir=dir\t\tLoad drivers from given dir\n"
 	"    -g --geometry=geometry\twindow geometry\n"
 	"    -t --timediv=value\t\tms per unit\n"
-	"    -m --mode\t\t\tenable alternative display mode\n"
-	"    -k --keep-root\t\tkeep root privileges\n"
-	"    -r --raw\t\t\taccess device directly\n"
-	"    -h --help\t\t\tdisplay usage summary\n"
-	"    -v --version\t\tdisplay version\n"
+	"    -m --mode\t\t\tEnable alternative display mode\n"
+	"    -k --keep-root\t\tKeep root privileges\n"
+	"    -r --raw\t\t\tAccess device directly\n"
+	"    -O --options-file\t\tUse alternative lirc_options.conf file\n"
 	"    -A --driver-options=key:value[|key:value...]\n"
 	"\t\t\t\tSet driver options\n"
+	"    -D --loglevel=level\t\t'error', 'info', 'notice',... or 3..10\n"
+	"    -h --help\t\t\tDisplay usage summary\n"
+	"    -v --version\t\tDisplay version\n\n"
 	"The window responds to the following keys:\n"
-	"    .1, .2, .5, 1, 2 & 5 set the timebase (ms)\n"
-	"    m to toggle the display mode\n"
-	"    q to quit\n";
+	"    .1, .2, .5, 1, 2 & 5 Set the timebase (ms)\n"
+	"    m to Toggle the display mode\n"
+	"    q to Quit\n";
 
 
 static void add_defaults(void)
 {
-	char level[4];
+	const char* const device = options_getstring("lircd:device");
+	const char* const driver = options_getstring("lircd:driver");
+	const char* const lircd_level = options_getstring("lircd:debug");
+	const char* const plugindir = options_getstring("lircd:plugindir");
+	char level[12];
 
-	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	if (lircd_level != NULL) {
+		strncpy(level, lircd_level, sizeof(level) - 1);
+	} else {
+		snprintf(level, sizeof(level), " %d", lirc_log_defaultlevel());
+	}
 	const char* const defaults[] = {
-		"lircd:plugindir",	    PLUGINDIR,
-		"lircd:debug",		    level,
-		"xmode2:driver",	    "devinput",
-		"xmode2:analyse",	    "False",
-		"xmode2:force",		    "False",
+		"xmode2:plugindir",  	plugindir ? plugindir : PLUGINDIR,
+		"xmode2:debug",		level,
+		"xmode2:device",     	device ? device : LIRC_DRIVER_DEVICE,
+		"xmode2:driver",        driver ? driver : "default",
+		"xmode2:analyse",	"False",
+		"xmode2:force",		"False",
+		"xmode2:dynamic-codes",	"False",
+		"xmode2:list_namespace","False",
 		"xmode2:disable-namespace", "False",
-		"xmode2:dynamic-codes",	    "False",
-		"xmode2:list_namespace",    "False",
 		(const char*)NULL,	    (const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -160,22 +181,29 @@ static void parse_options(int argc, char** const argv)
 
 	add_defaults();
 	char driver[64];
-	const char* const optstring =  "U:hvd:H:g:t:mrA:";
+	const char* const optstring =  "g:hvdD:U:H:t:mrA:";
 
 	strcpy(driver, "default");
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
 		switch (c) {
+		case 'D':
+			if (string2loglevel(optarg) == LIRC_BADLEVEL) {
+				fprintf(stderr, "Bad debug level: %s\n", optarg);
+				exit(EXIT_FAILURE);
+			}
+			options_set_opt("xmode2:debug", optarg);
+			break;
 		case 'h':
 			puts(help);
 			exit(EXIT_SUCCESS);
 		case 'H':
-			strncpy(driver, optarg, sizeof(driver) - 1);
+			options_set_opt("xmode2:driver", optarg);
 			break;
 		case 'v':
 			printf("%s %s\n", progname, VERSION);
 			exit(EXIT_SUCCESS);
 		case 'd':
-			device = optarg;
+			options_set_opt("xmode2:device", optarg);
 			break;
 		case 'g':
 			geometry = optarg;
@@ -193,7 +221,7 @@ static void parse_options(int argc, char** const argv)
 			use_raw_access = 1;
 			break;
 		case 'U':
-			options_set_opt("lircd:plugindir", optarg);
+			options_set_opt("xmode2:plugindir", optarg);
 			break;
 		case 'A':
 			options_set_opt("lircd:driver-options", optarg);
@@ -207,12 +235,17 @@ static void parse_options(int argc, char** const argv)
 		fprintf(stderr, "%s: too many arguments\n", progname);
 		exit(EXIT_FAILURE);
 	}
+	options_set_opt("lircd:plugindir",
+			options_getstring("xmode2:plugindir"));
 	if (hw_choose_driver(driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found", driver);
 		fputs(" (wrong or missing -U/--plugindir?)\n", stderr);
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
+	strncpy(driver,
+		options_getstring("xmode2:driver"),
+		sizeof(driver) - 1);
 }
 
 
@@ -289,13 +322,29 @@ int main(int argc, char** argv)
 	int result;
 	char textbuffer[80];
 	const char* opt;
+	const char* log_level;
+	char logpath[256];
 
-	lirc_log_open("xmode2", 0, LIRC_INFO);
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
+
+	lirc_log_get_clientlog("xmode2", logpath, sizeof(logpath));
+	(void)unlink(logpath);
+	lirc_log_set_file(logpath);
+	log_level = options_getstring("xmode2:debug");
+	lirc_log_open("xmode2", 0, string2loglevel(log_level));
+
+	device = options_getstring("xmode2:device");
 	if (strcmp(device, LIRCD) == 0) {
-		fprintf(stderr, "%s: refusing to connect to lircd socket\n", progname);
+		fputs("Refusing to connect to lircd socket\n", stderr);
 		return EXIT_FAILURE;
+	}
+	if (use_raw_access) {
+		printf("Using raw access on device %s\n", device);
+	} else {
+		printf("Using driver %s on device %s\n",
+		       options_getstring("xmode2:driver"),
+		       device);
 	}
 	if (!isatty(STDIN_FILENO)) {
 		use_stdin = 1;
@@ -311,19 +360,14 @@ int main(int argc, char** argv)
 		if ((fstat(fd, &s) != -1) && (S_ISFIFO(s.st_mode))) {
 			/* can't do ioctls on a pipe */
 		} else if ((fstat(fd, &s) != -1) && (!S_ISCHR(s.st_mode))) {
-			fprintf(stderr, "%s: %s is not a character device\n", progname, device);
-			fprintf(stderr, "%s: use the -d option to specify the correct device\n", progname);
+			fprintf(stderr,
+				"%s is not a character device\n", device);
+			fputs("Use the -d option to specify the correct device\n",
+			      stderr);
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
-			puts("This program is only intended for receivers supporting the pulse/space layer.");
-			puts("Note that this is no error, but this program "
-			     "simply makes no sense for your\n"
-			     "receiver.");
-			puts("In order to test your setup run lircd with "
-			     "the --nodaemon option and\n"
-			     "then check if the remote works with the irw tool.");
-			close(fd);
+			fputs(MSG_MODE2_DRIVER, stderr);
 			exit(EXIT_FAILURE);
 		}
 	} else {
@@ -475,12 +519,12 @@ int main(int argc, char** argv)
 				}
 			}
 			if (result != 0) {
-#ifdef DEBUG
-				if (data & PULSE_BIT)
-					printf("%.8x\t", data);
-				else
-					printf("%.8x\n", data);
-#endif
+				if lirc_log_is_enabled_for(LIRC_DEBUG) {
+					if (data & PULSE_BIT)
+						printf("%.8x\t", data);
+					else
+						printf("%.8x\n", data);
+				}
 				dx = (data & PULSE_MASK) / (div_);
 				if (dx > 400) {
 					if (!dmode)

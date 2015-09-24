@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: Aug 2015" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: Sep 2015" "irrecord @version@" "User Commands"
 .SH NAME
 .P
 \fBirrecord\fR - IR-codes recording tool for usage with LIRC
@@ -64,6 +64,12 @@ Use given driver. -H help lists available drivers.
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
 Read from given device.
 .TP
+\fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
+Load drivers from directory. See DRIVER LOADING.
+.TP
+\fB\-k\fR \fB\-\-keep-root\fR
+Don't drop root privileges after opening device. See RUNNING AS ROOT.
+.TP
 \fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
 Determine the amount of logging information. [level] can be a symbolic
 syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
@@ -72,6 +78,10 @@ gives even more messages ('trace2' bringing the most). However, in the
 log these messages are marked as 'debug'.
 The level can also be an integer in the range 3 (almost no messages) to
 10.
+.TP
+\fB\-O, \fB\-\-options-file\fR <\fIpath\fR>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
 .TP
 \fB\-h\fR \fB\-\-help\fR
 Display this message.
@@ -94,18 +104,40 @@ The environment variable LIRC_PLUGINDIR.
 .IP \- 2
 A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 
+.SH RUNNING AS ROOT
+In many cases irrecord needs to run as root to access devices not
+available to regular users. On the other hand, running as root creates
+problems such as log files owned by root, security concerns etc.
+.P
+In order to cope with this, irrecord by default drops root privileges
+after opening the input device. This support is based on that root
+permissions are accquired using sudo(1) e. g., using
+.nf
+
+        $ sudo irrecord --device /dev/lirc0 --driver default
+
+.fi
+If not using sudo, the same behaviour could be accomplished using the
+SUDO_USER environment variable e. g.,
+.nf
+
+        # SUDO_USER=$LOGNAME irrecord --device /dev/lirc0 --driver default
+
+.fi
+The --keep-root option will make irrecord to keep root privileges for the
+complete run.
+
+
 
 .SH FILES
 .TP 4
 .B /etc/lirc/lirc_options.conf
-The options file. irrecord mostly handles the values under the [irrecord]
-section, but some values such as debug and plugindir are inherited from
-the [lircd] section.
+The options file holding default values for command line options in the
+[irrecord] section. For some values including debug, plugindir, driver and
+device irrecord falls back to the [lircd] section if not found in [irrecord].
 .IP \- 4
 The location of this file can be changed using the -O/--options-file
 command-line option or using the environment variable LIRC_OPTIONS_PATH.
-The values here are used as defaults for any option not present on
-command line.
 
 .TP 4
 .B ~/.cache/irrecord.log

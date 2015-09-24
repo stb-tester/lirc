@@ -43,32 +43,33 @@ static const char* const help =
 	"\t -f --force\t\tForce raw mode\n"
 	"\t -n --disable-namespace\tDisable namespace checks\n"
 	"\t -Y --dynamic-codes\tEnable dynamic codes\n"
+	"\t -O --options-file\tUse alternative lirc_options.conf file\n"
 	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n";
 
 static const struct option long_options[] = {
-	{"help",	       no_argument,	  NULL, 'h'},
-	{"version",	       no_argument,	  NULL, 'v'},
-	{"analyse",	       no_argument,	  NULL, 'a'},
-	{"device",	       required_argument, NULL, 'd'},
-	{"options-file",      required_argument, NULL,  'O'},
-	{"debug",	       required_argument, NULL, 'D'},
-	{"loglevel",	       required_argument, NULL, 'D'},
-	{"driver",	       required_argument, NULL, 'H'},
-	{"force",	       no_argument,	  NULL, 'f'},
-	{"disable-namespace", no_argument,	  NULL, 'n'},
-	{"keep-root",	       no_argument,	  NULL, 'k'},
-	{"list-namespace",    no_argument,	  NULL, 'l'},
-	{"update",	       required_argument, NULL, 'u'},
-	{"plugindir",	       required_argument, NULL, 'U'},
-	{"dynamic-codes",     no_argument,	  NULL, 'Y'},
-	{"pre",		       no_argument,	  NULL, 'p'},
-	{"post",	       no_argument,	  NULL, 'P'},
-	{"test",	       no_argument,	  NULL, 't'},
-	{"invert",	       no_argument,	  NULL, 'i'},
-	{"trail",	       no_argument,	  NULL, 'T'},
-	{0,		       0,		  0,	0  }
+	{"help",	      no_argument,	 NULL, 'h'},
+	{"version",	      no_argument,	 NULL, 'v'},
+	{"analyse",	      no_argument,	 NULL, 'a'},
+	{"device",	      required_argument, NULL, 'd'},
+	{"options-file",      required_argument, NULL, 'O'},
+	{"debug",	      required_argument, NULL, 'D'},
+	{"loglevel",	      required_argument, NULL, 'D'},
+	{"driver",	      required_argument, NULL, 'H'},
+	{"force",	      no_argument,	 NULL, 'f'},
+	{"disable-namespace", no_argument,	 NULL, 'n'},
+	{"keep-root",	      no_argument,	 NULL, 'k'},
+	{"list-namespace",    no_argument,	 NULL, 'l'},
+	{"update",	      required_argument, NULL, 'u'},
+	{"plugindir",	      required_argument, NULL, 'U'},
+	{"dynamic-codes",     no_argument,	 NULL, 'Y'},
+	{"pre",		      no_argument,	 NULL, 'p'},
+	{"post",	      no_argument,	 NULL, 'P'},
+	{"test",	      no_argument,	 NULL, 't'},
+	{"invert",	      no_argument,	 NULL, 'i'},
+	{"trail",	      no_argument,	 NULL, 'T'},
+	{0,		      0,		 0,	0  }
 };
 
 const char* const MSG_WELCOME =
@@ -261,22 +262,30 @@ static uid_t getresuid_uid(void)
 /** Set up default values for all command line options + filename. */
 static void add_defaults(void)
 {
-	char level[4];
+	const char* const device = options_getstring("lircd:device");
+	const char* const driver = options_getstring("lircd:driver");
+	const char* const level = options_getstring("lircd:debug");
+	const char* const plugindir = options_getstring("lircd:plugindir");
+	char default_level[4];
 
-	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	snprintf(default_level, sizeof(default_level), "%d",
+		 lirc_log_defaultlevel());
 	const char* const defaults[] = {
-		"lircd:plugindir",	      PLUGINDIR,
-		"irrecord:driver",	      "default",
-		"irrecord:device",	      LIRC_DRIVER_DEVICE,
-		"irrecord:analyse",	      "False",
-		"irrecord:force",	      "False",
-		"irrecord:update",	      "False",
-		"irrecord:disable-namespace", "False",
-		"irrecord:dynamic-codes",     "False",
-		"irrecord:list-namespace",    "False",
-		"irrecord:filename",	      "irrecord.lircd.conf",
-		"lircd:debug",		      level,
-		(const char*)NULL,	      (const char*)NULL
+		"lircd:plugindir",      plugindir ? plugindir : PLUGINDIR,
+		"irrecord:driver",      driver ? driver : "default",
+		"irrecord:device",      device ? device : LIRC_DRIVER_DEVICE,
+		"irrecord:analyse",     "False",
+		"irrecord:force",       "False",
+		"irrecord:update",      "False",
+		"irrecord:disable-namespace",
+					"False",
+		"irrecord:dynamic-codes",
+					"False",
+		"irrecord:list-namespace",
+					"False",
+		"irrecord:filename",    "irrecord.lircd.conf",
+		"irrecord:debug",	level ? level : default_level,
+		(const char*)NULL,	(const char*)NULL
 	};
 	options_add_defaults(defaults);
 };
@@ -327,7 +336,7 @@ static void parse_options(int argc, char** const argv)
 				fprintf(stderr, "Bad debug level: %s\n", optarg);
 				exit(EXIT_FAILURE);
 			}
-			options_set_opt("lircd:debug", optarg);
+			options_set_opt("irrecord:debug", optarg);
 			break;
 		case 'd':
 			options_set_opt("irrecord:device", optarg);
@@ -404,6 +413,13 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	struct ir_ncode* nc;
 	int fd;
 
+	if (opts->force) {
+		printf("Using raw access on device %s\n",
+		       opts->device);
+	} else {
+		printf("Using driver %s on device %s\n",
+			opts->driver, opts->device);
+	}
 	hw_choose_driver(NULL);
 	if (!opts->analyse && hw_choose_driver(opts->driver) != 0)
 		return STS_INIT_BAD_DRIVER;
@@ -537,7 +553,8 @@ static int get_options(int argc,
 	options_load(argc, argv, NULL, parse_options);
 	options->analyse = options_getboolean("irrecord:analyse");
 	options->device = options_getstring("irrecord:device");
-	options->loglevel = string2loglevel(options_getstring("lircd:debug"));
+	options->loglevel =
+		string2loglevel(options_getstring("irrecord:debug"));
 	options->driver = options_getstring("irrecord:driver");
 	options->force = options_getboolean("irrecord:force");
 	options->disable_namespace =
