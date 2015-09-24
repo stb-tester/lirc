@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Aug 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Sep 2015" "mode2 @version@" "User Commands"
 .SH NAME
 .P
 \fBmode2\fR - Show pulse/space length or decoded input from infrared drivers.
@@ -51,15 +51,28 @@ Don't drop root privileges after opening device. See RUNNING AS ROOT.
 Treat spaces longer than time as the gap. Time is in microseconds.
 .TP
 \fB\-r\fR \fB\-\-raw\fR
-Access device directly. This is primarely intended to be used with kernel
-drivers i.e., when accessing \fI/dev/lirc*\fR devices. Using other devices might
-work, but is in general undefined.
+Access device directly. This is primarely intended to be used with kernel rc
+drivers i .e., when accessing \fI/dev/lirc*\fR devices. Using other devices
+might work, but is in general undefined.
 .TP
 \fB\-A\fR \fB\-\-driver\-options\fR=\fIkey:value[|key:value...]\fR
 Set driver-specific option named key to given value.
 .TP
 \fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
 Load drivers from directory. See DRIVER LOADING.
+.TP
+\fB\-O, \fB\-\-options-file\fR <\fIpath\fR>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
+.TP
+\fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+The level can also be an integer in the range 3 (almost no messages) to
+10.
 .TP
 \fB\-h\fR \fB\-\-help\fR
 Display usage summary.
@@ -106,17 +119,19 @@ A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .SH ENVIRONMENT
 .TP 4
 .B LIRC_LOGLEVEL
-Determines the amount of logging information. [level] can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'.
-.IP
-The level can also be an integer in the range 3 (almost no messages) to
-10.
+Used as fallback when there is no --loglevel option present. Syntax
+is the same as for --loglevel, see OPTIONS.
 
 .SH "FILES"
 .TP 4
+.B /etc/lirc/lirc_options.conf
+The options file holding default values for command line options in
+the [mode2] section. For some values including debug, plugindir, driver
+and device mode2 falls back to the [lircd] section if not found in [mode2].
+.IP \- 4
+The location of this file can be changed using the -O/--options-file
+command-line option or using the environment variable LIRC_OPTIONS_PATH.
+
 .B ~/.cache/mode2.log
 Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log

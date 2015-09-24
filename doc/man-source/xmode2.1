@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Aug 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Sep 2015" "mode2 @version@" "User Commands"
 .SH NAME
 xmode2 - Show the pulse/space length of infrared signals
 .SH SYNOPSIS
@@ -24,22 +24,41 @@ lirc-lsplugins(1) allows checking if a driver is a LIRC_MODE2 type one.
 
 .TP
 \fB\-h\fR \fB\-\-help\fR
-display usage summary
+Display usage summary.
 .TP
 \fB\-v\fR \fB\-\-version\fR
-display version
+Display version.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-read from given device
+Read from given device.
 .TP
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
-use given driver
+Use given driver.
 .TP
 \fB\-m\fR \fB\-\-mode\fR
-enable alternative display mode
+Enable alternative display mode.
 .TP
 \fB\-r\fR \fB\-\-raw\fR
-access device directly
+Access device directly.
+.TP
+\fB\-k\fR \fB\-\-keep-root\fR
+Don't drop root privileges after opening device. See RUNNING AS ROOT.
+.TP
+\fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
+Determine the amount of logging information. [level] can be a symbolic
+syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most). However, in the
+log these messages are marked as 'debug'.
+The level can also be an integer in the range 3 (almost no messages) to
+10.
+.TP
+\fB\-O, \fB\-\-options-file\fR <\fIpath\fR>
+File containing default values for all options. A relative path is
+interpreted from current directory. See [FILES] below.
+.TP
+\fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
+Load drivers from directory. See DRIVER LOADING.
 
 .SH RUNNING AS ROOT
 In many cases xmode2 needs to run as root to access devices not available
@@ -83,7 +102,16 @@ A hardcoded default (usually /usr/lib[64]/lirc/plugins).
 .B ~/.cache/xmode2.log
 Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/mode2.log
+.TP 4
+.B /etc/lirc/lirc_options.conf
+The options file holding default values for command line options in
+the [xmode2] section. For some values including debug, plugindir, driver
+and device xmode2 falls back to the [lircd] section if not found in [xmode2].
+.IP "" 4
+The location of this file can be changed using the -O/--options-file
+command-line option or using the environment variable LIRC_OPTIONS_PATH.
 
+.
 .SH "SEE ALSO"
 mode2(1)
 .br
