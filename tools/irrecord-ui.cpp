@@ -257,7 +257,7 @@ static void add_defaults(void)
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const defaults[] = {
 		"lircd:plugindir",	      PLUGINDIR,
-		"irrecord:driver",	      "devinput",
+		"irrecord:driver",	      "default",
 		"irrecord:device",	      LIRC_DRIVER_DEVICE,
 		"irrecord:analyse",	      "False",
 		"irrecord:force",	      "False",
