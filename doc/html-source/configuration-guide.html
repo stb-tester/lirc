@@ -410,13 +410,15 @@ remote | kernel |   devinput v        |
     the key symbol is perfectly possible, but probably not what you want
     here).  </p>
     <p>
-    Then, grab the devinput/devinput.lircd.conf file
-    <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
-    (remotes) </a> and copy it to /etc/lirc/lircd.conf.d/. Start the lircd
-    daemon and use irw to check:
+    Then, activate the devinput.lircd.conf template which comes with lirc:
     <pre>
-    $ irdb-get download devinput/devinput.lircd.conf
-    $ sudo cp devinput/devinput.lircd.conf  /etc/lirc/lircd.conf.d
+    cd /etc/lirc/lircd.conf.d; sudo cp devinput.lirc.dist devinput.lircd.conf
+    </pre>
+    If the  devinput.lircd.dist file is not available, you can download the
+    <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
+    copy in the database</a> and copy it to /etc/lirc/lircd.conf.d instead.
+    Start the lircd daemon and use irw to check:
+    <pre>
     $ lircd --device /dev/input/event13 --driver devinput
     $ irw
     </pre>

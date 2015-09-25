@@ -5,12 +5,13 @@ Files in this directory are automatically included, much the same way
 as if there was a "include" directive for it in lircd.conf. For this to
 work, the filename must match '*.conf'.
 
-You might want to symlink files elseware to this directory,
-naming the link to 'something.conf'.
+As distributed, here is a single file devinput.lircd.dist. This should
+be used with the devinput driver; in this case copy it to
+devinput.lircd.conf.
 
 lircd normally (tries to) sort the remotes so the ones which decodes fastest
 are used first. If you want to sort your configs manually you can add a file
-like this to lircd.conf.d (the filename does not matter).
+like this to lircd.conf.d (the filename does not matter):
 
        begin remote
             name manual_sort
@@ -20,10 +21,11 @@ like this to lircd.conf.d (the filename does not matter).
        end remote
 
 In manual sort mode the files here are used in the order they are listed by
-ls(1). In this situation it makes a lot of sense to name the links like:
+ls(1). In this situation it makes a lot of sense to name the files like:
 
-    00-my-first-remote.conf
-    01-my-next-remote.conf
+    00-manual-sort.conf
+    01-my-first-remote.conf
+    02-my-next-remote.conf
     ...
 
 to define the sort order.

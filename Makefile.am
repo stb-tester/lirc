@@ -27,7 +27,7 @@ lirc_confdir            = $(sysconfdir)/lirc
 dist_lirc_conf_DATA     = lircd.conf lirc_options.conf lircmd.conf
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
-dist_lircdconfig_DATA	= README.conf.d
+dist_lircdconfig_DATA	= README.conf.d devinput.lircd.dist
 
 endif
 
@@ -69,5 +69,10 @@ ChangeLog: .phony
 	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
+
+devinput.lircd.dist: $(srcdir)/lib/input_map.inc
+	echo "# Rename to devinput.lircd.conf when using devinput driver" > $@
+	echo '#' >> $@
+	$(srcdir)/contrib/devinput.sh $(srcdir)/lib/input_map.inc >> $@
 
 .phony:
