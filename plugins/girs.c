@@ -66,6 +66,10 @@
 #include "lirc_driver.h"
 #include "lirc/serial.h"
 
+/** Devices enumerated by device_hint. */
+#define DEVICE_HINT \
+	"/bin/sh ls /dev/ttyACM* /dev/ttyUSB* /dev/arduino* 2>/dev/null"
+
 /* Timeouts, all in microseconds */
 #define TIMEOUT_FLUSH	100
 
@@ -170,13 +174,13 @@ const struct driver hw_girs = {
 	.readdata	= readdata,
 	.name		= "girs",
 	.resolution	= 50,
-	.api_version	= 2,
-	.driver_version = "0.9.3",
+	.api_version	= 3,
+	.driver_version = "2015-08-26",
 	.info		= "Driver for a Girs server "
 		"(http://www.harctoolbox.org/Girs.html) on a serial port",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
-	//.device_hint	= NULL	      // default device does not make sense here.
+	.device_hint    = DEVICE_HINT,
 };
 
 const struct driver* hardwares[] = {
