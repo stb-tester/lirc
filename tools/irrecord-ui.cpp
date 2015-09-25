@@ -118,10 +118,11 @@ static const char* const MSG_TOGGLE_BIT_INTRO =
 
 static const char* MSG_LENGTHS_INIT =
 	"Now start pressing buttons on your remote control.\n\n"
-	"It is very important that you press many different buttons and hold them\n"
-	"down for approximately one second. Each button should generate at least one\n"
-	"dot but in no case more than ten dots of output.\n"
-	"Don't stop pressing buttons until two lines of dots (2x80) have been\n" "generated.\n";
+	"It is very important that you press many different buttons randomly\n"
+	"and hold them down for approximately one second. Each button should\n"
+	"generate at least one dot but never more than ten dots of output.\n"
+	"Don't stop pressing buttons until two lines of dots (2x80) have\n"
+	"been generated.\n";
 
 static const char* const MSG_NOISE_INTRO =
 	"Checking for ambient light  creating too much disturbances.\n"
