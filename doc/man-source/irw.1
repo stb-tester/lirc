@@ -1,4 +1,4 @@
-.TH IRW "1" "Last change: Aug 2015" "irw @version@" "User Commands"
+.TH IRW "1" "Last change: Sep 2015" "irw @version@" "User Commands"
 .SH NAME
 .P
 \fBirw\fR - Send data from Unix domain socket to stdout
@@ -9,7 +9,7 @@
 
 \fBirw\fR will connect to any Unix domain socket and print the
 received data to stdout. Without a \fIsocket\fR argument it will watch
-\fI/var/run/lirc/lircd\fR. Useful for debugging.
+\fI@varrundir@/lirc/lircd\fR. Useful for debugging.
 .P
 Options:
 .TP
@@ -31,7 +31,7 @@ many standard tools also can do. E. g., the ncat(1) tool can be
 used instead of irw to provide more flexibility (but without any sane default
 socket):
 .nf
-    ncat -U /var/run/lirc/lircd
+    ncat -U @varrundir@/lirc/lircd
 .fi
 
 .SH "SEE ALSO"
