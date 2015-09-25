@@ -137,6 +137,9 @@ $(nodist_man_MANS): $(man_sources)
 	@mkdir man 2>/dev/null || :
 	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
 	    $(SED) "s/@version@/$(VERSION)/" <$$src >$@
+	sed -i 's|@prefix@|$(prefix)|' $@
+	sed -i 's|@varrundir@|$(localstatedir)/run|' $@
+	sed -i 's|@etcdir@|$(sysconfdir)|' $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox

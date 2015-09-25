@@ -31,7 +31,7 @@ Dump file templates usable as stdin on stdout.
 Output directory, defaults to ~/.config/lirc
 .TP
 \fB\-c\fR \fI \<lircd-filename\>\fR
-lircd(8) config file, defaults to /etc/lirc/lircd.conf
+lircd(8) config file, defaults to @etcdir@/lirc/lircd.conf
 .TP
 \fB\-h\fR
 Print help message
@@ -48,17 +48,17 @@ The setup involves normalizing the lircd.conf to use symbols in the
 legal namespace, and to create application specific lircrc files which
 uses the normalized symbols.
 .PP
-To assist normalizing /etc/lircd.conf, the script can report symbols
+To assist normalizing @etcdir@/lircd.conf, the script can report symbols
 used which not are in the namespace. It can can also update many of
 these symbols to corresponding symbols within the namespace.
 .PP
 The script also can create application specific lircrc files such as
 mythtv.lircrc or vlc.lircrc. It then  uses  the normalized
-key symbols in /etc/lirdc.conf. By default, files are created in
+key symbols in @etcdir@/lirdc.conf. By default, files are created in
 ~/.config/lirc.
 .PP
 Generated lircrc files basically combines known keys from
-/etc/lirc/lircd.conf with template data for an application. The process
+@etcdir@/lirc/lircd.conf with template data for an application. The process
 results in a lircrc file, a list a of unused keys and some entries
 which don't match any existing key. The unused keys and unmatched entries
 are written as comments into the generated file.
@@ -77,7 +77,7 @@ The generated lircrc files are intended to be included in a main
 .SH EXAMPLES
 .PP
 
-Scan /etc/lirc/lircd.conf for duplicated symbols and symbols not in namespace:
+Scan @etcdir@/lirc/lircd.conf for duplicated symbols and symbols not in namespace:
 .IP
 lirc-config-tool -s
 .PP

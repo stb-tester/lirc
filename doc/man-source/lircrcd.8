@@ -40,7 +40,7 @@ representation).
 .BI \-o,\ \-\-output= socket
 With the \-\-output option you can select the Unix domain socket, which
 lircrcd will create. The default is to create a socket in VARRUNDIR
-(usually /var/run/lirc), see FILES.
+(@varrundir@/lirc), see FILES.
 
 .SH SOCKET PROTOCOL
 
@@ -73,8 +73,8 @@ lircrcd will set the actual mode, reflecting a mode in the .lircrc
 file.
 
 .SH FILES
-lircrcd creates its socket(s) in the VARRUNDIR directory, usually
-/var/run/lirc.  The socket basename includes the user UID and the
+lircrcd creates its socket(s) in the VARRUNDIR directory
+(@varrundir@/lirc).  The socket basename includes the user UID and the
 string from the lircrc_class option.
 .SH "SEE ALSO"
 .P

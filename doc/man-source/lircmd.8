@@ -1,4 +1,4 @@
-.TH LIRCMD "8" "Last change: Aug 2015" "lircmd @version@" "System Administration Utilities"
+.TH LIRCMD "8" "Last change: Sep 2015" "lircmd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircmd\fR - Translate infrared signals into mouse events.
@@ -9,7 +9,7 @@
 This daemon can simulate a MouseSystems, IntelliMouse or IMPS/2 type mouse. It
 gets the received buttons from lircd and converts them to mouse events. To
 make this possible, lircmd needs a config file located
-in /etc/lirc/lircmd.conf. In this file you have to determine which
+in @etcdir@/lirc/lircmd.conf. In this file you have to determine which
 button from which remote causes a mouse move or a mouse button click.
 You can also specify a special button which activates or deactivates the mouse
 mode.
@@ -30,7 +30,7 @@ Use alternate lircd socket path.
 .TP
 \fB\-O\fR \fB\-\-options\-file\fR=\fIfile\fR
 Alternative default options file, usually defaults to
-/etc/lirc/lirc_options.conf.
+@etcdir@/lirc/lirc_options.conf.
 .TP
 \fB\-u\fR \fB\-\-uinput\fR
 On Linux systems the \-\-uinput option will enable automatic generation
@@ -73,7 +73,7 @@ Byte 4 and 5: 0.
 \fBlircmd\fR will use syslogd to output error messages. It depends on your
 system configuration where they will show up.
 .P
-The options file is by default /etc/lirc/lirc_options.conf; lircmd handles
+The options file is by default @etcdir@/lirc/lirc_options.conf; lircmd handles
 the values under the [lircmd] section in this file. The location can
 be changed using the -O/--options-file command-line option or using the
 environment variable LIRC_OPTIONS_PATH. The values here are used as

@@ -54,7 +54,7 @@ Display usage summary.
 Display version.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-Use given lircd socket [/var/run/lirc/lircd].
+Use given lircd socket [@varrundir@/lirc/lircd].
 .TP
 \fB\-a\fR \fB\-\-address\fR=\fIhost[\fR:port]
 Connect to lircd at this address.
@@ -66,17 +66,17 @@ Send command n times.
 .TP 4
 LIRC_SOCKET_PATH
 The lircd socket to connect to, defaults to a hardcoded default value
-usually /var/run/lirc/lircd
+@varrundir@/lirc/lircd
 .SH FILES
 .TP
-.I /etc/lirc/lircd.conf
+.I @etcdir@/lirc/lircd.conf
 Default \fBlircd\fR configuration file.  It should contain all the
 remotes, their infra-red codes and the corresponding timing and
 waveform details.
 
 .SH DIAGNOSTICS
 .P
-If \fBlircd\fR is not running (or /var/run/lirc/lircd lacks write
+If \fBlircd\fR is not running (or @varrundir@/lirc/lircd lacks write
 permissions) \fBirsend\fR aborts with the following diagnostics:
 .nf
 "irsend: could not connect to socket"
