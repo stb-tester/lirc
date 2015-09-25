@@ -582,7 +582,7 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 		case STS_TGL_NOT_FOUND:
 			printf("Cannot find any toggle mask.\n");
 			if (!is_rc6(remote))
-				break;
+				return;
 			puts(MISSING_MASK_MSG);
 			unlink(opts->filename);
 			if (curr_driver->deinit_func)
