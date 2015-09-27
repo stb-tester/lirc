@@ -93,12 +93,15 @@ clean-local:
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
+
 table.html: driver-toc.xsl
-	$(PYTHON) $(srcdir)/data2table  | \
+	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
+	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs | \
 	    xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
-	$(PYTHON) $(srcdir)/data2hwdb > lirc.hwdb
+	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
+	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs > lirc.hwdb
 
 driver-toc.xsl: $(plugindocs)
 	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
