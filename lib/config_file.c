@@ -916,13 +916,13 @@ static void check_ncode_dups(const char* path,
 			     struct ir_ncode* code)
 {
 	if (foreach_void_array(ar, array_guest_ncode_cmp, code) != NULL) {
-		logprintf(LIRC_WARNING,
-			  "%s: %s: Duplicate codes: %s",
+		logprintf(LIRC_NOTICE,
+			  "%s: %s: Multiple definitions of: %s",
 			  path, name, code->name);
 	}
 	if (foreach_void_array(ar, array_guest_code_equals, code) != NULL) {
-		logprintf(LIRC_WARNING,
-			  "%s: %s: Duplicate values: %s",
+		logprintf(LIRC_NOTICE,
+			  "%s: %s: Multiple values for same code: %s",
 			  path, name, code->name);
 	}
 }
