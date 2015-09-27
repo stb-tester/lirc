@@ -9,7 +9,7 @@ configuration files. Here is a number of more or less static
 
 The original configuration data comes from different sources:
 
-  - User-space drivers has compiled configuration hints.
+  - User-space drivers have compiled configuration hints.
     This reflected in the file drivers.yaml.
   - The kernel drivers has a static file kernel-drivers.dist
     which provides the same info for some of the the kernel
@@ -50,16 +50,25 @@ describes the driver configuration:
               - 'None'. No device option is configured.
               - 'auto'. No configuration, but a message is displayed.
 
+          /bin/sh scripts can either output a list of devices presented
+          more or less as-is or a dictionary. The latter is a YAML dictionary
+          named label_by_device where the keys are devices and values user
+          visible labels. Example:
+
+          label_by_device:
+                  /dev/foo:      My own foo device
+                  /dev/bar:      My bar device
+
   - modprobe;
          Required modprobe configuration. Note that the device_hint in
          some cases e. g., serial ports alse ends up in modprobe config.
 
   - modinit:
          Shell commands needed to set up the device (runs as root).
-	 Supported substitutions commands string:
+	 Supported substitutions in commands string:
            - @device@: Device selected by user (based on device_hint)
            - @rc_dir@: The /sys/class/rc/rcX directory corresponding to
-             the selected device, or "" no such dir is found.
+             the selected device, or "" if no such dir is found.
 	   - @set_lirc_protocol@: The canonical
              "echo lirc > /sys/class/rc/rcX/protocols" for given device.
 
