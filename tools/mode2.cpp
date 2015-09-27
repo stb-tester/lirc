@@ -2,12 +2,18 @@
 ** mode2.c *****************************************************************
 ****************************************************************************
 *
-* mode2 - shows the pulse/space length of a remote button
+* mode2 - shows the pulse/space length or decoded values of remote buttons.
+*
 *
 * Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
 * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
 *
 */
+
+/*
+ * TODO: Close stuff (call curr_driver->close_func(), closing logs)
+ * when a terminating signal arrives.
+ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -72,13 +78,16 @@ static const struct option options[] = {
 };
 
 const char* const MSG_NO_GETMODE =
-	"Problems: this device is not a LIRC kernel device (it does not\n"
-	"support LIRC_GET_REC_MODE ioctl). This is not necessarily a\n"
-	"problem, but mode2 will not work.  If you are using the --raw\n"
-	"option you might try using without it and select a driver\n"
-	"instead. Otherwise, try using lircd + irw to view the decoded\n"
-	"data - this might very well work even if mode2 doesn't.";
+"Problems: this device is not a LIRC kernel device (it does not\n"
+"support LIRC_GET_REC_MODE ioctl). This is not necessarily a\n"
+"problem, but mode2 will not work.  If you are using the --raw\n"
+"option you might try using without it and select a driver\n"
+"instead. Otherwise, try using lircd + irw to view the decoded\n"
+"data - this might very well work even if mode2 doesn't.\n";
 
+const char* const USE_RAW_MSG =
+"Please use the --raw option to access the device directly instead"
+" through the abstraction layer\n";
 
 static void add_defaults(void)
 {
@@ -144,7 +153,7 @@ static void parse_options(int argc, char** argv)
 			options_set_opt("lircd:driver-options", optarg);
 			break;
 		default:
-			printf("Usage: mode2 [options]\n");
+			fprintf(stderr, "Usage: mode2 [options]\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -193,7 +202,7 @@ int open_device(int opt_raw_access, const char* device)
 			close(fd);
 			exit(EXIT_FAILURE);
 		} else if (ioctl(fd, LIRC_GET_REC_MODE, &mode) == -1) {
-			puts(MSG_NO_GETMODE);
+			fputs(MSG_NO_GETMODE, stderr);
 			close(fd);
 			exit(EXIT_FAILURE);
 		}
@@ -212,17 +221,16 @@ int open_device(int opt_raw_access, const char* device)
 				curr_driver->device);
 			exit(EXIT_FAILURE);
 		}
-		printf("Using device: %s\n", curr_driver->device);
+		fprintf(stderr, "Trying device: %s\n", curr_driver->device);
 		fd = curr_driver->fd;   /* please compiler */
 		mode = curr_driver->rec_mode;
 		if (mode != LIRC_MODE_MODE2) {
 			if (strcmp(curr_driver->name, "default") == 0) {
-				puts("Please use the --raw option to access "
-				     "the device directly instead through\n"
-				     "the abstraction layer");
+				fputs(USE_RAW_MSG, stderr);
 				exit(EXIT_FAILURE);
 			} else if (mode != LIRC_MODE_LIRCCODE) {
-				puts("Internal error: bad receive mode");
+				fputs("Internal error: bad receive mode\n",
+				      stderr);
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -231,7 +239,7 @@ int open_device(int opt_raw_access, const char* device)
 		fputs("Refusing to connect to lircd socket\n", stderr);
 		exit(EXIT_FAILURE);
 	}
-	printf("Using device: %s\n", curr_driver->device);
+	fprintf(stderr, "Using device: %s\n", curr_driver->device);
 	return fd;
 }
 
@@ -244,10 +252,10 @@ static void setup_log(void)
 
 	loglevel = getenv("LIRC_LOGLEVEL");
 	if (loglevel == NULL) {
-		loglevel = "LIRC_NOTICE";
+		loglevel = "DEBUG";
 	} else if (string2loglevel(loglevel) == LIRC_BADLEVEL) {
 		fprintf(stderr, "Bad LIRC_LOGLEVEL: %s\n", loglevel);
-		loglevel = "LIRC_NOTICE";
+		loglevel = "DEBUG";
 	}
 	lirc_log_get_clientlog("mode2", path, sizeof(path));
 	lirc_log_set_file(path);
