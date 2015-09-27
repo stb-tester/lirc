@@ -80,7 +80,10 @@ class Database(object):
         elif os.path.exists(_here('../configs')):
             configdir = _here('../configs')
         else:
-            raise FileNotFoundError(configdir)
+            where = 'configs:../configs'
+            if path:
+                where += ':' + path
+            raise FileNotFoundError(where)
         db = {}
         with open(os.path.join(configdir, "confs_by_driver.yaml")) as f:
             cf = yaml.load(f.read())
