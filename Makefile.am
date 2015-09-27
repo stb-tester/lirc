@@ -19,7 +19,13 @@ if WITH_SYSTEMDSYSTEMUNITDIR
     SYSTEMD_DIR         = systemd
 endif
 
-SUBDIRS                 = lib daemons tools plugins configs doc $(SYSTEMD_DIR)
+if BUILD_SELINUX
+   SELINUX_DIR          = selinux
+endif
+
+SUBDIRS                 = lib daemons tools plugins configs doc \
+                          $(SYSTEMD_DIR) \
+                          $(SELINUX_DIR)
 
 if INSTALL_ETC
 
@@ -43,6 +49,7 @@ nobase_dist_pkgdata_DATA = $(srcdir)/contrib/* \
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
 header_HEADERS          = paths.h drivers/irpipe/irpipe.h
+
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
