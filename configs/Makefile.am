@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-menuconfigs             = *.conf
+menuconfigs             = $(srcdir)/*.conf
 
 configsdir              = $(pkgdatadir)/configs
 dist_configs_DATA       = $(menuconfigs) \
