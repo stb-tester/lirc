@@ -243,6 +243,7 @@ static int drvctl(unsigned int cmd, void* arg)
 	} else if (cmd == DRVCTL_SET_OPTION) {
 		struct option_t* opt = (struct option_t*) arg;
 		long value = strtol(opt->value, NULL, 10);
+
 		if (strcmp(opt->key, "command_names_on_lcd") == 0) {
 			if (value < 0 || value > 1) {
 				log_error(
@@ -338,8 +339,10 @@ static ssize_t read_with_timeout(char* buf, size_t count, long timeout)
 static int readline(char* buf, size_t size, long timeout)
 {
 	ssize_t rc = 0;
+
 	buf[0] = '\0';
 	int noread = 0;
+
 	while (1) {
 		char c;
 
@@ -402,6 +405,7 @@ static int readline(char* buf, size_t size, long timeout)
 static void readflush(void)
 {
 	char c;
+
 	log_trace("girs: flushing the input");
 	while (read_with_timeout(&c, 1, TIMEOUT_FLUSH) == 1)
 		log_trace1("girs: flushing \"%c\"", c);
@@ -411,6 +415,7 @@ static int sendcommand(const char *command)
 {
 	if (command[0] != '\0') {
 		int nbytes = write(dev.fd, command, strlen(command)); // FIXME
+
 		if (nbytes != strlen(command)) {
 			log_error("girs: could not write command \"%s\"",
 				  command);
@@ -425,6 +430,7 @@ static int sendcommand(const char *command)
 static int sendcommandln(const char *command)
 {
 	int success = sendcommand(command) && sendcommand(EOL);
+
 	if (!success)
 		return 0;
 	tcdrain(dev.fd);
@@ -434,6 +440,7 @@ static int sendcommandln(const char *command)
 static int sendcommand_answer(const char *command, char *buf, int len)
 {
 	int status = sendcommandln(command);
+
 	if (!status) {
 		buf[0] = '\0';
 		return 0;
@@ -451,6 +458,7 @@ static int sendcommand_ok(const char *command)
 	log_trace1("girs: sendcommand_ok \"%s\"", command);
 	char answer[LONG_LINE_SIZE];
 	int success = sendcommand_answer(command, answer, LONG_LINE_SIZE);
+
 	if (success) {
 		log_debug("girs: command \"%s\" returned \"%s\"",
 			  command, answer);
@@ -473,6 +481,7 @@ static int syncronize(void)
 	dev.read_pending = 0;
 	dev.send_pending = 0;
 	int i;
+
 	for (i = 0; i < NO_SYNCRONIZE_ATTEMPTS; i++) {
 		int res = sendcommand_ok(" ");
 		//if (res == -1)
@@ -491,6 +500,7 @@ static int setLed(int ledNo, int status)
 {
 	if (dev.led && ledNo > 0) {
 		char cmd[20];
+
 		sprintf(cmd, "%s %d %d", LED_COMMAND, ledNo, status);
 		return sendcommand_ok(cmd);
 	} else
@@ -501,6 +511,7 @@ static int setLcd(const char* message)
 {
 	if (dev.lcd) {
 		char cmd[strlen(LCD_COMMAND) + strlen(message) + 2];
+
 		sprintf(cmd, "%s %s", LCD_COMMAND, message);
 		return sendcommand_ok(cmd);
 	} else
@@ -511,6 +522,7 @@ static int enable_receive(void)
 {
 	//syncronize();
 	int success = sendcommandln(RECEIVE_COMMAND);
+
 	if (success) {
 		readflush();
 		dev.read_pending = 1;
@@ -544,6 +556,7 @@ static lirc_t readdata(lirc_t timeout)
 		// Nothing to deliver, try to read some new data
 		if (!dev.read_pending) {
 			int success = enable_receive();
+
 			if (!success) {
 				log_debug("readdata FAILED");
 				return 0;
@@ -551,6 +564,7 @@ static lirc_t readdata(lirc_t timeout)
 
 		}
 		char buf[5 * MAXDATA];
+
 		while (1) {
 			int success = readline(buf, 5 * MAXDATA, timeout);
 
@@ -568,9 +582,9 @@ static lirc_t readdata(lirc_t timeout)
 			log_debug("readdata timeout from hardware, continuing");
 			enable_receive();
 		}
-
 		int i = 0;
 		const char* token;
+
 		for (token = strtok(buf, " +-");
 			token != NULL;
 			token = strtok(NULL, " +-")) {
@@ -578,9 +592,10 @@ static lirc_t readdata(lirc_t timeout)
 				errno = 0;
 				unsigned int x;
 				int status = sscanf(token, "%u", &x);
+
 				if (status != 1 || errno) {
 					log_error("Could not parse %s as unsigned",
-					  	  token);
+						  token);
 					enable_receive();
 					return 0;
 				}
@@ -598,8 +613,8 @@ static lirc_t readdata(lirc_t timeout)
 
 	if (data_length == data_ptr)
 		return 0;
-
 	unsigned int x = data[data_ptr++];
+
 	if (x >= PULSE_BIT) {
 		// TODO
 	}
@@ -616,6 +631,7 @@ static lirc_t readdata(lirc_t timeout)
 static void decode_modules(char* buf)
 {
 	char *token;
+
 	dev.receive = 0;
 	drv.rec_mode = 0;
 	drv.features = 0;
@@ -643,7 +659,7 @@ static void decode_modules(char* buf)
 			dev.transmitters = 1;
 			drv.features |= LIRC_CAN_SET_TRANSMITTER_MASK;
 		} else {
-			log_debug( "girs: unknown module \"%s", token);
+			log_debug("girs: unknown module \"%s", token);
 		}
 	}
 }
@@ -701,6 +717,7 @@ static int init(void)
 		dev.fd = drv.fd;
 
 		int success = readline(buf, LONG_LINE_SIZE, TIMEOUT_INITIAL);
+
 		if (!success) {
 			log_warn("girs: no response from device, "
 				 "making another try");
@@ -761,6 +778,7 @@ static int init(void)
 static int girs_open(const char* path)
 {
 	static char buff[LONG_LINE_SIZE];
+
 	if (path == NULL) {
 		if (drv.device == NULL)
 			drv.device = hw_girs.device;
@@ -774,7 +792,7 @@ static int girs_open(const char* path)
 
 static int deinit(void)
 {
-	log_debug( "girs: deinit");
+	log_debug("girs: deinit");
 	if (is_valid()) {
 		syncronize(); // interrupts reception
 		//setLcd("Sleeping...");
@@ -816,6 +834,7 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 	const lirc_t* signals = send_buffer_data();
 
 	char buf[LONG_LINE_SIZE];
+
 	if (dev.read_pending)
 		syncronize(); // kill possible ongoing receive
 
@@ -836,10 +855,11 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 
 	// no_sends, frequency, intro_length, repeat_length, end_length
 	sprintf(buf, "send 1 %d %d 0 0", freq, length+1);
-
 	int i;
+
 	for (i = 0; i < length; i++) {
 		char b[10];
+
 		sprintf(b, " %d", (unsigned int) signals[i]);
 		strcat(buf, b);
 	}
@@ -849,6 +869,7 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 
 	sendcommandln(buf);
 	int success = readline(buf, LONG_LINE_SIZE, TIMEOUT_SEND);
+
 	//setLed(dev.transmitled, 0);
 	return success;
 }
