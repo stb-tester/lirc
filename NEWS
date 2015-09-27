@@ -1,11 +1,25 @@
 0.9.4-devel
+  * News driver for the Girs protocol, gives LIRC Arduino support.
+  * Enhanced lircd-setup tool (#121) (TBD)
   * Several patches to make mode2 work with most (all?) drivers.
+  * Configuration database overhaul (#123, partly)
+    - Database lives as yaml files in configs/.
+    - Data is collected from drivers, remotes and static files.
+    - Better ways for drivers to enumerate devices.
+    - There is an unstable python database module used by
+      all tools.
+  * CLI options for mode2, xmode2 and irrecord has been streamlined.
+    All tools falls back to lircd defaults where it makes sense.
+  * selinux policy generation is added.
+  * New logging API with hooks for enhanced messages and filtering
+    (also #129).
+  * The out-of-tree build interface is enhanced with hooks for external
+    drivers to rebuild documentation and add a config file.
   * Fix gid and supplementary groups in CLI apps dropping root.
   * Fix a crash in irrecord when invoked without options.
   * Add an "auto" device to devinput driver for single-device
     usecase (#134).
   * Don't require write access if not needed in  default.c (#133).
-  * Add lircd--setup tool (#121).
   * Clean up docs, remove circular links (#136). Documentation is
     now only in lirc.org/html.
 
