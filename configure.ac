@@ -133,9 +133,6 @@ AH_TEMPLATE([HAVE_FTDI],
 AH_TEMPLATE([HAVE_LIBALSA],
         [Define if the ALSA library is installed])
 
-AH_TEMPLATE([HAVE_LIBCARACA],
-        [Define if the caraca library is installed])
-
 AH_TEMPLATE([HAVE_LIBIRMAN],
         [Define if the libirman library is installed])
 
@@ -178,11 +175,6 @@ AH_TEMPLATE([LIRC_LOCKDIR],
 AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
 
 
-AC_CHECK_LIB(caraca_client, caraca_init,[
-  AM_CONDITIONAL([BUILD_CARACA],[true])
-  ],[
-  AM_CONDITIONAL([BUILD_CARACA],[false])]
-)
 AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
@@ -406,7 +398,6 @@ Conditionals:
 ])
 
 AC_REPORT_CONDITIONAL([BUILD_ALSA_SB_RC])
-AC_REPORT_CONDITIONAL([BUILD_CARACA])
 AC_REPORT_CONDITIONAL([BUILD_DSP])
 AC_REPORT_CONDITIONAL([BUILD_FTDI])
 AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
