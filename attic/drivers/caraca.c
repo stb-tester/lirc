@@ -147,3 +147,56 @@ char* caraca_rec(struct ir_remote* remotes)
 	m = decode_all(remotes);
 	return m;
 }
+/* Build system diff from removing caraca. */
+
+// diff --git a/configure.ac b/configure.ac
+// index aee2f83..b79549f 100644
+// --- a/configure.ac
+// +++ b/configure.ac
+// @@ -133,9 +133,6 @@ AH_TEMPLATE([HAVE_FTDI],
+//  AH_TEMPLATE([HAVE_LIBALSA],
+//          [Define if the ALSA library is installed])
+//
+// -AH_TEMPLATE([HAVE_LIBCARACA],
+// -        [Define if the caraca library is installed])
+// -
+//  AH_TEMPLATE([HAVE_LIBIRMAN],
+//          [Define if the libirman library is installed])
+//
+// @@ -178,11 +175,6 @@ AH_TEMPLATE([LIRC_LOCKDIR],
+//  AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
+//
+//
+// -AC_CHECK_LIB(caraca_client, caraca_init,[
+// -  AM_CONDITIONAL([BUILD_CARACA],[true])
+// -  ],[
+// -  AM_CONDITIONAL([BUILD_CARACA],[false])]
+// -)
+//  AC_CHECK_HEADER(usb.h,[
+//    AC_DEFINE(HAVE_LIBUSB)
+//    AM_CONDITIONAL([BUILD_USB],[true])
+// @@ -406,7 +398,6 @@ Conditionals:
+//  ])
+//
+//  AC_REPORT_CONDITIONAL([BUILD_ALSA_SB_RC])
+// -AC_REPORT_CONDITIONAL([BUILD_CARACA])
+//  AC_REPORT_CONDITIONAL([BUILD_DSP])
+//  AC_REPORT_CONDITIONAL([BUILD_FTDI])
+//  AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
+// diff --git a/plugins/Makefile.am b/plugins/Makefile.am
+// index d5642f9..1d21b11 100644
+// --- a/plugins/Makefile.am
+// +++ b/plugins/Makefile.am
+// @@ -12,12 +12,6 @@ plugindir                   =  $(pkglibdir)/plugins
+//  EXTRA_DIST                  = pluginlist.am make-pluginlist.sh
+//  plugin_LTLIBRARIES          =
+//
+// -if BUILD_CARACA
+// -plugin_LTLIBRARIES          += caraca.la
+// -caraca_la_SOURCES           = caraca.c
+// -caraca_la_LDFLAGS           = $(AM_LDFLAGS) -lcaraca_client
+// -endif
+// -
+//  if BUILD_USB
+//  plugin_LTLIBRARIES          += atilibusb.la
+//  atilibusb_la_SOURCES        = atilibusb.c

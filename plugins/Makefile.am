@@ -12,12 +12,6 @@ plugindir                   =  $(pkglibdir)/plugins
 EXTRA_DIST                  = pluginlist.am make-pluginlist.sh
 plugin_LTLIBRARIES          =
 
-if BUILD_CARACA
-plugin_LTLIBRARIES          += caraca.la
-caraca_la_SOURCES           = caraca.c
-caraca_la_LDFLAGS           = $(AM_LDFLAGS) -lcaraca_client
-endif
-
 if BUILD_USB
 plugin_LTLIBRARIES          += atilibusb.la
 atilibusb_la_SOURCES        = atilibusb.c
