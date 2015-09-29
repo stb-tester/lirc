@@ -820,7 +820,6 @@ ir_remotes_append(struct ir_remote* root, struct ir_remote* what)
 	for (r = root; r->next != NULL; r = r->next)
 		;
 	r->next = what;
-	what->next = NULL;
 	return root;
 }
 
