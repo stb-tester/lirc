@@ -75,6 +75,9 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 install-data-hook: install-api-docs
 	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
+	$(top_srcdir)/tools/make_rel_symlink.py \
+	    $(DESTDIR)/$(website_htmldir)/configuration-guide.html \
+	    $(DESTDIR)/$(plugindocsdir)/configuration-guide.html
 
 
 install-api-docs:
@@ -94,12 +97,17 @@ uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
 
-table.html: driver-toc.xsl
+table.html: driver-toc.xsl configs
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs | \
 	    xsltproc --html docpage.xsl - > table.html
 
-lirc.hwdb:
+configs: .phony
+	if [ "$(top_srcdir)" != ".." ]; then \
+	    echo cp $(top_srcdir)/configs/*.conf ../configs; \
+	fi
+
+lirc.hwdb: configs
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs > lirc.hwdb
 
