@@ -70,9 +70,11 @@ ChangeLog: .phony
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
-devinput.lircd.dist: $(srcdir)/lib/input_map.inc
+devinput.lircd.dist: lib/input_map.inc
 	echo "# Rename to devinput.lircd.conf when using devinput driver" > $@
 	echo '#' >> $@
 	$(srcdir)/contrib/devinput.sh $(srcdir)/lib/input_map.inc >> $@
 
+lib/input_map.inc:
+	cd lib; $(MAKE) input_map.inc
 .phony:
