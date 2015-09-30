@@ -3,16 +3,36 @@
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 from gi.repository import GObject     # pylint: disable=no-name-in-module
 
+import grp
 import os
+import pwd
+import sys
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
 import mvc_model
 import mvc_view
 import choosers
+import util
 
 _DEBUG = 'LIRC_DEBUG' in os.environ
 _REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
+_USAGE = "Usage: lirc-setup [results directory]"
+
+
+MSG_NOT_IN_LIRC_GROUP = """
+You are not member of the lirc group, testing with mode2 will not work. To
+fix run <i>sudo usermod -aG lirc {user}; sg lirc lirc-setup</i> to add the
+new group and restart lirc-setup.
+"""
+
+
+def _check_groups():
+    """ Return error message if running user isn't member of group lirc. """
+    user = pwd.getpwuid(os.geteuid()).pw_name
+    if user in grp.getgrnam("lirc")[3]:
+        return None
+    return MSG_NOT_IN_LIRC_GROUP.format(user=user)
 
 
 def _hasitem(dict_, key):
@@ -53,6 +73,14 @@ class Controller(object):
         elif driver == 'lirc_parallel':
             self.state = self.CHECK_DIALOG
             self.view.show_select_lpt_window()
+        elif driver == 'default':
+            try:
+                rc_dir = util.get_rcdir_by_device(self.model.config.device)
+            except LookupError:
+                pass
+            else:
+                self.model.config.modinit = \
+                    'echo lirc > %s/protocols ' % rc_dir
         else:
             if 'modprobe' in self.model.driver \
                 and self.model.driver['modprobe']:
@@ -67,13 +95,13 @@ class Controller(object):
 
     def check_modinit(self):
         ''' Check kernel setup code.'''
-        #driver = self.model.config.driver['id']
-        #if 'modinit' in self.model.db.drivers[driver]:
-        #    modinit = self.model.db.drivers[driver]['modinit']
-        #    if modinit and modinit not in [None, 'None']:
-        #        self.view.show_info("Kernel setup required",
-        #                            "Required setup: " + modinit)
-        #        self.model.set_modinit(modinit)
+        # driver = self.model.config.driver['id']
+        # if 'modinit' in self.model.db.drivers[driver]:
+        #     modinit = self.model.db.drivers[driver]['modinit']
+        #     if modinit and modinit not in [None, 'None']:
+        #         self.view.show_info("Kernel setup required",
+        #                             "Required setup: " + modinit)
+        #         self.model.set_modinit(modinit)
         self.check(self.CHECK_MODPROBE)
 
     def configure_device(self, driver, next_state=None):
@@ -92,7 +120,8 @@ class Controller(object):
             self.view.show_warning(
                 "No device found",
                 'The %s driver can not be used since a suitable'
-                ' device matching  %s cannot be found.' %
+                ' device matching  %s cannot be found.'
+                ' Use "Modify device" to enable driver ' %
                 (self.model.driver['id'], self.model.driver['device_hint']))
             self.check(next_state)
         elif device_list.is_direct_installable():
@@ -203,11 +232,17 @@ class Controller(object):
     def start(self):
         ''' Start the thing... '''
         self.cli_options = mvc_model.parse_options()
+        if not self.cli_options:
+            sys.stderr.write(_USAGE)
+            sys.exit(1)
         errmsg = mvc_model.check_resultsdir(self.cli_options['results_dir'])
-        self.view.builder.get_object('main_window').show_all()
         if errmsg:
-            self.view.show_warning("Invalid results directory", errmsg, True)
-            Gtk.main_quit()
+            self.view.results_dir_reset(errmsg)
+        else:
+            errmsg = _check_groups()
+            if errmsg:
+                self.view.show_warning("Missing lirc group", errmsg)
+        self.view.builder.get_object('main_window').show_all()
 
     def restart(self):
         ''' Make a total reset, kills UI and makes a new. '''
@@ -231,7 +266,9 @@ class Controller(object):
         log = mvc_model.write_results(self.model,
                                       self.cli_options['results_dir'],
                                       self.view)
-        self.view.show_info('Installation files written', log)
+        self.view.show_resultdir('Installation files written',
+                                 log,
+                                 self.cli_options['results_dir'])
 
     def show_remote(self, remote):
         ''' Display remote config file in text window. '''

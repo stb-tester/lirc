@@ -83,5 +83,15 @@ class Baseview(object):
         ''' Display standard error dialog. '''
         self._message_dialog(header, Gtk.MessageType.INFO, body, exit_)
 
+    def  show_link_info(self, header, body):
+        ''' Show a info message, handling "See: <link>" by linking. '''
+        template = 'See: <a href="{link}" title="{link}">{link}</a>'
+        if body.lower().startswith('see') and (len(body.split(' ')) == 2):
+            link = body.split(' ')[1]
+            if link.endswith('.'):
+                link = link[:-1]
+            body = template.format(link=link)
+        self._message_dialog(header, Gtk.MessageType.INFO, body, False)
+
 
 # vim: set expandtab ts=4 sw=4:

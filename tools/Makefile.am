@@ -7,11 +7,15 @@ AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@
 AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
+BUILT_SOURCES           = paths.py
+CLEANFILES              = paths.py
+
 if NEED_PYTHON3
-BUILT_SOURCES           = python3
+BUILT_SOURCES           += python3
 endif
 
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
+
 
 EXTRA_PROGRAMS          =
 
@@ -82,12 +86,15 @@ if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get lirc-kerneldrivers
 dist_sbin_SCRIPTS       = lircd-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
+
+nodist_pkgpython_PYTHON = paths.py
 pkgpython_PYTHON        = lirc-setup/mvc_control.py \
                           lirc-setup/mvc_view.py \
                           lirc-setup/mvc_model.py \
                           lirc-setup/choosers.py \
                           lirc-setup/baseview.py \
-                          lirc-setup/database.py
+                          lirc-setup/database.py \
+                          lirc-setup/util.py
 dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
 dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
 endif
@@ -127,4 +134,10 @@ uninstall-hook:
 checkfiles:
 	../git-tools/checkfiles $(SOURCES)
 
-
+paths.py: Makefile
+	@echo 'DATADIR = "$(datadir)"' >$@
+	@echo 'SYSCONFDIR = "$(sysconfdir)"' >>$@
+	@echo 'VARRUNDIR = "$(localstatedir)/run"' >>$@
+	@echo 'LOCALSTATEDIR =  "$(localstatedir)"' >>$@
+	@echo 'LIBDIR = "$(libdir)"' >>$@
+	@echo 'DOCDIR = "$(docdir)"' >>$@
