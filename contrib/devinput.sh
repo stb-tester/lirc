@@ -14,6 +14,7 @@ begin remote
         post_data       0x00000001
         gap             132799
         toggle_bit      0
+	driver          devinput
 
         begin codes
 EOF
@@ -36,6 +37,7 @@ begin remote
         pre_data        0x8001
         gap             132799
         toggle_bit      0
+        driver          devinput
 
         begin codes
 EOF

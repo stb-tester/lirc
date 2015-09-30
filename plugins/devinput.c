@@ -90,6 +90,12 @@ const struct driver hw_devinput = {
 
 const struct driver* hardwares[] = { &hw_devinput, (const struct driver*)NULL };
 
+
+const char* const DEVINPUT_NOTICE1 =
+	"Use the distributed devinput.lircd.dist by renaming it. ";
+const char* const DEVINPUT_NOTICE2 =
+	"Or use irdb-get to search for \"devinput\" and download it.";
+
 static ir_code code;
 static ir_code code_compat;
 static int exclusive = 0;
@@ -392,9 +398,9 @@ int devinput_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 			return 0;
 		if (print_warning) {
 			print_warning = 0;
-			log_warn("you are using an obsolete devinput config file");
-			log_warn(
-				  "get the new version at http://lirc.sourceforge.net/remotes/devinput/lircd.conf.devinput");
+			log_warn("Obsolete devinput config file used");
+			log_notice(DEVINPUT_NOTICE1);
+			log_notice(DEVINPUT_NOTICE2);
 		}
 	}
 
