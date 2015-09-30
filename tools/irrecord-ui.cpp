@@ -103,10 +103,11 @@ const char* const MSG_WELCOME =
 
 static const char* const MSG_DEVINPUT =
 	"Usually it's not necessary to create a new config file for devinput\n"
-	"devices. A generic config file can be found at:\n"
-	"https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf\n"
-	"It can be downloaded using irdb-get(1)\n"
-	"Please try this config file before creating your own.";
+	"devices. LIRC is installed with a devinput.lircd.dist file which \n"
+        "is built for the current system. This can just be renamed to \n"
+        "devinput.lircd.conf to be used. Also, irdb-get can find and\n"
+        "download a generic file - use 'irdb-get find devinput' to locate.\n"
+	"Please try these config files before creating your own.";
 
 static const char* const MSG_TOGGLE_BIT_INTRO =
 	"Checking for toggle bit mask.\n"
@@ -943,6 +944,8 @@ static int mode2_get_lengths(const struct opts* opts, struct main_state* state)
 			case STS_LEN_NO_GAP_FOUND:
 				puts(MSG_NO_GAP_FOUND_WARNING);
 				remote.gap = DEFAULT_GAP;
+				printf("Press RETURN to continue.\n");
+				getchar();
 				return 1;
 			case STS_LEN_TOO_LONG:
 				fputs("Signal too long\n", stderr);
@@ -1139,11 +1142,14 @@ int main(int argc, char** argv)
 	do_init(&opts, &state);
 
 	puts(MSG_WELCOME);
-	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0)
-		puts(MSG_DEVINPUT);
-	printf("Press RETURN to continue.\n");
+	printf("\nPress RETURN to continue.\n");
 	getchar();
-
+	if (curr_driver->name && strcmp(curr_driver->name, "devinput") == 0) {
+		puts("\n\n");
+		puts(MSG_DEVINPUT);
+		printf("\nPress RETURN to continue.\n");
+		getchar();
+	}
 	check_ambient_light(&opts);
 	if (remote.name == NULL || !opts.update)
 		get_name(&remote, &opts);
