@@ -57,6 +57,7 @@ class Config(object):
         if config:
             for key, value in config.items():
                 setattr(self, key, value)
+
     @property
     def note(self):
         ''' The possible note to display when selected. '''
@@ -99,6 +100,17 @@ class Database(object):
         db['drivers'].update(cf['drivers'].copy())
         for key, d in db['drivers'].items():
             d['id'] = key
+            hint = d['device_hint']
+            if not hint:
+                continue
+            hint = hint.strip()
+            if hint.startswith('"') and hint.endswith('"'):
+                hint = hint[1:-1]
+                hint = hint.replace(r'\"', "@$#!")
+                hint = hint.replace('"', '')
+                hint = hint.replace("@$#!", '"')
+                hint = hint.replace("\\\\", "\\")
+            d['device_hint'] = hint
 
         configs = {}
         for path in glob.glob(configdir + '/*.conf'):
@@ -142,7 +154,6 @@ class Database(object):
         except KeyError:
             return []
 
-
     def driver_by_remote(self, remote):
         ''' Return the driver (possibly None) suggested for a remote. '''
         for driver, files in self.db['lircd_by_driver'].items():
@@ -163,8 +174,12 @@ class Database(object):
             return None
         found = dict(found[0])
         if 'device_hint' not in found:
-            found['device_hint'] = \
-                self.db['drivers'][found['driver']]['device_hint']
+            try:
+                found['device_hint'] = \
+                    self.db['drivers'][found['driver']]['device_hint']
+            except KeyError:
+                found['device_hint'] = \
+                    self.db['kernel-drivers'][found['driver']]['device_hint']
         return found
 
 
