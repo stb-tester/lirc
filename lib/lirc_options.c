@@ -145,7 +145,8 @@ void options_load(int argc, char** const argv,
 		logprintf(LIRC_WARNING, "Cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}
-	parse_options(argc, argv);
+	if (parse_options != NULL)
+		parse_options(argc, argv);
 	if (options_debug == -1)
 		options_debug = getenv(LIRC_DEBUG_OPTIONS) != NULL;
 	if (options_debug && lirc_options != NULL) {
