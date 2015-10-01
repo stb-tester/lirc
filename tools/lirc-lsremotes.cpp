@@ -243,7 +243,7 @@ int check_logs(const char* path)
 
 	if (stat(path, &statbuf) == -1)
 		return 1;
-	if (statbuf.st_size == 0)
+	if (statbuf.st_size < 120)  // Ad-hoc length of open message
 		return 1;
 	f = fopen(path, "r");
 	if (f == NULL) {

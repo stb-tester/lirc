@@ -144,13 +144,36 @@ void options_load(int argc, char** const argv,
 		log_warn("Cannot open %s\n", path);
 		lirc_options = dictionary_new(0);
 	}
-	parse_options(argc, argv);
+	if (parse_options != NULL)
+		parse_options(argc, argv);
 	if (options_debug == -1)
 		options_debug = getenv(LIRC_DEBUG_OPTIONS) != NULL;
 	if (options_debug && lirc_options != NULL) {
 		fprintf(stderr, "Dumping parsed option values:\n");
 		ciniparser_dump(lirc_options, stderr);
 	}
+}
+
+
+loglevel_t options_get_std_loglevel(void)
+{
+	const char* s;
+	loglevel_t level = LIRC_BADLEVEL;
+
+	s = getenv("LIRC_LOGLEVEL");
+	if (s != NULL)
+		level =  string2loglevel(s);
+	if (level == LIRC_BADLEVEL) {
+		if (lirc_options == NULL)
+			options_load(0, NULL, NULL, NULL);
+		s = ciniparser_getstring(lirc_options,
+					 "lircd:debug",
+					 "debug");
+		level = string2loglevel(s);
+		if (level == LIRC_BADLEVEL)
+			level = LIRC_DEBUG;
+	}
+	return level;
 }
 
 

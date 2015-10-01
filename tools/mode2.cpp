@@ -407,7 +407,6 @@ int main(int argc, char** argv)
 	__u32 mode;
 	size_t bytes = sizeof(lirc_t);
 	char logpath[256];
-	const char* loglevel;
 	/**
 	 * Was hard coded to 50000 but this is too long, the shortest gap in the
 	 * supplied .conf files is 10826, the longest space defined for any one,
@@ -421,8 +420,7 @@ int main(int argc, char** argv)
 	lirc_log_get_clientlog("mode2", logpath, sizeof(logpath));
 	(void)unlink(logpath);
 	lirc_log_set_file(logpath);
-	loglevel = options_getstring("mode2:debug");
-	lirc_log_open("mode2", 1, string2loglevel(loglevel));
+	lirc_log_open("mode2", 1, options_get_std_loglevel());
 
         if (opt_raw_access) {
 		printf("Using raw access on device %s\n", opt_device);

@@ -121,6 +121,10 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 	if (getenv("LIRC_LOGCHANNEL") != NULL) {
 		logged_channels = atoi(getenv("LIRC_LOGCHANNEL"));    // FIXME...
 	}
+	if (level != LIRC_NOLOG) {
+		logprintf(level, "%s:  Opening log, level: %s",
+			  _progname, prio2text(level));
+	}
 	return 0;
 }
 
