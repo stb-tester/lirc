@@ -462,6 +462,7 @@ int main(int argc, char** argv)
 	char path [128];
 	const char* which;
 	int c;
+	const loglevel_t level = options_get_app_loglevel("lirc-lsplugins");
 
 	pluginpath = LIBDIR "/lirc/plugins";
 	if (getenv(PLUGINDIR_VAR) != NULL)
@@ -512,7 +513,7 @@ int main(int argc, char** argv)
 	lirc_log_get_clientlog("lirc-lsplugins", path, sizeof(path));
 	unlink(path);
 	lirc_log_set_file(path);
-	lirc_log_open("lirc-lsplugins", 1, options_get_std_loglevel());
+	lirc_log_open("lirc-lsplugins", 1, level);
 
 	lsplugins(pluginpath, which);
 	return sum_errors == 0 ? 0 : 1;

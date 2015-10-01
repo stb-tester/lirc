@@ -59,7 +59,7 @@ satellite tuner with your computer, etc.
 
 Since some time some of the LIRC functionality has been moved to the
 kernel. However, LIRC still adds functionality and flexibility to the
-kernel.
+basic kernel IR remote handling.
 
 ## Bug tracker and mailing list.
 

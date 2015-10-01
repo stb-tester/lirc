@@ -413,6 +413,7 @@ int main(int argc, char** argv)
 	 * zero or header is 7590
 	 */
 	__u32 code_length;
+	const loglevel_t level = options_get_app_loglevel("mode2");
 
 	hw_choose_driver(NULL);
 	options_load(argc, argv, NULL, parse_options);
@@ -420,7 +421,7 @@ int main(int argc, char** argv)
 	lirc_log_get_clientlog("mode2", logpath, sizeof(logpath));
 	(void)unlink(logpath);
 	lirc_log_set_file(logpath);
-	lirc_log_open("mode2", 1, options_get_std_loglevel());
+	lirc_log_open("mode2", 1, level);
 
         if (opt_raw_access) {
 		printf("Using raw access on device %s\n", opt_device);

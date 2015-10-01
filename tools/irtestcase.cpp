@@ -207,6 +207,7 @@ int main(int argc, char* argv[])
 	const char* socketpath;
 	char path[128];
 	int c;
+	const loglevel_t level = options_get_app_loglevel("irtestcase");
 
 	while ((c = getopt_long(argc, argv, "hl:p:t:v", opts, NULL)) != EOF) {
 		switch (c) {
@@ -260,7 +261,7 @@ int main(int argc, char* argv[])
 
 	lirc_log_get_clientlog("irtestcase", path, sizeof(path));
 	lirc_log_set_file(path);
-	lirc_log_open("irtestcase", 1, options_get_std_loglevel());
+	lirc_log_open("irtestcase", 1, level);
 
 	setenv("LIRC_SOCKET_PATH", socketpath, 1);
 	fd_io = lirc_init(opt_prog, 1);

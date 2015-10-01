@@ -178,10 +178,11 @@ int main(int argc, char* argv[])
 {
 	struct ir_remote* remotes;
 	char path[128];
+	const loglevel_t level = options_get_app_loglevel("irsimreceive");
 
 	lirc_log_get_clientlog("irsimreceive", path, sizeof(path));
 	lirc_log_set_file(path);
-	lirc_log_open("irsimreceive", 1, options_get_std_loglevel());
+	lirc_log_open("irsimreceive", 1, level);
 
 	options_load(argc, argv, NULL, parse_options);
 	setup(argv[optind + 1]);

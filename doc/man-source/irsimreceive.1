@@ -1,4 +1,4 @@
-.TH irsimreceive "1" "Last change: Aug 2015" "irsimreceive @version@" "User Commands"
+.TH irsimreceive "1" "Last change: Oct 2015" "irsimreceive @version@" "User Commands"
 .SH NAME
 .P
 \fBirsimreceive\fR - Decode IR durations data.
@@ -24,6 +24,15 @@ Print version and exit.
 .TP 4
 .B -h , --help
 Print help message.
+
+.SH FILES
+.TP 4
+.B ~/.cache/irsimreceive.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irsimreceive.log. The amount of logging respects the
+LIRC_LOGLEVEL environment variable, defaulting to the \fidebug\fR value
+in the \fi[lircd]\fR  section of lirc_options.conf.
+
 
 .SH "SEE ALSO"
 .P

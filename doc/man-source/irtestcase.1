@@ -1,4 +1,4 @@
-.TH irtestcase "1" "Last change: Sep 2015" "irtestcase @version@" "User Commands"
+.TH irtestcase "1" "Last change: Oct 2015" "irtestcase @version@" "User Commands"
 .SH NAME
 .P
 \fBirtestcas\fRe - Create or check decoding testcases.
@@ -59,8 +59,11 @@ irtestcase respects LIRC_SOCKET_PATH which if defined holds the
 path to the lircd output socket to listen to.
 
 .SH FILES
+.TP 4
+.B /tmp/irtestcase
 irtestcase creates files in /tmp/irtestcase (hardcoded, sorry). After a
 successful run here is:
+.RS 4
 .TP 4
 .B durations.log
 Printable space/pulse durations in the same format as mode2(1). This file
@@ -71,13 +74,13 @@ The decoded  buttons, in same format as irw(1).
 .TP 4
 .B app_strings.log
 The application strings, as presented by ircat(1).
-
-.SH FILES
-
+.RE
 .TP 4
 .B ~/.cache/irtestcase.log
-Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
-file to $XDG_CACHE_HOME/irtestcase.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irtestcase.log. The amount of logging respects the
+LIRC_LOGLEVEL environment variable, defaulting to the \fidebug\fR value
+in the \fi[lircd]\fR section of lirc_options.conf.
 
 .SH "SEE ALSO"
 .P

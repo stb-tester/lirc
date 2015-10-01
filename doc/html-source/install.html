@@ -49,7 +49,7 @@
       <li>Generating the API documentation requires Doxygen. </li>
       <li>The <em>lirc-setup</em> GUI configuration tool
           needs python3-gi and thus also the Gtk
-          libs. These are not required for the build, though. </li>
+          libs and icons. These are not required for the build, though. </li>
       <li>Building the X11 GUI tools like <em>irxevent</em> and
           <em>xmode2</em> requires the X11 header files. </li>
       <li> The audio drivers needs the alsa and portaudio libs
@@ -149,8 +149,13 @@
              cd tools; ./lirc-lsplugins -U ../plugins/.libs
 </pre>
      <p>
-     This will create a list of the all drivers available, and also
-     possible link errors not revealed during the build.
+     Is some cases, lirc-lsplugins will crash on missing libraries e. g.,
+     <em>liblirc.so.0</em>. If so, you need to add the path where lirc
+     installs it's libraries (by default, /usr/local/lib) to the runtime
+     linker path. Refer to generic ld.so(1) documentation.</p>
+     <p>
+     With working paths lirc-lsplugins will create a list of the all drivers
+     available, and also possible link errors not revealed during the build.
      <em>lirc-lsplugins</em> has a -h option providing help, and
      <em> nroff -man ../doc/man/lirc-lsplugins.1 | more </em>
      provides more complete info.</p>

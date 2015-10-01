@@ -3,10 +3,11 @@
 
                     <P>
                       Usually you don't have to create a config file
-                      yourself if you use this driver as this <A
-                      HREF="http://lirc.sourceforge.net/remotes/devinput/lircd.conf.devinput">generic
-                      config file</A> should already contain all
-                      existing keys.
+                      yourself. As distributed, the lircd.conf.d contains
+                      a file devinput.lircd.dist. This can be used by
+                      renaming it to devinput.lircd.conf. There is
+                      also a generic devinput file available using
+                      <i>irdb-get find devinput</i>.
                     </P>
                     <P>
                       This driver uses <em>/dev/input/event0</em> as
@@ -29,3 +30,9 @@
                       available (i. e., there is just a single
                       /sys/class/rc/rc0 directory) the device can be
                       given as <em>auto</em>.</p>
+                    <p>
+                      The devices under /dev/input are often writable
+                      for some group. On Fedora, current user can be given
+                      access to these devices using <i>usermod -aG input $USER</i>,
+                      which adds the input group to the grouplist of current
+                      user.  Other distros have similar steps.</p>
