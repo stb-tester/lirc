@@ -512,7 +512,7 @@ int main(int argc, char** argv)
 	lirc_log_get_clientlog("lirc-lsplugins", path, sizeof(path));
 	unlink(path);
 	lirc_log_set_file(path);
-	lirc_log_open("lirc-lsplugins", 1, LIRC_DEBUG);
+	lirc_log_open("lirc-lsplugins", 1, options_get_std_loglevel());
 
 	lsplugins(pluginpath, which);
 	return sum_errors == 0 ? 0 : 1;

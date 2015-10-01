@@ -28,6 +28,12 @@ void options_set_opt(const char* key, const char* value);
 /** Parse and store a loglevel, returning value (possibly LIRC_BADLEVEL). */
 loglevel_t options_set_loglevel(const char* optarg);
 
+/**
+ * Return loglevel based on LIRC_LOGLEVEL in environment, falling back to
+ * [lircd] section's loglevel and finally LIRC_DEBUG.
+ */
+loglevel_t options_get_std_loglevel(void);
+
 /* Get a [string|int|boolean] option with 0 as default value. */
 const char* options_getstring(const char* const key);
 int options_getint(const char* const key);

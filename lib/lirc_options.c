@@ -155,6 +155,28 @@ void options_load(int argc, char** const argv,
 }
 
 
+loglevel_t options_get_std_loglevel(void)
+{
+	const char* s;
+	loglevel_t level = LIRC_BADLEVEL;
+
+	s = getenv("LIRC_LOGLEVEL");
+	if (s != NULL)
+		level =  string2loglevel(s);
+	if (level == LIRC_BADLEVEL) {
+		if (lirc_options == NULL)
+			options_load(0, NULL, NULL, NULL);
+		s = ciniparser_getstring(lirc_options,
+					 "lircd:debug",
+					 "debug");
+		level = string2loglevel(s);
+		if (level == LIRC_BADLEVEL)
+			level = LIRC_DEBUG;
+	}
+	return level;
+}
+
+
 void options_add_defaults(const char* const defaults[])
 {
 	int i;

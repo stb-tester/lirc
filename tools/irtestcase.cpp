@@ -260,7 +260,7 @@ int main(int argc, char* argv[])
 
 	lirc_log_get_clientlog("irtestcase", path, sizeof(path));
 	lirc_log_set_file(path);
-	lirc_log_open("irtestcase", 1, LIRC_NOTICE);
+	lirc_log_open("irtestcase", 1, options_get_std_loglevel());
 
 	setenv("LIRC_SOCKET_PATH", socketpath, 1);
 	fd_io = lirc_init(opt_prog, 1);

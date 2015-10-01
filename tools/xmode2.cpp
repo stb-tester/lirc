@@ -322,7 +322,6 @@ int main(int argc, char** argv)
 	int result;
 	char textbuffer[80];
 	const char* opt;
-	const char* log_level;
 	char logpath[256];
 
 	hw_choose_driver(NULL);
@@ -331,8 +330,7 @@ int main(int argc, char** argv)
 	lirc_log_get_clientlog("xmode2", logpath, sizeof(logpath));
 	(void)unlink(logpath);
 	lirc_log_set_file(logpath);
-	log_level = options_getstring("xmode2:debug");
-	lirc_log_open("xmode2", 0, string2loglevel(log_level));
+	lirc_log_open("xmode2", 0, options_get_std_loglevel());
 
 	device = options_getstring("xmode2:device");
 	if (strcmp(device, LIRCD) == 0) {
