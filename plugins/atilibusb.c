@@ -126,6 +126,10 @@ static int ati_init(void)
 	drv.fd = pipe_fd[0];
 
 	usb_dev = find_usb_device();
+	if (!usb_dev || !usb_dev->bus || !usb_dev->filename) {
+		log_error("couldn't find a compatible USB device");
+		return 0;
+	}
 	snprintf(device_path, sizeof(device_path),
 		 "/dev/bus/usb/%s/%s",
 		 usb_dev->bus->dirname, usb_dev->filename);
