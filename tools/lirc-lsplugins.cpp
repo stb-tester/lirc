@@ -400,7 +400,8 @@ static void print_yaml_header(void)
 
 void lsplugins(const char* pluginpath, const char* which)
 {
-	setenv(PLUGINDIR_VAR, pluginpath, 1);
+	options_load(0, NULL, NULL, NULL);
+        options_set_opt("lircd:plugindir", pluginpath);
 	for_each_plugin(format_plugin, (void*)which);
 	qsort(lines, line_ix, sizeof(line_t*), line_cmp);
 	if (opt_summary) {
