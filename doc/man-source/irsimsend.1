@@ -1,4 +1,4 @@
-.TH irsimsend "1" "Last change: Aug 2015" "irsimsend @version@" "User Commands"
+.TH irsimsend "1" "Last change: Oct 2015" "irsimsend @version@" "User Commands"
 .SH NAME
 .P
 \fBirsimsend\fR - Send simulated IR data.
@@ -55,11 +55,13 @@ Print version and exit.
 Print help message.
 
 .SH FILES
-
 .TP 4
 .B ~/.cache/irsimsend.log
-Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
-file to $XDG_CACHE_HOME/irsimsend.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/irsimsend.log. The amount of logging respects the
+LIRC_LOGLEVEL environment variable, defaulting to the \fidebug\fR value
+in the\fi[lircd]\fR section of lirc_options.conf.
+
 
 .SH "SEE ALSO"
 .P

@@ -12,7 +12,7 @@ body > a, body > p, body > code, body > em, h2 + b, p + b, br + b {
 div > dt {
     margin-left: 0px; }
 
-h1, h2, h3, h4 ,li, div, td, dt,  hr, div, pre {
+h1, h2, h3, h4 ,li, div, td, dt,  hr, div, pre, table {
     margin-left: 10%; }
 
 body > a, p, h1, h2, h3, h4, li, div, td, hr, div {

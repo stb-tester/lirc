@@ -21,14 +21,38 @@ Display version
 .SH SIGNALS
 .P
 On receiving SIGUSR1 \fBirw\fR makes a clean exit.
+
+.SH EXAMPLE
+.P
+Dumping the default socket while pressing one button:
+
+.nf
+
+    myhost $ irw
+    0000000000f40bf0 00 KEY_POWER ANIMAX
+    0000000000f40bf0 01 KEY_POWER ANIMAX
+    0000000000f40bf0 02 KEY_POWER ANIMAX
+    0000000000f40bf0 03 KEY_POWER ANIMAX
+    0000000000f40bf0 04 KEY_POWER ANIMAX
+    0000000000f40bf0 05 KEY_POWER ANIMAX
+    ^C
+    myhost $
+
+.if
+
+.P
+
+Note that the second counter is incremented for each new event generated
+by the single key press. This is important for correct lircd operation.
+
 .SH NOTES
 .P
 Since the lircd socket supports multiple clients, \fBirw\fR can run in
-parallell with other applications.
+parallel with other applications.
 .P
 \fBirw\fR does nothing more than dumps a unix-domain socket, a task which
 many standard tools also can do. E. g., the ncat(1) tool can be
-used instead of irw to provide more flexibility (but without any sane default
+used instead of irw to provide more flexibility (but without a sane default
 socket):
 .nf
     ncat -U @varrundir@/lirc/lircd

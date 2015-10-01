@@ -29,10 +29,13 @@ void options_set_opt(const char* key, const char* value);
 loglevel_t options_set_loglevel(const char* optarg);
 
 /**
- * Return loglevel based on LIRC_LOGLEVEL in environment, falling back to
- * [lircd] section's loglevel and finally LIRC_DEBUG.
+ * Return loglevel based on (falling priority)
+ *  - LIRC_LOGLEVEL in environment,
+ *  - If app is non-NULL the 'debug' value in the [app]section
+ *  - The 'debug' value in the [lircd] options file section.
+ *  - The hardcoded default LIRC_DEBUG
  */
-loglevel_t options_get_std_loglevel(void);
+loglevel_t options_get_app_loglevel(const char* app);
 
 /* Get a [string|int|boolean] option with 0 as default value. */
 const char* options_getstring(const char* const key);

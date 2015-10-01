@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Sep 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Oct 2015" "mode2 @version@" "User Commands"
 .SH NAME
 xmode2 - Show the pulse/space length of infrared signals
 .SH SYNOPSIS
@@ -94,14 +94,18 @@ The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
 The environment variable LIRC_PLUGINDIR.
 .IP \- 2
-A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+A hardcoded default (@libpath@/lirc/plugins).
 
 .SH FILES
 
 .TP 4
 .B ~/.cache/xmode2.log
-Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
-file to $XDG_CACHE_HOME/mode2.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/xmode2.log. The amount of logging respects the
+LIRC_LOGLEVEL environment variable, defaulting to the \fIdebug\fR value
+in lirc_options.conf.
+
+
 .TP 4
 .B @etcdir@/lirc/lirc_options.conf
 The options file holding default values for command line options in

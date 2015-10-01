@@ -133,7 +133,7 @@ $(generated_plugindocs): $(plugindocs) docpage.xsl driver-toc.xsl
 $(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
 	@mkdir man-html 2>/dev/null || :
 	src=$$(echo $(srcdir)/$@ | \
-                   $(SED) -e 's/man-html/man-source/' -e 's/\.html//'); \
+                   $(SED) -e 's/man-html/man/' -e 's/\.html//'); \
 	    man2html -M index.html -r $${src}.[1-8] | \
 		sed -e '1,/^$$/d' \
 		    -e '/This document was created/i \
@@ -151,6 +151,7 @@ $(nodist_man_MANS): $(man_sources)
 	sed -i 's|@prefix@|$(prefix)|' $@
 	sed -i 's|@varrundir@|$(localstatedir)/run|' $@
 	sed -i 's|@etcdir@|$(sysconfdir)|' $@
+	sed -i 's|@libpath@|$(libdir)|' $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox

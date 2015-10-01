@@ -358,6 +358,16 @@ remote | kernel |   devinput v        |
          device as described in <a href="#appendix-12"> Appendix 12</a>.</li>
      </ul>
      <p>
+     After selecting the driver and device you should check if there is any
+     <a href="programs.html#driver-index">driver documentation</a>. After
+     this, check the driver and device using using e. g., something like </p>
+<pre>
+         mode2 --driver default --device /dev/lirc0
+</pre>
+     <p>
+     Refer to EXAMPLES in  the <a href="mode2.html">mode2 manpage</a> too
+     see expected output.</a>
+     <p>
      If you are to use the devinput driver, read on. Otherwise proceed to
      <A HREF="#key-symbols-using-lirc-drivers">Getting the key symbols using
      lirc driver</A></p>
@@ -744,14 +754,6 @@ remote | kernel |   devinput v        |
     to boot the system without the usb device connected, and do a lsmod.
     After that, connect the device and make a new lsmod. Comparing the
     different outputs might give a clue.
-    <p>
-    Some user-space drivers have configuration info on conflicting
-    kernel drivers.Running:
-<pre>
-     grep conflicts configs/*.conf
-</pre>
-    creates a list of conflicting drivers from this info. It is far from
-    complete, though.
 
     <A NAME="permissions"></A>
     <h4 align="center">Adjusting kernel device permissions</h4>
@@ -760,17 +762,28 @@ remote | kernel |   devinput v        |
      kernel device it communicates with. Since devices in Linux are
      handled by udev this is handled by udev rules.</p>
      <p>
-     In the contrib directory is an example file for the <em>/dev/lirc</em>
-     devices called 60-lirc-rules.conf containing</p>
+     Many drivers including the <em>default</em> driver uses the /dev/lirc
+     or USB devices. In the contrib directory is an example file for the
+     these devices called 60-lirc.rules containing:</p>
 <pre>
-        KERNEL=="lirc[0-9]*", SUBSYSTEM=="lirc", GROUP="lirc", MODE="0660
+        KERNEL=="lirc[0-9]*", SUBSYSTEM=="lirc", GROUP="lirc", MODE="0660"
+        ACTION=="add", SUBSYSTEM=="usb", \
+           RUN+="/usr/bin/setfacl -m g:lirc:rw $env{DEVNAME}"
 </pre>
      <p>
      The file should be stored in <em>/etc/udev/rules.d/60-lirc.rules</em>
-     This example giver users in the group <em>lirc</em> full permissions.
-     It should be simple to adopt to other users (USER=),
-     usernames and devices. Refer to more generic udev docs.</p>
-
+     This example giver users in the group <em>lirc</em> full permissions
+     to the /dev/lirc0 devices using regular group permissions. It also
+     gives members of the same group access to all USB devices using
+     extended permissions (ACL).  It should be simple to adopt to other
+     users (USER=), usernames and devices. Refer to more generic udev docs.</p>
+     <p>
+     The <em>devinput</em> driver uses the /dev/input/event* devices. These
+     are often accessible for members of a specific group; the best
+     solution is then to add this group the the lircd user's
+     supplementary group e. g., using <i>usermod -aG input lirc</i> which
+     adds the input group to user lirc. See
+     <a href="#appendix-14"> Running as a regular user</a></p>
 
 
     <A NAME="serial_port_reservation"></A>
@@ -1506,8 +1519,30 @@ remote | kernel |   devinput v        |
     file from this.</p>
     <p>
     In many cases it's OK to just start irrecord and follow the instructions.
-    However, there are a few things to be aware about including physical
-    disturbances,  protocol parameters and repeat masks.</p>
+    However, there are a few things to be aware about including command line
+    options,rc device protocol, physical disturbances, protocol parameters
+    and repeat masks.</p>
+
+    <h4>Command line options.</h4>
+    <p>
+    The primary options are --driver and usually also --device (some drivers
+    does not need --device). Follow the regular setup flow in
+    <a href="#determine-driver-and-device">Determine driver and device</a>
+    to select these options before running irrecord.<p>
+    <p>
+    When driver and device is known it saves some work to update
+    lirc_options.conf with the new values. irrecord uses the [lircd] section
+    as a fallback, so with a proper lirc_options.conf irrecord could be run
+    without command line options.</p>
+
+    <h4> rc device protocol.</h4>
+    If there is various non-printable garbage on the screen when running
+    irrecord using the default driver the rc protocol needs to be set.
+    With a single device the protocol can be set and inspected using
+<pre>
+        sudo sh -c "echo 'lirc' &gt; /sys/class/rc/rc0/protocol"
+        cat /sys/class/rc/rc0/protocol
+</pre>
 
     <h4>Physical disturbances.</h4>
     <P>
@@ -1593,10 +1628,43 @@ remote | kernel |   devinput v        |
     Examples includes the groups <em>lock</em>, <em>input</em> and
     <em>dialout</em> but ultimately depends on the distribution.</p>
     <p>
+    <table>
+      <tr>
+        <th align="left">Devices</th>
+        <th align="left">Usage</th>
+        <th align="left">Example group</th>
+      </tr>
+      <tr>
+        <td>/dev/lirc*</td>
+        <td>/sys/class/rc devices</td>
+        <td>lirc (see udev rule below)</td>
+      </tr>
+      <tr>
+        <td>/dev/ttyS*</td>
+        <td>Serial ports</td>
+        <td>dialout</td>
+      </tr>
+      <tr>
+        <td>/dev/input/event[0-9]*</td>
+        <td>Event devices</td>
+        <td>input</td>
+      </tr>
+      <tr>
+        <td>/var/lock or /var/lock/lockdev</td>
+        <td>Old style serial locks</td>
+        <td>lock</td>
+      </tr>
+    </table>
+    </p>
+
+    <p>
     Some devices are created as accessible only by root. This
-    includes the often used <em>/dev/lirc?</em> and <em>/dev/ttyUSB*</em>
-    devices. These should be made accessible using udev rules. The
-    contrib/ directory contains some example rules for this purpose.</p>
+    includes the often used <em>/dev/lirc?</em> and the USB devices.
+    These should be made accessible using udev rules. The contrib/
+    directory contains an example rule 60-lirc.rules. This sets up the
+    /dev/lirc* devices to be accessible for the <i>lirc</i> group using
+    regular group permissions. It also grants r/w access for the lirc
+    group to USB devices using ACLs.</p>
     <p>
     If there is a need to run setup code as root the lirc_options.conf
     file supports a section modinit which e. g., might look like</p>

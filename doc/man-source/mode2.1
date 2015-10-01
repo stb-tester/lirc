@@ -1,11 +1,11 @@
-.TH MODE2 "1" "Last change: Sep 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Oct 2015" "mode2 @version@" "User Commands"
 .SH NAME
 .P
 \fBmode2\fR - Show pulse/space length or decoded input from infrared drivers.
 
 .SH SYNOPSIS
 .P
-\fBmode2\fR --driver <\fIdriver\fR> --device <\fIdevice\fR>
+\fBmode2\fR --driver <\fIdriver\fR> [--device <\fIdevice\fR>]
 [\fIother options\fR]
 .P
 \fBmode2\fR --raw --device <\fIdevice\fR> [\fIother options\fR]
@@ -26,6 +26,8 @@ the --raw option should always work for /dev/lirc* devices. At the time
 of writing, usb devices also work in most cases. However, since it is
 tricky to get the path to the usb device, such ones are normally best
 accessed using a driver.
+.P
+Not all drivers requires a device.
 
 .SH OPTIONS
 
@@ -103,6 +105,42 @@ SUDO_USER environment variable e. g.,
 The --keep-root option will make mode2 to keep root privileges for the
 complete run.
 
+.SH EXAMPLES
+
+Invoked with a MODE2 type driver with \fBmode2\fR prints space/mark timings:
+.nf
+     al@snorken $ ./mode2 --driver default --device /dev/lirc0
+     Using driver default on device /dev/lirc0
+     Trying device: /dev/lirc0
+     Using device: /dev/lirc0
+     pulse 2750
+     space 800
+     pulse 500
+     space 350
+     pulse 550
+     space 350
+     pulse 550
+     ...
+.if
+
+.P
+
+Invoked with a LIRCCODE type driver \fBmode2\fR prints decoded values:
+
+.nf
+     $ ./mode2 --driver atilibusb
+     Using driver atilibusb on device /dev/lirc0
+     Trying device: /dev/bus/usb/001/007
+     Using device: /dev/bus/usb/001/007
+     code: 0x14709b0000
+     code: 0x14709b0000
+     code: 0x14709b0000
+     code: 0x14709b0000
+     code: 0x14709b0000
+     ...
+.if
+
+.P
 
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. The search path used for this is determined
@@ -114,7 +152,7 @@ The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
 The environment variable LIRC_PLUGINDIR.
 .IP \- 2
-A hardcoded default (usually /usr/lib[64]/lirc/plugins).
+A hardcoded default (@libpath@/lirc/plugins).
 
 .SH ENVIRONMENT
 .TP 4
@@ -128,13 +166,17 @@ is the same as for --loglevel, see OPTIONS.
 The options file holding default values for command line options in
 the [mode2] section. For some values including debug, plugindir, driver
 and device mode2 falls back to the [lircd] section if not found in [mode2].
-.IP \- 4
+.IP "" 4
 The location of this file can be changed using the -O/--options-file
 command-line option or using the environment variable LIRC_OPTIONS_PATH.
 
+.TP 4
 .B ~/.cache/mode2.log
-Debug output. Setting the XDG_CACHE_HOME environment variable relocates this
-file to $XDG_CACHE_HOME/mode2.log
+Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
+file to $XDG_CACHE_HOME/mode2.log. The amount of logging respects the
+LIRC_LOGLEVEL environment variable, defaulting to the \fidebug\fR value
+in lirc_options.conf.
+
 
 .SH "SEE ALSO"
 xmode2(1)
