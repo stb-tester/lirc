@@ -123,6 +123,10 @@ static int ati_init(void)
 	drv.fd = pipe_fd[0];
 
 	usb_dev = find_usb_device();
+	if (!usb_dev || !usb_dev->bus || !usb_dev->filename) {
+		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
+		return 0;
+	}
 	if (usb_dev == NULL) {
 		logprintf(LIRC_ERROR, "couldn't find a compatible USB device");
 		return 0;
