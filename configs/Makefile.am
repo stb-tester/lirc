@@ -27,3 +27,7 @@ confs_by_driver.yaml: remotes.list ../tools/irdb-get
 
 remotes.list:
 	XDG_CACHE_HOME=$$(pwd) ../tools/irdb-get update
+
+../tools/lirc-lsplugins:
+	cd ../lib; $(MAKE)
+	cd ../tools; $(MAKE) lirc-lsplugins
