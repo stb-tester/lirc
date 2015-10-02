@@ -65,7 +65,6 @@ if test "$ac_cv_func_daemon" != yes; then
 fi
 AX_PYTHON_MODULE([yaml])
 AM_CONDITIONAL([HAVE_PYMOD_YAML], test $HAVE_PYMOD_YAML = "yes")
-
 forkpty=""
 AC_CHECK_FUNCS(forkpty)
 if test "$ac_cv_func_forkpty" != yes; then
@@ -192,15 +191,6 @@ if test -n "$FTDI_LIBS"; then
   AC_SUBST(FTDI_CFLAGS)
 else
   AM_CONDITIONAL([BUILD_FTDI],[false])
-fi
-
-PKG_CHECK_MODULES([SELINUX],[libselinux],,[true])
-if test -n "$SELINUX_LIBS"; then
-  AM_CONDITIONAL([BUILD_SELINUX],[true])
-  AC_SUBST(SELINUX_LIBS)
-  AC_SUBST(SELINUX_CFLAGS)
-else
-  AM_CONDITIONAL([BUILD_SELINUX],[false])
 fi
 
 AC_CHECK_HEADER(iguanaIR.h,[
@@ -374,7 +364,6 @@ AC_CONFIG_FILES([
   configs/Makefile
   doc/docpage.xsl
   systemd/Makefile
-  selinux/Makefile
 ])
 
 AC_OUTPUT
@@ -414,7 +403,6 @@ AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])
-AC_REPORT_CONDITIONAL([BUILD_SELINUX])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 
 echo
