@@ -709,23 +709,32 @@ static enum button_status get_button_data(struct button_state* btn_state,
 		case STS_BTN_GET_RAW_DATA:
 			break;
 		case STS_BTN_TIMEOUT:
-			printf("Timeout (10 seconds), try again\n");
+			retries--;
+			if (retries <= 0) {
+				puts("Too many timeouts, giving up.");
+				return STS_BTN_HARD_ERROR;
+			}
+			printf("Timeout (10 seconds), try again");
+			printf(" (%d retries left).\n", retries);
 			sts = STS_BTN_INIT_DATA;
 			continue;
 		case STS_BTN_GET_TOGGLE_BITS:
 			do_get_toggle_bit_mask(&remote, state, opts);
 			return STS_BTN_ALL_DONE;
 		case STS_BTN_SOFT_ERROR:
-			printf("Something went wrong: ");
+			retries--;
+			fputs("Something went wrong: ", stdout);
 			fputs(btn_state->message, stdout);
-			if (retries <= 0 && !opts->force) {
-				printf("Try using the -f option.\n");
-				break;
+			if (retries > 0) {
+				printf("Please try again. (%d retries left)\n",
+				       retries - 1);
+				sts = STS_BTN_INIT_DATA;
+				continue;
 			}
-			printf("Please try again. (%d retries left)\n",
-			       retries - 1);
-			sts = STS_BTN_INIT_DATA;
-			continue;
+			puts("Too many errors.");
+			if (!opts->force)
+				puts("Try using the -f option.");
+			return STS_BTN_HARD_ERROR;
 		case STS_BTN_BUTTON_DONE:
 			ncode_list_add(&(btn_state->ncode));
 			return sts;
