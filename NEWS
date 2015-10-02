@@ -1,25 +1,39 @@
 0.9.4-devel
-  * News driver for the Girs protocol, gives LIRC Arduino support.
-  * Enhanced lircd-setup tool (#121) (TBD)
-  * Several patches to make mode2 work with most (all?) drivers.
+  * The caraca driver has been retired (still available in attic/).
+  * New driver girs for the GIRS protocol, gives LIRC Arduino support.
+    See new info in driver documentation.
+  * Enhanced lircd-setup tool (#123)
+    - Integrated mode2 and irw tests of current configuration.
+    - Documentation links.
+    - More consistent data based on new database.
+    - Multiple bugfixes.
+  * Several patches to make mode2 work with all drivers.
   * Configuration database overhaul (#123, partly)
     - Database lives as yaml files in configs/.
     - Data is collected from drivers, remotes and static files.
     - Better ways for drivers to enumerate devices.
     - There is an unstable python database module used by
       all tools.
+  * devinput.lircd.conf is generated at build time to match host kernel.
+  * A new script lircd-setup runs as a one-shot service before lircd,
+    performing setup commands as root (#121).
+
   * CLI options for mode2, xmode2 and irrecord has been streamlined.
     All tools falls back to lircd defaults where it makes sense.
-  * selinux policy generation is added.
   * New logging API with hooks for enhanced messages and filtering
     (also #129).
   * The out-of-tree build interface is enhanced with hooks for external
     drivers to rebuild documentation and add a config file.
-  * Fix gid and supplementary groups in CLI apps dropping root.
-  * Fix a crash in irrecord when invoked without options.
+  * irrecord has benn taught to handle remotes without gap (#98).
   * Add an "auto" device to devinput driver for single-device
     usecase (#134).
-  * Don't require write access if not needed in  default.c (#133).
+
+  * Fix buggy handling of not decoded buttons in irrecord (#146).
+  * Fix --plugindir not being respected (#144).
+  * Fix crash for non-existing device (#145).
+  * Fix gid and supplementary groups in CLI apps dropping root.
+  * Fix a crash in irrecord when invoked without options.
+  * Don't require write access if not needed in default.c (#133).
   * Clean up docs, remove circular links (#136). Documentation is
     now only in lirc.org/html.
 
