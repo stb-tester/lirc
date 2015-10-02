@@ -70,7 +70,7 @@ class Config(object):
 class Database(object):
     ''' Reflects the *.yaml files in the configs/ directory. '''
 
-    def __init__(self, path=None):
+    def __init__(self, path=None, yamlpath=None):
 
         if path and os.path.exists(path):
             configdir = path
@@ -85,17 +85,19 @@ class Database(object):
             if path:
                 where += ':' + path
             raise FileNotFoundError(where)
+        if not yamlpath:
+            yamlpath = configdir
         db = {}
-        with open(os.path.join(configdir, "confs_by_driver.yaml")) as f:
+        with open(os.path.join(yamlpath, "confs_by_driver.yaml")) as f:
             cf = yaml.load(f.read())
         db['lircd_by_driver'] = cf['lircd_by_driver'].copy()
         db['lircmd_by_driver'] = cf['lircmd_by_driver'].copy()
 
-        with open(os.path.join(configdir, "kernel-drivers.yaml")) as f:
+        with open(os.path.join(yamlpath, "kernel-drivers.yaml")) as f:
             cf = yaml.load(f.read())
         db['kernel-drivers'] = cf['drivers'].copy()
         db['drivers'] = cf['drivers'].copy()
-        with open(os.path.join(configdir, "drivers.yaml")) as f:
+        with open(os.path.join(yamlpath, "drivers.yaml")) as f:
             cf = yaml.load(f.read())
         db['drivers'].update(cf['drivers'].copy())
         for key, d in db['drivers'].items():
