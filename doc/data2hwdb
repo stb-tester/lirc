@@ -83,7 +83,11 @@ def _add_submenu(menu, configs, db):
     return s
 
 def main():
-    if len(sys.argv) == 2:
+    yamldir = None
+    if len(sys.argv) == 3:
+        configdir = sys.argv[1]
+        yamldir = sys.argv[2]
+    elif len(sys.argv) == 2:
         configdir = sys.argv[1]
     elif len(sys.argv) == 1:
         configdir = None
@@ -91,7 +95,7 @@ def main():
         print("Usage: data2hwd [configuration directory]")
         sys.exit(1)
 
-    db = database.Database(configdir)
+    db = database.Database(configdir, yamldir)
     print(HEADER)
     for menu in MENUS.keys():
         try:

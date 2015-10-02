@@ -97,19 +97,17 @@ uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
 
-table.html: driver-toc.xsl configs
+table.html: driver-toc.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs | \
+	PYTHONPATH=. \
+	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs | \
 	    xsltproc --html docpage.xsl - > table.html
 
-configs: .phony
-	if [ "$(top_srcdir)" != ".." ]; then \
-	    echo cp $(top_srcdir)/configs/*.conf ../configs; \
-	fi
-
-lirc.hwdb: configs
+lirc.hwdb:
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs > lirc.hwdb
+	PYTHONPATH=. \
+	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
+	    > lirc.hwdb
 
 driver-toc.xsl: $(plugindocs)
 	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
