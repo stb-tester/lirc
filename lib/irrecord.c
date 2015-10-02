@@ -1933,24 +1933,15 @@ enum button_status record_buttons(struct button_state*	btn_state,
 				}
 			}
 			if (!decode_ok) {
-				if (retries <= 0) {
-					btn_state_set_message(
-						btn_state,
-						"Try using the -f option.\n");
-					return STS_BTN_HARD_ERROR;
-				}
 				if (!resethw()) {
 					btn_state_set_message(
 						btn_state,
 						"Could not reset hardware.\n");
 					return STS_BTN_HARD_ERROR;
 				}
-				btn_state_set_message(
-					btn_state,
-					"Try again (%d retries left).\n",
-					retries - 1);
+				btn_state_set_message(btn_state,
+						      "Cannot decode data\n");
 				flushhw();
-				retries--;
 				return STS_BTN_SOFT_ERROR;
 			}
 			btn_state->ncode.name = btn_state->buffer;
