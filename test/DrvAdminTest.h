@@ -82,7 +82,7 @@ class DrvAdminTest : public CppUnit::TestFixture
         {
             int count = 0;
             setenv("LD_LIBRARY_PATH", "../lib/.libs", 1);
-            for_each_driver(drv_guest_counter, (void*)&count);
+            for_each_driver(drv_guest_counter, (void*)&count, NULL);
             if (getenv("LIRC_TEST_DEBUG"))
                 cout << "Driver count: " << count << "\n";
             CPPUNIT_ASSERT( count == DRIVER_COUNT );
@@ -91,7 +91,7 @@ class DrvAdminTest : public CppUnit::TestFixture
         void testListPlugins()
         {
             int count = 0;
-            for_each_plugin(listPlugins, (void*)&count);
+            for_each_plugin(listPlugins, (void*)&count, NULL);
             if (getenv("LIRC_TEST_DEBUG"))
                 cout << "Plugin count: " << count << "\n";
             CPPUNIT_ASSERT(count == PLUGIN_COUNT );

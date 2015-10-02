@@ -178,18 +178,23 @@ static struct driver* for_each_plugin_in_dir(const char*	dirpath,
 
 static struct driver* for_each_path(plugin_guest_func	plg_guest,
 				    drv_guest_func	drv_guest,
-				    void*		arg)
+				    void*		arg,
+				    const char*		pluginpath_arg)
 {
 	const char* pluginpath;
 	char* tmp_path;
 	char* s;
 	struct driver* result = (struct driver*)NULL;
 
-	pluginpath = ciniparser_getstring(lirc_options,
-					  "lircd:plugindir",
-					  getenv(PLUGINDIR_VAR));
-	if (pluginpath == NULL)
-		pluginpath = PLUGINDIR;
+	if (pluginpath_arg == NULL) {
+		pluginpath = ciniparser_getstring(lirc_options,
+						  "lircd:plugindir",
+						  getenv(PLUGINDIR_VAR));
+		if (pluginpath == NULL)
+			pluginpath = PLUGINDIR;
+	} else {
+		pluginpath = pluginpath_arg;
+	}
 	if (strchr(pluginpath, ':') == (char*)NULL) {
 		return for_each_plugin_in_dir(pluginpath,
 					      plg_guest,
@@ -210,15 +215,19 @@ static struct driver* for_each_path(plugin_guest_func	plg_guest,
 }
 
 
-struct driver* for_each_driver(drv_guest_func func, void* arg)
+struct driver* for_each_driver(drv_guest_func func,
+			       void* arg,
+			       const char* pluginpath)
 {
-	return for_each_path(visit_plugin, func, arg);
+	return for_each_path(visit_plugin, func, arg, pluginpath);
 }
 
 
-void for_each_plugin(plugin_guest_func plugin_guest, void* arg)
+void for_each_plugin(plugin_guest_func plugin_guest,
+		     void* arg,
+		     const char* pluginpath)
 {
-	for_each_path(plugin_guest, NULL, arg);
+	for_each_path(plugin_guest, NULL, arg, pluginpath);
 }
 
 
@@ -232,7 +241,7 @@ void hw_print_drivers(FILE* file)
 	int i;
 
 	names.size = 0;
-	if (for_each_driver(add_hw_name, (void*)&names) != NULL) {
+	if (for_each_driver(add_hw_name, (void*)&names, NULL) != NULL) {
 		fprintf(stderr, "Too many plugins (%d)\n", MAX_PLUGINS);
 		return;
 	}
@@ -255,7 +264,7 @@ int hw_choose_driver(const char* name)
 	if (strcasecmp(name, "dev/input") == 0)
 		/* backwards compatibility */
 		name = "devinput";
-	found = for_each_driver(match_hw_name, (void*)name);
+	found = for_each_driver(match_hw_name, (void*)name, NULL);
 	if (found != (struct driver*)NULL) {
 		memcpy(&drv, found, sizeof(struct driver));
 		return 0;
