@@ -731,10 +731,10 @@ static enum button_status get_button_data(struct button_state* btn_state,
 				sts = STS_BTN_INIT_DATA;
 				continue;
 			}
-			printf("Please try again. (%d retries left)\n",
-			       retries - 1);
-			sts = STS_BTN_INIT_DATA;
-			continue;
+			puts("Too many errors.");
+			if (!opts->force)
+				puts("Try using the -f option.");
+			return STS_BTN_HARD_ERROR;
 		case STS_BTN_BUTTON_DONE:
 			ncode_list_add(&(btn_state->ncode));
 			return sts;
