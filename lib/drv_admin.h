@@ -54,14 +54,22 @@ void hw_print_drivers(FILE*);
  *
  * Apply func to all existing drivers. Returns pointer to a driver
  * if such a pointer is returned by func(), else NULL.
+ * Pluginpath defaults to lircd:pluginpath, LIRC_PLUGINPATH and
+ * a hardcoded last resort.
  *
  */
-struct driver* for_each_driver(drv_guest_func func, void* arg);
+struct driver* for_each_driver(drv_guest_func func,
+			       void* arg,
+			       const char* pluginpath);
 
 /**
- * Apply func to all plugins (i. e., .so-files) in current plugin path.
+ * Apply func to all plugins (i. e., .so-files) in plugin path.
+ * plugin path default to lircd:pluginpath, LIRC_PLUGINPATH and
+ * a hardcoded last resort.
  */
-void for_each_plugin(plugin_guest_func plugin_guest, void* arg);
+void for_each_plugin(plugin_guest_func plugin_guest,
+		     void* arg,
+		     const char* pluginpath);
 
 
 #ifdef __cplusplus
