@@ -161,7 +161,7 @@ static int drvctl(unsigned int cmd, void* arg);
 // understand this, just give some realistic default values.
 
 const struct driver hw_girs = {
-	.device		= "/dev/arduino",
+	.device		= "/dev/ACM0",
 	.fd		= -1,
 	.features	= LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
 	.send_mode	= LIRC_MODE_PULSE,
@@ -177,7 +177,7 @@ const struct driver hw_girs = {
 	.name		= "girs",
 	.resolution	= 50,
 	.api_version	= 3,
-	.driver_version = "2015-08-26",
+	.driver_version = "2015-10-09",
 	.info		= "See file://" PLUGINDOCS "/girs.html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
@@ -620,8 +620,6 @@ static lirc_t readdata(lirc_t timeout)
 	}
 	if (data_ptr & 1)
 		x |= PULSE_BIT;
-	if (data_ptr == data_length)
-		x |= LIRC_EOF;
 
 	log_debug("readdata %d %d",
 		  !!(x & PULSE_BIT), x & PULSE_MASK);
@@ -808,7 +806,7 @@ static int deinit(void)
 }
 
 
-static char* receive(struct ir_remote* remotes) // FIXME
+static char* receive(struct ir_remote* remotes)
 {
 	if (!dev.receive)
 		// probably should not happen
