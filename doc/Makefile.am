@@ -179,7 +179,8 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
                            $(srcdir)/man-source/lircrcd.8 \
-                           $(srcdir)/man-source/mode2.1
+                           $(srcdir)/man-source/mode2.1 \
+                           $(srcdir)/man-source/pronto2lirc.1
 
 plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/atilibusb.html \
@@ -238,7 +239,8 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
                            man/lircrcd.8 \
-                           man/mode2.1
+                           man/mode2.1 \
+                           man/pronto2lirc.1
 
 manpage_html            += man-html/ircat.html \
                            man-html/irdb-get.html \
@@ -260,7 +262,8 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \
                            man-html/lircrcd.html \
-                           man-html/mode2.html
+                           man-html/mode2.html \
+                           man-html/pronto2lirc.html
 
 generated_plugindocs    =  html/alsa-usb.html \
                            html/atilibusb.html \
