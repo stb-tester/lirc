@@ -1,0 +1,29 @@
+.TH PRONTO2LIRC "1" "Last change: Oct 2015" "pronto2lirc @VERSION" "User Commands"
+.SH NAME
+pronto2lirc - convert pronto-encoded data to lircd.conf format
+.SH SYNOPSIS
+.B pronto2lirc <\fIinputfile\fR>
+.SH DESCRIPTION
+.P
+Converts an input file to a lircd.conf formatted file. Inputfile can be:
+.IP \- 2
+An xml file output by CCFTools/CCFDecompiler.
+.IP \- 2
+Text file where each line contains the name of the button and
+all codes associated with it:
+.nf
+
+         Button1:0000 00ac 000b 00de ...
+
+.if
+.P
+\fIpronto2lirc\fR writes the result as a lircd.conf file  to the current
+directory containing all the Pronto codes extracted from the input file.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display usage summary.
+.SH "SEE ALSO"
+.P
+lircd.conf(5)
