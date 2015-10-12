@@ -1,0 +1,9 @@
+lirc 0.9.3 for Debian
+---------------------
+
+This package is a first attempt to package the more recent upstream. It
+makes no attempt, none, to keep compatibility with previous version. To
+use it, it must be re-configured using the new, upstream config
+mechanisms as described in the Configuration Guide in the manual.
+
+ -- Alec Leamas <al@jessie.nowhere.net>  Mon, 05 Oct 2015 14:11:10 +0200

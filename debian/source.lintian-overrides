@@ -1,0 +1,6 @@
+# Generally, we want to unbundle javascript libs like jquery. However,
+# the system library is as of 2015 while the bundled is of 2011; the diff
+# is large. Deciding to leave the bundled lib.
+# See: https://lists.debian.org/debian-devel/2014/04/msg00645.html
+lirc source: source-is-missing doc/api-docs/html/jquery.js
+lirc source: source-is-missing doc/api-docs/html/search/functions_7.js

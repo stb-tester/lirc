@@ -1,0 +1,1396 @@
+lirc (0.9.4-devel-1.1) jessie; urgency=low
+
+  * Non-maintainer upload.
+  * First shot on major upstream updates.
+  * Many iterations before it actually builds.
+
+ -- Alec Leamas  <leamas.alec@gmail.com>  Mon, 5 Oct 2015 11:14:25 +0100
+lirc (0.9.0~pre1-1.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix "unhandled symlink to directory conversion: /usr/share/doc/PACKAGE":
+    - add "Pre-Depends: ${misc:Pre-Depends}" to lirc-x stanza in
+      debian/control
+    - add debian/lirc-x.maintscript with symlink_to_dir instruction
+    (Closes: #774867)
+
+ -- gregor herrmann <gregoa@debian.org>  Sat, 17 Jan 2015 19:51:55 +0100
+lirc (0.9.0~pre1-1.1) unstable; urgency=low
+
+  * Non-maintainer upload with maintainers permission.
+  * Add dh-autoreconf to fix FTBFS on ppc64el. Closes: #746505
+
+ -- Andreas Barth <aba@ayous.org>  Thu, 11 Sep 2014 09:18:17 +0000
+lirc (0.9.0~pre1-1) unstable; urgency=low
+
+  [ Sven Mueller ]
+  * remove myself from uploaders
+
+  [ Stefan Lippers-Hollmann ]
+  * new upstream version 0.9.0~pre1:
+    - rediff patches against 0.8.6:
+      + drop 20_kcompat-2.6.26.patch, applied upstream.
+      + drop 21_silence-LIRC_MODE_LIRCCODE-logmessage.patch, it's no longer
+        necessary due to udev & hal acting upon hotplug events.
+      + drop 22_kcompat-2.6.27.patch, applied upstream.
+      + drop 23_man_pages_style_fixes.patch, mostly applied upstream.
+      + drop 24_kcompat-2.6.29.patch, applied upstream.
+      + drop 25_kcompat-2.6.31.patch, applied upstream.
+    - fixed by the new upstream version:
+      + lirc: Please update to version 0.8.4a (Closes: #517507).
+      + lirc: The version upstream is now at 0.8.6. Please upgrade this
+        package as it's a show stopper for me (Closes: #548826).
+      + lirc-modules-source: lirc_imon doesnt find hardware (Closes: #500714).
+      + lirc: Please add support for blaster of Hauppauge PVR150
+        (Closes: 505049).
+    - rediff patches against 0.8.7:
+      + drop 23_kcompat-2.6.32.patch, merged upstream
+      + drop kcompat-2.6.33.patch, merged upstream
+      + drop kcompat-2.6.35.patch, merged upstream
+      + add fix-kfreebsd-ftbs.patch
+    - fixes FTBS on Debian/ kFreeBSD, introduced in 0.8.6
+    - rediff patches against 0.9.0~pre1:
+      + import upstream changes (lirc-0.8.7-63-g77c9429):
+        ~ Remove-a-few-more-CVS-relics
+        ~ add-release-process-notes-for-my-own-sanity
+        ~ add-lirc-encoder-decoder-regression-test
+        ~ make-all-remote-names-unique
+        ~ updated-firefly-remote-definition-from-Bastien-Nocer
+        ~ try-to-standardize-remote-key-names-a-fair-bit
+        ~ lirc_serial-fill-in-dev-pointer
+        ~ Attempt-to-make-lirc_sir-behave-a-bit-better
+        ~ lirc_serial-resync-with-in-kernel-bits
+        ~ commandir-send_status-vs.-packetCounter-bug-fix
+        ~ lirc_serial-fix-tx-support-and-a-memory-leak
+      + drop 99_linux-input-layer_config, it should be obsolete now.
+      + drop lirc-in-kernel-ioctls, merged upstream.
+      + drop 18_pinsys-keycodes.
+      + update fix-kfreebsd-ftbs.patch to fix newly introduced __u32/ __u64
+        breakage on kFreeBSD; extend this change to all non-linux
+        architectures, given that it fails on hurd as well. Use stdint.h and
+        ISO C99 uint32_t/ uint64_t.
+      + drop 11_cheklib_fix.patch; while it is technically correct, it doesn't
+        actually have a real effect and is not upstreamable.
+      + drop 90_make-module-defines-unique.patch and warning-cleanup.patch,
+        lirc-modules-source doesn't get built anymore.
+      + avoid patching generated Makefiles by ensuring identical dates to avoid
+        autofoo/ libtool; this allows dropping 02_Makefiles.patch.
+      + drop 12_enodev_on_read.patch, it doesn't appear to be required anymore.
+  * suggest setserial (Closes: #546247).
+  * drop the udevadm settle call from the init script, it can lead to a
+    deadlock in combination with hotpluggable/ udev aware devices.
+  * fix conditional branches for 22_kcompat-2.6.27.patch (Closes: #547359).
+  * switch to Debian source format 3.0 (quilt).
+  * adapt watch file for bzip2 tarballs.
+  * drop debian/TODO, most entries are obsolete.
+  * create /var/run/lirc/ as needed.
+  * use --oknodo for start-stop-daemon.
+  * lirc 0.8.6 moves the lircd socket from /dev/ to /var/run/lirc/, create a
+    symlink to retain compatibility with old clients.
+  * partial sync with Ubuntu's lirc 0.8.6-0ubuntu2:
+    [ Mario Limonciello ]
+    - debian/control: add build-depends on libftdi-dev to prevent FTBFS.
+    - [PATCH 8/8] Add udev support to lirc and init script
+    - remove build time debug messages for kernel drivers
+  * add compatibility for kernel 2.6.32 (Closes: #562512, #588027).
+  * add compatibility for kernel 2.6.33/ 2.6.34.
+  * add maintainerclean target to debian/rules, to ease dealing with the
+    current way of maintaining the lirc package with svn-buildpackage's
+    mergeWithUpstream mode.
+  * document the kernel/ userspace ABI breakage between lirc 0.8.6 and earlier
+    versions in NEWS.
+  * debian/rules: fix stanza dependencies for parallel building (FTBS on
+    buildds with activated build concurrency).
+  * fix lintian complaint about "lirc: conflicts-with-version makedev
+    (<< 2.3.1-88)", a recent enough makedev (or none at all, if using udev) is
+    only required by postinst, not at unpack time.
+  * debian/NEWS: fix cosmetic formatting issues as pointed out by lintian:
+    - lirc: debian-news-entry-uses-asterisk
+    - lirc: debian-news-entry-without-blank-line line 13
+  * add compatibility for kernel 2.6.35.
+  * bump compat level to 8, supported by debhelper >=7.9.3 in squeeze.
+    - replace dh_clean -k by dh_prep.
+  * drop silent clobbering of the lirc configuration with misplaced files.
+  * make syntax check for hardware.conf more robust.
+  * drop obsolete lirc-svga package, its functionality is also provided by
+    lirc-x and has only been built for x86.
+  * drop and conflict with (using breaks) lirc-modules-source, starting with
+    kernel 2.6.36 lirc has been merged mainline and this package targets
+    post-squeeze anyways - this indirectly fixes:
+    - Failed to attach i2c client PV951 IR at 0x4b (-17) (Closes: #500429)
+    - lirc 0.8.3-5 breaks mceusb2 remote (Closes: #551706), replaced by new
+      in-kernel RC_CORE module "mceusb".
+    - lirc_sir: device fails to resume after suspend (Closes: #414014)
+    - sysfs: duplicate filename '0-0018' can not be created (Closes: #496681)
+  * rename patches for upstream submission:
+    - 04_man_pages_syntax_fixes.patch --> man-pages_syntax-fixes.patch
+    - 05_non_linux.patch --> lirc_fix-build-on-non-Linux-architectures.patch
+    - 22_fix-spelling-errors.patch --> lirc_fix-spelling-errors.patch
+    - 13_hurd_define_iotbase_u32.patch --> hurd_define-iotbase_u32.patch
+  * external ABI between kernel modules broke between 0.8.3 --> 0.8.4 and
+    0.8.7 --> 0.9.0, break lirc-modules-source (<<0.9.0~).
+  * drop obsolete debconf configuration:
+    - lirc should use debconf more fully (Closes: #162933)
+    - [INTL:nl] Updated Dutch po-debconf translation (Closes: #605610).
+    - [INTL:da] Danish translation of the debconf templates (Closes: #607575)
+  * drop pre-woody compatibility.
+  * don't try to install the upstream "ChangeLog", it's empty since upstream
+    moved to git.
+  * don't symlink /usr/share/doc/<package>/ anymore.
+  * declare a build-conflicts with libsvga1-dev.
+  * suggest "ir-keytable", it is required to configure scancodes for in-kernel
+    modules using the new RC_CORE subsystem.
+  * bump standards version to 3.9.1, now that the major roadblocks are finally
+    fixed.
+  * document that lirc uses syslog for all logging functionality since 0.6.5-1,
+    (Closes: #580666).
+  * use current maintainer script syntax.
+  * drop pre-squeeze versioned depends.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 20 Feb 2011 22:32:56 +0100
+
+lirc (0.8.3-5) unstable; urgency=low
+
+  * fix override disparity by moving lirc-modules-source to section kernel.
+  * update 05_non_linux.patch to fix an FTBS on kFreeBSD, thanks to Petr
+    Salinger <Petr.Salinger@seznam.cz> and Aurelien Jarno
+    <aurelien@aurel32.net> (Closes: #540742). This allows dropping
+    06_libtool_kfreebsd, thanks to Aurelien Jarno.
+  * use *.patch suffix consistently for all patches, no patch changes.
+  * clarify patch names for manpages.
+  * refresh patch series.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Mon, 10 Aug 2009 16:00:21 +0200
+
+lirc (0.8.3-4) unstable; urgency=medium
+
+  [ Stefan Lippers-Hollmann ]
+  * add kernel 2.6.27 compatibility (Closes: #506693).
+  * update italian debconf translation, thanks to Vincenzo Campanella
+    <vinz65@gmail.com> (Closes: #502602).
+  * add kernel 2.6.29 compatibility (Closes: #537197).
+  * s/(C)/©/ in copyright information.
+  * add kernel 2.6.31 compatibility.
+  * updating Basque debconf translation update, thanks to Piarres Beobide
+    <pi+debian@beobide.net> (Closes: #513433).
+  * sync with Ubuntu, where possible - thanks to Mario Limonciello
+    <superm1@ubuntu.com> (Closes: #500384):
+    - [PATCH 2/8] Cleanup whitespace in lirc.postinst
+    - [PATCH 7/8] Source lsb init functions in init script
+      - apply this patch first, we can't use any LSB function without
+        sourcing it first.
+      - depend on lsb-base.
+    - [PATCH 3/8] Update load_modules to use LSB functions
+      - keep the udevadm settle call, we need it for now.
+      - local var=foo is neither allowed by SUSv3, nor by Debian's special
+        excemptions; fix this bashism/ dashism.
+      - continue to use tab to indent.
+    - [PATCH 4/8] Update build_args to only check a single device
+      - local var=foo is neither allowed by SUSv3, nor by Debian's special
+        excemptions; fix this bashism/ dashism.
+      - continue to use tab to indent.
+    - [PATCH 5/8] Use LSB functions to show errors when conf files are missing
+      - continue to use tab to indent.
+      - remove commented out tests.
+    - [PATCH 6/8] Cleanup case statement to use LSB functions and whitespace
+      cleanup
+      - continue to use tab to indent.
+      - fix newly introduced syntax errors.
+  * employ standard line wrapping in debian/control stanzas.
+  * refer to GPL-2 explicitly in debian/copyright.
+  * make lintian happy and don't call ucf with its full path (policy 6.1).
+  * install upstream changelog also into arch-indep packages.
+  * severity medium, as this fixes lirc-modules-source FTBS against
+    kernel >= 2.6.27.
+
+  [ Matthew Johnson ]
+  * update some manpage patches (04_man_pages/22_man_pages2). Patches thanks
+    to Philipp Matthias Hahn <pmhahn@debian.org>. (Closes: #513675)
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Fri, 07 Aug 2009 00:38:08 +0200
+
+lirc (0.8.3-3) unstable; urgency=low
+
+  * update swedish translation, thanks to Martin Bagge <brother@bsnet.se>
+    (Closes: #491772).
+  * add italian debconf translation, thanks to Vincenzo Campanella
+    <vinz65@gmail.com>.
+  * silence LIRC_MODE_LIRCCODE log message, as it is not rate limited and
+    tends to overflow syslog in case IR receivers get removed without
+    stopping lirc or removing the configuration; this is a temporary
+    band-aid for lenny and no long term solution (Closes: #500421).
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 30 Sep 2008 01:28:27 +0200
+
+lirc (0.8.3-2) unstable; urgency=medium
+
+  * remove dead code (modutils has only been used for kernel 2.4 and the
+    affected code blocks weren't reachable since 0.8.3-1 anyways, as the
+    conffile wasn't shipped in the first place).
+  * conflict with makedev << 2.3.1-88, lirc either needs a fixed version or
+    none at all (Closes: #477063).
+  * 0.8.3-1 hasn't transitioned to testing yet, so keep the urgency at medium
+    as it fixes several serious bugs (oops in lirc_i2c on kernel 2.6.25, FTBS
+    against 2.6.26, missing module versions rejected by kernel >= 2.6.26,
+    custom mknod replaced by proper makedev calls, if installed).
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 16 Jul 2008 13:35:32 +0200
+
+lirc (0.8.3-1) unstable; urgency=medium
+
+  [ Stefan Lippers-Hollmann ]
+  * new upstream release 0.8.3 (Closes: #481649).
+  * rediff patches:
+    - 02_Makefile.in
+    - 04_man_pages
+    - 05_non_linux
+    - 06_libtool_kfreebsd
+  * drop patches merged upstream:
+    - 16_kcompat-2.6.23
+    - 17_kcompat-2.6.24
+    - 20_kcompat-2.6.25
+    - 19_enable-macmini-as-userspace-driver
+  * remove local scope definition for variables in lirc.init.d following
+    SUSv3, its current use for MODULES_MISSING and ARGS doesn't justify
+    making use of the exceptions specified in Debian policy 10.4
+    (Closes: #471422).
+  * fix copy and paste error in lirc-modules-source.README.Debian.
+  * lirc_i2c: fix kernel oops on 2.6.25, patch taken from upstream CVS.
+  * change debconf defaults for lirc-modules-source:
+    - drop lirc_gpio, it is affected by API changes in bttv and FTBS since
+      2.6.23.
+    - enable atiusb.
+    - enable bt829.
+    - enable cmdir.
+    - enable igorplugusb.
+    - enable imon.
+    - enable it87.
+    - enable mceusb/ mceusb2.
+    - keep lirc_parallel disabled, it is not SMP safe.
+    - enable sasem.
+    - enable streamzap.
+    - enable sir, keep the defaults at generic sir controller (other) port
+      0x2f8 and irq 3, which seems to be supported by a short poll among
+      notebook owners.
+    - enable serial, keep defaulting to generic (home-brewed) IR receivers,
+      change to ttyS0 (port 0x3f8, irq 4) as most concurrently sold systems
+      only ship one serial port.
+  * replace custom mknod usage by using makdev's newly added lirc support and
+    add a versioned dependency on a fixed makedev version instead. This
+    dependency can be relaxed to udev | makedev, once makedev (>= 2.3.1-88)
+    has been shipped in a stable release. Given that Breaks support isn't
+    usable until lenny+1, this conservative approach is the safer variant for
+    etch --> lenny upgrades (Closes: #393575, #477063).
+  * drop debian/lirc.config.in, which was added as a bandaid for #329897
+    alltogether, neither it nor setup-driver.sh are used anywhere on the end
+    user's system; this allows dropping the pre-dependency on dialog and
+    lirc.config.md5sum as well.
+  * add a sanity check to debian/rules' clean target to ensure that
+    liblirclient0's pkg-config file is up to date.
+  * add compatibility code for udev >= 0.117, avoid flag day changes or a hard
+    dependency on udev; inspired by Scott James Remnant <scott@ubuntu.com>
+    (Closes: #456325).
+  * restructure lirc-modules-source package to dump all module sources
+    directly into the toplevel directory (omit upstream's Makefiles from
+    module subdirectories) and replace custom toplevel Makefile with a simple
+    in-kernel style buildsystem. This fixes symbol versioning for the kernel
+    modules and, as a side effect, the clean target of the top-level Makefile
+    and doesn't allow empty port/ IRQ settings.
+    (Closes: #450521, #483089, #369076)
+  * add compatibility patch for kernels >= 2.6.26, based on upstream CVS.
+  * drop debian/lirc.modules, modutils is obsolete (kernel 2.4).
+  * make lirc-modules-source compatible with linux-modules-extra-2.6:
+    - use bzip2 to compress the source tarball.
+    - change path names to correspond with the package name.
+  * fix LIRC_IRQ redefinition.
+
+  [ Matthew Johnson ]
+  * Add pkg-config file (Closes: #421881)
+
+  [ Sven Mueller ]
+  * Add swedish translation (Closes: #483766)
+
+  [ Matthew Johnson ]
+  * Raise priority to medium since it fixes kernel-related bugs
+
+ -- Matthew Johnson <mjj29@debian.org>  Tue, 15 Jul 2008 18:56:26 +0100
+
+lirc (0.8.2-2) unstable; urgency=low
+
+  [ Sven Mueller ]
+  * Add some additional checks to the init script (Closes: #394663)
+  * Update lirc-modules-source README.Debian to refer to module-assistant
+    (Closes: #429249)
+  * New upstream closes: #409394,#432801,434569,#350318,#399135,#400494,#368075
+  * dpkg-reconfigure lirc-modules-source will now make
+    /etc/lirc/lirc-modules-source.conf world-readable. This should not be a
+    security risk, but allows building modules as a user via fakeroot. This
+    closes: #445324
+
+  [ Matthew Johnson ]
+  * New translations (Closes: #443470)
+    - cs (Closes: #451793)
+    - fr (Closes: #445587)
+    - fi (Closes: #445650)
+    - pt_BR (Closes: #445736)
+    - es (Closes: #459267,#463737)
+    - nb (Closes: #443470,#470104)
+    - ru (Closes: #445426)
+    - de (Closes: #445556,#446378)
+    - pt (Closes: #445653)
+    - cs (Closes: #451793)
+  * Add slh to uploaders, remove old developers.
+  * Refactor patches to use quilt and update dependencies
+  * Add Linux Input Layer remote config (Closes: #297290)
+
+  [ Stefan Lippers-Hollmann ]
+  * remove devfs support, it got removed in mainline linux for 2.6.18 so
+    neither etch nor lenny are affected.
+  * add LSB header to lirc initscript as suggested by Petter Reinholdtsen
+    <pere@hungry.com> (Closes: #460212).
+  * add LSB Description and Short-Description to initscript LSB stanza,
+    borrowed from Ubuntu's lirc packages by Mario Limonciello
+    <superm1@ubuntu.com>.
+  * apply patch from Václav Ovsík <vaclav.ovsik@i.cz> to fix Makefile
+    mangling for lirc-source, evaluating utsrelease.h instead of the no longer
+    existing version.h and recommend linux-image-$KVERS instead of the
+    obsolete kernel-image-$KVERS (Closes: #447172).
+  * drop no longer existing dpatch suffix from patch series and refresh
+    existing patches.
+  * add compatibility patch for kernels >= 2.6.24, based on upstream CVS
+    (Closes: #399135, #434569, #457858, #463388, #464777).
+  * fix lirc.conf template for pinsys remotes, shortly before lirc 0.8.2 the
+    keymapping got broken.
+  * remove versioned download location from debian/copyright, it's always
+    outdated and the base path will point to the download location just as
+    well.
+  * apply useful indention from Ubuntu to debian/rules.
+  * Recommend module-assistant | kernel-package for lirc-modules-source.
+  * add watch file pointing to lirc.org, not sourceforge.
+  * restore author information and short descriptions for debian/patches/*.
+  * add Basque translation "eu", thanks to Christian Perrier
+    <bubulle@debian.org> and Piarres Beobide <pi@beobide.net>
+    (Closes: #470363).
+  * fix debian/copyright to refer to "GPL v2 or later", not a single source
+    file seems to be licensed under the GPL v1.
+  * rewrite debian/modules-source/debian/rules from scratch and rely on common
+    kernel module handling based in module-assistant, this allows bumping the
+    standards version to 3.7.3 (Closes: #372815, #440514).
+  * add Homepage, Vcs-Svn and Vcs-Browser tags.
+  * modules-source/README.make is obsolete, as it only talks about kernel 2.2
+    and 2.4 specifics, while kernel 2.6 is covered by the other READMEs.
+  * drop bogus Recommends from lirc-modules-source, build-essentials are an
+    implicit requirement by definition.
+  * drop no longer valid statements from the module READMEs.
+  * no longer try to install etc/modutils/*, lenny will not support kernel
+    2.4.
+  * bump compat level to 5, which is supported by etch (backports), but lets
+    dh_install error out if wildcards expand to nothing.
+  * drop 03_extra_files, shipping private copies of bttv headers for random
+    kernels doesn't work.
+  * run debconf-updatepo, confirm that no strings get lost.
+  * remove informal_module_building(), while it may look convenient to the
+    user, the results were unpackaged modules of questionable quality that
+    cannot be removed on purge. module-assistant or make-kpkg are the
+    preferred way of module building (Closes: #404505).
+  * Update and partly rewrite the module source documentation to the new
+    packaging and explicitly mention the full source requirement for gio
+    (Closes: #429249).
+  * add patch based on upstream CVS to include the macmini driver in the
+    hw_list used for calculating the userspace daemon config options
+    (Closes: #448637).
+  * set doc-base section to "Help", which seems to be suited best for a
+    collection of pointers about how to work with the LIRC package.
+  * fix broken whatis headers in shipped manpages.
+
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sat, 15 Mar 2008 02:18:01 +0100
+
+lirc (0.8.2-1) experimental; urgency=low
+
+  * Initial release of new upstream
+
+ -- Sven Mueller <sven@debian.org>  Tue, 16 Oct 2007 18:28:57 +0200
+
+lirc (0.8.0-14) unstable; urgency=low
+
+  [ Christian Perrier ]
+  * Debconf templates and debian/control reviewed by the debian-l10n-
+    english team as part of the Smith review project. Closes: #443270, #443470
+    (the latter bug is about outdated translations)
+
+  [Debconf translation updates]
+
+  * Japanese. Closes: #444091
+  * Vietnamese. Closes: #444436
+  * Galician. Closes: #444752
+  * Russian. Closes: #445426
+  * German. Closes: #445556, #446378
+  * French. Closes: #445587
+  * Finnish. Closes: #445650
+  * Portuguese. Closes: #445653
+  * Brazilian Portuguese. Closes: #445736
+  * Czech. Closes: #445655
+
+  [ Sven Mueller ]
+  * Add compatibility patch for kernels >= 2.6.23 (closes: #446650)
+
+ -- Sven Mueller <sven@debian.org>  Tue, 16 Oct 2007 17:02:54 +0200
+
+lirc (0.8.0-13) unstable; urgency=low
+
+  [ Loic Minier ]
+  * Update 14_no_linux_config_h patch to also drop <linux/config.h> include
+    from lirc_atiusb/lirc_atiusb.c, lirc_bt829/lirc_bt829.c,
+    lirc_cmdir/lirc_cmdir.c, lirc_igorplugusb/lirc_igorplugusb.c,
+    lirc_imon/lirc_imon.c, lirc_it87/lirc_it87.c, lirc_mceusb/lirc_mceusb.c,
+    lirc_mceusb2/lirc_mceusb2.c, lirc_parallel/lirc_parallel.c,
+    lirc_sasem/lirc_sasem.c, lirc_serial/lirc_serial.c, lirc_sir/lirc_sir.c,
+    lirc_streamzap/lirc_streamzap.c; thanks Florent Rougon; see #400494 and
+    #436166.
+
+  [ Sven Mueller ]
+  * add patch to replace SLAB_ATOMIC usage with the more current equivalent
+    GFP_ATOMIC.
+  * incorporate update to debconf templates, thanks to Christian Perrier and
+    the english l10n team. (Closes: #443270)
+  * Update german translation
+  * Add option to start irexec in daemon mode from /etc/init.d/lirc (Closes:
+    #184245)
+  * Add myself to the Uploaders field
+  * Update galician (Closes: #444752), vietnamese (Closes: #444436) and
+    japanese (Closes: #444091) debconf translations.
+
+ -- Sven Mueller <sven@debian.org>  Wed,  3 Oct 2007 15:04:58 +0200
+
+lirc (0.8.0-12) unstable; urgency=medium
+
+  * Fix bashism in rules; thanks Martin F Krafft; closes: #437530.
+
+ -- Loic Minier <lool@dooz.org>  Mon, 13 Aug 2007 09:55:28 +0200
+
+lirc (0.8.0-11) unstable; urgency=low
+
+  * Update config.guess and .sub with autotools-dev's versions before running
+    configure.
+
+ -- Loic Minier <lool@dooz.org>  Sun, 12 Aug 2007 11:04:48 +0200
+
+lirc (0.8.0-10) unstable; urgency=low
+
+  * Add myself to uploaders for some QA work.
+  * Cleanup changelog.
+  * Wrap build-deps, deps, and uploaders.
+  * Use ${binary:Version} instead of ${Source-Version}.
+  * Cleanup rules.
+  * Merge diff from 0.8.0-9.3 NMU; thanks Steffen Joeris.
+  * Merge diff from 0.8.0-9.2 (and 0.8.0-9.1?!) NMUs; thanks
+    Christian Perrier.
+  * Merge 0.8.0-9.1 changelog entry into 0.8.0-9.2 as it seems there never was
+    a 0.8.0-9.1 upload.
+  * Update Vietnamese Debconf translation; thanks Clytie Siddall;
+    closes: #427007.
+  * Drop funny "set -e" from rules.
+  * Only pass --host to configure if DEB_HOST_GNU_TYPE and DEB_BUILD_GNU_TYPE
+    differ.
+  * Honor make clean errors.
+  * Add Russian Debconf translation; thanks Yuri Kozlov; closes: #432743.
+  * Check whether $START_LIRCMD and $START_LIRCD equals true instead of
+    checking whether it's non-empty as the init script sets these to "false"
+    in some cases; thanks Achim Lobbert; closes: #424912.
+  * New dpatch, 12_enodev_on_read, close device if read() returns ENODEV;
+    fixes infinite loop; thanks Alexander V. Inyukhin; closes: #430898.
+  * Drop -k flag to modprobe in init scripts; is undocumented and seems to be
+    a noop.
+  * New dpatch, 13_hurd_define_iotbase_u32, define _IOT__IOTBASE___u32 if
+    missing; fixes build failure on hurd; thanks Samuel Thibault;
+    closes: #436570.
+  * Do not build-dep on libusb-dev on hurd-i386; thanks Samuel Thibault;
+    closes: #436570.
+  * New dpatch, 14_no_linux_config_h, drops linux/config.h include which isn't
+    available anymore, but doesn't seem necessary either; parly fixes #436166,
+    it seems to also require bttv.h which went missing from linux-headers-*.
+
+ -- Loic Minier <lool@dooz.org>  Fri, 10 Aug 2007 15:11:20 +0200
+
+lirc (0.8.0-9.3) unstable; urgency=high
+
+  * Non-maintainer upload during BSP
+  * Fix unconditional use of debconf in postrm (Closes: #416930)
+
+ -- Steffen Joeris <white@debian.org>  Sat, 19 May 2007 22:24:22 +1000
+
+lirc (0.8.0-9.2) unstable; urgency=low
+
+  * Non-maintainer upload to fix pending l10n issues.
+  * Debconf translations:
+    - German. Closes: #399304
+    - Galician. Closes: #407277
+    - Swedish. Closes: #408289
+    - Spanish. Closes: #393864
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 17 Feb 2007 18:05:06 +0100
+
+lirc (0.8.0-9) unstable; urgency=low
+
+  * Rebuilding to fix and erroneous depend. (Closes: #393316, #393297, #393351)
+
+ -- Hector Garcia <hector@debian.org>  Mon, 16 Oct 2006 11:18:21 +0200
+
+lirc (0.8.0-8) unstable; urgency=low
+
+  [ Hector Garcia ]
+  * Added 09_lirc_drivers_2.6.18_compatibility patch by Thomas Creutz
+    (Closes: #387715)
+  * Fixed 03_extra_files to support 2.6.17 and 2.6.18. By Thomas Creutz
+    (Closes: #387715, #378395)
+  * Updated cs.po by Miroslav Jezbera. (Closes: #389248)
+  * Added patch to lirc_i2c from upstream CVS. By Jim Heck
+  * Added patch 11_cheklib_fix to remove extra depends.
+  * Updated po/es.po
+
+  [ Amaya Rodrigo Sastre ]
+  * Use debian/compat instead of DH_COMPAT=4 in debian/rules. Thanks Guillem
+    Jover for pointing this out.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Tue, 10 Oct 2006 10:31:48 +0200
+
+lirc (0.8.0-7) unstable; urgency=low
+
+  * Update french debconf template (Closes: #384619)
+  * Update logcheck file (Closes: #385025)
+
+ -- Julien Danjou <acid@debian.org>  Mon, 18 Sep 2006 14:00:57 +0200
+
+lirc (0.8.0-6) unstable; urgency=low
+
+  [ Amaya Rodrigo Sastre ]
+  * Added debconf templates translation update:
+    - French (Closes: #370479).
+    - Portuguese (Closes: #373129).
+    - Dutch (Closes: #373828).
+    - Japanese (Closes: #379937).
+  * Use DH_COMPAT=4 in debian/rules. Got rid of debian/compat.
+  * Added debconf-updatepo to de debian/rules clean target (Closes: 372911).
+
+  [ Hector Garcia ]
+  * Updated debian/patches/04_man_pages.dpatch
+
+ -- Hector Garcia <hector@debian.org>  Fri, 18 Aug 2006 22:23:46 +0200
+
+lirc (0.8.0-5) unstable; urgency=low
+
+  [ Aurelien Jarno ]
+  * debian/modules-source/debian/rules: simplify the call to
+    dpkg-architecture.
+  * debian/modules-source/debian/rules: take account of old dpkg-architecture
+    output.  (Closes: #371050).
+  * debian/control: Recommends dpkg-dev (>= 1.13). Drop the recommends on
+    dpkg (>= 1.13).
+
+  [ Julien Danjou ]
+  * Don't create udev queue in init script (Closes: #370745)
+
+ -- Julien Danjou <acid@debian.org>  Sun, 11 Jun 2006 14:18:07 +0200
+
+lirc (0.8.0-4) unstable; urgency=low
+
+  * Wait for devices to be up using udevsettle (Closes: #362217)
+  * Updated dutch po-debconf translation (Closes: #370218)
+  * Fix lintian warning about lirc and lirc-modules-source templates
+
+ -- Julien Danjou <acid@debian.org>  Sun,  4 Jun 2006 16:44:13 +0200
+
+lirc (0.8.0-3) unstable; urgency=low
+
+  [ Cyril Lacoux ]
+  * Added 08_min_code_repeat.dpatch, to allow proper interpretation of repeat
+    signals for Creative RM-900 (Closes: #367521).
+
+  [ Aurelien Jarno ]
+  * Updated German debconf templates translation. Thanks to Franz Pletz
+   (Closes: #367874).
+
+ -- Julien Danjou <acid@debian.org>  Tue, 23 May 2006 11:01:08 +0200
+
+lirc (0.8.0-2) unstable; urgency=low
+
+  [ Julien Danjou ]
+  * Include etc/lirc in lirc-modules-source.dirs (Closes: #342568)
+  * Fix compilation for non-root users (Closes: #297170)
+
+  [ Aurelien Jarno ]
+  * Updated German debconf templates translation. Thanks to Franz Pletz
+    (Closes: #367274).
+  * Fixed typos in debconf templates (Closes: #312498).
+
+ -- Julien Danjou <acid@debian.org>  Tue, 16 May 2006 12:45:59 +0200
+
+lirc (0.8.0-1) experimental; urgency=low
+
+  [ Hector Garcia ]
+  * New upstream release. (Closes: #349641, #352573)
+    - Added support up to for 2.6.15 kernels.
+    - dvico driver is enabled by default (Closes: #348753)
+  * Removed 02_aclocal.dpatch, not needed anymore.
+  * Ported 04_man_pages to this release.
+  * Ported 01_irxevent.dpatch to this release.
+  * Changed with-drivers to userspace to build only the userspace drivers
+    and keep only the kernel-space on the modules package.
+  * Added 02_Makefile.in.dpatch, to prevent autotools from getting run on
+    every build.
+  * Recompile with driver=userspace (Closes: #352767, #351723, #348390)
+
+  [ Julien Danjou ]
+  * Add lirc_dev dependency to it87
+  * Fix build-depends on libsvga1-dev rather than svgalibg1-dev
+    (Closes: #350791)
+  * Add lircrcd
+  * Add a patch to allow some drivers to compile with linux 2.6.16
+  * Add patches from Cyril Lacoux <clacoux@easter-eggs.com>
+    - Compile all modules
+    - Support 2 flavors for it87 (standard/digimatrix)
+    - Improve debconf template
+    - module-assistant works fine
+    - Add missing files for gpio
+
+  [ Aurelien Jarno ]
+  * Added Swedish debconf templates translation. Thanks to Daniel Nylander
+    (Closes: #339544)
+  * Added Dutch debconf templates translation. Thanks to Kurt De Bree
+    (Closes: #364033)
+  * Enable lirc-svga on amd64.
+  * Added support for non-Linux architectures:
+    - Don't build-depends on libasound2-dev on hurd-i386, kfreebsd-i386 and
+      kfreebsd-amd64.
+    - Added 05_non_linux.dpatch, to make lirc buildable on non-Linux
+      architectures.
+    - Added 06_libtool_kfreebsd.dpatch, to update libtool for GNU/kFreeBSD.
+  * Changed lirc-modules-source from Arch: any to Arch: all.
+
+ -- Julien Danjou <acid@debian.org>  Wed, 10 May 2006 13:40:57 +0200
+
+lirc (0.7.2-2) unstable; urgency=low
+
+  * Ready for unstable.
+
+ -- Hector Garcia <hector@debian.org>  Sun, 15 Jan 2006 03:58:59 +0100
+
+lirc (0.7.2-1) experimental; urgency=low
+
+  * New upstream release. (Closes: #310133)
+    - support for KeySym and KeyCode in key definition
+    - updated udev support for 2.6.13 kernels
+    - added support for new version of Windows Media Center Remotes
+    - Use all 8 bytes of IR code
+    - Rewritten Sasem driver
+    - added support for Asus Digimatrix
+    - added support for Remotec Multimedia PC Remote BW6130
+    - Added support for iMON-PAD and iMON-RSC
+    - Man page for lircd doesn't talk about the wrond -D flag
+      (Closes: #301688)
+  * Change build-depend to kernel-source.
+  * Change configure option --with-drivers to none on debian/rules.
+  * Separated build and configure stages.
+  * Deleted useless patch 01_configure-duplicates.dpatch
+  * Deleted obsolete patch 02_forgotten-files.dpatch
+  * Rewrite of 03_irxevent.dpatch to new version and renamed to 01_...
+  * Rename 04_aclocal.dpatch to 02_aclocal.dpatch
+  * Changed mv to cp on modules-source/Makefile
+  * Updated po/es.po
+  * Runned debconf-updatepo. (Closes: #329200)
+  * Updated cs.po, da.po, es.po, de.po (not all, only fuzzy), fr.po, ja.po and
+    vi.po
+  * Created 03_extra_files.dpatch so module compilation only depends on
+    kernel-headers. (Only 2.6.12 currently since is the only one for 2.6.x in
+    debian that is supported upstream. Custom kernels should still use
+    kernel-source).
+  * Deleted build-depend on kernel-source.
+  * Added depend on ucf.
+  * Added myself to uploaders and cleaned control file a bit.
+  * Make dpkg-reconfigure work even when no /etc/lirc/lirc-modules.conf found
+    (Closes: #342027)
+  * Added support for udev. Applied patch from dann frazier. (Closes: #303494)
+  * Added patch 04_man_pages.dpatch to fix hyphen-used-as-minus-sign problem.
+    I should send this upstream soon.
+  * Cleaned a few lintian warnings on maintainer scripts.
+
+ -- Hector Garcia <hector@debian.org>  Thu,  5 Jan 2006 11:13:54 +0100
+
+lirc (0.7.1pre2-11) unstable; urgency=low
+
+  * This upload sponsored by The Spanish Public Administration Department.
+  * Debian Policy 10.7.3. ("[Conffiles] must not be modified by the maintainer
+    scripts during installation (or at any other time). Apply wonderful patch
+    from Nicolas Boullis . (Closes #334170).
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Mon, 17 Oct 2005 16:30:37 +0200
+
+lirc (0.7.1pre2-10) unstable; urgency=low
+
+  * The "Follow the white rabbit" Release.
+  * Temporarily include upstream's complete setup-driver.sh into
+    debian/lirc.config.in so as to temporarily fix this issue. Another
+    temporary workaround is to install lirc-modules-source. See #329897.
+    I suck.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Mon, 10 Oct 2005 17:39:02 +0200
+
+lirc (0.7.1pre2-9) unstable; urgency=low
+
+  * Changed priority from optional to extra, learn to read, now change
+  liblircclient's priority to optional. Hopefully end this absurd loop.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Mon, 19 Sep 2005 18:19:06 +0200
+
+lirc (0.7.1pre2-8) unstable; urgency=low
+
+  * Changed priority from extra to optional, to get rid of override
+    disparities.
+  * Apply patch from zapdvb to irxevent, that also contains patch from
+    #326703, making lirc more stable when used with cpu intensive applications
+    like mplayer (Closes: #328697).
+  * Apply japanese debconf translation (Closes: #302487).
+  * Fixed fuzzy string in debconf .po files (Closes: #302430). Also updated
+    es.po.
+  * Corrected lirc-modules-source.conf so that it documents the right way to
+    separate the list of drivers (should be space separated, not comma
+    separated). (Closes: #312102).
+  * libusb-dev is already listed in Build-Depends, so this bug should have
+    been already fixed (Closes: #317158).
+  * Find the kernel source by testing for $KSRC/include/linux/version.h.
+    (Closes: #301590).
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 18 Sep 2005 11:55:30 +0200
+
+lirc (0.7.1pre2-7) unstable; urgency=low
+
+  * The "Kicked out from the MIA Team, by Debconf5 and RL meetings" Release.
+  * Acknowledge bugs closed by previous NMU. Thanks Blars!
+    (Closes: #315579, #318268, #312497, #301639, #302141).
+  * Applied patch from Agustin Martin <agustin.martin@hispalinux.es>, fixing:
+    - Get rid of unknown symbols when inserting lirc_sir.ko
+    - Build when two drivers requiring lirc_dev are selected
+    - Build the atiusb driver properly
+    (Closes: #303663, #304609, #300989).
+  * Apply patch supplied by Juergen Pfennig, making irxevent send keys to the
+    right application. (Closes: #326703).
+  * Apply patch from Robert Bihlmeyer <robbe@orcus.priv.at> to partially take
+    care of #303078, while a more elegant solution is found.
+  * Apply patch from Alban <browaeys.alban@wanadoo.fr> to correct spurious
+    warning with aclocal >= 1.8.  (Closes: #305291).
+  * And last, but not least, make litian happy:
+    - Get rid of some bashisms with help from Guillem Jover
+    - Avoid deprecated use of chown (ie. s/root.root/root:root/).
+  * Special thanks to J. Carlos Garcia Sogo for the quick tutorial on dpatch.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 17 Sep 2005 20:47:15 +0200
+
+lirc (0.7.1pre2-6.1) unstable; urgency=low
+
+  * 0 day NMU for RC bug durring bug squishing party
+  * remove unportable -v option from md5sum command in debian/rules
+    (only one of the two md5sum programs in debian has it)
+    (closes: #315579)
+  * standards version 3.6.2 (no changes)
+  * fix lirc-modules-source for dpkg 1.13, add versioned dpkg dependancy
+    (closes: #318268)
+  * Vietnamese debconf translation (closes: #312497)
+  * add build-dependency on libxt-dev (closes: #301639, #302141)
+
+ -- Blars Blarson <blarson@blars.org>  Sat,  3 Sep 2005 00:12:27 +0000
+
+lirc (0.7.1pre2-6) unstable; urgency=low
+
+  * back to priority optional. I am really confused now :)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Mon, 28 Mar 2005 23:10:45 +0200
+
+lirc (0.7.1pre2-5) unstable; urgency=low
+
+  * Now really close (Closes: #301570), instead of closing 301589 twice, now
+    instead of looking for Rules.make or Makefile, we test for
+    $KSRC/include/linux/version.h. Also (Closes: #199869).
+  * Leave debian/liblircclient-dev.install alone (Closes: #301723).
+  * Add french debconf template (Closes: #301825).
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 27 Mar 2005 23:12:16 +0200
+
+lirc (0.7.1pre2-4) unstable; urgency=low
+
+  * Remove liblirc_client.so.0.0.0 from debian/liblircclient-dev.install
+    (Closes: #301589).
+  * Do not look for Rules.make while building lirc-modules, as it is no longer
+    shipped with kernels above 2.6.1x (Closes: #301589).
+  * Changed priority optional from extra.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 27 Mar 2005 01:45:14 +0100
+
+lirc (0.7.1pre2-3) unstable; urgency=low
+
+  * The "I love to do some lirc housekeeping now that we're really going to
+    release Sarge" Release.
+  * Make /etc/init.d/lirc point to more useful doc regarding howto configure
+    lircd (Closes: #239196).
+  * Fix makefile for lirc-modules-source so that ati_usb is properly built.
+    Thanks to James Stark for the patch (Closes: #300989).
+  * lirc 0.7.1 is now in testing and does build with 2.6 (Closes: #300587).
+  * Fixed installatation tutorial typo mistake (Closes: #299647).
+  * Lirc has been logging to syslog properly identifying itself probably for
+    some time now (Closes: #164536).
+  * Build depend on libusb-dev so that the userspace driver for ATI USB
+    remotes (amongst others) is supported (Closes: #294248).
+  * If DEVICE is set to /dev/lirc and devfs is in use /dev/lirc/0 will be
+    automatically used instead (Closes: #197306).
+  * s/auido/audio/g in debian/lirc.config, ChangeLog, setup.data and setup.sh.
+  * Maybe (Closes: #290903) in debian/lirc.config.
+  * Fixed manpage-section-mismatch in doc/man/lircd.8 and doc/man/lircmd.8.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Fri, 25 Mar 2005 23:48:33 +0100
+
+lirc (0.7.1pre2-2) unstable; urgency=low
+
+  * Applied patch from Thomas Schmidt, thanks!. (Closes: #294720).
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 12 Mar 2005 00:01:46 +0100
+
+lirc (0.7.1pre2-1) unstable; urgency=low
+
+  * New upstream release (Closes: #294174).
+  * s/serial_CFLAGS/SERIAL_CFLAGS/a in Makefile (Closes: #294689).
+  * Added support for ati_usb modules (Closes: #297243).
+  * GNU config automated update: config.sub (20020307 to 20041130),
+    config.guess (20020320 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Thu, 10 Mar 2005 00:27:20 +0100
+
+lirc (0.7.1pre1-2) unstable; urgency=low
+
+  * The "And when it rains, it poures" Release.
+  * Fixed the nasty "setup-driver.sh not found" bug, again. This fix also
+    should fix the debconf freeze (Closes: #269833, #292637, #293091)
+    Thanks to Chris Boyle <cmb@debian.org> for spotting the fix.
+  * Included patch from "Eloy A. Paris" <peloy@debian.org> (Closes: #292043)
+    so that lirc_dev gets shipped.
+  * Partially included  patch for Makefile from Yann Rouillard
+    <yann@pleiades.fr.eu.org> (Closes: #246112, #287328, ) so that correct
+    modules and symbols get installed for 2.6.x kernels.
+  * Improved paths in README.Debian (Closes: #218888).
+  * Suggest just kernel-source and not headers (Closes: #250570).
+  * It now builds with 2.6 kernels (Closes: #221023). I'm terrible with lirc
+    bugs housekeeping :)
+  * Newewst upstream versions fix i2c build problems (Closes: #256986). More
+    housekeeping here.
+  * GNU config automated update: config.sub (20020307 to 20041130),
+    config.guess (20020320 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Tue, 25 Jan 2005 22:29:15 +0100
+
+lirc (0.7.1pre1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 23 Jan 2005 02:51:59 +0100
+
+lirc (0.7.0.1-2) unstable; urgency=low
+
+  * The "I can't believe nobody reported a RC bug yet!" release.
+  * Changed section from optional to extra to make installer@ftp-master happy.
+  * Change short decriptions in order to comply with new lintian check.
+  * GNU config automated update: config.sub (20020307 to 20041130),
+    config.guess (20020320 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 23 Jan 2005 02:51:48 +0100
+
+lirc (0.7.0.1-1) unstable; urgency=low
+
+  * The "let's try to fix the versioning mistake" release. I mistakenly took
+    0.7.0pre8 as later than 0.7.0, so this is actually upstream latest
+    tarball, 0.7.0, with a made up version number.
+  * Not try to build /dev/lirc during build (Closes: #287559). Thanks to Lars
+    Wirzenius <liw@iki.fi>.
+  * Include setup-driver.sh (Closes: #287370). Thanks to Lars Wirzenius
+    <liw@iki.fi>.
+  * This upstream version really closes (Closes: #236573, #255383, #280548).
+  * The Danish debconf po is included! (Closes: #276699).
+  * GNU config automated update: config.sub (20020307 to 20041130),
+    config.guess (20020320 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 15 Jan 2005 14:41:42 +0100
+
+lirc (0.7.0pre8-1) unstable; urgency=low
+
+  * New upstream release.
+  * GNU config automated update: config.sub (20020307 to 20041130),
+    config.guess (20020320 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sun, 26 Dec 2004 07:48:16 +0100
+
+lirc (0.7.0-1) unstable; urgency=low
+
+  * New upstream release (Closes: #236573, #280548, #236573).
+  * Now builds with 2.6.x (Closes: #255383, #221023).
+  * GNU config automated update: config.sub (20020307 to 20040624),
+    config.guess (20020320 to 20040813)
+  * Added Danish po-debconf translation for lirc (Closes: #276699).
+  * Removed Ian Murdock from Uploaders.
+  * GNU config automated update: config.sub (20040624 to 20041130),
+    config.guess (20040813 to 20041112)
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Tue, 28 Dec 2004 04:44:30 +0100
+
+lirc (0.6.6-13) unstable; urgency=low
+
+  * The "Happy birthday Ranty" release (Sept 24th).
+  * The "Happy birthday Amaya" release (Sept 25th).
+  * The "Pierre, we are so glad you are back home and feeling better" release.
+  * Fixed path in README.Debian (Closes: #218888)
+  * Fix debconf prompt freeze (Closes: #269833)
+  * debian/modules-source/README: s/WARMING/WARNING/
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Sat, 25 Sep 2004 19:57:49 +0200
+
+lirc (0.6.6-12) unstable; urgency=low
+
+  * The "Ranty is missed everyday" release.
+    Happy hacking in Heaven, our friend+brother (Closes: #252156).
+  * 4 new maintainers (Closes: #248767).
+  * Added Pierre Machard, Riku Voipio and Ian Murdock to the Uploaders field.
+  * GNU config automated update: config.sub (20040312 to 20040624),
+    config.guess (20040312 to 20040813)
+  * Get rid of config.log and config.status in the clean target.
+  * Included French Debconf Translation (Closes: #262379).
+  * Included Czech Debconf Translation (Closes: #261285).
+  * Added support for CFLAGS in the build target.
+
+ -- Amaya Rodrigo Sastre <amaya@debian.org>  Fri, 27 Aug 2004 20:21:00 +0200
+
+lirc (0.6.6-11) unstable; urgency=low
+
+  * Apply patch from : Goswin von Brederlow (closes: #259978)
+    - lirc-svga is only build for i386
+
+ -- Pierre Machard <pmachard@debian.org>  Sun, 18 Jul 2004 01:06:08 +0200
+
+lirc (0.6.6-10) unstable; urgency=low
+
+  * Add a test to know if smode2 is available for the target arch
+    (thanks to mrvn)
+  * Change priority to optional (closes: #236481)
+  * Swith to po-debconf format (closes: #232283)
+
+ -- Pierre Machard <pmachard@debian.org>  Sat, 17 Jul 2004 19:10:45 +0200
+
+lirc (0.6.6-9) unstable; urgency=low
+
+  * QA Upload
+  * Add depends on svgalib only for i386 to fix building on arch !i386
+
+ -- Pierre Machard <pmachard@debian.org>  Sat, 17 Jul 2004 16:53:55 +0200
+
+lirc (0.6.6-8) unstable; urgency=low
+
+  * QA Upload
+  * Set Maintainer to packages@qa.debian.org
+  * Fix svgalib Build-Deps. (Closes: #243195)
+  * GNU config automated update: config.sub (20031007 to 20040312),
+    config.guess (20031007 to 20040312)
+
+ -- Pierre Machard <pmachard@debian.org>  Sat, 17 Jul 2004 14:52:28 +0200
+
+lirc (0.6.6-7) unstable; urgency=low
+
+  * Set Architecture: properly for lirc-modules-KVERS packages. (Closes:#218881)
+    courtesy of Helge Kreutzmann <kreutzm@itp.uni-hannover.de>
+  * GNU config automated update: config.sub (20030717 to 20031007),
+    config.guess (20030702 to 20031007)
+  * Build-Depend on debhelper >= 4.0.18 for dh_install's --list-missing.
+    (Closes:#187712)
+  * Fix "quick walkthrough" instructions it is "debian/rules" not "make".
+    (Closes:#202622)
+  * Recommend xfonts-75dpi and copy from the gimp's package description the
+    explanation on why it is only recommended. (Closes:#215168)
+  * Use ACTISYS_ACT200L instead of ACTISYS_200L to match driver sources.
+    (Closes:#204724)
+  * Remove "Depends: ${shlibs:Depends}, ${misc:Depends}" from binary module
+    packages as it may cause an empty Depends: line which then confuses apt.
+    (Closes:#210477)
+  * Fix spelling in hardware.conf. (Closes:#218887)
+  * Add a comment about /dev/lirc/0 to hardware.conf. (Improves:#197306)
+  * Make sure this changelog is UTF-8.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sat, 22 Nov 2003 22:07:51 +0100
+
+lirc (0.6.6-6) unstable; urgency=low
+
+  * Changed liblircclient-dev section to libdevel.
+  * Added "Source: lirc" to modules-source's debian/control. (Closes: #213819)
+  * GNU config automated update: config.sub (20030103 to 20030717),
+    config.guess (20030110 to 20030702)
+
+ -- Manuel Estrada <root@ranty.pantax.net>  Thu,  2 Oct 2003 23:45:36 +0200
+
+lirc (0.6.6-5) unstable; urgency=low
+
+  * Use dpatch.
+  * Use ACTISYS_200L instead of ACT200L to properly configure SIR kernel
+    module. (closes: Bug#182647)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sat,  8 Mar 2003 20:15:56 +0100
+
+lirc (0.6.6-4) unstable; urgency=low
+
+  * Add kdist_configure target to lirc-modules-source. (closes: Bug#169364)
+  * GNU config automated update: config.sub (20020905 to 20021130),
+    config.guess (20020903 to 20021130)
+  * use DH_COMPAT 4
+  * GNU config automated update: config.sub (20021130 to 20030103),
+    config.guess (20021130 to 20030110)
+  * Load kernel modules modules with autoclean (closes: Bug#176421)
+  * Move configuration files for the different remotes from share/doc/lirc/ to
+    share/lirc/.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Wed, 22 Jan 2003 21:20:32 +0100
+
+lirc (0.6.6-3) unstable; urgency=low
+
+  * Include logcheck support as suggested by Blars Blarson <blarson@blars.org>
+    (closes: Bug#164510)
+  * GNU config automated update: config.sub (20020703 to 20020905),
+    config.guess (20020709 to 20020903)
+  * 'sed' was segfaulting on 'configure', use 'sort -u' instead
+    (closes: Bug#166264).
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Fri, 25 Oct 2002 21:44:45 +0200
+
+lirc (0.6.6-2) unstable; urgency=low
+
+  * Fixed modutils file setup on postinst (closes: Bug#164200).
+    Thanks to "Aaron M. Ucko" <ucko@debian.org> for diagnostic and fix.
+  * Temporarly renamed 'rc' into 'irsend' to prevent name clash with 'rc'
+    package, if upstream uses something different, I'll follow.
+    (closes: Bug#164196).
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Fri, 11 Oct 2002 11:16:50 +0200
+
+lirc (0.6.6-1) unstable; urgency=low
+
+  * New upstream release.
+    * added rc tool for sending IR commands (previously included in xrc package)
+    * bugfix for Winfast TV2000 card
+    * added SIR support for Actisys Act200L dongle (Karl Bongers)
+    * added UDP network driver for use with the IPC@Chip (Jim Paris)
+    * added support for hardware connected to soundcard input (Pavel Machek)
+    * added support for Tekram M230 Mach64 (Froenchenko Leonid)
+  * add debhelper dependency to lirc-modules-source (closes: Bug#163974).
+  * GNU config automated update: config.sub (20020621 to 20020703),
+    config.guess (20020529 to 20020709)
+  * Improved sanity checking when building kernel modules (closes: Bug#153491).
+  * Fixed a typo that prevented "automatic" configuration of lirc_parallel
+    driver.
+  * Use /etc/modutils/lirc to set kernel module parameters (closes: Bug#154476).
+  * Add a note about the need of 'setserial /dev/ttySX uart none' when using
+    lirc_serial or lirc_sir to README.Debian.
+  * lirc.config is now "POSIX Shell" compatible, use /bin/sh instead of
+    /bin/bash.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Thu, 10 Oct 2002 18:53:57 +0200
+
+lirc (0.6.5-6) unstable; urgency=low
+
+  * Took the upstream fix for the compilation problem with 2.4.19-rc1 kernels.
+    (closes: Bug#152982)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Thu,  8 Aug 2002 13:58:48 +0200
+
+lirc (0.6.5-5) unstable; urgency=low
+
+  * Patch by Andy Mortimer <andy.mortimer@zetnet.co.uk> to include network
+    only support. (closes: Bug#151414)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Tue,  9 Jul 2002 17:03:47 +0200
+
+lirc (0.6.5-4) unstable; urgency=low
+
+  * Applied a patch from CVS to remove the restricted licence on files
+    generated with irrecord. (closes: Bug#152074)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sun,  7 Jul 2002 02:12:57 +0200
+
+lirc (0.6.5-3) unstable; urgency=low
+
+  * Hacked around a problem with kernel 2.4.19-rc1.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Thu,  4 Jul 2002 23:36:10 +0200
+
+lirc (0.6.5-2) unstable; urgency=low
+
+  * Fixed a typo in README.Debian
+  * Tell how to get a list of supported drivers in /etc/lirc/hardware.conf
+    (closes: Bug#141318).
+  * Changed section to "utils". (closes: Bug#145100)
+  * GNU config automated update: config.sub (20020102 to 20020307),
+    config.guess (20020102 to 20020320)
+  * GNU config automated update: config.sub (20020307 to 20020621),
+    config.guess (20020320 to 20020529)
+
+ -- Manuel Estrada <root@ranty.ddts.net>  Thu,  4 Jul 2002 21:50:25 +0200
+
+lirc (0.6.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Updated debian/rules based on /usr/share/doc/autotools-dev/README.Debian.gz
+        + Use DEB_HOST_GNU_TYPE and DEB_BUILD_GNU_TYPE
+        + Update config.{sub,guess} automatically
+        + touch every single file in 'clean' to prevent timestamp skews
+  * GNU config automated update: config.sub (20011130 to 20020102),
+    config.guess (20011126 to 20020102)
+  * Use syslog and offer to remove /var/log/lircd (closes: Bug#131774)
+  * Integrate it87 kernel driver with the packing.
+        + updated debian/modules-source/{Makefile,README.make},
+          lirc-modules-source.templates and lirc-modules-source.config
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Fri,  1 Feb 2002 21:04:49 +0100
+
+lirc (0.6.4-10) unstable; urgency=high
+
+  * The urgency is because:
+        + 0.6.4-9: may be uninstalable.
+        + reduces user frustration on module building by giving a verbose
+          error message.
+        + Complies with policy by not restoring deleted conffiles on the users
+          back.
+        + Secures device permisions.
+        + There is no new feature.
+  * /etc/lirc/lircmd.conf may not be there (closes: Bug#126279).
+  * Don't create /etc/lirc/* files unless they are there, they should be moved
+    from /etc/ or the user chooses to reconfigure the package.
+  * Add MODULE_LICENSE to kernel modules, patch by Ingo Saitz <ingo@debian.org>
+    This was already fixed upstream, but oh well, lets not wait to the next
+    release. (closes: Bug#128074)
+  * Cry out if IRQ, PORT or TIMER are not set when compiling kernel modules.
+    (closes: Bug#108131)
+  * Tell devfsd to create /dev/lirc/0 unconditionaly. (works around: #128072)
+    The proper fix should come soon from upstream.
+  * Changed permisions of kernel devices from "root.video 660" to
+    "root.root 660" since only lircd should use them and it runs as root.
+        By writting to this devices you may confuse kernel code and that kind
+        of thing should be reserved to root. If someone feels that read-only
+        access should be allowed to to other users or groups go ahead and file
+        a bug.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sun, 13 Jan 2002 20:27:00 +0100
+
+lirc (0.6.4-9) unstable; urgency=low
+
+  * Added IntelliMouse support to lircmd. (closes: Bug#122300)
+  * Fixed html comments on the documentation which prevented some text from
+    showing up in a browser, so if you were looking for something and it
+    wasn't there go back and make sure it is still not there.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sat, 15 Dec 2001 20:04:48 +0100
+
+lirc (0.6.4-8) unstable; urgency=low
+
+  * Took X dependent parts and svgalib parts to their own packages, and have
+    lirc Suggest them. (closes: Bug#121543)
+  * ispelled README.Debian.
+  * Applied patch to handle epochs properly on lirc-modules-source by
+    Dwayne C. Litzenberger" <dlitz@dlitz.net> (closes: Bug#123019).
+  * Enabled Irman support (closes: Bug#103951).
+        I don't have an Irman and don't realy know how the hell it works, so
+        if there is any problem please report and I will try to fix it.
+  * Updated config.sub and config.guess from ftp://ftp.gnu.org/pub/gnu/config/
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Mon, 10 Dec 2001 23:46:29 +0100
+
+lirc (0.6.4-7) unstable; urgency=low
+
+  * I forgot to protect a couple of db_input's with "|| true".
+    (closes: Bug#121006)
+  * Make sure lirc-modules-source/kernel-source-not-found gets shown when
+    needed.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sun, 25 Nov 2001 03:32:58 +0100
+
+lirc (0.6.4-6) unstable; urgency=low
+
+  * Build-dep on svgalib-dummyg1[!i386] and svgalibg1-dev [i386] so it can
+    build on architectures where svgalib is not available.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Wed, 21 Nov 2001 13:17:22 +0100
+
+lirc (0.6.4-5) unstable; urgency=low
+
+  * call db_stop in lirc.postrm.
+  * modified lirc-modules-source.postinst a bit hopefully to make it
+    more portable, infact it now works with zsh.
+  * Updated README.Debian on regards to irman2lirc.
+  * Updated manpages and added manpages for all binaries (closes: Bug#85217).
+  * Build smode2 which makes lirc depend on svgalibg1. Please file a wishlist
+    bug suggesting an alternative if that is inconvenient.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Sun,  4 Nov 2001 20:39:50 +0100
+
+lirc (0.6.4-4) unstable; urgency=low
+
+  * lirc was not building on powerpc because of the time difference with
+    voltaire.debian.org. I was 'touch'ing configure.in to prevent rebuilding
+    too much stuff and the time difference broke that. Now I am a bit more
+    aggressive with the time change.
+  * Use forkpty from libc, so I don't have to worry about devfs or devpts.
+    closes: #115870 or at least makes it a libc problem :)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Mon, 29 Oct 2001 15:40:23 +0100
+
+lirc (0.6.4-3) unstable; urgency=low
+
+  * Updated config.sub and config.guess from ftp://ftp.gnu.org/pub/gnu/config/
+    so lirc may build on more architectures (closes: #115964).
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Wed, 17 Oct 2001 16:19:56 +0200
+
+lirc (0.6.4-2) unstable; urgency=low
+
+  * Fixed problem with not existing configure.in.stamp (closes: #114494)
+  * Put lirc-modules-source debs in $(KSRC)/.. as suggested by
+    Christian Ohm <chr.ohm@gmx.net>
+  * Depend on debconf (>= 0.5.00) to use seen flag.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Mon, 15 Oct 2001 19:29:53 +0200
+
+lirc (0.6.4-1) unstable; urgency=low
+
+  * Sorry for those 2 months of inactivity, I just came back from Colombia
+    where I didn't have a SID system to work on.
+  * New upstream release (closes: #112549)
+  * Call update-devfsd on postrm when purging. (closes: #104446)
+  * Change daemons/Makefile.in insted of daemons/Makefile.am to prevent
+    creating of devices nodes. This way we don't have to run automake and we
+    don't need to Build-depend on automake and libtool.
+  * Properly use MOD_DIR on lirc-modules-source (closes: #105784).
+  * Check for devfs device nodes after loading modules to make sure that they
+    are there (closes: #114284)
+  * Updated lirc-modules-source/do-build description, it should be more
+    readable now (closes: #107765)
+  * Added kdist_clean target to lirc-modules-source debian/rules.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Thu,  4 Oct 2001 14:35:33 +0200
+
+lirc (0.6.3-3) unstable; urgency=low
+
+  * include doc/irxevent.keys as it is referenced from within the
+    documentation.
+  * Mising variables will be restored in /etc/lirc/hardware.conf.
+  * Installation won't fail if a conffile is missing (closes: #103326)
+  * Maintainer script cleanups, removed bashisms but some shell script
+    extracted from upstream needs bash :(
+  * Don't manually call ldconfig on liblircclient0 postinst, debhelper does it
+    already.
+  * Make sure that debian/rules is executable on lirc-modules-source package.
+    (closes: #103607)
+  * Build lirc-modules-x.x.x.deb in MODDIR as set by make-kpkg and by default
+    on ".." (closes: #103797)
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Wed,  4 Jul 2001 13:10:14 +0200
+
+lirc (0.6.3-2) unstable; urgency=low
+
+  * Kernel module building cleanups: it now works for 2.2 kernels, but
+    keep in mind that not all modules support all kernels.
+  * Debconf German translation thanks to Sebastian Feltel <sebastian@feltel.de>
+    (closes: #101171)
+  * Parallel port kernel module now compiles on 2.4 kernels thanks to
+    Santiago Garcia Mantinan <manty@debian.org>
+  * Don't unpack the source into /usr/src/modules directly; instead,
+    build a tarball in /usr/src/lirc-modules.tar.gz
+  * lirc-modules-source is now a kernel-package compliant modules package.
+  * Kernel modules configuration is automated with debconf.
+  * lirc-modules-source:Recommends: make, dpkg-dev, c-compiler, kernel-package
+  * lirc-modules-source:Suggests: kernel-source | kernel-headers
+  * Extracted upstream configuration scripts and integrated them with debconf.
+  * If there is not a valid configuration try to get it from the previous
+    location or from upstream sample files. (closes: #102258)
+  * Added support for devfsd.
+  * Debconf Spanish translation thanks to
+    Carlos Valdivia Yagüe <valyag@teleline.es> (closes: #102158)
+  * init.d script tries to load appropriate kernel modules.
+  * lirc-modules-source: Added descriptions of ANIMAX, IRDEO and TEKRAM.
+  * Loading kernel modules from init.d script is now optional
+       (See /etc/lirc/hardware.conf )
+  * init.d script cryes out loud and refuses to launch daemons if it tries to
+    load kernel modules and they are not there.
+  * Resurrected automatic informal module building.
+  * Register html documentation with doc-base.
+  * Updated README.Debian, lirc-modules-source.README.Debian
+    modules-source/README and modules-source/README.make to reflect latest
+    changes.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Wed, 27 Jun 2001 05:43:29 +0200
+
+lirc (0.6.3-1) unstable; urgency=low
+
+  * New Maintainer.
+  * New upstream release. (closes: #71643, #90129, #90130, #99405, #94686,
+    #97373, #73023, #85214, #90258)
+  * /etc/rc?.d/S??lirc priority is now 19 so it starts before gpm
+    and creates /dev/lircm for devfs users. (closes: #76958)
+  * Pass the kernel version correctly to configure. (closes: #85215)
+  * Moved kernel modules source to it's own package.
+  * lirc: Suggests lirc-modules-source
+  * Adjusted de descriptions for the package.
+  * moved irman2lirc to /usr/bin
+  * Moved config files to /etc/lirc/ and added hardware.conf so editing
+    /etc/init.d/lirc is not needed
+  * Explained a bit more how to make all this work in README.Debian
+  * Added some manpages.
+
+ -- Manuel Estrada Sainz <ranty@debian.org>  Thu,  7 Jun 2001 00:45:11 +0200
+
+lirc (0.6.1-1.2) unstable; urgency=low
+
+  * Added libtool build-dependency. Should fix 90258
+  * Non-maintainer upload
+
+ -- Gopal Narayanan <gopal@debian.org>  Fri, 13 Apr 2001 17:09:21 +0000
+
+lirc (0.6.1-1.1) unstable; urgency=low
+
+  * Non-maintainer Upload
+  * Took out the install-exec-local target from daemons/Makefile.am and
+    added automake before configure in rules
+  * mknod stuff commented out in init.d
+  * Moved mknod to postinst
+  * above fixes are for bug 85214
+
+ -- Gopal Narayanan <gopal@debian.org>  Fri, 16 Mar 2001 23:02:39 -0500
+
+lirc (0.6.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * New makefile system for the kernel modules (Closes: #69028).
+
+ -- Tom Lees <tom@debian.org>  Sun, 27 Aug 2000 12:30:57 +0100
+
+lirc (0.6.0.final-2) unstable; urgency=low
+
+  * Build the Makefile for /usr/src/lirc/lirc_aver.
+  * Remove the /usr/src/lirc/Makefile* files, they're useless.
+  * Add a README to /usr/src/lirc about building the drivers.
+
+ -- Tom Lees <tom@debian.org>  Tue,  2 May 2000 09:33:14 +0100
+
+lirc (0.6.0.final-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fix a small bug which caused lircd to crash.
+  * Make the drivers buildable.
+  * Add AverMedia driver, thanks to Santiago Garcia Mantinan <manty@i.am>.
+  * Remove the device nodes on purge.
+
+ -- Tom Lees <tom@debian.org>  Thu, 20 Apr 2000 00:18:24 +0100
+
+lirc (0.6.0pre6-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Tom Lees <tom@debian.org>  Thu, 30 Mar 2000 19:30:57 +0100

@@ -1,0 +1,47 @@
+LIRC upstream Debian packaging
+==============================
+
+This is an upstream packaging of LIRC. Upstream packaging is basically a
+Bad Thing and should be avoided for many reasons. This is just
+a provisionary sketch to make recent versions of LIRC more available
+for Debian users since the official release channel seems to be stalled
+at 0.9.0.
+
+Building this package conflicts with the libirman package which must be
+removed prior to building. Resolving this requires a downstream update
+of the libirman package to provide also a shared library. See
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%20801588
+
+Also, be aware that this packaging makes no attempt, none, to migrate
+the current Debian-based configuration. In particular, the hardware.conf
+file is not used in any way by this package.  Refer to the upstream docs
+for how to configure LIRC (available in the lirc-doc package).
+
+Usage sketch (create a dist package and install build tools + deps):
+    $ sudo apt-get install build-essential devscripts debhelper pbuilder git
+    $ git clone git://git.code.sf.net/p/lirc/git lirc
+    $ cd lirc
+    $ dpkg-builddeps
+    # If anything is listed, install it using apt-get install
+    $ autoreconf -fi
+    $ ./configure
+    $ make dist
+    $ ls lirc*gz
+    lirc-0.9.4-devel.tar.gz
+
+Usage sketch (create debian source package from dist package)
+
+    $ mkdir lirc-git
+    $ cd lirc-git
+    $ cp some/path/lirc-0.9.4-devel.tar.gz lirc_0.9.4-devel.orig.tar.gz
+    $ tar xf lirc_0.9.4-devel.orig.tar.gz
+    $ cd lirc-0.9.4-devel
+    $ debuild -S -us -uc
+    $ cd ..; ls
+    lirc                                lirc_0.9.4-devel-1.1_source.build
+    lirc_0.9.4-devel-1.1.debian.tar.xz  lirc_0.9.4-devel-1.1_source.changes
+    lirc_0.9.4-devel-1.1.dsc            lirc_0.9.4-devel.orig.tar.gz
+
+
+Use 'sudo pdebuild' (no options) instead of 'debuild -S' to build binary
+packages. This leaves output in /var/cache/pbuilder/result

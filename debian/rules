@@ -1,0 +1,90 @@
+#!/usr/bin/make -f
+
+# See debhelper(7) (uncomment to enable)
+# Output every command that modifies files on the build system.
+# DH_VERBOSE = 1
+
+# See EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+# export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+# export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+# export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+# main packaging script based on dh7 syntax
+
+%:
+	dh $@ --with autoreconf --with python3 --with-systemd
+
+
+override_dh_autoreconf:
+	dh_autoreconf $(CURDIR)/autogen.sh
+
+
+override_dh_auto_build:
+	PATH=/sbin:$$PATH $(MAKE)
+
+
+override_dh_auto_install:
+	dh_testdir
+	dh_testroot
+	PATH="/sbin:$$PATH" $(MAKE) -j DESTDIR=$(CURDIR)/debian/tmp install
+	py3clean debian/tmp
+	rm -rf debian/lirc/usr/share/lirc/contrib/irman2lirc
+	mkdir -p debian/tmp/usr/lib/tmpfiles.d
+	echo "d /var/run/lirc  0777  root  root  10d" \
+	    > debian/tmp/usr/lib/tmpfiles.d/lirc.conf
+	find debian/tmp -name *.la -delete
+	rm -f debian/tmp/usr/bin/lirc-kerneldrivers
+	cd debian/tmp/usr/share/doc/lirc/lirc.org; tar xf api-docs.tar.gz
+	## (Dont') use system library instead of bundled jquery.js
+	## See lintian overrides
+	# rm -f debian/tmp/usr/share/doc/lirc/lirc.org/api-docs/html/jquery.js
+	# ln -sf ../../../../../../javascript/jquery/jquery.js \
+	#     debian/tmp/usr/share/doc/lirc/lirc.org/api-docs/html
+
+
+# Build architecture-independent files here.
+binary-indep:
+	dh_installdocs
+	dh_installchangelogs
+	dh_lintian
+	dh_install -i --fail-missing
+	dh_systemd_enable --name=lircd
+	dh_systemd_start
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+
+# Build architecture-dependent files here.
+binary-arch:
+	dh_installdocs
+	dh_installchangelogs
+	dh_lintian
+	dh_install -s --fail-missing
+	dh_python3
+	# Restore link nuked by 0007-tools-remove-configs-symlink.patch
+	# (Debian BTS #801719).
+	ln -sf ../../../../share/lirc/configs \
+	    debian/lirc/usr/lib/python*/*-packages/lirc/
+	dh_compress -s
+	dh_strip -s
+	dh_fixperms -s
+	chmod 755 debian/lirc/usr/share/lirc/contrib/devinput.sh
+	chmod 755 debian/lirc/usr/share/lirc/contrib/irman2lirc
+	dh_makeshlibs -s
+	dh_shlibdeps -s
+	dh_installdeb -s
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s

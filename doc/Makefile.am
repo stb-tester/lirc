@@ -73,20 +73,20 @@ dist_noinst_DATA        = $(man_sources) $(html_sources)
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 
-install-data-hook: install-api-docs
+install-data-hook:
 	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
 	$(top_srcdir)/tools/make_rel_symlink.py \
 	    $(DESTDIR)/$(website_htmldir)/configuration-guide.html \
 	    $(DESTDIR)/$(plugindocsdir)/configuration-guide.html
 
 
-install-api-docs:
+dist-hook:
 if HAVE_DOXYGEN
-	cd $(DESTDIR)$(websitedir); \
-	    tar xzf api-docs.tar.gz && rm api-docs.tar.gz
-	ln -sf lirc.org/api-docs/html/index.html $(DESTDIR)$(htmldir)/api-docs
+	tar -C $(distdir) -xf api-docs.tar.gz && rm $(distdir)/api-docs.tar.gz
+	-mkdir -p $(distdir)$(htmldir)
+	ln -sf lirc.org/api-docs/html/index.html $(distdir)$(htmldir)/api-docs
 else
-	ln -sf html/no-api-docs.html $(DESTDIR)$(docdir)/api-docs
+	ln -sf html/no-api-docs.html $(distdir)$(docdir)/api-docs
 endif
 
 

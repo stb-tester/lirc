@@ -51,7 +51,12 @@ install-data-hook:
 uninstall-hook:
 	rm -rf $(pkgdatadir) $(pkgpythondir)
 
-dist-hook: ChangeLog
+dist-hook: ChangeLog debian/distfiles
+	tar -T debian/distfiles -C $(srcdir) -cf - | tar -C $(distdir) -xf -
+
+debian/distfiles:
+	git ls-files debian > $@ || find debian -type f > $@
+	exit 1
 
 
 paths.h: Makefile
@@ -77,4 +82,6 @@ devinput.lircd.dist: lib/input_map.inc
 
 lib/input_map.inc:
 	cd lib; $(MAKE) input_map.inc
+
+
 .phony:
