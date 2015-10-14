@@ -1,3 +1,17 @@
+0.9.3a 14/10/15
+  * Broken fix for kernel bug reverted (#148, #119). This makes lirc
+    incompatible with at least the 4.04 kernels. kernels < 4.0 and >
+    4.1.6 seemingly works.
+  * Several irrecord fixes (#146, #139, d8826b, #141).
+  * Some fixes for poll() usage, one of which blocked irrecord
+    (02c2480, d9339b6).
+  * lib: Fix parsing of multiple files (#141).
+  * lib: Fix privilege dropping code and a compiler flag (e8be7ae,
+    8a08ab1)
+  * lirc-lsplugins: Fix --plugindir not being respected (#144).
+  * atilibusb: Fix crash for non-existing device (#145).
+  * plugins: file.c: Fix off-by-one sscanf error (#138).
+
 0.9.3 4/9/15
 
   * Digest of 0.9.3pre1..0.9.3pre3
