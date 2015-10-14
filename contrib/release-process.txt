@@ -22,13 +22,16 @@ Steps for a new release (pre or final)
 2) Update NEWS.
 
 3) Update version number in:
-        README, NEWS, configure.ac
+        README, NEWS, configure.ac, doc/lirc.org/index.html
    Update the news entry in README.
 
 4) Commit and push branch:
         git commit -a -s -m "Update for lirc <version> release"
 
 5) Create tarball:
+	cd ..
+        git clone -b <release branch> lirc lirc-tmp
+        cd lirc-tmp
         ./autogen.sh
         ./configure
         make distcheck
