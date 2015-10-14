@@ -1,0 +1,17 @@
+.TH LIRCD-SETUP "8" "Last change: Oct 2015" "lircd-setup @VERSION" "System Administration Utilities"
+.SH NAME
+lircd-setup - Run setup commands in lirc_options.conf
+.SH SYNOPSIS
+.B lircd-setup
+<\fIconfig-file\fR>
+.SH DESCRIPTION
+This program runs command defined in the \fIcode =\fR key in the
+\fImodinit\fR section of the config file. It's used as a one-shot
+service invoked before lircd, running code which needs root
+privileges.
+.P
+The config file defaults to @etcdir@/lirc/lirc_options.conf if not
+given as command line argument.
+
+.SH SEE ALSO
+lircd(8)
