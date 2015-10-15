@@ -1298,6 +1298,7 @@ static void compute_lengths_many_signals(struct lengths_state* state)
 {
 	int i;
 
+	add_length(&first_1lead, signals[0]);
 	merge_lengths(first_1lead);
 	for (i = 2; i < state->count - 2; i++) {
 		if (i % 2) {
