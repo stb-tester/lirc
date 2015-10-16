@@ -12,7 +12,7 @@ from gi.repository import Vte         # pylint: disable=no-name-in-module
 from gi.repository import GLib        # pylint: disable=no-name-in-module
 
 import baseview
-import paths
+import config
 import util
 
 from baseview import _on_window_delete_event_cb
@@ -92,7 +92,7 @@ README file in the results directory."""
 
 CONFIG_GUIDE_URL = \
 "file://@docdir@/lirc.org/html/configuration-guide.html#permissions" \
-    .replace("@docdir@", paths.DOCDIR)
+    .replace("@docdir@", config.DOCDIR)
 
 MODE2_HELP_MSG = """
 Run the command (push button) and then push buttons on your remote. There

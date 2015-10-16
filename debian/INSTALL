@@ -1,0 +1,52 @@
+LIRC upstream Debian packaging
+==============================
+
+This is an upstream packaging of LIRC. Upstream packaging is basically a
+Bad Thing and should be avoided for many reasons. This is just
+a provisionary sketch to make recent versions of LIRC more available
+for Debian users since the official release channel seems to be stalled
+at 0.9.0.
+
+Building this package conflicts with the libirman package which must be
+removed prior to building. Resolving this requires a downstream update
+of the libirman package to provide also a shared library. See
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%20801588
+
+Also, be aware that this packaging makes no attempt, none, to migrate
+the current Debian-based configuration. In particular, the hardware.conf
+file is not used in any way by this package.  Refer to the upstream docs
+for how to configure LIRC (available in the lirc-doc package).
+
+
+Dependencies (Fedora):
+
+    $ dnf copr enable leamas/dpkg-addons
+    $ sudo dnf install dh-python dh-autoreconf debhelper devscripts git
+
+Dependencies (Debian):
+
+    $ sudo apt-get install build-essential devscripts debhelper pbuilder git \
+      dh-python dh-autoreconf
+
+Create a source package:
+
+    $ git clone git://git.code.sf.net/p/lirc/git lirc
+    $ cd lirc
+    $ ./autogen.sh
+    $ ./configure
+    $ make debian-pkg
+    $ ls debian-pkg
+    lirc_0.9.4-devel-1.1.debian.tar.xz  lirc_0.9.4-devel-1.1_source.changes
+    lirc_0.9.4-devel-1.1.dsc            lirc_0.9.4-devel.orig.tar.gz
+    lirc_0.9.4-devel-1.1_source.build
+
+Create binary packages (Debian only):
+
+    $ cd debian-pkg
+    $ sudo pbuilder build *.dsc
+    $ ls /var/cache/pbuilder/result
+    liblirc0_0.9.4-devel-1.1_amd64.deb     lirc_0.9.4-devel-1.1.dsc
+    liblirc-dev_0.9.4-devel-1.1_amd64.deb  lirc_0.9.4-devel.orig.tar.gz
+    lirc_0.9.4-devel-1.1_amd64.changes     lirc-doc_0.9.4-devel-1.1_all.deb
+    lirc_0.9.4-devel-1.1_amd64.deb         lirc-x_0.9.4-devel-1.1_amd64.deb
+    lirc_0.9.4-devel-1.1.debian.tar.xz

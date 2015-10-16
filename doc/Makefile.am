@@ -1,8 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS         = -I m4
 
-DISTCLEANFILES          = man/* html/* man-html/* driver-toc.xsl table.html \
-                          api-docs.tar.gz NEWS.txt lirc.hwdb table.html
+CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
+                          api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
+                          doxygen*warning*
 
 EXTRA_DIST              = Doxyfile make-driver-toc.sh \
                           manpage.xsl docpage.xsl docpage.xsl  page.xsl
@@ -91,7 +92,7 @@ endif
 
 
 clean-local:
-	rm -rf $(DISTCLEANFILES)
+	rm -rf api-docs/*
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
@@ -153,7 +154,7 @@ $(nodist_man_MANS): $(man_sources)
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
-	doxygen >doxygen-warnings.txt 2>&1
+	doxygen $(srcdir)/Doxyfile >doxygen-warnings.txt 2>&1
 	find api-docs -name \*.tmp -delete
 	tar czf $@ api-docs
 

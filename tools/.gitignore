@@ -15,5 +15,5 @@ lirc-lsremotes
 mode2
 python3
 xmode2
-paths.py
+config.py
 
