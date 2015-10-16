@@ -51,8 +51,8 @@ Subject: [PATCH] build: Fix non-debian library name.
 -AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 +AM_LDFLAGS              =  -L../lib -llirc -llirc-client -ldl
  
- BUILT_SOURCES           = paths.py
- CLEANFILES              = paths.py
+ BUILT_SOURCES           = config.py
+ CLEANFILES              = config.py
 @@ -14,7 +14,7 @@
  BUILT_SOURCES           += python3
  endif
@@ -60,5 +60,5 @@ Subject: [PATCH] build: Fix non-debian library name.
 -LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 +LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc-client.la
  
- 
- EXTRA_PROGRAMS          =
+ sbin_PROGRAMS           = lirc-lsplugins
+ bin_PROGRAMS            = ircat \

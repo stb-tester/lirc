@@ -11,6 +11,8 @@ import sys
 import time
 import yaml
 
+import config
+
 
 def here(path):
     ' Return path added to current dir for __file__. '
@@ -30,7 +32,7 @@ def check_driver(driver):
 
     with open('/dev/null', 'w') as f:
         try:
-            subprocess.check_output(['modinfo', driver], stderr=f);
+            subprocess.check_output([config.MODINFO, driver], stderr=f);
         except subprocess.CalledProcessError:
             return False
         else:

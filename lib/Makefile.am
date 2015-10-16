@@ -101,7 +101,8 @@ input_map.lo: lirc/input_map.inc
 input_map.inc: lirc/input_map.inc
 
 lirc/input_map.inc:
-	$(srcdir)/input_map.sh >./input_map.inc
+	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
+	-$(top_srcdir)/tools/lirc-make-devinput -i > $@
 
 checkfiles:
 	../git-tools/checkfiles $(SOURCES) $(HEADERS)

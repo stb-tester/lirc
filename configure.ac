@@ -16,10 +16,16 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PATH_PROG(SH_PATH,[sh])
-AC_PATH_PROG(depmod, depmod, /sbin/depmod, $PATH:/sbin)
+AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
+if test x$MODINFO = xno; then
+  AC_MSG_ERROR([Required program modinfo is missing or or not in \$PATH])
+else
+  MODINFO=$( PATH=$PATH:/sbin:/usr/sbin which modinfo )
+  AC_SUBST(MODINFO)
+fi
 AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
 if test x$PKGCONFIG = xno; then
-  AC_MSG_ERROR([Required program pkg-config is missing])
+  AC_MSG_ERROR([Required program pkg-config is missing or not in \$PATH])
 fi
 AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
 if test x$XSLTPROC != "xyes"; then
@@ -353,6 +359,7 @@ AH_BOTTOM([
 
 dnl write these decisions out to the Makefiles
 AC_CONFIG_FILES([
+  VERSION
   Makefile
   lirc.pc
   lirc-driver.pc

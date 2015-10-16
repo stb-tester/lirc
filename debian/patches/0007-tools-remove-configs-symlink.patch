@@ -11,10 +11,10 @@ directory, see Debian BTS #801719. Link restored in rules.
 
 --- a/tools/Makefile.am
 +++ b/tools/Makefile.am
-@@ -121,12 +121,6 @@
+@@ -117,12 +117,6 @@
  	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \
  	    $(DESTDIR)/$(bindir)/lirc-setup
-
+ 
 -install-data-hook:
 -	rm -f $(DESTDIR)/$(pkgpythondir)/configs
 -	$(srcdir)/make_rel_symlink.py \

@@ -14,7 +14,7 @@ import yaml
 
 from database import Database
 from database import Config
-import paths
+import config
 import util
 
 REMOTES_LIST = os.path.expanduser('~/.cache/remotes.list')
@@ -236,7 +236,7 @@ def write_results(model, result_dir, view):
     log = get_configfiles(log)
     path = os.path.join(result_dir, 'README')
     with open(path, 'w') as f:
-        f.write(README.format(sysconfdir=paths.SYSCONFDIR))
+        f.write(README.format(sysconfdir=config.SYSCONFDIR))
     return log
 
 

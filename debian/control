@@ -12,7 +12,6 @@ Build-Depends:
  doxygen,
  libasound2-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64],
  libftdi-dev,
- libjs-jquery,
  libice-dev,
  libsm-dev,
  libusb-dev [!hurd-i386],
@@ -25,7 +24,9 @@ Build-Depends:
  python3-yaml,
  xsltproc,
  tree
+# libjs-jquery,    (See lintian overrides)
 Standards-Version: 3.9.6
+
 
 Package: lirc
 Section: misc
@@ -49,19 +50,21 @@ Description: infra-red remote control support
  This package provides the daemons and some utilities to support infra-red
  remote controls under Linux.
 
+
 Package: lirc-doc
 Architecture: all
 Section: doc
 Homepage: http://www.lirc.org
 Depends:
- libjs-jquery,
  ${misc:Depends},
  lsb-base
+# libjs-jquery,    (See lintian overrides)
 Description: infra-red remote control support
  LIRC stands for 'Linux Infra-red Remote Control'.
  .
  This package provides the documentation including manual, manpages and
  the public website.
+
 
 Package: liblirc0
 Architecture: any
@@ -77,6 +80,7 @@ Description: infra-red remote control support
  Package contains internal LIRC runtime libs used by external applications
  (liblirc-client.so*), drivers (liblirc_driver.so*) and also internal
  LIRC applications (lirc_private.so*)
+
 
 Package: liblirc-dev
 Architecture: any

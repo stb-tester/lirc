@@ -17,31 +17,36 @@ the current Debian-based configuration. In particular, the hardware.conf
 file is not used in any way by this package.  Refer to the upstream docs
 for how to configure LIRC (available in the lirc-doc package).
 
-Usage sketch (create a dist package and install build tools + deps):
-    $ sudo apt-get install build-essential devscripts debhelper pbuilder git
+
+Dependencies (Fedora):
+
+    $ dnf copr enable leamas/dpkg-addons
+    $ sudo dnf install dh-python dh-autoreconf debhelper devscripts git
+
+Dependencies (Debian):
+
+    $ sudo apt-get install build-essential devscripts debhelper pbuilder git \
+      dh-python dh-autoreconf
+
+Create a source package:
+
     $ git clone git://git.code.sf.net/p/lirc/git lirc
     $ cd lirc
-    $ dpkg-builddeps
-    # If anything is listed, install it using apt-get install
-    $ autoreconf -fi
+    $ ./autogen.sh
     $ ./configure
-    $ make dist
-    $ ls lirc*gz
-    lirc-0.9.4-devel.tar.gz
-
-Usage sketch (create debian source package from dist package)
-
-    $ mkdir lirc-git
-    $ cd lirc-git
-    $ cp some/path/lirc-0.9.4-devel.tar.gz lirc_0.9.4-devel.orig.tar.gz
-    $ tar xf lirc_0.9.4-devel.orig.tar.gz
-    $ cd lirc-0.9.4-devel
-    $ debuild -S -us -uc
-    $ cd ..; ls
-    lirc                                lirc_0.9.4-devel-1.1_source.build
+    $ make debian-pkg
+    $ ls debian-pkg
     lirc_0.9.4-devel-1.1.debian.tar.xz  lirc_0.9.4-devel-1.1_source.changes
     lirc_0.9.4-devel-1.1.dsc            lirc_0.9.4-devel.orig.tar.gz
+    lirc_0.9.4-devel-1.1_source.build
 
+Create binary packages (Debian only):
 
-Use 'sudo pdebuild' (no options) instead of 'debuild -S' to build binary
-packages. This leaves output in /var/cache/pbuilder/result
+    $ cd debian-pkg
+    $ sudo pbuilder build *.dsc
+    $ ls /var/cache/pbuilder/result
+    liblirc0_0.9.4-devel-1.1_amd64.deb     lirc_0.9.4-devel-1.1.dsc
+    liblirc-dev_0.9.4-devel-1.1_amd64.deb  lirc_0.9.4-devel.orig.tar.gz
+    lirc_0.9.4-devel-1.1_amd64.changes     lirc-doc_0.9.4-devel-1.1_all.deb
+    lirc_0.9.4-devel-1.1_amd64.deb         lirc-x_0.9.4-devel-1.1_amd64.deb
+    lirc_0.9.4-devel-1.1.debian.tar.xz
