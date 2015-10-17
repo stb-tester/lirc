@@ -12,6 +12,7 @@ usr/bin/irdb-get
 usr/bin/lircrcd
 usr/bin/lirc-config-tool
 usr/bin/lirc-lsremotes
+usr/bin/lirc-make-devinput
 usr/bin/lirc-setup
 usr/bin/mode2
 usr/bin/irw
