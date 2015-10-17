@@ -36,7 +36,7 @@ override_dh_auto_install:
 	find debian/tmp -name *.la -delete
 	# Debian uses .../dist-packages vs upstream .../site-packages.
 	# Preferably, this should be fixed in upstream autotools setup.
-	ln -sf  ../lib/python3.4/dist-packages/lirc/lirc-setup \
+	ln -sf ../lib/python3/dist-packages/lirc/lirc-setup \
 	    debian/tmp/usr/bin/lirc-setup
 	mkdir -p debian/tmp/usr/lib/tmpfiles.d
 	echo "d /var/run/lirc  0777  root  root  10d" \
@@ -78,7 +78,6 @@ binary-arch:
 	dh_compress -s
 	dh_strip -s
 	dh_fixperms -s
-	chmod 755 debian/lirc/usr/share/lirc/contrib/devinput.sh
 	chmod 755 debian/lirc/usr/share/lirc/contrib/irman2lirc
 	dh_makeshlibs -s
 	dh_shlibdeps -s

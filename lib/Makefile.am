@@ -2,8 +2,7 @@ ACLOCAL_AMFLAGS             = -I m4
 
 DISTCLEANFILES              = input_map.inc lirc/input_map.inc
 CLEANFILES                  = driver_api.dox lirc_client.dox
-EXTRA_DIST                  = input_map.inc input_map.sh \
-                              driver_api.dox  lirc_client.dox  mainpage.dox \
+EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
                               driver_api.doxhead  lirc_client.doxhead
 
 BUILT_SOURCES               = lirc/input_map.inc
@@ -93,7 +92,6 @@ dox: driver_api.dox lirc_client.dox
 
 dist-hook:
 	mkdir $(distdir)/lirc
-	$(srcdir)/input_map.sh > $(distdir)/lirc/input_map.inc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
 input_map.lo: lirc/input_map.inc

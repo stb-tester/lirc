@@ -89,13 +89,11 @@ ChangeLog: .phony
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
-devinput.lircd.dist: lib/input_map.inc
+devinput.lircd.dist:
 	echo "# Rename to devinput.lircd.conf when using devinput driver" > $@
+	echo "# Re-generate for current kernel using lirc-make-devinput" >> $@
 	echo '#' >> $@
-	$(srcdir)/contrib/devinput.sh $(srcdir)/lib/input_map.inc >> $@
-
-lib/input_map.inc:
-	cd lib; $(MAKE) input_map.inc
+	$(srcdir)/tools/lirc-make-devinput >> $@
 
 debian-pkg:
 	test -f lirc-$(VERSION).tar.gz || $(MAKE) dist

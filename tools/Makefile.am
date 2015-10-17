@@ -71,7 +71,7 @@ xmode2_SOURCES          = xmode2.cpp
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 
-dist_bin_SCRIPTS        = lirc-config-tool
+dist_bin_SCRIPTS        = lirc-config-tool lirc-make-devinput
 
 
 if NEED_PYTHON3
