@@ -1,4 +1,4 @@
-# Installing this udev rule will disable kernel IR handling, routing
-# everything to lirc. To enable, copy to /etc/udev/rules.d  or
-# /usr/lib/udev/rules.d.
+# Installing this udev rule will disable kernel IR decoding, routing
+# everything to /dev/lirc*. Corresponding /dev/input/event* files are
+# effectively muted.  To enable, copy to /etc/udev/rules.d.
 SUBSYSTEM=="rc", ATTR{protocols}="lirc"

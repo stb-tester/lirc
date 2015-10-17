@@ -1,6 +1,11 @@
 # This rule gives write access for the 'lirc' group for all USB
 # devices. Substituting the stars with actual values for vendor
 # and product confines the rule to specific vendors and/or devices.
+#
+# Usually you should be fine with 60-lirc.rules which covers also
+# USB devices. This is much less invasive instead compared to this quite
+# aggressive rule. Use this e. g., if extended file attributes (factl)
+# becomes a problem.
 
 ACTION=="add", SUBSYSTEM=="usb", \
    ATTR{idVendor}=="*", ATTR{idProduct}=="*", \
