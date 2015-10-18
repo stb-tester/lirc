@@ -200,9 +200,22 @@ static int set_rc_protocol(const char* device)
 }
 
 
+/** Log diagnostics if device cannot be accessed. */
+static void check_device(const char* device)
+{
+	if (device == NULL) {
+		log_error("default driver: NULL device");
+	} else {
+		if (access(device, R_OK | W_OK) != 0)
+			log_warn("Cannot access device: %s", drv.device);
+	}
+}
+
+
 int my_open(const char* path)
 {
 	default_open(path);
+	check_device(drv.device);
 	set_rc_protocol(drv.device);
 	return 0;
 }
