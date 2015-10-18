@@ -31,7 +31,7 @@ lirc_confdir            = $(sysconfdir)/lirc
 dist_lirc_conf_DATA     = lircd.conf lirc_options.conf lircmd.conf
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
-dist_lircdconfig_DATA	= README.conf.d devinput.lircd.dist
+dist_lircdconfig_DATA	= README.conf.d devinput.lircd.conf
 
 endif
 
@@ -85,11 +85,11 @@ paths.h: Makefile
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \
-	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	    -tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
-devinput.lircd.dist:
+devinput.lircd.conf:
 	echo "# Rename to devinput.lircd.conf when using devinput driver" > $@
 	echo "# Re-generate for current kernel using lirc-make-devinput" >> $@
 	echo '#' >> $@
