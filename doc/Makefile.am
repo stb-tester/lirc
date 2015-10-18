@@ -30,12 +30,12 @@ endif
 docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = irxevent.keys
 
+if HAVE_DOXYGEN
+dist_doc_DATA           += api-docs.tar.gz
+endif
+
 websitedir              = $(docdir)/lirc.org
 dist_website_DATA       = $(website_files)
-
-if HAVE_DOXYGEN
-dist_website_DATA       += api-docs.tar.gz
-endif
 
 plugindocsdir           = $(docdir)/plugindocs
 dist_plugindocs_DATA    = $(plugindocs) $(pluginfiles)
@@ -75,20 +75,20 @@ all: $(nodist_man_MANS) $(nodist_html_DATA)
 
 
 install-data-hook:
+if HAVE_DOXYGEN
+	tar -C $(DESTDIR)$(websitedir) \
+	    -xf $(DESTDIR)$(docdir)/api-docs.tar.gz && \
+	        rm $(DESTDIR)$(docdir)/api-docs.tar.gz
+	-mkdir -p $(DESTDIR)$(website_htmldir)
+	ln -sf lirc.org/api-docs/html/index.html \
+	    $(DESTDIR)$(website_htmldir)/api-docs
+else
+	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
+endif
 	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
 	$(top_srcdir)/tools/make_rel_symlink.py \
 	    $(DESTDIR)/$(website_htmldir)/configuration-guide.html \
 	    $(DESTDIR)/$(plugindocsdir)/configuration-guide.html
-
-
-dist-hook:
-if HAVE_DOXYGEN
-	tar -C $(distdir) -xf api-docs.tar.gz && rm $(distdir)/api-docs.tar.gz
-	-mkdir -p $(distdir)$(htmldir)
-	ln -sf lirc.org/api-docs/html/index.html $(distdir)$(htmldir)/api-docs
-else
-	ln -sf html/no-api-docs.html $(distdir)$(docdir)/api-docs
-endif
 
 
 clean-local:
@@ -261,6 +261,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
                            man-html/lirc-setup.html \
+                           man-html/lircd-setup.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \

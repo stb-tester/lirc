@@ -329,7 +329,13 @@ remote | kernel |   devinput v        |
          ir-keytable):
          <pre>
                 --driver devinput --device /dev/input/event11
-         </pre></li>
+         </pre>
+	 If ir-keytable only locates one device (the most common case) you
+         can use
+         <pre>
+                --driver devinput --device auto
+         </pre>
+	 This is actually the default setup, and needs no modifications.</li>
        <li>
          If you dont wan't to use the decoding done by the kernel, but the
          device is recognized by ir-keytable you can have lirc decode the
@@ -353,9 +359,7 @@ remote | kernel |   devinput v        |
          If you have a device such as a keyboard which is not recognized
          and can't find a driver in the <a href="table.html">driver list</a>
          or in the <a href="lirc-lsplugins.html">lirc-lsplugins</a> output,
-         the easiest option is using the devinput driver (above). Should
-         this not work you'll need to disable the usbhid driver for this
-         device as described in <a href="#appendix-12"> Appendix 12</a>.</li>
+         the feasible option is using the devinput driver (above).</li>
      </ul>
      <p>
      After selecting the driver and device you should check if there is any
@@ -367,6 +371,13 @@ remote | kernel |   devinput v        |
      <p>
      Refer to EXAMPLES in  the <a href="mode2.html">mode2 manpage</a> too
      see expected output.</a>
+     <p>The <a href="lirc-setup.html">lirc-setup</a> tool can be used to
+     run mode2 with different drivers and devices in a GUI environment.<p>
+     <p>
+     If you don't see anything, try to find out: (a) if you selected
+     the correct driver b) If the driver needs settings (I/O base
+     address, IRQ) in modprobe.d, (c) if the remote which works and
+     (d) if your capture hardware works.<p>
      <p>
      If you are to use the devinput driver, read on. Otherwise proceed to
      <A HREF="#key-symbols-using-lirc-drivers">Getting the key symbols using
@@ -422,12 +433,16 @@ remote | kernel |   devinput v        |
     <p>
     Then, activate the devinput.lircd.conf template which comes with lirc:
     <pre>
-    cd /etc/lirc/lircd.conf.d; sudo cp devinput.lirc.dist devinput.lircd.conf
+    $ cd /etc/lirc/lircd.conf.d; sudo cp devinput.lirc.dist devinput.lircd.conf
     </pre>
-    If the  devinput.lircd.dist file is not available, you can download the
-    <a href="https://sf.net/p/lirc-remotes/code/ci/master/tree/remotes/devinput/devinput.lircd.conf">
-    copy in the database</a> and copy it to /etc/lirc/lircd.conf.d instead.
-    Start the lircd daemon and use irw to check:
+    <p>
+    If the  devinput.lircd.dist file is not available or have some problem
+    it can be re-generated using the script <i>lirc-make-devinput</i>. This
+    requires the kernel-headers package installed. It might become necessary
+    to do this if the  running kernel is different from the  one used when
+    packaging the lirc files.</p>
+    <p>
+    Start the lircd daemon and use irw to check:</p>
     <pre>
     $ lircd --device /dev/input/event13 --driver devinput
     $ irw
@@ -450,7 +465,7 @@ remote | kernel |   devinput v        |
        |       | kernel rc driver |  Needs configuration
        |       -- -----------------
        |                  |
-       v                  v          raw pulse data on
+       v                  v          Pulse data on
        |                  |          a kernel device like
   ---------------         |          /dev/lirc0 or /dev/ttyACM0
   | LIRC driver |----------
@@ -467,31 +482,10 @@ remote | kernel |   devinput v        |
        |
     </pre>
     <p>
-      You have already determined the driver and perhaps device to use.
+      You have already determined the driver and device to use which is
+      verified using <a href="mode2.html">mode2</a>.
       Make sure the lirc driver can read the remote, and produce pulses:
     </p>
-    <ul>
-      <li>
-      Check if you need to configure the kernel <a href="#appendix-1">
-      (Appendix 1)</a>.</li>
-      <li>
-      Using mode2(1), verify that you get pulses using the driver and
-      device e. g.,
-        <pre>
-           $ sudo mode2 --driver default --device /dev/lirc0
-           space 16777215
-           pulse 2750
-           space 800
-           pulse 500
-           space 350
-           ...
-        </pre>
-        If you don't see anything, try to find out: (a) if you selected
-        the correct driver b) If the driver needs settings (I/O base
-        address, IRQ) in modprobe.d, (c) if the remote which works and
-        (d) if your capture hardware works.</li>
-
-    </ul>
     <p>
        lirc pass 1: Using lircd.conf, convert pulses to key symbols
        like KEY_UP:</p>
@@ -502,7 +496,8 @@ remote | kernel |   devinput v        |
        ways to find or create such a file.
     <ul>
        <li> The <a href="lirc-setup.html">lirc-setup</a> GUI tool can be used
-       to find and download both driver and configuration file.</li>
+       to find and download both driver and configuration file which
+       also can be tested in a GUI environment.</li>
        <li>
        If you manually selected a driver from the driver table it might
        need a specific lircd.conf. Such drivers are best installed using
@@ -516,8 +511,7 @@ remote | kernel |   devinput v        |
        search and download such files. </li>
        <li>
        You can create your own configuration using
-       the <a href="irrecord.html">irrecord</a> tool  as decribed in
-       <a href="#appendix-13">Appendix 13</a></li>
+       the <a href="irrecord.html">irrecord</a> tool </li>
        <li>
        If you already have a config file for the libirman
        package you can convert it using the <em>irman2lirc</em> script
@@ -531,6 +525,11 @@ remote | kernel |   devinput v        |
        harctoolbox.org</a> can convert a wide range of formats to lircd.conf
        files. It can also record data the same way as <em>irrecord</em>.</li>
      </ul>
+    <p>
+    Even if you obtain the configuration file without using <i>lirc-setup</i>,
+    you can still use it to verify the configuration. It runs lircd and irw
+    as described below, making testing much simpler. </p>
+    <p>
     To install the file it should be copied to the lircd.conf.d directory,
     usually /etc/lirc/lircd.conf.d. Make sure the name ends with .lircd.conf.
     <p>
@@ -685,8 +684,8 @@ remote | kernel |   devinput v        |
      twice to the application, both through /var/run/lirc and /dev/input.</p>
      <p>
      <i> As of 0.9.1+ this is configured automatically by lircd, and
-     neither the echo 'lirc' >/sys/class/rc/... nor the udev rule should
-     normally be required. </i> </p>
+     neither the echo 'lirc' >/sys/class/rc/... nor the protocol udev rule
+     should normally be required. </i> </p>
      <p>
      lircd can run either as root or as a regular user. In the latter
      case you might need to <a href="#permissions">adjust device
@@ -714,7 +713,7 @@ remote | kernel |   devinput v        |
      Using TV-cards requires some extra <a href="#tv_cards">attention</a>.</p>
 
    <A NAME="sys_class_rc_config"></A>
-    <h4 align="center"> Kernel IR driver configuration.</h4>
+    <h4 align="center"> Kernel IR driver runtime configuration.</h4>
     <p>
     The builtin ir driver subsystem is aware of LIRC, and is capable to send
     all data through /dev/lirc0. If lircd fails to configure this
@@ -728,20 +727,21 @@ remote | kernel |   devinput v        |
     Using '-lirc' instead restores the normal kernel operation when
     stopping LIRC. <p/>
     <A NAME="udev-rules"></A>
-    <h4 align="center">Udev rules</h4>
+    <h4 align="center">Kernel IR driver udev configuration</h4>
     <p>Likewise, if lircd fails to configure the kernel IR driver
     automatically you can create a file
     /etc/udev/rules.d/99-remote-control-lirc like:
     <pre>
        SUBSYSTEM=="rc", ATTR{protocols}="lirc"
     </pre>
-    This is persistent and makes all ir devices send data only
-    through /dev/lirc0 where it can be retrieved by the 'default' driver.
+    This is persistent and makes all ir (i. e., rc-based) devices send data
+    only through /dev/lirc0 where it can be retrieved by the 'default' driver.
+    The file is available in the contrib/ directory.
     <A NAME="blacklisting-modules"></A>
     <h4 align="center">Kernel module conflicts</h4>
     <p>
     When using remotes which are not infrared, the corresponding driver is
-    not affected by the methods above. One example is an RF remote I have
+    not affected by the methods above. One example is an RF remote
     which uses the atilibusb LIRC driver. This conflicts with the ati_remote
     kernel module, which thus needs to be disabled. Do this by creating the
     file /etc/modprobe.d/blacklist-atiremote.conf like:
@@ -749,10 +749,17 @@ remote | kernel |   devinput v        |
         # Conflicts with LIRC.
         blacklist ati_remote
     </pre>
-    Finding out what module to blacklist is not always easy. dmesg(1)
-    sometimes gives a hint about conflicts on a device. Another method is
-    to boot the system without the usb device connected, and do a lsmod.
-    After that, connect the device and make a new lsmod. Comparing the
+    <p>For known cases the <a href="lirc-setup.html"> lirc-setup</a> tool
+    generates blacklisting configuration files.</p>
+    <p>
+    The contrib directory contains a file <i>61-lirc.blacklist-all.conf</i>
+    which blacklists all kernel drivers known to conflict with any lirc
+    plugin. While in most cases an overkill, it can be helpful.</p>
+    <p>
+    In general, finding out what module to blacklist is not always easy.
+    dmesg(1) sometimes gives a hint about conflicts on a device. Another
+    method is to boot the system without the usb device connected, and do a
+    lsmod. After that, connect the device and make a new lsmod. Comparing the
     different outputs might give a clue.
 
     <A NAME="permissions"></A>
@@ -772,7 +779,7 @@ remote | kernel |   devinput v        |
 </pre>
      <p>
      The file should be stored in <em>/etc/udev/rules.d/60-lirc.rules</em>
-     This example giver users in the group <em>lirc</em> full permissions
+     This example gives users in the group <em>lirc</em> full permissions
      to the /dev/lirc0 devices using regular group permissions. It also
      gives members of the same group access to all USB devices using
      extended permissions (ACL).  It should be simple to adopt to other
@@ -800,9 +807,20 @@ remote | kernel |   devinput v        |
         modprobe lirc_serial
 </pre>
     <p>
-      This could be added to the systemd service files as ExecStartPre
-      statements. Debian users should adjust their <em>/etc/serial.conf</em>.
-      Note that lirc_serial probably needs some modprobe setup, see below.</p>
+      This could be added to lirc_options.conf as a modprobe section e. g.,:</p>
+<pre>
+        [modprobe]
+        code = setserial /dev/ttyS0 uart none; modprobe lirc_serial
+</pre>
+     <p>
+     This section is parsed by the <a href="lircd-setup.html">lircd-setup</a>
+     tool which runs as root when lircd is started.</p>
+     <p>
+     <a href="lirc-setup.html">lirc-setup</a> can generate this section
+     in many cases.</p>
+     <p>
+     Debian users should adjust their <em>/etc/serial.conf</em>. Note that
+     lirc_serial probably needs some modprobe setup, see below.</p>
 
     <A NAME="modprobe_config"></A>
     <h4 align="center">modprobe configuration</h4>
@@ -815,7 +833,7 @@ remote | kernel |   devinput v        |
      options or <em>modprobe.d(5)</em> files. Options to modprobe include
      things like the actual port, interrupt to use etc.</p>
      <p>
-     <a href="lirc-setup.html"> lirc-setup</a> can generate proper
+     <a href="lirc-setup.html">lirc-setup</a> can generate proper
      <em>/etc/modprobe.d</em> files in such cases. <em>modinfo(1)</em>
      also provides useful info. In any case, the proper kernel module
      must be loaded with correct options before lircd is started.</p>
@@ -880,6 +898,17 @@ remote | kernel |   devinput v        |
     </pre>
     <p>
     Here, the device is <em>/dev/input/event14</em>.</p>
+    <h4>Testing the device. </h4>
+    <p>
+    The easiest way to test if the correct device is found is to just
+    try to print the data like in <p>
+<pre>
+        cat /dev/input/event1
+</pre>
+    <p>
+    This will print garbage on the terminal when remote buttons are
+    pressed if it is the correct device. </p>
+
 
     <A NAME="appendix-3"></A>
     <h3 align="center"> A3: Understanding the driver table</h3>
@@ -1124,7 +1153,7 @@ remote | kernel |   devinput v        |
     </ul>
     <A NAME="appendix-8"></A>
     <h3 align="center">A8 : Using multiple remotes</h3>
-    lirc will happily accept several lircd.conf file. When doing so, it
+    lirc will happily accept several lircd.conf files. When doing so, it
     will try to match input with each configuration until there is a match.
     This means that the number of configurations has some limits, otherwise
     it would take too long time. For practical scenarios say 2-4 remotes
@@ -1136,7 +1165,12 @@ remote | kernel |   devinput v        |
          lircd.conf. This method is deprecated, since you will loose track of
          which files that actually are in use. </li>
 
-    <li> Another way is to use the <code>include</code> directive. Using this,
+    <li> The preferred way is to install the files in the directory
+         lircd.conf.d. This directory should be in the same place as the main
+         lircd.conf file, usually /etc/lirc/lircd.conf.d/. Any file in this
+         directory which has a name ending with <code>.conf</code> is
+         automagically included by the default lircd.conf file. </li>
+     <li> Another way is to use the <code>include</code> directive. Using this,
          you can include files without changing them e. g., using a file like
 <pre>
                 include "/usr/share/lirc-remotes/ei/tv90"
@@ -1146,12 +1180,7 @@ remote | kernel |   devinput v        |
          dir as the main lircd.conf file, usually <code>/etc/lirc</code>.
          All-in-all, this is good method which preserves the original files
          </li>
-    <li> Another way is to install the files in the directory lircd.conf.d.
-         This directory should be in the same place as the main
-         lircd.conf file, usually /etc/lirc/lircd.conf.d/. Any file in this
-         directory which has a name ending with <code>.conf</code> is
-         automagically included. </li>
-    </ul>
+   </ul>
     <p>
     When using multiple remotes lircd tries to sort them so that the ones
     which decodes faster are used first. Normally you could use this feature
@@ -1409,202 +1438,6 @@ remote | kernel |   devinput v        |
      There is also a hardware-related section in the
      <a href="../faq.html">FAQ</a> </p>
 
-    <A NAME="appendix-12"></A>
-    <h3 align="center">A12 : Handling USB HID devices</h3>
-    <p>
-    <h4>Overview</h4>
-    <p>
-    Some remote  devices are treated like general keyboards by the kernel.
-    The typical symptom is dmesg lines like <a name="dmesg1"></p>
-<pre>
-[178998.885410] usb 1-1: new low-speed USB device number 3 using xhci_hcd
-[178999.061504] usb 1-1: New USB device found, idVendor=0471, idProduct=20cc
-[178999.061517] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-[178999.061526] usb 1-1: Product: MCE USB IR Receiver- Spinel plus
-[178999.061533] usb 1-1: Manufacturer: PHILIPS
-[178999.064751] usb 1-1: ep 0x81 - rounding interval to 64 microframes, ep desc says 80 microframes
-[178999.137558] hid-generic 0003:0471:20CC.0003: input,hiddev0,hidraw2: USB
-    HID v1.00 Keyboard [PHILIPS MCE USB IR Receiver- Spinel plus] on usb-0000:00:14.0-1/input0
-</pre>
-    <p>
-    The important one is the last <i>hid-generic...</i> which basically says
-    that the HID driver has claimed the device, making it impossible for the
-    usual remote driver (mceusb in this case) to use it.</p>
-    <p>
-    As long as the HID driver manages the device it can only be used as a
-    regular keyboard.  If you want to use another driver e. g., due to need of
-    blasting (transmitting) or using irexec you must first disable the HID
-    driver and bind another low-level driver to it.</p>
-    <p>
-
-    <h4>Disabling the HID driver</h4>
-    <p>
-    Disabling the HID driver can be done in many ways including reloading
-    the kernel modules in a different order, using a usbhid quirk or
-    using xorg.conf. Here we will focus on unbinding using the kernel
-    userspace unbind interface described in
-    <a href="https://lwn.net/Articles/143397/">this article</a>,
-    <a href="http://unix.stackexchange.com/questions/13964/prevent-claiming-of-novelty-usb-device-by-usbhid-so-i-can-control-it-with-libusb">this HOWTO.</a>
-    and <a href="http://lxr.free-electrons.com/source/Documentation/ABI/testing/sysfs-bus-usb">some kernel docs</a> </p>
-    <p>
-    The basic idea is to unbind the usbhid driver using a udev rule. Such
-    a rule could be defined as</p>
-<pre>
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0471", ATTRS{idProduct}=="20cc", \
-        MODE="0660", GROUP="lirc",
-        RUN="/bin/sh -c 'echo -n $kernel:1.0 &gt; /sys/bus/usb/drivers/usbhid/unbind'"
-</pre>
-    <p>
-    The <code>ATTRS{idVendor}</code> and <code>ATTRS{idProduct}</code> could
-    be obtained from the dmesg output when inserting the device, see example
-    <a href="#dmesg1">above</a> or using lsusb(1). This rule not only
-    unbinds the usbhid driver, at also allows member of the <code>lirc</code>
-    group to access the device.</p>
-    <p>
-    Check the results by listing the driver directory. </p>
-
-    <h4>Bind the new driver.</h4>
-
-    <p>
-    First, check the driver directory for  attached devices:</p>
-<pre>
-    $ tree /sys/bus/usb/drivers/usbhid/
-    /sys/bus/usb/drivers/usbhid/
-    ├── 1-1.1:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.1/1-1.1:1.0
-    ├── 1-1.2:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.2/1-1.2:1.0
-    ├── 1-1.3:1.0 -&gt; ../../../../devices/pci0000:00/0000:00:1c.4/0000:0b:00.0/usb1/1-1/1-1.3/1-1.3:1.0
-    ├── bind
-    ├── module -&gt; ../../../../module/usbhid
-    ├── new_id
-    ├── remove_id
-    ├── uevent
-    └── unbind
-</pre>
-    <p>
-    Doing this with the device inserted and removed will reveal the entry
-    created when the device is inserted. Here it is <em>1-1.1:1.0</em></p>
-    <p>
-    You can manually unbind the device from the usbhid driver by using:</p>
-<pre>
-	# echo  1-1.1:1.0 &gt; /sys/bus/usb/drivers/usbhid/unbind
-</pre>
-    <p>
-    If there is another driver like mceusb which supports the device
-    you can bind it to the same device using</p>
-<pre>
-	# echo  1-1.1:1.0 &gt; /sys/bus/usb/drivers/mceusb/bind
-</pre>
-    <p>
-    An alternative is to just reload the driver using modprobe.</p>
-    <p>
-    If you have reason to believe that the driver works with the capture
-    device although the driver does not recognize it you can do
-    something like</p>
-<pre>
-	# echo  "0471 20cc" &gt; /sys/bus/usb/drivers/mceusb/new_id
-</pre>
-    <p>
-    Here, <em>0471</em> and <em>20cc</em> is the vendor and product id
-    from dmesg. Beware: this might very well halt your system!</p>
-    <p>
-    This text only defines the outlines. Refer to the references for
-    details.  </p>
-
-    <A NAME="appendix-13"></A>
-    <h3 align="center">A13 : Using irrecord</h3>
-    <h4>Overview</h4>
-    <p>
-    <a href="irrecord.html">irrecord</a> is a simple program which in most
-    cases can record the signals emitted by a remote and create a lircd.conf
-    file from this.</p>
-    <p>
-    In many cases it's OK to just start irrecord and follow the instructions.
-    However, there are a few things to be aware about including command line
-    options,rc device protocol, physical disturbances, protocol parameters
-    and repeat masks.</p>
-
-    <h4>Command line options.</h4>
-    <p>
-    The primary options are --driver and usually also --device (some drivers
-    does not need --device). Follow the regular setup flow in
-    <a href="#determine-driver-and-device">Determine driver and device</a>
-    to select these options before running irrecord.<p>
-    <p>
-    When driver and device is known it saves some work to update
-    lirc_options.conf with the new values. irrecord uses the [lircd] section
-    as a fallback, so with a proper lirc_options.conf irrecord could be run
-    without command line options.</p>
-
-    <h4> rc device protocol.</h4>
-    If there is various non-printable garbage on the screen when running
-    irrecord using the default driver the rc protocol needs to be set.
-    With a single device the protocol can be set and inspected using
-<pre>
-        sudo sh -c "echo 'lirc' &gt; /sys/class/rc/rc0/protocol"
-        cat /sys/class/rc/rc0/protocol
-</pre>
-
-    <h4>Physical disturbances.</h4>
-    <P>
-    As for physical disturbances, the primary source is fluorescent
-    light. You should not have any such light around when using irrecord.
-    It's also important to have a suitable distance between the remote and
-    the capture device, which often is smaller than in typical, normal
-    usage. However, making the distance too small might cause other problems.
-    At a first try, use a foot or two.</p>
-
-    <h4>Protocol parameters and templates.</h4>
-    <p>
-    irrecord actually works in two phases. In the first, it tries to identify
-    the protocol used by the remote. Although this often  works quite well,
-    there are advantages using an existing file as a template.</p>
-    <p>
-    One reason to use a template is when irrecord fails to recognize the
-    protocol in the beginning. In such cases, try to find an existing
-    configuration from the same vendor using something like</p>
-<pre>
-        irdb-get find motorola
-        # lots of remotes listed...
-        irdb-get download motorola/VIP_1200.lircd.conf  # Pick any
-        cp VIP_1200.lircd.conf my_remote.lircd.conf
-        irrecord my_remote.lircd.conf
-</pre>
-    <p>
-    Invoking irrecord this way re-uses the existing protocol which usually
-    works (vendors seldom changes protocol parameters).</p>
-    <p>
-    Another reason to use an existing file is to get more exact timing,
-    important when planning to also transmit (blast). In such cases, using
-    a generic template found using <i>irdb-get find generic</i> has
-    advantages since the timing values here are hand-crafted from
-    specifications. To use these, you need to know which protocol your
-    remote uses, though.</p>
-    <p>
-    If decoding of IR commands does not work reliably you can try to
-    modify the eps and aeps values in the lircd config file to adjust
-    the tolerance of signal lengths. aeps is an absolute value while
-    eps is a relative value expressed in percent.</p>
-
-    <h4>Repeat masks.</h4>
-    <p>
-    After recording some buttons with irrecord, you should check the
-    repeat masks. These are needed in order to handle repeated button
-    presses, which are very common.</p>
-    <p>
-    Using the config file, start lircd and irw. Keeping a button
-    pressed down, you should see something like:</p>
-<pre>
-        0000000000f40bf0 00 KEY_1 ANIMAX
-        0000000000f40bf0 01 KEY_1 ANIMAX
-        0000000000f40bf0 02 KEY_1 ANIMAX
-        0000000000f40bf0 03 KEY_1 ANIMAX
-        0000000000f40bf0 04 KEY_1 ANIMAX
-        0000000000f40bf0 05 KEY_1 ANIMAX
-</pre>
-    <p>
-    Note how the second field gets incremented. It is important this
-    does work correctly.</p>
-
     <A NAME="appendix-14"></A>
     <h3 align="center">A14 : Running lircd as a regular user</h3>
     <p>
@@ -1614,7 +1447,7 @@ remote | kernel |   devinput v        |
     called <em>lirc</em> and it's group also is named <em>lirc</em>.</p>
     <p>
     There are two ways to run as a regular user. One is to patch the
-    lircd.service file so the services started as the lirc user.The
+    lircd.service file so the services started as the lirc user. The
     other is to use the --effective-user option. In this mode, lircd is
     started as root but drops privileges before actually processing
     infrared data.</p>
@@ -1674,11 +1507,6 @@ remote | kernel |   devinput v        |
              code = setserial /dev/ttyS0 uart none; modprobe lirc-serial
 </pre>
     <p>
-    The lircd-setup script which by default is run before the lircd
-    service runs this setup code as root. The code is ordinary shell
-    commands.</p>
-    <p>
-    On systems running selinux a non-root lircd will run into selinux
-    AVC denials problems. The contrib/ directory contains a lircd.te
-    selinux policy file which if compiled and installed gives lircd
-    the required permissions.</p>
+    The <a href="lircd-setup.html">lircd-setup</a> script which by default
+    is run before the lircd service runs this setup code as root. The code
+    is ordinary shell commands.</p>
