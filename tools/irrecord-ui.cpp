@@ -733,8 +733,9 @@ static enum button_status get_button_data(struct button_state* btn_state,
 				continue;
 			}
 			puts("Too many errors.");
+			puts("Check TROUBLESHOOTING in irrecord(1) manpage.");
 			if (!opts->force)
-				puts("Try using the -f option.");
+				puts("Or try using the -f option.");
 			return STS_BTN_HARD_ERROR;
 		case STS_BTN_BUTTON_DONE:
 			ncode_list_add(&(btn_state->ncode));
@@ -835,9 +836,11 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 			sts = STS_BTN_INIT;
 			continue;
 		case STS_BTN_HARD_ERROR:
-			fprintf(stderr, "Unrecoverable error: ");
-			fprintf(stderr, "%s\n", btn_state.message);
-			fprintf(stderr, "Giving up\n");
+			fprintf(stderr, "Unrecoverable error: %s\n",
+				btn_state.message);
+			fputs("Giving up\n", stderr);
+			fputs("Check TROUBLESHOOTING in irrecord manpage.\n",
+			      stderr);
 			exit(EXIT_FAILURE);
 		}
 		sts = record_buttons(&btn_state, sts, state, opts);
