@@ -24,6 +24,7 @@ ChangeLog
 simsend.out
 var
 *.log
+remotes.list
 
 drivers.yaml
 kernel-drivers.yaml

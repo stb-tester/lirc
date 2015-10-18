@@ -30,21 +30,23 @@
       <li>Compilation and linking requires the GNU toolchain
           including <em>make</em>, <em>gcc</em>, <em>g++</em>
           and <em>ld</em>.</li>
-      <li>The build requires python3. If the installed package does
+      <li>python3. If the installed package does
           not provide a python3 link (e. g., just python3.3)
           the <em>--enable-python3-fix</em> ./configure option
           installs a wrapper.</li>
       <li>Building requires <em>modinfo</em>, often in the package kmod.
-      <li>Building without kernel headers is not tested, and might
-          cause all sorts of problems. </li>
+      <li>Building requires kernel headers, often in the kernel-headers
+          package.</li>
       <li>xsltproc </li>
      </ul>
      <p><b>Optional dependencies</b></p>
      If these are missing, ./configure can cope with it and still
      build LIRC in a more or less limited way.
      <ul>
-      <li>Several scripts need the python3 PyYaml package at
-          http://pyyaml.org/wiki/PyYAML. Building without
+      <li>Several scripts need the python3 PyYaml at
+          http://pyyaml.org/wiki/PyYAML. Some distributions includes a
+          python3-yaml package. There is also a pypi package at
+          https://pypi.python.org/pypi/PyYAML. Building without
           this is possible but not recommended.</li>
       <li>Generating the HTML manpages requires man2html. </li>
       <li>Generating the API documentation requires Doxygen. </li>
@@ -173,7 +175,7 @@
       configuration steps for the main lircd program involves:
     <ul>
         <li> In some cases e. g., serial devices setting up kernel module
-             options in /etc/modprobe.d. </li>
+             options in /etc/modprobe.d or using udev rules. </li>
         <li> Selecting the driver and kernel device for your capture
              device.</li>
         <li> Selecting configuration file for your remote.</li>
