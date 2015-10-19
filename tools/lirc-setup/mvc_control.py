@@ -30,8 +30,11 @@ new group and restart lirc-setup.
 def _check_groups():
     """ Return error message if running user isn't member of group lirc. """
     user = pwd.getpwuid(os.geteuid()).pw_name
-    if user in grp.getgrnam("lirc")[3]:
-        return None
+    try:
+        if user in grp.getgrnam("lirc")[3]:
+            return None
+    except KeyError:
+        pass
     return MSG_NOT_IN_LIRC_GROUP.format(user=user)
 
 
