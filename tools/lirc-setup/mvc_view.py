@@ -189,7 +189,7 @@ class DecodeTestWindow(Gtk.Window):
         self.terminal.spawn_sync(
             Vte.PtyFlags.DEFAULT,
             os.getcwd(),
-            ['/usr/bin/sh'],
+            ['/bin/sh'],
             [],
             GLib.SpawnFlags.DO_NOT_REAP_CHILD,
             None,
@@ -261,7 +261,7 @@ class DeviceTestWindow(Gtk.Window):
         self.terminal.spawn_sync(
             Vte.PtyFlags.DEFAULT,
             os.getcwd(),
-            ['/usr/bin/sh'],
+            ['/bin/sh'],
             [],
             GLib.SpawnFlags.DO_NOT_REAP_CHILD,
             None,
