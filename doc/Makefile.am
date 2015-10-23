@@ -5,8 +5,10 @@ CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
                           api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
                           doxygen*warning*
 
-EXTRA_DIST              = Doxyfile make-driver-toc.sh \
-                          manpage.xsl docpage.xsl docpage.xsl  page.xsl
+EXTRA_DIST              = Doxyfile \
+                          manpage.xsl \
+                          driver-toc.xsl \
+                          make-driver-toc.sh
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
@@ -34,11 +36,12 @@ if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
 
+
 websitedir              = $(docdir)/lirc.org
 dist_website_DATA       = $(website_files)
 
 plugindocsdir           = $(docdir)/plugindocs
-dist_plugindocs_DATA    = $(plugindocs) $(pluginfiles)
+dist_plugindocs_DATA    = README $(pluginfiles)
 
 website_htmldir         = $(docdir)/lirc.org/html
 dist_website_html_DATA  = $(generated_html) \
@@ -68,7 +71,7 @@ if HAVE_PYMOD_YAML
 nodist_pkgdata_DATA     = lirc.hwdb
 endif
 
-dist_noinst_DATA        = $(man_sources) $(html_sources)
+dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
@@ -86,9 +89,7 @@ else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
 	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
-	$(top_srcdir)/tools/make_rel_symlink.py \
-	    $(DESTDIR)/$(website_htmldir)/configuration-guide.html \
-	    $(DESTDIR)/$(plugindocsdir)/configuration-guide.html
+	sed -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
 
 
 clean-local:
@@ -98,7 +99,7 @@ uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
 
-table.html: driver-toc.xsl
+table.html: driver-toc.xsl ext-driver-toc.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
 	PYTHONPATH=. \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs | \
@@ -112,6 +113,9 @@ lirc.hwdb:
 
 driver-toc.xsl: $(plugindocs)
 	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
+
+ext-driver-toc.xsl:
+	$(srcdir)/make-ext-driver-toc.sh  > $@
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $< $@
@@ -201,11 +205,12 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/tira.html \
                            $(srcdir)/plugindocs/udp.html
 
-pluginfiles             =  plugindocs/Makefile \
-                           docpage.xsl.in \
-                           page.xsl \
-                           make-driver-toc.sh \
-                           html-source/programs.html
+pluginfiles             =  $(srcdir)/plugpage.xsl \
+                           $(srcdir)/driver-toc.xsl \
+                           $(srcdir)/make-ext-driver-toc.sh \
+                           $(srcdir)/page.xsl \
+                           $(srcdir)/plugindocs.mk \
+                           html/programs.html
 
 html_sources            =  $(srcdir)/html-source/api-general.html \
                            $(srcdir)/html-source/configuration-guide.html \

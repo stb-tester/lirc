@@ -1,5 +1,5 @@
 
-# Post-installation re-generation of plugin docs and programs.html.
+# Installation generation of plugin docs and programs.html.
 # Uses hardcore GNU Make addons not likely to run on any other
 # make implementation.
 #

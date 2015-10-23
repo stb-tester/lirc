@@ -1,0 +1,34 @@
+ <CENTER><H1>Default driver.</H1></CENTER>
+
+ <P>
+  The default driver reads/writes data to the <code>/dev/lirc[0-9]</code>
+  devices. It's a LIRC_LIRCMODE2 type driver handling timing information.</p>
+<p>
+  The <code>/dev/lirc[0-9]</code> devices are created by certain kernel
+  modules (most of which former LIRC drivers which have been moved into
+  the kernel). They reflect a IR remote driver loaded by the kernel.</p>
+<p>
+  The kernel drivers will by default recieve and decode the timing data
+  from the remote and send them as events on a /dev/input device. However,
+  the will also make the raw timing data available on a /dev/lirc device.
+  The default driver listens to this data, and decodes it to events
+  presented to the applications on a (default)<code> /var/run/lirc/lircd
+  </code> socket.
+<p>
+  Without further configuration, this means that a single button press can
+  reach the application both on the /dev/input and the /var/run/lirc/lircd
+  interfaces. The symptoms of this is that each press is doubled. </p>
+<p>
+  To fix this, force the kernel driver to use the lirc protocol, which
+  effectively mutes the /dev/input device. On a simple system with only
+  one remote this is done using
+<pre>
+       sudo echo 'lirc' &gt; /sys/class/rc/rc0/protocols
+</pre>
+  From 0.9.3+ this is done automatically by the driver.
+<p>
+  The driver also supports sending (IR blasting).
+<p>
+  Contrary to most drivers, the default driver probes the loaded kernel
+  modules about their capabilities. This means that the static capability
+  information displayed by lirc-lsplugins(1) doesn't make much sense.

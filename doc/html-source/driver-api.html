@@ -405,9 +405,9 @@ lirc
  |-----doc
  |      |
  |      |
- |     html-source------
+ |     plugindocs ------
  |                     |
- |               foo_driver.html
+ |                  foo.html
  |-----configs
  |        |
  |     foo.conf
@@ -427,10 +427,10 @@ The file configs/README describes the format. This is used by tools
 like lirc-setup, but also to create the list of all drivers. New
 files are automatically picked up.</p>
 <p>
-The documentation is a single html file in the doc/html-source directory.
-The filename should have _driver.html suffix. New files with this suffix
-are automatically picked up by the build system, as long it's
-listed in doc/Makefile.am.</p>
+The documentation is a single html file in the doc/plugindocs directory.
+The plugindocs directory contains a makefile which could be used to
+update the main html documents when the plugindocs/ contents have
+changed. See example in @ref drivers/default/Makefile</p>
 <P>
 The lirc-driver pkgconfig file defines three variables useful when
 installing files: <i>plugindir</i>, <i>configdir</i> and <i>plugindocs</i>.
