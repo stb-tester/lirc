@@ -248,7 +248,9 @@ int main(int argc, char** argv)
 }
 </pre>
 
-Notes:
+<p>
+Notes: </p>
+<p>
 <ul>
    <li>
      Feeding NULL to lirc_get_local_socket() will make it use the default
@@ -260,10 +262,12 @@ Notes:
    <li>
     <em>Key symbol</em> is the name of a key definition in the lircd.conf
     file.</li>
-</ul>
+</ul> </p>
+<p>
 lirc_send_one() and lirc_simulate() are blocking. If you need to do
 non-blocking IO and/or access other functionality available you need to
-use lirc_command_init() and lirc_command_run(). Example code is in irsend.cpp.
+use lirc_command_init() and lirc_command_run(). Example code is in
+irsend.cpp.  </p>
 
 
 <h3>Autoconf support</h3>

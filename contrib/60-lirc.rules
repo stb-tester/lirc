@@ -1,6 +1,6 @@
 # Installing this udev rule will make the /dev/lirc* devices accessible
 # for users in the group "lirc" using regular group permissions. USB
-# devices are grants rw permission to the lirc group using ACL.
+# devices grants rw permission to the lirc group using ACL.
 # To enable, copy to /etc/udev/rules.d.
 
 KERNEL=="lirc[0-9]*", SUBSYSTEM=="lirc", GROUP="lirc", MODE="0660"

@@ -1,0 +1,31 @@
+#
+# Example of a ~/config/lircrc.  The restart command requires
+# sudo setup, see the Configuration Manual (Running Irexec).
+#
+
+
+# Enable lircrcd (see "Configure LIRC" in the manual".
+lircrc_class default
+
+
+include ~/.config/lirc/mythtv.lircrc
+include ~/.config/lirc/vlc.lircrc
+include ~/.config/lirc/volume_mythtv.lircrc
+
+begin
+    prog   = irexec
+    button = KEY_RED
+    config = sudo /usr/bin/systemctl restart gdm.service
+end
+
+begin
+    prog   = irexec
+    button = KEY_GREEN
+    config = wmctrl -s 1; spotify &
+end
+
+begin
+    prog   = irexec
+    button = KEY_YELLOW
+    config = wmctrl -s 0
+end

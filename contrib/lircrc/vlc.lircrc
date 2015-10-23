@@ -1,0 +1,191 @@
+# Created by /usr/bin/lirc-config-tool at Sat 24 Oct 20:14:14 CEST 2015
+
+# See http://wiki.videolan.org/How_to_Use_Lirc
+
+    begin
+        prog   = vlc
+        button = KEY_REWIND
+        config = key-slower
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_FASTFORWARD
+        config = key-faster
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_MUTE
+        config = key-vol-mute
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_STOP
+        config = key-quit
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_PAUSE
+        config = key-pause
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_PLAY
+        config = key-play
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_VOLUMEUP
+        config = key-vol-up
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_VOLUMEDOWN
+        config = key-vol-down
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_NEXT
+        config = key-next
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_PAGEUP
+        config = key-next
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_PAGEDOWN
+        config = key-previous
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_TV
+        config = key-aspect-ratio
+    end
+
+    begin
+        prog   = vlc
+        button = KEY_SUBTITLE
+        config = key-subtitle-track
+    end
+#
+# Illegal button names:
+#
+#    X_KEY_START
+#    X_KEY_RECORDEDTV
+#
+# Unused buttons:
+#
+#    KEY_PC
+#    KEY_RECORD
+#    KEY_AGAIN
+#    KEY_BACK
+#    KEY_INFO
+#    KEY_UP
+#    KEY_LEFT
+#    KEY_OK
+#    KEY_RIGHT
+#    KEY_DOWN
+#    KEY_EPG
+#    2
+#    KEY_MENU
+#    KEY_1
+#    KEY_2
+#    KEY_3
+#    KEY_4
+#    KEY_5
+#    KEY_6
+#    KEY_7
+#    KEY_8
+#    KEY_9
+#    KEY_NUMERIC_STAR
+#    KEY_0
+#    KEY_NUMERIC_POUND
+#    KEY_CLEAR
+#    KEY_ENTER
+#    KEY_TEXT
+#    KEY_RED
+#    KEY_GREEN
+#    KEY_YELLOW
+#    KEY_BLUE
+#
+# Unused capabilities:
+#
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_EXIT
+#        config = key-quit
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_PLAY_PAUSE.
+#        config = key-play-pause
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_DVD
+#        config = key-disc-menu
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_PREVIOUS
+#        config = key-prev
+#    end
+
+#    begin
+#        prog   = vlc
+#        button = KEY_AUDIO
+#        config = key-audiodevice-cycle
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_LANGUAGE
+#        config = key-audiotrack
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_NEXTSONG
+#        config = key-next
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_PREVIOUSSONG
+#        config = key-previous
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_SCALE
+#        config = key-toggle-autoscale
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_ZOOMIN
+#        config = key-incr-scalefactor
+#    end
+#
+#    begin
+#        prog   = vlc
+#        button = KEY_ZOOMOUT
+#        config = key-decr-scalefactor
+#    end
+#

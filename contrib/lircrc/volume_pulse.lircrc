@@ -1,0 +1,15 @@
+# Created by /usr/bin/lirc-config-tool at Sat 24 Oct 20:18:22 CEST 2015
+
+# See http://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Modules/
+
+    begin
+        prog   = PulseAudio
+        button = KEY_VOLUMEDOWN
+        config = volume-down
+    end
+
+    begin
+        prog   = PulseAudio
+        button = KEY_VOLUMEUP
+        config = volume-up
+    end

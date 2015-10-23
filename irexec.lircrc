@@ -1,9 +1,9 @@
 #
 # Initial test configuration for systemwide irexec service.
 #
-# Note that uing the system-wide service is useful only in corner-cases.
+# Note that the system-wide service is useful only in corner-cases.
 # Most scenarios are better off with a session service as described in the
-# Configuration Guide.
+# Configuration Guide. However, note that both can also be combined.
 #
 # Also note that the system-wide service runs without a terminal. To
 # check the output generated use something like

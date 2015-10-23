@@ -1,0 +1,95 @@
+<!--
+KODI does not use lircrc mapping, instead there is this XML file. This
+is just a simple mapping between LIRC button names and KODI's
+internal naming scheme. lirc capabilities like sequences, modes,
+repeat suppress and long keypresses are not available
+
+Using names from the namespece means that this file should be usable
+as-is in most cases (besides the initial device=name).
+
+See: http://kodi.wiki/view/LIRC
+
+-->
+
+<lircmap>
+
+  <remote device="my-LIRC-remote">
+
+    <left>KEY_LEFT</left>
+    <right>KEY_LEFT</right>
+    <up>KEY_UP</up>
+    <down>KEY_DOWN</down>
+    <select>KEY_OK</select>
+    <back>KEY_BACK</back>
+
+    <play>KEY_PLAY</play>
+    <pause>KEY_PAUSE</pause>
+    <stop>KEY_STOP</stop>
+
+    <volumeplus>KEY_VOLUMEUP</volumeplus>
+    <volumeminus>KEY_VOLUMEDOWN</volumeminus>
+    <mute>KEY_MUTE</mute>
+
+    <pageplus>KEY_PAGEUP</pageplus>
+    <pageminus>KEY_PAGEDOWN</pageminus>
+
+    <power>KEY_POWER</power>
+    <menu>KEY_MENU</menu>
+    <info>KEY_INFO</info>
+    <display></display>
+    <title>KEY_TITLE</title>
+
+    <red>KEY_RED</red>
+    <green>KEY_GREEN</green>
+    <yellow>KEY_YELLOW</yellow>
+    <blue>KEY_BLUE</blue>
+
+    <zero>KEY_0</zero>
+    <one>KEY_1</one>
+    <two>KEY_2</two>
+    <three>KEY_3</three>
+    <four>KEY_4</four>
+    <five>KEY_5</five>
+    <six>KEY_6</six>
+    <seven>KEY_7</seven>
+    <eight>KEY_8</eight>
+    <nine>KEY_9</nine>
+
+    <skipplus>KEY_NEXT</skipplus>
+    <skipminus>KEY_PREVIOUS</skipminus>
+
+    <reverse>KEY_REWIND</reverse>
+    <forward>KEY_FORWARD</forward>
+
+    <subtitle>KEY_SUBTITLE</subtitle>
+    <language>KEY_LANGUAGE</language>
+
+    <channelplus>KEY_CHANNELUP</channelplus>
+    <channelminus>KEY_CHANNELDOWN</channelminus>
+
+    <mytv></mytv>
+    <mymusic>KEY_AUDIO</mymusic>
+    <mypictures>KEY_IMAGES</mypictures>
+    <myvideo>KEY_VIDEO</myvideo>
+    <livetv>KEY_TV</livetv>
+    <recordedtv>KEY_TV2</recordedtv>
+    <liveradio>KEY_RADIO</liveradio>
+    <epgsearch>KEY_SEARCH</epgsearch>
+
+    <guide>KEY_EPG</guide>
+
+    <record>KEY_RECORD</record>
+    <start>KEY_RESTART</start>
+
+    <star>KEY_NUMERIC_STAR</star>
+    <hash>KEY_NUMERIC_POUND</hash>
+    <clear>KEY_CLEAR</clear>
+    <enter>KEY_ENTER</enter>
+    <xbox></xbox>
+
+    <playlist>KEY_LIST</playlist>
+    <teletext>KEY_TEXT</teletext>
+
+  </remote>
+
+</lircmap>

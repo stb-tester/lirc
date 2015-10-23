@@ -213,6 +213,7 @@ struct driver {
 	 *    - /dev/foo\*    A wildcard listing possible devices, general
 	 *                    fallback.
 	 *    - /bin/sh ...   Shell command listing possible devices.
+	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
 	 *    - None          No device is silently configured.
 	 *    - Auto          No device configured, but a message is
 	 *                    displayed.

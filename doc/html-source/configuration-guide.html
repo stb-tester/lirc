@@ -1110,18 +1110,21 @@ remote | kernel |   devinput v        |
     this, you can bind remote buttons to any command you can run. It's
     typically used to shut down system, system volume controls etc.</p>
     <p>
-    There is two ways to run irexec, both with their pros and cons.</p>
+    There is two ways to run irexec, both with their pros and cons. It
+    is possible to run irexec either way, or both as parallel services.</p>
     <p>
-    The first way is to run irexec as a system daemon. This can be done in
-    many ways e. g., from a rc.local script or as a systemd service. Any way
-    you will have security problems since running arbitrary commands and
+    The first way is to run irexec as a system daemon. This can be done
+    using a systemd service. This way
+    has security problems since running arbitrary commands and
     scripts as root is generally a bad idea. There is also the problem that
     irexec runs outside your session which means it's problematic to access
     the display, sound system and other resources typically bound to the
     session. On the other hand, this is flexible and since irexec runs as
-    root it can in the end do anything </p>
+    root it can in the end do anything. As shipped, lircd has a service
+    which can be enabled using <em>systemctl start irexec.service</em>
+    etc. It is configured using /etc/lirc/irexec.lircrc </p>
     <p>
-    The second way to run irexec is to run it as a part of the session. A
+    The second way to run irexec is to run it as a part of the session. The
     standard way to do this is to drop a irexec.desktop file in the config
     autostart  directory, normally ~/.config/autostart.  Doing so you can
     use your desktop tools to control the service. Also, since the service
@@ -1138,16 +1141,16 @@ remote | kernel |   devinput v        |
         ## Allows members of the htpc group to restart session service
         %htpc ALL=NOPASSWD: /usr/bin/systemctl restart gdm.service
     </pre>
-    All in all, to configure irexec:
+    All in all, to configure irexec as a session service:
     <ul>
         <li> Copy irexec.desktop from the contrib directory to
              ~/.config/autostart</li>
         <li> Possibly add entries to /etc/sudoers (above) if you need to
              run otherwise restricted commands.</li>
-        <li> Enable the session service using e. g. gnome settings or
-             corresponding tools.</li>
+        <li> Enable the session service using e. g., gnome-tweak-tool or
+             corresponding apps. Or just logout-login.</li>
         <li> Configure the ~/.config/lircrc file as described in
-    <a href="configure.html#lircrc_format">.lircrc chapter </a>
+             <a href="configure.html#lircrc_format">.lircrc chapter </a>
              Note that you must specify "program = irexec" for irexec
              to pick up your configuration.</li>
     </ul>

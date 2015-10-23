@@ -1,0 +1,18 @@
+# Created by /usr/bin/lirc-config-tool at Sat 24 Oct 20:21:20 CEST 2015
+
+
+    begin
+        prog   = irexec
+        button = KEY_VOLUMEDOWN
+        config = amixer set Master 3%- &> /dev/null
+        repeat = 10
+        delay  = 10
+    end
+
+    begin
+        prog   = irexec
+        button = KEY_VOLUMEUP
+        config = amixer set Master 3%+ &> /dev/null
+        repeat = 10
+        delay  = 10
+    end

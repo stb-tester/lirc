@@ -1,0 +1,14 @@
+# Created by /usr/bin/lirc-config-tool at Sat 24 Oct 20:47:25 CEST 2015
+
+
+    begin
+        prog   = mythtv
+        button = KEY_VOLUMEDOWN
+        config = [
+    end
+
+    begin
+        prog   = mythtv
+        button = KEY_VOLUMEUP
+        config = ]
+    end

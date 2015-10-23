@@ -3,12 +3,15 @@ ACLOCAL_AMFLAGS         = -I m4
 
 CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
                           api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
-                          doxygen*warning*
+                          doxygen*warning* ext-driver-toc.xsl
 
-EXTRA_DIST              = Doxyfile \
-                          manpage.xsl \
-                          driver-toc.xsl \
-                          make-driver-toc.sh
+EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh
+
+if DEVEL
+website                 = http://lirc.sf.net/lirc.org
+else
+website                 = http://lirc.org
+endif
 
 LIB_SRC                 = $(srcdir)/../lib
 API_SRC                 = $(LIB_SRC)/*.c \
@@ -35,7 +38,6 @@ dist_doc_DATA           = irxevent.keys
 if HAVE_DOXYGEN
 dist_doc_DATA           += api-docs.tar.gz
 endif
-
 
 websitedir              = $(docdir)/lirc.org
 dist_website_DATA       = $(website_files)
@@ -98,8 +100,14 @@ clean-local:
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
 
+$(abs_builddir)/driver-toc.xsl: $(plugindocs)
+	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
 
-table.html: driver-toc.xsl ext-driver-toc.xsl
+docpage.xsl: $(abs_builddir)/driver-toc.xsl
+
+$(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
+
+table.html: docpage.xsl ext-driver-toc.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
 	PYTHONPATH=. \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs | \
@@ -111,22 +119,19 @@ lirc.hwdb:
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
 
-driver-toc.xsl: $(plugindocs)
-	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
-
 ext-driver-toc.xsl:
 	$(srcdir)/make-ext-driver-toc.sh  > $@
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $< $@
 
-$(generated_html): $(html_sources) docpage.xsl driver-toc.xsl
+$(generated_html): $(html_sources) docpage.xsl
 	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
 	$(SED) -i "s/@version@/$(VERSION)/" $@
 
-$(generated_plugindocs): $(plugindocs) docpage.xsl driver-toc.xsl
+$(generated_plugindocs): $(plugindocs) docpage.xsl
 	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|plugindocs/|') > $@
@@ -145,16 +150,18 @@ $(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
                         </p>'  \
 		    -e '/HREF/s|".*man[1-9]/\(.*\)[0-9]\.html|"\1html|' | \
 			 xsltproc --html $(srcdir)/manpage.xsl - | \
-			    sed '/href="\.\.\/index.html"/s|\.\./||' >$@
+			    sed -e '/href="\.\.\/index.html"/s|\.\./||' > $@
 
 $(nodist_man_MANS): $(man_sources)
 	@mkdir man 2>/dev/null || :
 	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
 	    $(SED) "s/@version@/$(VERSION)/" <$$src >$@
-	sed -i 's|@prefix@|$(prefix)|' $@
-	sed -i 's|@varrundir@|$(localstatedir)/run|' $@
-	sed -i 's|@etcdir@|$(sysconfdir)|' $@
-	sed -i 's|@libpath@|$(libdir)|' $@
+	@sed -i 's|@prefixdir@|$(prefix)|' $@
+	@sed -i 's|@varrundir@|$(localstatedir)/run|' $@
+	@sed -i 's|@etcdir@|$(sysconfdir)|' $@
+	@sed -i 's|@libpath@|$(libdir)|' $@
+	@sed -i 's|@libpath@|$(libdir)|' $@
+	@sed -i 's|@website@|$(website)|' $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
@@ -179,12 +186,14 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lirc.4 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
+                           $(srcdir)/man-source/lirc-make-devinput.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd-setup.8 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
                            $(srcdir)/man-source/lircrcd.8 \
+                           $(srcdir)/man-source/lircrc.5 \
                            $(srcdir)/man-source/mode2.1 \
                            $(srcdir)/man-source/pronto2lirc.1
 
@@ -196,6 +205,7 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/default.html \
                            $(srcdir)/plugindocs/devinput.html \
                            $(srcdir)/plugindocs/file.html \
+                           $(srcdir)/plugindocs/ftdi.html \
                            $(srcdir)/plugindocs/girs.html \
                            $(srcdir)/plugindocs/imon-24g.html \
                            $(srcdir)/plugindocs/imon.html \
@@ -241,12 +251,14 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lirc.4 \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
+                           man/lirc-make-devinput.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd-setup.8 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
                            man/lircrcd.8 \
+                           man/lircrc.5 \
                            man/mode2.1 \
                            man/pronto2lirc.1
 
@@ -265,12 +277,14 @@ manpage_html            += man-html/ircat.html \
                            man-html/lirc.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
+                           man-html/lirc-make-devinput.html \
                            man-html/lirc-setup.html \
                            man-html/lircd-setup.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \
                            man-html/lircrcd.html \
+                           man-html/lircrc.html \
                            man-html/mode2.html \
                            man-html/pronto2lirc.html
 
@@ -282,6 +296,7 @@ generated_plugindocs    =  html/alsa-usb.html \
                            html/default.html \
                            html/devinput.html \
                            html/file.html \
+                           html/ftdi.html \
                            html/girs.html \
                            html/imon-24g.html \
                            html/imon.html \

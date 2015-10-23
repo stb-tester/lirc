@@ -43,8 +43,7 @@ dist_doc_DATA           = VERSION
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
-nobase_dist_pkgdata_DATA = $(srcdir)/contrib/* \
-                           $(srcdir)/configs/kernel-drivers.dist
+nobase_dist_pkgdata_DATA = configs/kernel-drivers.dist
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
@@ -53,9 +52,13 @@ header_HEADERS          = paths.h drivers/irpipe/irpipe.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
+	cp -ar $(srcdir)/contrib $(DESTDIR)$(pkgdatadir)
 
 uninstall-hook:
-	rm -rf $(pkgdatadir) $(pkgpythondir)
+	chmod -R u+w $(DESTDIR)/$(datadir)/contrib
+	rm -r $(DESTDIR)/$(pkgdatadir) \
+	      $(DESTDIR)/$(pkgpythondir) \
+	      $(DESTDIR)/$(datadir)/contrib
 
 dist-hook: ChangeLog $(distdir)/debian/distfiles fix-version
 	tar -T $(distdir)/debian/distfiles -C $(srcdir) -cf - | \
@@ -90,7 +93,7 @@ ChangeLog: .phony
 	) > ChangeLog
 
 devinput.lircd.conf:
-	echo "# Rename to devinput.lircd.conf when using devinput driver" > $@
+	echo "# Rename to devinput.lircd.dist if not using devinput driver" > $@
 	echo "# Re-generate for current kernel using lirc-make-devinput" >> $@
 	echo '#' >> $@
 	$(srcdir)/tools/lirc-make-devinput >> $@
