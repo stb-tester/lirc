@@ -5,3 +5,7 @@ This directory is a dumping ground where plugins compiled out-of-tree can
 store documentation. It's not used in any particular way by the main
 lirc installation, but is exported using the pkg-config 'plugindocs'
 variable.
+
+The plugindocs.mk file provided here can be included and used with
+'make update'. This will format complete pages in the main html
+directory from sources here, and also update the programs.html index.
