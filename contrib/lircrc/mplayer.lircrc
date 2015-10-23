@@ -1,0 +1,176 @@
+# Created by /usr/bin/lirc-config-tool at Sat 24 Oct 20:17:04 CEST 2015
+
+# See http://www.mplayerhq.hu/DOCS/HTML/en/control.html
+
+    begin
+        prog   = mplayer
+        button = KEY_UP
+        config = pt_up-step 1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_DOWN
+        config = pt_up_step -1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_LEFT
+        config = pt_step -1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_RIGHT
+        config = pt_step 1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_REWIND
+        config = seek -30 0
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_FASTFORWARD
+        config = seek +30 0
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_MUTE
+        config = mute
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_VOLUMEUP
+        config = volume +1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_VOLUMEDOWN
+        config = volume -1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_STOP
+        config = quit
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_PAUSE
+        config = pause
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_PLAY
+        config = seek +1
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_MENU
+        config = osd
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_POWER
+        config = quit
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_CHANNELDOWN
+        config = tv_step_channel -1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_CHANNELUP
+        config = tv_step_channel +1
+        delay = 5
+    end
+
+    begin
+        prog   = mplayer
+        button = KEY_PLAYPAUSE
+        config = pause
+    end
+
+# Illegal button names:
+#
+#    X_KEY_START
+#    X_KEY_RECORDEDTV
+#
+# Unused buttons:
+#
+#    KEY_TV
+#    KEY_PC
+#    KEY_RECORD
+#    KEY_AGAIN
+#    KEY_NEXT
+#    KEY_BACK
+#    KEY_INFO
+#    KEY_OK
+#    KEY_PAGEUP
+#    KEY_PAGEDOWN
+#    KEY_EPG
+#    KEY_TV2
+#    KEY_1
+#    KEY_2
+#    KEY_3
+#    KEY_4
+#    KEY_5
+#    KEY_6
+#    KEY_7
+#    KEY_8
+#    KEY_9
+#    KEY_NUMERIC_STAR
+#    KEY_0
+#    KEY_NUMERIC_POUND
+#    KEY_CLEAR
+#    KEY_ENTER
+#    KEY_TEXT
+#    KEY_RED
+#    KEY_GREEN
+#    KEY_YELLOW
+#    KEY_BLUE
+#
+# Unused capabilities:
+#
+#
+#    begin
+#        prog   = mplayer
+#        button = KEY_F11
+#        config = vo_fullscreen
+#    end
+#
+#    begin
+#        prog   = mplayer
+#        button = TBD_AUDIO_DELAY_UP
+#        config = audio_delay +0.1
+#        delay = 5
+#    end
+#
+#    begin
+#        prog   = mplayer
+#        button = TBD_AUDIO_DELAY_DOWN
+#        config = audio_delay -0.1
+#        delay = 5
+#    end
+#

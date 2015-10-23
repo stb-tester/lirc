@@ -1,4 +1,4 @@
-.TH IREXEC "1" "Last change: Sep 2015" "irexec @version@" "User Commands"
+.TH IREXEC "1" "Last change: Oct 2015" "irexec @version@" "User Commands"
 .SH NAME
 .P
 \fBirexe\fRc - run programs with one button press
@@ -7,22 +7,26 @@
 [\fIoptions\fR] [\fIconfig_file\fR]
 .SH DESCRIPTION
 .P
-This program lets you execute arbitrary commands on an IR signal decoded
-by lircd, the LIRC daemon. You can give irexec a command line parameter
-which has to be a name of a valid config file. If no command line
-parameters are given irexec reads the default config file which is
-usually ~/.config/lircrc.
+\fBirexec\fR executes commands on an IR signal decoded
+by lircd, the LIRC daemon. It uses an lircrc config file where
+the \fI config = \fR entries are executed. E. g., given the
+following config file snippet
+.nf
+    begin
+        prog   = irexec
+        button = KEY_RED
+        config = echo "KEY_RED"
+    end
+.fi
 .P
-For version up to 0.9.1 irexec will wait until the executed program
-terminates. So append a '&' to the command string if you don't want that.
-.P
-For version 0.9.2+ irexec does \fBnot\fR wait for the executed program to
-terminate. In fact, the executed code is completely disconnected from irexec.
-So, for 0.9.2+ the trailing & is not required, and there is no way to make
-irexec wait for the executed code.
-.P
-The config string consists of the shell command to be run. Potential
-uses are shutting down the computer, starting a dial-up connection etc.
+\fBirexec\fR will echo \fIKEY_RED\fR on the terminal when the corresponding
+button is pushed on a remote. The command is an arbitrary shell command
+executed asynchronously \- \fBirexec\fR does not wait for it to complete.
+.SH ARGUMENTS
+.TP 4
+.B config_file
+lircrc configuration file. \fBirexec\fR only uses entries with
+\fIprog = irexec\fR. The path defaults to \fI~/.config/lircrc\fR.
 .SH OPTIONS
 .TP 4
 .B -h, --help
@@ -32,47 +36,54 @@ Display usage summary
 Display version
 .TP 4
 .B  -d, --daemon
-Make irexec fork to background. That way you can easily start irexec
-from an init script. In this case you should specify a config file on the
-command line as irexec won't be able to find your home directory.
+Make irexec fork to background. In this case a config file should be given
+on the command line as irexec won't be able to find any home directory.
 .TP 4
 \fB-D, --loglevel\fR [\fIlevel\fR]
-Determine the amount of logging information. [level] can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'. By default, no logging is done.
+Determine the amount of logging information. [\fIlevel\fR] can be a symbolic
+syslog level: \fIerror\fR, \fIwarning\fR, \fIinfo\fR, \fInotice\fR or
+\fIdebug\fR. lirc also defines three additional levels \fItrace\fR,
+\fItrace\fR and \fItrace2\fR which gives even more messages (\fItrace2\fR
+bringing the most). However, in the log these messages are marked as
+\fIdebug\fR. By default, no logging is done.
 .TP 4
 \fB-n, --name\fR <\fIname\fR>
-Use this program name instead of the default 'irexec' as identifier in
+Use this program name instead of the default \fIirexec\fR as identifier in
 the lircd.conf file.
 .SH ENVIRONMENT
 .TP 4
-LIRC_SOCKET_PATH
+.B LIRC_SOCKET_PATH
 Path to the lircd socket irexec reads from, defaults to @varrundir@/lirc/lircd.
-
-
 .SH FILES
+.TP 4
+.B ~/.config/lircrc
+Default config file
+.TP 4
+.B @etcdir@/lirc/lircrc
+Config file used by the systemd irexec service.
 .TP 4
 .B ~/.cache/irexec.log
 Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
 file to $XDG_CACHE_HOME/irexec.log
-
-
-.SH NOTE
+.SH NOTES
 .P
-If you start irexec, it reads your ~/.config/lircrc and reacts only on
-prog= entries that point to irexec. If you have included more than one
-program in your .lircrc, then start all these programs, they react
-itself only to their according entries in .lircrc.
+For versions up to 0.9.1 \fBirexec\fR used to  wait until the executed program
+terminated. Old configuration files thus often includes a  '&' appended
+to the command string to avoid being stuck in the command. This is not
+required in 0.9.2+ which cannot wait for command completion.
 .P
 irexec should run as a service. The contrib directory contains a .desktop
 file which could be dropped in ~/.local/autostart. Doing so creates a
-service which can be handled by regular desktop tools on all major
-desktops. If you need to run run restricted commands such as powering
-off the machine, you can use sudo to allow regular users to run specific
-commands. See the Configuration Guide in the html documentation.
-.SH "SEE ALSO"
+service which can be handled by regular desktop tools such
+as \fIgnome\-tweak\-tool\fR on all major desktops. If running restricted
+commands such as powering off the machine is required, sudo(8) can be used
+to allow regular users to run such commands.
 .P
-The documentation for \fBlirc\fR is maintained as html pages. They are
-located under html/ in the documentation directory.
+An alternative is to use the irexec.service systemd service
+which runs as root (and can run in parallel with the desktop service).
+Running as root has severe security implications.
+See the Configuration Guide in the html documentation.
+.SH "SEE ALSO"
+.TP 4
+.B lircrc(5)
+The lircrc configuration file.

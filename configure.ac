@@ -335,6 +335,9 @@ AC_ARG_ENABLE([python3_fix],
   [enable_python3_fix="no"])
 AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
 
+suffix=$(echo "$VERSION" | sed 's/.*-//')
+AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
+
 dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
@@ -411,6 +414,7 @@ AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
+AC_REPORT_CONDITIONAL([DEVEL])
 
 echo
 

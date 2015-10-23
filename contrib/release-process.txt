@@ -31,6 +31,7 @@ Steps for a new release (pre or final)
 
 4) Update version number in:
         README, NEWS, configure.ac
+        Makefile.am (ChangeLog entries)
    Update the news entry in README.
 
 5) Commit and push branch:

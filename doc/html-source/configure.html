@@ -208,6 +208,12 @@ MOVE_NE   ANIMAX_MOUSE_PAD   MOUSE_NNE</PRE>
       is to have configuration information of all clients in one
       place. That lets you keep a better overview of clients and
       simplifies the use of modes explained later.
+    <p>
+      The preferred setup is to have a main <em>~/.lircrc</em>
+      which includes a number of other files, typically  living in
+      <em>~/.config/lircrc/*</em>. The contrib directory contains
+      a number of example files, most of which created using
+      <em>lirc-config-tool</em> for an ordinary MCE remote </p>
     </P>
     <P>
       First I will explain the syntax of the <em>lircrc</em>file itself.
@@ -539,8 +545,8 @@ lircrc_class default
       than for receiving. A discussion of all the infrared protocols
       is way beyond the scope of this manual but when creating a
       config file at least read the <A HREF="help.html">hints</A> at the
-      end of this manual. You can find exact timing specifications for most i
-      common protocols in files retrieved from the remotes database
+      end of this manual. You can find exact timing specifications for most
+      common protocols in files retrieved from the remotes database located
       using <i>irdb-get find generic</i>
     </P>
     <P>

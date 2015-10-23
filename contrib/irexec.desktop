@@ -1,3 +1,5 @@
+; Drop in ~/.config/autostart to create a session irexec service
+
 [Desktop Entry]
 Version=1.0
 Name=Irexec daemon
