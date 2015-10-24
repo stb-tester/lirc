@@ -1,0 +1,60 @@
+#
+# Initial test configuration for systemwide irexec service.
+#
+# Note that uing the system-wide service is useful only in corner-cases.
+# Most scenarios are better off with a session service as described in the
+# Configuration Guide.
+#
+# Also note that the system-wide service runs without a terminal. To
+# check the output generated use something like
+# 'journalctl -b0 /usr/bin/irexec'. This service just echoes some keys
+# commonly available.
+#
+
+begin
+    prog   = irexec
+    button = KEY_RED
+    config = echo "KEY_RED"
+end
+
+begin
+    prog   = irexec
+    button = KEY_BLUE
+    config = echo "KEY_BLUE"
+end
+
+begin
+    prog   = irexec
+    button = KEY_1
+    config = echo "KEY_1"
+end
+
+begin
+    prog   = irexec
+    button = KEY_2
+    config = echo "KEY_2"
+end
+
+begin
+    prog   = irexec
+    button = KEY_3
+    config = echo "KEY_3"
+end
+
+begin
+    prog   = irexec
+    button = KEY_OK
+    config = echo "KEY_OK"
+end
+
+begin
+    prog   = irexec
+    button = KEY_LEFT
+    config = echo "KEY_LEFT"
+end
+
+begin
+    prog   = irexec
+    button = KEY_RIGHT
+    config = echo "KEY_RIGHT"
+end
