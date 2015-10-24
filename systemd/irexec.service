@@ -1,0 +1,11 @@
+[Unit]
+Description=LIRC Infrared Signal Exec
+
+[Service]
+; user =
+: group =
+Type=simple
+ExecStart=/usr/sbin/irexec /etc/lirc/irexec.lircrc
+
+[Install]
+WantedBy=multi-user.target

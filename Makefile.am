@@ -28,7 +28,10 @@ SUBDIRS                 = lib daemons tools plugins configs doc $(SYSTEMD_DIR)
 if INSTALL_ETC
 
 lirc_confdir            = $(sysconfdir)/lirc
-dist_lirc_conf_DATA     = lircd.conf lirc_options.conf lircmd.conf
+dist_lirc_conf_DATA     = lircd.conf \
+                          lircmd.conf \
+                          lirc_options.conf \
+                          irexec.lircrc
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
 dist_lircdconfig_DATA	= README.conf.d devinput.lircd.conf
