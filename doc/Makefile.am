@@ -103,6 +103,9 @@ uninstall-hook:
 $(abs_builddir)/driver-toc.xsl: $(plugindocs)
 	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
 
+$(srcdir)/driver-toc.xsl: $(plugindocs)
+	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
+
 docpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
