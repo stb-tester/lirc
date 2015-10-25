@@ -43,12 +43,13 @@ describes the driver configuration:
           matches.  If there is a single match this is silently selected
           without user interaction.  There is specific support for:
 
-              - /dev/tty*. User can select an available tty.
-              - /dev/event/* User can select a /dev/input/event/* device.
-              - 'udp_port' [default port]. User can select an udp port
-              - /bin/sh .... shell command which lists possible devices.
-              - 'None'. No device option is configured.
-              - 'auto'. No configuration, but a message is displayed.
+              - /dev/tty*: User can select an available tty.
+              - /dev/event/*: User can select a /dev/input/event/* device.
+              - 'udp_port': [default port]. User can select an udp port
+              - /bin/sh:  .... shell command which lists possible devices.
+              - 'ioctl':  Driver can list devices using DRVCTL_GET_DEVICES.
+              - 'None': No device option is configured.
+              - 'auto': No configuration, but a message is displayed.
 
           /bin/sh scripts can either output a list of devices presented
           more or less as-is or a dictionary. The latter is a YAML dictionary

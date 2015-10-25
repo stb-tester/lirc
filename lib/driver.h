@@ -67,6 +67,16 @@ int drv_handle_options(const char* options);
 */
 #define DRVCTL_GET_RAW_CODELENGTH       4
 
+/**
+* Drvctl cmd: get list of possible devices. Argument is a *glob_t as
+* defined in <glob.h>.  The returned memory is owned by driver and
+* should be free()'d using DRVCTL_FREE_DEVICES.
+*/
+#define DRVCTL_GET_DEVICES              5
+
+/** drvctl cmd: Free memory in argument obtained using DRVCTL_GET_DEVICES. */
+#define DRVCTL_FREE_DEVICES             6
+
 /** Last well-known command. Remaining is used in driver-specific controls.*/
 #define  DRVCTL_MAX                     128
 
