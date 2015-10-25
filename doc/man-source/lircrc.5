@@ -1,0 +1,33 @@
+.TH LIRCRC "5" "Last change: Oct 2015" "lircrc @version@" "FILE FORMATS"
+.SH NAME
+.P
+\fBlircrc\fR - application-specific remotes signals configuration
+.SH DESCRIPTION
+.P
+\fBlircrc\fR is the last LIRC configuration point in the
+flow of events from the kernel to the application. It provides a way
+to translate the application-agnostic events which \fIlircd\fR makes
+available on \fI@varrundir@/lirc/lircd\fR to application-specific strings.
+The translation is invoked by LIRC-aware applications by using the
+<em>lirc_code2char()</em> routine in the <em>lirc_client</em>
+library.
+.P
+The lircrc event mapping is not only mapping from a remote event
+to an application string. It also supports a variety of functionality
+such as repeat suppression, modes, long keypresses and button sequences.
+.P
+The default location for lircrc is \fI~/.config/lircrc\fR with a global
+fallback in \fI@etcdir@/lirc/lircrc\fR. Many applications which
+uses the lircrc translations have private locations for the file.
+.P
+The programmatic interface to the \fBlircrc\fR functionality is described
+in the Client API manual, see below
+.P
+The file format is described in the configuration manual, see below.
+.SH "SEE ALSO"
+.TP 4
+.B @website@/html/configure.html#lircrc_format
+Description of the lircrc file format.
+.TP 4
+.B @website@/html/lirc_client.html
+Client API, the programmatic interface to the lircrc files.

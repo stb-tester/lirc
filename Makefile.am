@@ -55,14 +55,15 @@ install-data-hook:
 	cp -ar $(srcdir)/contrib $(DESTDIR)$(pkgdatadir)
 
 uninstall-hook:
-	chmod -R u+w $(DESTDIR)/$(datadir)/contrib
-	rm -r $(DESTDIR)/$(pkgdatadir) \
-	      $(DESTDIR)/$(pkgpythondir) \
-	      $(DESTDIR)/$(datadir)/contrib
+	-chmod -R u+w $(DESTDIR)/$(pkgdatadir)/contrib
+	-rm -r $(DESTDIR)/$(pkgdatadir) \
+	       $(DESTDIR)/$(pkgpythondir) \
+	       $(DESTDIR)/$(pkgdatadir)/contrib
 
 dist-hook: ChangeLog $(distdir)/debian/distfiles fix-version
 	tar -T $(distdir)/debian/distfiles -C $(srcdir) -cf - | \
 	    tar -C $(distdir) -xf -
+	cp -ar $(srcdir)/contrib $(distdir)
 
 $(distdir)/debian/distfiles:
 	cp -ar $(srcdir)/debian $(distdir)
