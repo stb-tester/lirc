@@ -85,12 +85,12 @@ if HAVE_DOXYGEN
 	    -xf $(DESTDIR)$(docdir)/api-docs.tar.gz && \
 	        rm $(DESTDIR)$(docdir)/api-docs.tar.gz
 	-mkdir -p $(DESTDIR)$(website_htmldir)
-	ln -sf lirc.org/api-docs/html/index.html \
+	ln -sf ../api-docs/html/index.html \
 	    $(DESTDIR)$(website_htmldir)/api-docs
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
-	cd $(DESTDIR)$(websitedir)/api-docs/html; ln -sf index.html api-docs
+	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf html/index.html .
 	sed -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
 
 
