@@ -38,8 +38,10 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <libusb-1.0/libusb.h>
 #include <netinet/in.h>
 #include <errno.h>
+#include <glob.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -84,6 +86,55 @@ static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t ga
 	return (lirc_t)(diff < gap ? gap - diff : 0);
 }
 #endif
+
+static void list_devices(glob_t *buff)
+{
+	struct ftdi_context* ctx;
+	struct ftdi_device_list* devlist;
+	struct ftdi_device_list* dev;
+	char vendor[128];
+	char descr[128];
+	int r;
+	char device[256];
+
+	ctx = ftdi_new();
+	if (ctx == NULL) {
+		log_error("List FTDI devices: ftdi_new() failed");
+		return;
+	}
+	r = ftdi_usb_find_all(ctx, &devlist, 0, 0);
+	if (r < 0) {
+		log_error("List FTDI devices: _usb_find_all() failed");
+		ftdi_free(ctx);
+		return;
+	}
+	memset(buff, 0, sizeof(glob_t));
+	buff->gl_offs = 32;
+	buff->gl_pathv = calloc(buff->gl_offs, sizeof(char*));
+	for (dev = devlist; dev != NULL; dev = dev->next) {
+		r = ftdi_usb_get_strings(ctx,
+					 dev->dev,
+					 vendor, sizeof(vendor),
+					 descr, sizeof(descr),
+					 NULL, 0);
+		if (r < 0) {
+			log_warn("List FTDI devices: Cannot get strings");
+			continue;
+		}
+		if (buff->gl_pathc >= buff->gl_offs) {
+			log_warn("List FTDI devices - too many of them");
+			break;
+		}
+		snprintf(device, sizeof(device),
+			 "/dev/bus/usb/%03d/%03d:   %s:%s\n",
+			 libusb_get_bus_number(dev->dev),
+			 libusb_get_port_number(dev->dev),
+			 vendor, descr);
+		buff->gl_pathv[buff->gl_pathc] = strdup(device);
+		buff->gl_pathc += 1;
+	}
+	ftdi_free(ctx);
+}
 
 static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 {
@@ -203,6 +254,28 @@ retry:
 		usleep(500000);
 	}
 }
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	glob_t* glob;
+	int i;
+
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		list_devices((glob_t*) arg);
+		return 0;
+	case DRVCTL_FREE_DEVICES:
+		glob = (glob_t*) arg;
+		for (i = 0; i < glob->gl_pathc; i += 1)
+			free(glob->gl_pathv[i]);
+		free(glob->gl_pathv);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
 
 static int hwftdi_init(void)
 {
@@ -471,20 +544,6 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 	return 1;
 }
 
-static int hwftdi_ioctl(unsigned int cmd, void* arg)
-{
-	int res = -1;
-
-	switch (cmd) {
-	default:
-		log_error("unsupported ioctl - %d", cmd);
-		res = -1;
-		break;
-	}
-
-	return res;
-}
-
 const struct driver hw_ftdi = {
 	.name		= "ftdi",
 	.device		= "",
@@ -501,7 +560,7 @@ const struct driver hw_ftdi = {
 	.send_func	= hwftdi_send,
 	.rec_func	= hwftdi_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= hwftdi_ioctl,
+	.drvctl_func	= drvctl_func,
 	.readdata	= hwftdi_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",

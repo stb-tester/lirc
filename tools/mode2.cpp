@@ -34,6 +34,7 @@
 #include <sys/ioctl.h>
 #include <limits.h>
 #include <errno.h>
+#include <glob.h>
 #include <syslog.h>
 #include <time.h>
 #include <pwd.h>
@@ -48,6 +49,7 @@ static int opt_dmode = 0;
 static int t_div = 500;
 static unsigned int opt_gap = 10000;
 static int opt_raw_access = 0;
+static int opt_list_devices = 0;
 
 static const char* const help =
 	"Usage: mode2 [options]\n"
@@ -56,6 +58,7 @@ static const char* const help =
 	"\t -U --plugindir=path\tLoad plugins from path\n"
 	"\t -k --keep-root\t\tKeep root privileges\n"
 	"\t -m --mode\t\tEnable column display mode\n"
+	"\t -l --list-devices\tList available devices\n"
 	"\t -r --raw\t\tAccess device directly without driver\n"
 	"\t -g --gap=time\t\tTreat spaces longer than time as the gap\n"
 	"\t -s --scope=time\t'Scope' like display with time us per char\n"
@@ -74,6 +77,7 @@ static const struct option options[] = {
 	{"device",         required_argument, NULL, 'd'},
 	{"driver",         required_argument, NULL, 'H'},
 	{"keep-root",      no_argument,       NULL, 'k'},
+	{"list-devices",   no_argument,       NULL, 'l'},
 	{"mode",           no_argument,       NULL, 'm'},
 	{"raw",            no_argument,       NULL, 'r'},
 	{"gap",            required_argument, NULL, 'g'},
@@ -134,7 +138,7 @@ static void add_defaults(void)
 static void parse_options(int argc, char** argv)
 {
 	int c;
-	static const char* const optstring = "hvD:d:H:mkrg:s:U:A:";
+	static const char* const optstring = "hvD:d:H:mklrg:s:U:A:";
 
 	add_defaults();
 	while ((c = getopt_long(argc, argv, optstring, options, NULL)) != -1) {
@@ -160,6 +164,9 @@ static void parse_options(int argc, char** argv)
 			break;
 		case 'k':
 			unsetenv("SUDO_USER");
+			break;
+		case 'l':
+			opt_list_devices = 1;
 			break;
 		case 'd':
 			options_set_opt("mode2:device", optarg);
@@ -400,6 +407,22 @@ int next_press(int fd, int mode, int bytes)
 	return 1;
 }
 
+static void list_devices(void)
+{
+	glob_t glob;
+	unsigned i;
+
+	if (!curr_driver->drvctl_func  ||
+	    curr_driver->drvctl_func(DRVCTL_GET_DEVICES, &glob) != 0) {
+		fputs("Device enumeration is not supported by this driver\n",
+                      stderr);
+		exit(1);
+	}
+	for (i = 0; i < glob.gl_pathc; i += 1)
+		puts(glob.gl_pathv[i]);
+	curr_driver->drvctl_func(DRVCTL_FREE_DEVICES, &glob);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -422,7 +445,10 @@ int main(int argc, char** argv)
 	(void)unlink(logpath);
 	lirc_log_set_file(logpath);
 	lirc_log_open("mode2", 1, level);
-
+	if (opt_list_devices) {
+		list_devices();
+		return 0;
+	}
         if (opt_raw_access) {
 		printf("Using raw access on device %s\n", opt_device);
 	} else {
@@ -433,6 +459,7 @@ int main(int argc, char** argv)
 	fd = open_device(opt_raw_access, opt_device);
 	if (geteuid() == 0)
 		drop_root_cli(setuid);
+
 	mode = curr_driver->rec_mode;
 	if (mode == LIRC_MODE_LIRCCODE) {
 		code_length = get_codelength(fd, opt_raw_access);
