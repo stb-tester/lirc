@@ -287,14 +287,14 @@ void logprintf(loglevel_t prio, const char* format_str, ...)
 		vsyslog(prio, buff, ap);
 		va_end(ap);
 	} else if (lf && prio <= loglevel) {
-		time_t current;
 		char* currents;
+		struct timeval tv;
+		struct timezone tz;
+		gettimeofday(&tv, &tz);
+		currents = ctime(&tv.tv_sec);
 
-		current = time(&current);
-		currents = ctime(&current);
-
-		fprintf(lf, "%15.15s %s %s: ",
-			currents + 4, hostname, progname);
+		fprintf(lf, "%15.15s.%06d %s %s: ",
+			currents + 4, tv.tv_usec, hostname, progname);
 		fprintf(lf, "%s: ", prio2text(prio));
 		va_start(ap, format_str);
 		vfprintf(lf, format_str, ap);
