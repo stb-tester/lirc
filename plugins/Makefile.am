@@ -52,18 +52,6 @@ iguanaIR_la_SOURCES         = iguanaIR.c
 iguanaIR_la_LDFLAGS         = $(AM_LDFLAGS) -liguanaIR -lrt
 endif
 
-if BUILD_LIBIRMAN
-plugin_LTLIBRARIES          += irman.la
-irman_la_SOURCES            = irman_drv.c
-irman_la_LDFLAGS            = $(AM_LDFLAGS) -lirman
-endif
-
-if BUILD_LIBIRMAN_SW
-plugin_LTLIBRARIES          += irman_sw.la
-irman_sw_la_SOURCES         = irman_drv.c
-irman_sw_la_LDFLAGS         = $(AM_LDFLAGS) -lirman_sw
-endif
-
 if BUILD_LIBPORTAUDIO
 plugin_LTLIBRARIES          += audio.la
 audio_la_SOURCES            = audio.c
