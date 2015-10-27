@@ -216,7 +216,8 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/irtoy.html \
                            $(srcdir)/plugindocs/srm7500atilibusb.html \
                            $(srcdir)/plugindocs/tira.html \
-                           $(srcdir)/plugindocs/udp.html
+                           $(srcdir)/plugindocs/udp.html \
+                           $(srcdir)/plugindocs/yard2.html
 
 pluginfiles             =  $(srcdir)/plugpage.xsl \
                            $(srcdir)/driver-toc.xsl \
@@ -307,7 +308,8 @@ generated_plugindocs    =  html/alsa-usb.html \
                            html/irtoy.html \
                            html/srm7500atilibusb.html \
                            html/tira.html \
-                           html/udp.html
+                           html/udp.html \
+                           html/yard2.html
 
 generated_html          =  html/api-general.html \
                            html/configuration-guide.html \
