@@ -138,12 +138,6 @@ AH_TEMPLATE([HAVE_FTDI],
 AH_TEMPLATE([HAVE_LIBALSA],
         [Define if the ALSA library is installed])
 
-AH_TEMPLATE([HAVE_LIBIRMAN],
-        [Define if the libirman library is installed])
-
-AH_TEMPLATE([HAVE_LIBIRMAN_SW],
-        [Define if the software only test version of libirman is installed])
-
 AH_TEMPLATE([HAVE_LIBPORTAUDIO],
         [Define if the portaudio library is installed])
 
@@ -204,16 +198,7 @@ AC_CHECK_HEADER(iguanaIR.h,[
   ],[
   AM_CONDITIONAL([BUILD_IGUANAIR],[false])]
 )
-AC_CHECK_LIB(irman, ir_strerror,[
-  AM_CONDITIONAL([BUILD_LIBIRMAN],[true])
-  ],[
-  AM_CONDITIONAL([BUILD_LIBIRMAN],[false])]
-)
-AC_CHECK_LIB(irman_sw, ir_strerror,[
-  AM_CONDITIONAL([BUILD_LIBIRMAN_SW],[true])
-  ],[
-  AM_CONDITIONAL([BUILD_LIBIRMAN_SW],[false])]
-)
+
 dnl audio driver requires PortAudio library installed and some linker flags
 AC_CHECK_HEADERS(portaudio.h,[
   AC_CHECK_LIB(portaudio, Pa_Initialize,[
@@ -403,8 +388,6 @@ AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
 AC_REPORT_CONDITIONAL([BUILD_I2CUSER])
 AC_REPORT_CONDITIONAL([BUILD_LIBALSA])
 AC_REPORT_CONDITIONAL([BUILD_IGUANAIR])
-AC_REPORT_CONDITIONAL([BUILD_LIBIRMAN])
-AC_REPORT_CONDITIONAL([BUILD_LIBIRMAN_SW])
 AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
 AC_REPORT_CONDITIONAL([BUILD_USB])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])

@@ -1,0 +1,25 @@
+irman LIRC driver README
+========================
+
+
+This driver was part of LIRC up to 0.9.3. The preferred way to install
+it in 0.9.4 is to use the updated libirman package available at
+https://sourceforge.net/projects/libirman which contains the driver.
+As an intermediary solution it is possible to build the driver in this
+directory which is the same as in 0.9.3. Building requires that the
+libirman library is installed (same url).
+
+Building requires lirc >= 0.9.4. If you are using a packaged version
+you probably need to have the -devel and -doc packages installed.  To
+build and install:
+
+    $ make
+    $ sudo make install
+
+Verifying the driver after make install:
+
+     $ lirc-lsplugins -q irman
+     ---   /usr/lib64/lirc/plugins/irman_drv.so
+
+You could also find the driver docs in the manual. The path varies, but is
+in a packaged version typically /usr/share/doc/lirc/lirc.org/html/index.html.

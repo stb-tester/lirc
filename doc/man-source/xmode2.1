@@ -1,127 +1,25 @@
-.TH MODE2 "1" "Last change: Oct 2015" "mode2 @version@" "User Commands"
-.SH NAME
-xmode2 - Show the pulse/space length of infrared signals
-.SH SYNOPSIS
-.P
-\fBxmode2\fR [\fIoptions\fR]
-
-.SH DESCRIPTION
-.P
-The main purpose of \fBxmode2\fR is to check operation of your
-home-brew LIRC receiver hardware and to see the IR waveform of the
-remote controller without an expensive oscilloscope. Very useful for
-debugging. Of course this program won't work with hardware that decodes
-the signals itself like e.g. TV cards or the Irman i. e., it only
-works with LIRC_MODE_MODE2 type drivers.
-.P
-\fBxmode2\fR prints a simple graphics display of the pulse/space lengths. It
-accepts a few commands including time base changes; see the xmode2 -h output.
-.P
-lirc-lsplugins(1) allows checking if a driver is a LIRC_MODE2 type one.
-
-
-.SH OPTIONS
-
-.TP
-\fB\-h\fR \fB\-\-help\fR
-Display usage summary.
-.TP
-\fB\-v\fR \fB\-\-version\fR
-Display version.
-.TP
-\fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-Read from given device.
-.TP
-\fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
-Use given driver.
-.TP
-\fB\-m\fR \fB\-\-mode\fR
-Enable alternative display mode.
-.TP
-\fB\-r\fR \fB\-\-raw\fR
-Access device directly.
-.TP
-\fB\-k\fR \fB\-\-keep-root\fR
-Don't drop root privileges after opening device. See RUNNING AS ROOT.
-.TP
-\fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
-Determine the amount of logging information. [level] can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lirc
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'.
-The level can also be an integer in the range 3 (almost no messages) to
-10.
-.TP
-\fB\-O, \fB\-\-options-file\fR <\fIpath\fR>
-File containing default values for all options. A relative path is
-interpreted from current directory. See [FILES] below.
-.TP
-\fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
-Load drivers from directory. See DRIVER LOADING.
-
-.SH RUNNING AS ROOT
-In many cases xmode2 needs to run as root to access devices not available
-to regular users. On the other hand, running as root creates problems
-such as log files owned by root, security concerns etc.
-.P
-In order to cope with this, xmode2 by default drops root privileges
-after opening the input device. This support is based on that root
-permissions are acquired using sudo(1) e. g., using
-.nf
-
-        $ sudo xmode2 --driver default --device /dev/lirc0
-
-.fi
-If not using sudo, the same behaviour could be accomplished using the
-SUDO_USER environment variable e. g.,
-.nf
-
-        # SUDO_USER=$LOGNAME xmode2 --raw /dev/lirc0
-
-.fi
-The --keep-root option will make xmode2 keep it's root privileges for the
-complete run.
-
-
-.SH "DRIVER LOADING"
-Drivers are loaded dynamically. The search path used for this is determined
-by (falling priority):
-.IP \- 2
-The --plugindir option.
-.IP \- 2
-The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
-.IP \- 2
-The environment variable LIRC_PLUGINDIR.
-.IP \- 2
-A hardcoded default (@libpath@/lirc/plugins).
-
-.SH FILES
-
-.TP 4
-.B ~/.cache/xmode2.log
-Debug log. Setting the XDG_CACHE_HOME environment variable relocates this
-file to $XDG_CACHE_HOME/xmode2.log. The amount of logging respects the
-LIRC_LOGLEVEL environment variable, defaulting to the \fIdebug\fR value
-in lirc_options.conf.
-
-
-.TP 4
-.B @etcdir@/lirc/lirc_options.conf
-The options file holding default values for command line options in
-the [xmode2] section. For some values including debug, plugindir, driver
-and device xmode2 falls back to the [lircd] section if not found in [xmode2].
-.IP "" 4
-The location of this file can be changed using the -O/--options-file
-command-line option or using the environment variable LIRC_OPTIONS_PATH.
-
-.
-.SH "SEE ALSO"
-mode2(1)
-.br
-lirc-lsplugins(1)
-
-The documentation for
-.B lirc
-is maintained as html pages. They are located under html/ in the
-documentation directory.
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<TITLE>LIRC - Linux Infrared Remote Control</TITLE>
+<LINK REL="stylesheet" TYPE="text/css" HREF="lirc.css">
+<LINK REL="shortcut icon" HREF="../images/favicon.ico">
+<META NAME="description" CONTENT="LIRC - Linux Infrared Remote Control">
+<META NAME="keywords" CONTENT="linux remote control, multimedia">
+<META charset="UTF-8">
+</HEAD>
+<body>
+<TABLE CLASS="menu"><TR>
+<TD CLASS="menu"><IMG class="menuimg" SRC="../images/diode.gif" ALT="LIRC icon" ALIGN="LEFT"></TD>
+<TD><IMG class="menuimg" SRC="../images/lirc.gif" ALT="LIRC logo" ALIGN="RIGHT"></TD>
+</TR></TABLE>
+<h1>File not found</h1>
+<p>
+Could not open (null)
+</p>
+<p class="footer">
+        [<A HREF="http://www.lirc.org/">LIRC homepage</A>]
+      </p>
+</body>
+</html>
