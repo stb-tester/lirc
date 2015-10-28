@@ -1,9 +1,16 @@
 YARD2 LIRC driver README
 ========================
 
-This directory holds a complete lirc driver for yard2. It requires
+This driver used to be part of the LIRC sources. In order to improve
+the maintenance, it has been moved to the YARD2 project. From 0.9.4
+the driver is available at
+https://www.assembla.com/spaces/yard2srvd/git/source.
+
+As a transition step the same files are available here during the 0.9.4
+cycle. These files are a complete lirc driver for yard2. Building requires
 lirc >= 0.9.4. If you are using a packaged version you probably need to
-have the -devel and -doc packages installed.
+have the -devel and -doc packages installed. Note that the downstream
+sources at yard2 are preferred and will be the only option in next release.
 
 To build and install the driver together with the support files:
 
@@ -17,5 +24,3 @@ Verifying the driver after make install:
 
 You could also find the driver docs in the manual. The path varies, but
 in a packaged version typically /usr/share/doc/lirc/lirc.org/html/index.html.
-
-
