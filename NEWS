@@ -2,6 +2,10 @@
   * Issues: https://sourceforge.net/p/lirc/tickets/milestone/0.9.4
 
   * The caraca driver has been retired (still available in attic/).
+  * The irman driver has been moved out of tree. From 0.5.1 the
+    libirman package contains the driver. See drivers/irman/README
+  * The yard2 driver has been moved out of tree and is now maintained
+    by the yard2 project. See driver/yard2/README.
   * New upstream debian packaging with which Debian users can create
     .deb packages. Ubuntu packages are also available in PPAs. See
      debian/INSTALL (#137).
