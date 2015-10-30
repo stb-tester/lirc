@@ -132,7 +132,7 @@ $(generated_html): $(html_sources) docpage.xsl
 	@mkdir html 2>/dev/null || :
 	xsltproc --html docpage.xsl \
 	    $$(echo $(srcdir)/$@ | $(SED) 's|html/|html-source/|') > $@
-	$(SED) -i "s/@version@/$(VERSION)/" $@
+	$(SED) -i -e "s/@version@/$(VERSION)/" $@
 
 $(generated_plugindocs): $(plugindocs) docpage.xsl
 	@mkdir html 2>/dev/null || :

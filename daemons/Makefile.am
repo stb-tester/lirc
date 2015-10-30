@@ -2,7 +2,7 @@
 ACLOCAL_AMFLAGS         = -I m4
 
 AM_CPPFLAGS             = -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
-AM_CPPFLAGS             += -Wp,-D_FORTIFY_SOURCE=2
+AM_CPPFLAGS             += -Wp,-D_FORTIFY_SOURCE=2 @osflags@
 AM_LDFLAGS              = -lpthread $(SYSTEMD_LIBS)
 
 CLEANFILES              = *~

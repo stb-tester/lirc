@@ -229,7 +229,7 @@ extern struct driver drv;
 #endif
 
 /** Raad-only access to drv for application.*/
-extern const struct driver* curr_driver;
+extern const struct driver* const curr_driver;
 
 #ifdef __cplusplus
 }

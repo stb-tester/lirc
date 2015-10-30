@@ -119,10 +119,6 @@ static struct lirc_config* config;
 static int send_error(int fd, char* message, const char* format_str, ...);
 static int handle_input(void);
 
-static inline int max(int a, int b)
-{
-	return a > b ? a : b;
-}
 
 static int get_client_index(int fd)
 {

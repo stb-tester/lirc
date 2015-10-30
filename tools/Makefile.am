@@ -3,7 +3,8 @@ ACLOCAL_AMFLAGS         = -I m4
 
 PYLINT                  = python3-pylint
 
-AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) @X_CFLAGS@
+AM_CPPFLAGS             = -I$(top_srcdir)/lib -I$(top_srcdir) \
+                           @X_CFLAGS@ @osflags@
 AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client -ldl
 
@@ -20,7 +21,6 @@ sbin_PROGRAMS           = lirc-lsplugins
 bin_PROGRAMS            = ircat \
                           irexec \
                           irpipe \
-                          irpty \
                           irrecord \
                           irsend \
                           irsimreceive \
@@ -33,6 +33,10 @@ if BUILD_XTOOLS
 bin_PROGRAMS            += xmode2 irxevent
 endif
 
+
+if !DARWIN
+bin_PROGRAMS            += irpty
+endif
 
 ## Simple programs
 irw_SOURCES             = irw.cpp

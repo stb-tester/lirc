@@ -36,6 +36,7 @@
 
 #include <asm/ioctls.h>
 #include <asm/current.h>
+#include <asm-generic/ioctl.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/errno.h>

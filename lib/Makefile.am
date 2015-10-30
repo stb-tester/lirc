@@ -7,7 +7,8 @@ EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
 
 BUILT_SOURCES               = lirc/input_map.inc
 
-AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2
+AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
+                              @osflags@
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
