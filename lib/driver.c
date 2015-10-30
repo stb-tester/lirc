@@ -25,7 +25,7 @@ struct driver drv;
 const char* const OPTION_FMT = "%32s%64s";
 
 /** Read-only access to drv for client code. */
-const struct driver const* curr_driver = &drv;
+const struct driver* const curr_driver = &drv;
 
 int default_open(const char* path)
 {

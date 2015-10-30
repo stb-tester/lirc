@@ -14,6 +14,10 @@
 #include <sys/ioctl.h>
 
 #include "media/lirc.h"
+#ifndef __u32
+#define __u32 uint32_t
+#endif
+
 #include "irpipe.h"
 
 

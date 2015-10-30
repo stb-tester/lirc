@@ -35,9 +35,6 @@ mouseremote_la_SOURCES           = mouseremote.c
 plugin_LTLIBRARIES              += mp3anywhere.la
 mp3anywhere_la_SOURCES           = mp3anywhere.c
 
-plugin_LTLIBRARIES              += mplay.la
-mplay_la_SOURCES                 = mplay.c
-
 plugin_LTLIBRARIES              += pcmak.la
 pcmak_la_SOURCES                 = pcmak.c
 

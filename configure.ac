@@ -46,7 +46,8 @@ LIBUSB_CONFIG="pkg-config libusb"
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS(fcntl.h limits.h sys/ioctl.h sys/time.h syslog.h unistd.h)
+AC_CHECK_HEADERS([fcntl.h limits.h sys/ioctl.h sys/time.h syslog.h unistd.h])
+AC_CHECK_HEADERS([util.h libutil.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -82,7 +83,14 @@ fi
 lockdir_default="/var/lock/lockdev"
 test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 
-AM_CONDITIONAL([DARWIN], [case $host_os in darwin*) true;; *) false;; esac])
+case $host_os in
+    darwin*) osflags='-DDARWIN'
+	;;
+    *)  osflags=''
+esac
+
+AM_CONDITIONAL([DARWIN], [test -n "$osflags"])
+AC_SUBST(osflags)
 
 x_progs="irxevent xmode2"
 AC_PATH_XTRA

@@ -320,12 +320,12 @@ void logperror(loglevel_t prio, const char* fmt, ...)
 	vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
 	if (use_syslog) {
-		if ((s) != NULL)
+		if (*s != '\0')
 			syslog(prio, "%s: %m\n", s);
 		else
 			syslog(prio, "%m\n");
 	} else {
-		if (s != NULL)
+		if (*s != '\0')
 			logprintf(prio, "%s: %s", s, strerror(errno));
 		else
 			logprintf(prio, "%s", strerror(errno));

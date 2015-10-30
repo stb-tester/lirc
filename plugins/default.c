@@ -58,7 +58,7 @@ static int my_open(const char* path);
 
 
 
-static const const struct driver hw_default = {
+static const struct driver hw_default = {
 	.name		= "default",
 	.device		= LIRC_DRIVER_DEVICE,
 	.features	= 0,

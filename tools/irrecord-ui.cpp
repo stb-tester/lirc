@@ -249,18 +249,6 @@ static int ncode_list_for_each(int (*func)(struct ir_ncode*, void*),
 }
 
 
-/** getresuid wrapper, returns saved set-uid. */
-static uid_t getresuid_uid(void)
-{
-	uid_t ruid, euid, suid;
-
-	getresuid(&ruid, &euid, &suid);
-	return suid;
-}
-
-
-
-
 /** Set up default values for all command line options + filename. */
 static void add_defaults(void)
 {
@@ -508,7 +496,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	} else {
 		opts->backupfile = NULL;
 	}
-	if (getresuid_uid() == 0) {
+	if (state->started_as_root) {
 		if (seteuid(0) == -1)
 			log_error("Cannot reset root uid");
 	}
@@ -627,7 +615,8 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 
 
 /** View part of init: run init() and handle results. Returns or exits. */
-static void do_init(struct opts* opts, struct main_state* state)
+static void
+do_init(struct opts* opts, struct main_state* state)
 {
 	enum init_status sts;
 
@@ -789,7 +778,7 @@ void do_record_buttons(struct main_state* state, const struct opts* opts)
 	enum button_status sts = STS_BTN_INIT;
 
 	config_file_setup(state, opts);
-	button_state_init(&btn_state);
+	button_state_init(&btn_state, state->started_as_root);
 	flushhw();
 	while (1) {
 		switch (sts) {
@@ -1140,8 +1129,10 @@ int main(int argc, char** argv)
 	}
 	get_commandline(argc, argv,
 			opts.commandline, sizeof(opts.commandline));
-	if (geteuid() == 0)
+	if (geteuid() == 0){
+		state.started_as_root = 1;
 		drop_root_cli(seteuid);
+	}
 	do_init(&opts, &state);
 
 	puts(MSG_WELCOME);

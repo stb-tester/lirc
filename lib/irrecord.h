@@ -176,6 +176,7 @@ struct opts {
 struct main_state {
 	FILE*			fout;
 	struct decode_ctx_t	decode_ctx;
+	int                     started_as_root;
 };
 
 
@@ -244,6 +245,7 @@ struct button_state {
 	unsigned int	count;
 	int		flag;
 	int		no_data;
+	int             started_as_root;  /** Started with euid == 0? */
 };
 
 
@@ -278,7 +280,7 @@ void lengths_state_init(struct lengths_state* state);
 void toggle_state_init(struct toggle_state* state);
 
 /** Initiate a pristine button_state. */
-void button_state_init(struct button_state* state);
+void button_state_init(struct button_state* state, int started_as_root);
 
 /** Try to find out gap length, returning gap_status. */
 enum get_gap_status get_gap_length(struct gap_state* state,

@@ -72,6 +72,15 @@
 
 #include "lirc_private.h"
 
+#ifdef DARWIN
+#define gid_type int
+#else
+#define gid_type gid_t
+#endif
+
+
+
+
 /****************************************************************************
 ** lircd.h *****************************************************************
 ****************************************************************************
@@ -439,8 +448,8 @@ static int setup_timeout(void)
 static int setup_filter(void)
 {
 	int ret1, ret2;
-	lirc_t min_pulse_supported, max_pulse_supported;
-	lirc_t min_space_supported, max_space_supported;
+	lirc_t min_pulse_supported = 0, max_pulse_supported = 0;
+	lirc_t min_space_supported = 0, max_space_supported = 0;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_FILTER))
 		return 1;
@@ -717,7 +726,7 @@ void drop_privileges(void)
 {
 	const char* user;
 	struct passwd* pw;
-	gid_t groups[32];
+	gid_type groups[32];
 	int group_cnt = sizeof(groups)/sizeof(gid_t);
 	char groupnames[256] = {0};
 	char buff[12];
@@ -741,7 +750,7 @@ void drop_privileges(void)
 		log_perror_warn("Cannot get supplementary groups");
 		return;
 	}
-	r = setgroups(group_cnt, groups);
+	r = setgroups(group_cnt, (const gid_t*) groups);
 	if (r == -1) {
 		log_perror_warn("Cannot set supplementary groups");
 		return;
