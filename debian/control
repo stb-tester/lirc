@@ -14,7 +14,7 @@ Build-Depends:
  libftdi-dev,
  libice-dev,
  libsm-dev,
- libusb-dev [!hurd-i386],
+ libusb-1.0-0-dev [!hurd-i386],
  libx11-dev,
  libxt-dev,
  module-init-tools,
