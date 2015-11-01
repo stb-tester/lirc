@@ -28,16 +28,14 @@ override_dh_autoreconf:
 
 
 override_dh_auto_install:
-	dh_testdir
-	dh_testroot
 	$(MAKE) -j DESTDIR=$(CURDIR)/debian/tmp install
 	py3clean debian/tmp
 	rm -f debian/tmp/usr/bin/lirc-kerneldrivers
 	find debian/tmp -name *.la -delete
 	# Debian uses .../dist-packages vs upstream .../site-packages.
 	# Preferably, this should be fixed in upstream autotools setup.
-	ln -sf ../lib/python3/dist-packages/lirc/lirc-setup \
-	    debian/tmp/usr/bin/lirc-setup
+	dh_link ../lib/python3/dist-packages/lirc/lirc-setup \
+	    /usr/bin/lirc-setup
 	mkdir -p debian/tmp/usr/lib/tmpfiles.d
 	echo "d /var/run/lirc  0777  root  root  10d" \
 	    > debian/tmp/usr/lib/tmpfiles.d/lirc.conf
@@ -47,41 +45,19 @@ override_dh_auto_install:
 	# ln -sf ../../../../../../javascript/jquery/jquery.js \
 	#     debian/tmp/usr/share/doc/lirc/lirc.org/api-docs/html
 
-
-# Build architecture-independent files here.
-binary-indep:
-	dh_installdocs
-	dh_installchangelogs
-	dh_lintian
-	dh_install -i --fail-missing
+override_dh_systemd_enable:
 	dh_systemd_enable --name=lircd
-	dh_systemd_start
-	dh_compress -i
-	dh_fixperms -i
-	dh_installdeb -i
-	dh_gencontrol -i
-	dh_md5sums -i
-	dh_builddeb -i
 
+override_dh_install:
+	dh_install --fail-missing
 
-# Build architecture-dependent files here.
-binary-arch:
-	dh_installdocs
-	dh_installchangelogs
-	dh_lintian
-	dh_install -s --fail-missing
+override_dh_python3:
 	dh_python3
 	# Restore link nuked by 0007-tools-remove-configs-symlink.patch
 	# (Debian BTS #801719).
-	ln -sf ../../../../share/lirc/configs \
-	    debian/lirc/usr/lib/python*/*-packages/lirc/
-	dh_compress -s
-	dh_strip -s
-	dh_fixperms -s
+	dh_link ../../../../share/lirc/configs \
+	    /usr/lib/python*/*-packages/lirc/configs
+
+override_dh_fixperms:
+	dh_fixperms
 	chmod 755 debian/lirc/usr/share/lirc/contrib/irman2lirc
-	dh_makeshlibs -s
-	dh_shlibdeps -s
-	dh_installdeb -s
-	dh_gencontrol -s
-	dh_md5sums -s
-	dh_builddeb -s
