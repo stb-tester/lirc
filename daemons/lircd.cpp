@@ -1194,10 +1194,30 @@ void sigalrm(int sig)
 }
 
 
+static void schedule_repeat_timer (struct timespec* last)
+{
+	unsigned long secs;
+	lirc_t usecs, gap, diff;
+	struct timespec current;
+	struct itimerval repeat_timer;
+	gap = send_buffer_sum() + repeat_remote->min_remaining_gap;
+	clock_gettime (CLOCK_MONOTONIC, &current);
+	secs = current.tv_sec - last->tv_sec;
+	diff = 1000000 * secs + (current.tv_nsec - last->tv_nsec) / 1000;
+	usecs = (diff < gap ? gap - diff : 0);
+	if (usecs < 10)
+		usecs = 10;
+	log_trace("alarm in %lu usecs", (unsigned long)usecs);
+	repeat_timer.it_value.tv_sec = 0;
+	repeat_timer.it_value.tv_usec = usecs;
+	repeat_timer.it_interval.tv_sec = 0;
+	repeat_timer.it_interval.tv_usec = 0;
+
+	setitimer(ITIMER_REAL, &repeat_timer, NULL);
+}
+
 void dosigalrm(int sig)
 {
-	struct itimerval repeat_timer;
-
 	if (repeat_remote->last_code != repeat_code) {
 		/* we received a different code from the original
 		 * remote control we could repeat the wrong code so
@@ -1219,13 +1239,10 @@ void dosigalrm(int sig)
 	if (repeat_code->next == NULL
 	    || (repeat_code->transmit_state != NULL && repeat_code->transmit_state->next == NULL))
 		repeat_remote->repeat_countdown--;
+	struct timespec before_send;
+	clock_gettime (CLOCK_MONOTONIC, &before_send);
 	if (send_ir_ncode(repeat_remote, repeat_code, 1) && repeat_remote->repeat_countdown > 0) {
-		repeat_timer.it_value.tv_sec = 0;
-		repeat_timer.it_value.tv_usec = repeat_remote->min_remaining_gap;
-		repeat_timer.it_interval.tv_sec = 0;
-		repeat_timer.it_interval.tv_usec = 0;
-
-		setitimer(ITIMER_REAL, &repeat_timer, NULL);
+		schedule_repeat_timer(&before_send);
 		return;
 	}
 	repeat_remote = NULL;
@@ -1524,7 +1541,6 @@ static int send_core(int fd, char* message, char* arguments, int once)
 {
 	struct ir_remote* remote;
 	struct ir_ncode* code;
-	struct itimerval repeat_timer;
 	unsigned int reps;
 	int err;
 
@@ -1550,6 +1566,8 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	if (has_toggle_bit_mask(remote))
 		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
 	code->transmit_state = NULL;
+	struct timespec before_send;
+	clock_gettime (CLOCK_MONOTONIC, &before_send);
 	if (!send_ir_ncode(remote, code, 1))
 		return send_error(fd, message, "transmission failed\n");
 	gettimeofday(&remote->last_send, NULL);
@@ -1562,10 +1580,6 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	if (remote->repeat_countdown > 0 || code->next != NULL) {
 		repeat_remote = remote;
 		repeat_code = code;
-		repeat_timer.it_value.tv_sec = 0;
-		repeat_timer.it_value.tv_usec = remote->min_remaining_gap;
-		repeat_timer.it_interval.tv_sec = 0;
-		repeat_timer.it_interval.tv_usec = 0;
 		if (once) {
 			repeat_message = strdup(message);
 			if (repeat_message == NULL) {
@@ -1579,7 +1593,7 @@ static int send_core(int fd, char* message, char* arguments, int once)
 			repeat_code = NULL;
 			return 0;
 		}
-		setitimer(ITIMER_REAL, &repeat_timer, NULL);
+		schedule_repeat_timer(&before_send);
 		return 1;
 	} else {
 		return send_success(fd, message);
