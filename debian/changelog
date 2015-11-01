@@ -1,3 +1,10 @@
+lirc (0.9.4-devel-1.2) jessie; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix review remarks from debian-mentors, round 1
+
+ --  Alec Leamas <al@snorken.localdomain.net>  Mon, 02 Nov 2015 07:00:40 +0100
+
 lirc (0.9.4-devel-1.1) jessie; urgency=low
 
   * Non-maintainer upload.
