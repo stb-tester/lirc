@@ -11,7 +11,6 @@ Build-Depends:
  dh-systemd,
  doxygen,
  libasound2-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64],
- libftdi-dev,
  libice-dev,
  libsm-dev,
  libusb-1.0-0-dev [!hurd-i386],
@@ -24,7 +23,11 @@ Build-Depends:
  python3-yaml,
  xsltproc,
  tree
-# libjs-jquery,    (See lintian overrides)
+# libjs-jquery    (See lintian overrides)
+# libftdi1-dev,   (Not available in jessie)
+#
+# See DBS #801588
+Build-Conflicts: libirman
 Standards-Version: 3.9.6
 
 

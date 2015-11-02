@@ -30,11 +30,10 @@ override_dh_autoreconf:
 override_dh_auto_install:
 	$(MAKE) -j DESTDIR=$(CURDIR)/debian/tmp install
 	py3clean debian/tmp
-	rm -f debian/tmp/usr/bin/lirc-kerneldrivers
 	find debian/tmp -name *.la -delete
 	# Debian uses .../dist-packages vs upstream .../site-packages.
 	# Preferably, this should be fixed in upstream autotools setup.
-	dh_link ../lib/python3/dist-packages/lirc/lirc-setup \
+	dh_link /usr/lib/python3/dist-packages/lirc/lirc-setup \
 	    /usr/bin/lirc-setup
 	mkdir -p debian/tmp/usr/lib/tmpfiles.d
 	echo "d /var/run/lirc  0777  root  root  10d" \
@@ -55,8 +54,8 @@ override_dh_python3:
 	dh_python3
 	# Restore link nuked by 0007-tools-remove-configs-symlink.patch
 	# (Debian BTS #801719).
-	dh_link ../../../../share/lirc/configs \
-	    /usr/lib/python*/*-packages/lirc/configs
+	dh_link /usr/share/lirc/configs \
+	    /usr/lib/python3/dist-packages/lirc/configs
 
 override_dh_fixperms:
 	dh_fixperms
