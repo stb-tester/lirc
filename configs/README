@@ -11,7 +11,7 @@ The original configuration data comes from different sources:
 
   - User-space drivers have compiled configuration hints.
     This reflected in the file drivers.yaml.
-  - The kernel drivers has a static file kernel-drivers.dist
+  - The kernel drivers has a static file kernel-drivers.yaml
     which provides the same info for some of the the kernel
     drivers.
   - lircd.conf files for LIRCCODE type hardware sometimes
@@ -28,8 +28,7 @@ drivers.yaml and kernel-driver.yaml
 The kernel-drivers.dist file  is a static file  describing some
 of the built-in kernel drivers which either needs manual configuration
 or might be abscent. It has the same format as drivers.yaml.
-kernel-driver.yaml is created from kernel-drivers.dist by
-'lirc-kerneldrivers' which checks available drivers.
+Actually usable drivers are determined in runtime using modinfo(1).
 
 The drivers.yaml file is created  using 'lirc-lsplugins --yaml'
 which retrieves data from the driver configuration hints.  It

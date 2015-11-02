@@ -112,13 +112,13 @@ $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 table.html: docpage.xsl ext-driver-toc.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=. \
-	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs | \
-	    xsltproc --html docpage.xsl - > table.html
+	PYTHONPATH=.:$(top_srcdir)/tools \
+	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
+	        | xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=. \
+	PYTHONPATH=.:$(top_srcdir)/tools \
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
 
