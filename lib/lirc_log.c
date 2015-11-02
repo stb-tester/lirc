@@ -290,11 +290,12 @@ void logprintf(loglevel_t prio, const char* format_str, ...)
 		char* currents;
 		struct timeval tv;
 		struct timezone tz;
+
 		gettimeofday(&tv, &tz);
 		currents = ctime(&tv.tv_sec);
 
-		fprintf(lf, "%15.15s.%06d %s %s: ",
-			currents + 4, tv.tv_usec, hostname, progname);
+		fprintf(lf, "%15.15s.%06ld %s %s: ",
+			currents + 4, (long) tv.tv_usec, hostname, progname);
 		fprintf(lf, "%s: ", prio2text(prio));
 		va_start(ap, format_str);
 		vfprintf(lf, format_str, ap);
