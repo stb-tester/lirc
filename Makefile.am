@@ -43,8 +43,6 @@ dist_doc_DATA           = VERSION
 pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
-nobase_dist_pkgdata_DATA = configs/kernel-drivers.dist
-
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
 header_HEADERS          = paths.h drivers/irpipe/irpipe.h

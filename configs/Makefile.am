@@ -5,23 +5,16 @@ menuconfigs             = $(srcdir)/*.conf
 
 configsdir              = $(pkgdatadir)/configs
 dist_configs_DATA       = $(menuconfigs) \
-                          kernel-drivers.dist\
+                          kernel-drivers.yaml\
                           remotes.list
 
-nodist_configs_DATA     = drivers.yaml \
-                          confs_by_driver.yaml \
-                          kernel-drivers.yaml
+nodist_configs_DATA     = drivers.yaml confs_by_driver.yaml
 
-
-CLEANFILES              = drivers.yaml kernel-drivers.yaml confs_by_driver.yaml
+CLEANFILES              = drivers.yaml confs_by_driver.yaml
 DISTCLEANFILES          = remotes.list
 
 drivers.yaml: ../tools/lirc-lsplugins $(menuconfigs)
 	-../tools/lirc-lsplugins  -U ../plugins/.libs --yaml > drivers.yaml
-
-kernel-drivers.yaml: $(srcdir)/kernel-drivers.dist
-	$(top_srcdir)/tools/lirc-kerneldrivers $(srcdir)/kernel-drivers.dist \
-		 > kernel-drivers.yaml
 
 confs_by_driver.yaml: $(srcdir)/remotes.list $(top_srcdir)/tools/irdb-get
 	-XDG_CACHE_HOME=$(srcdir) \

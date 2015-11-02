@@ -22,7 +22,10 @@ read-only structure.
 import glob
 import os
 import os.path
+import subprocess
 import sys
+
+import config
 
 YAML_MSG = '''
 "Cannot import the yaml library. Please install the python3
@@ -72,6 +75,27 @@ class Database(object):
 
     def __init__(self, path=None, yamlpath=None):
 
+        def load_kerneldrivers(configdir):
+            ''' Parse the kerneldrivers.yaml file, discard unavailable
+            drivers.
+            '''
+
+            with open(os.path.join(configdir, "kernel-drivers.yaml")) as f:
+                cf = yaml.load(f.read())
+            drivers = cf['drivers'].copy()
+            for driver in cf['drivers']:
+                if driver == 'default':
+                    continue
+                with open('/dev/null', 'w') as f:
+                    try:
+                        subprocess.check_output([config.MODINFO, driver],
+                                                 stderr=f);
+                    except subprocess.CalledProcessError:
+                        del drivers[driver]
+            return drivers
+
+
+
         if path and os.path.exists(path):
             configdir = path
         elif path:
@@ -93,10 +117,7 @@ class Database(object):
         db['lircd_by_driver'] = cf['lircd_by_driver'].copy()
         db['lircmd_by_driver'] = cf['lircmd_by_driver'].copy()
 
-        with open(os.path.join(yamlpath, "kernel-drivers.yaml")) as f:
-            cf = yaml.load(f.read())
-        db['kernel-drivers'] = cf['drivers'].copy()
-        db['drivers'] = cf['drivers'].copy()
+        db['drivers'] = load_kerneldrivers(configdir)
         with open(os.path.join(yamlpath, "drivers.yaml")) as f:
             cf = yaml.load(f.read())
         db['drivers'].update(cf['drivers'].copy())

@@ -79,7 +79,7 @@ dist_bin_SCRIPTS        += python3
 endif
 
 if HAVE_PYTHON
-dist_bin_SCRIPTS        += pronto2lirc irdb-get lirc-kerneldrivers
+dist_bin_SCRIPTS        += pronto2lirc irdb-get
 dist_sbin_SCRIPTS       = lircd-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
 

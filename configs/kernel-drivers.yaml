@@ -3,6 +3,7 @@
 #  are two reasons to list a driver here. The first is if it is in
 #  the staging area and thus might be missing on a system. The second
 #  is if it needs manual configuration hints (modinit, modprobe).
+#  The actually usable drivers are determined in runtime using modinfo(1),
 #
 
 drivers:
