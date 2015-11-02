@@ -190,8 +190,8 @@ AC_CHECK_HEADER(usb.h,[
   AM_CONDITIONAL([BUILD_USB],[false])]
 )
 
-PKG_CHECK_MODULES([FTDI],[libftdi],,[true])
-test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1],,[true])
+PKG_CHECK_MODULES([FTDI],[libftdi >= 1.0],,[true])
+test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1 >= 1.0],,[true])
 if test -n "$FTDI_LIBS"; then
   AC_DEFINE(HAVE_FTDI)
   AM_CONDITIONAL([BUILD_FTDI],[true])

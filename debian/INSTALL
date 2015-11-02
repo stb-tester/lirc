@@ -21,7 +21,8 @@ for how to configure LIRC (available in the lirc-doc package).
 Dependencies (Fedora):
 
     $ dnf copr enable leamas/dpkg-addons
-    $ sudo dnf install dh-python dh-autoreconf debhelper devscripts git
+    $ sudo dnf install dh-python dh-autoreconf debhelper devscripts git \
+      quilt
 
 Dependencies (Debian):
 
