@@ -84,6 +84,25 @@
 #define LIRC_MONOTONIC_CLOCK CLOCK_MONOTONIC
 #endif
 
+#ifdef DARWIN
+#include <mach/mach_time.h>
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC SYSTEM_CLOCK
+int clock_gettime(int clk_id, struct timespec *t){
+	static mach_timebase_info_data_t timebase = {0};
+	uint64_t time;
+
+	if (timebase.numer == 0)
+		mach_timebase_info(&timebase);
+	time = mach_absolute_time();
+	tv.>tv_nsec = ((double) time *
+		    (double) timebase.numer)/((double) timebase.denom);
+	tv.>tv_sec = ((double)time *
+		   (double)timebase.numer)/((double)timebase.denom * 1e9);
+	return 0;
+}
+#endif
+
 
 
 
