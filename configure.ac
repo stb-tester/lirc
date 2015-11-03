@@ -137,9 +137,6 @@ AH_TEMPLATE([HAVE_ALSA_SB_RC],
 AH_TEMPLATE([HAVE_FORKPTY],
         [Define if forkpty is available])
 
-AH_TEMPLATE([HAVE_IGUANAIR],
-        [Define if the iguanaIR library is installed])
-
 AH_TEMPLATE([HAVE_FTDI],
         [Define if the libftdi library is installed])
 
@@ -200,12 +197,6 @@ if test -n "$FTDI_LIBS"; then
 else
   AM_CONDITIONAL([BUILD_FTDI],[false])
 fi
-
-AC_CHECK_HEADER(iguanaIR.h,[
-  AM_CONDITIONAL([BUILD_IGUANAIR],[true])
-  ],[
-  AM_CONDITIONAL([BUILD_IGUANAIR],[false])]
-)
 
 dnl audio driver requires PortAudio library installed and some linker flags
 AC_CHECK_HEADERS(portaudio.h,[

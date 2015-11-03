@@ -212,7 +212,6 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/girs.html \
                            $(srcdir)/plugindocs/imon-24g.html \
                            $(srcdir)/plugindocs/imon.html \
-                           $(srcdir)/plugindocs/iguanair.html \
                            $(srcdir)/plugindocs/irtoy.html \
                            $(srcdir)/plugindocs/srm7500atilibusb.html \
                            $(srcdir)/plugindocs/tira.html \
@@ -303,7 +302,6 @@ generated_plugindocs    =  html/alsa-usb.html \
                            html/girs.html \
                            html/imon-24g.html \
                            html/imon.html \
-                           html/iguanair.html \
                            html/irtoy.html \
                            html/srm7500atilibusb.html \
                            html/tira.html \

@@ -47,12 +47,6 @@ ftdi_la_LDFLAGS             = $(AM_LDFLAGS) @FTDI_LIBS@
 ftdi_la_CFLAGS              = $(AM_CFLAGS) @FTDI_CFLAGS@
 endif
 
-if BUILD_IGUANAIR
-plugin_LTLIBRARIES          += iguanaIR.la
-iguanaIR_la_SOURCES         = iguanaIR.c
-iguanaIR_la_LDFLAGS         = $(AM_LDFLAGS) -liguanaIR -lrt
-endif
-
 if BUILD_LIBPORTAUDIO
 plugin_LTLIBRARIES          += audio.la
 audio_la_SOURCES            = audio.c
