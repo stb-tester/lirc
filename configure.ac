@@ -178,6 +178,9 @@ AH_TEMPLATE([LIRC_LOCKDIR],
 
 AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
 
+AH_TEMPLATE([HAVE_MONOTONIC_RAW],
+        [Define if clock_gettime supports TIMER_MONOTONIC_RAW])
+
 
 AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
@@ -298,6 +301,21 @@ if test -n "$SYSTEMD_LIBS"; then
     AC_DEFINE(HAVE_SYSTEMD)
 fi
 SYSTEMD_SYSTEMUNITDIR
+
+AC_COMPILE_IFELSE([
+  AC_LANG_SOURCE([
+    #include <time.h>
+    int main(int argc, char** argv)
+    {
+	struct timespec res;
+	clock_gettime(CLOCK_MONOTONIC_RAW, &res);
+    }
+    ])
+  ],
+  [AC_DEFINE(HAVE_MONOTONIC_RAW)],
+  [true]
+)
+
 
 AC_MSG_NOTICE([Building all userspace drivers.])
 
