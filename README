@@ -30,6 +30,9 @@ NEWS file which contains all user visible changes between
 releases. Also at least read the "Updating from lirc-x.y.z" sections
 in the main documentation.
 
+If you intend to make a package the separate branches 'debian' and
+'fedora' contains upstream .deb and RPM packaging starting points.
+
 ## What is LIRC?
 
 LIRC is a package that allows you to decode and send infra-red signals

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -e
-
-systemd-tmpfiles --create /usr/lib/tmpfiles.d/lirc.conf || :
-
-#DEBHELPER#
