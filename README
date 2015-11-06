@@ -27,8 +27,7 @@ manual, the Installation chapter. The fast track:
 
 If you are upgrading from an older version of LIRC take a look at the
 NEWS file which contains all user visible changes between
-releases. Also at least read the "Updating from lirc-x.y.z" sections
-in the main documentation.
+releases.
 
 If you intend to make a package the separate branches 'debian' and
 'fedora' contains upstream .deb and RPM packaging starting points.
