@@ -288,6 +288,8 @@ class Controller(object):
                                                               errors='ignore')
             except urllib.error.URLError as ex:
                 text = "Sorry: cannot download: " + uri + ' (' + str(ex) + ')'
+        text = text.replace('@', ' at ').replace('|', ' pipe ') \
+            .replace('<', '[').replace('>', ']')
         self.view.show_text('<tt>' + text + '</tt>',
                             'LIRC: Remote config file')
 

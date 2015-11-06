@@ -65,7 +65,8 @@ class Baseview(object):
                               Gtk.ButtonsType.OK,
                               header)
         if body:
-            d.format_secondary_markup(body.replace('@', ' at '))
+            body = body.replace('@', ' at ').replace('|', ' pipe ')
+            d.format_secondary_markup(body)
         d.run()
         d.destroy()
         if exit_:
@@ -83,7 +84,7 @@ class Baseview(object):
         ''' Display standard error dialog. '''
         self._message_dialog(header, Gtk.MessageType.INFO, body, exit_)
 
-    def  show_link_info(self, header, body):
+    def show_link_info(self, header, body):
         ''' Show a info message, handling "See: <link>" by linking. '''
         template = 'See: <a href="{link}" title="{link}">{link}</a>'
         if body.lower().startswith('see') and (len(body.split(' ')) == 2):

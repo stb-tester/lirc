@@ -43,12 +43,31 @@ def _here(path):
     ''' Return path added to current dir for __file__. '''
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
 
+def _load_kerneldrivers(configdir):
+    ''' Parse the kerneldrivers.yaml file, discard unavailable
+    drivers.
+    '''
+
+    with open(os.path.join(configdir, "kernel-drivers.yaml")) as f:
+        cf = yaml.load(f.read())
+    drivers = cf['drivers'].copy()
+    for driver in cf['drivers']:
+        if driver == 'default':
+            continue
+        with open('/dev/null', 'w') as f:
+            try:
+                subprocess.check_output([config.MODINFO, driver],
+                                        stderr=f)
+            except subprocess.CalledProcessError:
+                del drivers[driver]
+    return drivers
+
 
 class Config(object):
     ''' The configuration selected, and it's sources. '''
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, config=None):
+    def __init__(self, cf=None):
         self.device = None        # << selected device.
         self.driver = {}          # << Read-only driver dict in db
         self.config = {}          # << Read-only config dict in db
@@ -57,8 +76,8 @@ class Config(object):
         self.lircd_conf = ""      # << Name of lircd.conf file
         self.lircmd_conf = ""     # << Name of lircmd.conf file
         self.label = ""           # << Label for driver + device
-        if config:
-            for key, value in config.items():
+        if cf:
+            for key, value in cf.items():
                 setattr(self, key, value)
 
     @property
@@ -74,27 +93,6 @@ class Database(object):
     ''' Reflects the *.yaml files in the configs/ directory. '''
 
     def __init__(self, path=None, yamlpath=None):
-
-        def load_kerneldrivers(configdir):
-            ''' Parse the kerneldrivers.yaml file, discard unavailable
-            drivers.
-            '''
-
-            with open(os.path.join(configdir, "kernel-drivers.yaml")) as f:
-                cf = yaml.load(f.read())
-            drivers = cf['drivers'].copy()
-            for driver in cf['drivers']:
-                if driver == 'default':
-                    continue
-                with open('/dev/null', 'w') as f:
-                    try:
-                        subprocess.check_output([config.MODINFO, driver],
-                                                 stderr=f);
-                    except subprocess.CalledProcessError:
-                        del drivers[driver]
-            return drivers
-
-
 
         if path and os.path.exists(path):
             configdir = path
@@ -117,7 +115,8 @@ class Database(object):
         db['lircd_by_driver'] = cf['lircd_by_driver'].copy()
         db['lircmd_by_driver'] = cf['lircmd_by_driver'].copy()
 
-        db['drivers'] = load_kerneldrivers(configdir)
+        db['kernel-drivers'] = _load_kerneldrivers(configdir)
+        db['drivers'] = db['kernel-drivers'].copy()
         with open(os.path.join(yamlpath, "drivers.yaml")) as f:
             cf = yaml.load(f.read())
         db['drivers'].update(cf['drivers'].copy())
