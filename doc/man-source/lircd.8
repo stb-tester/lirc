@@ -146,7 +146,7 @@ this number, it will be replaced by this number.
 \fB-u, --uinput\fR
 [DEPRECATED] Enable automatic generation of Linux input events. Obsoleted
 by the
-.B lircd-uinput
+.BR lircd-uinput (8)
 tool and the
 .I lircd-uinput.service
 systemd service.
@@ -302,11 +302,15 @@ command line.
 .SH ENVIRONMENT
 .TP 4
 .B LIRC_OPTIONS_PATH
-Plugin load path, se DRIVER LOADING
+Options file path, see FILES.
+.TP 4
+.B LIRC_PLUGINDIR
+Plugin load path, se DRIVER LOADING.
 .TP 4
 .B LIRC_DEBUG_OPTIONS
-If set, enables debugging in early stages when the --debug parameter is
-yet not parsed.
+If set, enables debugging in early stages when the
+.I --debug
+option is yet not parsed.
 
 .SH "DRIVER LOADING"
 Drivers are loaded dynamically. This is done from a traditional *ux

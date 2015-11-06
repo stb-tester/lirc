@@ -1,7 +1,9 @@
 0.9.4-devel
-  * Issues: https://sourceforge.net/p/lirc/tickets/milestone/0.9.4
+  * Issues: https://sf.net/p/lirc/tickets/milestone/0.9.4
 
   * The caraca driver has been retired (still available in attic/).
+  * The iguanair driver has been moved out of tree and is now
+    maintained by Iguanaworks, Inc. See drivers/iguanair/README.
   * The irman driver has been moved out of tree. From 0.5.1 the
     libirman package contains the driver. See drivers/irman/README
   * The yard2 driver has been moved out of tree and is now maintained
@@ -37,6 +39,8 @@
   * Add an "auto" device to devinput driver for single-device
     usecase (#134).
   * irrecord has been taught to handle remotes without gap (#98).
+  * The --uinput lircd option is deprecated, obsoleted by the
+    lircd.uinput.service systemd service. See lircd-uinput(8).
   * CLI options for mode2, xmode2 and irrecord has been streamlined.
     All tools falls back to lircd defaults where it makes sense.
 
@@ -47,6 +51,7 @@
   * The out-of-tree build interface is enhanced with hooks for external
     drivers to rebuild documentation and add a config file.
 
+  * lircd: Fix too-short gap  when sending/blasting (#158).
   * irrecord fixes:
     - Buggy handling of not decoded buttons in irrecord (#146).
     - Repeated buttons problems (#149)
@@ -57,9 +62,15 @@
   * Fix crash for non-existing device (#145).
   * Fix gid and supplementary groups in CLI apps dropping root.
   * Fix a crash in irrecord when invoked without options.
+  * Fix bad parsing of --options-file unless given first (#165).
   * Don't require write access if not needed in default.c (#133).
   * Clean up docs, remove circular links (#136). Documentation is
     now only in lirc.org/html.
+
+  * Upstream selinux updated to match current lircd requirements.
+    See: https://github.com/fedora-selinux/selinux-policy/pull/41
+  * The lirc.4 manpage (/dev/lirc* interface) is upstreamed to the
+    linux kernel manpages project (#
 
 0.9.3  4/09/15
   * Digest of 0.9.3pre1..0.9.3pre3

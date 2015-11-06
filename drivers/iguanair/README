@@ -5,13 +5,14 @@ This driver used to be part of the LIRC sources. In order to improve
 the maintenance it has been moved to Iguanaworks, Inc which is the
 primary hardware and software vendor.
 
-From 0.9.4 the driver is available at: TBD
+From 0.9.4 the driver is available at:
+https://github.com/iguanaworks/iguanair-lirc
 
 As a transition step the same files are available here during the 0.9.4
 cycle. These files are a complete lirc driver for iguanair. Building requires
 lirc >= 0.9.4. If you are using a packaged version you probably need to
 have the -devel and -doc packages installed. Note that the downstream
-sources at TBD are preferred and will be the only option in next release.
+sources (above)  are preferred and will be the only option in next release.
 
 To build and install the driver together with the support files:
 
