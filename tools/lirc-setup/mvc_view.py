@@ -91,7 +91,7 @@ You should then install these files into their proper locations, see the
 README file in the results directory."""
 
 CONFIG_GUIDE_URL = \
-"file://@docdir@/lirc.org/html/configuration-guide.html#permissions" \
+    "file://@docdir@/lirc.org/html/configuration-guide.html#permissions" \
     .replace("@docdir@", config.DOCDIR)
 
 MODE2_HELP_MSG = """
@@ -144,6 +144,7 @@ NO_DIR_BROWSER_MSG = """
 There is no configured directory browser Fix using <i> xdg-mime default
 nautilus.desktop inode/directory</i> or so.
 """
+
 
 def _get_lines_by_letter(lines):
     '''' Return a dictionary keyed with first letter of lines. '''
@@ -247,11 +248,11 @@ class DeviceTestWindow(Gtk.Window):
             """ User clicked View log button. """
             path = os.path.expanduser("~/.cache/mode2.log")
             if not os.path.exists(path) or os.stat(path)[6] < 10:
-                self.view.show_info("No log available");
+                self.view.show_info("No log available")
                 return
             with open(path, "r") as f:
                 log = '\n'.join(f.readlines())
-            self.view.show_info("mode2 logfile", log);
+            self.view.show_info("mode2 logfile", log)
 
         Gtk.Window.__init__(self, title="Test device and driver setup")
         self.view = view
@@ -301,7 +302,6 @@ class DeviceTestWindow(Gtk.Window):
         """ User clicked Run Command button. """
         length = len(self.command)
         self.terminal.feed_child(self.command, length)
-
 
 
 class View(baseview.Baseview):
@@ -357,7 +357,7 @@ class View(baseview.Baseview):
             self.test_window = DecodeTestWindow(self.model, self)
             self.test_window.show_all()
 
-        #def on_driver_info_clicked_cb(btn, data=None):
+        # def on_driver_info_clicked_cb(btn, data=None):
         #    ''' User clicked 'Info' for current driver. '''
         #    info = self.model.driver_info()
         #    if info:
@@ -465,7 +465,6 @@ class View(baseview.Baseview):
         devicebtn = self.builder.get_object('manual_device_btn')
         devicebtn.set_sensitive(bool(self.model.config.device))
 
-
     def show_resultdir(self, header, text, results_dir):
         """ Show data for written config files. """
         # pylint: disable=not-callable
@@ -490,11 +489,10 @@ class View(baseview.Baseview):
                     browser = None
                 if not browser:
                     self.show_warning("Bad desktop config",
-                                      NO_DIR_BROWSER_MSG);
+                                      NO_DIR_BROWSER_MSG)
                 else:
                     subprocess.check_call(["xdg-open", results_dir])
         d.destroy()
-
 
     def load_configs(self):
         ''' Load config files into model. -> control... '''
@@ -504,11 +502,11 @@ class View(baseview.Baseview):
     def show_driver(self):
         ''' Display data for current driver. '''
 
-        def format_path(config, key):
+        def format_path(cf, key):
             ''' Format a lircd.conf/lircmd.conf entry. '''
-            if not hasattr(config, key) or not getattr(config, key):
+            if not hasattr(cf, key) or not getattr(cf, key):
                 return 'Not set'
-            return os.path.basename(getattr(config, key))
+            return os.path.basename(getattr(cf, key))
 
         items = [
             ('Driver', 'driver'),
@@ -592,8 +590,8 @@ class View(baseview.Baseview):
             else:
                 self.model.set_device(numtext)
                 self.controller.modprobe_done(None)
-                config = self.model.db.configs['udp']
-                self.model.set_config(config)
+                cf = self.model.db.configs['udp']
+                self.model.set_config(cf)
                 self.model.config.device = numtext
             button.get_toplevel().hide()
 
@@ -727,11 +725,11 @@ class View(baseview.Baseview):
             ''' User pressed 'Next' button. '''
             label = self.builder.get_object('preconfig_select_lbl')
             try:
-                config = self.model.db.find_config('label', label.get_text())
+                cf = self.model.db.find_config('label', label.get_text())
             except KeyError:
                 self.show_error("This driver is not available.")
             else:
-                self.model.set_config(config)
+                self.model.set_config(cf)
                 button.get_toplevel().hide()
                 self.builder.get_object('preconfig_window').hide()
                 self.controller.start_check()
@@ -923,7 +921,6 @@ class View(baseview.Baseview):
         cancel = self.builder.get_object("manual_device_cancel_btn")
         cancel.connect('clicked', on_cancel_cb)
         w.show_all()
-
 
 
 # vim: set expandtab ts=4 sw=4:
