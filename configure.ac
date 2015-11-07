@@ -181,6 +181,8 @@ AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
 AH_TEMPLATE([HAVE_MONOTONIC_RAW],
         [Define if clock_gettime supports TIMER_MONOTONIC_RAW])
 
+AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
+        [Define if getgrouplist() groups arg is int*])
 
 AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
@@ -316,6 +318,23 @@ AC_COMPILE_IFELSE([
   [true]
 )
 
+saved_cflags="$CFLAGS"
+CFLAGS="-Werror -Wall"
+AC_COMPILE_IFELSE([
+  AC_LANG_SOURCE([
+    #include <grp.h>
+    int main(int argc, char**argv)
+    {
+        int groups[[4]];
+        int ngroups;
+        getgrouplist("foo", (gid_t)1, groups, &ngroups);
+    }
+    ])
+  ],
+  [AC_DEFINE(HAVE_INT_GETGROUPLIST_GROUPS)],
+  [true]
+)
+CFLAGS="$saved_cflags"
 
 AC_MSG_NOTICE([Building all userspace drivers.])
 

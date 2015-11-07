@@ -25,10 +25,10 @@
 
 static const logchannel_t logchannel = LOG_LIB;
 
-#ifdef DARWIN
-#define gid_type int
+#ifdef HAVE_INT_GETGROUPLIST_GROUPS
+#define lirc_gid int
 #else
-#define gid_type gid_t
+#define lirc_gid gid_t
 #endif
 
 
@@ -36,7 +36,7 @@ const char* drop_sudo_root(int (*set_some_uid)(uid_t))
 {
 	struct passwd* pw;
 	char* user;
-	gid_type groups[32];
+	lirc_gid groups[32];
 	int group_cnt = sizeof(groups)/sizeof(gid_t);
 	char groupnames[256] = {0};
 	char buff[12];

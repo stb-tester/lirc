@@ -72,10 +72,10 @@
 
 #include "lirc_private.h"
 
-#ifdef DARWIN
-#define gid_type int
+#ifdef HAVE_INT_GETGROUPLIST_GROUPS
+#define lirc_gid int
 #else
-#define gid_type gid_t
+#define lirc_gid gid_t
 #endif
 
 #ifdef HAVE_MONOTONIC_RAW
@@ -751,7 +751,7 @@ void drop_privileges(void)
 {
 	const char* user;
 	struct passwd* pw;
-	gid_type groups[32];
+	lirc_gid groups[32];
 	int group_cnt = sizeof(groups)/sizeof(gid_t);
 	char groupnames[256] = {0};
 	char buff[12];
