@@ -161,7 +161,7 @@ static int drvctl(unsigned int cmd, void* arg);
 // understand this, just give some realistic default values.
 
 const struct driver hw_girs = {
-	.device		= "/dev/ACM0",
+	.device		= "/dev/ttyACM0",
 	.fd		= -1,
 	.features	= LIRC_CAN_REC_MODE2 | LIRC_CAN_SEND_PULSE,
 	.send_mode	= LIRC_MODE_PULSE,
