@@ -78,12 +78,6 @@
 #define lirc_gid gid_t
 #endif
 
-#ifdef HAVE_MONOTONIC_RAW
-#define LIRC_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
-#else
-#define LIRC_MONOTONIC_CLOCK CLOCK_MONOTONIC
-#endif
-
 #ifdef DARWIN
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
@@ -102,8 +96,6 @@ int clock_gettime(int clk_id, struct timespec *t){
 	return 0;
 }
 #endif
-
-
 
 
 /****************************************************************************
@@ -1226,7 +1218,7 @@ static void schedule_repeat_timer (struct timespec* last)
 	struct timespec current;
 	struct itimerval repeat_timer;
 	gap = send_buffer_sum() + repeat_remote->min_remaining_gap;
-	clock_gettime (LIRC_MONOTONIC_CLOCK, &current);
+	clock_gettime (CLOCK_MONOTONIC, &current);
 	secs = current.tv_sec - last->tv_sec;
 	diff = 1000000 * secs + (current.tv_nsec - last->tv_nsec) / 1000;
 	usecs = (diff < gap ? gap - diff : 0);
