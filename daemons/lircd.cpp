@@ -589,7 +589,7 @@ void remove_client(int fd)
 			log_info("removed client");
 
 			clin--;
-			if (!use_hw() && curr_driver->deinit_func)
+			if (!useuinput && use_hw() && curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			for (; i < clin; i++)
 				clis[i] = clis[i + 1];
@@ -2142,6 +2142,14 @@ void loop(void)
 	char* message;
 
 	log_notice("lircd(%s) ready, using %s", curr_driver->name, lircdfile);
+	if(useuinput) {
+		// Don't wait for client to connect when using uinput (#161)
+		if (curr_driver->init_func) {
+			if (!curr_driver->init_func()) {
+				log_warn("Failed to initialize hardware");
+			}
+		}
+	}
 	while (1) {
 		(void)mywaitfordata(0);
 		if (!curr_driver->rec_func)
