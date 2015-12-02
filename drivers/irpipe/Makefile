@@ -1,5 +1,5 @@
 obj-m += irpipe.o
-ccflags-y +=-O0 -g
+ccflags-y +=-O1 -g
 
 all: test
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
