@@ -216,6 +216,10 @@ static int send_func(struct ir_remote* remote, struct ir_ncode* code)
 
 	log_trace("file.c: sending, code: %s", code->name);
 
+	if (remote->bits > 0) {
+		write_line("code", code->code);
+		return 1;
+	}
 	if (!send_buffer_put(remote, code)) {
 		log_debug("file.c: Cannot make send_buffer_put");
 		return 0;
