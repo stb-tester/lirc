@@ -85,14 +85,6 @@ extern char progname[128];
 #define logmax(l) (l > LIRC_DEBUG ? LIRC_DEBUG : l)
 #endif
 
-/**
- * Compatibility perror(3) wrapper Accepts level 1..3 which are mapped to
- * LIRC_TRACE..LIRC_TRACE2.
- */
-#define LOGPERROR(level, s) \
-	if (level + 7 <= loglevel) \
-		logperror(logmax(level + 7), s)
-
 /** perror wrapper logging with level LIRC_ERROR. */
 #define log_perror_err(fmt, ...) \
 	{ if ((logchannel & logged_channels) && LIRC_ERROR <= loglevel) \
