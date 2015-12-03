@@ -35,6 +35,7 @@ static const char* const help =
 	"\t -t --text2bin\t\tConvert text data to binary\n"
 	"\t -r --read\t\tSend data from kernel device to stdout\n"
 	"\t -f --filter\t\tSend data from stdin to stdout\n"
+	"\t -B --bits=bits\t\tConvert bits wide LIRCCODE data\n"
 	"\t -s --add-sync\t\tAdd long initial sync on converted output\n"
 	"\t -h --help\t\tDisplay this message\n"
 	"\t -v --version\t\tDisplay version\n";
@@ -45,6 +46,7 @@ static const struct option options[] = {
 	{ "length",	    required_argument, NULL, 'l' },
 	{ "bin2text",	    no_argument,       NULL, 't' },
 	{ "text2bin",	    no_argument,       NULL, 'b' },
+	{ "bits",	    required_argument, NULL, 'B' },
 	{ "write",	    no_argument,       NULL, 'w' },
 	{ "filter",	    no_argument,       NULL, 'f' },
 	{ "add-sync",	    no_argument,       NULL, 's' },
@@ -61,6 +63,7 @@ static int opt_length = -1;
 static bool opt_totext = false;
 static bool opt_tobin = false;
 static bool opt_add_sync = false;
+static int opt_bits = 0;
 
 
 static void parse_options(int argc, char* argv[])
@@ -68,7 +71,7 @@ static void parse_options(int argc, char* argv[])
 
 	int c;
 	long l;
-	const char* const optstring = "F:l:btrfd:hsv";
+	const char* const optstring = "F:l:bB:trfd:hsv";
 
 	while (1) {
 		c = getopt_long(argc, argv, optstring, options, NULL);
@@ -89,6 +92,13 @@ static void parse_options(int argc, char* argv[])
 				exit(1);
 			}
 			opt_length = l;
+		case 'B':
+			l = strtol(optarg, NULL, 10);
+			if (l >= INT_MAX || l <= INT_MIN) {
+				fprintf(stderr, "Bad numeric: %s\n", optarg);
+				exit(1);
+			}
+			opt_bits = l;
 		case 'b':
 			opt_tobin = true;
 			break;
@@ -150,9 +160,11 @@ static uint32_t process_line(const char* token1, const char* token2)
 		return (uint32_t)-1;
 	if (strcmp("pulse", token1) == 0)
 		value |= PULSE_BIT;
-	else if (strcmp("space", token1) != 0)
-		return (uint32_t)-1;
-	return (uint32_t)value;
+	else if (strcmp("space", token1) == 0)
+		return (uint32_t)value;
+	else if (strcmp("code", token1) == 0)
+		return (uint32_t)value;
+	return (uint32_t)-1;
 }
 
 
@@ -164,6 +176,7 @@ static void write_tobin(void)
 	char* token1;
 	char* token2;
 	int32_t value;
+	const int len = opt_bits == 0 ? sizeof(uint32_t) : opt_bits/8;
 
 	if (opt_add_sync) {
 		value = 1000000;
@@ -175,13 +188,13 @@ static void write_tobin(void)
 		token1 = strtok(buff, "\n ");
 		token2 = strtok(NULL, "\n ");
 		value = process_line(token1, token2);
-		if (value == -1)
+		if (value == -1) {
 			fprintf(stderr,
 				"Illegal data (ignored):\"%s\"\n", line);
-		else
-			if (write(1, &value, sizeof(uint32_t))
-			    != sizeof(uint32_t))
+		} else {
+			if (write(1, &value,len) != len)
 				perror("write() failed");
+		}
 	}
 }
 
@@ -254,6 +267,10 @@ int main(int argc, char**argv)
 		run_ioctl(LIRC_SET_FEATURES, opt_features);
 	if (opt_length != -1)
 		run_ioctl(LIRC_SET_LENGTH, opt_length);
+	if (opt_bits > 0 && opt_mode != MODE_FILTER) {
+		run_ioctl(LIRC_SET_REC_MODE, LIRC_MODE_LIRCCODE);
+		run_ioctl(LIRC_SET_SEND_MODE, LIRC_MODE_LIRCCODE);
+	}
 	if (opt_tobin)
 		write_tobin();
 	else if (opt_totext)
