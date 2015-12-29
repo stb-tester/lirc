@@ -131,6 +131,9 @@ uninstall-hook:
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup \
 	      $(DESTDIR)/$(pkgpythondir)/configs
 
+clean-local:
+	-find . -name __pycache__ -exec rm -r {} \;
+
 checkfiles:
 	../git-tools/checkfiles $(SOURCES)
 

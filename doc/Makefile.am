@@ -96,6 +96,7 @@ endif
 
 clean-local:
 	rm -rf api-docs/*
+	rm -f lirc
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir)
