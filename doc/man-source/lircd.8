@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Sep 2015" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Jan 2016" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -144,12 +144,12 @@ many times. Also, if the number of repeats in a SEND_ONCE request exceeds
 this number, it will be replaced by this number.
 .TP
 \fB-u, --uinput\fR
-Enable automatic generation
-of Linux input events. lircd will open /dev/input/uinput and inject
-key events to the Linux kernel. The key code depends on the name that
-was given a button in the lircd config file, e.g. if the button is
-named KEY_1, the '1' key code will be generated. You will find a
-complete list of possible button names in /usr/include/linux/input.h.
+[DEPRECATED] Enable automatic generation of Linux input events. Obsoleted
+by the
+.B lircd-uinput
+tool and the
+.I lircd-uinput.service
+systemd service.
 
 .SH SOCKET BROADCAST MESSAGES FORMAT
 
@@ -339,12 +339,14 @@ installed by default there are also example scripts for other distros
 and init systems in the contrib directory.
 
 .SH "SEE ALSO"
-irdb-get(1)
+.BR irdb-get (1)
 .br
-lirc-setup(1)
+.BR lirc-setup (1)
 .br
-lircd.conf(5)
+.BR lircd.conf (5)
 .br
-irrecord(1)
+.BR irrecord (1)
 .br
-lirc(4)
+.BR lirc (4)
+.br
+.BR lircd-uinput (8)

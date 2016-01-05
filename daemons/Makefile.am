@@ -14,10 +14,13 @@ bin_PROGRAMS            = lircrcd
 lircrcd_SOURCES         = lircrcd.cpp
 lircrcd_LDADD           = ../lib/liblirc_client.la
 
-sbin_PROGRAMS           = lircd lircmd
+sbin_PROGRAMS           = lircd lircmd lircd-uinput
 
 lircd_SOURCES           = lircd.cpp
 lircd_LDADD             = ../lib/liblirc.la
+
+lircd_uinput_SOURCES    = lircd-uinput.cpp
+lircd_uinput_LDADD     = ../lib/liblirc.la
 
 lircmd_SOURCES          = lircmd.cpp
 lircmd_LDADD            = ../lib/liblirc.la

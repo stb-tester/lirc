@@ -1,0 +1,92 @@
+.TH LIRCD-UINPUT "1" "Last change: Jan 2016" "lircd.uinput @VERSION" "System Managers Manual"
+
+.\" Copyright (c) 2015, Alec Leamas
+.\"
+.\" %%%LICENSE_START(GPLv2+_DOC_FULL)
+.\" This is free documentation; you can redistribute it and/or
+.\" modify it under the terms of the GNU General Public License as
+.\" published by the Free Software Foundation; either version 2 of
+.\" the License, or (at your option) any later version.
+.\"
+.\" The GNU General Public License's references to "object code"
+.\" and "executables" are to be interpreted as the output of any
+.\" document formatting or typesetting system, including
+.\" intermediate and printed output.
+.\"
+.\" This manual is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public
+.\" License along with this manual; if not, see
+.\" <http://www.gnu.org/licenses/>.
+.\" %%%LICENSE_END
+
+.SH NAME
+.P
+lircd-uinput \- Forward lirc button presses as uinput events
+
+.SH SYNOPSIS
+.P
+lircd-uinput [\fIoptions\fP]... [\fIlircd output socket\fP]
+
+.SH DESCRIPTION
+Enables automatic generation of Linux input events.
+.B lircd-uinput
+opens  the uinput device  and injects key events received on a
+.B lircd (8)
+output socket to the Linux kernel.
+The key code depends on the name that was given a button in the
+lircd config file, e.g., if the button is named KEY_1, the '1'
+key code will be generated.
+A complete list of possible button names  is available in
+.I /usr/include/linux/input.h
+and also using
+.I irrecord -l.
+.P
+.B lircd-uinput
+is designed to run as a systemd service.
+.P
+The
+.I lircd output socket
+argument is an optional path to lircd output socket. It defaults
+to the
+.I output
+value in the [lircd] section of the
+lirc_options config file, falling back to
+.I @varrundir@/lirc/lircd
+
+.SH OPTIONS
+.TP
+\fB\-u\fR \fB\-\-uinput\fR device
+uinput kernel device, defaults to /dev/uinput.
+.TP
+\fB\-r\fR \fB\-\-release-suffix\fR suffix
+.B lircd-uinput
+generates two events for each received lircd button
+press.
+The first uses the lircd button press name as-is, the second
+adds the release-suffix. Defaults to \fI_UP\fR.
+.TP
+\fB\-O\fR \fB\-\-options-file\fR
+Options file holding default values. Defaults to
+.I @etcdir@/lircd/lirc_options.conf
+.TP
+\fB\-h\fR \fB\-\-help\fR
+Display usage summary.
+.TP
+\fB\-v\fR \fB\-\-version\fR
+Display version info.
+
+.SH NOTES
+.B lircd-uinput
+can only forward lircd button events with names from
+the legal namespace as defined by irrecord(1), i. e., as defined
+by the kernel.
+
+.SH "SEE ALSO"
+
+.BR lircd (8)
+.br
+.BR irrecord(1)
