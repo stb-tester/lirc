@@ -197,6 +197,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lirc-make-devinput.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd-setup.8 \
+                           $(srcdir)/man-source/lircd-uinput.8 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
@@ -262,6 +263,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd-setup.8 \
+                           man/lircd-uinput.8 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
                            man/lircrcd.8 \
@@ -287,6 +289,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/lirc-make-devinput.html \
                            man-html/lirc-setup.html \
                            man-html/lircd-setup.html \
+                           man-html/lircd-uinput.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \

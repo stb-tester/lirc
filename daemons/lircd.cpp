@@ -2432,6 +2432,8 @@ int main(int argc, char** argv)
 	allow_simulate = options_getboolean("lircd:allow-simulate");
 #       if defined(__linux__)
 	useuinput = options_getboolean("lircd:uinput");
+	if (useuinput)
+		log_warn("--uinput is deprecated, check the lircd manpage.");
 #       endif
 	repeat_max = options_getint("lircd:repeat-max");
 	configfile = options_getstring("lircd:configfile");
