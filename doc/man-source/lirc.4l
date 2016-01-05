@@ -1,4 +1,4 @@
-.TH LIRC 4 "Aug 2015" "Linux" "Linux Programmer's Manual"
+.TH LIRC 4l "Aug 2015" "Linux" "Linux Programmer's Manual"
 
 
 .\" Copyright (c) 2015, Alec Leamas
@@ -453,6 +453,9 @@ This file is not (yet) publicly exported by kernel headers.
 For the time being, the file is bundled in the lirc package; see
 .UR http://www.lirc.org
 .UE .
+.P
+The lirc.4l manpage is a copy of the upstream page lirc.4 distributed
+with the lirc package. It will be removed in next lirc release.
 
 .SH SEE ALSO
 .BR lircd (8)
