@@ -13,7 +13,12 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "media/lirc.h"
+#endif
+
 #ifndef __u32
 #define __u32 uint32_t
 #endif
