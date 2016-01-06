@@ -83,26 +83,23 @@ static const struct option o_option[] = {
 
 static char* parse_O_arg(int argc, char** argv)
 {
-	int c;
 	char* path = NULL;
 
-	opterr = 0;
-	optind = 1;
-	// This should really be "O:", but getopt_long seemingly cannot
-	// handle a single option in the string. The w is tolerated here,
-	// but it does not matter.
-	while ((c = getopt_long(argc, argv, "wO:", o_option, NULL)) != -1)
-		if (c == 'O')
-			path = optarg;
-	opterr = 1;
-	optind = 1;
-
-	if (path && access(path, R_OK) != 0) {
-		fprintf(stderr, "Cannot open options file %s for read\n",
-			path);
-		return NULL;
+	for (int i = 0; i < argc; i += 1) {
+		if (strcmp(argv[i], "-O") != 0 &&
+		    strcmp(argv[i], "--options-file") != 0)
+			continue;
+		if (i + 1 >= argc)
+			return NULL;
+		path = argv[i + 1];
+		if (path && access(path, R_OK) != 0) {
+			fprintf(stderr, "Cannot open options file %s for read\n",
+				path);
+			return NULL;
+		}
+		return path;
 	}
-	return path;
+	return NULL;
 }
 
 
