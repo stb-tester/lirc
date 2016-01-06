@@ -29,7 +29,12 @@
 
 #include <sys/ioctl.h>
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/ir_remote.h"
 #include "lirc/driver.h"
 #include "lirc/release.h"

@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/release.h"
 #include "lirc/receive.h"
 #include "lirc/lirc_log.h"

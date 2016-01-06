@@ -13,7 +13,12 @@
 #ifndef _LIRC_PRIVATE_H
 #define _LIRC_PRIVATE_H
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"

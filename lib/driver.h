@@ -20,7 +20,12 @@
 #ifndef _HARDWARE_H
 #define _HARDWARE_H
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/ir_remote_types.h"
 
 #ifdef __cplusplus

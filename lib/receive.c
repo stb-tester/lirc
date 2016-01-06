@@ -22,7 +22,12 @@
 #include <errno.h>
 #include <poll.h>
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/driver.h"
 #include "lirc/lirc_log.h"
 #include "lirc/receive.h"

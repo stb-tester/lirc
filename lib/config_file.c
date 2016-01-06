@@ -34,7 +34,12 @@
 #include <fcntl.h>
 #include <ctype.h>
 
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
 #include "include/media/lirc.h"
+#endif
+
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
 #include "lirc/ir_remote.h"
