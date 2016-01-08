@@ -12,7 +12,7 @@ EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
-CHANGELOG_REVS          = lirc-0_9_3..HEAD
+CHANGELOG_REVS          = lirc-0_9_4..HEAD
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
     --with-systemdsystemunitdir=$${dc_install_base}/lib/systemd/system
