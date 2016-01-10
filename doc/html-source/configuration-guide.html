@@ -41,12 +41,41 @@
       <li>
         You might want to use lirc's applications e. g., irexec(1)  which
         can run arbitrary commands in parallel with an application such
-        as mythtv or xbmc.</li>
+        as mythtv or kodi.</li>
     </ul>
     <p>
     So, while the kernel built-in handling works out of the box in many
     cases, there are still scenarios when LIRC is the right tool.
     </p>
+
+    <A NAME="default-setup"></A><HR>
+    <h2 align="center">The default configuration</h2>
+    <p>
+    From 0.9.4+ LIRC is distributed with a default configuration based
+    on the devinput driver. This should work out of the box with the
+    following limitations:</p>
+    <ul>
+       <li>
+         There must be exactly one capture device supported by the
+         kernel</li>
+       <li>
+         The remote(s) used must be supported by the kernel.</li>
+       <li>
+         There is no need to do IR blasting (i. e., to send IR data).
+         </li>
+    </ul>
+    <p>
+    The easy way to check is to try the remotes without lircd running. If
+    it works this way, it should also work using lircd.</p>
+    <p>
+    To check the number of supported devices run <em>ls /sys/class/rc</em>.
+    This should list a single entry <em>rc0</em>.</p>
+    <p>
+    If you want to use the default configuration you should start and enable
+    the lircd service and possibly define lircrc files for your
+    applications. However, you can use the lirc_options.conf file as-is.
+    See <a href="#systemd-setup">systemd-setup</a>
+
 
     <A NAME="hardware"></A><HR>
     <H2 ALIGN="CENTER">Supported Hardware</H2>
