@@ -5,7 +5,8 @@ CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
                           api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
                           doxygen*warning* ext-driver-toc.xsl
 
-EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh
+EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
+                          make_rel_symlink.py index.html plugindocs.mk
 
 if DEVEL
 website                 = http://lirc.sf.net/lirc.org
@@ -57,6 +58,12 @@ if HAVE_PYMOD_YAML
 dist_website_html_DATA  += table.html
 endif
 
+vardocsdir              = $(localstatedir)/lib/lirc/plugins
+vardocs_DATA            = index.html html-source/lirc.css
+
+varimagedir             = $(localstatedir)/lib/lirc/images
+varimage_DATA           = $(dist_image_DATA)
+
 website_imagedir        = $(docdir)/lirc.org/images
 
 imagedir                = $(docdir)/images
@@ -95,7 +102,12 @@ else
 endif
 	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf html/index.html .
 	sed -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
-
+	$(PYTHON) $(srcdir)/make_rel_symlink.py \
+	    $(DESTDIR)$(vardocsdir) $(DESTDIR)$(plugindocsdir)/var
+	$(PYTHON) $(srcdir)/make_rel_symlink.py \
+	    $(DESTDIR)$(vardocsdir)/index.html \
+	    $(DESTDIR)$(website_htmldir)/plugins-index.html
+	cp $(srcdir)/plugindocs.mk $(DESTDIR)$(plugindocsdir)/Makefile
 
 clean-local:
 	rm -rf api-docs/*
@@ -103,7 +115,7 @@ clean-local:
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir) \
-            $(DESTDIR)$(mandir)/man4l
+            $(DESTDIR)$(mandir)/man4l $(DESTDIR)$(plugindocsdir)
 
 
 $(abs_builddir)/driver-toc.xsl: $(plugindocs)
@@ -112,11 +124,17 @@ $(abs_builddir)/driver-toc.xsl: $(plugindocs)
 $(srcdir)/driver-toc.xsl: $(plugindocs)
 	$(srcdir)/make-driver-toc.sh $(plugindocs)> $@
 
+$(srcdir)/empty_toc.tmpl: $(generated_html)
+	cp html/empty_toc.html $@
+
+elugins.index.html: $(srcdir)/empty_toc.tmpl
+	cp -a $? $@
+
 docpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
 
-table.html: docpage.xsl ext-driver-toc.xsl
+table.html: docpage.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
 	PYTHONPATH=.:$(top_srcdir)/tools \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
@@ -127,9 +145,6 @@ lirc.hwdb:
 	PYTHONPATH=.:$(top_srcdir)/tools \
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
-
-ext-driver-toc.xsl:
-	$(srcdir)/make-ext-driver-toc.sh  > $@
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $< $@
@@ -226,15 +241,17 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
 
 pluginfiles             =  $(srcdir)/plugpage.xsl \
                            $(srcdir)/driver-toc.xsl \
+                           $(srcdir)/empty_index.tmpl \
+                           $(srcdir)/index.tmpl \
                            $(srcdir)/make-ext-driver-toc.sh \
                            $(srcdir)/page.xsl \
-                           $(srcdir)/plugindocs.mk \
-                           html/programs.html
+                           $(srcdir)/html-source/lirc.css
 
 html_sources            =  $(srcdir)/html-source/api-general.html \
                            $(srcdir)/html-source/configuration-guide.html \
                            $(srcdir)/html-source/configure.html \
                            $(srcdir)/html-source/driver-api.html \
+                           $(srcdir)/html-source/empty_toc.html \
                            $(srcdir)/html-source/help.html \
                            $(srcdir)/html-source/index.html \
                            $(srcdir)/html-source/install.html \
@@ -320,6 +337,7 @@ generated_html          =  html/api-general.html \
                            html/configuration-guide.html \
                            html/configure.html \
                            html/driver-api.html \
+                           html/empty_toc.html \
                            html/help.html \
                            html/index.html \
                            html/install.html \

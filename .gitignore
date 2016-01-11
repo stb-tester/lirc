@@ -43,6 +43,7 @@ doc/table.html
 doc/driver-toc.xsl
 doc/docpage.xsl
 doc/lirc.org/html
+doc/ext-driver-toc.xsl
 
 doxygen-warnings.txt
 doxygen.warnings
