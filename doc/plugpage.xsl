@@ -10,6 +10,6 @@
   />
 
   <xsl:include href="page.xsl"/>
-  <xsl:include href="ext-driver-toc.xsl"/>
+  <xsl:include href="var/ext-driver-toc.xsl"/>
 
 </xsl:stylesheet>
