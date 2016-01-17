@@ -13,6 +13,8 @@ EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog \
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
+MANTAINERCLEANFILES     = config.sub install-sh depcomp py-compile \
+                          missing libtool plugins/Makefile.am
 CHANGELOG_REVS          = lirc-0_9_3..HEAD
 
 AM_DISTCHECK_CONFIGURE_FLAGS = \
@@ -61,6 +63,9 @@ uninstall-hook:
 
 dist-hook: ChangeLog fix-version
 	cp -ar $(srcdir)/contrib $(distdir)
+
+maintainer-clean-local:
+	finf . -name Makefile.in -delete
 
 fix-version: .phony
 	chmod u+w $(distdir)/VERSION
