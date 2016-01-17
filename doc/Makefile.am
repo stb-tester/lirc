@@ -47,15 +47,15 @@ plugindocsdir           = $(docdir)/plugindocs
 dist_plugindocs_DATA    = README $(pluginfiles)
 
 website_htmldir         = $(docdir)/lirc.org/html
-dist_website_html_DATA  = $(generated_html) \
+nodist_website_html_DATA  = $(generated_html) \
                           $(generated_plugindocs) \
                           NEWS.txt html-source/lirc.css
 if HAVE_MAN2HTML
-dist_website_html_DATA  += $(manpage_html)
+nodist_website_html_DATA  += $(manpage_html)
 endif
 
 if HAVE_PYMOD_YAML
-dist_website_html_DATA  += table.html
+nodist_website_html_DATA  += table.html
 endif
 
 vardocsdir              = $(localstatedir)/lib/lirc/plugins
@@ -70,7 +70,8 @@ imagedir                = $(docdir)/images
 
 htmldir                 = $(docdir)/html
 
-nodist_html_DATA        = html-source/lirc.css
+dist_html_DATA          = html-source/lirc.css
+nodist_html_DATA        =
 
 if HAVE_PYMOD_YAML
 nodist_html_DATA        += table.html
@@ -112,6 +113,7 @@ endif
 clean-local:
 	rm -rf api-docs/*
 	rm -f lirc
+	rm -f html/programs.html api-docs.tar.gz driver-toc.xsl
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir) \
