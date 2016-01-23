@@ -10,7 +10,7 @@ includedir=@includedir@
 pkgdatadir=@datadir@/lirc
 docdir=@docdir@
 
-Libs: -llirc_driver
+Libs: -L${libdir} -llirc_driver
 Cflags: -I${includedir} -fpic -DPLUGINDOCS='"${docdir}/plugindocs"'
 
 plugindir=${libdir}/lirc/plugins
