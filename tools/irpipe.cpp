@@ -164,7 +164,7 @@ static uint32_t process_line(const char* token1, const char* token2)
 	if (value == LONG_MIN || value >= PULSE_BIT || value == 0)
 		return (uint32_t)-1;
 	if (strcmp("pulse", token1) == 0)
-		value |= PULSE_BIT;
+		return value |= PULSE_BIT;
 	else if (strcmp("space", token1) == 0)
 		return (uint32_t)value;
 	else if (strcmp("code", token1) == 0)
