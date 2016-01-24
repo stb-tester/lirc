@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <include/media/lirc.h>
 #include "lirc_driver.h"
 
 
@@ -229,6 +230,7 @@ int my_open(const char* path)
 int default_readdata(lirc_t timeout)
 {
 	int data, ret;
+	static int last_space = (lirc_t) 0;
 
 	if (!waitfordata((long)timeout))
 		return 0;
@@ -241,7 +243,20 @@ int default_readdata(lirc_t timeout)
 
 		return 0;
 	}
+	if (last_space == LIRC_SPACE(LIRC_VALUE_MASK) && LIRC_IS_SPACE(data)) {
+		/* Work around #172. */
+		if (!waitfordata((long)timeout))
+			return 0;
 
+		ret = read(drv.fd, &data, sizeof(data));
+		if (ret != sizeof(data)) {
+			log_perror_err(
+				"error reading from %s (got %d, expected %d)",
+				drv.device, ret, sizeof(data));
+			default_deinit();
+			return 0;
+		}
+	}
 	if (data == 0) {
 		static int data_warning = 1;
 
@@ -252,6 +267,7 @@ int default_readdata(lirc_t timeout)
 		}
 		data = 1;
 	}
+	last_space = data;
 	return data;
 }
 
