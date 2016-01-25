@@ -65,7 +65,7 @@ dist-hook: ChangeLog fix-version
 	cp -ar $(srcdir)/contrib $(distdir)
 
 maintainer-clean-local:
-	finf . -name Makefile.in -delete
+	find . -name Makefile.in -delete
 
 fix-version: .phony
 	chmod u+w $(distdir)/VERSION
