@@ -1,4 +1,4 @@
-.TH LIRCD.CONF "5" "Last change: Aug 2015" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: Jan 2016" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
@@ -183,6 +183,11 @@ Remote carrier frequency, defaults to 38000.
 .B duty_cycle <on time>
 The percentage of time during a pulse that infrared light is being sent
 (default is 50).
+.TP 4
+.B suppress_repeat <count>
+Suppress \fIcount\fR repeated events. Use for remotes which sends to
+many signals. This can also be handled in the .lircrc file (the
+\fIdelay\fR token).
 
 .SH FLAGS
 
