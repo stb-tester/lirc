@@ -202,6 +202,78 @@ retry:
 	}
 }
 
+static int subprocess_ftdi_write(const char* data, size_t len)
+{
+	int ret = 0, child_pid;
+	struct ftdi_context ftdic;
+
+	child_pid = fork();
+	if (child_pid == -1) {
+		logprintf(LOG_ERR, "unable to fork child process");
+		return 1;
+	} else if (child_pid > 0) {
+		/* we're the parent: */
+		while (1) {
+			int exit_status;
+			ret = waitpid(child_pid, &exit_status, 0);
+			if (ret == -1) {
+				logprintf(LOG_ERR, "Error waiting for child");
+				return 1;
+			} else if (WIFEXITED(exit_status)) {
+				return WEXITSTATUS(exit_status);
+			} else if (WIFSIGNALED(exit_status)) {
+				logprintf(LOG_ERR, "ftdi: subprocess died by signal %i",
+					  WTERMSIG(exit_status));
+				return 1;
+			}
+		};
+	}
+
+	/* We're the child */
+	alarm(0);
+	signal(SIGTERM, SIG_DFL);
+	signal(SIGPIPE, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGHUP, SIG_IGN);
+	signal(SIGALRM, SIG_IGN);
+
+	ftdi_init(&ftdic);
+
+	/* Open the USB device */
+	if (ftdi_usb_open_desc(&ftdic, usb_vendor, usb_product, usb_desc, usb_serial) < 0) {
+		logprintf(LOG_ERR, "unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
+		abort();
+	}
+
+	/* Enable bit-bang mode, setting output & input pins
+	   direction */
+	if (ftdi_enable_bitbang(&ftdic, 1 << output_pin) < 0) {
+		logprintf(LOG_ERR, "unable to enable bitbang mode (%s)", ftdi_get_error_string(&ftdic));
+		abort();
+	}
+
+	logprintf(LOG_DEBUG, "opened FTDI device '%s' OK", hw.device);
+
+	/* select correct transmit baudrate */
+	if (ftdi_set_baudrate(&ftdic, tx_baud_rate) < 0) {
+		logprintf(LOG_ERR, "unable to set required baud rate for transmission (%s)",
+			  ftdi_get_error_string(&ftdic));
+		abort();
+	}
+	if (ftdi_write_data(&ftdic, data, len) < 0) {
+		logprintf(LOG_ERR, "unable to write ftdi buffer (%s)",
+			  ftdi_get_error_string(&ftdic));
+		ret = 1;
+	}
+	if (ftdi_usb_purge_tx_buffer(&ftdic) < 0) {
+		logprintf(LOG_ERR, "unable to purge ftdi buffer (%s)",
+			  ftdi_get_error_string(&ftdic));
+		ret = 1;
+	}
+	logprintf(LOG_ERR, "ftdi: exit(%i)", ret);
+	_exit(ret);
+}
+
 static int hwftdi_init()
 {
 	int flags;
@@ -299,16 +371,18 @@ next:
 	}
 
 	/* Spawn the child process */
-	child_pid = fork();
-	if (child_pid == -1) {
-		logprintf(LOG_ERR, "unable to fork child process");
-		goto fail;
-	} else if (child_pid == 0) {
-		/* we're the child: */
-		close(pipe_rx2main[0]);
-		close(pipe_main2tx[1]);
-		close(pipe_tx2main[0]);
-		child_process(pipe_rx2main[1], pipe_main2tx[0], pipe_tx2main[1]);
+	if (0) {
+		child_pid = fork();
+		if (child_pid == -1) {
+			logprintf(LOG_ERR, "unable to fork child process");
+			goto fail;
+		} else if (child_pid == 0) {
+			/* we're the child: */
+			close(pipe_rx2main[0]);
+			close(pipe_main2tx[1]);
+			close(pipe_tx2main[0]);
+			child_process(pipe_rx2main[1], pipe_main2tx[0], pipe_tx2main[1]);
+		}
 	}
 
 	/* we're the parent: */
@@ -473,13 +547,10 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 	/* always end with 0 to turn off transmitter: */
 	buf[bufidx++] = 0;
 
-	/* let the child process transmit the pattern */
-	res = write(pipe_main2tx[1], buf, bufidx);
-
-	/* wait for child process to be ready with it */
-	res = read(pipe_tx2main[0], buf, 1);
-
-	return (1);
+	if (0 == subprocess_ftdi_write(buf, bufidx))
+		return 1;
+	else
+		return 0;
 }
 
 static int hwftdi_ioctl(unsigned int cmd, void *arg)
