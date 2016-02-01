@@ -89,7 +89,8 @@ static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t ga
 #endif
 
 static int modulate_pulses(unsigned char* buf, size_t size,
-	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier);
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier,
+	unsigned int duty_cycle);
 
 static void list_devices(glob_t *buff)
 {
@@ -498,13 +499,16 @@ static ssize_t write_pulse(unsigned char* buf, size_t size,
 	n_pulses = send_buffer_length();
 	pulseptr = send_buffer_data();
 
-	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier);
+	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier,
+	    remote->duty_cycle);
 }
 
 static int modulate_pulses(unsigned char* buf, size_t size,
-	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier)
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier,
+	unsigned int duty_cycle)
 {
 	__u32 div_carrier;
+	__u32 duty;
 	lirc_t pulse;
 	int pulsewidth;
 	int val_carrier;
@@ -515,6 +519,13 @@ static int modulate_pulses(unsigned char* buf, size_t size,
 	div_carrier = 0;
 	val_carrier = 0;
 	sendpulse = 0;
+
+	/* Calculate the carrier on time (in # samples) */
+	duty = f_sample * duty_cycle / 100;  /* duty_cycle is 1-100 */
+	if (duty <= 1)
+		duty = 1;
+	else if (duty >= f_sample)
+		duty = f_sample - 1;
 
 	while (n_pulses--) {
 		/* take pulse from buffer */
@@ -530,11 +541,11 @@ static int modulate_pulses(unsigned char* buf, size_t size,
 			/* carrier generator (generates a carrier
 			 * continously, will be modulated by the
 			 * requested signal): */
-			div_carrier += f_carrier * 2;
+			div_carrier += f_carrier;
 			if (div_carrier >= f_sample) {
 				div_carrier -= f_sample;
-				val_carrier = val_carrier ? 0 : 255;
 			}
+			val_carrier = div_carrier < duty ? 255 : 0;
 
 			/* send carrier or send space ? */
 			if (sendpulse)
