@@ -253,6 +253,9 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 				ret = write(fd_tx2main, &ret, 1);
 
 				continue;
+			} else if (ret == 0) {
+				/* EOF => The parent has died so the pipe has closed */
+				_exit(0);
 			}
 
 			/* receive IR */
