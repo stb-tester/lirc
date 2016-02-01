@@ -87,6 +87,9 @@ static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t ga
 }
 #endif
 
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier);
+
 static void list_devices(glob_t *buff)
 {
 	struct ftdi_context* ctx;
@@ -469,29 +472,37 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 	return res;
 }
 
-static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
+static ssize_t write_pulse(unsigned char* buf, size_t size,
+	const struct ir_remote* remote, const struct ir_ncode* code)
 {
 	__u32 f_sample = tx_baud_rate * 8;
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
-	__u32 div_carrier;
-	int val_carrier;
 	const lirc_t* pulseptr;
-	lirc_t pulse;
 	int n_pulses;
-	int pulsewidth;
-	int bufidx;
-	int sendpulse;
-	unsigned char buf[TXBUFSZ];
 
 	log_debug("hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
 	if (!send_buffer_put(remote, code))
-		return 0;
+		return -1;
 
 	/* init vars: */
 	n_pulses = send_buffer_length();
 	pulseptr = send_buffer_data();
+
+	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier);
+}
+
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier)
+{
+	__u32 div_carrier;
+	lirc_t pulse;
+	int pulsewidth;
+	int val_carrier;
+	int bufidx;
+	int sendpulse;
+
 	bufidx = 0;
 	div_carrier = 0;
 	val_carrier = 0;
@@ -525,18 +536,29 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 
 			/* flush txbuffer? */
 			/* note: be sure to have room for last '0' */
-			if (bufidx >= (TXBUFSZ - 1)) {
+			if (bufidx >= (size - 1)) {
 				log_error("buffer overflow while generating IR pattern");
-				return 0;
+				return -1;
 			}
 		}
 	}
 
 	/* always end with 0 to turn off transmitter: */
 	buf[bufidx++] = 0;
+	return bufidx;
+}
+
+static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
+{
+	unsigned char buf[TXBUFSZ];
+	ssize_t pulse_len;
+
+	pulse_len = write_pulse(buf, sizeof(buf), remote, code);
+	if (pulse_len == -1)
+		return 0;
 
 	/* let the child process transmit the pattern */
-	chk_write(pipe_main2tx[1], buf, bufidx);
+	chk_write(pipe_main2tx[1], buf, pulse_len);
 
 	/* wait for child process to be ready with it */
 	chk_read(pipe_tx2main[0], buf, 1);
