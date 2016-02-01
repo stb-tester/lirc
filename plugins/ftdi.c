@@ -285,6 +285,11 @@ static int hwftdi_init(void)
 
 	char* p;
 
+	if (child_pid > 0) {
+		log_info("hwftdi_init: Already initialised");
+		return 1;
+	}
+
 	log_info("Initializing FTDI: %s", drv.device);
 
 	/* Parse the device string, which has the form key=value,
@@ -422,7 +427,7 @@ fail_start:
 	return 0;
 }
 
-static int hwftdi_deinit(void)
+static int hwftdi_close(void)
 {
 	if (child_pid != -1) {
 		/* Kill the child process, and wait for it to exit */
@@ -554,9 +559,8 @@ const struct driver hw_ftdi = {
 	.rec_mode	= LIRC_MODE_MODE2,
 	.code_length	= 0,
 	.init_func	= hwftdi_init,
-	.deinit_func	= hwftdi_deinit,
 	.open_func	= default_open,
-	.close_func	= default_close,
+	.close_func	= hwftdi_close,
 	.send_func	= hwftdi_send,
 	.rec_func	= hwftdi_rec,
 	.decode_func	= receive_decode,
