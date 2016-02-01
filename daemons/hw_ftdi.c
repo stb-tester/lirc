@@ -414,7 +414,7 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 }
 
 static ssize_t write_pulse(unsigned char* buf, size_t size,
-	struct ir_remote* remote, const struct ir_ncode* code)
+	struct ir_remote* remote, struct ir_ncode* code)
 {
 	__u32 f_sample = tx_baud_rate * 8;
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
