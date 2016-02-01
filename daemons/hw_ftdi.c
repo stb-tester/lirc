@@ -76,6 +76,9 @@ extern struct ir_remote *repeat_remote;
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier);
+
 static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 {
 	int i;
@@ -401,31 +404,38 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 	return (res);
 }
 
-static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
+static ssize_t write_pulse(unsigned char* buf, size_t size,
+	struct ir_remote* remote, const struct ir_ncode* code)
 {
 	__u32 f_sample = tx_baud_rate * 8;
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
-	__u32 div_carrier;
-	int val_carrier;
-	lirc_t *pulseptr;
-	lirc_t pulse;
+	lirc_t* pulseptr;
 	int n_pulses;
-	int pulsewidth;
-	int bufidx;
-	int sendpulse;
-	int res;
-	unsigned char buf[TXBUFSZ];
 
 	logprintf(LOG_DEBUG, "hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
 	if (!init_send(remote, code)) {
-		return 0;
+		return -1;
 	}
 
 	/* init vars: */
 	n_pulses = send_buffer.wptr;
 	pulseptr = send_buffer.data;
+
+	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier);
+}
+
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier)
+{
+	__u32 div_carrier;
+	lirc_t pulse;
+	int pulsewidth;
+	int val_carrier;
+	int bufidx;
+	int sendpulse;
+
 	bufidx = 0;
 	div_carrier = 0;
 	val_carrier = 0;
@@ -462,9 +472,9 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 
 			/* flush txbuffer? */
 			/* note: be sure to have room for last '0' */
-			if (bufidx >= (TXBUFSZ - 1)) {
+			if (bufidx >= (size - 1)) {
 				logprintf(LOG_ERR, "buffer overflow while generating IR pattern");
-				return 0;
+				return -1;
 			}
 		}
 
@@ -472,9 +482,21 @@ static int hwftdi_send(struct ir_remote *remote, struct ir_ncode *code)
 
 	/* always end with 0 to turn off transmitter: */
 	buf[bufidx++] = 0;
+	return bufidx;
+}
+
+static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
+{
+	unsigned char buf[TXBUFSZ];
+	ssize_t pulse_len;
+	int res;
+
+	pulse_len = write_pulse(buf, sizeof(buf), remote, code);
+	if (pulse_len == -1)
+		return 0;
 
 	/* let the child process transmit the pattern */
-	res = write(pipe_main2tx[1], buf, bufidx);
+	res = write(pipe_main2tx[1], buf, pulse_len);
 
 	/* wait for child process to be ready with it */
 	res = read(pipe_tx2main[0], buf, 1);
