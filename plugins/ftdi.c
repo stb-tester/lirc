@@ -233,6 +233,8 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 						  ftdi_get_error_string(&ftdic));
 					goto retry;
 				}
+
+				logprintf(LOG_DEBUG, "ftdi: Writing %iB", ret);
 				if (ftdi_write_data(&ftdic, buf, ret) < 0)
 					log_error("enable to write ftdi buffer (%s)",
 						  ftdi_get_error_string(&ftdic));
@@ -575,6 +577,8 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 	pulse_len = write_pulse(buf, sizeof(buf), remote, code);
 	if (pulse_len == -1)
 		return 0;
+
+	logprintf(LOG_DEBUG, "Signal length %iB", pulse_len);
 
 	/* let the child process transmit the pattern */
 	chk_write(pipe_main2tx[1], buf, pulse_len);
