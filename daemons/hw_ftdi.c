@@ -62,6 +62,7 @@ static pid_t child_pid = -1;
 static char *device_config = NULL;
 static int tx_baud_rate = 65536;
 static int rx_baud_rate = 9600;
+static unsigned int tx_chunk_size = 4096;
 static int input_pin = 1;	/* RXD as input */
 static int output_pin = 2;	/* RTS as output */
 static int usb_vendor = 0x0403;	/* default for FT232 */
@@ -153,6 +154,11 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 		/* Set baud rate */
 		if (ftdi_set_baudrate(&ftdic, rx_baud_rate) < 0) {
 			logprintf(LOG_ERR, "unable to set required baud rate (%s)", ftdi_get_error_string(&ftdic));
+			goto retry;
+		}
+
+		if (ftdi_write_data_set_chunksize(&ftdic, tx_chunk_size) < 0) {
+			logprintf(LOG_ERR, "unable to set required chunk size (%s)", ftdi_get_error_string(&ftdic));
 			goto retry;
 		}
 
@@ -256,6 +262,8 @@ static int hwftdi_init()
 			output_pin = strtol(value, NULL, 0);
 		} else if (strcmp(p, "txbaud") == 0) {
 			tx_baud_rate = strtol(value, NULL, 0);
+		} else if (strcmp(p, "txchunksize") == 0) {
+			tx_chunk_size = strtol(value, NULL, 0);
 		} else {
 			logprintf(LOG_ERR, "unrecognised device configuration option: '%s'", p);
 			goto fail_start;
