@@ -176,6 +176,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 			/* transmit IR */
 			ret = read(fd_main2tx, buf, sizeof buf);
 			if (ret > 0) {
+				logprintf(LOG_DEBUG, "read %d bytes", ret);
 				/* select correct transmit baudrate */
 				if (ftdi_set_baudrate(&ftdic, tx_baud_rate) < 0) {
 					logprintf(LOG_ERR, "unable to set required baud rate for transmission (%s)",
