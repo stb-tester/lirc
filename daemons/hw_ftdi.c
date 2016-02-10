@@ -31,6 +31,8 @@
 # include <config.h>
 #endif
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -57,7 +59,7 @@
 static pid_t child_pid = -1;
 
 #define RXBUFSZ		2048
-#define TXBUFSZ		65536
+#define TXBUFSZ		212992
 
 static char *device_config = NULL;
 static int tx_baud_rate = 65536;
@@ -75,6 +77,19 @@ extern struct ir_remote *repeat_remote;
 
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
+
+#if defined(__linux__)
+static int set_pipe_size(int fd, int size)
+{
+    return fcntl(fd, F_SETPIPE_SZ, size);
+}
+#else
+static int set_pipe_size(int fd, int size)
+{
+    errno = EINVAL;
+    return -1;
+}
+#endif
 
 static void parsesamples(unsigned char *buf, int n, int pipe_rxir_w)
 {
@@ -296,6 +311,10 @@ next:
 	if (fcntl(pipe_main2tx[0], F_SETFL, flags | O_NONBLOCK) == -1) {
 		logprintf(LOG_ERR, "unable to make pipe read end non-blocking");
 		goto fail;
+	}
+
+	if (set_pipe_size(pipe_main2tx[1], TXBUFSZ) == -1) {
+		logprintf(LOG_WARNING, "unable to set pipe capacity");
 	}
 
 	/* Spawn the child process */
