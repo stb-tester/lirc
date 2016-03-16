@@ -56,7 +56,7 @@ static const logchannel_t logchannel = LOG_DRIVER;
 static pid_t child_pid = -1;
 
 #define RXBUFSZ         2048
-#define TXBUFSZ         65536
+#define TXBUFSZ         65536*4
 
 static char* device_config = NULL;
 static int tx_baud_rate = 65536;
