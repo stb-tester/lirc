@@ -60,6 +60,7 @@ static pid_t child_pid = -1;
 
 static char* device_config = NULL;
 static int tx_baud_rate = 65536;
+static int f_sample_hz = 65536*8;
 static int rx_baud_rate = 9600;
 static unsigned int tx_chunk_size = 65536;
 static int input_pin = 1;       /* RXD as input */
@@ -346,6 +347,8 @@ static int hwftdi_init(void)
 			output_pin = strtol(value, NULL, 0);
 		} else if (strcmp(p, "txbaud") == 0) {
 			tx_baud_rate = strtol(value, NULL, 0);
+		} else if (strcmp(p, "samplerate") == 0) {
+			f_sample_hz = strtol(value, NULL, 0);
 		} else if (strcmp(p, "txchunksize") == 0) {
 			tx_chunk_size = strtol(value, NULL, 0);
 		} else {
@@ -494,12 +497,12 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 static ssize_t write_pulse(unsigned char* buf, size_t size,
 	struct ir_remote* remote, struct ir_ncode* code)
 {
-	__u32 f_sample = tx_baud_rate * 8;
 	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	const lirc_t* pulseptr;
 	int n_pulses;
 
-	log_debug("hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
+	log_debug("hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier,
+	          f_sample_hz);
 
 	/* initialize decoded buffer: */
 	if (!send_buffer_put(remote, code))
@@ -509,8 +512,8 @@ static ssize_t write_pulse(unsigned char* buf, size_t size,
 	n_pulses = send_buffer_length();
 	pulseptr = send_buffer_data();
 
-	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier,
-	    remote->duty_cycle);
+	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample_hz,
+	    f_carrier, remote->duty_cycle);
 }
 
 static int modulate_pulses(unsigned char* buf, size_t size,
