@@ -46,13 +46,16 @@
 * initedled
 	If non-zero, the LED with this number will be turned
 	on by the init function ("has been inited", motivating the "funny" name),
-	and turned on by the deinit function.</dd>
+	and turned off by the deinit function.
  * transmitled
 	f non-zero, the LED with this number will be turned
 	on by the send function and turned on by the deinit function.
  * drop_dtr_when_initing
 	If non-zero, the "DTR line" will be lowered for 100 ms when
 	making the first connect, causing most Arduinos to reset.
+ * command_names_on_lcd
+	If non-zero, and an LCD display is used, every transmitted command is
+	displayed on the LCD, as remote- and command name.
  */
 
 #include <poll.h>
@@ -102,6 +105,9 @@
 // Define if the device sends \r\n as line ending.
 #define CRLF_FROM_DEVICE
 
+/** Weird extra gap added in front of the first signal. */
+#define DUMMY_TIMEOUT 1000000
+
 static const logchannel_t logchannel = LOG_DRIVER;
 
 typedef struct {
@@ -119,6 +125,7 @@ typedef struct {
 	int receive;
 	int transmit;
 	int transmitters;
+	int initialized;
 	unsigned int transmitter_mask;
 	char version[LONG_LINE_SIZE]; // Use to indicate valid device
 	char driver_version[LONG_LINE_SIZE];
@@ -135,10 +142,11 @@ static girs_t dev = {
 	.initedled = 0,
 	.transmitled = 0,
 	.substitute_0_frequency = 0,
-	.drop_dtr_when_initing = 0,
+	.drop_dtr_when_initing = 1,
 	.receive = 0,
 	.transmit = 0,
 	.transmitters = 0,
+	.initialized = 0,
 	.transmitter_mask = 0,
 	.version = "",
 	.driver_version = ""
@@ -154,6 +162,7 @@ static int girs_close(void);
 static int girs_open(const char* path);
 static int setLcd(const char* message);
 static int drvctl(unsigned int cmd, void* arg);
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 
 // This driver determines features, send_mode, and rec_mode dynamically during
 // runtime, using the Girs modules command.
@@ -171,13 +180,13 @@ const struct driver hw_girs = {
 	.deinit_func	= deinit,
 	.send_func	= send,
 	.rec_func	= receive,
-	.decode_func	= receive_decode, // defined in receive.c
+	.decode_func	= decode,
 	.drvctl_func	= drvctl,
 	.readdata	= readdata,
 	.name		= "girs",
 	.resolution	= 50,
 	.api_version	= 3,
-	.driver_version = "2015-10-09",
+	.driver_version = "2016-04-03",
 	.info		= "See file://" PLUGINDOCS "/girs.html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
@@ -189,6 +198,15 @@ const struct driver* hardwares[] = {
 	(const struct driver*) NULL
 };
 
+static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
+{
+	log_trace("decode: enter");
+	int res = receive_decode(remote, ctx);
+
+	log_trace("decode returned: %d", res);
+	return res;
+}
+
 static int is_valid(void)
 {
 	return dev.fd >= 0 && dev.version[0] != '\0';
@@ -199,8 +217,10 @@ static int min(int x, int y)
 	return x < y ? x : y;
 }
 
+// Public function through hw_girs
 static int girs_close(void)
 {
+	log_debug("girs_close called");
 	if (dev.fd >= 0) {
 		if (is_valid()) {
 			setLed(dev.connectled, 0);
@@ -227,6 +247,7 @@ static int girs_close(void)
  * \retval 0	Success.
  * \retval !=0	drvctl error.
  */
+// Public function through hw_girs
 static int drvctl(unsigned int cmd, void* arg)
 {
 	if (cmd == LIRC_SET_TRANSMITTER_MASK) {
@@ -390,7 +411,7 @@ static int readline(char* buf, size_t size, long timeout)
 				buf[noread] = c;
 			} else if (noread == size - 1) {
 				buf[noread] = '\0';
-				log_error("girs: realine buffer full: \"%s\"",
+				log_error("girs: readline buffer full: \"%s\"",
 					  buf);
 				// but we keep on looking for an end-of-line
 			} else
@@ -421,8 +442,7 @@ static int sendcommand(const char *command)
 				  command);
 			return 0;
 		}
-		logprintf(nbytes > 1 ? LIRC_TRACE : LIRC_TRACE1,
-			  "girs: written command \"%s\"", command);
+		log_trace1("girs: written command \"%s\"", command);
 	}
 	return 1;
 }
@@ -460,7 +480,7 @@ static int sendcommand_ok(const char *command)
 	int success = sendcommand_answer(command, answer, LONG_LINE_SIZE);
 
 	if (success) {
-		log_debug("girs: command \"%s\" returned \"%s\"",
+		log_trace1("girs: command \"%s\" returned \"%s\"",
 			  command, answer);
 		return strncmp(answer, SUCCESS_RESPONSE,
 			strlen(SUCCESS_RESPONSE)) == 0;
@@ -483,15 +503,14 @@ static int syncronize(void)
 	int i;
 
 	for (i = 0; i < NO_SYNCRONIZE_ATTEMPTS; i++) {
-		int res = sendcommand_ok(" ");
-		//if (res == -1)
-			//return 0;
+		int res = sendcommand_ok("");
+
 		if (res == 1) {
 			log_debug("girs: syncronized!");
 			return 1;
 		}
 	}
-	log_trace("girs: failed syncronizing after "
+	log_debug("girs: failed syncronizing after "
 		  STR(NO_SYNCRONIZE_ATTEMPTS) " attempts");
 	return 0;
 }
@@ -541,6 +560,7 @@ static void drop_dtr(void)
 	tty_setdtr(drv.fd, 1);
 }
 
+// Public function through hw_girs
 static lirc_t readdata(lirc_t timeout)
 {
 	static unsigned int data[MAXDATA];
@@ -551,7 +571,7 @@ static lirc_t readdata(lirc_t timeout)
 		// this should not happen
 		return 0;
 
-	log_trace("girs readdata, timeout = %d", timeout);
+	log_trace1("girs readdata, timeout = %d", timeout);
 	if (data_length == data_ptr/* && timeout > 0*/) {
 		// Nothing to deliver, try to read some new data
 		if (!dev.read_pending) {
@@ -581,6 +601,7 @@ static lirc_t readdata(lirc_t timeout)
 
 			log_debug("readdata timeout from hardware, continuing");
 			enable_receive();
+			return 0;
 		}
 		int i = 0;
 		const char* token;
@@ -611,18 +632,28 @@ static lirc_t readdata(lirc_t timeout)
 		enable_receive();
 	}
 
-	if (data_length == data_ptr)
-		return 0;
-	unsigned int x = data[data_ptr++];
+	unsigned int x;
 
-	if (x >= PULSE_BIT) {
-		// TODO
+	if (!dev.initialized) {
+		log_debug("girs: initial dummy timeout");
+		dev.initialized = 1;
+		// Needed, otherwise the first signal will go into Nirvana.
+		// I wish I know why...
+		x = DUMMY_TIMEOUT;
+	} else {
+
+		x = (data_length == data_ptr - 1)
+			? LIRC_MODE2_TIMEOUT : data[data_ptr];
+		data_ptr++;
+
+		if (x >= PULSE_BIT)
+			x = PULSE_BIT - 1;
+
+		if (data_ptr & 1)
+			x |= PULSE_BIT;
 	}
-	if (data_ptr & 1)
-		x |= PULSE_BIT;
 
-	log_debug("readdata %d %d",
-		  !!(x & PULSE_BIT), x & PULSE_MASK);
+	log_trace("readdata %d %d", !!(x & PULSE_BIT), x & PULSE_MASK);
 	return (lirc_t) x;
 }
 
@@ -662,6 +693,7 @@ static void decode_modules(char* buf)
 	}
 }
 
+// Public function through hw_girs
 static int init(void)
 {
 	char buf[LONG_LINE_SIZE];
@@ -763,16 +795,18 @@ static int init(void)
 		log_info("Version \"%s\"", dev.version);
 	}
 	drv.driver_version = dev.driver_version;
-	setLcd("Lirc connected");
+	setLcd("Initialized!");
 	setLed(dev.connectled, 1);
 	setLed(dev.initedled, 1);
 	rec_buffer_init();
 	send_buffer_init();
 	readflush();
+	dev.initialized = 0;
 	return dev.receive ? enable_receive() : 1;
 }
 
 // Almost the default open
+// Public function through hw_girs
 static int girs_open(const char* path)
 {
 	static char buff[LONG_LINE_SIZE];
@@ -788,12 +822,15 @@ static int girs_open(const char* path)
 	return 0;
 }
 
+// Public function through hw_girs
 static int deinit(void)
 {
 	log_debug("girs: deinit");
 	if (is_valid()) {
 		syncronize(); // interrupts reception
-		//setLcd("Sleeping...");
+		// for readability skip if command_names_on_lcd
+		if (!dev.command_names_on_lcd)
+			setLcd("Sleeping...");
 
 		setLed(dev.connectled, 1);
 		setLed(dev.initedled, 0);
@@ -806,6 +843,7 @@ static int deinit(void)
 }
 
 
+// Public function through hw_girs
 static char* receive(struct ir_remote* remotes)
 {
 	if (!dev.receive)
@@ -820,6 +858,8 @@ static char* receive(struct ir_remote* remotes)
 
 // NOTE: In the Lirc model, lircd takes care of the timing between intro and
 // repeat etc., NOT the driver. The timing is therefore critical.
+
+// Public function through hw_girs
 static int send(struct ir_remote* remote, struct ir_ncode* code)
 {
 	if (!dev.transmit)
