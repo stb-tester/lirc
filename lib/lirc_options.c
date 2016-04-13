@@ -84,8 +84,9 @@ static const struct option o_option[] = {
 static char* parse_O_arg(int argc, char** argv)
 {
 	char* path = NULL;
+	int i;
 
-	for (int i = 0; i < argc; i += 1) {
+	for (i = 0; i < argc; i += 1) {
 		if (strcmp(argv[i], "-O") != 0 &&
 		    strcmp(argv[i], "--options-file") != 0)
 			continue;
