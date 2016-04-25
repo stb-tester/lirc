@@ -589,7 +589,7 @@ void remove_client(int fd)
 			log_info("removed client");
 
 			clin--;
-			if (!useuinput && use_hw() && curr_driver->deinit_func)
+			if (!useuinput && !use_hw() && curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			for (; i < clin; i++)
 				clis[i] = clis[i + 1];
