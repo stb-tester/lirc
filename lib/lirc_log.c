@@ -33,6 +33,10 @@
 
 #include "lirc/lirc_log.h"
 
+#ifndef min
+#define min(a, b) (a < b ? a : b)
+#endif
+
 #define HOSTNAME_LEN 128
 
 static const logchannel_t logchannel = LOG_LIB;
@@ -269,7 +273,6 @@ void logprintf(loglevel_t prio, const char* format_str, ...)
 	int save_errno = errno;
 	va_list ap;
 	char buff[PRIO_LEN + strlen(format_str)];
-
 #ifdef SYSTEMD_LOGPERROR_FIX
 	if (nodaemon && prio <= loglevel) {
 		fprintf(stderr, "%s: %s ", progname, prio2text(prio));
@@ -284,9 +287,9 @@ void logprintf(loglevel_t prio, const char* format_str, ...)
 		snprintf(buff, sizeof(buff),
 			 "%s: %s", prio2text(prio), format_str);
 		va_start(ap, format_str);
-		vsyslog(prio, buff, ap);
+		vsyslog(min(7, prio), buff, ap);
 		va_end(ap);
-	} else if (lf && prio <= loglevel) {
+	} else if (lf) {
 		char* currents;
 		struct timeval tv;
 		struct timezone tz;
@@ -321,9 +324,9 @@ void logperror(loglevel_t prio, const char* fmt, ...)
 	va_end(ap);
 	if (use_syslog) {
 		if (*s != '\0')
-			syslog(prio, "%s: %m\n", s);
+			syslog(min(7, prio), "%s: %m\n", s);
 		else
-			syslog(prio, "%m\n");
+			syslog(min(7, prio), "%m\n");
 	} else {
 		if (*s != '\0')
 			logprintf(prio, "%s: %s", s, strerror(errno));
