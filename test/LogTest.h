@@ -22,6 +22,9 @@
     testSuite->addTest(new CppUnit::TestCaller<LogTest>( \
                        id,  &LogTest::func))
 
+static const logchannel_t logchannel = LOG_DRIVER;
+
+
 using namespace std;
 
 class LogTest : public CppUnit::TestFixture
@@ -49,16 +52,16 @@ class LogTest : public CppUnit::TestFixture
             lirc_log_open("IrRemoteTest", 0, LIRC_TRACE2);
 
             lirc_log_setlevel(LIRC_TRACE1);
-            logprintf(LIRC_TRACE1, "Testing LIRC_TRACE1: %s", "TRACE1 arg");
-            logprintf(LIRC_TRACE2, "Testing LIRC_TRACE2 (disabled): %s", "TRACE2 arg");
+            log_trace1("Testing LIRC_TRACE1: %s", "TRACE1 arg");
+            log_trace2("Testing LIRC_TRACE2 (disabled): %s", "TRACE2 arg");
 
             lirc_log_setlevel(LIRC_TRACE);
-            logprintf(LIRC_TRACE1, "Testing LIRC_TRACE: %s", "TRACE arg");
-            logprintf(LIRC_INFO, "Testing enabled TRACE");
+            log_trace1("Testing LIRC_TRACE: %s", "TRACE arg");
+            log_info("Testing enabled TRACE");
 
             lirc_log_setlevel(LIRC_WARNING);
-            logprintf(LIRC_INFO, "Testing disabled WARNING");
-            logprintf(LIRC_WARNING, "Testing enabled WARNING");
+            log_info("Testing disabled WARNING");
+            log_warn("Testing enabled WARNING");
             lirc_log_close();
 
             ifstream logfile("logtest.log");
