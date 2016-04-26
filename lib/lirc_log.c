@@ -263,7 +263,8 @@ void perrorf(const char* format, ...)
 
 
 /**
- * Prints the log request to the log, if the priority fits.
+ * Write a message to the log.
+ * Caller should use the log_ macros and not call this directly.
  * @param prio Priority of log request
  * @param format_str Format string in the usual C sense.
  * @param ... Additional vararg parameters.
