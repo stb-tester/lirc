@@ -51,6 +51,9 @@
   * The out-of-tree build interface is enhanced with hooks for external
     drivers to rebuild documentation and add a config file.
 
+  * default driver: Walk around kernel bug generating multiple spaces
+    (#172).
+  * ftdi driver: Several bugfixes (#182).
   * lircd: Fix too-short gap  when sending/blasting (#158).
   * irrecord fixes:
     - Buggy handling of not decoded buttons in irrecord (#146).
@@ -70,7 +73,8 @@
   * Upstream selinux updated to match current lircd requirements.
     See: https://github.com/fedora-selinux/selinux-policy/pull/41
   * The lirc.4 manpage (/dev/lirc* interface) is upstreamed to the
-    linux kernel manpages project (#
+    linux kernel manpages project (#164). Old page lirc.4l still
+    lingers in attic/.
 
 0.9.3  4/09/15
   * Digest of 0.9.3pre1..0.9.3pre3
