@@ -160,7 +160,8 @@ loglevel_t lirc_log_defaultlevel(void);
 int lirc_log_use_syslog(void);
 
 /**
- * Write a message to log.
+ * Write a message to the log.
+ * Caller should use the log_ macros and not call this directly.
  *
  * @param prio Level of message
  * @param format_str,... printf-style string.
