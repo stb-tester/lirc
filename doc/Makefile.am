@@ -86,11 +86,8 @@ dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
-## Temporary fix for lirc.4l; to be removed (see also uninstall-hook).
-lirc_4l_fix:
-	cd $(DESTDIR)$(mandir); mv man4 man4l
 
-install-data-hook: lirc_4l_fix
+install-data-hook:
 if HAVE_DOXYGEN
 	tar -C $(DESTDIR)$(websitedir) \
 	    -xf $(DESTDIR)$(docdir)/api-docs.tar.gz && \
@@ -209,7 +206,6 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irtestcase.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
-                           $(srcdir)/man-source/lirc.4l \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
                            $(srcdir)/man-source/lirc-make-devinput.1 \
@@ -276,7 +272,6 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irtestcase.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
-                           man/lirc.4l \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
                            man/lirc-make-devinput.1 \
