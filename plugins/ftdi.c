@@ -591,30 +591,6 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 
 	return 1;
 }
-
-const struct driver hw_ftdi = {
-	.name		= "ftdi",
-	.device		= "",
-	.features	= LIRC_CAN_REC_MODE2 | \
-			  LIRC_CAN_SEND_PULSE | \
-			  LIRC_CAN_SET_SEND_CARRIER,
-	.send_mode	= LIRC_MODE_PULSE,
-	.rec_mode	= LIRC_MODE_MODE2,
-	.code_length	= 0,
-	.init_func	= hwftdi_init,
-	.open_func	= default_open,
-	.close_func	= hwftdi_close,
-	.send_func	= hwftdi_send,
-	.rec_func	= hwftdi_rec,
-	.decode_func	= receive_decode,
-	.drvctl_func	= drvctl_func,
-	.readdata	= hwftdi_readdata,
-	.api_version	= 3,
-	.driver_version = "0.9.3",
-	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
-};
-
 /*
 * Mode2 transmitter using the bitbang mode of an FTDI USB-to-serial chip such as
 * the FT230X.  The standard FTDI driver with the FT232R is unreliable having a
@@ -677,16 +653,16 @@ static int hwftdix_open(const char* device)
 
 	/* Open the USB device */
 	if (ftdi_usb_open_desc(&ftdic, config.vendor, config.product,
-	                       config.desc, config.serial) < 0) {
+			       config.desc, config.serial) < 0) {
 		log_error("unable to open FTDI device (%s)",
-		          ftdi_get_error_string(&ftdic));
+			  ftdi_get_error_string(&ftdic));
 		goto fail_inited;
 	}
 
 	/* Enable bit-bang mode, setting output & input pins direction */
 	if (ftdi_set_bitmode(&ftdic, 1 << config.output, BITMODE_BITBANG) < 0) {
 		log_error("unable to enable bitbang mode (%s)",
-		          ftdi_get_error_string(&ftdic));
+			  ftdi_get_error_string(&ftdic));
 		goto fail_opened;
 	}
 
@@ -694,9 +670,9 @@ static int hwftdix_open(const char* device)
 	is_open = 1;
 	return 0;
 fail_opened:
-	ftdi_usb_close (&ftdic);
+	ftdi_usb_close(&ftdic);
 fail_inited:
-	ftdi_deinit (&ftdic);
+	ftdi_deinit(&ftdic);
 	hwftdix_clear_config(&config);
 fail:
 	log_debug("Failed to open FTDI device '%s'", device);
@@ -709,7 +685,7 @@ static int hwftdix_close(void)
 		log_error("ftdi_usb_close() failed: %s",
 			  ftdi_get_error_string(&ftdic));
 	}
-	ftdi_deinit (&ftdic);
+	ftdi_deinit(&ftdic);
 	is_open = 0;
 	return 0;
 }
@@ -720,9 +696,9 @@ static void sched_enable_realtime(int* orig_scheduler)
 	*orig_scheduler = sched_getscheduler(0);
 	if (*orig_scheduler == -1) {
 		log_warn("Failed to get current scheduling policy with error "
-		         "%s  Sending will not run with real-time priority and "
-		         "you may suffer USB buffer underruns causing corrupt "
-		         "IR signals", strerror(errno));
+			 "%s  Sending will not run with real-time priority and "
+			 "you may suffer USB buffer underruns causing corrupt "
+			 "IR signals", strerror(errno));
 		return;
 	}
 	if (*orig_scheduler != SCHED_BATCH && *orig_scheduler != SCHED_OTHER &&
@@ -734,11 +710,11 @@ static void sched_enable_realtime(int* orig_scheduler)
 	struct sched_param param = {
 		.sched_priority = 1,
 	};
-	if (sched_setscheduler (0, SCHED_FIFO, &param) < 0) {
+	if (sched_setscheduler(0, SCHED_FIFO, &param) < 0) {
 		log_warn("Failed to set scheduling policy to SCHED_FIFO: %s "
-		         "Sending will not run with real-time priority and you "
-		         "may suffer USB buffer underruns causing corrupt IR "
-		         "signals", strerror(errno));
+			 "Sending will not run with real-time priority and you "
+			 "may suffer USB buffer underruns causing corrupt IR "
+			 "signals", strerror(errno));
 		*orig_scheduler = -1;
 	}
 #else
@@ -755,7 +731,7 @@ static void sched_restore(int* orig_scheduler)
 	struct sched_param param = {
 		.sched_priority = 0,
 	};
-	if (sched_setscheduler (0, *orig_scheduler, &param) < 0) {
+	if (sched_setscheduler(0, *orig_scheduler, &param) < 0) {
 		log_warn("Restoring scheduling policy failed: %s",
 			 strerror(errno));
 	}
@@ -791,7 +767,7 @@ static int parse_config(const char* device_config, struct ftdix_config* config)
 		value = strchr(p, '=');
 		if (value == NULL) {
 			log_error("device configuration option must contain an "
-			          "'=': '%s'", p);
+				  "'=': '%s'", p);
 			goto error;
 		}
 		*value++ = '\0';
@@ -808,7 +784,7 @@ static int parse_config(const char* device_config, struct ftdix_config* config)
 			config->output = strtol(value, NULL, 0);
 		} else {
 			log_error("unrecognised device configuration option: "
-			          "'%s'", p);
+				  "'%s'", p);
 			goto error;
 		}
 
@@ -826,7 +802,7 @@ error:
 static void hwftdix_clear_config(struct ftdix_config* config)
 {
 	free(config->_config_text);
-	memset(config, 0, sizeof *config);
+	memset(config, 0, sizeof(*config));
 }
 
 
@@ -847,7 +823,7 @@ static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
 	int n_pulses;
 
 	log_debug("hwftdix_send() carrier=%dHz f_sample=%dHz tx_baud=%d",
-	          f_carrier, f_sample, tx_baud);
+		  f_carrier, f_sample, tx_baud);
 
 	/* initialize decoded buffer: */
 	if (!send_buffer_put(remote, code))
@@ -857,13 +833,13 @@ static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
 	n_pulses = send_buffer_length();
 	pulseptr = send_buffer_data();
 
-	buf_len = modulate_pulses(buf, sizeof buf, pulseptr, n_pulses, f_sample,
-	                          f_carrier, remote->duty_cycle);
+	buf_len = modulate_pulses(buf, sizeof(buf), pulseptr, n_pulses, f_sample,
+				  f_carrier, remote->duty_cycle);
 
 	/* select correct transmit baudrate */
 	if (ftdi_set_baudrate(&ftdic, tx_baud) < 0) {
 		log_error("unable to set required baud rate for transmission "
-		          "(%s)", ftdi_get_error_string(&ftdic));
+			  "(%s)", ftdi_get_error_string(&ftdic));
 		success = 0;
 		goto out;
 	}
@@ -883,10 +859,34 @@ out:
 	return success;
 }
 
+const struct driver hw_ftdi = {
+	.name		= "ftdi",
+	.device		= "",
+	.features	= LIRC_CAN_REC_MODE2 |
+			  LIRC_CAN_SEND_PULSE |
+			  LIRC_CAN_SET_SEND_CARRIER,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= LIRC_MODE_MODE2,
+	.code_length	= 0,
+	.init_func	= hwftdi_init,
+	.open_func	= default_open,
+	.close_func	= hwftdi_close,
+	.send_func	= hwftdi_send,
+	.rec_func	= hwftdi_rec,
+	.decode_func	= receive_decode,
+	.drvctl_func	= drvctl_func,
+	.readdata	= hwftdi_readdata,
+	.api_version	= 3,
+	.driver_version = "0.9.5",
+	.info		= "See file://" PLUGINDOCS "/ftdi.html",
+	.device_hint    = "drvctl",
+};
+
+
 const struct driver hw_ftdix = {
 	.name		= "ftdix",
 	.device		= "",
-	.features	= LIRC_CAN_SEND_PULSE | \
+	.features	= LIRC_CAN_SEND_PULSE |
 			  LIRC_CAN_SET_SEND_CARRIER,
 	.send_mode	= LIRC_MODE_PULSE,
 	.rec_mode	= 0,
@@ -900,11 +900,10 @@ const struct driver hw_ftdix = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
-	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.driver_version = "0.9.5",
+	.info		= "See file://" PLUGINDOCS "/ftdix.html",
+	.device_hint    = "drvctl",
 };
 
-extern const struct driver hw_ftdix; /* <- Defined in ftdix.c */
 const struct driver* hardwares[] = {
 	&hw_ftdi, &hw_ftdix, (const struct driver*)NULL };
