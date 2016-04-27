@@ -13,6 +13,8 @@
      debian/INSTALL (#137).
   * New driver girs for the GIRS protocol, gives LIRC Arduino support.
     See new info in driver documentation.
+  * New transmit-only FTDI driver with enhanced accuracy and hardware
+    support. See ftdix driver documentation.
   * Support for non-modulated signals added (#132).
   * As shipped, lircd now uses the devinput driver and the new 'auto'
     device, should work for all remotes supported by kernel (#106).
