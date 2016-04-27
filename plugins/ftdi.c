@@ -31,6 +31,7 @@
 # include <config.h>
 #endif
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -49,6 +50,12 @@
 #include "lirc_driver.h"
 
 #include <ftdi.h>
+
+#define LIRC_FTDIX_SET_SCHEDULER 1
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+#include <sched.h>
+#include <linux/sched.h>
+#endif
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
@@ -608,4 +615,296 @@ const struct driver hw_ftdi = {
 	.device_hint    = "/dev/ttyUSB*",
 };
 
-const struct driver* hardwares[] = { &hw_ftdi, (const struct driver*)NULL };
+/*
+* Mode2 transmitter using the bitbang mode of an FTDI USB-to-serial chip such as
+* the FT230X.  The standard FTDI driver with the FT232R is unreliable having a
+* IR failure rate of ~2%.  The FT232R also becomes unusable if you set the
+* tx_baud_rate to values other than 65536.
+*
+* This driver works differently modifying its tx_baud_rate according to the
+* carrier frequency set.  This is ok because the FT230X does not have the timing
+* bugs present in the FT232R.  This allows much lower data rates over USB and
+* so improves reliablity, particularly if other devices are connect to the same
+* USB port.
+*
+* Receive is not included to significantly simplify design of this driver.
+*/
+
+struct ftdix_config {
+	uint32_t vendor;
+	uint32_t product;
+	char* desc;
+	char* serial;
+	uint32_t output;
+
+	char* _config_text;
+};
+
+static struct ftdix_config ftdix_default_config = {
+	.vendor = 0x0403,
+	.product = 0x6015,
+	.output = 2,  /* RTS as output */
+};
+
+static int is_open = 0;
+static struct ftdi_context ftdic;
+
+static int parse_config(const char* device_config, struct ftdix_config* config);
+static void hwftdix_clear_config(struct ftdix_config* config);
+
+static int hwftdix_open(const char* device)
+{
+	struct ftdix_config config = {0};
+
+	if (is_open) {
+		log_info("Ignoring attempt to reopen ftdi device");
+		return 0;
+	}
+
+	log_info("Opening FTDI-X device: %s", device);
+
+	if (parse_config(device, &config) != 0) {
+		goto fail;
+	}
+
+	drv.fd = -1;
+
+	if (ftdi_init(&ftdic) < 0) {
+		log_error(
+			"ftdi_init failed: %s", ftdi_get_error_string(&ftdic));
+		goto fail;
+	}
+
+	/* Open the USB device */
+	if (ftdi_usb_open_desc(&ftdic, config.vendor, config.product,
+	                       config.desc, config.serial) < 0) {
+		log_error("unable to open FTDI device (%s)",
+		          ftdi_get_error_string(&ftdic));
+		goto fail_inited;
+	}
+
+	/* Enable bit-bang mode, setting output & input pins direction */
+	if (ftdi_set_bitmode(&ftdic, 1 << config.output, BITMODE_BITBANG) < 0) {
+		log_error("unable to enable bitbang mode (%s)",
+		          ftdi_get_error_string(&ftdic));
+		goto fail_opened;
+	}
+
+	log_debug("opened FTDI device '%s' OK", device);
+	is_open = 1;
+	return 0;
+fail_opened:
+	ftdi_usb_close (&ftdic);
+fail_inited:
+	ftdi_deinit (&ftdic);
+	hwftdix_clear_config(&config);
+fail:
+	log_debug("Failed to open FTDI device '%s'", device);
+	return 1;
+}
+
+static int hwftdix_close(void)
+{
+	if (ftdi_usb_close(&ftdic) < 0) {
+		log_error("ftdi_usb_close() failed: %s",
+			  ftdi_get_error_string(&ftdic));
+	}
+	ftdi_deinit (&ftdic);
+	is_open = 0;
+	return 0;
+}
+
+static void sched_enable_realtime(int* orig_scheduler)
+{
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+	*orig_scheduler = sched_getscheduler(0);
+	if (*orig_scheduler == -1) {
+		log_warn("Failed to get current scheduling policy with error "
+		         "%s  Sending will not run with real-time priority and "
+		         "you may suffer USB buffer underruns causing corrupt "
+		         "IR signals", strerror(errno));
+		return;
+	}
+	if (*orig_scheduler != SCHED_BATCH && *orig_scheduler != SCHED_OTHER &&
+	    *orig_scheduler != SCHED_IDLE) {
+		/* We only know how to restore these schedulers */
+		*orig_scheduler = -1;
+		return;
+	}
+	struct sched_param param = {
+		.sched_priority = 1,
+	};
+	if (sched_setscheduler (0, SCHED_FIFO, &param) < 0) {
+		log_warn("Failed to set scheduling policy to SCHED_FIFO: %s "
+		         "Sending will not run with real-time priority and you "
+		         "may suffer USB buffer underruns causing corrupt IR "
+		         "signals", strerror(errno));
+		*orig_scheduler = -1;
+	}
+#else
+	*orig_scheduler = -1;
+#endif /* LIRC_FTDIX_SET_SCHEDULER */
+}
+
+static void sched_restore(int* orig_scheduler)
+{
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+	if (*orig_scheduler == -1)
+		return;
+
+	struct sched_param param = {
+		.sched_priority = 0,
+	};
+	if (sched_setscheduler (0, *orig_scheduler, &param) < 0) {
+		log_warn("Restoring scheduling policy failed: %s",
+			 strerror(errno));
+	}
+#else
+	*orig_scheduler = -1;
+#endif /* LIRC_FTDIX_SET_SCHEDULER */
+}
+
+
+static int parse_config(const char* device_config, struct ftdix_config* config)
+{
+	char* p;
+
+	*config = ftdix_default_config;
+
+	/* Parse the device string, which has the form key=value,
+	 * key=value, ...  This isn't very nice, but it's not a lot
+	 * more complicated than what some of the other drivers do. */
+	config->_config_text = p = strdup(device_config);
+	assert(p);
+	while (p) {
+		char* comma;
+		char* value;
+
+		comma = strchr(p, ',');
+		if (comma != NULL)
+			*comma = '\0';
+
+		/* Skip empty options. */
+		if (*p == '\0')
+			goto next;
+
+		value = strchr(p, '=');
+		if (value == NULL) {
+			log_error("device configuration option must contain an "
+			          "'=': '%s'", p);
+			goto error;
+		}
+		*value++ = '\0';
+
+		if (strcmp(p, "vendor") == 0) {
+			config->vendor = strtol(value, NULL, 0);
+		} else if (strcmp(p, "product") == 0) {
+			config->product = strtol(value, NULL, 0);
+		} else if (strcmp(p, "desc") == 0) {
+			config->desc = value;
+		} else if (strcmp(p, "serial") == 0) {
+			config->serial = value;
+		} else if (strcmp(p, "output") == 0) {
+			config->output = strtol(value, NULL, 0);
+		} else {
+			log_error("unrecognised device configuration option: "
+			          "'%s'", p);
+			goto error;
+		}
+
+next:
+		if (comma == NULL)
+			break;
+		p = comma + 1;
+	}
+	return 0;
+error:
+	hwftdix_clear_config(config);
+	return 1;
+}
+
+static void hwftdix_clear_config(struct ftdix_config* config)
+{
+	free(config->_config_text);
+	memset(config, 0, sizeof *config);
+}
+
+
+static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
+{
+	int success = 1;
+	unsigned char buf[TXBUFSZ];
+	ssize_t buf_len;
+	int orig_scheduler;
+	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
+
+	/* A sample rate of carrier*2 means we will get the pattern 1010101010
+	 * when the blaster is on and 0000000000 when it is off. */
+	__u32 f_sample = f_carrier * 2;
+	__u32 tx_baud = f_carrier * 2 / 64;
+
+	const lirc_t* pulseptr;
+	int n_pulses;
+
+	log_debug("hwftdix_send() carrier=%dHz f_sample=%dHz tx_baud=%d",
+	          f_carrier, f_sample, tx_baud);
+
+	/* initialize decoded buffer: */
+	if (!send_buffer_put(remote, code))
+		return -1;
+
+	/* init vars: */
+	n_pulses = send_buffer_length();
+	pulseptr = send_buffer_data();
+
+	buf_len = modulate_pulses(buf, sizeof buf, pulseptr, n_pulses, f_sample,
+	                          f_carrier, remote->duty_cycle);
+
+	/* select correct transmit baudrate */
+	if (ftdi_set_baudrate(&ftdic, tx_baud) < 0) {
+		log_error("unable to set required baud rate for transmission "
+		          "(%s)", ftdi_get_error_string(&ftdic));
+		success = 0;
+		goto out;
+	}
+
+	/* buffer underruns will mess up our IR signal, go into realtime mode
+	   if possible: */
+	sched_enable_realtime(&orig_scheduler);
+
+	if (ftdi_write_data(&ftdic, buf, buf_len) < buf_len) {
+		log_error("enable to write ftdi buffer (%s)",
+			  ftdi_get_error_string(&ftdic));
+		return 1;
+	}
+
+	sched_restore(&orig_scheduler);
+out:
+	return success;
+}
+
+const struct driver hw_ftdix = {
+	.name		= "ftdix",
+	.device		= "",
+	.features	= LIRC_CAN_SEND_PULSE | \
+			  LIRC_CAN_SET_SEND_CARRIER,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= 0,
+	.code_length	= 0,
+	.init_func	= NULL,
+	.open_func	= hwftdix_open,
+	.close_func	= hwftdix_close,
+	.send_func	= hwftdix_send,
+	.rec_func	= NULL,
+	.decode_func	= receive_decode,
+	.drvctl_func	= drvctl_func,
+	.readdata	= NULL,
+	.api_version	= 3,
+	.driver_version = "0.9.3",
+	.info		= "No info available",
+	.device_hint    = "/dev/ttyUSB*",
+};
+
+extern const struct driver hw_ftdix; /* <- Defined in ftdix.c */
+const struct driver* hardwares[] = {
+	&hw_ftdi, &hw_ftdix, (const struct driver*)NULL };
