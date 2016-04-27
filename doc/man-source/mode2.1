@@ -9,6 +9,8 @@
 [\fIother options\fR]
 .P
 \fBmode2\fR --raw --device <\fIdevice\fR> [\fIother options\fR]
+.P
+\fBmode2\fR --driver <\fIdriver\fR>  --list-devices
 
 .SH DESCRIPTION
 .P
@@ -23,7 +25,7 @@ as TV-cards and the irman driver writes the decoded, integer values.
 .P
 When given the correct driver mode2 should always work. Without a driver,
 the --raw option should always work for /dev/lirc* devices. At the time
-of writing, usb devices also work in most cases. However, since it is
+of writing, usb devices also works in most cases. However, since it is
 tricky to get the path to the usb device, such ones are normally best
 accessed using a driver.
 .P
@@ -38,7 +40,7 @@ Read from given device.
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
 Use given driver.
 .TP
-\fB\-m\fR \fB\-\-mode\fR=\fImode\fR
+\fB\-m\fR \fB\-\-mode
 Write pulse/space data as raw config files. Does not affect
 LIRCCODE drivers.
 .TP
@@ -48,6 +50,10 @@ affect lirccode drivers.
 .TP
 \fB\-k\fR \fB\-\-keep-root\fR
 Don't drop root privileges after opening device. See RUNNING AS ROOT.
+.TP
+\fB\-l\fR \fB\-\-list\-devices\fR
+List all available devices for given driver. Requires support not
+present in all drivers.
 .TP
 \fB\-g\fR \fB\-\-gap\fR=\fItime\fR
 Treat spaces longer than time as the gap. Time is in microseconds.
