@@ -79,27 +79,35 @@ void get_lircmd(const char* path, char* buff, ssize_t size)
 
 
 /** Given lircd.conf path, write photo path or "no_photo" in buff. */
-void get_photo(const char* path, char* buff, ssize_t size)
+void get_photo(const char* const path, char* buff, ssize_t size)
 {
-	glob_t globbuf;
-	int r;
-	char* ext;
+	const char* const extensions[] =
+		{".jpg",".png",".gif",".JPG",".PNG",".GIF", 0};
+	char try_buff[256];
+	char* last;
+	int found = 0;
 
-	strncpy(buff, path, size);
-	ext = strstr(buff, ".lircd.conf");
-	if (ext != NULL)
-		*ext = '\0';
-	strncat(buff,
-		"{.jpg,.png,.gif,.JPG,.PNG,.GIF}",
-		size - strlen(buff) - 1);
-	r = glob(buff, GLOB_BRACE, NULL, &globbuf);
-	if (r == GLOB_NOMATCH) {
-		strcpy(buff, "no_photo");
+	strcpy(buff, "no_photo");
+	strncpy(try_buff, path, sizeof(try_buff));
+	last = strstr(try_buff, ".lircd.conf");
+	if (last == NULL) {
+		log_warn("Illegal path: %s", path);
 		return;
 	}
-	if (globbuf.gl_pathc > 1)
-		log_warn("Multiple photos for %s", buff);
-	strncpy(buff, basename(globbuf.gl_pathv[0]), size);
+	for (int i = 0; extensions[i] != 0; i += 1) {
+		*last = '\0';
+		strncat(try_buff,
+			extensions[i],
+			sizeof(try_buff) - strlen(try_buff) -1);
+		if (access(try_buff, R_OK) != 0)
+			continue;
+		if (found) {
+			log_warn("Multiple photos for %s", buff);
+			continue;
+		}
+		found = 1;
+		strncpy(buff, basename(try_buff), size);
+	}
 }
 
 
