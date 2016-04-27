@@ -1,0 +1,54 @@
+<center><h1>FTDIX driver.</h1></center>
+
+<p>The FTDIX driver is a MODE2 driver which is only capable of transmission.  It
+uses the bitbang mode of an FTDI USB-to-serial chip such as the FT230X. It has
+been tested with transmitters based on the the FT230X series of FTDI chips but
+in theory it should work with most FTDI USB chips.  Note: Due to bugs in the
+clock of the FT232R this driver will not work with IR blasters based on that
+chip and you should used the ftdi driver instead.</p>
+
+<p>You can build your own FT230X based IR transmitters by purchasing an
+<a href="http://www.ftdichip.com/Support/Documents/DataSheets/Modules/DS_UMFT201_220_230XB.pdf">
+FTDI UMFT201XB</a> and attaching an IR diode or you can purchase a ready-built
+one from <a href="http://irblaster.info/usb_blaster.html">irblaster.info</a>.
+Be sure to ask specifically for the FT230X based devices to avoid getting one
+based on the FT232R.</p>
+
+<h2>Which FTDI driver should I choose?</h2>
+
+<p>lirc also includes another driver for FTDI devices called
+<a href="ftdi.html">ftdi</a>.</p>
+
+<table>
+  <tr><th>Use ftdi if</th><th>Use ftdix if</th></tr>
+  <tr>
+    <td>You need to be able to receive IR signals</td>
+    <td>You only need transmit functionality</td>
+  </tr>
+  <tr>
+    <td>Your IR hardware is based on the FT232R chip</td>
+    <td>Your IR hardware is based on the FT230X chip or any other FTDI chip which
+    doesn't have a buggy bitbang clock</td>
+  </tr>
+  <tr>
+    <td>Your can cope with missed keypresses or your hardware is tolerant of
+    inaccurate and inconsistent IR carrier timing and pulse lengths</td>
+    <td>You need high reliability and timing precision</td>
+  </tr>
+</table>
+
+<p>
+By default, it searches for an usb device with <i>vendor:product</i> matching
+0x0403:0x6015. This can be changed using the device argument which is a
+comma-separated string of <i>key=value</i> assignments. The available keys
+are:</p>
+<ul>
+    <li>vendor: Numeric USB idVendor value of device to use [0403]</li>
+    <li>product: Numeric USB idVendor value of device to use [6015]</li>
+    <li>desc: USB descriptor of device to use [*]</li>
+    <li>serial: USB idSerial value of device to use [*]</li>
+    <li>output: output pin [2]</li>
+</ul>
+<p>
+The driver has support for listing available devices using e. g.,
+using <i>mode2 -l </i></p>

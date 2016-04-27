@@ -229,6 +229,7 @@ plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/devinput.html \
                            $(srcdir)/plugindocs/file.html \
                            $(srcdir)/plugindocs/ftdi.html \
+                           $(srcdir)/plugindocs/ftdix.html \
                            $(srcdir)/plugindocs/girs.html \
                            $(srcdir)/plugindocs/imon-24g.html \
                            $(srcdir)/plugindocs/imon.html \
@@ -322,6 +323,7 @@ generated_plugindocs    =  html/alsa-usb.html \
                            html/devinput.html \
                            html/file.html \
                            html/ftdi.html \
+                           html/ftdix.html \
                            html/girs.html \
                            html/imon-24g.html \
                            html/imon.html \

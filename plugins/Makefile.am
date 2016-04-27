@@ -41,10 +41,13 @@ srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 endif
 
 if BUILD_FTDI
-plugin_LTLIBRARIES          += ftdi.la
+plugin_LTLIBRARIES          += ftdi.la ftdix.la
 ftdi_la_SOURCES             = ftdi.c
 ftdi_la_LDFLAGS             = $(AM_LDFLAGS) @FTDI_LIBS@
 ftdi_la_CFLAGS              = $(AM_CFLAGS) @FTDI_CFLAGS@
+ftdix_la_SOURCES            = ftdix.c
+ftdix_la_LDFLAGS            = $(AM_LDFLAGS) @FTDI_LIBS@
+ftdix_la_CFLAGS             = $(AM_CFLAGS) @FTDI_CFLAGS@
 endif
 
 if BUILD_LIBPORTAUDIO
