@@ -20,6 +20,8 @@
 #ifndef _HARDWARE_H
 #define _HARDWARE_H
 
+#include <glob.h>
+
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
@@ -43,6 +45,15 @@ int default_close(void);
 
 /** Return DRVCTL_ERR_NOTIMPLEMENTED. */
 int default_drvctl(unsigned int cmd, void* arg);
+
+/** Return an malloc'ed glob_t with default capacity. */
+void glob_t_init(glob_t* glob);
+
+/** Free memory obtained using glob_t_new. */
+void glob_t_free(glob_t* glob);
+
+/** Add a malloc'ed copy of path into glob, possibly increasing capacity. */
+void glob_t_add_path(glob_t* glob, const char* path);
 
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
@@ -76,6 +87,10 @@ int drv_handle_options(const char* options);
 * Drvctl cmd: get list of possible devices. Argument is a *glob_t as
 * defined in <glob.h>.  The returned memory is owned by driver and
 * should be free()'d using DRVCTL_FREE_DEVICES.
+*
+* Each string in glob is a space-separated list of words. The first
+* word is the mandatory device path, the optional reminder is
+* information about the device suitable in user interfaces.
 */
 #define DRVCTL_GET_DEVICES              5
 

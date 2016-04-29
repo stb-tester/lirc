@@ -27,6 +27,40 @@ const char* const OPTION_FMT = "%32s%64s";
 /** Read-only access to drv for client code. */
 const struct driver* const curr_driver = &drv;
 
+/** Allocation chunk in  glob_t_* routines. */
+const int GLOB_CHUNK_SIZE = 32;
+
+
+void glob_t_init(glob_t* glob)
+{
+	memset(glob, 0, sizeof(glob_t));
+	glob->gl_offs = GLOB_CHUNK_SIZE;
+	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
+}
+
+
+void glob_t_add_path(glob_t* glob, const char* path)
+{
+	if (glob->gl_pathc >= glob->gl_offs) {
+		glob->gl_offs += GLOB_CHUNK_SIZE;
+		glob->gl_pathv = realloc(glob->gl_pathv,
+					 glob->gl_offs * sizeof(char*));
+	}
+	glob->gl_pathv[glob->gl_pathc] = strdup(path);
+	glob->gl_pathc += 1;
+}
+
+
+void glob_t_free(glob_t* glob)
+{
+	int i;
+
+	for (i = 0; i < glob->gl_pathc; i += 1)
+		free(glob->gl_pathv[i]);
+	free(glob->gl_pathv);
+}
+
+
 int default_open(const char* path)
 {
 	static char buff[128];
