@@ -12,6 +12,10 @@
 # include <config.h>
 #endif
 
+#ifdef HAVE_LIBUDEV_H
+#include <libudev.h>
+#endif
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -56,6 +60,7 @@ static char* default_rec(struct ir_remote* remotes);
 static int default_ioctl(unsigned int cmd, void* arg);
 static lirc_t default_readdata(lirc_t timeout);
 static int my_open(const char* path);
+static int drvctl(unsigned int cmd, void* arg);
 
 
 
@@ -73,12 +78,12 @@ static const struct driver hw_default = {
 	.send_func	= default_send,
 	.rec_func	= default_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= default_ioctl,
+	.drvctl_func	= drvctl,
 	.readdata	= default_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.9.4",
 	.info		= "See file://" PLUGINDOCS "/default.html",
-	.device_hint    = "/dev/lirc*",
+	.device_hint    = "drvctl",
 };
 
 
@@ -477,4 +482,75 @@ char* default_rec(struct ir_remote* remotes)
 int default_ioctl(unsigned int cmd, void* arg)
 {
 	return ioctl(drv.fd, cmd, arg);
+}
+
+
+static void list_device(struct udev_device* device, glob_t* glob)
+{
+	char buff[256];
+	const char* devnode;
+
+	devnode = udev_device_get_devnode(device);
+	device = udev_device_get_parent_with_subsystem_devtype(
+					device, "usb", "usb_device");
+	if (device != NULL) {
+		snprintf(buff, sizeof(buff), "%s %s [%s:%s] vers: %s serial: %s",
+			 devnode,
+			 udev_device_get_sysattr_value(device, "product"),
+			 udev_device_get_sysattr_value(device, "idVendor"),
+			 udev_device_get_sysattr_value(device, "idProduct"),
+			 udev_device_get_sysattr_value(device, "version"),
+			 udev_device_get_sysattr_value(device, "serial"));
+	} else {
+		snprintf(buff, sizeof(buff), "%s", devnode);
+	}
+	glob_t_add_path(glob, buff);
+}
+
+
+#ifdef HAVE_LIBUDEV_H
+static void list_devices(glob_t* glob)
+{
+	struct udev* udev;
+	struct udev_enumerate* enumerate;
+	struct udev_list_entry* devices;
+	struct udev_list_entry* device;
+
+	glob_t_init(glob);
+
+	udev = udev_new();
+	if (udev == NULL) {
+		log_error("Cannot run udev_new()");
+		return;
+	}
+	enumerate = udev_enumerate_new(udev);
+	udev_enumerate_add_match_subsystem(enumerate, "lirc");
+	udev_enumerate_scan_devices(enumerate);
+	devices = udev_enumerate_get_list_entry(enumerate);
+	udev_list_entry_foreach(device, devices) {
+		const char* const syspath = udev_list_entry_get_name(device);
+		struct udev_device* udev_device =
+			udev_device_new_from_syspath(udev, syspath);
+		list_device(udev_device, glob);
+	}
+	udev_enumerate_unref(enumerate);
+	udev_unref(udev);
+}
+#endif
+
+
+static int drvctl(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+#ifdef HAVE_LIBUDEV_H
+	case DRVCTL_GET_DEVICES:
+		list_devices((glob_t*) arg);
+		return 0;
+	case DRVCTL_FREE_DEVICES:
+		glob_t_free((glob_t*) arg);
+		return 0;
+#endif
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
 }
