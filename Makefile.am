@@ -8,8 +8,7 @@ GIT_COMMIT      = $(shell git log -1 --pretty=format:%h || echo UNKNOWN)
 GIT_DATE        = $(shell git log -1 --pretty=format:%cd || echo UNKNOWN)
 GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 
-EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog \
-                          make_rel_symlink.py
+EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~
@@ -85,7 +84,7 @@ paths.h: Makefile
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \
-	    -tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
