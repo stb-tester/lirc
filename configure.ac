@@ -181,9 +181,12 @@ AH_TEMPLATE([LIRC_LOCKDIR],
 
 AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
 
-
 AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
         [Define if getgrouplist() groups arg is int*])
+
+AH_TEMPLATE([HAVE_LIBUDEV_H],
+        [Define if libudev is installed])
+
 
 AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
@@ -287,6 +290,14 @@ AC_CHECK_HEADERS([linux/hiddev.h],[
 #endif
 ]
 )
+
+dnl Several plugins uses libudev to enumerate devices
+AC_CHECK_HEADERS(libudev.h,[
+  AM_CONDITIONAL([HAVE_LIBUDEV],[true])
+  ],[
+  AM_CONDITIONAL([HAVE_LIBUDEV],[false])]
+)
+
 #dnl dsp driver requires linux soundcard api
 AC_CHECK_HEADERS(sys/soundcard.h,[
   AM_CONDITIONAL([BUILD_DSP],[true])
@@ -418,6 +429,7 @@ AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
 AC_REPORT_CONDITIONAL([BUILD_USB])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_DOXYGEN])
+AC_REPORT_CONDITIONAL([HAVE_LIBUDEV])
 AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
