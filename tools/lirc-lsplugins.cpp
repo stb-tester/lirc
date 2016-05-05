@@ -200,6 +200,11 @@ static void line_print_yaml(const line_t* line)
         size_t src;
 	char next;
 
+	if (line->errors){
+		fputs("\n", stdout);
+		fputs(line->errors, stdout);
+		return;
+	}
 	printf("\n    %s:\n", line->name);
 	printf("        %-16s%s\n", "type:", line->type );
 	printf("        %-16s%s\n", "can_send:", line->can_send);
