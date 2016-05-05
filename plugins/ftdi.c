@@ -507,7 +507,7 @@ static ssize_t write_pulse(unsigned char* buf, size_t size,
 	pulseptr = send_buffer_data();
 
 	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier,
-	    remote->duty_cycle);
+	    get_duty_cycle(remote));
 }
 
 static int modulate_pulses(unsigned char* buf, size_t size,
@@ -834,7 +834,7 @@ static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
 	pulseptr = send_buffer_data();
 
 	buf_len = modulate_pulses(buf, sizeof(buf), pulseptr, n_pulses, f_sample,
-				  f_carrier, remote->duty_cycle);
+				  f_carrier, 50);
 
 	/* select correct transmit baudrate */
 	if (ftdi_set_baudrate(&ftdic, tx_baud) < 0) {

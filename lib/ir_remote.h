@@ -324,6 +324,18 @@ static inline lirc_t max_gap(const struct ir_remote* remote)
 		return remote->gap;
 }
 
+static inline unsigned int get_duty_cycle(const struct ir_remote* remote)
+{
+	if (remote->duty_cycle == 0)
+		return 50;
+	else if (remote->duty_cycle < 0)
+		return 1;
+	else if (remote->duty_cycle > 100)
+		return 100;
+	else
+		return remote->duty_cycle;
+}
+
 /* check if delta is inside exdelta +/- exdelta*eps/100 */
 
 static inline int expect(const struct ir_remote*	remote,
