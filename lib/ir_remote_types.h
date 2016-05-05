@@ -218,7 +218,7 @@ struct ir_remote {
 	 *				   sent */
 	unsigned int		min_code_repeat;
 	unsigned int		freq;           /**< modulation frequency */
-	unsigned int		duty_cycle;     /**< 0<duty cycle<=100 */
+	unsigned int		duty_cycle;     /**< 0<duty cycle<=100 default: 50 */
 	ir_code			toggle_mask;    /**< Sharp (?) error detection scheme */
 	ir_code			rc6_mask;       /**< RC-6 doubles signal length of some bits */
 
