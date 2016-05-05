@@ -201,7 +201,7 @@ void fprint_remote_head(FILE* f, const struct ir_remote* rem)
 	}
 	if (rem->freq != 0)
 		fprintf(f, "  frequency    %u\n", rem->freq);
-	if (rem->duty_cycle != 0)
+	if (rem->duty_cycle != 50)
 		fprintf(f, "  duty_cycle   %u\n", rem->duty_cycle);
 	fprintf(f, "\n");
 }

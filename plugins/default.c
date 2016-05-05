@@ -446,10 +446,7 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 		}
 	}
 	if (drv.features & LIRC_CAN_SET_SEND_DUTY_CYCLE) {
-		unsigned int duty_cycle;
-
-		duty_cycle = remote->duty_cycle == 0 ? 50 : remote->duty_cycle;
-		if (default_ioctl(LIRC_SET_SEND_DUTY_CYCLE, &duty_cycle) == -1) {
+		if (default_ioctl(LIRC_SET_SEND_DUTY_CYCLE, &remote->duty_cycle) == -1) {
 			log_error("could not set duty cycle");
 			log_perror_err(NULL);
 			return 0;

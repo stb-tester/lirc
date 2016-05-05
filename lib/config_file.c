@@ -929,6 +929,10 @@ static void check_ncode_dups(const char* path,
 	}
 }
 
+static const struct ir_remote DEFAULT_REMOTE = {
+	.freq = DEFAULT_FREQ,
+	.duty_cycle = 50,
+};
 
 static struct ir_remote*
 read_config_recursive(FILE* f, const char* name, int depth)
@@ -1028,12 +1032,12 @@ read_config_recursive(FILE* f, const char* name, int depth)
 						/* create first remote */
 						log_trace1("creating first remote");
 						rem = top_rem = s_malloc(sizeof(struct ir_remote));
-						rem->freq = DEFAULT_FREQ;
+						memcpy(rem, &DEFAULT_REMOTE, sizeof(struct ir_remote));
 					} else {
 						/* create new remote */
 						log_trace1("creating next remote");
 						rem = s_malloc(sizeof(struct ir_remote));
-						rem->freq = DEFAULT_FREQ;
+						memcpy(rem, &DEFAULT_REMOTE, sizeof(struct ir_remote));
 						ir_remotes_append(top_rem, rem);
 					}
 				} else if (mode == ID_codes) {
