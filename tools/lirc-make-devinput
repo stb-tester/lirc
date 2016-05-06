@@ -33,7 +33,11 @@ elif [[ "$1" = -i ]]; then
 fi
 
 readonly TYPES="KEY BTN"
+if test -e "/usr/include/linux/input-event-codes.h"; then
+readonly file=${1:-/usr/include/linux/input-event-codes.h}
+else
 readonly file=${1:-/usr/include/linux/input.h}
+fi
 tmpfile=$( mktemp )
 
 if ! test -f $file; then
