@@ -536,6 +536,13 @@ lirc_t uirt2_read_raw(uirt2_t* dev, lirc_t timeout)
 
 		if (b == 0xff) {
 			dev->new_signal = 1;
+
+			/* if the terminating ff is the first byte read we don't */
+			/* want to block for an unknown amount of time until     */
+			/* some other signal arrives                             */
+			if (timeout == 0)
+				timeout = MIN_RECEIVE_TIMEOUT;
+
 			continue;
 		}
 
