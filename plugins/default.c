@@ -485,6 +485,7 @@ int default_ioctl(unsigned int cmd, void* arg)
 }
 
 
+#ifdef HAVE_LIBUDEV_H
 static void list_device(struct udev_device* device, glob_t* glob)
 {
 	char buff[256];
@@ -508,7 +509,6 @@ static void list_device(struct udev_device* device, glob_t* glob)
 }
 
 
-#ifdef HAVE_LIBUDEV_H
 static void list_devices(glob_t* glob)
 {
 	struct udev* udev;
@@ -536,7 +536,7 @@ static void list_devices(glob_t* glob)
 	udev_enumerate_unref(enumerate);
 	udev_unref(udev);
 }
-#endif
+#endif // HAVE_LIBUDEV_H
 
 
 static int drvctl(unsigned int cmd, void* arg)

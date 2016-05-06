@@ -7,6 +7,12 @@ AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \
                               @osflags@
 AM_CPPFLAGS                 += -Wall -Wp,-D_FORTIFY_SOURCE=2
 
+if HAVE_LIBUDEV
+AM_LDFLAGS                  += -ludev
+AM_CFLAGS                   += -DHAVE_LIBUDEV_H
+endif
+
+
 DISTCLEANFILES              = pluginlist.am
 
 plugindir                   =  $(pkglibdir)/plugins

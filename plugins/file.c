@@ -217,7 +217,7 @@ static int send_func(struct ir_remote* remote, struct ir_ncode* code)
 	log_trace("file.c: sending, code: %s", code->name);
 
 	if (remote->pzero == 0 && remote->szero == 0
-		&& (remote->flags & RAW_CODES == 0))
+		&& ((remote->flags & RAW_CODES) == 0))
 	{
 		write_line("code", code->code);
 		return 1;
