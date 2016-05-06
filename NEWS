@@ -2,14 +2,15 @@
 
   * Issues: https://sf.net/p/lirc/tickets/milestone/0.9.4
 
+  * irrecord: Fix broken namespace checks on recent kernels (#187).
   * lirs-lsremotes: Don't use non-standard GLOB_BRACE (#174).
-  * lib:Fix  misleading logprintf comments (#179)
+  * lib: Fix  misleading logprintf comments (#179)
   * lib: Clean up loglevel handling (#178).
   * plugins/file: Fix bad test for LIRCCODE cases (#171).
   * plugins/ftdi: Bugfixes: 4157fe1, 92e2d1d, #182.
   * plugins/girs: Bugfixes.
-  * plugins/default: Walk around kernel bug generating multiple spaces
-    (#172).
+  * plugins/default: Walk around kernel bug generating multiple
+    spaces (#172).
   * Several drivers including default and devinput has enhanced
     enumeration support, usable with mode2 -l and lirc-config.
   * The lirc.4 manpage (/dev/lirc* interface) is upstreamed to the
