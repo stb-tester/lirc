@@ -318,7 +318,20 @@ if test -n "$SYSTEMD_LIBS"; then
     CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
     AC_DEFINE(HAVE_SYSTEMD)
 fi
-SYSTEMD_SYSTEMUNITDIR
+
+dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
+kernelversion=`cat /proc/version || echo "non-linux"`
+case $kernelversion in
+   *Ubuntu*)
+        AC_MSG_NOTICE([Hardwiring Ubuntu systemd setup])
+        AC_SUBST([systemdsystemunitdir], [/lib/systemd/system])
+        AM_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR], [true])
+        ;;
+    *)
+        SYSTEMD_SYSTEMUNITDIR
+        ;;
+esac
+
 
 saved_cflags="$CFLAGS"
 CFLAGS="-Werror -Wall"
