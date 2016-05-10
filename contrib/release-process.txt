@@ -71,3 +71,14 @@ For final release:
 3) Send announcement email to lirc-list@lists.sourceforge.net, include top
    of NEWS.
 
+Ubuntu PPA update:
+
+   $ make debian
+   $ cd debian-src
+   $ dpkg-source -x *dsc
+   $ cd lirc-0.9.4*
+   $ vi debian/changelog # change experimental to Ubuntu channel like 'Trusty'.
+   $ debuild -S -sa -us -uc
+   $ cd ..
+   $ debsign *source.changes
+   $ dput ppa:leamas-alec/lirc-0.9.4 *source.changes
