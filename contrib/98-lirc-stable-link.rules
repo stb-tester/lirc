@@ -1,0 +1,9 @@
+# If there is more than on /dev/lirc* device there is a need for fixed names
+# for the different devices.  This example rule creates a symlink (here
+# /dev/iguana) to a usb device with a given serial nr (here TS0013Yn). Find
+# attributes to match using e. g., 'udevadm info --attribute-walk /dev/lirc0'
+
+KERNEL=="lirc*", \
+PROGRAM=="/bin/sh -c 'udevadm info --attribute-walk /dev/%k \
+                 | grep -q TS0013Yn'", \
+SYMLINK+="iguana"
