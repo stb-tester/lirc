@@ -1,4 +1,4 @@
-.TH LIRCD-UINPUT "8" "Last change: Jan 2016" "lircd.uinput @VERSION" "System Managers Manual"
+.TH LIRCD-UINPUT "8" "Last change: May 2016" "lircd.uinput @VERSION" "System Managers Manual"
 
 .\" Copyright (c) 2015, Alec Leamas
 .\"
@@ -32,30 +32,21 @@ lircd-uinput \- Forward lirc button presses as uinput events
 lircd-uinput [\fIoptions\fP]... [\fIlircd output socket\fP]
 
 .SH DESCRIPTION
-Enables automatic generation of Linux input events.
-.B lircd-uinput
-opens  the uinput device  and injects key events received on a
-.B lircd (8)
+Enables automatic generation of Linux input events. \fBlircd-uinput\fR
+opens the uinput device and injects key events received on a \fBlircd (8)\fR
 output socket to the Linux kernel.
 The key code depends on the name that was given a button in the
 lircd config file, e.g., if the button is named KEY_1, the '1'
 key code will be generated.
 A complete list of possible button names  is available in
-.I /usr/include/linux/input.h
-and also using
-.I irrecord -l.
+\fI/usr/include/linux/input.hi\fR and also using \fIirrecord -l\fR.
 .P
 .B lircd-uinput
 is designed to run as a systemd service.
 .P
-The
-.I lircd output socket
-argument is an optional path to lircd output socket. It defaults
-to the
-.I output
-value in the [lircd] section of the
-lirc_options config file, falling back to
-.I @varrundir@/lirc/lircd
+The \fIlircd output socket\fP argument is an optional path to lircd output socket.
+It defaults to the \fIoutput\fP value in the [lircd] section of the
+lirc_options config file, falling back to \fI@varrundir@/lirc/lircd\fP.
 
 .SH OPTIONS
 .TP
@@ -82,7 +73,7 @@ Display version info.
 .SH NOTES
 .B lircd-uinput
 can only forward lircd button events with names from
-the legal namespace as defined by irrecord(1), i. e., as defined
+the legal namespace as defined by \fIirrecord(1)\fR, i. e., as defined
 by the kernel.
 
 .SH "SEE ALSO"
