@@ -29,8 +29,6 @@ If you are upgrading from an older version of LIRC take a look at the
 NEWS file which contains all user visible changes between
 releases.
 
-If you intend to make a package the separate branches 'debian' and
-'fedora' contains upstream .deb and RPM packaging starting points.
 
 ## What is LIRC?
 
@@ -44,13 +42,10 @@ on the LIRC homepage. Current versions of LIRC also support a variety
 of other hardware. An up-to-date list of all supported devices and the
 status of the according drivers is available on the LIRC homepage.
 
-The most important part of LIRC is the lircd daemon that will decode
-IR signals received by the device drivers and provide the information
-on a socket. It will also accept commands for IR signals to be sent if
-the hardware supports this. The second daemon program called lircmd
-will connect to lircd and translate the decoded IR signals to mouse
-movements. You can e.g. configure X to use your remote control as an
-input device.
+The most important part of LIRC is the lircd daemon which decodes IR
+signals received by the device drivers and provides the information
+on a socket. It also accepts commands for IR signals to be sent if
+the hardware supports this.
 
 The user space applications will allow you to control your computer
 with your remote control. You can send X events to applications, start
