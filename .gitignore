@@ -28,6 +28,7 @@ remotes.list
 
 drivers.yaml
 confs_by_driver.yaml
+devinput.lircd.conf
 
 # lirc-setup cruft
 lirc-setup.conf.d
