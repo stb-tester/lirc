@@ -18,4 +18,4 @@ for file in *.c; do
     echo "plugin_LTLIBRARIES              += ${basename}.la"
     printf "%-32s = %s\n" "${basename}_la_SOURCES " "$sources"
     echo
-done
+done | sed  '$ d'
