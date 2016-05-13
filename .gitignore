@@ -29,6 +29,7 @@ remotes.list
 
 drivers.yaml
 confs_by_driver.yaml
+devinput.lircd.conf
 
 README.md
 README.html
