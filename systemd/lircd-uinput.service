@@ -1,6 +1,9 @@
 [Unit]
-Description=Forward LIRC button presses as uinput events
 After=lircd.service
+Description=Forward LIRC button presses as uinput events
+Documentation=Daemon which forwards LIRC button presses to the \
+kernel uinput device, making LIRC-decoded IR remote input \
+available as regular /dev/input events
 
 [Service]
 Type=simple

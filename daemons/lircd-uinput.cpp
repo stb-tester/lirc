@@ -239,7 +239,7 @@ void lircd_uinput(const char* socket_path,
 	}
 	// strcpy(addr.sun_path, "/home/mk/tmp/lirc/test/var/lircd.socket");
 	if (connect(fd, (struct sockaddr*) &addr, sizeof(addr)) == -1) {
-		log_perror_err("Cannot connnect to socket %s", addr.sun_path);
+		log_perror_err("Cannot connect to socket %s", addr.sun_path);
 		exit(2);
 	}
         uinputfd = setup_uinputfd(device);

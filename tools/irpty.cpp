@@ -97,7 +97,7 @@ static void copy_loop(int ptym, int ignoreeof)
 				else if (!nread)
 					break;
 				if (write(ptym, buf, nread) != nread)
-					die("writen error to master pty");
+					die("write error to master pty");
 			}
 			if (pfd[0].revents & POLLIN) {  /*lsock */
 				char* ir;
@@ -109,7 +109,7 @@ static void copy_loop(int ptym, int ignoreeof)
 						break;
 					while ((ret = lirc_code2char(lconfig, ir, &irchars)) == 0 && irchars != NULL)
 						if (write(ptym, irchars, strlen(irchars)) != (int) strlen(irchars))
-							die("writen error to master pty");
+							die("write error to master pty");
 					free(ir);
 					if (ret == -1)
 						break;
@@ -134,7 +134,7 @@ static void copy_loop(int ptym, int ignoreeof)
 		if ((nread = read(ptym, buf, BUFFSIZE)) <= 0)
 			break;
 		if (write(STDOUT_FILENO, buf, nread) != nread)
-			die("writen error to stdout");
+			die("write error to stdout");
 	}
 	if (!sigcaught)
 		kill(child, SIGTERM);

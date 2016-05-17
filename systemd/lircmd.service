@@ -1,6 +1,7 @@
 [Unit]
-Description=LIRC Infrared Mouse Event Signal Decoder
 Wants=lircd.socket
+Description=LIRC Infrared Mouse Event Signal Decoder
+Documentation=Converts input decoded by lircd to mouse movements and clicks
 
 [Service]
 Type=simple

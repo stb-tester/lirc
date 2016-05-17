@@ -232,7 +232,7 @@ error:          unlink(tmp_name);
 			else if (stereo_channel[1] == 'r')
 				alsa_hw.channel = 1;
 			else
-				log_warn("dont understand which channel to use - defaulting to left\n");
+				log_warn("don't understand which channel to use - defaulting to left\n");
 		}
 
 		/* Remove the sample rate from device name (and

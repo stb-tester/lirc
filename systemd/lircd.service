@@ -1,5 +1,7 @@
 [Unit]
 Description=LIRC Infrared Signal Decoder
+Documentation=Decodes input from IR remote controls, also supporting writes \
+to the device
 Wants=lircd-setup.service
 After=network.target lircd-setup.service
 
