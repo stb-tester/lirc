@@ -1,5 +1,7 @@
 [Unit]
 Description=LIRC Infrared Signal Exec
+Documentation=System daemon handling events from IR remotes decoded \
+by lircd
 
 [Service]
 ; user =

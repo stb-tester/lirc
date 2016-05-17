@@ -497,7 +497,7 @@ static int sendcommand_ok(const char *command)
  */
 static int syncronize(void)
 {
-	log_debug("girs: syncronizing");
+	log_debug("girs: synchronizing");
 	dev.read_pending = 0;
 	dev.send_pending = 0;
 	int i;
@@ -506,11 +506,11 @@ static int syncronize(void)
 		int res = sendcommand_ok("");
 
 		if (res == 1) {
-			log_debug("girs: syncronized!");
+			log_debug("girs: synchronized!");
 			return 1;
 		}
 	}
-	log_debug("girs: failed syncronizing after "
+	log_debug("girs: failed synchronizing after "
 		  STR(NO_SYNCRONIZE_ATTEMPTS) " attempts");
 	return 0;
 }
@@ -539,7 +539,7 @@ static int setLcd(const char* message)
 
 static int enable_receive(void)
 {
-	//syncronize();
+	//synchronize();
 	int success = sendcommandln(RECEIVE_COMMAND);
 
 	if (success) {
@@ -761,7 +761,7 @@ static int init(void)
 		if (success) {
 			success = syncronize();
 			if (!success) {
-				log_error("girs: cannot syncronize");
+				log_error("girs: cannot synchronize");
 			}
 		}
 		if (success) {
