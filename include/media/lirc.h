@@ -3,7 +3,8 @@
  * This file contains some general definitions, like feature flags.
  * It's a bundled copy from the kernel sources. Being part of
  * kernel sources is a bug, see
- * https://bugzilla.kernel.org/show_bug.cgi?id=75751
+ * https://bugzilla.kernel.org/show_bug.cgi?id=75751.
+ * The file is upstreamed to the kernel from 4.6.
  */
 
 #ifndef LIRC_BASE_H

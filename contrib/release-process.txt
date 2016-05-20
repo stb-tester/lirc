@@ -4,11 +4,22 @@ LIRC release procedure (more or less)
 Pre-requisites:
 - Compiles without warnings
 - Unit tests pass.
+    + cd test
+    + make
+    + ./run-tests
 - 'make distcheck' pass
 - Encoder/decoder regression tests all pass
+- lirc.org linkcheck:
+    + cd doc; DESTDIR=$PWD/foo make install
+    + linkchecker foo/usr/local/share/doc/lirc/lirc.org/index.html
+    + Allow errors for standard tools like sudo, ncat, etc.
 - liblirc_client: version number change required?
+    + use abidiff
+    + run (more or less)
+         $ abidiff lirc-old/lib/.libs/liblirc_client.so.0.3.0  \
+         >     lirc-new/lib/.libs/liblirc_client.so.0.3.0
         current:release:age
-        http://www.gnu.org/software/libtool/manual/html_node/Libtool-versioning.html#Libtool-versioning
+        https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 - git master branch is committed and pushed
 - Update NEWS.
 - Create a new git release branch:
@@ -44,7 +55,7 @@ Steps for a new release (pre or final)
         ./configure
         make distcheck
 
-   Make preliminary RPM package to pick up packaging errors.
+   Make preliminary Debian and RPM packages to pick up packaging errors.
 
 7) Merge release branch into the 'release' branch:
        git checkout release
