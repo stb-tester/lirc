@@ -1,6 +1,9 @@
 ''' Simple lirc setup tool - common parts of view components '''
 
 import sys
+
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 
 

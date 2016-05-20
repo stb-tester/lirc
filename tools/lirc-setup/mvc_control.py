@@ -1,4 +1,6 @@
 ''' Simple lirc setup tool - control part. '''
+import gi
+gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 from gi.repository import GObject     # pylint: disable=no-name-in-module
