@@ -17,6 +17,7 @@
 #endif
 
 #include <dirent.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
@@ -217,10 +218,39 @@ static void check_device(const char* device)
 	}
 }
 
+/** Try to use an "auto" device specification. */
+static int get_auto_device(char* pathbuf, size_t size)
+{
+	const char* const PATTERN = "/dev/lirc*";
+	glob_t globbuf;
+
+	globbuf.gl_offs = 10;
+	glob(PATTERN, 0, NULL, &globbuf);
+	if (globbuf.gl_pathc == 0) {
+		log_error("No matching /dev/lirc device found for \"auto\"");
+		return  ENODEV;
+	}
+	if (globbuf.gl_pathc > 1) {
+		log_warn("Multiple /dev/lirc devices found for \"auto\"");
+	}
+	strncpy(pathbuf, globbuf.gl_pathv[0], size - 1);
+	globfree(&globbuf);
+	return 0;
+}
+
 
 int my_open(const char* path)
 {
-	default_open(path);
+	char pathbuf[128];
+	int r;
+
+	strncpy(pathbuf, path, sizeof(pathbuf) - 1);
+	if (strcmp(pathbuf, "auto") == 0) {
+		r = get_auto_device(pathbuf, sizeof(pathbuf));
+		if (r != 0)
+			return r;
+	}
+	default_open(pathbuf);
 	check_device(drv.device);
 	set_rc_protocol(drv.device);
 	return 0;
