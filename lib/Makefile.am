@@ -33,7 +33,7 @@ liblirc_la_SOURCES          = config_file.c \
 libirrecord_la_LDFLAGS      = -llirc
 libirrecord_la_SOURCES      = irrecord.c
 
-liblirc_client_la_LDFLAGS   = -version-info 3:0:3
+liblirc_client_la_LDFLAGS   = -version-info 4:0:4
 liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
 
 liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
