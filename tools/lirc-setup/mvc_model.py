@@ -270,9 +270,9 @@ class DeviceListModel(object):
     AUTO_CONFIG = "atilibusb"   # A driver configuration with device: auto.
 
     def __init__(self, driver):
-        self.driver_id = driver['id']
+        self.driver_id = driver.driver['id']
         self.config = driver
-        self.device_pattern = driver['device_hint']
+        self.device_pattern = driver.driver['device_hint']
         self.label_by_device = {}
         self.list_devices()
         if not self.label_by_device:
@@ -353,6 +353,36 @@ class SerialDeviceListModel(DeviceListModel):
                 self.label_by_device[dev] = "%s (%s)" % (dev, rc)
             else:
                 self.label_by_device[dev] = dev
+
+class DrvctlDeviceListModel(DeviceListModel):
+    '''A device list for a driver supporting drvctl enumeration. '''
+
+    def list_devices(self):
+        ''' Return a dict label_by_device, labels for matching devices. '''
+        self.label_by_device = {}
+        trypath = os.path.abspath(_here("../mode2"))
+        if not os.path.exists(trypath):
+            trypath = os.path.join(BINDIR, "mode2")
+        if not os.path.exists(trypath):
+            raise FileNotFoundError("trypath")
+        cmd = [trypath, "--driver" , self.driver_id, "--list-devices"]
+        try:
+            result = subprocess.check_output(cmd, universal_newlines=True)
+        except (OSError, subprocess.CalledProcessError):
+            sys.stderr.write("Error invoking: " + " ".join(cmd))
+            result = None
+        if not result:
+            self.label_by_device['dev_null'] = 'No devices found'
+            return
+        devices = result.split("\n")
+        for device in devices:
+            words = device.split(None, 1)
+            if len(words) == 0:
+                continue
+            if len(words) == 1:
+                self.label_by_device[words[0]] = words[0]
+            else:
+                self.label_by_device[words[0]] = words[1]
 
 
 class ShellCommandDeviceListModel(DeviceListModel):
@@ -441,6 +471,8 @@ def device_list_factory(driver, model):
         devicel_list_model = AutoDeviceList(model)
     elif hint == 'udp_port':
         devicel_list_model = UdpPortDeviceList(model)
+    elif hint == 'drvctl':
+        devicel_list_model = DrvctlDeviceListModel(model)
     else:
         devicel_list_model = GenericDeviceListModel(driver)
     return devicel_list_model

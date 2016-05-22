@@ -146,6 +146,7 @@ config.py: Makefile
 	@echo 'SYSCONFDIR = "$(sysconfdir)"' >>$@
 	@echo 'VARRUNDIR = "$(localstatedir)/run"' >>$@
 	@echo 'LOCALSTATEDIR = "$(localstatedir)"' >>$@
+	@echo 'BINDIR = "$(bindir)"' >>$@
 	@echo 'LIBDIR = "$(libdir)"' >>$@
 	@echo 'DOCDIR = "$(docdir)"' >>$@
 	@echo 'MODINFO = "$(MODINFO)"' >>$@
