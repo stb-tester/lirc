@@ -186,6 +186,7 @@ static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 {
 	int ret = 0;
+	int fd;
 	struct ftdi_context ftdic;
 
 	alarm(0);
@@ -194,6 +195,15 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
+
+	/* Best effort close the fds for easier debugging.  This way if the parent
+	   process dies the child won't have any lirc client connections open
+	   preventing clients from erroring out. */
+	for (fd = 3; fd < 20; fd++) {
+		if (fd != fd_rx2main && fd != fd_main2tx && fd != fd_tx2main) {
+			close(fd);
+		}
+	}
 
 	ftdi_init(&ftdic);
 
