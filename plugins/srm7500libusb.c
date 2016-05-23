@@ -38,9 +38,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <usb.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+
+#if HAVE_USB_H
+#include <usb.h>
+#endif
+
+#ifdef HAVE_LIBUSB_1_0_USB_H
+#include <libusb-1.0/usb.h>
+#endif
 
 #include "lirc_driver.h"
 

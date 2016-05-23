@@ -29,8 +29,12 @@
 #ifndef HW_COMMANDIR_H
 #define HW_COMMANDIR_H
 
+#if HAVE_USB_H
 #include <usb.h>
-
+#endif
+#ifdef HAVE_LIBUSB_1_0_USB_H
+#include <libusb-1.0/usb.h>
+#endif
 
 #define TRUE    0
 #define FALSE   1
