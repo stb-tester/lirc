@@ -11,7 +11,7 @@ GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
-CLEANFILES              = *~ remotes/*~ contrib/*~
+CLEANFILES              = *~ remotes/*~ contrib/*~ devinput.lircd.conf
 CHANGELOG_REVS          = lirc-0_9_4..HEAD
 MANTAINERCLEANFILES     = config.sub install-sh depcomp py-compile \
                           missing libtool plugins/Makefile.am
@@ -38,8 +38,8 @@ dist_lirc_conf_DATA     = lircd.conf \
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
 dist_lircdconfig_DATA	= README.conf.d 
 
-if !BSD
-dist_lircdconfig_DATA	+= devinput.lircd.conf
+if HAVE_DEVINPUT
+nodist_lircdconfig_DATA	= devinput.lircd.conf
 endif
 
 endif
@@ -60,9 +60,9 @@ install-data-hook:
 
 uninstall-hook:
 	-chmod -R u+w $(DESTDIR)/$(pkgdatadir)/contrib
-	-rm -r $(DESTDIR)/$(pkgdatadir) \
-	       $(DESTDIR)/$(pkgpythondir) \
-	       $(DESTDIR)/$(pkgdatadir)/contrib
+	-rm -rf $(DESTDIR)/$(pkgdatadir) \
+	        $(DESTDIR)/$(pkgpythondir) \
+	        $(DESTDIR)/$(pkgdatadir)/contrib
 
 dist-hook: ChangeLog fix-version
 	cp -pr $(srcdir)/contrib $(distdir)
@@ -77,14 +77,14 @@ fix-version: .phony
 	$(SED) -i '/REFS/s|=.*|="$(GIT_REFS)"|' $(distdir)/VERSION
 
 paths.h: Makefile
-	@echo "#ifndef PATHS_H"          >$@
-	@echo "#define PATHS_H"          >>$@
-	@echo '#define DATADIR          "$(datadir)"' >>$@
-	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>$@
-	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>$@
-	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>$@
-	@echo '#define LIBDIR           "$(libdir)"' >>$@
-	@echo "#endif"                  >>$@
+	@echo "#ifndef PATHS_H"          >paths.h
+	@echo "#define PATHS_H"          >>paths.h
+	@echo '#define DATADIR          "$(datadir)"' >>paths.h
+	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>paths.h
+	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>paths.h
+	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>paths.h
+	@echo '#define LIBDIR           "$(libdir)"' >>paths.h
+	@echo "#endif"                  >>paths.h
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \

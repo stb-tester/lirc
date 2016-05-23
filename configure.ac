@@ -9,6 +9,11 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
 
+dnl Checks for kernel capabilities
+
+AM_CONDITIONAL([HAVE_DEVINPUT], [test -e "/dev/input"])
+AM_CONDITIONAL([HAVE_UINPUT], [test -e /dev/uinput])
+
 dnl Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_C_O
@@ -33,7 +38,6 @@ if test x$XSLTPROC != "xyes"; then
     AC_MSG_ERROR([
       xsltproc is required to build. It usually comes with libxml])
 fi
-AM_CONDITIONAL(HAVE_UINPUT, test -e /dev/uinput)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
@@ -141,6 +145,9 @@ AC_MSG_RESULT()
 
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
         [Define if the ALSA library with SB RC support is installed])
+
+AH_TEMPLATE([HAVE_DEVINPUT],
+        [Define if the Linux input framwework is available])
 
 AH_TEMPLATE([HAVE_FORKPTY],
         [Define if forkpty is available])
@@ -444,7 +451,6 @@ AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])
-AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([DEVEL])
 AC_REPORT_CONDITIONAL([HAVE_UINPUT])
 AC_REPORT_CONDITIONAL([DARWIN])

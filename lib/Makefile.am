@@ -4,8 +4,9 @@ DISTCLEANFILES              = input_map.inc lirc/input_map.inc
 CLEANFILES                  = driver_api.dox lirc_client.dox
 EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
                               driver_api.doxhead  lirc_client.doxhead
-
+if HAVE_DEVINPUT
 BUILT_SOURCES               = lirc/input_map.inc
+endif
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @osflags@
@@ -74,8 +75,10 @@ dist_lircinclude_HEADERS    = config_file.h \
                               receive.h \
                               serial.h \
                               transmit.h \
-                              util.h \
-                              input_map.inc
+                              util.h
+if HAVE_DEVINPUT
+dist_lircinclude_HEADERS    += input_map.inc
+endif
 
 driver_api.dox: $(srcdir)/driver_api.doxhead  \
 		$(top_srcdir)/doc/html-source/driver-api.html
@@ -94,15 +97,11 @@ dist-hook:
 	mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
+if !BSD
 input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
-if BSD
-lirc/input_map.inc:
-	touch $@
-	touch touch input_map.inc
-else
 lirc/input_map.inc:
 	ln -s . lirc || :
 	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc

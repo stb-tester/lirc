@@ -14,11 +14,15 @@
  */
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __linux__
 #include "lirc/input_map.h"
+#endif
 
+#ifdef __linux__
 struct {
 	char*			name;
 	linux_input_code	code;
@@ -28,7 +32,9 @@ struct {
 		NULL, 0
 	}
 };
+#endif
 
+#ifdef __linux__
 int get_input_code(const char* name, linux_input_code* code)
 {
 	int i;
@@ -41,7 +47,9 @@ int get_input_code(const char* name, linux_input_code* code)
 	}
 	return -1;
 }
+#endif
 
+#ifdef __linux__
 void fprint_namespace(FILE* f)
 {
 	int i;
@@ -49,10 +57,17 @@ void fprint_namespace(FILE* f)
 	for (i = 0; input_map[i].name != NULL; i++)
 		fprintf(stdout, "%s\n", input_map[i].name);
 }
+#else
+void fprint_namespace(FILE* f) { fputs("No symbols defined\n", stderr); }
+#endif
 
+#ifdef __linux__
 int is_in_namespace(const char* name)
 {
 	linux_input_code dummy;
 
 	return get_input_code(name, &dummy) == -1 ? 0 : 1;
 }
+#else
+int is_in_namespace(const char* name) { return 1; }
+#endif
