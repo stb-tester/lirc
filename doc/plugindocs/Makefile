@@ -17,7 +17,7 @@ docpage.xsl: docpage.xsl.in
 	sed 's|@.*@/||' < $? > $@
 
 driver-toc.xsl: make-driver-toc.sh
-	/bin/bash make-driver-toc.sh $(SRC)> $@
+	/usr/bin/env bash make-driver-toc.sh $(SRC)> $@
 
 $(DOCS): $(SRC) docpage.xsl page.xsl driver-toc.xsl
 	xsltproc --html docpage.xsl $(subst ../lirc.org/html/,,$@) > $@

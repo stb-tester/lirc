@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # vim: set expandtab ts=4 sw=4:
 #
 # Generate lircrc files for various applications

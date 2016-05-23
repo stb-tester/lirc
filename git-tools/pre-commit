@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # lirc pre-commit hook: Check source formatting, last update: in manpages
 # and overall whitespace.
