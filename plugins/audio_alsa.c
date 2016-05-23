@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <signal.h>
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -97,10 +98,55 @@ static struct {
 " -e 's/ : .*//p'"
 
 /* Forward declarations */
+static int audio_alsa_init(void);
 static int audio_alsa_deinit(void);
 static void alsa_sig_io(snd_async_handler_t* h);
 
 static const logchannel_t logchannel = LOG_DRIVER;
+
+static int mywaitfordata(long maxusec)
+{
+	int  ret, poll_ms;
+	struct timeval start, now;
+
+	while (1) {
+		do {
+			struct pollfd pfd  = {
+				.fd = drv.fd, .events = POLLIN, .revents = 0
+			};
+
+			gettimeofday(&start, NULL);
+			poll_ms = MAX(0, maxusec / 1000);
+			if (drv.fd == -1) {
+				/* try to reconnect */
+				if (poll_ms > 1000 || poll_ms == 0)
+					poll_ms = 1000;
+			}
+			ret = poll(&pfd, 1, poll_ms == 0 ? -1 : poll_ms);
+			if (ret == -1 && errno != EINTR) {
+				log_perror_err("poll() failed");
+				continue;
+			}
+			gettimeofday(&now, NULL);
+			if (maxusec > 0) {
+				if (ret == 0 || time_elapsed(&start, &now) >= maxusec)
+					return 0;
+				maxusec -= time_elapsed(&start, &now);
+			}
+		} while (ret == -1 && errno == EINTR);
+
+		if (drv.fd == -1) {
+			loglevel_t saved_level = loglevel;
+
+			lirc_log_setlevel(LIRC_NOLOG);
+			audio_alsa_init();
+			lirc_log_setlevel(saved_level);
+		} else if (ret >= 1) {
+			/* we will read later */
+			return 1;
+		}
+	}
+}
 
 static int alsa_error(const char* errstr, int errcode)
 {
@@ -164,7 +210,7 @@ static int alsa_set_hwparams(void)
 	return 0;
 }
 
-int audio_alsa_init(void)
+static int audio_alsa_init(void)
 {
 	int fd, err;
 	char* pcm_rate;
@@ -232,7 +278,7 @@ error:          unlink(tmp_name);
 			else if (stereo_channel[1] == 'r')
 				alsa_hw.channel = 1;
 			else
-				log_warn("dont understand which channel to use - defaulting to left\n");
+				log_warn("don't understand which channel to use - defaulting to left\n");
 		}
 
 		/* Remove the sample rate from device name (and
@@ -510,7 +556,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	lirc_t data;
 	int ret;
 
-	if (!waitfordata((long)timeout))
+	if (!mywaitfordata((long)timeout))
 		return 0;
 
 	ret = read(drv.fd, &data, sizeof(data));

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env /bash
 #
 # This script is used for lirc protocol encode/decode regression testing
 # between two versions of lirc. You'll need two source trees, both fully

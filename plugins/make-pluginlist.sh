@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 #
 # Create a list of automake module setups.
 
@@ -18,4 +18,4 @@ for file in *.c; do
     echo "plugin_LTLIBRARIES              += ${basename}.la"
     printf "%-32s = %s\n" "${basename}_la_SOURCES " "$sources"
     echo
-done
+done | sed  '$ d'

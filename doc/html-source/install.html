@@ -34,8 +34,10 @@
           not provide a python3 link (e. g., just python3.3)
           the <em>--enable-python3-fix</em> ./configure option
           installs a wrapper.</li>
-      <li>Building requires <em>modinfo</em>, often in the package kmod.
-      <li>Building requires <em>pkg-config</em>.
+      <li>Building requires <em>modinfo</em>, often in the package 
+          kmod. Without modinfo, all kernel drivers are excluded 
+          from the build. </li>
+      <li>Building requires <em>pkg-config</em>.</li>
       <li>Building requires kernel headers, often in the kernel-headers
           package.</li>
       <li>xsltproc </li>
@@ -59,7 +61,7 @@
       <li> The audio drivers needs the alsa and portaudio libs
            (libraries and headers). </li>
        <li>
-         The <em>ftdi</em> and <em>ftdix</rm> drivers require libftdi from
+         The <em>ftdi</em> and <em>ftdix</em> drivers require libftdi from
          <a href="http://www.intra2net.com/de/produkte/opensource/ftdi/">
          http://www.intra2net.com/de/produkte/opensource/ftdi/</a></li>
      </ul>

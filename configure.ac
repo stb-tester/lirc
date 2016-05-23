@@ -2,7 +2,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.4pre2])
+AC_INIT([lirc], [0.9.4])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -18,11 +18,12 @@ AC_PROG_MAKE_SET
 AC_PATH_PROG(SH_PATH,[sh])
 AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
 if test x$MODINFO = xno; then
-  AC_MSG_ERROR([Required program modinfo is missing or or not in \$PATH])
+  AC_MSG_WARN(["No modinfo command found - skipping kernel drivers."])
+  MODINFO="/usr/bin/false"
 else
   MODINFO=$( PATH=$PATH:/sbin:/usr/sbin which modinfo )
-  AC_SUBST(MODINFO)
 fi
+AC_SUBST(MODINFO)
 AC_CHECK_PROG([PKGCONFIG],[pkg-config],[yes],[no])
 if test x$PKGCONFIG = xno; then
   AC_MSG_ERROR([Required program pkg-config is missing or not in \$PATH])
@@ -32,6 +33,7 @@ if test x$XSLTPROC != "xyes"; then
     AC_MSG_ERROR([
       xsltproc is required to build. It usually comes with libxml])
 fi
+AM_CONDITIONAL(HAVE_UINPUT, test -e /dev/uinput)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
@@ -62,6 +64,9 @@ AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname gettimeofday mkfifo select socket strdup \
         strerror strtoul snprintf strsep vsyslog)
+AC_SEARCH_LIBS([dlopen], [dl dld], [], [
+  AC_MSG_ERROR([unable to find the dlopen() function])
+])
 AC_CHECK_FUNCS(daemon)
 if test "$ac_cv_func_daemon" != yes; then
   daemon=""
@@ -86,10 +91,13 @@ test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 case $host_os in
     darwin*) osflags='-DDARWIN'
 	;;
+    *bsd*) osflags='-DFREEBSD'
+	;;
     *)  osflags=''
 esac
 
-AM_CONDITIONAL([DARWIN], [test -n "$osflags"])
+AM_CONDITIONAL([DARWIN], [test "$osflags" = "-DDARWIN"])
+AM_CONDITIONAL([BSD], [test -n "$osflags"])
 AC_SUBST(osflags)
 
 x_progs="irxevent xmode2"
@@ -187,8 +195,7 @@ AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
 AH_TEMPLATE([HAVE_LIBUDEV_H],
         [Define if libudev is installed])
 
-
-AC_CHECK_HEADER(usb.h,[
+AC_CHECK_HEADERS([libusb-1.0/usb.h usb.h],[
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
   usb_libs=`${LIBUSB_CONFIG} --libs`
@@ -318,7 +325,20 @@ if test -n "$SYSTEMD_LIBS"; then
     CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
     AC_DEFINE(HAVE_SYSTEMD)
 fi
-SYSTEMD_SYSTEMUNITDIR
+
+dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
+kernelversion=`cat /proc/version || echo "non-linux"`
+case $kernelversion in
+   *Ubuntu*)
+        AC_MSG_NOTICE([Hardwiring Ubuntu systemd setup])
+        AC_SUBST([systemdsystemunitdir], [/lib/systemd/system])
+        AM_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR], [true])
+        ;;
+    *)
+        SYSTEMD_SYSTEMUNITDIR
+        ;;
+esac
+
 
 saved_cflags="$CFLAGS"
 CFLAGS="-Werror -Wall"
@@ -436,6 +456,9 @@ AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])
 AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([DEVEL])
+AC_REPORT_CONDITIONAL([HAVE_UINPUT])
+AC_REPORT_CONDITIONAL([DARWIN])
+AC_REPORT_CONDITIONAL([FREEBSD])
 
 echo
 

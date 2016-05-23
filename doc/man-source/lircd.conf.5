@@ -1,4 +1,4 @@
-.TH LIRCD.CONF "5" "Last change: Jan 2016" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: May 2016" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
@@ -26,7 +26,7 @@ and
 .B end codes.
 
 Each line in a codes section contains the name of a button on the remote
-followed by a hexidecimal data value matching the data part of the IR
+followed by a hexadecimal data value matching the data part of the IR
 frame (see REMOTE DESCRIPTION SECTION). You may not assign the same name
 to two buttons in the same remote section.
 .PP
@@ -52,7 +52,7 @@ values that should be assigned to that parameter. Parameters
 are optional unless otherwise stated.
 .PP
 All values are decimal integers that are either dimensionless or have units
-of microseconds unless otherwise stated. Hexidecimal numbers should be
+of microseconds unless otherwise stated. Hexadecimal numbers should be
 prefixed by 0x. If the remote does not have a particular "feature," then
 the line may be omitted. The button code is sent just after the pre signal
 and just before the post signal.
@@ -93,7 +93,7 @@ For lirccode drivers which does not have timing information the optional
 driver attribute names the driver which is required to use this remote.
 .TP 4
 .B bits <number of data bits>
-The number of data bits in the hexidecimal codes which describe each
+The number of data bits in the hexadecimal codes which describe each
 button (decimal integer).
 .TP 4
 .B eps <relative error tolerance>
@@ -137,15 +137,15 @@ the header is not sent unless the REPEAT_HEADER flag is present.
 .B pre_data_bits <number of pre_data_bits>
 The number of bits in the pre_data code.
 .TP 4
-.B pre_data <hexidecimal number>
-Hexidecimal code indicating the sequence of ones and zeros immediately
+.B pre_data <hexadecimal number>
+Hexadecimal code indicating the sequence of ones and zeros immediately
 following the leading pulse.
 .TP 4
 .B post_data_bits <number of post data bits>
 The number of bits in the post_data code.
 .TP 4
-.B post_data <hexidecimal number>
-Hexidecimal code indicating the sequence of ones and zeros immediately
+.B post_data <hexadecimal number>
+Hexadecimal code indicating the sequence of ones and zeros immediately
 following the post signal.
 .TP 4
 .B pre <ppre> <spre>

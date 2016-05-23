@@ -8,9 +8,6 @@ bte_la_SOURCES                   = bte.c
 plugin_LTLIBRARIES              += creative.la
 creative_la_SOURCES              = creative.c
 
-plugin_LTLIBRARIES              += default.la
-default_la_SOURCES               = default.c
-
 plugin_LTLIBRARIES              += ea65.la
 ea65_la_SOURCES                  = ea65.c
 

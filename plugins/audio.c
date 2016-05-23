@@ -576,7 +576,7 @@ int audio_init(void)
 
 error:
 	Pa_Terminate();
-	log_error("an error occured while using the portaudio stream");
+	log_error("an error occurred while using the portaudio stream");
 	log_error("error number: %d", err);
 	log_error("error message: %s", Pa_GetErrorText(err));
 
@@ -620,7 +620,7 @@ int audio_deinit(void)
 
 error:
 	Pa_Terminate();
-	log_error("an error occured while using the portaudio stream");
+	log_error("an error occurred while using the portaudio stream");
 	log_error("error number: %d", err);
 	log_error("eError message: %s", Pa_GetErrorText(err));
 	return 0;

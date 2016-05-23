@@ -36,7 +36,11 @@ dist_lirc_conf_DATA     = lircd.conf \
                           irexec.lircrc
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
-dist_lircdconfig_DATA	= README.conf.d devinput.lircd.conf
+dist_lircdconfig_DATA	= README.conf.d 
+
+if !BSD
+dist_lircdconfig_DATA	+= devinput.lircd.conf
+endif
 
 endif
 
@@ -52,7 +56,7 @@ header_HEADERS          = paths.h drivers/irpipe/irpipe.h
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
-	cp -ar $(srcdir)/contrib $(DESTDIR)$(pkgdatadir)
+	cp -pr $(srcdir)/contrib $(DESTDIR)$(pkgdatadir)
 
 uninstall-hook:
 	-chmod -R u+w $(DESTDIR)/$(pkgdatadir)/contrib
@@ -61,16 +65,16 @@ uninstall-hook:
 	       $(DESTDIR)/$(pkgdatadir)/contrib
 
 dist-hook: ChangeLog fix-version
-	cp -ar $(srcdir)/contrib $(distdir)
+	cp -pr $(srcdir)/contrib $(distdir)
 
 maintainer-clean-local:
 	find . -name Makefile.in -delete
 
 fix-version: .phony
 	chmod u+w $(distdir)/VERSION
-	sed -i '/COMMIT/s/=.*/="$(GIT_COMMIT)"/' $(distdir)/VERSION
-	sed -i '/DATE/s/=.*/="$(GIT_DATE)"/' $(distdir)/VERSION
-	sed -i '/REFS/s|=.*|="$(GIT_REFS)"|' $(distdir)/VERSION
+	$(SED) -i '/COMMIT/s/=.*/="$(GIT_COMMIT)"/' $(distdir)/VERSION
+	$(SED) -i '/DATE/s/=.*/="$(GIT_DATE)"/' $(distdir)/VERSION
+	$(SED) -i '/REFS/s|=.*|="$(GIT_REFS)"|' $(distdir)/VERSION
 
 paths.h: Makefile
 	@echo "#ifndef PATHS_H"          >$@
