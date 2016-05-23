@@ -29,11 +29,6 @@ dfclibusb_la_SOURCES        = dfclibusb.c
 dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
 dfclibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
-plugin_LTLIBRARIES          += commandir.la
-commandir_la_SOURCES        = commandir.c
-commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
-commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
-
 plugin_LTLIBRARIES          += srm7500libusb.la
 srm7500libusb_la_SOURCES    = srm7500libusb.c
 srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
@@ -98,8 +93,17 @@ if DARWIN
 plugin_LTLIBRARIES          += osx_usbraw.la
 osx_usbraw_la_SOURCES       = osx_usbraw.c
 osx_usbraw_la_LDFLAGS       = $(AM_LDFLAGS) -framework IOKit -framework Cocoa
+endif
 
-else
+if !BSD
+plugin_LTLIBRARIES          += default.la
+default_la_SOURCES          = default.c
+
+plugin_LTLIBRARIES          += commandir.la
+commandir_la_SOURCES        = commandir.c
+commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
+
 plugin_LTLIBRARIES          += hiddev.la
 hiddev_la_SOURCES           = hiddev.c
 

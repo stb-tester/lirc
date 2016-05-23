@@ -13,7 +13,6 @@ AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
 
-liblirc_la_LDFLAGS          = -ldl
 liblirc_la_SOURCES          = config_file.c \
                               ciniparser.c \
                               dictionary.c \

@@ -102,7 +102,7 @@ else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
 	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf html/index.html .
-	sed -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
+	$(SED) -i '/class="footer"/,/p>/d' $(DESTDIR)$(plugindocsdir)/page.xsl
 	$(PYTHON) $(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)$(vardocsdir) $(DESTDIR)$(plugindocsdir)/var
 	$(PYTHON) $(srcdir)/make_rel_symlink.py \
@@ -149,7 +149,7 @@ lirc.hwdb:
 	    > lirc.hwdb
 
 NEWS.txt: $(top_srcdir)/NEWS
-	cp -a $< $@
+	cp -a $(top_srcdir)/NEWS $@
 
 $(generated_html): $(html_sources) docpage.xsl
 	@mkdir html 2>/dev/null || :
@@ -169,25 +169,26 @@ $(manpage_html): $(nodist_man_MANS) $(srcdir)/manpage.xsl
 	src=$$(echo $(srcdir)/$@ | \
                    $(SED) -e 's/man-html/man/' -e 's/\.html//'); \
 	    man2html -M index.html -r $${src}.[1-8] | \
-		sed -e '1,/^$$/d' \
+		$(SED) \
+	            -e '1,/^$$/d' \
 		    -e '/This document was created/i \
                         <p>'  \
 		    -e '/^Time:/a \
                         </p>'  \
 		    -e '/HREF/s|".*man[1-9]/\(.*\)[0-9]\.html|"\1html|' | \
 			 xsltproc --html $(srcdir)/manpage.xsl - | \
-			    sed -e '/href="\.\.\/index.html"/s|\.\./||' > $@
+			    $(SED) -e '/href="\.\.\/index.html"/s|\.\./||' > $@
 
 $(nodist_man_MANS): $(man_sources)
 	@mkdir man 2>/dev/null || :
 	src=$$(echo  $(srcdir)/$@ | $(SED) 's|/man/|/man-source/|'); \
 	    $(SED) "s/@version@/$(VERSION)/" <$$src >$@
-	@sed -i 's|@prefixdir@|$(prefix)|' $@
-	@sed -i 's|@varrundir@|$(localstatedir)/run|' $@
-	@sed -i 's|@etcdir@|$(sysconfdir)|' $@
-	@sed -i 's|@libpath@|$(libdir)|' $@
-	@sed -i 's|@libpath@|$(libdir)|' $@
-	@sed -i 's|@website@|$(website)|' $@
+	@$(SED) -i 's|@prefixdir@|$(prefix)|' $@
+	@$(SED) -i 's|@varrundir@|$(localstatedir)/run|' $@
+	@$(SED) -i 's|@etcdir@|$(sysconfdir)|' $@
+	@$(SED) -i 's|@libpath@|$(libdir)|' $@
+	@$(SED) -i 's|@libpath@|$(libdir)|' $@
+	@$(SED) -i 's|@website@|$(website)|' $@
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
