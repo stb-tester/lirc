@@ -195,7 +195,8 @@ AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
 AH_TEMPLATE([HAVE_LIBUDEV_H],
         [Define if libudev is installed])
 
-AC_CHECK_HEADERS([libusb-1.0/usb.h usb.h],[
+
+AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
   usb_libs=`${LIBUSB_CONFIG} --libs`

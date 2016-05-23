@@ -38,20 +38,13 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <libusb-1.0/libusb.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <glob.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-
-#if HAVE_USB_H
-#include <usb.h>
-#endif
-
-#ifdef HAVE_LIBUSB_1_0_USB_H
-#include <libusb-1.0/usb.h>
-#endif
 
 #include "lirc_driver.h"
 
