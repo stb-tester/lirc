@@ -20,6 +20,7 @@ EXTRA_DIST                  = pluginlist.am make-pluginlist.sh
 plugin_LTLIBRARIES          =
 
 if BUILD_USB
+
 plugin_LTLIBRARIES          += atilibusb.la
 atilibusb_la_SOURCES        = atilibusb.c
 atilibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
@@ -39,6 +40,14 @@ plugin_LTLIBRARIES          += srm7500libusb.la
 srm7500libusb_la_SOURCES    = srm7500libusb.c
 srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
 srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
+
+if !BSD
+plugin_LTLIBRARIES          += commandir.la
+commandir_la_SOURCES        = commandir.c
+commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
+endif
+
 endif
 
 if BUILD_FTDI
@@ -107,11 +116,6 @@ endif
 if !BSD
 plugin_LTLIBRARIES          += default.la
 default_la_SOURCES          = default.c
-
-plugin_LTLIBRARIES          += commandir.la
-commandir_la_SOURCES        = commandir.c
-commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
-commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += hiddev.la
 hiddev_la_SOURCES           = hiddev.c
