@@ -200,12 +200,14 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 	/* indicate we're started: */
 	ret = write(fd_tx2main, &ret, 1);
 
+	/* Open the USB device */
+	while (ftdi_usb_open_desc(&ftdic, usb_vendor, usb_product, usb_desc, usb_serial) < 0) {
+		log_error("unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
+		/* Wait a while and try again */
+		usleep(500000);
+	}
+
 	while (1) {
-		/* Open the USB device */
-		if (ftdi_usb_open_desc(&ftdic, usb_vendor, usb_product, usb_desc, usb_serial) < 0) {
-			log_error("unable to open FTDI device (%s)", ftdi_get_error_string(&ftdic));
-			goto retry;
-		}
 
 		/* Enable bit-bang mode, setting output & input pins
 		 * direction */
