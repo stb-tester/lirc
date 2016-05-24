@@ -45,7 +45,8 @@
 	"# E:\tEmpty: Plugin loaded OK, but is empty (is this a plugin?).\n" \
 	"# F:\tFail: Plugin failed to load (unresolved references?).\n" \
 	"# a:\tAny: Driver can be used with any remote or capture device.\n" \
-	"# s:\tSend: The driver can send data.\n"
+	"# s:\tSend: The driver can send data.\n" \
+	"# L:\tList: The driver can enumerate devices.\n"
 
 #define LONG_LEGEND \
 	"# Feature flags (see lirc(4)):\n" \
@@ -238,6 +239,7 @@ static void line_print_long(const line_t* line)
 	const char* loadstate;
 	const char* handles_timing;
 	const char* can_send;
+	const char* can_list;
 
 	switch (line->flags[0]) {
 	case '-':
@@ -275,6 +277,18 @@ static void line_print_long(const line_t* line)
 		can_send = "?";
 		break;
 	}
+	switch (line->flags[3]) {
+	case '-':
+		can_list = "No";
+		break;
+	case 'L':
+		can_list = "Yes";
+		break;
+	default:
+		can_list = "?";
+		break;
+	}
+
 
 	printf("Plugin path:\t%s\n", line->path);
 	printf("Driver name:\t%s\n", line->name ? line->name : "-");
@@ -282,6 +296,7 @@ static void line_print_long(const line_t* line)
 	printf("Load state:\t%s\n", loadstate);
 	printf("Timing info:\t%s\n", handles_timing);
 	printf("Can send:\t%s\n", can_send);
+	printf("Can list devices:\t%s\n", can_list);
 	printf("Capabilities:\t%s\n", line->features);
 	printf("Version:\t%s\n", line->version ? line->version : "(None)");
 	printf("Driver info:\t");
@@ -322,6 +337,7 @@ static void format_drivers(struct driver**	drivers,
 {
 	char buf[1024];
 	const char* what;
+	int can_list = 0;
 
 	if (!drivers)
 		return;
@@ -356,9 +372,11 @@ static void format_drivers(struct driver**	drivers,
 		line->type = what;
 		what = ((*drivers)->features & CAN_SEND) ? "yes" : "no";
 		line->can_send = what;
-		snprintf(buf, sizeof(buf), "-%c%c",
+		can_list = strcmp((*drivers)->device_hint, "drvctl") == 0;
+		snprintf(buf, sizeof(buf), "-%c%c%c",
 			 get(CAN_ANY, 'a', *drivers),
-			 get(CAN_SEND, 's', *drivers));
+			 get(CAN_SEND, 's', *drivers),
+			 can_list ? 'L' : '-');
 		line->flags = strdup(buf);
 		format_features(*drivers, line);
 		lines_next(line);
