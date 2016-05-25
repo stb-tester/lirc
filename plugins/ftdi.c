@@ -222,7 +222,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 		log_debug("opened FTDI device '%s' OK", drv.device);
 
-		do {
+		while (1) {
 			unsigned char buf[RXBUFSZ > TXBUFSZ ? RXBUFSZ : TXBUFSZ];
 
 			/* transmit IR */
@@ -250,6 +250,9 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 				/* signal transmission ready: */
 				ret = write(fd_tx2main, &ret, 1);
+				if (ret <= 0) {
+					goto retry;
+				}
 
 				continue;
 			} else if (ret == 0) {
@@ -259,9 +262,15 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 			/* receive IR */
 			ret = ftdi_read_data(&ftdic, buf, RXBUFSZ);
-			if (ret > 0)
+			if (ret > 0) {
 				parsesamples(buf, ret, fd_rx2main);
-		} while (ret > 0);
+			} else if (ret < 0) {
+				goto retry;
+			} else {
+				/* No data available for reading from device */
+				goto retry;
+			}
+		};
 
 retry:
 		/* Wait a while and try again */
