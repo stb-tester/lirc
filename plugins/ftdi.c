@@ -277,6 +277,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 retry:
 		/* Wait a while and try again */
+		ftdi_usb_close (&ftdic);
 		usleep(500000);
 	}
 }
