@@ -251,6 +251,8 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 				/* signal transmission ready: */
 				ret = write(fd_tx2main, &ret, 1);
 				if (ret <= 0) {
+					log_error("unable to post success to lircd (%s)",
+					          strerror(errno));
 					goto retry;
 				}
 
@@ -265,9 +267,11 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 			if (ret > 0) {
 				parsesamples(buf, ret, fd_rx2main);
 			} else if (ret < 0) {
+				log_error("ftdi: error reading data from device: %s",
+				          ftdi_get_error_string(&ftdic));
 				goto retry;
 			} else {
-				/* No data available for reading from device */
+				log_error("ftdi: no data available for reading from device");
 				goto retry;
 			}
 		};
