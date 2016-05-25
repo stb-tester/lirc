@@ -271,8 +271,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 				          ftdi_get_error_string(&ftdic));
 				goto retry;
 			} else {
-				log_error("ftdi: no data available for reading from device");
-				goto retry;
+				log_info("ftdi: no data available for reading from device");
 			}
 		};
 
