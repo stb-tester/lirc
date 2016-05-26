@@ -86,11 +86,8 @@ dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
 all: $(nodist_man_MANS) $(nodist_html_DATA)
 
-## Temporary fix for lirc.4l; to be removed (see also uninstall-hook).
-lirc_4l_fix:
-	cd $(DESTDIR)$(mandir); mv man4 man4l
 
-install-data-hook: lirc_4l_fix
+install-data-hook:
 if HAVE_DOXYGEN
 	tar -C $(DESTDIR)$(websitedir) \
 	    -xf $(DESTDIR)$(docdir)/api-docs.tar.gz && \
@@ -117,7 +114,7 @@ clean-local:
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir) \
-            $(DESTDIR)$(mandir)/man4l $(DESTDIR)$(plugindocsdir)
+            $(DESTDIR)$(plugindocsdir)
 
 
 $(abs_builddir)/driver-toc.xsl: $(plugindocs)
