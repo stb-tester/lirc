@@ -580,6 +580,8 @@ static int drvctl(unsigned int cmd, void* arg)
 		glob_t_free((glob_t*) arg);
 		return 0;
 #endif
+	case LIRC_SET_TRANSMITTER_MASK:
+		return default_ioctl(LIRC_SET_TRANSMITTER_MASK, arg);
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}
