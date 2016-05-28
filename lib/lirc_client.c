@@ -2050,28 +2050,25 @@ int lirc_get_local_socket(const char* path, int quiet)
 
 int lirc_get_remote_socket(const char* address, int port, int quiet)
 {
-	struct addrinfo* host;
-	struct addrinfo* tmp;
+	struct addrinfo* addrinfos;
+	struct addrinfo* a;
 	char service[64];
 	int r;
 
 	snprintf(service, sizeof(service),
 		 "%d", port > 0 ? port : LIRC_INET_PORT);
-	r = getaddrinfo(address, service, NULL, &host);
+	r = getaddrinfo(address, service, NULL, &addrinfos);
 	if (r < 0) {
 		if (!quiet)
 			fprintf(stderr, "get_remote_socket: host %s unknown\n",
 				address);
 		return -EADDRNOTAVAIL;
 	}
-	do {
-		r = do_connect(host->ai_family,
-			       host->ai_addr,
-			       sizeof(host->ai_addr),
-			       quiet);
-		tmp = host;
-		host = host->ai_next;
-		freeaddrinfo(tmp);
-	} while (r < 0 && host != NULL);
+	for (a = addrinfos; a != NULL; a = a->ai_next) {
+		r = do_connect(a->ai_family, a->ai_addr, a->ai_addrlen, quiet);
+		if (r >= 0)
+			break;
+	};
+	freeaddrinfo(addrinfos);
 	return r;
 }
