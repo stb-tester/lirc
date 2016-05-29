@@ -473,7 +473,7 @@ int default_send(struct ir_remote* remote, struct ir_ncode* code)
 	if (drv.features & LIRC_CAN_SET_SEND_CARRIER) {
 		unsigned int freq;
 
-		freq = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
+		freq = remote->freq;
 		if (default_ioctl(LIRC_SET_SEND_CARRIER, &freq) == -1) {
 			log_error("could not set modulation frequency");
 			log_perror_err(NULL);
