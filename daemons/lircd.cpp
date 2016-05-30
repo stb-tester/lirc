@@ -129,6 +129,7 @@ static const char* const help =
 	"\t -h --help\t\t\tDisplay this message\n"
 	"\t -v --version\t\t\tDisplay version\n"
 	"\t -O --options-file\t\tOptions file\n"
+        "\t -i --immediate_init\t\tInitialize the device immediately at start\n"
 	"\t -n --nodaemon\t\t\tDon't fork to background\n"
 	"\t -p --permission=mode\t\tFile permissions for " LIRCD "\n"
 	"\t -H --driver=driver\t\tUse given driver (-H help lists drivers)\n"
@@ -156,6 +157,7 @@ static const struct option lircd_options[] = {
 	{ "help",	    no_argument,       NULL, 'h' },
 	{ "version",	    no_argument,       NULL, 'v' },
 	{ "nodaemon",	    no_argument,       NULL, 'n' },
+	{ "immediate_init", no_argument,       NULL, 'i' },
 	{ "options-file",   required_argument, NULL, 'O' },
 	{ "permission",	    required_argument, NULL, 'p' },
 	{ "driver",	    required_argument, NULL, 'H' },
@@ -2255,7 +2257,7 @@ int parse_peer_connections(const char* opt)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring = "A:e:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
+	const char* optstring = "A:e:O:hvnpi:H:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 				"u"
 #       endif
@@ -2284,6 +2286,9 @@ static void lircd_parse_options(int argc, char** const argv)
 			break;
 		case 'n':
 			options_set_opt("lircd:nodaemon", "True");
+			break;
+                case 'i':
+			options_set_opt("lircd:immediate_init", "True");
 			break;
 		case 'p':
 			options_set_opt("lircd:permission", optarg);
@@ -2364,6 +2369,7 @@ int main(int argc, char** argv)
 	const char* device = NULL;
 	char errmsg[128];
 	const char* opt;
+	int immediate_init = 0;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
@@ -2379,6 +2385,7 @@ int main(int argc, char** argv)
 		lirc_log_set_file(opt);
 	lirc_log_open("lircd", 0, LIRC_INFO);
 
+	immediate_init = options_getboolean("lircd:immediate_init");
 	nodaemon = options_getboolean("lircd:nodaemon");
 	opt = options_getstring("lircd:permission");
 	if (oatoi(opt) == -1) {
@@ -2473,6 +2480,22 @@ int main(int argc, char** argv)
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 	sigaction(SIGHUP, &act, NULL);
+
+	if (immediate_init && curr_driver->init_func) {
+		log_info("Doing immediate init, as requested");
+		int status = curr_driver->init_func();
+		if (status)
+			setup_hardware();
+		else {
+			log_error("Failed to initialize hardware");
+			return(EXIT_FAILURE);
+		}
+		if (curr_driver->deinit_func) {
+			int status = curr_driver->deinit_func();
+			if (!status)
+				log_error("Failed to de-initialize hardware");
+		}
+	}
 
 	/* ready to accept connections */
 	if (!nodaemon)

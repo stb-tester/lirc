@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Jan 2016" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: May 2016" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -71,6 +71,11 @@ comma separated list.
 \fB-e, --effective-user\fR <\fIuid\fR>
 If started as user root, lircd drops it privileges and runs as user <uid>
 after opening files etc.
+.TP 4
+\fB-i, --immediate-init\fR
+Lircd normally initializes the driver when the first client
+connects. If this option is selected, the driver is instead initialized
+immedately at start.
 .TP 4
 \fB-A, --driver-options\fR \fIkey:value[|key:value...]\fR
 Set one or more options for the driver. The argument is a list of
