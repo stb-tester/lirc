@@ -278,6 +278,8 @@ static int uirt2_raw_deinit(void)
 {
 	int version;
 
+	if (uirt2_setmodeuir(dev) < 0)
+		log_warn("uirt2_raw: could not set uir mode");
 	if (uirt2_getversion(dev, &version) >= 0 && version >= 0x0905)
 		tty_setdtr(drv.fd, 1);
 	uirt2_uninit(dev);
