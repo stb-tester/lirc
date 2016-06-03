@@ -129,7 +129,7 @@ static const char* const help =
 	"\t -h --help\t\t\tDisplay this message\n"
 	"\t -v --version\t\t\tDisplay version\n"
 	"\t -O --options-file\t\tOptions file\n"
-        "\t -i --immediate_init\t\tInitialize the device immediately at start\n"
+        "\t -i --immediate-init\t\tInitialize the device immediately at start\n"
 	"\t -n --nodaemon\t\t\tDon't fork to background\n"
 	"\t -p --permission=mode\t\tFile permissions for " LIRCD "\n"
 	"\t -H --driver=driver\t\tUse given driver (-H help lists drivers)\n"
@@ -157,7 +157,7 @@ static const struct option lircd_options[] = {
 	{ "help",	    no_argument,       NULL, 'h' },
 	{ "version",	    no_argument,       NULL, 'v' },
 	{ "nodaemon",	    no_argument,       NULL, 'n' },
-	{ "immediate_init", no_argument,       NULL, 'i' },
+	{ "immediate-init", no_argument,       NULL, 'i' },
 	{ "options-file",   required_argument, NULL, 'O' },
 	{ "permission",	    required_argument, NULL, 'p' },
 	{ "driver",	    required_argument, NULL, 'H' },
@@ -2288,7 +2288,7 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:nodaemon", "True");
 			break;
                 case 'i':
-			options_set_opt("lircd:immediate_init", "True");
+			options_set_opt("lircd:immediate-init", "True");
 			break;
 		case 'p':
 			options_set_opt("lircd:permission", optarg);
@@ -2385,7 +2385,7 @@ int main(int argc, char** argv)
 		lirc_log_set_file(opt);
 	lirc_log_open("lircd", 0, LIRC_INFO);
 
-	immediate_init = options_getboolean("lircd:immediate_init");
+	immediate_init = options_getboolean("lircd:immediate-init");
 	nodaemon = options_getboolean("lircd:nodaemon");
 	opt = options_getstring("lircd:permission");
 	if (oatoi(opt) == -1) {
