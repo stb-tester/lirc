@@ -102,12 +102,12 @@ const char* const MSG_WELCOME =
 	"to  <lirc@bartelmus.de> so it can be made available to others.";
 
 static const char* const MSG_DEVINPUT =
-	"Usually it's not necessary to create a new config file for devinput\n"
-	"devices. LIRC is installed with a devinput.lircd.dist file which \n"
-        "is built for the current system. This can just be renamed to \n"
-        "devinput.lircd.conf to be used. Also, irdb-get can find and\n"
-        "download a generic file - use 'irdb-get find devinput' to locate.\n"
-	"Please try these config files before creating your own.";
+	"Usually you should not create a new config file for devinput\n"
+	"devices. LIRC is installed with a devinput.lircd.conf file which \n"
+	"is built for the current system which works with all remotes \n"
+	"supported by the kernel. There might be a need to update \n"
+	"this file so it matches the current kernel. For this, use the \n"
+	"lirc-make-devinput(1) script.";
 
 static const char* const MSG_TOGGLE_BIT_INTRO =
 	"Checking for toggle bit mask.\n"
