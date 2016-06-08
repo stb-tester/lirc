@@ -69,6 +69,8 @@ def _add_submenu(menu, configs, db):
     for remote in sorted(configs, key=lambda r: getit(r, 'label', '')):
         if remote['id'] == 'irlink':
             pass
+        if remote['id'] == 'none':
+            continue
         s += '<tr>'
         s += '<td>' + getit(remote, 'label') + '</td>'
         s += '<td>' + getit(remote, 'modinit') + '</td>'

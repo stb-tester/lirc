@@ -70,6 +70,8 @@ def _add_submenu(menu, configs, db):
             driver = db.drivers[remote['driver']]
         except KeyError:
             driver = None
+        if getit(remote, 'driver', driver)  == "none":
+            continue
         s += getit(remote, 'label', driver) + ';'
         s += getit(remote, 'modinit', driver).replace(';', ',') + ';'
         s += getit(remote, 'driver', driver) + ';;'
