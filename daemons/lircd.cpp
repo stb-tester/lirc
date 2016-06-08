@@ -2257,7 +2257,7 @@ int parse_peer_connections(const char* opt)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring = "A:e:O:hvnpi:H:d:o:U:P:l::L:c:r::aR:D::Y"
+	const char* optstring = "A:e:O:hvnp:iH:d:o:U:P:l::L:c:r::aR:D::Y"
 #       if defined(__linux__)
 				"u"
 #       endif
