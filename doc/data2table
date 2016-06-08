@@ -25,7 +25,7 @@ _TEMPLATE = '''
 <table border="1">
     <tr>
         <th>Hardware</th>
-        <th>Required LIRC kernel modules</th>
+        <th>Required LIRC kernel setup</th>
         <th>lircd driver</th>
         <th>Default lircd and lircmd config files</th>
         <th>Supported remotes</th>
