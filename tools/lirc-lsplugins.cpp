@@ -368,7 +368,7 @@ static void format_drivers(struct driver**	drivers,
 			strncpy(buf, (*drivers)->device_hint, sizeof(buf) - 1);
 			line->device_hint = strdup(buf);
 		}
-		what = ((*drivers)->features & CAN_ANY) ? "code" : "mode2";
+		what = ((*drivers)->features & CAN_ANY) ? "mode2" : "code";
 		line->type = what;
 		what = ((*drivers)->features & CAN_SEND) ? "yes" : "no";
 		line->can_send = what;
