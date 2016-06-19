@@ -186,7 +186,7 @@ const struct driver hw_girs = {
 	.name		= "girs",
 	.resolution	= 50,
 	.api_version	= 3,
-	.driver_version = "2016-04-03",
+	.driver_version = "2016-06-10",
 	.info		= "See file://" PLUGINDOCS "/girs.html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
@@ -571,7 +571,7 @@ static lirc_t readdata(lirc_t timeout)
 		// this should not happen
 		return 0;
 
-	log_trace1("girs readdata, timeout = %d", timeout);
+	log_trace2("girs readdata, timeout = %d", timeout);
 	if (data_length == data_ptr/* && timeout > 0*/) {
 		// Nothing to deliver, try to read some new data
 		if (!dev.read_pending) {
@@ -641,19 +641,24 @@ static lirc_t readdata(lirc_t timeout)
 		// I wish I know why...
 		x = DUMMY_TIMEOUT;
 	} else {
+		if (data_ptr == data_length - 1) {
+			// Last value, mark it as timeout
+			x = (data[data_ptr] & PULSE_MASK) | LIRC_MODE2_TIMEOUT;
+		} else {
+			x = data[data_ptr];
 
-		x = (data_length == data_ptr - 1)
-			? LIRC_MODE2_TIMEOUT : data[data_ptr];
+			// Fix if too large (> 16.7 seconds)?
+			if (x > LIRC_VALUE_MASK)
+				x = LIRC_VALUE_MASK;
+
+			// Mark as PULSE if appropriate (otherwise is SPACE)
+			if (data_ptr & 1)
+				x |= PULSE_BIT;
+		}
 		data_ptr++;
-
-		if (x >= PULSE_BIT)
-			x = PULSE_BIT - 1;
-
-		if (data_ptr & 1)
-			x |= PULSE_BIT;
 	}
 
-	log_trace("readdata %d %d", !!(x & PULSE_BIT), x & PULSE_MASK);
+	log_trace("readdata %d %d", (x & LIRC_MODE2_MASK) >> 24, x & PULSE_MASK);
 	return (lirc_t) x;
 }
 
