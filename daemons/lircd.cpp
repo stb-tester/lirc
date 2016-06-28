@@ -901,43 +901,41 @@ void connect_to_peer(peer_connection* peer)
 {
 	int r;
 	char service[64];
-	struct addrinfo* addr;
-	struct addrinfo* tmp;
+	struct addrinfo* addrinfos;
+	struct addrinfo* a;
 	int enable = 1;
 
 	snprintf(service, sizeof(service), "%d", peer->port);
 	peer->socket = socket(AF_INET, SOCK_STREAM, 0);
-	r = getaddrinfo(peer->host, service, NULL, &addr);
+	r = getaddrinfo(peer->host, service, NULL, &addrinfos);
 	if (r != 0) {
-		log_error("Name lookup failure connecting to %s",
-			  peer->host);
-		peer->connection_failure++;
-		gettimeofday(&peer->reconnect, NULL);
-		peer->reconnect.tv_sec += 5 * peer->connection_failure;
-		close(peer->socket);
-		peer->socket = -1;
-		return;
+		log_perror_err("Name lookup failure connecting to %s",
+			       peer->host);
+		goto errexit;
 	}
 	(void)setsockopt(peer->socket,
 			 SOL_SOCKET, SO_KEEPALIVE, &enable, sizeof(enable));
-        do {
-		r = connect(peer->socket,
-			    addr->ai_addr, sizeof(struct sockaddr));
-		tmp = addr;
-	addr = addr->ai_next;
-		freeaddrinfo(tmp);
-	} while (r < 0 && addr != NULL);
+	for (a = addrinfos; a != NULL; a = a->ai_next) {
+		r = connect(peer->socket, a->ai_addr, a->ai_addrlen);
+		if (r >= 0)
+			break;
+	}
+	freeaddrinfo(addrinfos);
 	if (r == -1) {
 		log_perror_err("Cannot connect to %s", peer->host);
-		peer->connection_failure++;
-		gettimeofday(&peer->reconnect, NULL);
-		peer->reconnect.tv_sec += 5 * peer->connection_failure;
-		close(peer->socket);
-		peer->socket = -1;
-		return;
+		goto errexit;
 	}
-	log_notice("connected to %s", peer->host);
+	log_notice("Connected to %s", peer->host);
 	peer->connection_failure = 0;
+	return;
+
+errexit:
+	peer->connection_failure++;
+	gettimeofday(&peer->reconnect, NULL);
+	peer->reconnect.tv_sec += 5 * peer->connection_failure;
+	close(peer->socket);
+	peer->socket = -1;
+	return;
 }
 
 

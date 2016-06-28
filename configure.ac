@@ -2,7 +2,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.9.4])
+AC_INIT([lirc], [0.9.4a])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -459,7 +459,7 @@ AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([DEVEL])
 AC_REPORT_CONDITIONAL([HAVE_UINPUT])
 AC_REPORT_CONDITIONAL([DARWIN])
-AC_REPORT_CONDITIONAL([FREEBSD])
+AC_REPORT_CONDITIONAL([BSD])
 
 echo
 

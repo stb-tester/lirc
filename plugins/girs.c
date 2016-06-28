@@ -907,7 +907,7 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 
 	sendcommandln(buf);
 	int success = readline(buf, LONG_LINE_SIZE, TIMEOUT_SEND);
-
+	int enable_receive_success = dev.receive ? enable_receive() : 1;
 	//setLed(dev.transmitled, 0);
-	return success;
+	return success && enable_receive_success;
 }

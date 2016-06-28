@@ -89,7 +89,11 @@ const struct driver hw_devinput = {
 	.api_version	= 4,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/devinput.html",
+#ifdef HAVE_LIBUDEV_H
+	.device_hint    = "drvctl",
+#else
 	.device_hint    = "/dev/input/event*",
+#endif
 };
 
 

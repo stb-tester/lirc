@@ -29,7 +29,7 @@ liblirc_la_SOURCES          = config_file.c \
                               transmit.c \
                               util.c
 
-libirrecord_la_LDFLAGS      = -llirc
+libirrecord_la_LIBADD       = -llirc
 libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 4:0:4
@@ -98,10 +98,16 @@ input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
+if BSD
+lirc/input_map.inc:
+	touch $@
+	touch touch input_map.inc
+else
 lirc/input_map.inc:
 	ln -s . lirc || :
 	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
 	$(top_srcdir)/tools/lirc-make-devinput -i > $@
+endif
 
 checkfiles:
 	../git-tools/checkfiles $(SOURCES) $(HEADERS)
