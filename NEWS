@@ -1,3 +1,17 @@
+0.9.4a 22/6/16
+  * Fix syntax errors in systemd unit files (rhbz: 1350750).
+  * irrecord: Enhance "Don't use devinput" message (#180).
+  * plugins/uirt2_raw: Reset device to UIR mode on deinit.
+  * plugins/girs.c: Enable reception after sending.
+  * lirc.org: Updates and bugfixes
+  * lircd, liblirc_client: Fix freeaddrinfo handling (#195).
+  * Don't build commandir unless we have usb.h (#191).
+  * lirc_options.conf: debug => loglevel (#199).
+  * lib: use proper linking method to avoid parallel build issue
+  * tools: make_rel_symlink.py can also use python2
+  * plugins/devinput: Make the list-devices support available.
+  * configure.ac: Bugfix (BSD setting reported wrong).
+
 0.9.4 22/5/16
   * Issues: https://sf.net/p/lirc/tickets/milestone/0.9.4
   * Digest of 0.9.4pre1, 0.9.4pre2
