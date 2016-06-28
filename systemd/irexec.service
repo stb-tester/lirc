@@ -1,11 +1,12 @@
 [Unit]
-Description=LIRC Infrared Signal Exec
-Documentation=System daemon handling events from IR remotes decoded \
-by lircd
+Documentation=man:irexec(1)
+Documentation=http://lirc.org/html/configure.html
+Documentation=http://lirc.org/html/configure.html#lircrc_format
+Description=Handle events from IR remotes decoded by lircd(8)
 
 [Service]
 ; user =
-: group =
+; group =
 Type=simple
 ExecStart=/usr/sbin/irexec /etc/lirc/irexec.lircrc
 

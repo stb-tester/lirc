@@ -1,7 +1,8 @@
 [Unit]
 Wants=lircd.socket
-Description=LIRC Infrared Mouse Event Signal Decoder
-Documentation=Converts input decoded by lircd to mouse movements and clicks
+Documentation=man:lircmd(8)
+Documentation=http://lirc.org/html/configure.html
+Description=Convert IR remotes button presses to mouse movements and clicks
 
 [Service]
 Type=simple
