@@ -1,7 +1,6 @@
 [Unit]
-Description=LIRC Infrared Signal Decoder - setup as root
-Documentation=Runs lircd initialization commands as root even if \
-lircd runs as a regular user
+Documentation=man:lircd-setup(8)
+Description=lircd(8) initialization helper tool
 
 [Service]
 Type=oneshot
