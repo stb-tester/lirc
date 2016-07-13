@@ -25,7 +25,7 @@ if WITH_SYSTEMDSYSTEMUNITDIR
     SYSTEMD_DIR         = systemd
 endif
 
-SUBDIRS                 = lib daemons tools plugins configs doc $(SYSTEMD_DIR)
+SUBDIRS                 = lib daemons tools doc $(SYSTEMD_DIR) plugins
 
 if INSTALL_ETC
 
