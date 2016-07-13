@@ -526,7 +526,6 @@ AC_CONFIG_FILES([
   tools/Makefile
   lib/Makefile
   doc/Makefile
-  configs/Makefile
   doc/docpage.xsl
   systemd/Makefile
 ])
