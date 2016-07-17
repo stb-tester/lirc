@@ -279,9 +279,9 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 					strcpy(ctx->reply, "");
 			}
 			if (ctx->reply_to_stdout) {
-				chk_write(0, string, strlen(string),
+				chk_write(STDOUT_FILENO, string, strlen(string),
 					  "reply (1)");
-				chk_write(0, "\n", 1, "reply (2)");
+				chk_write(STDOUT_FILENO, "\n", 1, "reply (2)");
 			} else {
 				strncpy(ctx->reply,
 					string,
