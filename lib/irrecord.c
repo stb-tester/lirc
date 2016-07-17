@@ -129,7 +129,7 @@ int availabledata(void)
 void flushhw(void)
 {
 	size_t size = 1;
-	char buffer[sizeof(ir_code)];
+	char buffer[PACKET_SIZE];
 
 	switch (curr_driver->rec_mode) {
 	case LIRC_MODE_MODE2:
