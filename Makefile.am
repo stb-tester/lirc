@@ -81,7 +81,7 @@ paths.h: Makefile
 	@echo "#define PATHS_H"          >>paths.h
 	@echo '#define DATADIR          "$(datadir)"' >>paths.h
 	@echo '#define SYSCONFDIR       "$(sysconfdir)"' >>paths.h
-	@echo '#define VARRUNDIR        "$(localstatedir)/run"' >>paths.h
+	@echo '#define VARRUNDIR        "$(runstatedir)"' >>paths.h
 	@echo '#define LOCALSTATEDIR    "$(localstatedir)"' >>paths.h
 	@echo '#define LIBDIR           "$(libdir)"' >>paths.h
 	@echo "#endif"                  >>paths.h

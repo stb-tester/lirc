@@ -6,6 +6,9 @@ AC_INIT([lirc], [0.9.5-devel])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
+# support runstatedir
+DEFINE_RUNSTATEDIR
+
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS(config.h)
 
