@@ -33,7 +33,6 @@ nodist_man_MANS         += man/xmode2.1 man/irxevent.1
 manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
-docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = irxevent.keys
 
 if HAVE_DOXYGEN
