@@ -722,7 +722,8 @@ int write_message(char*		buffer,
 
 	len = snprintf(buffer, size, "%016llx %02x %s%s %s\n",
 		       (unsigned long long)code, reps, button_name,
-		       button_suffix, remote_name);
+		       button_suffix != NULL ? button_suffix : "",
+		       remote_name);
 
 	return len;
 }
