@@ -2,7 +2,7 @@
 ACLOCAL_AMFLAGS         = -I m4
 
 AM_CPPFLAGS             = -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
-AM_CPPFLAGS             += -Wp,-D_FORTIFY_SOURCE=2 @osflags@
+AM_CPPFLAGS             += -std=c++11 -Wp,-D_FORTIFY_SOURCE=2 @osflags@
 AM_LDFLAGS              = -lpthread $(SYSTEMD_LIBS)
 
 CLEANFILES              = *~
@@ -14,7 +14,7 @@ bin_PROGRAMS            = lircrcd
 lircrcd_SOURCES         = lircrcd.cpp
 lircrcd_LDADD           = ../lib/liblirc_client.la
 
-sbin_PROGRAMS           = lircd lircmd 
+sbin_PROGRAMS           = lircd lircmd
 
 if HAVE_UINPUT
 sbin_PROGRAMS           += lircd-uinput

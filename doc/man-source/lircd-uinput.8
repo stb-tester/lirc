@@ -1,4 +1,4 @@
-.TH LIRCD-UINPUT "8" "Last change: May 2016" "lircd.uinput @VERSION" "System Managers Manual"
+.TH LIRCD-UINPUT "8" "Last change: Aug 2016" "lircd.uinput @VERSION" "System Managers Manual"
 
 .\" Copyright (c) 2015, Alec Leamas
 .\"
@@ -29,40 +29,114 @@ lircd-uinput \- Forward lirc button presses as uinput events
 
 .SH SYNOPSIS
 .P
-lircd-uinput [\fIoptions\fR]... [\fIlircd output socket\fR]
+lircd-uinput [\fIoptions\fP]... [\fIlircd output socket\fP]
+.br
+lircd-uinput [\fIoptions\fP]... [\fIfile\fP]
 
 .SH DESCRIPTION
-Enables automatic generation of Linux input events. \fBlircd-uinput\fR
-opens the uinput device and injects key events received on a
-\fBlircd (8)\fR output socket to the Linux kernel.
-The key code depends on the name that was given a button in the
-lircd config file, e.g., if the button is named KEY_1, the '1'
-key code will be generated.
-A complete list of possible button names  is available in
-\fI/usr/include/linux/input.hi\fR and also using \fIirrecord -l\fR.
+
+.BR lircd-uinput
+reads decoded button press events from a
+.BR lircd(8)
+output socket and
+injects these as key events to the kernel uinput device.
+These events are made available to other applications on a
+.I /dev/input/event
+device, just as for any other input device.
 .P
-.B lircd-uinput
+.BR lircd-uinput
 is designed to run as a systemd service.
 .P
-The \fIlircd output socket\fR argument is an optional path to lircd output socket.
-It defaults to the \fIoutput\fR value in the [lircd] section of the
-lirc_options config file, falling back to \fI@varrundir@/lirc/lircd\fR.
+The
+.I lircd output socket
+argument is an optional path to the lircd output socket.
+It defaults to the \fIoutput\fP value in the [lircd] section of the
+lirc_options config file, falling back to
+.I @varrundir@/lirc/lircd.
+.P
+If a plain file is given instead of a socket it is supposed to contain data
+formatted as the
+.BR irw(1)
+output.
+.B lircd-uinput
+will in this case send the codes in this file and exit.
+.P
+In order to work, release events must be sent to the uinput device.
+This can be accomplished either by using the
+.BR lircd
+.I --release
+option or by the
+.BR lircd-uinput
+.I --add-release-events
+option.
+.P
+.BR lircd-uinput
+can only handle button events named using the official namespace i. e.,
+buttons known to the kernel. See NOTES.
+.P
+The
+.I /dev/input/event
+device created by the kernel can be tricky to locate, and is not stable.
+See NOTES.
 
 .SH OPTIONS
 .TP
-\fB\-u\fR \fB\-\-uinput\fR device
+\fB\-u\fR \fB\-\-uinput\fR <\fIdevice\fR>
 uinput kernel device, defaults to /dev/uinput.
 .TP
-\fB\-r\fR \fB\-\-release-suffix\fR suffix
-.B lircd-uinput
-generates two events for each received lircd button
-press.
-The first uses the lircd button press name as-is, the second
-adds the release-suffix. Defaults to \fI_UP\fR.
+\fB\-r\fR \fB\-\-release-suffix\fR <\fIsuffix\fR>
+.BR lircd-uinput
+generates different events depending on if the button name
+ends with the \fIrelease-suffix\fR or not.
+The setting should usually match the
+.BR lircd(8)
+.I --release
+option.
+Defaults to the lircd setting, falling back to
+.I _UP
 .TP
-\fB\-O\fR \fB\-\-options-file\fR
+\fB\-a\fR \fB\-\-add-release-events\fR
+Generate synthetic release events.
+This option is mandatory unless
+.BR lircd
+is using the
+.I--release
+option.
+The timeout used can be modified using the
+.I release-timeout
+key in the
+.I lircd-uinput
+section of the
+.BR lirc_options.conf
+file.
+Useless if used with a text file as input.
+.TP
+\fB\-d\fR \fB\-\-disabled\fR <\fIdisabled buttons file path\fR>
+The path of a file which contains name of buttons to be disabled,
+one per line.
+By default,
+.BR lircd-uinput
+sends all buttons found in input.
+See NOTES.
+.TP
+\fB\-O\fR \fB\-\-options-file\fR <\fIpath\fR>
 Options file holding default values. Defaults to
 .I @etcdir@/lircd/lirc_options.conf
+.TP
+\fB-L, --logfile\fR <\fIlogfile path\fR>
+Select the log file, either the string 'syslog' indicating that syslog(1)
+should be used or a log file path.
+The default is to use syslog.
+.TP
+\fB-D, --loglevel\fR [\fIlevel\fR]
+Determine the amount of logging information.
+.I level
+can be a symbolic syslog level: 'error','warning, 'info', 'notice' or
+\'debug'.
+.BR lircd-uinput
+also defines three additional levels 'trace', 'trace1' and 'trace2' which
+gives even more messages ('trace2' bringing the most).
+However, in the log these messages are marked as 'debug'.
 .TP
 \fB\-h\fR \fB\-\-help\fR
 Display usage summary.
@@ -71,13 +145,63 @@ Display usage summary.
 Display version info.
 
 .SH NOTES
-.B lircd-uinput
+
+.BR lircd-uinput
 can only forward lircd button events with names from
-the legal namespace as defined by \fIirrecord(1)\fR, i. e., as defined
-by the kernel.
+the legal namespace defined by the kernel.
+A complete list of possible button names  is available in
+.I /usr/include/linux/input-event-codes.h
+and also using
+.I irrecord -l
+Other button names are silently dropped.
+.P
+The event keycode depends on the name that was given a button in the
+lircd config file e.g., if the button is named \fIKEY_1\fR the keycode
+\fI1\fR will be generated.
+.P
+The kernel makes the events generated by
+.BR lircd-uinput
+available on a
+.I /dev/input
+device like
+.I /dev/input/event12.
+This device name is not stable and typically varies after a reboot.
+The lirc distribution contains a udev rule which if installed creates
+a device link named
+.I /dev/lircd-uinput
+which always can be used.
+.P
+.BR lircd-uinput
+is designed to replace the currently deprecated
+.I --uinput
+option to
+.BR lircd(8).
+However,
+.B lircd-uinput
+forwards all events unless blocked by the
+.I --disabled
+option.
+On the other hand,
+.BR lircd
+.I --uinput
+does not forward all events - the heuristics used has been changed
+over versions.
+.P
+Also, \fBlircd\fR implements (emulates) hardware autorepeat in the events
+sent to uinput. \fBlircd-uinput\fR only sends keypress and release events,
+trusting the kernel autorepeat support.
+
+.SH BUGS
+
+Since the device name is fixed, only one instance of
+.BR lircd-uinput
+can run on a system.
 
 .SH "SEE ALSO"
 
+.br
 .BR lircd (8)
 .br
 .BR irrecord(1)
+.br
+.BR http://www.kernel.org/doc/Documentation/input/event-codes.txt

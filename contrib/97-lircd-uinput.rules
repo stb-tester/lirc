@@ -1,0 +1,3 @@
+# If installed, this rule makes the lircd-uinput device visible as
+# /dev/lircd-uinput
+SUBSYSTEMS=="input",ATTRS{name}=="lircd-uinput",SYMLINK+="lircd-uinput"
