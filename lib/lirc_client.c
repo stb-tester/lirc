@@ -155,19 +155,24 @@ static int read_string(lirc_cmd_ctx* cmd, int fd, const char** string)
 	int r;
 	int skip;
 
+	/* Move remaining data to start of buffer, overwriting previous line. */
 	if (cmd->next != NULL && cmd->next != cmd->buffer) {
 		skip = cmd->next - cmd->buffer;
 		memmove(cmd->buffer, cmd->next, cmd->head - skip);
 		cmd->head -= skip;
 		cmd->next = cmd->buffer;
+		cmd->buffer[cmd->head] = '\0';
 	}
+	/* If no complete line is available, load more bytes from fd. */
 	if (cmd->next == NULL || strchr(cmd->next, '\n') == NULL) {
 		r = fill_string(fd, cmd);
 		if (r > 0)
 			return r;
 		cmd->next = cmd->buffer;
 	}
+	/* cmd->next == cmd->buffer here in all cases. */
 	*string = cmd->next;
+	/* Separate current line from the remaining lines, if available. */
 	cmd->next = strchr(cmd->next, '\n');
 	if (cmd->next != NULL) {
 		*(cmd->next) = '\0';
