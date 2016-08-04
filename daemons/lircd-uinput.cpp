@@ -27,6 +27,9 @@
 
 static const logchannel_t logchannel = LOG_APP;
 
+/** The name used to register the uinput device. */
+static const char* const DEVNAME = "lircd-uinput";
+
 static const char* const HELP =
 	"\nUsage: lircd-uinput [options] [socket]\n\n"
 	"Argument:\n"
@@ -45,7 +48,7 @@ static const char* const HELP =
 	"\t -v --version\t\t\tDisplay version\n";
 
 
-static const struct option lircd_options[] = {
+static const struct option cli_options[] = {
 	{ "help",	        no_argument,       NULL, 'h' },
 	{ "version",	        no_argument,       NULL, 'v' },
 	{ "options-file",       required_argument, NULL, 'O' },
@@ -59,9 +62,8 @@ static const struct option lircd_options[] = {
 };
 
 
-/** Used in parse_options(), matches lircd_options above. */
+/** Used in parse_options(), matches cli_options above. */
 static const char* const optstring = "ad:D::hO:r:u:L:v";
-
 
 /** Keys in lirc_options db and thus in lirc_options.conf config file. */
 static const char* const DEBUG_OPT    =	"lircd:debug";
@@ -72,7 +74,6 @@ static const char* const TIMEOUT_OPT  =	"lircd-uinput:release-timeout";
 static const char* const RELEASE_OPT  =	"lircd-uinput:add-release-events";
 static const char* const INPUT_ARG    =	"lircd-uinput:output";
 static const char* const DISABLED_OPT =	"lircd-uinput:disabled";
-
 
 /** Runtime options decoded from command line, config file and defaults. */
 struct options {
@@ -136,7 +137,7 @@ static std::string last_button_press = std::string("");
 
 
 /** Setup defaults for the CLI options parsing. */
-static void lircd_add_defaults(void)
+static void add_defaults(void)
 {
 	char level[4];
 
@@ -159,20 +160,20 @@ static void lircd_add_defaults(void)
 
 
 /** Parse options and store in lirc_options db, argument to options_load(). */
-static void lircd_uinput_parse_options(int argc, char** const argv)
+static void parse_options(int argc, char** const argv)
 {
 	int c;
 
 	optind = 1;
-	lircd_add_defaults();
-	c = getopt_long(argc, argv, optstring, lircd_options, NULL);
+	add_defaults();
+	c = getopt_long(argc, argv, optstring, cli_options, NULL);
 	while (c != -1) {
 		switch (c) {
 		case 'h':
 			fputs(HELP, stdout);
 			exit(EXIT_SUCCESS);
 		case 'v':
-			printf("lircd %s\n", VERSION);
+			printf("lircd-uinput %s\n", VERSION);
 			exit(EXIT_SUCCESS);
 		case 'O':
 			break;
@@ -199,19 +200,19 @@ static void lircd_uinput_parse_options(int argc, char** const argv)
                               stderr);
 			exit(EXIT_FAILURE);
 		}
-		c = getopt_long(argc, argv, optstring, lircd_options, NULL);
+		c = getopt_long(argc, argv, optstring, cli_options, NULL);
 	}
 	if (optind == argc - 1) {
 		options_set_opt(INPUT_ARG, argv[optind]);
 	} else if (optind != argc) {
-		fputs("lircd-uinput: invalid argument count\n", stderr);
+		fputs("lircd-uinput: too many arguments (max one)\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 }
 
 
 /** Handle the --disabled option, initiates the set of disabled buttons. */
-void parse_disabled(const char* path, std::set<std::string>* buttons)
+static void parse_disabled(const char* path, std::set<std::string>* buttons)
 {
 	FILE* f;
 	char buff[128];
@@ -235,7 +236,8 @@ void parse_disabled(const char* path, std::set<std::string>* buttons)
 }
 
 
-void log_options(const struct options* opts)
+/** Log some info on effective options. */
+static void log_options(const struct options* opts)
 {
 	log_info("Reading data from %s, writing to %s",
 		 opts->input_path, opts->uinput_path);
@@ -252,7 +254,7 @@ void log_options(const struct options* opts)
 
 
 /** Get all options from lirc_options db and store in *opts. */
-void parse_options(struct options* opts)
+static void parse_options(struct options* opts)
 {
 	opts->input_path = options_getstring(INPUT_ARG);
 	opts->uinput_path = options_getstring(UINPUT_OPT);
@@ -263,7 +265,7 @@ void parse_options(struct options* opts)
 	opts->add_release_events = options_getboolean(RELEASE_OPT);
 	opts->disabled_path = options_getstring(DISABLED_OPT);
 	if (opts->disabled_path != NULL)
-		parse_disabled(opts->disabled_path, &(opts->disabled_buttons));
+		parse_disabled(opts->disabled_path, &opts->disabled_buttons);
 	const char* opt = options_getstring(DEBUG_OPT);
 	opts->loglevel = string2loglevel(opt);
 	if (opts->loglevel == LIRC_BADLEVEL) {
@@ -277,29 +279,13 @@ void parse_options(struct options* opts)
 }
 
 
-/** Test if str ends with suffix. */
-bool ends_with(const char* str, const char* suffix)
-{
-	if (str == NULL && suffix == NULL)
-		return true;
-	if (!str || !suffix)
-		return false;
-
-	size_t lenstr = strlen(str);
-	size_t lensuffix = strlen(suffix);
-	if (lensuffix > lenstr)
-		return false;
-	return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
-}
-
-
 /**
  * Returns linux keycode for button name or KEY_RESERVED if no match,
  * sets is_release to reflect if this is a release event.
  */
-linux_input_code get_keycode(const char* button_name,
-			     const char* suffix,
-			     bool* is_release)
+static linux_input_code get_keycode(const char* button_name,
+				    const char* suffix,
+				    bool* is_release)
 {
 	linux_input_code input_code;
 	*is_release = false;
@@ -319,21 +305,21 @@ linux_input_code get_keycode(const char* button_name,
 }
 
 
-/** Send a struct input_event to uinputfd, return success. */
-bool write_event(int uinputfd, unsigned type, linux_input_code code, int value)
+/** Send a struct input_event to an uinput fd, return success. */
+static bool write_event(int fd, unsigned type, linux_input_code code, int val)
 {
 	struct input_event event;
 
 	memset(&event, 0, sizeof(event));
 	event.type = type;
 	event.code = code;
-	event.value = value;
-	return write(uinputfd, &event, sizeof(event)) == sizeof(event);
+	event.value = val;
+	return write(fd, &event, sizeof(event)) == sizeof(event);
 }
 
 
 /** Given a button, format and send struct input_events to /dev/uinput. */
-void send_message(const struct options* opts, const char* button)
+static void send_message(const struct options* opts, const char* button)
 {
 	linux_input_code code;
 	bool is_release;
@@ -356,7 +342,7 @@ void send_message(const struct options* opts, const char* button)
 		log_perror_err("Writing regular event to uinput failed");
 	if (!write_event(opts->uinputfd, EV_SYN, SYN_REPORT, 0))
 		log_perror_err("Writing EV_SYN to uinput failed");
-	// send_release_event() need to know if a event is required
+	// send_release_event() needs to know if an event is required
 	if (opts->add_release_events && !is_release)
 		last_button_press = std::string(button);
 	else
@@ -365,7 +351,7 @@ void send_message(const struct options* opts, const char* button)
 
 
 /** Process a single line of input from the socket (or test file). */
-void process_line(const struct options* opts, std::string line)
+static void process_line(const struct options* opts, std::string line)
 {
 	int r;
 	char button[PACKET_SIZE + 1];
@@ -384,8 +370,21 @@ void process_line(const struct options* opts, std::string line)
 }
 
 
+/** Process all available lines in line_buffer. */
+static void process_lines(const struct options* opts, LineBuffer* line_buffer)
+{
+	std::string line;
+
+	while (line_buffer->has_lines()) {
+		line = line_buffer->get_next_line();
+		log_trace("Input: %s", line.c_str());
+		process_line(opts, line);
+	}
+}
+
+
 /** If required, send a release event after a read timeout. */
-void send_release_event(const struct options* opts)
+static void send_release_event(const struct options* opts)
 {
 	if (!opts->add_release_events)
 		return;
@@ -398,16 +397,15 @@ void send_release_event(const struct options* opts)
 
 
 /** The main worker. */
-void lircd_uinput(const struct options* opts)
+static void lircd_uinput(const struct options* opts)
 {
 	int r;
         char buffer[PACKET_SIZE + 1];
 	LineBuffer line_buffer;
-	std::string line;
 	struct pollfd fds;
 	int timeout = opts->add_release_events ? opts->release_timeout : -1;
 
-	while (1) {
+	while (true) {
 		fds.fd = opts->inputfd;
 		fds.events = POLLIN;
 		fds.revents = 0;
@@ -422,16 +420,12 @@ void lircd_uinput(const struct options* opts)
 		}
 		r = read(opts->inputfd, buffer, PACKET_SIZE);
 		if (r > 0) {
-			line_buffer.append(buffer, static_cast<size_t>(r));
-			while (line_buffer.has_lines()) {
-				line = line_buffer.get_next_line();
-				log_trace("Input: %s", line.c_str());
-				process_line(opts, line);
-			}
-		}
-		if (r == -1)
+			line_buffer.append(buffer,
+					   static_cast<size_t>(r));
+			process_lines(opts, &line_buffer);
+		} else if (r == -1) {
 			log_perror_warn("lircd_uinput(): read() error");
-		if (r == 0 || (fds.revents & POLLHUP) != 0) {
+		} else if (r == 0 || (fds.revents & POLLHUP) != 0) {
 			log_debug("POLLHUP or no data: exiting .");
 			exit(0);
 		}
@@ -440,33 +434,32 @@ void lircd_uinput(const struct options* opts)
 
 
 /** Register all keys as active besides those --disabled. */
-bool register_keys(const options* opts, int fd)
+static bool register_keys(const options* opts, int fd)
 {
 	bool dummy;
 	linux_input_code code;
-	auto disabled = std::set<linux_input_code>();
+	auto disabled_keys = std::set<linux_input_code>();
 
-	for (auto it: opts->disabled_buttons) {
-		code = get_keycode(std::string(it).c_str(),
+	for (auto button: opts->disabled_buttons) {
+		code = get_keycode(std::string(button).c_str(),
 				   opts->release_suffix,
 				   &dummy);
-		disabled.insert(code);
+		disabled_keys.insert(code);
 	}
 	for (int key = KEY_RESERVED; key <= KEY_MAX; key++) {
-		if (disabled.count(key) == 1) {
+		if (disabled_keys.count(key) == 1) {
 			log_debug("Cowardly refusing to register %d", key);
 			continue;
 		}
-		if (ioctl(fd, UI_SET_KEYBIT, key) != 0) {
+		if (ioctl(fd, UI_SET_KEYBIT, key) != 0)
 			return false;
-		}
 	}
 	return true;
 }
 
 
 /** Try to setup the uinput output device fd. Returns valid fd or -1.  */
-int setup_uinputfd(const options* opts)
+static int setup_uinputfd(const options* opts)
 {
 	int fd;
 	struct uinput_user_dev dev;
@@ -479,15 +472,12 @@ int setup_uinputfd(const options* opts)
 		return -1;
 	}
 	memset(&dev, 0, sizeof(dev));
-	strncpy(dev.name, "lircd-uinput", sizeof(dev.name));
-	dev.name[sizeof(dev.name) - 1] = 0;
+	strncpy(dev.name, DEVNAME, sizeof(dev.name) - 1);
 	ok = write(fd, &dev, sizeof(dev)) == sizeof(dev)
 		&& ioctl(fd, UI_SET_EVBIT, EV_KEY) == 0
-		&& ioctl(fd, UI_SET_EVBIT, EV_REP) == 0;
-	if (ok)
-		ok = register_keys(opts, fd);
-	if (ok)
-		ok = ioctl(fd, UI_DEV_CREATE) == 0;
+		&& ioctl(fd, UI_SET_EVBIT, EV_REP) == 0
+		&& register_keys(opts, fd)
+		&& ioctl(fd, UI_DEV_CREATE) == 0;
 	if (ok)
 		return fd;
 	log_perror_err("could not setup uinput");
@@ -497,7 +487,7 @@ int setup_uinputfd(const options* opts)
 
 
 /** Open the input file, a lircd socket or a plain file. Return fd or -1. */
-int open_input(const char* path)
+static int open_input(const char* path)
 {
 	struct sockaddr_un addr;
 	struct stat statbuf;
@@ -537,7 +527,7 @@ int main(int argc, char** argv)
 {
 	struct options opts = {0};
 
-	options_load(argc, argv, NULL, lircd_uinput_parse_options);
+	options_load(argc, argv, NULL, parse_options);
 	parse_options(&opts);
 	lirc_log_set_file(opts.logfile);
 	lirc_log_open("lircd-uinput", 1, opts.loglevel);

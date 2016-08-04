@@ -1,3 +1,6 @@
-# If installed, this rule makes the lircd-uinput device visible as
-# /dev/lircd-uinput
+# Make the lircd-uinput /dev/input device visible as  /dev/lircd-uinput
 SUBSYSTEMS=="input",ATTRS{name}=="lircd-uinput",SYMLINK+="lircd-uinput"
+
+# Make /dev/uinput accessible for the lirc group. A setfacl RUN
+# would be better here, but seemingly does not work (?)
+KERNEL=="uinput",GROUP:="lirc",MODE:="0660"
