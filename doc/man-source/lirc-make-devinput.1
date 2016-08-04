@@ -1,4 +1,4 @@
-.TH LIRC_MAKE_DEVINPUT "1" "Last change: Oct 2015" "lirc-make-devinput @VERSION" "User Commands"
+.TH LIRC_MAKE_DEVINPUT "1" "Last change: Aug 2016" "lirc-make-devinput @VERSION" "User Commands"
 .SH NAME
 lirc-make-devinput - create a devinput.lircd.conf for the local site.
 .SH SYNOPSIS
@@ -14,8 +14,12 @@ matches the local system (i. e., the local kernel). It normally requires
 that the kernel-headers package is installed.
 .SH FILES
 .TP
-/usr/include/linux/input.h
+.I /usr/include/linux/input.h
 Default system header file
+.TP
+.I /usr/include/linux/input-event-codes.h
+Alternative header file on newer kernels
+
 
 .SH "SEE ALSO"
 .P

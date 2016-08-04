@@ -1,10 +1,12 @@
-.TH LIRCD.CONF "5" "Last change: Jul 2016" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: Aug 2016" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
+
 The file has two purposes: to provide timing information to the driver
 so it can decode the data to button presses, and to provide a mapping
-from button presses to key symbols used by lircd(8).
+from button presses to key symbols used by
+.BI  lircd(8).
 .PP
 The basic structure is a list of remote blocks.  Whitespace and line
 breaks are used as delimiters.
