@@ -293,79 +293,6 @@ bool ends_with(const char* str, const char* suffix)
 }
 
 
-/** Try to setup the uinput output device fd. Returns valid fd or -1.  */
-int setup_uinputfd(const char* path)
-{
-	int fd;
-	struct uinput_user_dev dev;
-	bool ok;
-
-	fd = open(path, O_RDWR);
-	if (fd == -1) {
-		log_perror_err("Cannot open uinput device: %s", path);
-		return -1;
-	}
-	memset(&dev, 0, sizeof(dev));
-	strncpy(dev.name, "lircd-uinput", sizeof(dev.name));
-	dev.name[sizeof(dev.name) - 1] = 0;
-	ok = write(fd, &dev, sizeof(dev)) == sizeof(dev)
-		&& ioctl(fd, UI_SET_EVBIT, EV_KEY) == 0
-		&& ioctl(fd, UI_SET_EVBIT, EV_REP) == 0;
-	if (ok) {
-		for (int key = KEY_RESERVED; key <= KEY_MAX; key++) {
-			if (ioctl(fd, UI_SET_KEYBIT, key) != 0) {
-				ok = false;
-				break;
-			}
-		}
-	}
-	if (ok)
-		ok = ioctl(fd, UI_DEV_CREATE) == 0;
-	if (ok)
-		return fd;
-	log_perror_err("could not setup uinput");
-	close(fd);
-	return -1;
-}
-
-
-/** Open the input file, a lircd socket or a plain file. Return fd or -1. */
-int open_input(const char* path)
-{
-	struct sockaddr_un addr;
-	struct stat statbuf;
-	int fd;
-
-	if (stat(path, &statbuf) == -1) {
-		log_perror_err("Cannot stat socket path. %s", path);
-		return -1;
-	}
-	if (S_ISREG(statbuf.st_mode)) {
-		fd = open(path, O_RDONLY);
-		if (fd >= 0)
-			return fd;
-		log_perror_err("Cannot open input file %s", path);
-		return -1;
-	}
-	if (!S_ISSOCK(statbuf.st_mode)){
-		log_perror_err("Unknown non-socket device %s", path);
-		return -1;
-	}
-	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
-	fd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (fd == -1) {
-		log_perror_err("socket() failure");
-		return -1;
-	}
-	if (connect(fd, (struct sockaddr*) &addr, sizeof(addr)) == -1) {
-		log_perror_err("Cannot connect to socket %s", addr.sun_path);
-		return -1;
-	}
-	return fd;
-}
-
-
 /**
  * Returns linux keycode for button name or KEY_RESERVED if no match,
  * sets is_release to reflect if this is a release event.
@@ -512,6 +439,100 @@ void lircd_uinput(const struct options* opts)
 }
 
 
+/** Register all keys as active besides those --disabled. */
+bool register_keys(const options* opts, int fd)
+{
+	bool dummy;
+	linux_input_code code;
+	auto disabled = std::set<linux_input_code>();
+
+	for (auto it: opts->disabled_buttons) {
+		code = get_keycode(std::string(it).c_str(),
+				   opts->release_suffix,
+				   &dummy);
+		disabled.insert(code);
+	}
+	for (int key = KEY_RESERVED; key <= KEY_MAX; key++) {
+		if (disabled.count(key) == 1) {
+			log_debug("Cowardly refusing to register %d", key);
+			continue;
+		}
+		if (ioctl(fd, UI_SET_KEYBIT, key) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+/** Try to setup the uinput output device fd. Returns valid fd or -1.  */
+int setup_uinputfd(const options* opts)
+{
+	int fd;
+	struct uinput_user_dev dev;
+	bool ok;
+
+	fd = open(opts->uinput_path, O_RDWR);
+	if (fd == -1) {
+		log_perror_err("Cannot open uinput device: %s",
+			       opts->uinput_path);
+		return -1;
+	}
+	memset(&dev, 0, sizeof(dev));
+	strncpy(dev.name, "lircd-uinput", sizeof(dev.name));
+	dev.name[sizeof(dev.name) - 1] = 0;
+	ok = write(fd, &dev, sizeof(dev)) == sizeof(dev)
+		&& ioctl(fd, UI_SET_EVBIT, EV_KEY) == 0
+		&& ioctl(fd, UI_SET_EVBIT, EV_REP) == 0;
+	if (ok)
+		ok = register_keys(opts, fd);
+	if (ok)
+		ok = ioctl(fd, UI_DEV_CREATE) == 0;
+	if (ok)
+		return fd;
+	log_perror_err("could not setup uinput");
+	close(fd);
+	return -1;
+}
+
+
+/** Open the input file, a lircd socket or a plain file. Return fd or -1. */
+int open_input(const char* path)
+{
+	struct sockaddr_un addr;
+	struct stat statbuf;
+	int fd;
+
+	if (stat(path, &statbuf) == -1) {
+		log_perror_err("Cannot stat socket path. %s", path);
+		return -1;
+	}
+	if (S_ISREG(statbuf.st_mode)) {
+		fd = open(path, O_RDONLY);
+		if (fd >= 0)
+			return fd;
+		log_perror_err("Cannot open input file %s", path);
+		return -1;
+	}
+	if (!S_ISSOCK(statbuf.st_mode)){
+		log_perror_err("Unknown non-socket device %s", path);
+		return -1;
+	}
+	addr.sun_family = AF_UNIX;
+	strncpy(addr.sun_path, path, sizeof(addr.sun_path) - 1);
+	fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (fd == -1) {
+		log_perror_err("socket() failure");
+		return -1;
+	}
+	if (connect(fd, (struct sockaddr*) &addr, sizeof(addr)) == -1) {
+		log_perror_err("Cannot connect to socket %s", addr.sun_path);
+		return -1;
+	}
+	return fd;
+}
+
+
 int main(int argc, char** argv)
 {
 	struct options opts = {0};
@@ -527,7 +548,7 @@ int main(int argc, char** argv)
 		log_error("Cannot setup input file descriptor.")
 		exit(1);
 	}
-        opts.uinputfd = setup_uinputfd(opts.uinput_path);
+        opts.uinputfd = setup_uinputfd(&opts);
         if (opts.uinputfd == -1) {
 		log_error("Cannot setup uinput output file descriptor.")
 		exit(1);
