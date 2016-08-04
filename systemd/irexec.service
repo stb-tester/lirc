@@ -5,8 +5,19 @@ Documentation=http://lirc.org/html/configure.html#lircrc_format
 Description=Handle events from IR remotes decoded by lircd(8)
 
 [Service]
-; user =
-; group =
+; user=lirc
+; group=lirc
+
+; Hardening opts, see systemd.exec(5).  Doesn't add much unless
+; not running as root.
+;
+; CapabilityBoundingSet=CAP_SETEUID
+; PrivateTmp=true
+; ProtectSystem=full
+; NoNewPrivileges=true
+; ProtectHome=true
+
+
 Type=simple
 ExecStart=/usr/sbin/irexec /etc/lirc/irexec.lircrc
 

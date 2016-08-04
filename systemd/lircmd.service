@@ -7,6 +7,18 @@ Description=Convert IR remotes button presses to mouse movements and clicks
 [Service]
 Type=simple
 ExecStart=/usr/sbin/lircmd  --nodaemon
+; user=lirc
+; group=lirc
+
+; Hardening opts, see systemd.exec(5).  Doesn't add much unless
+; not running as root.
+;
+; CapabilityBoundingSet=CAP_SETEUID
+; PrivateTmp=true
+; ProtectSystem=full
+; NoNewPrivileges=true
+; ProtectHome=true
+
 
 [Install]
 WantedBy=multi-user.target
