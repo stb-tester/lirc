@@ -5,9 +5,11 @@
 
 #include <fcntl.h>
 #include <getopt.h>
+#include <limits.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -37,6 +39,7 @@ static const char* const HELP =
 	"\nOptions:\n"
 	"\t -u --uinput=uinput \t\tuinput device [/dev/uinput]\n"
 	"\t -r --release-suffix=suffix \tRelease events suffix [_UP]\n"
+	"\t -R --repeat=delay[,period]\tSet kernel repeat parameters [none]\n"
 	"\t -a --add-release-events\tAdd synthetic release events [no]\n"
 	"\t -d --disable=file\t\tDisable buttons listed in file\n"
         "\t -D[level] --loglevel[=level]\t"
@@ -54,6 +57,7 @@ static const struct option cli_options[] = {
 	{ "options-file",       required_argument, NULL, 'O' },
 	{ "uinput",	        required_argument, NULL, 'u' },
 	{ "release-suffix",     required_argument, NULL, 'r' },
+	{ "repeat",             required_argument, NULL, 'R' },
 	{ "add-release-events", no_argument,       NULL, 'a' },
 	{ "loglevel",	        optional_argument, NULL, 'D' },
 	{ "disable",	        required_argument, NULL, 'd' },
@@ -63,7 +67,7 @@ static const struct option cli_options[] = {
 
 
 /** Used in parse_options(), matches cli_options above. */
-static const char* const optstring = "ad:D::hO:r:u:L:v";
+static const char* const optstring = "ad:D::hO:r:R:u:L:v";
 
 /** Keys in lirc_options db and thus in lirc_options.conf config file. */
 static const char* const DEBUG_OPT    =	"lircd:debug";
@@ -72,6 +76,7 @@ static const char* const UINPUT_OPT   =	"lircd-uinput:uinput";
 static const char* const SUFFIX_OPT   =	"lircd-uinput:release-suffix";
 static const char* const TIMEOUT_OPT  =	"lircd-uinput:release-timeout";
 static const char* const RELEASE_OPT  =	"lircd-uinput:add-release-events";
+static const char* const REPEAT_OPT   =	"lircd-uinput:repeat";
 static const char* const INPUT_ARG    =	"lircd-uinput:output";
 static const char* const DISABLED_OPT =	"lircd-uinput:disabled";
 
@@ -81,6 +86,8 @@ struct options {
 	const char* input_path;     /**< The socket argument. */
 	const char* release_suffix; /**< The --release-suffix option. */
 	unsigned release_timeout;   /**< Hidden release-timeout option. */
+	unsigned repeat_delay;      /**< delay part of --repeat option. */
+	unsigned repeat_period;     /**< period part of --repeat option. */
 	bool add_release_events;    /**< The --add-release-events option. */
 	loglevel_t loglevel;        /**< The --loglevel option. */
 	const char* logfile;        /**< The --logfile option. */
@@ -149,6 +156,7 @@ static void add_defaults(void)
 		DEBUG_OPT,		level,
 		LOGFILE_OPT,		"syslog",
 		UINPUT_OPT,		"/dev/uinput",
+		REPEAT_OPT,	 	(const char*) NULL,
 		SUFFIX_OPT,		suffix ? suffix : "_UP",
 		TIMEOUT_OPT,		"200",
 		INPUT_ARG,		socket ? socket : LIRCD,
@@ -179,6 +187,9 @@ static void parse_options(int argc, char** const argv)
 			break;
 		case 'r':
 			options_set_opt(SUFFIX_OPT, optarg);
+			break;
+		case 'R':
+			options_set_opt(REPEAT_OPT, optarg);
 			break;
 		case 'u':
 			options_set_opt(UINPUT_OPT, optarg);
@@ -236,6 +247,46 @@ static void parse_disabled(const char* path, std::set<std::string>* buttons)
 }
 
 
+/** Handle the --repeat option, sets repeat_period and repeat_delay. */
+static bool parse_repeat(struct options* opts)
+{
+	const char* repeat_opt = options_getstring(REPEAT_OPT);
+	char optbuff[64];
+	char* opt = optbuff;
+	long value;
+
+	opts->repeat_delay = 0;
+	opts->repeat_period = 0;
+	if (repeat_opt == NULL)
+		return true;
+
+	// Parsing: [delay][,period]
+	strncpy(optbuff, repeat_opt, sizeof(optbuff) - 1);
+	if (isdigit(*opt)) {
+		value = strtol(opt, &opt, 10);
+		if (value == LONG_MAX || value == LONG_MIN )
+			return false;
+		opts->repeat_delay = static_cast<unsigned>(value);
+	}
+	if (opt == NULL || *opt == '\0')
+		return true;
+	if (*opt != ',')
+		return false;
+	opt++;
+	if (*opt == '\0')
+		return true; // Lets accept omitted period.
+	if (!isdigit(*opt))
+		return false;
+	value = strtol(opt, &opt, 10);
+	if (value == LONG_MAX || value == LONG_MIN)
+		return false;
+	if (opt != NULL && *opt != '\0')
+		return false;
+	opts->repeat_period = static_cast<unsigned>(value);
+	return true;
+}
+
+
 /** Log some info on effective options. */
 static void log_options(const struct options* opts)
 {
@@ -246,8 +297,16 @@ static void log_options(const struct options* opts)
 			 opts->release_timeout);
 	}
 	if (opts->disabled_path != NULL) {
-		    log_info("Disabling %d key(s)",
-			     opts->disabled_buttons.size());
+		log_info("Disabling %d key(s)",
+			 opts->disabled_buttons.size());
+	}
+	if (opts->repeat_delay != 0) {
+		log_info("Setting kernel repeat delay to %d ms",
+			 opts->repeat_delay);
+	}
+	if (opts->repeat_period != 0) {
+		log_info("Setting kernel repeat period to %d ms",
+			 opts->repeat_period);
 	}
 	log_info("Using \"%s\" as release suffix", opts->release_suffix);
 }
@@ -263,6 +322,10 @@ static void parse_options(struct options* opts)
 	opts->release_timeout = options_getint(TIMEOUT_OPT);
 	opts->release_suffix = options_getstring(SUFFIX_OPT);
 	opts->add_release_events = options_getboolean(RELEASE_OPT);
+	if( !parse_repeat(opts)) {
+		fputs("Cannot parse --repeat option\n", stderr);
+		opts->repeat_delay = opts->repeat_period = 0;
+	}
 	opts->disabled_path = options_getstring(DISABLED_OPT);
 	if (opts->disabled_path != NULL)
 		parse_disabled(opts->disabled_path, &opts->disabled_buttons);
@@ -494,7 +557,7 @@ static int open_input(const char* path)
 	int fd;
 
 	if (stat(path, &statbuf) == -1) {
-		log_perror_err("Cannot stat socket path. %s", path);
+		log_perror_err("Cannot stat socket path %s", path);
 		return -1;
 	}
 	if (S_ISREG(statbuf.st_mode)) {
@@ -523,6 +586,31 @@ static int open_input(const char* path)
 }
 
 
+static void set_kernel_repeat(const options* opts)
+{
+	if (opts->repeat_delay != 0) {
+		log_debug("Setting kernel repeat delay to %d",
+			  opts->repeat_delay);
+		if (!write_event(opts->uinputfd,
+				 EV_REP,
+				 REP_DELAY,
+				 opts->repeat_delay)) {
+			log_warn("Cannot set kernel repeat delay");
+		}
+	}
+	if (opts->repeat_period != 0) {
+		log_debug("Setting kernel repeat period to %d",
+			  opts->repeat_period);
+		if (!write_event(opts->uinputfd,
+				 EV_REP,
+				 REP_PERIOD,
+				 opts->repeat_period)) {
+			log_warn("Cannot set kernel repeat period");
+		}
+	}
+}
+
+
 int main(int argc, char** argv)
 {
 	struct options opts = {0};
@@ -543,6 +631,6 @@ int main(int argc, char** argv)
 		log_error("Cannot setup uinput output file descriptor.")
 		exit(1);
 	}
-
+	set_kernel_repeat(&opts);
 	lircd_uinput(&opts);
 }
