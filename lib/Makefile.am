@@ -32,6 +32,7 @@ liblirc_la_SOURCES          = config_file.c \
                               util.c
 
 libirrecord_la_LIBADD       = -llirc
+libirrecord_la_DEPENDENCIES = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 4:0:4
