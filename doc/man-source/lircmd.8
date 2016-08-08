@@ -1,4 +1,4 @@
-.TH LIRCMD "8" "Last change: Sep 2015" "lircmd @version@" "System Administration Utilities"
+.TH LIRCMD "8" "Last change: Aug 2016" "lircmd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircmd\fR - Translate infrared signals into mouse events.
@@ -6,13 +6,56 @@
 .P
 \fBlircmd\fR [\fIoptions\fR] [\fIconfig-file\fR]
 .SH DESCRIPTION
-This daemon can simulate a MouseSystems, IntelliMouse or IMPS/2 type mouse. It
-gets the received buttons from lircd and converts them to mouse events. To
-make this possible, lircmd needs a config file located
-in @etcdir@/lirc/lircmd.conf. In this file you have to determine which
-button from which remote causes a mouse move or a mouse button click.
-You can also specify a special button which activates or deactivates the mouse
-mode.
+.B lircmd
+reads decoded buttonpress events from a
+.BR lircd(8)
+output socket and converts them to mouse events.
+These events are made available either on the lircmd output
+socket (by default
+.I @varrundir@/lirc/lircmd
+) or, using the
+.I --uinput
+option, on a /dev/input device like
+.I /dev/input/event12
+\&.
+.P
+This daemon can simulate a MouseSystems, IntelliMouse or IMPS/2 type mouse.
+The function depends on a configuration file, by default
+.I @etcdir@/lirc/lircmd.conf
+\&.
+This file determines which button from which remote causes a mouse move
+or a mouse button click.
+Special button which activates or deactivates the mouse mode can also be
+defined.
+.P
+The normal usage is to configure X11 to use the events produced by lircmd
+as an input source.
+See  SEE ALSO.
+.P
+Using the
+.I --uinput
+option the user device created by the kernel has a dynamic name
+which typically changes after a reboot.
+The lirc distribution contains a udev rule which, if installed, creates
+a fixed link named
+.I /dev/lircmd
+which always can be used.
+.P
+By default, using the
+.I --uinput
+option requires
+.B lircmd
+to run as root since the
+.I /dev/uinput
+device can be accessed only by root.
+The lirc distribution contains example udev rules and
+.B lircd-setup(8)
+configurations which can be used to make the device accessible by other
+users.
+In this way,
+.B lircmd
+can be run as a regular user.
+
 
 .SH OPTIONS
 .TP
@@ -26,7 +69,14 @@ Display version.
 Don't fork to background.
 .TP
 \fB\-s\fR \fB\-\-socket\fR <\fIsocket path\fR>
-Use alternate lircd socket path.
+Use alternate lircd socket path (the lircmd input source).
+Defaults to the
+.I output
+key in the
+.I [lircd]
+section of the
+.I lirc_options.conf
+config file, falling back to @varrundir@/lirc/lircd.
 .TP
 \fB\-O\fR \fB\-\-options\-file\fR=\fIfile\fR
 Alternative default options file, usually defaults to
@@ -37,6 +87,8 @@ On Linux systems the \-\-uinput option will enable automatic generation
 of Linux input events. lircmd will open /dev/input/uinput and inject
 the simulated mouse events into the Linux kernel rather than creating
 the /dev/lircm device.
+The kernel makes these  events available to other applications on a
+/dev/input device, just like any other kernel input device.
 .TP
 \fB\-D\fR \fB\-\-loglevel\fR=[\fIlevel\fR]
 Determine the amount of logging information. [level] can be a symbolic
@@ -73,27 +125,39 @@ Byte 4 and 5: 0.
 \fBlircmd\fR will use syslogd to output error messages. It depends on your
 system configuration where they will show up.
 .P
-The options file is by default @etcdir@/lirc/lirc_options.conf; lircmd handles
-the values under the [lircmd] section in this file. The location can
-be changed using the -O/--options-file command-line option or using the
-environment variable LIRC_OPTIONS_PATH. The values here are used as
-defaults for any option not present on command line.
+The options file is by default @etcdir@/lirc/lirc_options.conf;
+.B lircmd
+handles the values under the [lircmd] section in this file.
+The location can be changed using the -O/--options-file command-line
+option or using the environment variable LIRC_OPTIONS_PATH.
+The values here are used as defaults for any option not present on
+command line.
 .P
 
 .SH DAEMONS
-\fBlircmd\fR is a  daemon. You should start it in some init script
-depending on your system. Besides the systemd setup which is
-installed by default there are also example scripts for other distros
-and init systems in the contrib directory. lircmd has to be started after
-lircd as it connects to the socket lircd provides.
+.Blircmd
+is a  daemon.
+It should be started in some system-dependent init script.
+Besides the systemd setup which is installed by default there are also
+example scripts for other distros and init systems in the contrib
+directory.
+.B lircmd
+has to be started after lircd as it connects to the socket lircd provides.
 
+.SH BUGS
+
+Since the device name used when registrating the
+.I --uinput
+device is fixed, only one instance of
+.B lircmd
+using this option can run on a given system.
 .P
-If you start lircd or lircmd from your shell prompt you will usually get
-back immediately to the prompt. This is not an error, daemons always run
-in background.
+The socket protocol is a documentation-wise mess.
 
 .SH "SEE ALSO"
 .P
-The documentation for \fBlirc\fR
-is also maintained as html pages. They are located under html/ in the
-documentation directory.
+.BR http://lirc.org/html/configure.html#lircmd.conf
+.br
+.BR lircd(8)
+.br
+.BR lircd-setup(8)

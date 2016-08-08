@@ -752,12 +752,13 @@ static void lircmd_add_defaults(void)
 	char level[4];
 
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
+	const char* socket = options_getstring("lircd:output");
 
 	const char* const defaults[] = {
 		"lircmd:nodaemon",   "False",
 		"lircmd:uinput",     "False",
 		"lircmd:configfile", LIRCMDCFGFILE,
-		"lircmd:socket",     LIRCD,
+		"lircmd:socket",     socket ? socket : LIRCD,
 		(const char*)NULL,   (const char*)NULL
 	};
 	options_add_defaults(defaults);
