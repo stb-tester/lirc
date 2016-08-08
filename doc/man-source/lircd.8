@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: May 2016" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Aug 2016" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -75,7 +75,7 @@ after opening files etc.
 \fB-i, --immediate-init\fR
 Lircd normally initializes the driver when the first client
 connects. If this option is selected, the driver is instead initialized
-immedately at start.
+immediately at start.
 .TP 4
 \fB-A, --driver-options\fR \fIkey:value[|key:value...]\fR
 Set one or more options for the driver. The argument is a list of
@@ -290,6 +290,25 @@ The format of the reply packet is
 If the command was successful, data is only sent for the commands that
 return some information. Note that a packet containing 0 lines of data
 can be a valid reply.
+
+.SH RUNNING AS REGULAR USER
+Traditionally
+.B lircd
+has been running as root since accessing kernel devices like
+.I /dev/lirc0
+by default requires root privileges.
+However, running a long-running service like this is a major security
+issue.
+.P
+The lirc distribution contains example udev rules which makes
+.I /dev/lirc[0-9]
+, USB and serial devices accessible by the
+.I lirc
+user.
+Using these rules, it is possible to run
+.B lircd
+as a regular user and group such as
+.I lirc.
 
 .SH FILES
 .TP 4
