@@ -62,17 +62,17 @@ button press events formatted as documented in
 will in this case send the codes in this file and exit.
 .P
 In order to work, release events must be sent to the uinput device.
-This can be accomplished either by using the
-.BR lircd
-.I --release
-option or by the
-.B lircd-uinput
-.I --add-release-events
-option.
+See REPEAT HANDLING.
 .P
 .B lircd-uinput
 can only handle button events named using the official namespace i. e.,
 buttons known to the kernel. See NOTES.
+.P
+Unless the
+.I /dev/uinput
+default permissions are changed
+.B lirc-uinput
+needs to run as root. See NOTES.
 .P
 The
 .I /dev/input/event
@@ -204,6 +204,25 @@ only sends keypress and release events, trusting the kernel autorepeat
 support.
 
 .SH NOTES
+
+By default, the
+.I dev/uinput
+device is not writable for regular users.
+Thus
+.B lircd-uinput
+needs to run as root unless these permissions are changed.
+.P
+One way to achieve this is an udev rule.
+The lirc distribution contains an example rule which makes the
+.B lircd-uinput
+device writable for users in the group lirc.
+Another way is to use
+.BR lircd-setup(8)
+to change the permissions. As distributed, the
+.I lirc_options.conf
+file contains an commented example using
+.BR setfacl(1)
+\&.
 
 .B lircd-uinput
 can only forward lircd button events with names from
