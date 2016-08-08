@@ -44,7 +44,6 @@
 
     <H3>X11</H3>
 
-
     <P>
       Put this section in your Xorg.conf file to use the lircmd
       emulated mouse in addition to your normal one.
@@ -59,6 +58,8 @@
                      Option      &quot;ZAxisMapping&quot; &quot;4 5&quot;
              EndSection</PRE>
      <p>
+
+    <H3> uinput  and effective user </h3>
     If your distribution does not have uinput enabled by default
     (i. e., there is a /dev/uinput device) add to the file /etc/modules
     the entry: </p>
@@ -70,9 +71,15 @@
 <pre>
              KERNEL=="uinput", MODE="0666"
 </pre>
-    This has security implications. The alternative is to run lircmd as
-    root. In this case this udev rule is not required.
-    <p>
+<p>
+    However, this has security implications. The preferred setup is to use
+    the example rule in the contrib directory which makes
+    <em>/dev/uinput</em> accessible for the lirc user, and then run lircmd
+    as this user</p>
+<p>
+    Another alternative is to run lircmd as root. In this case this no udev
+    rule is required, but it raises other security concerns.</p>
+<p>
     Finally, run lircmd with the --uinput option (which can be set in
     lirc_options.conf).</p>
 
