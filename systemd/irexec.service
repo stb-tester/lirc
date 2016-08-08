@@ -9,13 +9,14 @@ Description=Handle events from IR remotes decoded by lircd(8)
 ; group=lirc
 
 ; Hardening opts, see systemd.exec(5).  Doesn't add much unless
-; not running as root.
+; not running as root. If these are applicable or not depends on
+; what commands irexec.lircrc invokes.
 ;
-; CapabilityBoundingSet=CAP_SETEUID
-; PrivateTmp=true
-; ProtectSystem=full
 ; NoNewPrivileges=true
+; MemoryDenyWriteExecute=true
+; PrivateTmp=true
 ; ProtectHome=true
+; ProtectSystem=full
 
 
 Type=simple

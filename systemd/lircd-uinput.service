@@ -13,11 +13,11 @@ ExecStart=/usr/sbin/lircd-uinput
 ; Hardening opts, see systemd.exec(5).  Doesn't add much unless
 ; not running as root.
 ;
-; CapabilityBoundingSet=CAP_SETEUID
-; PrivateTmp=true
-; ProtectSystem=full
+; MemoryDenyWriteExecute=true
 ; NoNewPrivileges=true
+; PrivateTmp=true
 ; ProtectHome=true
+; ProtectSystem=full
 
 
 [Install]

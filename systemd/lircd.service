@@ -11,14 +11,16 @@ ExecStart=/usr/sbin/lircd --nodaemon
 ; User=lirc
 ; Group=lirc
 
-; Hardening opts, see systemd.exec(5).  They conflict with --effective-user
-; and should be applied only if not running as root.
+; Hardening opts, see systemd.exec(5). Doesn't add much unless
+; not running as root.
 ;
+; # Required for dropping privileges in --effective-user.
 ; CapabilityBoundingSet=CAP_SETEUID
-; PrivateTmp=true
-; ProtectSystem=full
+; MemoryDenyWriteExecute=true
 ; NoNewPrivileges=true
+; PrivateTmp=true
 ; ProtectHome=true
+; ProtectSystem=full
 
 [Install]
 WantedBy=multi-user.target
