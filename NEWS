@@ -1,4 +1,4 @@
-0.9.4b 15/8/16
+0.9.4b 9/8/16
   * lircd-uinput: A multitude of fixes (#213, #211, #177). Adds new options.
   * lirc_client:  Fix "Can't redirect irsend output" (#207).
   * lirc_client: read_string() not terminating buffer contents (#216)
@@ -8,6 +8,8 @@
   * lircmd: Options, udev examples and manpage update.A
   * lib: Add missing Makefile.am dep (#210).
   * doc: Manpages and configuration guide fixes.
+  * build: Don't define docdir - autoconf defines docdir (#215).
+  * build: support runstatedir configure option (#212).
 
 0.9.4a 22/6/16
   * Fix syntax errors in systemd unit files (rhbz: 1350750).
