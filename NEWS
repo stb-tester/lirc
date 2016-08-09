@@ -1,3 +1,14 @@
+0.9.4b 15/8/16
+  * lircd-uinput: A multitude of fixes (#213, #211, #177). Adds new options.
+  * lirc_client:  Fix "Can't redirect irsend output" (#207).
+  * lirc_client: read_string() not terminating buffer contents (#216)
+  * Remove a single python2 dependency [4e3c97c].
+  * irrecord: Fix under-sized buffer causing crash (#208).
+  * systemd: Add hardening options comments to services (#204).
+  * lircmd: Options, udev examples and manpage update.A
+  * lib: Add missing Makefile.am dep (#210).
+  * doc: Manpages and configuration guide fixes.
+
 0.9.4a 22/6/16
   * Fix syntax errors in systemd unit files (rhbz: 1350750).
   * irrecord: Enhance "Don't use devinput" message (#180).
