@@ -21,6 +21,7 @@ liblirc_la_SOURCES          = config_file.c \
                               dump_config.c \
                               input_map.c \
                               ir_remote.c \
+                              line_buffer.cpp \
                               lirc_log.c \
                               lirc_options.c \
                               receive.c  \
@@ -66,6 +67,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               ir_remote.h \
                               ir_remote_types.h \
                               irrecord.h \
+                              line_buffer.h \
                               lirc_client.h \
                               lirc_config.h \
                               lirc_log.h \
