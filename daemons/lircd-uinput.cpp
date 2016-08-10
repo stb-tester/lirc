@@ -69,6 +69,9 @@ static const struct option cli_options[] = {
 /** Used in parse_options(), matches cli_options above. */
 static const char* const optstring = "ad:D::hO:r:R:u:L:v";
 
+/** Max for --repeat period and delay parts (ms). */
+static const int MAX_INTERVAL = 20000;
+
 /** Keys in lirc_options db and thus in lirc_options.conf config file. */
 static const char* const DEBUG_OPT    =	"lircd:debug";
 static const char* const LOGFILE_OPT  =	"lircd-uinput:logfile";
@@ -264,7 +267,7 @@ static bool parse_repeat(struct options* opts)
 	strncpy(optbuff, repeat_opt, sizeof(optbuff) - 1);
 	if (isdigit(*opt)) {
 		value = strtol(opt, &opt, 10);
-		if (value == LONG_MAX || value == LONG_MIN )
+		if (value > MAX_INTERVAL || value < 0 )
 			return false;
 		opts->repeat_delay = static_cast<unsigned>(value);
 	}
@@ -278,7 +281,7 @@ static bool parse_repeat(struct options* opts)
 	if (!isdigit(*opt))
 		return false;
 	value = strtol(opt, &opt, 10);
-	if (value == LONG_MAX || value == LONG_MIN)
+	if (value > MAX_INTERVAL || value < 0)
 		return false;
 	if (opt != NULL && *opt != '\0')
 		return false;
@@ -313,7 +316,7 @@ static void log_options(const struct options* opts)
 
 
 /** Get all options from lirc_options db and store in *opts. */
-static void parse_options(struct options* opts)
+static void options_new(struct options* opts)
 {
 	opts->input_path = options_getstring(INPUT_ARG);
 	opts->uinput_path = options_getstring(UINPUT_OPT);
@@ -323,7 +326,8 @@ static void parse_options(struct options* opts)
 	opts->release_suffix = options_getstring(SUFFIX_OPT);
 	opts->add_release_events = options_getboolean(RELEASE_OPT);
 	if( !parse_repeat(opts)) {
-		fputs("Cannot parse --repeat option\n", stderr);
+		fputs("Warning: Cannot parse --repeat option.\n", stderr);
+		fputs("Warning: Using kernel defaults\n", stderr);
 		opts->repeat_delay = opts->repeat_period = 0;
 	}
 	opts->disabled_path = options_getstring(DISABLED_OPT);
@@ -343,15 +347,21 @@ static void parse_options(struct options* opts)
 
 
 /**
- * Returns linux keycode for button name or KEY_RESERVED if no match,
- * sets is_release to reflect if this is a release event.
+ * Get linux keycode for button name.
+ *
+ * @param button_name     Name of button.
+ * @param suffix          The release suffix from the --release-suffix option.
+ * @param[out] is_release If non-NULL, reflects if button_name is a regular
+ *                        button with the suffix appended.
+ * @return keycode or KEY_RESERVED if no match.
  */
 static linux_input_code get_keycode(const char* button_name,
 				    const char* suffix,
-				    bool* is_release)
+				    bool* is_release = NULL)
 {
 	linux_input_code input_code;
-	*is_release = false;
+	if (is_release != NULL)
+		*is_release = false;
 
 	if (get_input_code(button_name, &input_code) != -1)
 		return input_code;
@@ -363,7 +373,8 @@ static linux_input_code get_keycode(const char* button_name,
 	s = s.substr(0, pos);
 	if (get_input_code(s.c_str(), &input_code) == -1)
 		return KEY_RESERVED;
-	*is_release = true;
+	if (is_release != NULL)
+		*is_release = true;
 	return input_code;
 }
 
@@ -397,7 +408,7 @@ static void send_message(const struct options* opts, const char* button)
 		log_info("Dropping non-standard symbol %s", button);
 		return;
 	}
-	// event.value: 0 => release, 1 => press, 2 => autorepeat(not used).
+	// event.value: 0 => release, 1 => press, 2 => autorepeat (not used).
 	const int value = is_release ? 0 : 1;
 	log_debug("Sending %s as %d:%d", button, code, value);
 
@@ -446,7 +457,10 @@ static void process_lines(const struct options* opts, LineBuffer* line_buffer)
 }
 
 
-/** If required, send a release event after a read timeout. */
+/**
+ * If required, send a release event after a read timeout, emulating
+ * a release event sent by lircd.
+ */
 static void send_release_event(const struct options* opts)
 {
 	if (!opts->add_release_events)
@@ -459,7 +473,7 @@ static void send_release_event(const struct options* opts)
 }
 
 
-/** The main worker. */
+/** The main worker: handle data, timeouts and errors on input fd. */
 static void lircd_uinput(const struct options* opts)
 {
 	int r;
@@ -473,22 +487,25 @@ static void lircd_uinput(const struct options* opts)
 		fds.events = POLLIN;
 		fds.revents = 0;
 		r = poll(&fds, 1, timeout);
+
+		if (r < 0 || (fds.revents & POLLERR) != 0) {
+			log_error("POLLERR or poll() error, exiting.");
+			exit(EXIT_FAILURE);
+		}
 		if (r == 0) {
 			send_release_event(opts);
 			continue;
 		}
-		if ((fds.revents & POLLERR) != 0 || r < 0 ) {
-			log_notice("POLLERR or poll() error, exiting.");
-			exit(EXIT_FAILURE);
-		}
 		r = read(opts->inputfd, buffer, PACKET_SIZE);
 		if (r > 0) {
-			line_buffer.append(buffer,
-					   static_cast<size_t>(r));
+			line_buffer.append(buffer, static_cast<size_t>(r));
 			process_lines(opts, &line_buffer);
 		} else if (r == -1) {
 			log_perror_warn("lircd_uinput(): read() error");
-		} else if (r == 0 || (fds.revents & POLLHUP) != 0) {
+		} else  {
+			fds.revents |= POLLHUP;
+		}
+		if ((fds.revents & POLLHUP) != 0) {
 			log_debug("POLLHUP or no data: exiting .");
 			exit(0);
 		}
@@ -499,15 +516,13 @@ static void lircd_uinput(const struct options* opts)
 /** Register all keys as active besides those --disabled. */
 static bool register_keys(const options* opts, int fd)
 {
-	bool dummy;
 	linux_input_code code;
 	auto disabled_keys = std::set<linux_input_code>();
 
 	for (auto button: opts->disabled_buttons) {
-		code = get_keycode(std::string(button).c_str(),
-				   opts->release_suffix,
-				   &dummy);
+		code = get_keycode(button.c_str(), opts->release_suffix);
 		disabled_keys.insert(code);
+		log_trace("Disabling %s (%d)", button.c_str(), code);
 	}
 	for (int key = KEY_RESERVED; key <= KEY_MAX; key++) {
 		if (disabled_keys.count(key) == 1) {
@@ -586,27 +601,20 @@ static int open_input(const char* path)
 }
 
 
+/** Set the event device REP_DELAY and REP_PERIOD parameters from *opts. */
 static void set_kernel_repeat(const options* opts)
 {
-	if (opts->repeat_delay != 0) {
-		log_debug("Setting kernel repeat delay to %d",
-			  opts->repeat_delay);
-		if (!write_event(opts->uinputfd,
-				 EV_REP,
-				 REP_DELAY,
-				 opts->repeat_delay)) {
+	unsigned delay = opts->repeat_delay;
+	if (delay != 0) {
+		log_debug("Setting kernel repeat delay to %d", delay);
+		if (!write_event(opts->uinputfd, EV_REP, REP_DELAY, delay))
 			log_warn("Cannot set kernel repeat delay");
-		}
 	}
-	if (opts->repeat_period != 0) {
-		log_debug("Setting kernel repeat period to %d",
-			  opts->repeat_period);
-		if (!write_event(opts->uinputfd,
-				 EV_REP,
-				 REP_PERIOD,
-				 opts->repeat_period)) {
+	unsigned period = opts->repeat_period;
+	if (period != 0) {
+		log_debug("Setting kernel repeat period to %d", period);
+		if (!write_event(opts->uinputfd, EV_REP, REP_PERIOD, period))
 			log_warn("Cannot set kernel repeat period");
-		}
 	}
 }
 
@@ -616,7 +624,7 @@ int main(int argc, char** argv)
 	struct options opts = {0};
 
 	options_load(argc, argv, NULL, parse_options);
-	parse_options(&opts);
+	options_new(&opts);
 	lirc_log_set_file(opts.logfile);
 	lirc_log_open("lircd-uinput", 1, opts.loglevel);
 	log_options(&opts);
