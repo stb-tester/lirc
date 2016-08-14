@@ -467,6 +467,9 @@ static int init_device(void)
 			  IRTOY_MINFWVERSION,
 			  dev->swVersion);
 		free(dev);
+		dev = NULL;
+		close(drv.fd);
+		tty_delete_lock();
 		return 0;
 	}
 	rec_buffer_init();
@@ -490,9 +493,14 @@ static int init(void)
 		"Additional irtoy device found: %s (ignored)";
 	const char* const MSG_FOUND = "irtoy device found on %s";
 
+	log_trace("irtoy: init");
 	if (drv.device == NULL) {
 		log_error("irtoy: NULL device.");
 		return 0;
+	}
+	if (dev != NULL) {
+		log_debug("irtoy: init: irtoy already initialized");
+		return 1;
 	}
 	if (strcmp(drv.device, "auto") != 0)
 		return init_device();
@@ -516,6 +524,8 @@ static int init(void)
 
 static int deinit(void)
 {
+	log_trace("irtoy: deinit");
+
 	// IMPORTANT do not remove this reset. it is vital to return the
 	// irtoy to IRMAN mode.
 	// If we leave the irtoy in sample mode while no-one has the
@@ -527,14 +537,14 @@ static int deinit(void)
 	// sending the next one, while sample mode will keep streaming
 	// (and under fluorescent light it WILL stream..)
 	// triggering the problem
-	setPin(openPin, 0);
-	setPin(sendingPin, 0);
-	setPin(receivePin, 0);
 	if (dev != NULL) {
+		setPin(openPin, 0);
+		setPin(sendingPin, 0);
+		setPin(receivePin, 0);
 		irtoy_reset(dev);
 		free(dev);
+		dev = NULL;
 	}
-	dev = NULL;
 
 	close(drv.fd);
 	drv.fd = -1;
@@ -562,10 +572,6 @@ static int irtoy_send_double_buffered(unsigned char* signals, int length)
 	unsigned char reply[16];
 	int irtoyXmit;
 
-	if (dev == NULL) {
-		log_error("irtoy_send: irtoy not initialized");
-		return 0;
-	}
 	res = write(dev->fd, IRTOY_COMMAND_TXSTART, sizeof(IRTOY_COMMAND_TXSTART));
 
 	if (res != sizeof(IRTOY_COMMAND_TXSTART)) {
@@ -647,6 +653,12 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 	lirc_t val;
 	int res;
 
+	log_trace("irtoy: send");
+
+	if (dev == NULL) {
+		log_error("irtoy: send: irtoy not initialized");
+		return 0;
+	}
 
 	if (!send_buffer_put(remote, code))
 		return 0;
