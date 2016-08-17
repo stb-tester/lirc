@@ -436,11 +436,12 @@ var_reset:                      /* Reset variables */
 		for (i = 0; i < count; i++) {
 			/* cs == current sample */
 			unsigned char cs, as, sl, sz, xz;
-			short stmp;
+			unsigned short stmp;
 
 			if (bytes_per_sample == 2) {
-				stmp = buff[i * bytes_per_sample * alsa_hw.num_channels +
-					    bytes_per_sample * alsa_hw.channel];
+				int ix = i * bytes_per_sample * alsa_hw.num_channels +
+					     bytes_per_sample * alsa_hw.channel;
+				memcpy(&stmp, &buff[ix], sizeof(stmp));
 				cs = stmp >> 8;
 				cs ^= 0x80;
 			} else {
