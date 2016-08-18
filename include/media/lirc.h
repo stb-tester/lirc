@@ -1,39 +1,13 @@
-/**
- * @file lirc.c
- * This file contains some general definitions, like feature flags.
- * It's a bundled copy from the kernel sources. Being part of
- * kernel sources is a bug, see
- * https://bugzilla.kernel.org/show_bug.cgi?id=75751.
- * The file is upstreamed to the kernel from 4.6.
- */
-
-#ifndef LIRC_BASE_H
-#define LIRC_BASE_H
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
-
-/**
- * This data type, with its extremely carefully selected name, is used as
- * data type for the signal durations.
- */
-#define lirc_t int
-
 /*
  * lirc.h - linux infrared remote control header file
- * last modified 2010/06/03 by Jarod Wilson
+ * last modified 2010/07/13 by Jarod Wilson
  */
 
-#if defined(__linux__)
+#ifndef _LINUX_LIRC_H
+#define _LINUX_LIRC_H
+
 #include <linux/types.h>
 #include <linux/ioctl.h>
-#elif defined(_NetBSD_)
-#include <sys/ioctl.h>
-#elif defined(_CYGWIN_)
-#define __USE_LINUX_IOCTL_DEFS
-#include <sys/ioctl.h>
-#endif
 
 #define PULSE_BIT       0x01000000
 #define PULSE_MASK      0x00FFFFFF
@@ -59,6 +33,9 @@ extern "C" {
 #define LIRC_IS_FREQUENCY(val) (LIRC_MODE2(val) == LIRC_MODE2_FREQUENCY)
 #define LIRC_IS_TIMEOUT(val) (LIRC_MODE2(val) == LIRC_MODE2_TIMEOUT)
 
+/* used heavily by lirc userspace */
+#define lirc_t int
+
 /*** lirc compatible hardware features ***/
 
 #define LIRC_MODE2SEND(x) (x)
@@ -79,16 +56,8 @@ extern "C" {
 
 #define LIRC_CAN_SEND_MASK             0x0000003f
 
-/** This flag indicates that the transmitter is capable of setting the
- * IR carrier frequency. */
 #define LIRC_CAN_SET_SEND_CARRIER      0x00000100
-
-/** This flag indicates that the transmitter is capable of setting the
- *  duty cycle of generated IR signals. */
 #define LIRC_CAN_SET_SEND_DUTY_CYCLE   0x00000200
-
-/** This flag indicates that the transmitter is capable of setting a
- *  transmitter mask, i.e., probably has several transmitters. */
 #define LIRC_CAN_SET_TRANSMITTER_MASK  0x00000400
 
 #define LIRC_CAN_REC_RAW               LIRC_MODE2REC(LIRC_MODE_RAW)
@@ -107,16 +76,10 @@ extern "C" {
 #define LIRC_CAN_SET_REC_TIMEOUT          0x10000000
 #define LIRC_CAN_SET_REC_FILTER           0x08000000
 
-
-/** This flag indicates that the receiver is capable of estimating
- *  the carrier frequency of received IR signals. */
 #define LIRC_CAN_MEASURE_CARRIER          0x02000000
 #define LIRC_CAN_USE_WIDEBAND_RECEIVER    0x04000000
 
-/** Extract sending features from its argument. */
 #define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
-
-/** Extract receiving features from its argument. */
 #define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
 
 #define LIRC_CAN_NOTIFY_DECODE            0x01000000
@@ -127,19 +90,10 @@ extern "C" {
 
 #define LIRC_GET_SEND_MODE             _IOR('i', 0x00000001, __u32)
 #define LIRC_GET_REC_MODE              _IOR('i', 0x00000002, __u32)
-#define LIRC_GET_SEND_CARRIER          _IOR('i', 0x00000003, __u32)
-#define LIRC_GET_REC_CARRIER           _IOR('i', 0x00000004, __u32)
-#define LIRC_GET_SEND_DUTY_CYCLE       _IOR('i', 0x00000005, __u32)
-#define LIRC_GET_REC_DUTY_CYCLE        _IOR('i', 0x00000006, __u32)
 #define LIRC_GET_REC_RESOLUTION        _IOR('i', 0x00000007, __u32)
 
 #define LIRC_GET_MIN_TIMEOUT           _IOR('i', 0x00000008, __u32)
 #define LIRC_GET_MAX_TIMEOUT           _IOR('i', 0x00000009, __u32)
-
-#define LIRC_GET_MIN_FILTER_PULSE      _IOR('i', 0x0000000a, __u32)
-#define LIRC_GET_MAX_FILTER_PULSE      _IOR('i', 0x0000000b, __u32)
-#define LIRC_GET_MIN_FILTER_SPACE      _IOR('i', 0x0000000c, __u32)
-#define LIRC_GET_MAX_FILTER_SPACE      _IOR('i', 0x0000000d, __u32)
 
 /* code length in bits, currently only for LIRC_MODE_LIRCCODE */
 #define LIRC_GET_LENGTH                _IOR('i', 0x0000000f, __u32)
@@ -150,7 +104,6 @@ extern "C" {
 #define LIRC_SET_SEND_CARRIER          _IOW('i', 0x00000013, __u32)
 #define LIRC_SET_REC_CARRIER           _IOW('i', 0x00000014, __u32)
 #define LIRC_SET_SEND_DUTY_CYCLE       _IOW('i', 0x00000015, __u32)
-#define LIRC_SET_REC_DUTY_CYCLE        _IOW('i', 0x00000016, __u32)
 #define LIRC_SET_TRANSMITTER_MASK      _IOW('i', 0x00000017, __u32)
 
 /*
@@ -164,45 +117,17 @@ extern "C" {
 #define LIRC_SET_REC_TIMEOUT_REPORTS   _IOW('i', 0x00000019, __u32)
 
 /*
- * pulses shorter than this are filtered out by hardware (software
- * emulation in lirc_dev?)
- */
-#define LIRC_SET_REC_FILTER_PULSE      _IOW('i', 0x0000001a, __u32)
-/*
- * spaces shorter than this are filtered out by hardware (software
- * emulation in lirc_dev?)
- */
-#define LIRC_SET_REC_FILTER_SPACE      _IOW('i', 0x0000001b, __u32)
-/*
- * if filter cannot be set independantly for pulse/space, this should
- * be used
- */
-#define LIRC_SET_REC_FILTER            _IOW('i', 0x0000001c, __u32)
-
-/*
  * if enabled from the next key press on the driver will send
  * LIRC_MODE2_FREQUENCY packets
  */
-#define LIRC_SET_MEASURE_CARRIER_MODE  _IOW('i', 0x0000001d, __u32)
+#define LIRC_SET_MEASURE_CARRIER_MODE	_IOW('i', 0x0000001d, __u32)
 
 /*
- * to set a range use
- * LIRC_SET_REC_DUTY_CYCLE_RANGE/LIRC_SET_REC_CARRIER_RANGE with the
- * lower bound first and later
- * LIRC_SET_REC_DUTY_CYCLE/LIRC_SET_REC_CARRIER with the upper bound
+ * to set a range use LIRC_SET_REC_CARRIER_RANGE with the
+ * lower bound first and later LIRC_SET_REC_CARRIER with the upper bound
  */
-
-#define LIRC_SET_REC_DUTY_CYCLE_RANGE  _IOW('i', 0x0000001e, __u32)
 #define LIRC_SET_REC_CARRIER_RANGE     _IOW('i', 0x0000001f, __u32)
 
-#define LIRC_NOTIFY_DECODE             _IO('i', 0x00000020)
-
-#define LIRC_SETUP_START               _IO('i', 0x00000021)
-#define LIRC_SETUP_END                 _IO('i', 0x00000022)
 #define LIRC_SET_WIDEBAND_RECEIVER     _IOW('i', 0x00000023, __u32)
 
-#ifdef	__cplusplus
-}
 #endif
-
-#endif //LIRC_BASE_H
