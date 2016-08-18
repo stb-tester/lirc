@@ -7,4 +7,4 @@ SUBSYSTEMS=="input",ATTRS{name}=="lircmd",SYMLINK+="lircmd"
 # Make /dev/uinput accessible for the lirc group. A setfacl RUN would be
 # better here, but seemingly does not work (?)
 # An alternative is to use lircd-setup(8) to sun setfacl(1).
-KERNEL=="uinput",GROUP:="lirc",MODE:="0660"
+## KERNEL=="uinput",GROUP:="lirc",MODE:="0660"
