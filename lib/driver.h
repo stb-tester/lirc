@@ -97,6 +97,13 @@ int drv_handle_options(const char* options);
 /** drvctl cmd: Free memory in argument obtained using DRVCTL_GET_DEVICES. */
 #define DRVCTL_FREE_DEVICES             6
 
+/**
+ * The former LIRC_NOTIFY_DECODE, informs drier that signal is successfully
+ * decoded e. g., to initiate some visual feedback through a LED.
+ */
+
+#define DRVCTL_NOTIFY_DECODE            7
+
 /** Last well-known command. Remaining is used in driver-specific controls.*/
 #define  DRVCTL_MAX                     128
 
