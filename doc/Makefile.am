@@ -6,7 +6,8 @@ CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
                           doxygen*warning* ext-driver-toc.xsl
 
 EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
-                          make_rel_symlink.py index.html plugindocs.mk
+                          make_rel_symlink.py index.html plugindocs.mk \
+                          fix-urls.sh
 
 if DEVEL
 website                 = http://lirc.sf.net/lirc.org
@@ -94,6 +95,7 @@ if HAVE_DOXYGEN
 	-mkdir -p $(DESTDIR)$(website_htmldir)
 	ln -sf ../api-docs/html/index.html \
 	    $(DESTDIR)$(website_htmldir)/api-docs
+	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf ../api-docs .
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
@@ -105,6 +107,7 @@ endif
 	    $(DESTDIR)$(vardocsdir)/index.html \
 	    $(DESTDIR)$(website_htmldir)/plugins-index.html
 	cp $(srcdir)/plugindocs.mk $(DESTDIR)$(plugindocsdir)/Makefile
+	sh $(srcdir)/fix-urls.sh $(DESTDIR)$(websitedir)
 
 clean-local:
 	rm -rf api-docs/*

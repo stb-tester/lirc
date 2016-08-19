@@ -11,7 +11,7 @@ Pre-requisites:
 - Encoder/decoder regression tests all pass
 - lirc.org linkcheck:
     + cd doc; DESTDIR=$PWD/foo make install
-    + linkchecker foo/usr/local/share/doc/lirc/lirc.org/index.html
+    + linkchecker -r 8 foo/usr/local/share/doc/lirc/lirc.org/index.html
     + Allow errors for standard tools like sudo, ncat, etc.
 - liblirc_client: version number change required?
     + use abidiff
