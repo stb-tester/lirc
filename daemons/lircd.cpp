@@ -482,50 +482,6 @@ static int setup_timeout(void)
 }
 
 
-static int setup_filter(void)
-{
-	int ret1, ret2;
-	lirc_t min_pulse_supported = 0, max_pulse_supported = 0;
-	lirc_t min_space_supported = 0, max_space_supported = 0;
-
-	if (!(curr_driver->features & LIRC_CAN_SET_REC_FILTER))
-		return 1;
-	if (curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_PULSE,
-				     &min_pulse_supported) == -1 ||
-	    curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_PULSE, &max_pulse_supported) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MIN_FILTER_SPACE, &min_space_supported) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_FILTER_SPACE, &max_space_supported) == -1) {
-		log_error("could not get filter range");
-		log_perror_err(__func__);
-	}
-
-	if (setup_min_pulse > max_pulse_supported)
-		setup_min_pulse = max_pulse_supported;
-	else if (setup_min_pulse < min_pulse_supported)
-		setup_min_pulse = 0;    /* disable filtering */
-
-	if (setup_min_space > max_space_supported)
-		setup_min_space = max_space_supported;
-	else if (setup_min_space < min_space_supported)
-		setup_min_space = 0;    /* disable filtering */
-
-	ret1 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_PULSE, &setup_min_pulse);
-	ret2 = curr_driver->drvctl_func(LIRC_SET_REC_FILTER_SPACE, &setup_min_space);
-	if (ret1 == -1 || ret2 == -1) {
-		if (curr_driver->
-		    drvctl_func(LIRC_SET_REC_FILTER,
-				setup_min_pulse < setup_min_space ? &setup_min_pulse : &setup_min_space) == -1) {
-			log_error("could not set filter");
-			log_perror_err(__func__);
-			return 0;
-		}
-	}
-	return 1;
-}
-
-
-
-
 static int setup_hardware(void)
 {
 	int ret = 1;
@@ -534,10 +490,7 @@ static int setup_hardware(void)
 		if ((curr_driver->features & LIRC_CAN_SET_REC_CARRIER)
 		    || (curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT)
 		    || (curr_driver->features & LIRC_CAN_SET_REC_FILTER)) {
-			(void)curr_driver->drvctl_func(LIRC_SETUP_START, NULL);
-			ret = setup_frequency() && setup_timeout()
-			      && setup_filter();
-			(void)curr_driver->drvctl_func(LIRC_SETUP_END, NULL);
+				ret = setup_frequency() && setup_timeout();
 		}
 	}
 	return ret;
@@ -2199,7 +2152,7 @@ void loop(void)
 			int reps;
 
 			if (curr_driver->drvctl_func && (curr_driver->features & LIRC_CAN_NOTIFY_DECODE))
-				curr_driver->drvctl_func(LIRC_NOTIFY_DECODE, NULL);
+				curr_driver->drvctl_func(DRVCTL_NOTIFY_DECODE, NULL);
 
 			get_release_data(&remote_name, &button_name, &reps);
 
