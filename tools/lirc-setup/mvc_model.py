@@ -362,10 +362,10 @@ class DrvctlDeviceListModel(DeviceListModel):
         self.label_by_device = {}
         trypath = os.path.abspath(_here("../mode2"))
         if not os.path.exists(trypath):
-            trypath = os.path.join(BINDIR, "mode2")
+            trypath = os.path.join(config.BINDIR, "mode2")
         if not os.path.exists(trypath):
             raise FileNotFoundError("trypath")
-        cmd = [trypath, "--driver" , self.driver_id, "--list-devices"]
+        cmd = [trypath, "--driver", self.driver_id, "--list-devices"]
         try:
             result = subprocess.check_output(cmd, universal_newlines=True)
         except (OSError, subprocess.CalledProcessError):
