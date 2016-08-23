@@ -115,6 +115,12 @@ int clock_gettime(int clk_id, struct timespec *t){
 
 static const logchannel_t logchannel = LOG_APP;
 
+/** How long we sleep while waiting for busy write sockets. */
+static const int WRITE_SLEEP_US = 20000;
+
+/** How many times we retry busy write sockets. */
+static const int WRITE_RETRIES = 50;
+
 struct peer_connection {
 	char*		host;
 	unsigned short	port;
@@ -340,11 +346,22 @@ static int oatoi(const char* s)
 int write_socket(int fd, const char* buf, int len)
 {
 	int done, todo = len;
+	int retries = WRITE_RETRIES;
 
 	while (todo) {
 		done = write(fd, buf, todo);
-		if (done <= 0)
-			return done;
+		if (done <= 0) {
+			log_perror_debug("Error in write_socket");
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				retries -= 1;
+				if (retries <= 0)
+					return done;
+				usleep(WRITE_SLEEP_US);
+				continue;
+			} else {
+				return done;
+			}
+		}
 		buf += done;
 		todo -= done;
 	}
