@@ -70,6 +70,9 @@
 #include <sys/ioctl.h>
 #endif
 
+#include <string>
+#include <set>
+
 #include "lirc_private.h"
 
 #ifdef HAVE_INT_GETGROUPLIST_GROUPS
@@ -540,6 +543,22 @@ static int setup_hardware(void)
 	return ret;
 }
 
+static void check_config_duplicates(const struct ir_remote* head)
+{
+	std::set<std::string> names;
+	const struct ir_remote* ir;
+	const char* const errmsg =
+		"Duplicate remotes \"%s\" found, problems ahead";
+
+	for (ir = head; ir != NULL; ir = ir->next) {
+		std::string name(ir->name);
+		if (names.count(name) == 1)
+			log_warn(errmsg, name.c_str())
+		else
+			names.insert(name);
+	}
+}
+
 
 void config(void)
 {
@@ -572,6 +591,7 @@ void config(void)
 	}
 	configfile = filename;
 	config_remotes = read_config(fd, configfile);
+	check_config_duplicates(config_remotes);
 	fclose(fd);
 	if (config_remotes == (void*)-1) {
 		log_error("reading of config file failed");
