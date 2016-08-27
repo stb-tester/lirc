@@ -196,11 +196,11 @@ static void parse_options(int argc, char** argv)
 		fputs("Too many arguments\n", stderr);
 		exit(EXIT_FAILURE);
 	}
+	opt_device = options_getstring("mode2:device");
 	if (opt_raw_access && opt_device == NULL) {
 		fprintf(stderr, "The --raw option requires a --device\n");
 		exit(EXIT_FAILURE);
 	}
-	opt_device = options_getstring("mode2:device");
 	options_set_opt("lircd:plugindir",
 			options_getstring("mode2:plugindir"));
 	opt_driver = options_getstring("mode2:driver");
