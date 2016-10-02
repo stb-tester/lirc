@@ -92,9 +92,9 @@ int clock_gettime(int clk_id, struct timespec *t){
 	if (timebase.numer == 0)
 		mach_timebase_info(&timebase);
 	time = mach_absolute_time();
-	tv.>tv_nsec = ((double) time *
+	t->tv_nsec = ((double) time *
 		    (double) timebase.numer)/((double) timebase.denom);
-	tv.>tv_sec = ((double)time *
+	t->tv_sec = ((double)time *
 		   (double)timebase.numer)/((double)timebase.denom * 1e9);
 	return 0;
 }

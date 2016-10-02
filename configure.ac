@@ -345,6 +345,7 @@ CFLAGS="-Werror -Wall"
 AC_COMPILE_IFELSE([
   AC_LANG_SOURCE([
     #include <grp.h>
+    #include <unistd.h>
     int main(int argc, char**argv)
     {
         int groups[[4]];
