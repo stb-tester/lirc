@@ -248,8 +248,9 @@ struct driver {
 extern struct driver drv;
 #endif
 
-/** Raad-only access to drv for application.*/
+/** Read-only access to drv for application.*/
 extern const struct driver* const curr_driver;
+
 
 #ifdef __cplusplus
 }
