@@ -110,6 +110,14 @@ typedef struct {
 #define USB_TIMEOUT (1000 * 10)
 #define CONTROL_BUFFERSIZE 128
 
+/** Not all platforms (macos...) defines strchrnul, so: */
+static const char* my_strchrnul(const char *s, int c)
+{
+	const char *ptr = strchr(s, c);
+
+	return ptr ? ptr : strchr(s, '\0');
+}
+
 static const logchannel_t logchannel = LOG_DRIVER;
 
 static int srm7500_init(void);
@@ -206,7 +214,7 @@ static int srm7500_init(void)
 	while (op_start < string_end) {
 		int result;
 
-		op_end = strchrnul(op_start, ',');
+		op_end = my_strchrnul(op_start, ',');
 		if (!strncmp(op_start, "macShortAddress=", 16)) {
 			result = sscanf(op_start + 16, "%hhx:%hhx", macShortAddress, macShortAddress + 1);
 			if (result == 2)
