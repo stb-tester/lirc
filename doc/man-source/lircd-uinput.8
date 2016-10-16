@@ -1,4 +1,4 @@
-.TH LIRCD-UINPUT "8" "Last change: Aug 2016" "lircd.uinput @VERSION" "System Managers Manual"
+.TH LIRCD-UINPUT "8" "Last change: Oct 2016" "lircd.uinput @version@" "System Managers Manual"
 
 .\" Copyright (c) 2015, Alec Leamas
 .\"
@@ -161,7 +161,7 @@ Display version info.
 
 .SH REPEAT HANDLING
 
-After receiving a keypress events the kernel will start emitting repeat
+After receiving a keypress event the kernel will start emitting repeat
 events to applications until
 .B lircd-uinput
 emits a corresponding release event.
@@ -193,7 +193,7 @@ By design the repeat parameters can't be set in an atomic way
 during input device registration so this option is prone to
 race conditions.
 .P
-\&.Note that the
+Note that the
 .B lircd-uinput
 repeat-event handling differs from
 .BR lircd(8)
