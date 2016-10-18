@@ -401,10 +401,10 @@ int read_timeout(int fd, char* buf, int len, int timeout_us)
 	 * waiting as long as there are EINTR.
 	 */
 	do
-		ret = poll(&pfd, 1, timeout);
+		ret = curl_poll(&pfd, 1, timeout);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		log_perror_err("read_timeout: poll() failed");
+		log_perror_err("read_timeout: curl_poll() failed");
 		return -1;
 	};
 	if (ret == 0)
@@ -2037,14 +2037,16 @@ static int mywaitfordata(unsigned long maxusec)
 				}
 			}
 			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
-				ret = poll((struct pollfd *) &poll_fds.byindex,
-					    POLLFDS_SIZE,
-					    tv.tv_sec * 1000 + tv.tv_usec / 1000);
+				ret = curl_poll((struct pollfd *) &poll_fds.byindex,
+					         POLLFDS_SIZE,
+					         tv.tv_sec * 1000 + tv.tv_usec / 1000);
 			else
-				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, -1);
+				ret = curl_poll((struct pollfd*)&poll_fds.byindex,
+					         POLLFDS_SIZE,
+						 -1);
 
 			if (ret == -1 && errno != EINTR) {
-				log_perror_err("poll()() failed");
+				log_perror_err("curl_poll()() failed");
 				raise(SIGTERM);
 				continue;
 			}

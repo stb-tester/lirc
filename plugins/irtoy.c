@@ -194,7 +194,7 @@ read_with_timeout(int fd, void* buf, size_t count, long to_usec)
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && numread < count)) {
 
-		rc = poll(&pfd, 1, to_usec / 1000);
+		rc = curl_poll(&pfd, 1, to_usec / 1000);
 
 		if (rc == 0)
 			/* timeout */

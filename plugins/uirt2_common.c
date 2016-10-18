@@ -72,7 +72,7 @@ static ssize_t readagain(int fd, void* buf, size_t count)
 		pos += rc;
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && pos < count)) {
-		rc = poll(&pfd, 1, TIMEOUT_MS);
+		rc = curl_poll(&pfd, 1, TIMEOUT_MS);
 
 		if (rc == 0)
 			/* timeout */
@@ -95,7 +95,7 @@ static int mywaitfordata(uirt2_t* dev, long timeout_usec)
 	struct pollfd pfd = {.fd = dev->fd, .events = POLLIN, .revents = 0};
 	int ret;
 
-	ret = poll(&pfd, 1, timeout_usec / 1000);
+	ret = curl_poll(&pfd, 1, timeout_usec / 1000);
 	return ret <= 0 ? 0 : 1;
 }
 

@@ -340,7 +340,7 @@ static ssize_t read_with_timeout(char* buf, size_t count, long timeout)
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && numread < count)) {
 
-		rc = poll(&pfd, 1, timeout ? (int) timeout : -1);
+		rc = curl_poll(&pfd, 1, timeout ? (int) timeout : -1);
 
 		if (rc == 0)
 			/* timeout */

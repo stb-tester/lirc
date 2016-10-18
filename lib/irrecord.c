@@ -113,10 +113,10 @@ int availabledata(void)
 
 	do {
 		do {
-			ret = poll(&pfd, 1, 0);
+			ret = curl_poll(&pfd, 1, 0);
 		} while (ret == -1 && errno == EINTR);
 		if (ret == -1) {
-			log_perror_err("availabledata: poll() failed");
+			log_perror_err("availabledata: curl_poll() failed");
 			continue;
 		}
 	} while (ret == -1);
@@ -497,11 +497,11 @@ static int mywaitfordata(__u32 maxusec)
 		.fd = curr_driver->fd, .events = POLLIN, .revents = 0};
 
 	do {
-		ret = poll(&pfd, 1, maxusec / 1000);
+		ret = curl_poll(&pfd, 1, maxusec / 1000);
 	} while (ret == -1 && errno == EINTR);
 
 	if (ret == -1 && errno != EINTR)
-		log_perror_err("mywaitfordata: poll() failed");
+		log_perror_err("mywaitfordata: curl_poll() failed");
 	return (pfd.revents & POLLIN) != 0;
 }
 

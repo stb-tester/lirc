@@ -486,15 +486,14 @@ static void lircd_uinput(const struct options* opts)
 		fds.fd = opts->inputfd;
 		fds.events = POLLIN;
 		fds.revents = 0;
-		r = poll(&fds, 1, timeout);
-
-		if (r < 0 || (fds.revents & POLLERR) != 0) {
-			log_error("POLLERR or poll() error, exiting.");
-			exit(EXIT_FAILURE);
-		}
+		r = curl_poll(&fds, 1, timeout);
 		if (r == 0) {
 			send_release_event(opts);
 			continue;
+		}
+		if ((fds.revents & POLLERR) != 0 || r < 0 ) {
+			log_notice("POLLERR or curl_poll() error, exiting.");
+			exit(EXIT_FAILURE);
 		}
 		r = read(opts->inputfd, buffer, PACKET_SIZE);
 		if (r > 0) {

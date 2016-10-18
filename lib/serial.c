@@ -46,6 +46,8 @@
 #endif
 
 #include "lirc/lirc_log.h"
+#include "lirc/curl_poll.h"
+
 
 static const logchannel_t logchannel = LOG_LIB;
 
@@ -557,12 +559,12 @@ int tty_read(int fd, char* byte)
 	struct pollfd pfd = {.fd = fd, .events = POLLIN, .revents = 0};
 	int ret;
 
-	ret = poll(&pfd, 1, 1000); /* 1 second timeout. */
+	ret = curl_poll(&pfd, 1, 1000); /* 1 second timeout. */
 	if (ret == 0) {
 		log_error("tty_read(): timeout");
 		return -1;      /* received nothing, bad */
 	} else if (ret != 1) {
-		log_perror_debug("tty_read(): poll() failed");
+		log_perror_debug("tty_read(): curl_poll() failed");
 		return -1;
 	}
 	if (read(fd, byte, 1) != 1) {

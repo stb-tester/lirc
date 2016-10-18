@@ -157,7 +157,7 @@ static void irlink_read_flush(const int port)
 
 	/* FIXME: This loop makes no sense. */
 	for (;; ) {
-		if (poll(&pfd, 1, 0) > 0) {
+		if (curl_poll(&pfd, 1, 0) > 0) {
 			if (read(port, &data, sizeof(data)) <= 0)
 				break;
 		} else {
