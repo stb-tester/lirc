@@ -26,6 +26,7 @@ liblirc_la_SOURCES          = config_file.c \
                               lirc_log.c \
                               lirc_options.c \
                               lirc-utils.c \
+                              curl_poll.c  \
                               receive.c  \
                               release.c \
                               serial.c \
@@ -35,7 +36,7 @@ libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 4:0:4
-liblirc_client_la_SOURCES   = lirc_client.c lirc_client.h lirc_log.c lirc_log.h
+liblirc_client_la_SOURCES   = lirc_client.c curl_poll.c curl_poll.h lirc_client.h lirc_log.c lirc_log.h
 
 liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
 liblirc_driver_la_SOURCES   = driver.h \
@@ -44,6 +45,8 @@ liblirc_driver_la_SOURCES   = driver.h \
                               ir_remote_types.h \
                               lirc_log.c \
                               lirc_log.h \
+                              curl_poll.c \
+                              curl_poll.h \
                               receive.c \
                               receive.h \
                               release.c \
@@ -60,6 +63,7 @@ lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
                               config_flags.h \
                               ciniparser.h \
+                              curl_poll.h \
                               dictionary.h \
                               drv_admin.h \
                               dump_config.h \

@@ -23,6 +23,7 @@
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
 #include "lirc/lirc-utils.h"
+#include "lirc/curl_poll.h"
 #include "lirc/config_file.h"
 #include "lirc/dump_config.h"
 #include "lirc/input_map.h"

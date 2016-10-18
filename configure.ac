@@ -55,8 +55,8 @@ LIBUSB_CONFIG="pkg-config libusb"
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([fcntl.h limits.h sys/ioctl.h sys/time.h syslog.h unistd.h])
-AC_CHECK_HEADERS([util.h libutil.h pty.h])
+AC_CHECK_HEADERS([fcntl.h limits.h poll.h sys/ioctl.h sys/poll.h sys/time.h ])
+AC_CHECK_HEADERS([syslog.h unistd.h util.h libutil.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -191,6 +191,9 @@ AH_TEMPLATE([HAVE_SYS_POLL_H],
 AH_TEMPLATE([HAVE_SCSI],
         [defined if SCSI API is available])
 
+AH_TEMPLATE([HAVE_SELECT],
+        [defined if select(2) is available])
+
 AH_TEMPLATE([HAVE_SOUNDCARD],
         [defined if soundcard API is available])
 
@@ -283,6 +286,37 @@ if test "$have_alsa" = "yes"; then
 else
   AM_CONDITIONAL([BUILD_ALSA_SB_RC],[false])
 fi
+
+dnl see https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/
+AC_MSG_CHECKING(for working poll(2))
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+  #include <errno.h>
+  #include <fcntl.h>
+  #include <poll.h>
+  #include <stdio.h>
+  #include <sys/time.h>
+]],[[
+  int fd = open("/dev/tty", O_RDONLY);
+  if (fd == -1) return 2;
+  struct pollfd pfd = {fd, 1, 0};
+
+  struct timeval before, after;
+  gettimeofday(&before, NULL);
+  int rc = poll(&pfd, 1, 500);
+  if (rc < 0) return errno;
+  if (rc > 0) return rc;
+  gettimeofday(&after, NULL);
+
+  suseconds_t us = (after.tv_sec - before.tv_sec) * 1000000 +
+    (after.tv_usec - before.tv_usec);
+  return us >= 400000 ? 0 : 1;
+]])],[
+  AC_DEFINE(HAVE_POLL_FINE)
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+])
+
 
 dnl check for kernel-headers
 AC_CHECK_HEADERS([linux/input.h],
