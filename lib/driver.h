@@ -29,6 +29,7 @@
 #endif
 
 #include "lirc/ir_remote_types.h"
+#include "lirc/curl_poll.h"
 
 #ifdef __cplusplus
 extern "C" {

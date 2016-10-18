@@ -121,6 +121,7 @@
 
 #include "lirc/paths.h"
 #include "lirc/lirc_config.h"
+#include "lirc/curl_poll.h"
 
 #ifdef __cplusplus
 extern "C" {
