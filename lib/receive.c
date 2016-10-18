@@ -171,12 +171,12 @@ int waitfordata(__u32 maxusec)
 	while (1) {
 		do {
 			do {
-				ret = poll(&pfd, 1, (maxusec > 0) ? (maxusec / 1000) : -1);
+				ret = curl_poll(&pfd, 1, (maxusec > 0) ? (maxusec / 1000) : -1);
 				if (maxusec > 0 && ret == 0)
 					return 0;
 			} while (ret == -1 && errno == EINTR);
 			if (ret == -1) {
-				log_perror_err("poll() failed");
+				log_perror_err("curl_poll() failed");
 				continue;
 			}
 		} while (ret == -1);

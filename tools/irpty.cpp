@@ -89,7 +89,7 @@ static void copy_loop(int ptym, int ignoreeof)
 	} else if (!child) {
 
 		while (1) {
-			poll(pfd, 2, 0);
+			curl_poll(pfd, 2, 0);
 
 			if (pfd[1].revents & POLLIN) { /* STDIN_FILENO */
 				if ((nread = read(STDIN_FILENO, buf, BUFFSIZE)) < 0)

@@ -163,9 +163,9 @@ static void* atwf83_repeat(void* arg)
 	while (1) {
 		// Initialize set to monitor device's events
 		if (pressed)
-			sel = poll(&pfd, 1, delay);
+			sel = curl_poll(&pfd, 1, delay);
 		else
-			sel = poll(&pfd, 1, -1);
+			sel = curl_poll(&pfd, 1, -1);
 		switch (sel) {
 		case 1:
 			// Data ready in device's file
@@ -203,7 +203,7 @@ static void* atwf83_repeat(void* arg)
 			break;
 		default:
 			// Error
-			log_error("(%s) poll() failed", __func__);
+			log_error("(%s) curl_poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe

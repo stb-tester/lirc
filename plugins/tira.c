@@ -200,12 +200,12 @@ int child_process(int pipe_w, int oldprotocol)
 	trailtime.tv_usec = 0;
 
 	while (1) {
-		tmp = poll(&pfd, 1, 1);  /* 1 ms timeout. */
+		tmp = curl_poll(&pfd, 1, 1);  /* 1 ms timeout. */
 
 		if (tmp == 0)
 			continue;
 		if (tmp < 0) {
-			log_perror_err("child_process: Error  in poll()");
+			log_perror_err("child_process: Error  in curl_poll()");
 			return 0;
 		}
 

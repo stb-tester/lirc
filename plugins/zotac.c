@@ -334,9 +334,9 @@ static void* zotac_repeat(void* arg)
 	while (1) {
 		// Initialize set to monitor device's events
 		if (pressed)
-			sel = poll(&pfd, 1, delay_ms);
+			sel = curl_poll(&pfd, 1, delay_ms);
 		else
-			sel = poll(&pfd, 1, 0);
+			sel = curl_poll(&pfd, 1, 0);
 		switch (sel) {
 		case 1:
 			// Data ready in device's file
@@ -374,7 +374,7 @@ static void* zotac_repeat(void* arg)
 			break;
 		default:
 			// Error
-			log_error("(%s) poll() failed", __func__);
+			log_error("(%s) curl_poll() failed", __func__);
 			goto exit_loop;
 		}
 		// Send code to main thread through pipe

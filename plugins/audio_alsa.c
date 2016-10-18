@@ -122,9 +122,9 @@ static int mywaitfordata(long maxusec)
 				if (poll_ms > 1000 || poll_ms == 0)
 					poll_ms = 1000;
 			}
-			ret = poll(&pfd, 1, poll_ms == 0 ? -1 : poll_ms);
+			ret = curl_poll(&pfd, 1, poll_ms == 0 ? -1 : poll_ms);
 			if (ret == -1 && errno != EINTR) {
-				log_perror_err("poll() failed");
+				log_perror_err("curl_poll() failed");
 				continue;
 			}
 			gettimeofday(&now, NULL);

@@ -196,10 +196,10 @@ inline int read_timeout(int fd, char* buf, int len, int timeout_us)
 	 */
 
 	do
-		ret = poll(&pfd, 1, timeout * 1000);
+		ret = curl_poll(&pfd, 1, timeout * 1000);
 	while (ret == -1 && errno == EINTR);
 	if (ret == -1) {
-		log_perror_err("read_timeout, poll() failed");
+		log_perror_err("read_timeout, curl_poll() failed");
 		return -1;
 	};
 	if (ret == 0)
@@ -628,11 +628,11 @@ static void loop(int sockfd, int lircdfd)
 				poll_fds.byname.clis[i].events = POLLIN;
 			}
 			log_trace2("poll");
-			ret = poll((struct pollfd*) &poll_fds.byindex,
-				   POLLFDS_SIZE,
-				   0);
+			ret = curl_poll((struct pollfd*) &poll_fds.byindex,
+				         POLLFDS_SIZE,
+				         0);
 			if (ret == -1 && errno != EINTR) {
-				log_perror_err("loop: poll() failed");
+				log_perror_err("loop: curl_poll() failed");
 				raise(SIGTERM);
 				continue;
 			}

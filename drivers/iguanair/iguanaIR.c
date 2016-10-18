@@ -328,7 +328,7 @@ static lirc_t readdata(lirc_t timeout)
 	lirc_t code = 0;
 	struct pollfd pfd = {.fd = drv.fd, .events = POLLIN, .revents = 0};
 	/* attempt a read with a timeout using select */
-	if (poll(&pfd, 1, timeout / 1000) > 0) {
+	if (curl_poll(&pfd, 1, timeout / 1000) > 0) {
 		/* if we failed to get data return 0 */
 		if (read(drv.fd, &code, sizeof(lirc_t)) <= 0)
 			iguana_deinit();
