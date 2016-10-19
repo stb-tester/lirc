@@ -1,3 +1,20 @@
+0.9.4c TBD
+ * New curl_poll files adds a new MIT license. Lirc now carries
+   GPL, BSD and MIT licenses.
+ * Several patches to make lirc work again on macos (#226, #227).
+ * New tool irtext2udp generates udp plugin data (#197).
+ * plugins: girs: Add udp/receive support (#201).
+ * mode2: Fix broken --raw option (#223).
+ * lirc-make-devinput: Fix that two remotes has the same name (#222).
+ * lircd: Warn for duplicate remote definitions (#222).
+ * lircd: Retry temporary unavailable write sockets (#221).
+ * contrib: Fix usb devices' acl permissions (rhbz #1364744).
+ * lirc-setup: Fix crasher bugfix (Fedora abort trace).
+ * contrib: disable udev /dev/uinput rule requiring lirc user.
+ * plugins: audio_alsa: Fix byte truncating in 16-bit data (#218):
+ * plugins: irtoy: improve error handling (#220).
+ * Minor documentation fixes.
+
 0.9.4b 9/8/16
   * lircd-uinput: A multitude of fixes (#213, #211, #177). Adds new options.
   * lirc_client:  Fix "Can't redirect irsend output" (#207).
