@@ -49,7 +49,7 @@
 static const logchannel_t logchannel = LOG_LIB;
 
 /*
- * This is a wrapper around poll().  If poll() does not exist, then
+ * A wrapper around poll().  If poll() does not exist, then
  * select() is used instead.  An error is returned if select() is
  * being used and a file descriptor is too large for FD_SETSIZE.
  * A negative timeout value makes this function wait indefinitely,
@@ -57,7 +57,8 @@ static const logchannel_t logchannel = LOG_LIB;
  * negative timeout is ignored and the function times out immediately.
  *
  * Return values:
- *   -1 = system call error or fd >= FD_SETSIZE
+ *   -1 = system call error or invalid fd. errno as set by poll()/select()
+ *        or EINVAL if fd > FD_SETSIZE.
  *    0 = timeout
  *    N = number of structures with non zero revent fields
  */
