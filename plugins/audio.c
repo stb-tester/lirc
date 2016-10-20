@@ -28,9 +28,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <termios.h>
-#ifdef __APPLE__
+
+#ifdef HAVE_UTIL_H
 #include <util.h>
-#else
+#endif
+
+#ifdef HAVE_PTY_H
 #include <pty.h>
 #endif
 
@@ -380,7 +383,6 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 {
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
-
 	const char* devicetype = "custom";
 	const char* latencytype = "custom";
 	int nrdevices = Pa_GetDeviceCount();

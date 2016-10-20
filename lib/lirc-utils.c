@@ -21,7 +21,7 @@
 #endif
 
 #include "lirc/lirc_log.h"
-#include "util.h"
+#include "lirc-utils.h"
 
 static const logchannel_t logchannel = LOG_LIB;
 
