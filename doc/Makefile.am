@@ -205,6 +205,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irsimsend.1 \
                            $(srcdir)/man-source/irsend.1 \
                            $(srcdir)/man-source/irtestcase.1 \
+                           $(srcdir)/man-source/irtext2udp.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
@@ -271,6 +272,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irsimreceive.1 \
                            man/irsimsend.1 \
                            man/irsend.1 \
+                           man/irtext2udp.1 \
                            man/irtestcase.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
@@ -298,6 +300,7 @@ manpage_html            += man-html/ircat.html \
                            man-html/irsimsend.html \
                            man-html/irsend.html \
                            man-html/irtestcase.html \
+                           man-html/irtext2udp.html \
                            man-html/irw.html \
                            man-html/lirc-config-tool.html \
                            man-html/lirc.html \
