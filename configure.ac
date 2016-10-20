@@ -166,6 +166,18 @@ AH_TEMPLATE([HAVE_LINUX_DEVINPUT],
 AH_TEMPLATE([HAVE_LINUX_HIDDEV_FLAG_UREF],
         [defined if Linux hiddev HIDDEV_FLAG_UREF flag is available])
 
+AH_TEMPLATE([HAVE_POLL_FINE],
+        [defined  if poll() is available and seemingly without bugs])
+
+AH_TEMPLATE([HAVE_POLL_H],
+        [defined  if poll.h is available])
+
+AH_TEMPLATE([HAVE_PTY_H],
+        [defined  if pty.h is available])
+
+AH_TEMPLATE([HAVE_SYS_POLL_H],
+        [defined  if sys/poll.h is available])
+
 AH_TEMPLATE([HAVE_SCSI],
         [defined if SCSI API is available])
 
@@ -194,6 +206,9 @@ AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
 
 AH_TEMPLATE([HAVE_LIBUDEV_H],
         [Define if libudev is installed])
+
+AH_TEMPLATE([HAVE_UTIL_H],
+        [Define if util.h is installed])
 
 
 AC_CHECK_HEADER(usb.h,[

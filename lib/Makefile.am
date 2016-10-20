@@ -24,11 +24,11 @@ liblirc_la_SOURCES          = config_file.c \
                               line_buffer.cpp \
                               lirc_log.c \
                               lirc_options.c \
+                              lirc-utils.c \
                               receive.c  \
                               release.c \
                               serial.c \
-                              transmit.c \
-                              util.c
+                              transmit.c
 
 libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
@@ -72,11 +72,11 @@ dist_lircinclude_HEADERS    = config_file.h \
                               lirc_config.h \
                               lirc_log.h \
                               lirc_options.h \
+                              lirc-utils.h \
                               release.h \
                               receive.h \
                               serial.h \
                               transmit.h \
-                              util.h \
                               input_map.inc
 
 driver_api.dox: $(srcdir)/driver_api.doxhead  \

@@ -22,6 +22,7 @@
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
 #include "lirc/lirc_options.h"
+#include "lirc/lirc-utils.h"
 #include "lirc/config_file.h"
 #include "lirc/dump_config.h"
 #include "lirc/input_map.h"
@@ -34,6 +35,5 @@
 #include "lirc/serial.h"
 #include "lirc/transmit.h"
 #include "lirc/ciniparser.h"
-#include "lirc/util.h"
 
 #endif
