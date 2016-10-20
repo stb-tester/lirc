@@ -7,6 +7,7 @@ for f in $files; do
     i=$((i + 1))
     sed -e 's|href=".*sudo.html"|href="https://manned.org/sudo"|g' \
     -e 's|href=".*xdotool.html"|href="http://https://manned.org/xdotool"|g' \
+    -e 's|href=".*socat.html"|href="https://manned.org/socat.1"|g' \
     -e 's|href=".*XStringToKeysym.3x.html"|href="https://www.x.org/releases/X11R7.5/doc/man/man3/XStringToKeysym.3.html"|g' \
     -e 's|href=".*XKeysymToKeycode.3x.html"|href=https://www.x.org/releases/X11R7.5/doc/man/man3/XKeysymToKeycode.3.html"|g' \
     -e 's|href=".*XClassHint.3x.html"|href="https://www.x.org/releases/X11R7.5/doc/man/man3/XAllocClassHint.3.html"|g' \
