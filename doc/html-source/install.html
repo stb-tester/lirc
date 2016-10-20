@@ -34,8 +34,8 @@
           not provide a python3 link (e. g., just python3.3)
           the <em>--enable-python3-fix</em> ./configure option
           installs a wrapper.</li>
-      <li>Building requires <em>modinfo</em>, often in the package 
-          kmod. Without modinfo, all kernel drivers are excluded 
+      <li>Building requires <em>modinfo</em>, often in the package
+          kmod. Without modinfo, all kernel drivers are excluded
           from the build. </li>
       <li>Building requires <em>pkg-config</em>.</li>
       <li>Building requires kernel headers, often in the kernel-headers
@@ -60,14 +60,6 @@
           <em>xmode2</em> requires the X11 header files. </li>
       <li> The audio drivers needs the alsa and portaudio libs
            (libraries and headers). </li>
-       <li>
-          The <em>Irman (=UIR)</em> driver requires libirman available at
-         <A HREF="http://www.lirc.org/software/snapshots/"><em>libirman</em>
-         </A>. To build, the irman library must exist as a dynamic .so module.
-         At the time of writing this is true for the Fedora package, but
-         not for Debian. You can build and install the library locally
-         directly from the sources to walk around problems with the
-         packaged version. </li>
        <li>
          The <em>ftdi</em> and <em>ftdix</em> drivers require libftdi from
          <a href="http://www.intra2net.com/de/produkte/opensource/ftdi/">
