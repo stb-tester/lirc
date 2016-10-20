@@ -1,4 +1,4 @@
-0.9.4c TBD
+0.9.4c 22/10/16
  * New curl_poll files adds a new MIT license. Lirc now carries
    GPL, BSD and MIT licenses.
  * Several patches to make lirc work again on macos (#226, #227).
