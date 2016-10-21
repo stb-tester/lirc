@@ -48,6 +48,7 @@
 
 #include "lirc_driver.h"
 #include "lirc/serial.h"
+#include "lirc/curl_poll.h"
 
 /** Devices enumerated by device_hint. */
 #define DEVICE_HINT \
@@ -331,7 +332,7 @@ static ssize_t read_with_timeout(char* buf, size_t count, int timeout)
 	size_t numread = 0;
 	struct pollfd pfd = {.fd = dev.fd, .events = POLLIN, .revents = 0};
 
-	rc = poll(&pfd, 1, timeout ? timeout : -1);
+	rc = curl_poll(&pfd, 1, timeout ? timeout : -1);
 	if (rc == 0)
 		return -1;
 	rc = read(dev.fd, buf, count);
@@ -341,7 +342,7 @@ static ssize_t read_with_timeout(char* buf, size_t count, int timeout)
 
 	while ((rc == -1 && errno == EAGAIN) || (rc >= 0 && numread < count)) {
 
-		rc = poll(&pfd, 1, timeout ? timeout : -1);
+		rc = curl_poll(&pfd, 1, timeout ? timeout : -1);
 
 		if (rc == 0)
 			/* timeout */
