@@ -55,7 +55,7 @@
 	"/bin/sh ls /dev/ttyACM* /dev/ttyUSB* /dev/arduino* 2>/dev/null"
 
 #define DRIVER_NAME "girs"
-#define DEFAULT_DEVICE "/dev/ttyAMC0"
+#define DEFAULT_DEVICE "/dev/ttyACM0"
 #define DRIVER_RESOLUTION 50
 #define DRIVER_VERSION "2016-08-19"
 
