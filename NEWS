@@ -3,6 +3,7 @@
    GPL, BSD and MIT licenses.
  * Several patches to make lirc work again on macos (#226, #227).
  * New tool irtext2udp generates udp plugin data (#197).
+ * Fix FTBS errors on linux kernel >= 4.8.0 (#232).
  * plugins: girs: Add udp/receive support (#201).
  * mode2: Fix broken --raw option (#223).
  * lirc-make-devinput: Fix that two remotes has the same name (#222).
