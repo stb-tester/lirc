@@ -657,6 +657,8 @@ static int is_open = 0;
 static struct ftdi_context ftdic;
 
 static int parse_config(const char* device_config, struct ftdix_config* config);
+static int hwftdix_set_option(struct ftdix_config* config, const char* key,
+	const char* value);
 static void hwftdix_clear_config(struct ftdix_config* config);
 
 static int hwftdix_open(const char* device)
@@ -802,22 +804,8 @@ static int parse_config(const char* device_config, struct ftdix_config* config)
 			goto error;
 		}
 		*value++ = '\0';
-
-		if (strcmp(p, "vendor") == 0) {
-			config->vendor = strtol(value, NULL, 0);
-		} else if (strcmp(p, "product") == 0) {
-			config->product = strtol(value, NULL, 0);
-		} else if (strcmp(p, "desc") == 0) {
-			config->desc = strdup(value);
-		} else if (strcmp(p, "serial") == 0) {
-			config->serial = strdup(value);
-		} else if (strcmp(p, "output") == 0) {
-			config->output = strtol(value, NULL, 0);
-		} else {
-			log_error("unrecognised device configuration option: "
-				  "'%s'", p);
+		if (hwftdix_set_option(config, p, value) != 0)
 			goto error;
-		}
 
 next:
 		if (comma == NULL)
@@ -839,6 +827,29 @@ static void hwftdix_clear_config(struct ftdix_config* config)
 	memset(config, 0, sizeof(*config));
 }
 
+static int hwftdix_set_option(struct ftdix_config* config, const char* key,
+	const char* value)
+{
+	if (strcmp(key, "vendor") == 0) {
+		config->vendor = strtol(value, NULL, 0);
+	} else if (strcmp(key, "product") == 0) {
+		config->product = strtol(value, NULL, 0);
+	} else if (strcmp(key, "desc") == 0) {
+		config->desc = strdup(value);
+	} else if (strcmp(key, "serial") == 0) {
+		config->serial = strdup(value);
+	} else if (strcmp(key, "output") == 0) {
+		config->output = strtol(value, NULL, 0);
+	} else {
+		log_error("unrecognised device configuration option: '%s'",
+			  key);
+		goto error;
+	}
+
+	return 0;
+error:
+	return 1;
+}
 
 static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
 {
@@ -893,6 +904,18 @@ out:
 	return success;
 }
 
+static int hwftdix_drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_SET_OPTION: {
+		struct option_t *option = (struct option_t*) arg;
+		return hwftdix_set_option(&config, option->key, option->value);
+	}
+	default:
+		return drvctl_func(cmd, arg);
+	}
+}
+
 const struct driver hw_ftdi = {
 	.name		= "ftdi",
 	.device		= "",
@@ -931,7 +954,7 @@ const struct driver hw_ftdix = {
 	.send_func	= hwftdix_send,
 	.rec_func	= NULL,
 	.decode_func	= receive_decode,
-	.drvctl_func	= drvctl_func,
+	.drvctl_func	= hwftdix_drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.5",
