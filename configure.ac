@@ -305,6 +305,19 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[
   AC_MSG_RESULT(yes)
 ],[
   AC_MSG_RESULT(no)
+],[
+  case x$HAVE_WORKING_POLL in
+    xyes)
+      AC_MSG_RESULT(yes)
+      AC_DEFINE(HAVE_POLL_FINE)
+      ;;
+    xno)
+      AC_MSG_RESULT(no)
+      ;;
+    *) AC_MSG_ERROR([
+         Define HAVE_WORKING_POLL to "yes" or "no" when cross-compiling])
+      ;;
+  esac
 ])
 
 
@@ -428,6 +441,9 @@ AC_ARG_ENABLE([python3_fix],
   [],
   [enable_python3_fix="no"])
 AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
+
+AC_ARG_VAR(HAVE_WORKING_POLL,[
+	   On cross-compile: Target has a working poll(2) implementation])
 
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
