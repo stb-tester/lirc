@@ -645,8 +645,6 @@ struct ftdix_config {
 	char* desc;
 	char* serial;
 	uint32_t output;
-
-	char* _config_text;
 };
 
 static struct ftdix_config ftdix_default_config = {
@@ -776,14 +774,14 @@ static void sched_restore(int* orig_scheduler)
 
 static int parse_config(const char* device_config, struct ftdix_config* config)
 {
-	char* p;
+	char* p = NULL;
 
 	*config = ftdix_default_config;
 
 	/* Parse the device string, which has the form key=value,
 	 * key=value, ...  This isn't very nice, but it's not a lot
 	 * more complicated than what some of the other drivers do. */
-	config->_config_text = p = strdup(device_config);
+	p = strdup(device_config);
 	assert(p);
 	while (p) {
 		char* comma;
@@ -810,9 +808,9 @@ static int parse_config(const char* device_config, struct ftdix_config* config)
 		} else if (strcmp(p, "product") == 0) {
 			config->product = strtol(value, NULL, 0);
 		} else if (strcmp(p, "desc") == 0) {
-			config->desc = value;
+			config->desc = strdup(value);
 		} else if (strcmp(p, "serial") == 0) {
-			config->serial = value;
+			config->serial = strdup(value);
 		} else if (strcmp(p, "output") == 0) {
 			config->output = strtol(value, NULL, 0);
 		} else {
@@ -826,15 +824,18 @@ next:
 			break;
 		p = comma + 1;
 	}
+	free(p);
 	return 0;
 error:
+	free(p);
 	hwftdix_clear_config(config);
 	return 1;
 }
 
 static void hwftdix_clear_config(struct ftdix_config* config)
 {
-	free(config->_config_text);
+	free(config->desc);
+	free(config->serial);
 	memset(config, 0, sizeof(*config));
 }
 
