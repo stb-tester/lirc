@@ -6,8 +6,19 @@
 #ifndef _LINUX_LIRC_H
 #define _LINUX_LIRC_H
 
+#include <config.h>
+
+#ifdef HAVE_LINUX_TYPES_H
 #include <linux/types.h>
+#else
+#include <sys/types.h>
+#endif
+
+#ifdef HAVE_LINUX_IOCTL_H
 #include <linux/ioctl.h>
+#else
+#include <sys/ioctl.h>
+#endif
 
 #define PULSE_BIT       0x01000000
 #define PULSE_MASK      0x00FFFFFF
