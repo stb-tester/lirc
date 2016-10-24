@@ -666,11 +666,15 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 */
 
 struct ftdix_config {
+	/* Either device is of the form vendor=xxxx,product=xxxx */
 	uint32_t vendor;
 	uint32_t product;
 	char* desc;
 	char* serial;
 	uint32_t output;
+
+	/* ... or is a absolute pathname beginning with '/' */
+	char* devname;
 
 	char* _config_text;
 };
@@ -690,6 +694,7 @@ static void hwftdix_clear_config(struct ftdix_config* config);
 static int hwftdix_open(const char* device)
 {
 	struct ftdix_config config = {0};
+	int res;
 
 	if (is_open) {
 		log_info("Ignoring attempt to reopen ftdi device");
@@ -711,8 +716,40 @@ static int hwftdix_open(const char* device)
 	}
 
 	/* Open the USB device */
-	if (ftdi_usb_open_desc(&ftdic, config.vendor, config.product,
-			       config.desc, config.serial) < 0) {
+	if (config.devname) {
+		char *desc;
+		char real[PATH_MAX];
+		size_t pathlen;
+
+		/* Need to resolve symlinks that may have been set-up by udev */
+		if (realpath(config.devname, real) == NULL) {
+			log_error("ftdi: unable to resolve device filename %s: "
+				  "%s", config.devname, strerror(errno));
+			goto fail_inited;
+		}
+
+		/* path should be something like /dev/bus/usb/BBB/DDD or
+		 * /proc/fs/usb/BBB/DDD.  ftdi_usb_open_string wants a string of
+		 * the form d:BBB/DDD.  Here we transform the former to the
+		 * latter in-place.
+		 */
+		pathlen = strlen(real);
+		if (pathlen < 9) {
+			log_error("ftdi: resolved device filename '%s' is too "
+			          "short.  It should be of the form "
+			          "/dev/bus/usb/BBB/DDD", real);
+			goto fail_inited;
+		}
+		desc = real + pathlen - 9;
+		desc[0] = 'd';
+		desc[1] = ':';
+		res = ftdi_usb_open_string(&ftdic, desc);
+	} else {
+		res = ftdi_usb_open_desc(&ftdic, config.vendor, config.product,
+					 config.desc, config.serial);
+	}
+
+	if (res < 0) {
 		log_error("unable to open FTDI device (%s)",
 			  ftdi_get_error_string(&ftdic));
 		goto fail_inited;
@@ -805,11 +842,22 @@ static int parse_config(const char* device_config, struct ftdix_config* config)
 	char* p;
 
 	*config = ftdix_default_config;
-
-	/* Parse the device string, which has the form key=value,
-	 * key=value, ...  This isn't very nice, but it's not a lot
-	 * more complicated than what some of the other drivers do. */
 	config->_config_text = p = strdup(device_config);
+
+	/* Parse the device string.  This is either a filename (preferred) or
+	 * has the form key=value, key=value, ... (legacy).  We distinguish
+	 * between the two by requiring any filename to be absolute (and thus
+	 * start with a /).
+	 */
+	if (device_config && device_config[0] == '/') {
+		config->devname = p;
+		return 0;
+	}
+	config->devname = NULL;
+
+	/* This isn't very nice, but it's not a lot more complicated than what
+	 * some of the other drivers do. */
+	p = strdup(device_config);
 	assert(p);
 	while (p) {
 		char* comma;
