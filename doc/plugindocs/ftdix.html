@@ -39,15 +39,22 @@ based on the FT232R.</p>
 
 <p>
 By default, it searches for an usb device with <i>vendor:product</i> matching
-0x0403:0x6015. This can be changed using the device argument which is a
-comma-separated string of <i>key=value</i> assignments. The available keys
-are:</p>
+0x0403:0x6015. This can be changed using the device argument which is either:
+</p>
+
 <ul>
-    <li>vendor: Numeric USB idVendor value of device to use [0403]</li>
-    <li>product: Numeric USB idVendor value of device to use [6015]</li>
-    <li>desc: USB descriptor of device to use [*]</li>
-    <li>serial: USB idSerial value of device to use [*]</li>
-    <li>output: output pin [2]</li>
+    <li>An absolute path to a device file starting with <code>/</code> (e.g.
+    <code>/dev/bus/usb/002/006</code>) or</li>
+    <li>A comma-separated string of <i>key=value</i> assignments. The available
+    keys are:
+        <ul>
+            <li>vendor: Numeric USB idVendor value of device to use [0403]</li>
+            <li>product: Numeric USB idVendor value of device to use [6015]</li>
+            <li>desc: USB descriptor of device to use [*]</li>
+            <li>serial: USB idSerial value of device to use [*]</li>
+            <li>output: output pin [2]</li>
+        </ul>
+    </li>
 </ul>
 <p>
 The driver has support for listing available devices using e. g.,
