@@ -10,5 +10,5 @@ includedir=@includedir@
 pkgdatadir=@datadir@/lirc
 plugindir=${libdir}/lirc/plugins
 
-Libs: -L${libdir} -llirc
+Libs: -L${libdir} -llirc_client
 Cflags: -I${includedir}
