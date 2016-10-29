@@ -15,7 +15,6 @@ AC_CONFIG_HEADERS(config.h)
 dnl Checks for kernel capabilities
 
 AM_CONDITIONAL([HAVE_DEVINPUT], [test -e "/dev/input"])
-AM_CONDITIONAL([HAVE_UINPUT], [test -e /dev/uinput])
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -95,6 +94,9 @@ fi
 
 lockdir_default="/var/lock/lockdev"
 test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
+
+enable_uinput_default="no"
+test -e "/dev/uinput" && enable_uinput_default="yes"
 
 case $host_os in
     darwin*) osflags='-DDARWIN'
@@ -433,6 +435,12 @@ AC_ARG_WITH(lockdir,
   lockdir=${lockdir_default})
 AC_DEFINE_UNQUOTED(LIRC_LOCKDIR, "$lockdir")
 
+AC_ARG_ENABLE(uinput,
+  [  --enable-uinput         Build lircd-uinput (default=guessed)],
+  [ enable_uinput="${enableval}" ],
+  [ enable_uinput="${enable_uinput_default}"])
+AM_CONDITIONAL([ENABLE_UINPUT], [test x$enable_uinput = xyes])
+
 AC_ARG_ENABLE(install_etc,
 [  --install-etc           Install /etc/lirc configuration files(default=yes)],
 [ install_etc="${enableval}" ],
@@ -522,10 +530,10 @@ AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
 AC_REPORT_CONDITIONAL([HAVE_DOXYGEN])
 AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
+AC_REPORT_CONDITIONAL([ENABLE_UINPUT])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
 AC_REPORT_CONDITIONAL([NEED_PYTHON3])
 AC_REPORT_CONDITIONAL([DEVEL])
-AC_REPORT_CONDITIONAL([HAVE_UINPUT])
 AC_REPORT_CONDITIONAL([DARWIN])
 AC_REPORT_CONDITIONAL([BSD])
 

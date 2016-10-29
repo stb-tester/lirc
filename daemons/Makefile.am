@@ -16,7 +16,7 @@ lircrcd_LDADD           = ../lib/liblirc_client.la
 
 sbin_PROGRAMS           = lircd lircmd
 
-if HAVE_UINPUT
+if ENABLE_UINPUT
 sbin_PROGRAMS           += lircd-uinput
 endif
 
