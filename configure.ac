@@ -33,7 +33,7 @@ if test x$XSLTPROC != "xyes"; then
     AC_MSG_ERROR([
       xsltproc is required to build. It usually comes with libxml])
 fi
-AM_CONDITIONAL(HAVE_UINPUT, test -e /dev/uinput)
+AM_CONDITIONAL(HAVE_UINPUT, test -n "$HAVE_UINPUT" -o -e /dev/uinput)
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
@@ -445,6 +445,11 @@ AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
 	   On cross-compile: Target has a working poll(2) implementation])
+
+AC_ARG_VAR(HAVE_UINPUT,[
+  If not-empty, assume uinput is available despite missing /dev/uinput
+])
+
 
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
