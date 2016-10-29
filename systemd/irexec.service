@@ -20,7 +20,7 @@ Description=Handle events from IR remotes decoded by lircd(8)
 
 
 Type=simple
-ExecStart=/usr/sbin/irexec /etc/lirc/irexec.lircrc
+ExecStart=/usr/bin/irexec /etc/lirc/irexec.lircrc
 
 [Install]
 WantedBy=multi-user.target
