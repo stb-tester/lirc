@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#include "lirc/ir_remote.h"
+#include "ir_remote.h"
 
 /**
  * Parse a lircd.conf config file.
