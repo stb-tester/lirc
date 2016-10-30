@@ -75,12 +75,6 @@
 
 #include "lirc_private.h"
 
-#ifdef HAVE_INT_GETGROUPLIST_GROUPS
-#define lirc_gid int
-#else
-#define lirc_gid gid_t
-#endif
-
 #ifdef DARWIN
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
@@ -735,7 +729,7 @@ void drop_privileges(void)
 {
 	const char* user;
 	struct passwd* pw;
-	lirc_gid groups[32];
+	GETGROUPS_T groups[32];
 	int group_cnt = sizeof(groups)/sizeof(gid_t);
 	char groupnames[256] = {0};
 	char buff[12];

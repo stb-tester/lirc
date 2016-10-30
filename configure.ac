@@ -64,6 +64,7 @@ AC_C_INLINE
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_GETGROUPS
 AC_STRUCT_TM
 
 dnl Checks for library functions.
@@ -216,9 +217,6 @@ AH_TEMPLATE([LIRC_LOCKDIR],
         [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
 
 AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
-
-AH_TEMPLATE([HAVE_INT_GETGROUPLIST_GROUPS],
-        [Define if getgrouplist() groups arg is int*])
 
 AH_TEMPLATE([HAVE_LIBUDEV_H],
         [Define if libudev is installed])
@@ -407,25 +405,6 @@ case $kernelversion in
         ;;
 esac
 
-
-saved_cflags="$CFLAGS"
-CFLAGS="-Werror -Wall"
-AC_COMPILE_IFELSE([
-  AC_LANG_SOURCE([
-    #include <grp.h>
-    #include <unistd.h>
-    int main(int argc, char**argv)
-    {
-        int groups[[4]];
-        int ngroups;
-        getgrouplist("foo", (gid_t)1, groups, &ngroups);
-    }
-    ])
-  ],
-  [AC_DEFINE(HAVE_INT_GETGROUPLIST_GROUPS)],
-  [true]
-)
-CFLAGS="$saved_cflags"
 
 AC_MSG_NOTICE([Building all userspace drivers.])
 
