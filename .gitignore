@@ -37,6 +37,7 @@ kernel-drivers.yaml
 doc/api-docs
 doc/man-html
 doc/man/*.[1-9]
+doc/man
 doc/html
 doc/NEWS*
 doc/lirc.hwdb
@@ -44,6 +45,7 @@ doc/table.html
 doc/driver-toc.xsl
 doc/docpage.xsl
 doc/lirc.org/html
+doc/lirc.org/api-docs/
 doc/ext-driver-toc.xsl
 
 doxygen-warnings.txt
