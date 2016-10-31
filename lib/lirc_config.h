@@ -34,15 +34,8 @@
 #define        LIRC_INET_PORT  8765
 
 
-/* Default device in some  places, notably drivers.
- * Might be something else on Darwin(?), but all current
- * Linux systems should be using udev (i. e., not DEVFS).
- */
-#ifdef LIRC_HAVE_DEVFS
+/* Default device in some  places, notably drivers.  */
 #define LIRC_DRIVER_DEVICE      "/dev/lirc/0"
-#else
-#define LIRC_DRIVER_DEVICE      "/dev/lirc0"
-#endif /* LIRC_HAVE_DEVFS */
 
 /** Complete lircd socket path. */
 #define LIRCD                   VARRUNDIR "/" PACKAGE "/" DEV_LIRCD

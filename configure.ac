@@ -1,4 +1,3 @@
-
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
@@ -37,8 +36,7 @@ if test x$PKGCONFIG = xno; then
 fi
 AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
 if test x$XSLTPROC != "xyes"; then
-    AC_MSG_ERROR([
-      xsltproc is required to build. It usually comes with libxml])
+    AC_MSG_ERROR([xsltproc is required. It sometimes comes with libxml])
 fi
 AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
@@ -59,13 +57,10 @@ AC_CHECK_HEADERS([fcntl.h limits.h linux/ioctl.h poll.h sys/ioctl.h \
 		  libutil.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
 AC_C_INLINE
-AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_GETGROUPS
-AC_STRUCT_TM
 AC_TYPE_INT8_T
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -76,8 +71,6 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 
 dnl Checks for library functions.
-AC_TYPE_SIGNAL
-AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(gethostname gettimeofday mkfifo select socket strdup \
         strerror strtoul snprintf strsep vsyslog)
 AC_SEARCH_LIBS([dlopen], [dl dld], [], [
@@ -126,20 +119,6 @@ if test "$no_x" = "yes"; then
 fi
 AM_CONDITIONAL([BUILD_XTOOLS],[ test "x$x_progs" != x ])
 
-dnl getopt_long support
-AC_CHECK_FUNCS(getopt_long,,
-  [AC_CHECK_LIB(gnugetopt,getopt_long,LDFLAGS="${LDFLAGS} -lgnugetopt",
-    [AC_MSG_ERROR([*** your libc doesn't provide the getopt_long function.
-Therfore you need to have \"libgnugetopt\" installed to compile LIRC.
-You can get a version from:
-  http://www.inf.ethz.ch/~mringwal/downloads/libgnugetopt-1.2.tar.gz
-Extract the package and do a \"./configure  && make && sudo make install\"
-in its directory.
-])]
-  )]
-)
-
-
 dnl Determine default configuration based on OS
 case "${host_os}" in
   darwin*)
@@ -152,11 +131,6 @@ case "${host_os}" in
     ;;
 esac
 
-AC_MSG_CHECKING([for which drivers can be installed on this system])
-AC_MSG_RESULT()
-
-# this list must only contain userspace drivers without external
-# (header/library) dependencies!
 
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
         [Define if the ALSA library with SB RC support is installed])
@@ -164,23 +138,16 @@ AH_TEMPLATE([HAVE_ALSA_SB_RC],
 AH_TEMPLATE([HAVE_DEVINPUT],
         [Define if the Linux input framwework is available])
 
-AH_TEMPLATE([HAVE_FORKPTY],
-        [Define if forkpty is available])
+AH_TEMPLATE([HAVE_FORKPTY], [Define if forkpty is available])
 
-AH_TEMPLATE([HAVE_FTDI],
-        [Define if the libftdi library is installed])
+AH_TEMPLATE([HAVE_FTDI], [Define if the libftdi library is installed])
 
-AH_TEMPLATE([HAVE_LIBALSA],
-        [Define if the ALSA library is installed])
+AH_TEMPLATE([HAVE_LIBALSA], [Define if the ALSA library is installed])
 
 AH_TEMPLATE([HAVE_LIBPORTAUDIO],
         [Define if the portaudio library is installed])
 
-AH_TEMPLATE([HAVE_LIBUSB],
-        [Define if libusb is installed])
-
-AH_TEMPLATE([HAVE_LIBVGA],
-        [Define if the complete vga libraries (vga, vgagl) are installed])
+AH_TEMPLATE([HAVE_LIBUSB], [Define if libusb is installed])
 
 AH_TEMPLATE([HAVE_LINUX_DEVINPUT],
         [defined if Linux input interface is available])
@@ -191,46 +158,30 @@ AH_TEMPLATE([HAVE_LINUX_HIDDEV_FLAG_UREF],
 AH_TEMPLATE([HAVE_POLL_FINE],
         [defined  if poll() is available and seemingly without bugs])
 
-AH_TEMPLATE([HAVE_POLL_H],
-        [defined  if poll.h is available])
+AH_TEMPLATE([HAVE_POLL_H], [defined  if poll.h is available])
 
-AH_TEMPLATE([HAVE_PTY_H],
-        [defined  if pty.h is available])
+AH_TEMPLATE([HAVE_PTY_H], [defined  if pty.h is available])
 
-AH_TEMPLATE([HAVE_SYS_POLL_H],
-        [defined  if sys/poll.h is available])
+AH_TEMPLATE([HAVE_SYS_POLL_H], [defined  if sys/poll.h is available])
 
-AH_TEMPLATE([HAVE_SCSI],
-        [defined if SCSI API is available])
+AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
 
-AH_TEMPLATE([HAVE_SELECT],
-        [defined if select(2) is available])
+AH_TEMPLATE([HAVE_SELECT], [defined if select(2) is available])
 
-AH_TEMPLATE([HAVE_SOUNDCARD],
-        [defined if soundcard API is available])
+AH_TEMPLATE([HAVE_SOUNDCARD], [defined if soundcard API is available])
 
-AH_TEMPLATE([HAVE_SYSTEMD],
-        [defined if systemd API is available])
+AH_TEMPLATE([HAVE_SYSTEMD], [defined if systemd API is available])
 
-AH_TEMPLATE([HAVE_VSYSLOG],
-        [define if you have vsyslog( prio, fmt, va_arg )])
-
-AH_TEMPLATE([HAVE_KERNEL_LIRC_H],
-        [define if kernel-headers contains lirc.]h)
-
-AH_TEMPLATE([LIRC_HAVE_DEVFS],
-        [Define if devfs support is present in current kernel])
+AH_TEMPLATE([HAVE_KERNEL_LIRC_H], [define if kernel-headers contains lirc.]h)
 
 AH_TEMPLATE([LIRC_LOCKDIR],
         [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
 
 AH_TEMPLATE([SH_PATH], [Path to shell, usually /bin/sh or /usr/bin/sh])
 
-AH_TEMPLATE([HAVE_LIBUDEV_H],
-        [Define if libudev is installed])
+AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
-AH_TEMPLATE([HAVE_UTIL_H],
-        [Define if util.h is installed])
+AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
 
 AC_CHECK_HEADER(usb.h,[
@@ -264,6 +215,7 @@ AC_CHECK_HEADERS(portaudio.h,[
   ],[
   AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])]
 )
+
 dnl audio_alsa driver requires ALSA library installed and some linker flags
 have_alsa=no
 AC_CHECK_HEADERS(alsa/asoundlib.h,[
@@ -277,6 +229,7 @@ AC_CHECK_HEADERS(alsa/asoundlib.h,[
     ],[
     AM_CONDITIONAL([BUILD_LIBALSA],[false])]
 )
+
 dnl alsa_usb driver requires an ALSA that knows about our hwdep device
 if test "$have_alsa" = "yes"; then
   AC_MSG_CHECKING(for ALSA SB RC hwdep support)
@@ -379,6 +332,7 @@ AC_CHECK_HEADERS([linux/hiddev.h],[
 #endif
 ]
 )
+
 #dnl dsp driver requires linux soundcard api
 AC_CHECK_HEADERS(sys/soundcard.h,[
   AM_CONDITIONAL([BUILD_DSP],[true])
@@ -386,13 +340,13 @@ AC_CHECK_HEADERS(sys/soundcard.h,[
   ],[
   AM_CONDITIONAL([BUILD_DSP],[false])]
 )
+
 dnl i2cuser driver requires the Linux I2C API
 AC_CHECK_HEADERS(linux/i2c-dev.h,[
   AM_CONDITIONAL([BUILD_I2CUSER],[true])
   ],[
   AM_CONDITIONAL([BUILD_I2CUSER],[false])]
 )
-
 
 PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],,[true])
 if test -n "$SYSTEMD_LIBS"; then
@@ -413,8 +367,6 @@ case $kernelversion in
         ;;
 esac
 
-
-AC_MSG_NOTICE([Building all userspace drivers.])
 
 AC_ARG_WITH(lockdir,
   [  --with-lockdir=DIR      Old-school device lock files in DIR (/var/lock)],
@@ -441,7 +393,7 @@ AC_ARG_ENABLE([python3_fix],
 AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
-	   On cross-compile: Target has a working poll(2) implementation])
+   On cross-compile: Target has a working poll(2) implementation])
 
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
@@ -510,7 +462,6 @@ AC_REPORT_CONDITIONAL([BUILD_FTDI])
 AC_REPORT_CONDITIONAL([BUILD_HIDDEV])
 AC_REPORT_CONDITIONAL([BUILD_I2CUSER])
 AC_REPORT_CONDITIONAL([BUILD_LIBALSA])
-AC_REPORT_CONDITIONAL([BUILD_IGUANAIR])
 AC_REPORT_CONDITIONAL([BUILD_LIBPORTAUDIO])
 AC_REPORT_CONDITIONAL([BUILD_USB])
 AC_REPORT_CONDITIONAL([BUILD_XTOOLS])
