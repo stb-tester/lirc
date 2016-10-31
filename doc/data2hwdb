@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ''' Create the legacy hwdb table using data in config files '''
 
 import glob

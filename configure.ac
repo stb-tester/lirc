@@ -47,6 +47,7 @@ LT_INIT([disable-static])
 AM_PATH_PYTHON([3.1],,)
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ""])
 AC_CHECK_PROG([HAVE_PYTHON3],[python3],[yes],[no])
+AM_CONDITIONAL(HAVE_PYTHON3, [test "x$HAVE_PYTHON3" = "xyes"])
 LIBUSB_CONFIG="pkg-config libusb"
 
 dnl Checks for header files.
@@ -386,11 +387,6 @@ AC_ARG_ENABLE(install_etc,
 [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
-AC_ARG_ENABLE([python3_fix],
-  [  --enable-python3-fix    Install python3 wrapper to python 3.x],
-  [],
-  [enable_python3_fix="no"])
-AM_CONDITIONAL(NEED_PYTHON3, [test "x$enable_python3_fix" = "xyes"])
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
    On cross-compile: Target has a working poll(2) implementation])
@@ -470,7 +466,6 @@ AC_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AC_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AC_REPORT_CONDITIONAL([ENABLE_UINPUT])
 AC_REPORT_CONDITIONAL([INSTALL_ETC])
-AC_REPORT_CONDITIONAL([NEED_PYTHON3])
 AC_REPORT_CONDITIONAL([DEVEL])
 AC_REPORT_CONDITIONAL([DARWIN])
 AC_REPORT_CONDITIONAL([BSD])
@@ -480,11 +475,6 @@ echo
 if test "$HAVE_PYMOD_YAML" != "yes"; then
     AC_MSG_WARN([python3-yaml is missing. lirc-setup will not work, table.html
 and lirc.hwdb will not be created.])
-fi
-if test "$HAVE_PYTHON3" = "no" -a x$enable_python3_fix != "x$yes"; then
-    AC_MSG_WARN([
-python3 link is missing, re-configure using --enable-python3-fix or just
-make a symlink])
 fi
 
 echo

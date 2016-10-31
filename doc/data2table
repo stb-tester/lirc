@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ''' Create the lirc Supported Devices Table using data in hardware.yaml '''
 
 import glob

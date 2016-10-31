@@ -11,10 +11,6 @@ AM_LDFLAGS              =  -L../lib -llirc -llirc_client
 BUILT_SOURCES           = config.py
 CLEANFILES              = config.py
 
-if NEED_PYTHON3
-BUILT_SOURCES           += python3
-endif
-
 LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 
 sbin_PROGRAMS           = lirc-lsplugins
@@ -81,11 +77,6 @@ if HAVE_DEVINPUT
 dist_bin_SCRIPTS        += lirc-make-devinput
 endif
 
-
-if NEED_PYTHON3
-dist_bin_SCRIPTS        += python3
-endif
-
 if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get irtext2udp
 dist_sbin_SCRIPTS       = lircd-setup
@@ -111,25 +102,30 @@ pylint: irdb-get irtext2udp $(pkgpython_PYTHON)
 pep8:   irdb-get $(pkgpython_PYTHON)
 	python3-pep8 --config=pep8.conf $?
 
-python3:
-	echo "#!/bin/sh" > $@
-	echo "exec $(PYTHON) \$$@" >> $@
-	chmod 755 $@
 
 install-exec-hook:
 	$(SED) -i -e 's/@version@/$(VERSION)/' \
 	    $(DESTDIR)$(bindir)/lirc-config-tool \
 	    $(DESTDIR)$(bindir)/irdb-get
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup
-	$(srcdir)/make_rel_symlink.py \
+	$(PYTHON) $(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgpythondir)/lirc-setup \
 	    $(DESTDIR)/$(bindir)/lirc-setup
+	cd $(DESTDIR)/$(bindir);  \
+	    $(SED) -i '1s|python3[0-9\.]*|$(PYTHON)|' \
+	        $(notdir $(dist_bin_SCRIPTS))
+	cd $(DESTDIR)/$(sbindir);  \
+	    $(SED) -i '1s|python3[0-9\.]*|$(PYTHON)|' \
+	        $(notdir $(dist_sbin_SCRIPTS))
 
 install-data-hook:
 	rm -f $(DESTDIR)/$(pkgpythondir)/configs
-	$(srcdir)/make_rel_symlink.py \
+	$(PYTHON) $(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)$(pkgdatadir)/configs \
 	    $(DESTDIR)$(pkgpythondir)/configs
+	cd $(DESTDIR)/$(pkgpythondir);  \
+	    $(SED) -ri '1s|python[0-9\.]*|$(PYTHON)|'  \
+	        $(notdir $(dist_pkgpython_SCRIPTS))
 
 uninstall-hook:
 	rm -f $(DESTDIR)/$(bindir)/lirc-setup \
