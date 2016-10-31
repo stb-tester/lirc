@@ -23,6 +23,7 @@
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -37,7 +38,7 @@
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
-static __u32 supported_send_modes[] = {
+static uint32_t supported_send_modes[] = {
 	/* LIRC_CAN_SEND_LIRCCODE, */
 	/* LIRC_CAN_SEND_MODE2, this one would be very easy */
 	LIRC_CAN_SEND_PULSE,
@@ -45,7 +46,7 @@ static __u32 supported_send_modes[] = {
 	0
 };
 
-static __u32 supported_rec_modes[] = {
+static uint32_t supported_rec_modes[] = {
 	LIRC_CAN_REC_LIRCCODE,
 	LIRC_CAN_REC_MODE2,
 	/* LIRC_CAN_REC_PULSE, shouldn't be too hard */
@@ -379,7 +380,7 @@ int default_init(void)
 			log_error("did you mean to use the devinput driver instead of the %s driver?",
 				  drv.name);
 		} else {
-			log_error("major number of %s is %lu", drv.device, (__u32)major(s.st_rdev));
+			log_error("major number of %s is %lu", drv.device, (uint32_t)major(s.st_rdev));
 			log_error("make sure %s is a LIRC device and use a current version of the driver",
 				  drv.device);
 		}

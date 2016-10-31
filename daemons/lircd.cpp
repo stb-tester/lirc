@@ -223,7 +223,7 @@ static struct ir_remote* free_remotes = NULL;
 
 static int repeat_fd = -1;
 static char* repeat_message = NULL;
-static __u32 repeat_max = REPEAT_MAX_DEFAULT;
+static uint32_t repeat_max = REPEAT_MAX_DEFAULT;
 
 static const char* configfile = NULL;
 static FILE* pidf;
@@ -299,7 +299,7 @@ static int useuinput = 0;
 static sig_atomic_t term = 0, hup = 0, alrm = 0;
 static int termsig;
 
-static __u32 setup_min_freq = 0, setup_max_freq = 0;
+static uint32_t setup_min_freq = 0, setup_max_freq = 0;
 static lirc_t setup_max_gap = 0;
 static lirc_t setup_min_pulse = 0, setup_min_space = 0;
 static lirc_t setup_max_pulse = 0, setup_max_space = 0;
@@ -311,7 +311,7 @@ int use_hw(void)
 }
 
 /* set_transmitters only supports 32 bit int */
-#define MAX_TX (CHAR_BIT * sizeof(__u32))
+#define MAX_TX (CHAR_BIT * sizeof(uint32_t))
 
 int max(int a, int b)
 {
@@ -414,7 +414,7 @@ int read_timeout(int fd, char* buf, int len, int timeout_us)
 
 static int setup_frequency(void)
 {
-	__u32 freq;
+	uint32_t freq;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_CARRIER))
 		return 1;
@@ -444,7 +444,7 @@ static int setup_frequency(void)
 static int setup_timeout(void)
 {
 	lirc_t val, min_timeout, max_timeout;
-	__u32 enable = 1;
+	uint32_t enable = 1;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
 		return 1;
@@ -1424,9 +1424,9 @@ static int set_transmitters(int fd, char* message, char* arguments)
 {
 	char* next_arg = NULL;
 	char* end_ptr;
-	__u32 next_tx_int = 0;
-	__u32 next_tx_hex = 0;
-	__u32 channels = 0;
+	uint32_t next_tx_int = 0;
+	uint32_t next_tx_hex = 0;
+	uint32_t channels = 0;
 	int retval = 0;
 	unsigned int i;
 

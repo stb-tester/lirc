@@ -19,10 +19,6 @@
 #include "media/lirc.h"
 #endif
 
-#ifndef __u32
-#define __u32 uint32_t
-#endif
-
 #include "irpipe.h"
 
 

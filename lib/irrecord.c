@@ -10,6 +10,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdint.h>
 #include <unistd.h>
 #include <poll.h>
 
@@ -75,8 +76,8 @@ static struct lengths* first_trail = NULL;
 static struct lengths* first_repeatp = NULL;
 static struct lengths* first_repeats = NULL;
 
-static __u32 lengths[MAX_SIGNALS];
-static __u32 first_length, first_lengths, second_lengths;
+static uint32_t lengths[MAX_SIGNALS];
+static uint32_t first_length, first_lengths, second_lengths;
 static unsigned int count, count_spaces, count_signals;
 static unsigned int count_3repeats, count_5repeats;
 
@@ -490,7 +491,7 @@ void for_each_remote(struct ir_remote* remotes, remote_func func)
 }
 
 
-static int mywaitfordata(__u32 maxusec)
+static int mywaitfordata(uint32_t maxusec)
 {
 	int ret;
 	struct pollfd pfd  = {
@@ -674,7 +675,7 @@ static void merge_lengths(struct lengths* first)
 	struct lengths* l;
 	struct lengths* inner;
 	struct lengths* last;
-	__u32 new_sum;
+	uint32_t new_sum;
 	int new_count;
 
 	l = first;
@@ -715,8 +716,8 @@ static void merge_lengths(struct lengths* first)
 	}
 	for (l = first; l != NULL; l = l->next) {
 		log_debug("%d x %u [%u,%u]",
-			  l->count, (__u32)calc_signal(l),
-			  (__u32)l->min, (__u32)l->max);
+			  l->count, (uint32_t)calc_signal(l),
+			  (uint32_t)l->min, (uint32_t)l->max);
 	}
 }
 
@@ -740,7 +741,7 @@ static struct lengths* get_max_length(struct lengths*	first,
 
 	if (first->count > 0)
 		log_debug("%u x %u", first->count,
-			  (__u32)calc_signal(first));
+			  (uint32_t)calc_signal(first));
 	scan = first->next;
 	while (scan) {
 		if (scan->count > max_length->count)
@@ -749,7 +750,7 @@ static struct lengths* get_max_length(struct lengths*	first,
 		log_debug(
 			  "%u x %u",
 			  scan->count,
-			  (__u32)calc_signal(scan));
+			  (uint32_t)calc_signal(scan));
 		scan = scan->next;
 	}
 	if (sump != NULL)
@@ -773,7 +774,7 @@ int get_trail_length(struct ir_remote* remote, int interactive)
 		  sum, max_count);
 	if (max_count >= sum * TH_TRAIL / 100) {
 		log_debug("Found trail pulse: %lu",
-			  (__u32)calc_signal(max_length));
+			  (uint32_t)calc_signal(max_length));
 		remote->ptrail = calc_signal(max_length);
 		return 1;
 	}
@@ -804,7 +805,7 @@ int get_lead_length(struct ir_remote* remote, int interactive)
 	if (max_count >= sum * TH_LEAD / 100) {
 		log_debug(
 			  "Found lead pulse: %lu",
-			  (__u32)calc_signal(max_length));
+			  (uint32_t)calc_signal(max_length));
 		remote->plead = calc_signal(max_length);
 		return 1;
 	}
@@ -823,7 +824,7 @@ int get_lead_length(struct ir_remote* remote, int interactive)
 	if (abs(2 * a - b) < b * eps / 100 || abs(2 * a - b) < aeps) {
 		log_debug(
 			  "Found hidden lead pulse: %lu",
-			  (__u32)a);
+			  (uint32_t)a);
 		remote->plead = a;
 		return 1;
 	}
@@ -862,8 +863,8 @@ int get_header_length(struct ir_remote* remote, int interactive)
 
 			log_debug(
 				  "Found possible header: %lu %lu",
-				  (__u32)headerp,
-				  (__u32)headers);
+				  (uint32_t)headerp,
+				  (uint32_t)headers);
 			remote->phead = headerp;
 			remote->shead = headers;
 			if (first_lengths < second_lengths) {
@@ -924,8 +925,8 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 
 			log_debug(
 				  "Found repeat code: %lu %lu",
-				  (__u32)repeatp,
-				  (__u32)repeats);
+				  (uint32_t)repeatp,
+				  (uint32_t)repeats);
 			remote->prepeat = repeatp;
 			remote->srepeat = repeats;
 			if (!(remote->flags & CONST_LENGTH)) {
@@ -934,7 +935,7 @@ int get_repeat_length(struct ir_remote* remote, int interactive)
 				repeat_gap = calc_signal(max_slength);
 				log_debug(
 					  "Found repeat gap: %lu",
-					  (__u32)repeat_gap);
+					  (uint32_t)repeat_gap);
 				remote->repeat_gap = repeat_gap;
 			}
 			return 1;
@@ -1038,11 +1039,11 @@ int get_data_length(struct ir_remote* remote, int interactive)
 				max2_plength = NULL;
 		log_debug("Pulse candidates: ");
 		log_debug("%u x %u", max_plength->count,
-			  (__u32)calc_signal(max_plength));
+			  (uint32_t)calc_signal(max_plength));
 		if (max2_plength)
 			log_debug(", %u x %u",
 				  max2_plength->count,
-				  (__u32)calc_signal(max2_plength));
+				  (uint32_t)calc_signal(max2_plength));
 
 		max_slength = get_max_length(first_space, &sum);
 		max_count = max_slength->count;
@@ -1062,12 +1063,12 @@ int get_data_length(struct ir_remote* remote, int interactive)
 				log_debug(
 					  "%u x %u",
 					  max_slength->count,
-					  (__u32)calc_signal(max_slength));
+					  (uint32_t)calc_signal(max_slength));
 				if (max2_slength) {
 					log_debug(
 						"%u x %u",
 						max2_slength->count,
-						(__u32)calc_signal(max2_slength));
+						(uint32_t)calc_signal(max2_slength));
 				}
 			}
 			remote->eps = eps;
@@ -1832,7 +1833,7 @@ enum button_status record_buttons(struct button_state*	btn_state,
 		"That's weird because the signal length must be odd!\n";
 	ir_code code2;
 	int decode_ok;
-	__u32 timeout;
+	uint32_t timeout;
 	int retries;
 	struct ir_remote* my_remote;
 	FILE* f;

@@ -29,6 +29,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
@@ -117,9 +118,9 @@ void fprint_remotes(FILE* f, const struct ir_remote* all, const char* commandlin
 void fprint_remote_gap(FILE* f, const struct ir_remote* rem)
 {
 	if (rem->gap2 != 0)
-		fprintf(f, "  gap          %u %u\n", (__u32)rem->gap, (__u32)rem->gap2);
+		fprintf(f, "  gap          %u %u\n", (uint32_t)rem->gap, (uint32_t)rem->gap2);
 	else
-		fprintf(f, "  gap          %u\n", (__u32)rem->gap);
+		fprintf(f, "  gap          %u\n", (uint32_t)rem->gap);
 }
 
 void fprint_remote_head(FILE* f, const struct ir_remote* rem)
@@ -137,24 +138,24 @@ void fprint_remote_head(FILE* f, const struct ir_remote* rem)
 	fprintf(f, "  aeps        %5d\n\n", rem->aeps);
 	if (!is_raw(rem)) {
 		if (has_header(rem))
-			fprintf(f, "  header      %5u %5u\n", (__u32)rem->phead, (__u32)rem->shead);
+			fprintf(f, "  header      %5u %5u\n", (uint32_t)rem->phead, (uint32_t)rem->shead);
 		if (rem->pthree != 0 || rem->sthree != 0)
-			fprintf(f, "  three       %5u %5u\n", (__u32)rem->pthree, (__u32)rem->sthree);
+			fprintf(f, "  three       %5u %5u\n", (uint32_t)rem->pthree, (uint32_t)rem->sthree);
 		if (rem->ptwo != 0 || rem->stwo != 0)
-			fprintf(f, "  two         %5u %5u\n", (__u32)rem->ptwo, (__u32)rem->stwo);
-		fprintf(f, "  one         %5u %5u\n", (__u32)rem->pone, (__u32)rem->sone);
-		fprintf(f, "  zero        %5u %5u\n", (__u32)rem->pzero, (__u32)rem->szero);
+			fprintf(f, "  two         %5u %5u\n", (uint32_t)rem->ptwo, (uint32_t)rem->stwo);
+		fprintf(f, "  one         %5u %5u\n", (uint32_t)rem->pone, (uint32_t)rem->sone);
+		fprintf(f, "  zero        %5u %5u\n", (uint32_t)rem->pzero, (uint32_t)rem->szero);
 	}
 	if (rem->ptrail != 0)
-		fprintf(f, "  ptrail      %5u\n", (__u32)rem->ptrail);
+		fprintf(f, "  ptrail      %5u\n", (uint32_t)rem->ptrail);
 	if (!is_raw(rem)) {
 		if (rem->plead != 0)
-			fprintf(f, "  plead       %5u\n", (__u32)rem->plead);
+			fprintf(f, "  plead       %5u\n", (uint32_t)rem->plead);
 		if (has_foot(rem))
-			fprintf(f, "  foot        %5u %5u\n", (__u32)rem->pfoot, (__u32)rem->sfoot);
+			fprintf(f, "  foot        %5u %5u\n", (uint32_t)rem->pfoot, (uint32_t)rem->sfoot);
 	}
 	if (has_repeat(rem))
-		fprintf(f, "  repeat      %5u %5u\n", (__u32)rem->prepeat, (__u32)rem->srepeat);
+		fprintf(f, "  repeat      %5u %5u\n", (uint32_t)rem->prepeat, (uint32_t)rem->srepeat);
 	if (!is_raw(rem)) {
 		if (rem->pre_data_bits > 0) {
 			fprintf(f, "  pre_data_bits   %d\n", rem->pre_data_bits);
@@ -165,13 +166,13 @@ void fprint_remote_head(FILE* f, const struct ir_remote* rem)
 			fprintf(f, "  post_data      0x%llX\n", (unsigned long long)rem->post_data);
 		}
 		if (rem->pre_p != 0 && rem->pre_s != 0)
-			fprintf(f, "  pre         %5u %5u\n", (__u32)rem->pre_p, (__u32)rem->pre_s);
+			fprintf(f, "  pre         %5u %5u\n", (uint32_t)rem->pre_p, (uint32_t)rem->pre_s);
 		if (rem->post_p != 0 && rem->post_s != 0)
-			fprintf(f, "  post        %5u %5u\n", (__u32)rem->post_p, (__u32)rem->post_s);
+			fprintf(f, "  post        %5u %5u\n", (uint32_t)rem->post_p, (uint32_t)rem->post_s);
 	}
 	fprint_remote_gap(f, rem);
 	if (has_repeat_gap(rem))
-		fprintf(f, "  repeat_gap   %u\n", (__u32)rem->repeat_gap);
+		fprintf(f, "  repeat_gap   %u\n", (uint32_t)rem->repeat_gap);
 	if (rem->suppress_repeat > 0)
 		fprintf(f, "  suppress_repeat %d\n", rem->suppress_repeat);
 	if (rem->min_repeat > 0) {
@@ -247,11 +248,11 @@ void fprint_remote_signal(FILE* f, const struct ir_remote* rem, const struct ir_
 		j = 0;
 		for (i = 0; i < codes->length; i++) {
 			if (j == 0) {
-				fprintf(f, "          %7u", (__u32)codes->signals[i]);
+				fprintf(f, "          %7u", (uint32_t)codes->signals[i]);
 			} else if (j < 5) {
-				fprintf(f, " %7u", (__u32)codes->signals[i]);
+				fprintf(f, " %7u", (uint32_t)codes->signals[i]);
 			} else {
-				fprintf(f, " %7u\n", (__u32)codes->signals[i]);
+				fprintf(f, " %7u\n", (uint32_t)codes->signals[i]);
 				j = -1;
 			}
 			j++;

@@ -19,6 +19,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -303,7 +304,7 @@ char* pinsys_rec(struct ir_remote* remotes)
 	code = b[2];
 #endif
 
-	log_trace(" -> %016lx", (__u32)code);
+	log_trace(" -> %016lx", (uint32_t)code);
 	m = decode_all(remotes);
 	return m;
 }

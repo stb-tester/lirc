@@ -22,6 +22,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -31,7 +32,7 @@ extern "C" {
 #endif
 
 #if defined __linux__
-typedef __u16 linux_input_code;
+typedef uint16_t linux_input_code;
 #else
 typedef unsigned short linux_input_code;
 #endif

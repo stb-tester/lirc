@@ -39,6 +39,7 @@
 
 #include <poll.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -194,7 +195,7 @@ int child_process(int pipe_w, int oldprotocol)
 	lirc_t data, tdata;
 	struct pollfd pfd = {.fd = drv.fd, .events = POLLIN, .revents = 0};
 	struct timeval trailtime, currtime;
-	__u32 eusec;
+	uint32_t eusec;
 
 	trailtime.tv_sec = 0;
 	trailtime.tv_usec = 0;
@@ -651,7 +652,7 @@ char* tira_rec(struct ir_remote* remotes)
 		code = code << 8;
 	}
 
-	log_trace(" -> %0llx", (__u64)code);
+	log_trace(" -> %0llx", (uint64_t)code);
 
 	m = decode_all(remotes);
 	return m;

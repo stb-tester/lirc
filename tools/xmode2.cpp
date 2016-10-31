@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -316,7 +317,7 @@ int main(int argc, char** argv)
 	int xfd, maxfd;
 
 	int fd;
-	__u32 mode;
+	uint32_t mode;
 	lirc_t data = 0;
 	lirc_t x1, y1, dx;
 	int result;

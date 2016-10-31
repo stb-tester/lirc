@@ -321,7 +321,7 @@ char* bte_automaton(void)
 		key_release = msg[i + 1] == '0';
 		code |= key_release << 15;
 
-		log_trace("bte_automaton: code 0x%llx", (__u64)code);
+		log_trace("bte_automaton: code 0x%llx", (uint64_t)code);
 
 		if (key_release) {
 			code = 0;       // block key release events
@@ -377,6 +377,6 @@ int bte_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	ctx->code = code;
 	ctx->post = 0;
 
-	log_trace("bte_decode: %llx", (__u64)ctx->code);
+	log_trace("bte_decode: %llx", (uint64_t)ctx->code);
 	return 1;
 }

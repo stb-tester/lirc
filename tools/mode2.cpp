@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -219,7 +220,7 @@ int open_device(int opt_raw_access, const char* device)
 {
 	struct stat s;
 
-	__u32 mode;
+	uint32_t mode;
 	int fd;
 	const char* opt;
 
@@ -317,11 +318,11 @@ void print_mode2_data(unsigned int data)
 	case 0:
 		printf("%s %u\n", (
 			       data & PULSE_BIT) ? "pulse" : "space",
-		       (__u32)(data & PULSE_MASK));
+		       (uint32_t)(data & PULSE_MASK));
 		break;
 	case 1: {
 		/* print output like irrecord raw config file data */
-		printf(" %8u", (__u32)data & PULSE_MASK);
+		printf(" %8u", (uint32_t)data & PULSE_MASK);
 		++bitno;
 		if (data & PULSE_BIT) {
 			if ((bitno & 1) == 0)
@@ -427,7 +428,7 @@ static void list_devices(void)
 int main(int argc, char** argv)
 {
 	int fd;
-	__u32 mode;
+	uint32_t mode;
 	size_t bytes = sizeof(lirc_t);
 	char logpath[256];
 	/**
@@ -435,7 +436,7 @@ int main(int argc, char** argv)
 	 * supplied .conf files is 10826, the longest space defined for any one,
 	 * zero or header is 7590
 	 */
-	__u32 code_length;
+	uint32_t code_length;
 	const loglevel_t level = options_get_app_loglevel("mode2");
 
 	hw_choose_driver(NULL);

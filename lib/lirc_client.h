@@ -128,10 +128,6 @@ extern "C" {
 #endif
 
 
-#ifndef __u32
-typedef uint32_t __u32;
-#endif
-
 #define LIRC_RET_SUCCESS  (0)
 #define LIRC_RET_ERROR   (-1)
 

@@ -18,6 +18,7 @@
 #ifndef _RECEIVE_H
 #define _RECEIVE_H
 
+#include <stdint.h>
 #include "ir_remote.h"
 
 #ifdef __cplusplus
@@ -60,7 +61,7 @@ static inline lirc_t receive_timeout(lirc_t usec)
  * @return True (1) if there is data available in drv.fd, else 0 indicating
  *       timeout.
  */
-int waitfordata(__u32 maxusec);
+int waitfordata(uint32_t maxusec);
 
 /** Clear internal buffer to pristine state. */
 void rec_buffer_init(void);

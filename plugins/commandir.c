@@ -10,6 +10,7 @@
 
 #include <fcntl.h>
 #include <signal.h>
+#include <stdint.h>
 #include <sys/wait.h>
 
 #include "lirc_driver.h"
@@ -205,7 +206,7 @@
 struct send_tx_mask {
 	unsigned char	numBytes[2];
 	unsigned char	idByte;
-	__u32		new_tx_mask;
+	uint32_t	new_tx_mask;
 };
 
 struct tx_signal {
@@ -307,8 +308,8 @@ static void commandir_2_transmit_next(struct commandir_device* pcd);
 
 static int get_hardware_tx_bitmask(struct commandir_device* pcd);
 
-static void set_convert_int_bitmask_to_list_of_enabled_bits(__u32* bitmask, int bitmask_len);
-static void set_all_next_tx_mask(int* ar_new_tx_mask, int new_tx_len, __u32 bitmask);
+static void set_convert_int_bitmask_to_list_of_enabled_bits(uint32_t* bitmask, int bitmask_len);
+static void set_all_next_tx_mask(int* ar_new_tx_mask, int new_tx_len, uint32_t bitmask);
 static void set_new_signal_bitmasks(struct commandir_device* pcd, struct tx_signal* ptx);
 
 static void update_tx_available(struct commandir_device* pcd);
@@ -1523,9 +1524,9 @@ static int check_irsend_commandir(unsigned char* command)
 
 	if (commandir_code > 0xef) {
 		// It's a settransmitters command; convert channel number to bitmask
-		__u32 channel = 0x01 << (commandir_code & 0x0f);
+		uint32_t channel = 0x01 << (commandir_code & 0x0f);
 
-		set_convert_int_bitmask_to_list_of_enabled_bits(&channel, sizeof(__u32));
+		set_convert_int_bitmask_to_list_of_enabled_bits(&channel, sizeof(uint32_t));
 		return commandir_code;
 	}
 
@@ -2380,16 +2381,16 @@ static void update_tx_available(struct commandir_device* pcd)
 	pipeline_check(pcd);
 }
 
-static void set_convert_int_bitmask_to_list_of_enabled_bits(__u32* bitmask, int bitmask_len)
+static void set_convert_int_bitmask_to_list_of_enabled_bits(uint32_t* bitmask, int bitmask_len)
 {
 	int x, set_next_list_item, bitnum = 1;
-	__u32 tmp_mask = *bitmask;
+	uint32_t tmp_mask = *bitmask;
 	int* list_of_bits;
 
 	list_of_bits = malloc(sizeof(int) * bitmask_len);
 	set_next_list_item = 0;
 
-	for (x = 0; x < (sizeof(__u32) * 8); x++) {
+	for (x = 0; x < (sizeof(uint32_t) * 8); x++) {
 		if (tmp_mask & 0x01)
 			list_of_bits[set_next_list_item++] = bitnum;
 		bitnum++;
@@ -2398,7 +2399,7 @@ static void set_convert_int_bitmask_to_list_of_enabled_bits(__u32* bitmask, int 
 	set_all_next_tx_mask(list_of_bits, set_next_list_item, *bitmask);
 }
 
-static void set_all_next_tx_mask(int* ar_new_tx_mask_list, int new_tx_len, __u32 raw_tx_mask)
+static void set_all_next_tx_mask(int* ar_new_tx_mask_list, int new_tx_len, uint32_t raw_tx_mask)
 {
 	static int* ar_current_tx_mask_list = NULL;
 	int x = 0;

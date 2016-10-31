@@ -39,6 +39,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -103,8 +104,11 @@ int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	ctx->max_remaining_gap = max_gap(remote);
 
 	log_trace("repeat_flagp: %d", ctx->repeat_flag);
-	log_trace("remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
-	log_trace("rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
+	log_trace("remote->gap range:      %lu %lu\n",
+		  (uint32_t)min_gap(remote), (uint32_t)max_gap(remote));
+	log_trace("rem: %lu %lu",
+		  (uint32_t)remote->min_remaining_gap,
+		  (uint32_t)remote->max_remaining_gap);
 	return 1;
 }
 
@@ -166,7 +170,7 @@ char* usbx_rec(struct ir_remote* remotes)
 		code |= ((ir_code)b[i]);
 	}
 
-	log_trace(" -> %0llx", (__u64)code);
+	log_trace(" -> %0llx", (uint64_t)code);
 
 	m = decode_all(remotes);
 	return m;

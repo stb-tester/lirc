@@ -34,6 +34,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -175,7 +176,7 @@ static char* uirt2_rec(struct ir_remote* remotes)
 	code = code << 8;
 	code |= ((ir_code)b[5]);
 
-	log_trace("code: %llx", (__u64)code);
+	log_trace("code: %llx", (uint64_t)code);
 
 	m = decode_all(remotes);
 	return m;

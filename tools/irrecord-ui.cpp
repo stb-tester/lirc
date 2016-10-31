@@ -13,6 +13,7 @@
 #endif
 
 #include <ctype.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "lirc_private.h"
@@ -590,11 +591,11 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 			sts = STS_TGL_AGAIN;
 			continue;
 		case STS_TGL_FOUND:
-			printf("\nToggle bit mask is 0x%llx.\n",
-			       (__u64)remote->toggle_bit_mask);
+			printf("\nToggle bit mask is 0x%lx.\n",
+			       (uint64_t)remote->toggle_bit_mask);
 			if (is_rc6(remote))
-				printf("RC6 mask is 0x%llx.\n",
-				       (__u64)remote->rc6_mask);
+				printf("RC6 mask is 0x%lx.\n",
+				       (uint64_t)remote->rc6_mask);
 			fflush(stdout);
 			return;
 		case STS_TGL_NOT_FOUND:
@@ -885,10 +886,10 @@ static void remote_report(struct ir_remote* remote)
 	else if (is_bo(remote)) printf("Bang & Olufsen encoding\n");
 	else printf("Unknown encoding\n");
 	log_debug("%d %u %u %u %u %u %d %d %d %u\n",
-		  remote->bits, (__u32)remote->pone, (__u32)remote->sone,
-		  (__u32)remote->pzero, (__u32)remote->szero,
-		  (__u32)remote->ptrail, remote->flags, remote->eps,
-		  remote->aeps, (__u32)remote->gap);
+		  remote->bits, (uint32_t)remote->pone, (uint32_t)remote->sone,
+		  (uint32_t)remote->pzero, (uint32_t)remote->szero,
+		  (uint32_t)remote->ptrail, remote->flags, remote->eps,
+		  remote->aeps, (uint32_t)remote->gap);
 }
 
 

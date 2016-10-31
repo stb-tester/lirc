@@ -32,6 +32,7 @@
 #endif
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -44,6 +45,7 @@
 #include <errno.h>
 #include <glob.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <signal.h>
 
@@ -76,7 +78,7 @@ static const char* usb_desc = NULL;
 static const char* usb_serial = NULL;
 
 static int laststate = -1;
-static __u32 rxctr = 0;
+static uint32_t rxctr = 0;
 
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
@@ -84,7 +86,7 @@ static int pipe_tx2main[2] = { -1, -1 };
 #if 0
 static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t gap)
 {
-	__u32 secs, diff;
+	uint32_t secs, diff;
 
 	secs = current->tv_sec - last->tv_sec;
 
@@ -95,7 +97,7 @@ static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t ga
 #endif
 
 static int modulate_pulses(unsigned char* buf, size_t size,
-	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier,
+	const int* pulseptr, int n_pulses, uint32_t f_sample, uint32_t f_carrier,
 	unsigned int duty_cycle);
 
 static void list_devices(glob_t *buff)
@@ -252,7 +254,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 				ret = write(fd_tx2main, &ret, 1);
 				if (ret <= 0) {
 					log_error("unable to post success to lircd (%s)",
-					          strerror(errno));
+						  strerror(errno));
 					goto retry;
 				}
 
@@ -268,7 +270,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 				parsesamples(buf, ret, fd_rx2main);
 			} else if (ret < 0) {
 				log_error("ftdi: error reading data from device: %s",
-				          ftdi_get_error_string(&ftdic));
+					  ftdi_get_error_string(&ftdic));
 				goto retry;
 			} else {
 				log_info("ftdi: no data available for reading from device");
@@ -277,7 +279,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 retry:
 		/* Wait a while and try again */
-		ftdi_usb_close (&ftdic);
+		ftdi_usb_close(&ftdic);
 		usleep(500000);
 	}
 }
@@ -504,8 +506,8 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 static ssize_t write_pulse(unsigned char* buf, size_t size,
 	struct ir_remote* remote, struct ir_ncode* code)
 {
-	__u32 f_sample = tx_baud_rate * 8;
-	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
+	uint32_t f_sample = tx_baud_rate * 8;
+	uint32_t f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	const lirc_t* pulseptr;
 	int n_pulses;
 
@@ -524,11 +526,11 @@ static ssize_t write_pulse(unsigned char* buf, size_t size,
 }
 
 static int modulate_pulses(unsigned char* buf, size_t size,
-	const int* pulseptr, int n_pulses, __u32 f_sample, __u32 f_carrier,
+	const int* pulseptr, int n_pulses, uint32_t f_sample, uint32_t f_carrier,
 	unsigned int duty_cycle)
 {
-	__u32 div_carrier;
-	__u32 duty;
+	uint32_t div_carrier;
+	uint32_t duty;
 	lirc_t pulse;
 	int pulsewidth;
 	int val_carrier;
@@ -552,7 +554,9 @@ static int modulate_pulses(unsigned char* buf, size_t size,
 		pulse = *pulseptr++;
 
 		/* compute the pulsewidth (in # samples) */
-		pulsewidth = ((__u64)f_sample) * ((__u32)(pulse & PULSE_MASK)) / 1000000ul;
+		pulsewidth =
+		    ((uint64_t)f_sample) * ((uint32_t)(pulse & PULSE_MASK))
+			/ 1000000ul;
 
 		/* toggle pulse / space */
 		sendpulse = sendpulse ? 0 : 1;
@@ -825,12 +829,12 @@ static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
 	unsigned char buf[TXBUFSZ];
 	ssize_t buf_len;
 	int orig_scheduler;
-	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
+	uint32_t f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 
 	/* A sample rate of carrier*2 means we will get the pattern 1010101010
 	 * when the blaster is on and 0000000000 when it is off. */
-	__u32 f_sample = f_carrier * 2;
-	__u32 tx_baud = f_carrier * 2 / 64;
+	uint32_t f_sample = f_carrier * 2;
+	uint32_t tx_baud = f_carrier * 2 / 64;
 
 	const lirc_t* pulseptr;
 	int n_pulses;

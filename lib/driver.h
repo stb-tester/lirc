@@ -21,6 +21,7 @@
 #define _HARDWARE_H
 
 #include <glob.h>
+#include <stdint.h>
 
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
@@ -137,22 +138,22 @@ struct driver {
 	int		fd;
 
 	/** Code for the features of the present device, valid after init(). */
-	__u32		features;
+	uint32_t	features;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32		send_mode;
+	uint32_t	send_mode;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32		rec_mode;
+	uint32_t	rec_mode;
 
 	/** Length in bits of the code. */
-	const __u32	code_length;
+	const uint32_t	code_length;
 
 	 /**
 	 *  Function called to do basic driver setup.

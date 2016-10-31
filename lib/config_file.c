@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
@@ -257,24 +258,24 @@ ir_code s_strtocode(const char* val)
 
 	errno = 0;
 	code = strtoull(val, &endptr, 0);
-	if ((code == (__u64) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
+	if ((code == (uint64_t) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
 		log_error("error in configfile line %d:", line);
-		log_error("\"%s\": must be a valid (__u64) number", val);
+		log_error("\"%s\": must be a valid (uint64_t) number", val);
 		parse_error = 1;
 		return 0;
 	}
 	return code;
 }
 
-__u32 s_strtou32(char* val)
+uint32_t s_strtou32(char* val)
 {
-	__u32 n;
+	uint32_t n;
 	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
 	if (!*val || *endptr) {
 		log_error("error in configfile line %d:", line);
-		log_error("\"%s\": must be a valid (__u32) number", val);
+		log_error("\"%s\": must be a valid (uint32_t) number", val);
 		parse_error = 1;
 		return 0;
 	}
@@ -301,12 +302,12 @@ int s_strtoi(char* val)
 unsigned int s_strtoui(char* val)
 {
 	char* endptr;
-	__u32 n;
+	uint32_t n;
 	unsigned int h;
 
 	n = strtoul(val, &endptr, 0);
 	h = (unsigned int)n;
-	if (!*val || *endptr || n != ((__u32)h)) {
+	if (!*val || *endptr || n != ((uint32_t)h)) {
 		log_error("error in configfile line %d:", line);
 		log_error("\"%s\": must be a valid (unsigned int) number", val);
 		parse_error = 1;
@@ -317,13 +318,13 @@ unsigned int s_strtoui(char* val)
 
 lirc_t s_strtolirc_t(char* val)
 {
-	__u32 n;
+	uint32_t n;
 	lirc_t h;
 	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
 	h = (lirc_t)n;
-	if (!*val || *endptr || n != ((__u32)h)) {
+	if (!*val || *endptr || n != ((uint32_t)h)) {
 		log_error("error in configfile line %d:", line);
 		log_error("\"%s\": must be a valid (lirc_t) number", val);
 		parse_error = 1;

@@ -30,6 +30,7 @@
 
 #include <poll.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
@@ -212,11 +213,11 @@ static int command(uirt2_t* dev, const byte_t* buf, int len)
 	return out[1] < UIRT2_CSERROR;
 }
 
-static __u32 calc_bits_length(remstruct1_data_t* buf)
+static uint32_t calc_bits_length(remstruct1_data_t* buf)
 {
 	int i;
 	byte_t b = 0;
-	__u32 len = 0;
+	uint32_t len = 0;
 
 	for (i = 0; i < buf->bBits; i++) {
 		int bit;
@@ -245,11 +246,11 @@ static __u32 calc_bits_length(remstruct1_data_t* buf)
 	return unit * len;
 }
 
-static __u32 calc_struct1_length(int repeat, remstruct1_data_t* buf)
+static uint32_t calc_struct1_length(int repeat, remstruct1_data_t* buf)
 {
 	int bISDly = unit * (buf->bISDlyLo + 256 * buf->bISDlyHi);
 	int bHdr = unit * (buf->bHdr1 + buf->bHdr0);
-	__u32 bBitLength = calc_bits_length(buf);
+	uint32_t bBitLength = calc_bits_length(buf);
 
 	log_trace("bBitLength %lu repeat %d", bBitLength, repeat);
 
@@ -590,7 +591,7 @@ int uirt2_send_raw(uirt2_t* dev, byte_t* buf, int length)
 int uirt2_send_struct1(uirt2_t* dev, int freq, int bRepeatCount, remstruct1_data_t* buf)
 {
 	int res;
-	__u32 delay;
+	uint32_t delay;
 	remstruct1_t rem;
 	remstruct1_ext_t rem_ext;
 

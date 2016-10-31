@@ -23,19 +23,7 @@
 extern "C" {
 #endif
 
-#if defined(__linux__)
-#include <sys/types.h>
-#else
 #include <stdint.h>
-typedef int8_t __s8;
-typedef uint8_t __u8;
-typedef int16_t __s16;
-typedef uint16_t __u16;
-typedef int32_t __s32;
-typedef uint32_t __u32;
-typedef int64_t __s64;
-typedef uint64_t __u64;
-#endif
 
 #include <sys/time.h>
 #include <unistd.h>
@@ -56,7 +44,7 @@ typedef uint64_t __u64;
  * Denotes an internal coded representation for an IR transmission.
  *  Note that there may be more than one ir_code in one ir_ncode.
  */
-typedef __u64 ir_code;
+typedef uint64_t ir_code;
 
 /**
  * An ir_code for entering into (singly) linked lists,
@@ -200,9 +188,9 @@ struct ir_remote {
 	lirc_t		pre_p, pre_s;           /**< signal between pre_data and keycode */
 	lirc_t		post_p, post_s;         /**< signal between keycode and post_code */
 
-	__u32		gap;                    /**< time between signals in usecs */
-	__u32		gap2;                   /**< time between signals in usecs */
-	__u32		repeat_gap;             /**< time between two repeat codes if different from gap */
+	uint32_t	gap;                    /**< time between signals in usecs */
+	uint32_t	gap2;                   /**< time between signals in usecs */
+	uint32_t	repeat_gap;             /**< time between two repeat codes if different from gap */
 	int		toggle_bit;             /**< obsolete */
 	ir_code		toggle_bit_mask;        /**< previously only one bit called toggle_bit */
 	int		suppress_repeat;        /**< suppress unwanted repeats */

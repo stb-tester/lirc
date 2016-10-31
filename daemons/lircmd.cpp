@@ -16,6 +16,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
@@ -33,16 +34,6 @@
 #if defined(__linux__)
 #include <linux/input.h>
 #include <linux/uinput.h>
-#else
-#include <stdint.h>
-typedef int8_t __s8;
-typedef uint8_t __u8;
-typedef int16_t __s16;
-typedef uint16_t __u16;
-typedef int32_t __s32;
-typedef uint32_t __u32;
-typedef int64_t __s64;
-typedef uint64_t __u64;
 #endif
 
 #include "lirc_options.h"
@@ -314,7 +305,7 @@ setup_error:
 	return -1;
 }
 
-void write_uinput(__u16 type, __u16 code, __s32 value)
+void write_uinput(uint16_t type, uint16_t code, int32_t value)
 {
 #ifdef __linux__
 	struct input_event event;

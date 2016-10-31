@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <sys/param.h>
@@ -190,7 +191,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 	char* endptr;
 	enum packet_state state;
 	int status, n, r;
-	__u32 data_n = 0;
+	uint32_t data_n = 0;
 
 	todo = strlen(ctx->packet);
 	data = ctx->packet;
@@ -268,7 +269,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 			goto bad_packet;
 		case P_N:
 			errno = 0;
-			data_n = (__u32)strtoul(string, &endptr, 0);
+			data_n = (uint32_t)strtoul(string, &endptr, 0);
 			if (!*string || *endptr)
 				goto bad_packet;
 			if (data_n == 0)
