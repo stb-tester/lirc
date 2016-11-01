@@ -81,6 +81,14 @@ if test "$ac_cv_func_daemon" != yes; then
     AC_MSG_ERROR([*** daemon() function not available on this system, giving up])
   fi
 fi
+AC_CHECK_FUNCS([clock_gettime])
+if test x$ac_cv_func_clock_gettime = xno; then
+  AC_CHECK_LIB(rt, clock_gettime,[ac_cv_func_clock_gettime="yes"])
+  AS_IF([test x$ac_cv_func_clock_gettime = xyes],
+    [LIBS="-lrt $LIBS"],
+    AC_MSG_ERROR([Required function clock_gettime() not found])
+  )
+fi
 AX_PYTHON_MODULE([yaml])
 AM_CONDITIONAL([HAVE_PYMOD_YAML], test $HAVE_PYMOD_YAML = "yes")
 forkpty=""
