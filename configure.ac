@@ -45,17 +45,13 @@ AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON([3.1],,)
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != ""])
-AC_CHECK_PROG([HAVE_PYTHON3],[python3],[yes],[no])
-AM_CONDITIONAL(HAVE_PYTHON3, [test "x$HAVE_PYTHON3" = "xyes"])
 LIBUSB_CONFIG="pkg-config libusb"
 
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([fcntl.h limits.h linux/ioctl.h poll.h sys/ioctl.h \
-		  sys/poll.h sys/time.h syslog.h unistd.h util.h \
-		  libutil.h pty.h])
+AC_CHECK_HEADERS([fcntl.h libutil.h limits.h linux/ioctl.h poll.h sys/ioctl.h \
+		  sys/poll.h sys/time.h syslog.h unistd.h util.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -101,37 +97,30 @@ test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 enable_uinput_default="no"
 test -e "/dev/uinput" && enable_uinput_default="yes"
 
-case $host_os in
-    darwin*) osflags='-DDARWIN'
-	;;
-    *bsd*) osflags='-DFREEBSD'
-	;;
-    *)  osflags=''
-esac
+AS_CASE([$host_os],
+        [darwin], [osflags='-DDARWIN'],
+        [*bsd],[osflags='-DFREEBSD'],
+        [*],[osflags='']
+)
 
 AM_CONDITIONAL([DARWIN], [test "$osflags" = "-DDARWIN"])
 AM_CONDITIONAL([BSD], [test -n "$osflags"])
 AC_SUBST(osflags)
 
-x_progs="irxevent xmode2"
 AC_PATH_XTRA
-if test "$no_x" = "yes"; then
-  x_progs=
-fi
+AS_IF([test x$no_x = xyes],[x_progs=],[x_progs="irxevent xmode2"])
+
 AM_CONDITIONAL([BUILD_XTOOLS],[ test "x$x_progs" != x ])
 
 dnl Determine default configuration based on OS
-case "${host_os}" in
-  darwin*)
+AS_CASE([${host_os}],
+  [darwin*],[
     dnl Mac OS X configuration
-    portaudio_lib_other="-framework CoreAudio -framework AudioToolbox"
-    ;;
-  *)
+    portaudio_lib_other="-framework CoreAudio -framework AudioToolbox"],
+  [*],[
     dnl Unix OSS configuration
-    portaudio_lib_other="-lm -lpthread ${forkpty}"
-    ;;
-esac
-
+    portaudio_lib_other="-lm -lpthread ${forkpty}"]
+)
 
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
         [Define if the ALSA library with SB RC support is installed])
@@ -184,7 +173,6 @@ AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
 AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
-
 AC_CHECK_HEADER(usb.h,[
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
@@ -224,11 +212,11 @@ AC_CHECK_HEADERS(alsa/asoundlib.h,[
     AM_CONDITIONAL([BUILD_LIBALSA],[true])
     AC_DEFINE(HAVE_LIBALSA)
     have_alsa=yes
-    ],[
+  ],[
     AM_CONDITIONAL([BUILD_LIBALSA],[false])],
-    )
-    ],[
-    AM_CONDITIONAL([BUILD_LIBALSA],[false])]
+  )
+],[
+  AM_CONDITIONAL([BUILD_LIBALSA],[false])]
 )
 
 dnl alsa_usb driver requires an ALSA that knows about our hwdep device
@@ -253,45 +241,43 @@ fi
 dnl see https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/
 AC_MSG_CHECKING(for working poll(2))
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[
-  #include <errno.h>
-  #include <fcntl.h>
-  #include <poll.h>
-  #include <stdio.h>
-  #include <sys/time.h>
-]],[[
-  int fd = open("/dev/tty", O_RDONLY);
-  if (fd == -1) return 2;
-  struct pollfd pfd = {fd, 1, 0};
+    #include <errno.h>
+    #include <fcntl.h>
+    #include <poll.h>
+    #include <stdio.h>
+    #include <sys/time.h>
+  ]],[[
+    int fd = open("/dev/tty", O_RDONLY);
+    if (fd == -1) return 2;
+    struct pollfd pfd = {fd, 1, 0};
 
-  struct timeval before, after;
-  gettimeofday(&before, NULL);
-  int rc = poll(&pfd, 1, 500);
-  if (rc < 0) return errno;
-  if (rc > 0) return rc;
-  gettimeofday(&after, NULL);
+    struct timeval before, after;
+    gettimeofday(&before, NULL);
+    int rc = poll(&pfd, 1, 500);
+    if (rc < 0) return errno;
+    if (rc > 0) return rc;
+    gettimeofday(&after, NULL);
 
-  suseconds_t us = (after.tv_sec - before.tv_sec) * 1000000 +
-    (after.tv_usec - before.tv_usec);
-  return us >= 400000 ? 0 : 1;
-]])],[
-  AC_DEFINE(HAVE_POLL_FINE)
-  AC_MSG_RESULT(yes)
-],[
-  AC_MSG_RESULT(no)
-],[
-  case x$HAVE_WORKING_POLL in
-    xyes)
-      AC_MSG_RESULT(yes)
-      AC_DEFINE(HAVE_POLL_FINE)
-      ;;
-    xno)
-      AC_MSG_RESULT(no)
-      ;;
-    *) AC_MSG_ERROR([
-         Define HAVE_WORKING_POLL to "yes" or "no" when cross-compiling])
-      ;;
-  esac
-])
+    suseconds_t us = (after.tv_sec - before.tv_sec) * 1000000 +
+      (after.tv_usec - before.tv_usec);
+    return us >= 400000 ? 0 : 1;
+  ]])],[
+    AC_DEFINE(HAVE_POLL_FINE)
+    AC_MSG_RESULT(yes)
+  ],[
+    AC_MSG_RESULT(no)
+  ],[
+    AS_CASE([x$HAVE_WORKING_POLL],[xyes],[
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_POLL_FINE)
+      ],[xno],[
+        AC_MSG_RESULT(no)
+      ],[*],[
+        Define HAVE_WORKING_POLL to "yes" or "no" when cross-compiling
+      ]
+    )
+  ]
+)
 
 
 dnl check for kernel-headers
@@ -351,23 +337,20 @@ AC_CHECK_HEADERS(linux/i2c-dev.h,[
 
 PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],,[true])
 if test -n "$SYSTEMD_LIBS"; then
-    CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
-    AC_DEFINE(HAVE_SYSTEMD)
+  CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
+  AC_DEFINE(HAVE_SYSTEMD)
 fi
 
 dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
 kernelversion=`cat /proc/version || echo "non-linux"`
-case $kernelversion in
-   *Ubuntu*)
-        AC_MSG_NOTICE([Hardwiring Ubuntu systemd setup])
-        AC_SUBST([systemdsystemunitdir], [/lib/systemd/system])
-        AM_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR], [true])
-        ;;
-    *)
-        SYSTEMD_SYSTEMUNITDIR
-        ;;
-esac
-
+AS_CASE([$kernelversion],
+  [*Ubuntu*],[
+    AC_MSG_NOTICE([Hardwiring Ubuntu systemd setup])
+    AC_SUBST([systemdsystemunitdir], [/lib/systemd/system])
+    AM_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR], [true])
+  ],[*],[
+    SYSTEMD_SYSTEMUNITDIR
+])
 
 AC_ARG_WITH(lockdir,
   [  --with-lockdir=DIR      Old-school device lock files in DIR (/var/lock)],
@@ -382,14 +365,14 @@ AC_ARG_ENABLE(uinput,
 AM_CONDITIONAL([ENABLE_UINPUT], [test x$enable_uinput = xyes])
 
 AC_ARG_ENABLE(install_etc,
-[  --install-etc           Install /etc/lirc configuration files(default=yes)],
-[ install_etc="${enableval}" ],
-[ install_etc="yes"])
+  [  --install-etc           Install /etc/lirc configuration files(default=yes)],
+  [ install_etc="${enableval}" ],
+  [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
-   On cross-compile: Target has a working poll(2) implementation])
+  On cross-compile: Target has a working poll(2) implementation])
 
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
@@ -431,23 +414,27 @@ AC_CONFIG_FILES([
   doc/docpage.xsl
   systemd/Makefile
 ])
-
 AC_OUTPUT
+
 AC_DEFUN([AC_REPORT_CONDITIONAL], [
-AS_ECHO_N([$1:])
-AS_IF(test -z $$1_TRUE,AS_ECHO([yes]),AS_ECHO([no]))])
+  AS_IF([test -z $$1_TRUE],[enabled="yes"],[enabled="no"])
+  printf "%-20s%-12s" $1: $enabled
+  AS_CASE([$report_col],[1],[report_col=2],[*],[report_col=1])
+  AS_IF(test x$report_col = x2, AS_ECHO,)
+])
 
 AC_MSG_RESULT([
 Summary of selected options:
 ----------------------------------------
 prefix:                         $prefix
+lockdir:                        $lockdir
 sysconfdir:                     $sysconfdir
 x_progs:                        $x_progs
 host:                           $host
 host_os:                        $host_os
 forkpty:                        $forkpty
 usb_libs                        $usb_libs
-lockdir:                        $lockdir
+portaudio_lib_other:            $portaudio_lib_other
 
 Conditionals:
 ])

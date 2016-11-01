@@ -77,7 +77,6 @@ if HAVE_DEVINPUT
 dist_bin_SCRIPTS        += lirc-make-devinput
 endif
 
-if HAVE_PYTHON
 dist_bin_SCRIPTS        += pronto2lirc irdb-get irtext2udp
 dist_sbin_SCRIPTS       = lircd-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
@@ -92,7 +91,6 @@ pkgpython_PYTHON        = config.py \
                           lirc-setup/util.py
 dist_pkgpython_SCRIPTS  = lirc-setup/lirc-setup
 dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
-endif
 
 pylint: irdb-get irtext2udp $(pkgpython_PYTHON)
 	PYTHONPATH=./lirc-setup $(PYLINT) --rcfile=pylint.conf \
