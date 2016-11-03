@@ -5,13 +5,6 @@
  * @ingroup driver_api
  */
 
-/**
- * If defined, duplicates log console output to walk-around systemd
- * not handling the LOGPERROR  openlog() flag correctly.
- */
-
-// #define SYSTEMD_LOGPERROR_FIX
-
 /** lircd socket file name - beneath $varrundir (default /var/run/lirc) */
 #define DEV_LIRCD       "lircd"
 
