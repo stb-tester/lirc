@@ -50,8 +50,9 @@ LIBUSB_CONFIG="pkg-config libusb"
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([fcntl.h libutil.h limits.h linux/ioctl.h poll.h sys/ioctl.h \
-		  sys/poll.h sys/time.h syslog.h unistd.h util.h pty.h])
+AC_CHECK_HEADERS([fcntl.h libudev.h libutil.h limits.h linux/ioctl.h poll.h \
+		  sys/ioctl.h sys/poll.h sys/time.h syslog.h unistd.h util.h  \
+		  pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -348,6 +349,10 @@ if test -n "$SYSTEMD_LIBS"; then
   CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
   AC_DEFINE(HAVE_SYSTEMD)
 fi
+
+PKG_CHECK_MODULES([LIBUDEV],[libudev],,[true])
+CFLAGS="$CFLAGS $LIBUDEV_CFLAGS"
+LIBS="$LIBS $LIBUDEV_LIBS"
 
 dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
 kernelversion=`cat /proc/version || echo "non-linux"`
