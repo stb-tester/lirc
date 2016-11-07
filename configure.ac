@@ -20,7 +20,6 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
 AC_PATH_PROG(SH_PATH,[sh])
 AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
 if test x$MODINFO = xno; then
@@ -42,10 +41,8 @@ AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
 AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
-AC_PROG_LN_S
 LT_INIT([disable-static])
 AM_PATH_PYTHON([3.1],,)
-LIBUSB_CONFIG="pkg-config libusb"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -121,16 +118,6 @@ AS_IF([test x$no_x = xyes],[x_progs=],[x_progs="irxevent xmode2"])
 
 AM_CONDITIONAL([BUILD_XTOOLS],[ test "x$x_progs" != x ])
 
-dnl Determine default configuration based on OS
-AS_CASE([${host_os}],
-  [darwin*],[
-    dnl Mac OS X configuration
-    portaudio_lib_other="-framework CoreAudio -framework AudioToolbox"],
-  [*],[
-    dnl Unix OSS configuration
-    portaudio_lib_other="-lm -lpthread ${forkpty}"]
-)
-
 AH_TEMPLATE([HAVE_ALSA_SB_RC],
         [Define if the ALSA library with SB RC support is installed])
 
@@ -182,13 +169,13 @@ AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
 AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
-AC_CHECK_HEADER(usb.h,[
+PKG_CHECK_MODULES([LIBUSB],[libusb],[libusb=yes],[libusb=no])
+if test x$libusb = xyes; then
   AC_DEFINE(HAVE_LIBUSB)
   AM_CONDITIONAL([BUILD_USB],[true])
-  usb_libs=`${LIBUSB_CONFIG} --libs`
-  ],[
+else
   AM_CONDITIONAL([BUILD_USB],[false])]
-)
+fi
 
 PKG_CHECK_MODULES([FTDI],[libftdi >= 1.0],,[true])
 test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1 >= 1.0],,[true])
@@ -202,17 +189,8 @@ else
 fi
 
 dnl audio driver requires PortAudio library installed and some linker flags
-AC_CHECK_HEADERS(portaudio.h,[
-  AC_CHECK_LIB(portaudio, Pa_Initialize,[
-    AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[true])
-    ],[
-    AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])
-    ],[
-    ${portaudio_lib_other}]
-  )
-  ],[
-  AM_CONDITIONAL([BUILD_LIBPORTAUDIO],[false])]
-)
+PKG_CHECK_MODULES([PORTAUDIO],[portaudio-2.0],[portaudio=yes],[portaudio=no])
+AM_CONDITIONAL(BUILD_LIBPORTAUDIO, [test x$portaudio = xyes])
 
 dnl audio_alsa driver requires ALSA library installed and some linker flags
 have_alsa=no
@@ -394,7 +372,6 @@ dnl tell the Makefiles what we decided
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
 AC_SUBST(sysconfdir)
-AC_SUBST(usb_libs)
 AC_SUBST(x_progs)
 
 dnl tell the C code what we decided
@@ -446,8 +423,8 @@ x_progs:                        $x_progs
 host:                           $host
 host_os:                        $host_os
 forkpty:                        $forkpty
-usb_libs                        $usb_libs
-portaudio_lib_other:            $portaudio_lib_other
+LIBUSB_LIBS:                    $LIBUSB_LIBS
+PORTAUDIO_LIBS:                 $PORTAUDIO_LIBS
 
 Conditionals:
 ])

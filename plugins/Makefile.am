@@ -17,28 +17,28 @@ if BUILD_USB
 
 plugin_LTLIBRARIES          += atilibusb.la
 atilibusb_la_SOURCES        = atilibusb.c
-atilibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+atilibusb_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 atilibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += awlibusb.la
 awlibusb_la_SOURCES         = awlibusb.c
-awlibusb_la_LDFLAGS         = $(AM_LDFLAGS) @usb_libs@
+awlibusb_la_LDFLAGS         = $(AM_LDFLAGS) @LIBUSB_LIBS@
 awlibusb_la_CFLAGS          = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += dfclibusb.la
 dfclibusb_la_SOURCES        = dfclibusb.c
-dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 dfclibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += srm7500libusb.la
 srm7500libusb_la_SOURCES    = srm7500libusb.c
-srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
+srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @LIBUSB_LIBS@
 srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 if !BSD
 plugin_LTLIBRARIES          += commandir.la
 commandir_la_SOURCES        = commandir.c
-commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+commandir_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 endif
 
@@ -54,8 +54,9 @@ endif
 if BUILD_LIBPORTAUDIO
 plugin_LTLIBRARIES          += audio.la
 audio_la_SOURCES            = audio.c
+audio_la_CFLAGS             = $(AM_CFLAGS) $(PORTAUDIO_CFLAGS)
 audio_la_LDFLAGS            = $(AM_LDFLAGS) -lportaudio \
-                              $(portaudio_lib_other)  @forkpty@
+                              @PORTAUDIO_LIBS@  @forkpty@
 endif
 
 if BUILD_LIBALSA
