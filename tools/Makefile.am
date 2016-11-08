@@ -16,7 +16,6 @@ LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 sbin_PROGRAMS           = lirc-lsplugins
 bin_PROGRAMS            = ircat \
                           irexec \
-                          irpipe \
                           irrecord \
                           irsend \
                           irsimreceive \
@@ -29,6 +28,9 @@ if BUILD_XTOOLS
 bin_PROGRAMS            += xmode2 irxevent
 endif
 
+if LINUX_KERNEL
+bin_PROGRAMS            += irpipe
+endif
 
 if !DARWIN
 bin_PROGRAMS            += irpty

@@ -200,7 +200,6 @@ api-docs.tar.gz: $(API_SRC)
 man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irdb-get.1 \
                            $(srcdir)/man-source/irexec.1 \
-                           $(srcdir)/man-source/irpipe.1 \
                            $(srcdir)/man-source/irpty.1 \
                            $(srcdir)/man-source/irrecord.1 \
                            $(srcdir)/man-source/irsimreceive.1 \
@@ -213,10 +212,8 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lirc.4l \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
-                           $(srcdir)/man-source/lirc-make-devinput.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
                            $(srcdir)/man-source/lircd-setup.8 \
-                           $(srcdir)/man-source/lircd-uinput.8 \
                            $(srcdir)/man-source/lircd.8 \
                            $(srcdir)/man-source/lircd.conf.5 \
                            $(srcdir)/man-source/lircmd.8 \
@@ -224,6 +221,18 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/lircrc.5 \
                            $(srcdir)/man-source/mode2.1 \
                            $(srcdir)/man-source/pronto2lirc.1
+
+if LINUX_KERNEL
+man_sources             += $(srcdir)/man-source/irpipe.1
+endif
+
+if HAVE_DEVINPUT
+man_sources             += $(srcdir)/man-source/lirc-make-devinput.1
+endif
+
+if ENABLE_UINPUT
+man_sources             += $(srcdir)/man-source/lircd-uinput.8
+endif
 
 plugindocs              =  $(srcdir)/plugindocs/alsa-usb.html \
                            $(srcdir)/plugindocs/atilibusb.html \
@@ -269,7 +278,6 @@ html_sources            =  $(srcdir)/html-source/api-general.html \
 nodist_man_MANS         += man/ircat.1 \
                            man/irdb-get.1 \
                            man/irexec.1 \
-                           man/irpipe.1 \
                            man/irpty.1 \
                            man/irrecord.1 \
                            man/irsimreceive.1 \
@@ -282,11 +290,9 @@ nodist_man_MANS         += man/ircat.1 \
                            man/lirc.4l \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
-                           man/lirc-make-devinput.1 \
                            man/lirc-setup.1 \
                            man/lircd.8 \
                            man/lircd-setup.8 \
-                           man/lircd-uinput.8 \
                            man/lircd.conf.5 \
                            man/lircmd.8 \
                            man/lircrcd.8 \
@@ -294,10 +300,22 @@ nodist_man_MANS         += man/ircat.1 \
                            man/mode2.1 \
                            man/pronto2lirc.1
 
+if LINUX_KERNEL
+nodist_man_MANS         += man/irpipe.1
+endif
+
+if HAVE_DEVINPUT
+nodist_man_MANS         += man/lirc-make-devinput.1
+endif
+
+if ENABLE_UINPUT
+nodist_man_MANS         += man/lircd-uinput.8
+endif
+
+
 manpage_html            += man-html/ircat.html \
                            man-html/irdb-get.html \
                            man-html/irexec.html \
-                           man-html/irpipe.html \
                            man-html/irpty.html \
                            man-html/irrecord.html \
                            man-html/irsimreceive.html \
@@ -310,10 +328,8 @@ manpage_html            += man-html/ircat.html \
                            man-html/lirc.html \
                            man-html/lirc-lsplugins.html \
                            man-html/lirc-lsremotes.html \
-                           man-html/lirc-make-devinput.html \
                            man-html/lirc-setup.html \
                            man-html/lircd-setup.html \
-                           man-html/lircd-uinput.html \
                            man-html/lircd.html \
                            man-html/lircd.conf.html \
                            man-html/lircmd.html \
@@ -321,6 +337,18 @@ manpage_html            += man-html/ircat.html \
                            man-html/lircrc.html \
                            man-html/mode2.html \
                            man-html/pronto2lirc.html
+
+if LINUX_KERNEL
+manpage_html            += man-html/irpipe.html
+endif
+
+if HAVE_DEVINPUT
+manpage_html            += man-html/lirc-make-devinput.html
+endif
+
+if ENABLE_UINPUT
+manpage_html            += man-html/lircd-uinput.html
+endif
 
 generated_plugindocs    =  html/alsa-usb.html \
                            html/atilibusb.html \

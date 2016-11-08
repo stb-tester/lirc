@@ -105,15 +105,19 @@ dist-hook:
 	mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
-if !BSD
 input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
+if HAVE_DEVINPUT
 lirc/input_map.inc:
 	ln -s . lirc || :
 	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
 	$(top_srcdir)/tools/lirc-make-devinput -i > $@
+else
+lirc/input_map.inc:
+	touch $@
+	touch input_map.inc
 endif
 
 checkfiles:
