@@ -41,7 +41,7 @@ srm7500libusb_la_SOURCES    = srm7500libusb.c
 srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
 srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
-if !BSD
+if LINUX_KERNEL
 plugin_LTLIBRARIES          += commandir.la
 commandir_la_SOURCES        = commandir.c
 commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
@@ -113,7 +113,7 @@ osx_usbraw_la_SOURCES       = osx_usbraw.c
 osx_usbraw_la_LDFLAGS       = $(AM_LDFLAGS) -framework IOKit -framework Cocoa
 endif
 
-if !BSD
+if LINUX_KERNEL
 plugin_LTLIBRARIES          += default.la
 default_la_SOURCES          = default.c
 

@@ -20,7 +20,6 @@ LIRC_LIBS               = ../lib/liblirc.la ../lib/liblirc_client.la
 sbin_PROGRAMS           = lirc-lsplugins
 bin_PROGRAMS            = ircat \
                           irexec \
-                          irpipe \
                           irrecord \
                           irsend \
                           irsimreceive \
@@ -33,6 +32,9 @@ if BUILD_XTOOLS
 bin_PROGRAMS            += xmode2 irxevent
 endif
 
+if LINUX_KERNEL
+bin_PROGRAMS            += irpipe
+endif
 
 if !DARWIN
 bin_PROGRAMS            += irpty
@@ -75,8 +77,11 @@ xmode2_SOURCES          = xmode2.cpp
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 
-dist_bin_SCRIPTS        = lirc-config-tool lirc-make-devinput
+dist_bin_SCRIPTS        = lirc-config-tool
 
+if LINUX_KERNEL
+dist_bin_SCRIPTS        += lirc-make-devinput
+endif
 
 if NEED_PYTHON3
 dist_bin_SCRIPTS        += python3

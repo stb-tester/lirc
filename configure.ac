@@ -19,7 +19,7 @@ AC_PATH_PROG(SH_PATH,[sh])
 AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
 if test x$MODINFO = xno; then
   AC_MSG_WARN(["No modinfo command found - skipping kernel drivers."])
-  MODINFO="/usr/bin/false"
+  MODINFO="false"
 else
   MODINFO=$( PATH=$PATH:/sbin:/usr/sbin which modinfo )
 fi
@@ -96,10 +96,24 @@ case $host_os in
 	;;
     *)  osflags=''
 esac
+AC_SUBST(osflags)
 
 AM_CONDITIONAL([DARWIN], [test "$osflags" = "-DDARWIN"])
-AM_CONDITIONAL([BSD], [test -n "$osflags"])
-AC_SUBST(osflags)
+
+AC_MSG_CHECKING([for linux kernel])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[
+    #ifndef __linux__
+    #error Not linux
+    #endif
+  ]])],[
+    AC_MSG_RESULT(yes)
+    AM_CONDITIONAL([LINUX_KERNEL],[true])
+  ],[
+    AC_MSG_RESULT(no)
+    AM_CONDITIONAL([LINUX_KERNEL],[false])
+  ]
+)
+
 
 x_progs="irxevent xmode2"
 AC_PATH_XTRA
@@ -535,7 +549,7 @@ AC_REPORT_CONDITIONAL([SYSTEMD_INSTALL])
 AC_REPORT_CONDITIONAL([DEVEL])
 AC_REPORT_CONDITIONAL([HAVE_UINPUT])
 AC_REPORT_CONDITIONAL([DARWIN])
-AC_REPORT_CONDITIONAL([BSD])
+AC_REPORT_CONDITIONAL([LINUX_KERNEL])
 
 echo
 

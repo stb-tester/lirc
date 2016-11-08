@@ -36,9 +36,9 @@ dist_lirc_conf_DATA     = lircd.conf \
                           irexec.lircrc
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
-dist_lircdconfig_DATA	= README.conf.d 
+dist_lircdconfig_DATA	= README.conf.d
 
-if !BSD
+if LINUX_KERNEL
 dist_lircdconfig_DATA	+= devinput.lircd.conf
 endif
 
