@@ -24,7 +24,7 @@ AC_PATH_PROG(SH_PATH,[sh])
 AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
 if test x$MODINFO = xno; then
   AC_MSG_WARN(["No modinfo command found - skipping kernel drivers."])
-  MODINFO="/usr/bin/false"
+  MODINFO="false"
 else
   MODINFO=$( PATH=$PATH:/sbin:/usr/sbin which modinfo )
 fi
