@@ -182,13 +182,19 @@ AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
 AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
-PKG_CHECK_MODULES([LIBUSB],[libusb],[libusb=yes],[libusb=no])
-if test x$libusb = xyes; then
-  AC_DEFINE(HAVE_LIBUSB)
-  AM_CONDITIONAL([BUILD_USB],[true])
-else
-  AM_CONDITIONAL([BUILD_USB],[false])]
-fi
+AH_TEMPLATE([HAVE_USB_H],
+        [Define if usb.h is installed])
+
+AH_TEMPLATE([HAVE_LIBUSB_H],
+        [Define if libusb.h is installed])
+
+AH_TEMPLATE([HAVE_LIBUSB_1_0_LIBUSB_H],
+        [Define if libusb-1.0/libusb.h is installed])
+
+AC_CHECK_HEADERS([usb.h libusb-1.0/libusb.h libusb.h])
+AC_CHECK_LIB([usb],[usb_get_string],[usb_libs="-lusb"],,)
+AM_CONDITIONAL([BUILD_USB],[test x$usb_libs != x])
+AC_CHECK_LIB([usb-1.0],[libusb_lock_events],[usb_libs="$usb_libs -lusb-1.0"],,)
 
 PKG_CHECK_MODULES([FTDI],[libftdi >= 1.0],,[true])
 test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1 >= 1.0],,[true])
