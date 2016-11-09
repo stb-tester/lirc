@@ -31,6 +31,14 @@
 # include <config.h>
 #endif
 
+#if defined (HAVE_LIBUSB_1_0_LIBUSB_H)
+#include <libusb-1.0/libusb.h>
+#elif defined (HAVE_LIBUSB_H)
+#include <libusb.h>
+#else
+#error Cannot find required libusb.h header
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -38,7 +46,6 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#include <libusb-1.0/libusb.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <glob.h>

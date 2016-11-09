@@ -13,6 +13,11 @@
 #ifndef _LIRC_PRIVATE_H
 #define _LIRC_PRIVATE_H
 
+#ifndef __u32
+#include <stdint.h>
+#define __u32 uint32_t
+#endif
+
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
