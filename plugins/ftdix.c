@@ -58,8 +58,7 @@
 
 #include <ftdi.h>
 
-#define LIRC_FTDIX_SET_SCHEDULER 1
-#ifdef LIRC_FTDIX_SET_SCHEDULER
+#ifdef HAVE_LINUX_SCHED_H
 #include <sched.h>
 #include <linux/sched.h>
 #endif
@@ -700,7 +699,7 @@ static int hwftdix_close(void)
 
 static void sched_enable_realtime(int* orig_scheduler)
 {
-#ifdef LIRC_FTDIX_SET_SCHEDULER
+#ifdef HAVE_LINUX_SCHED_H
 	*orig_scheduler = sched_getscheduler(0);
 	if (*orig_scheduler == -1) {
 		log_warn("Failed to get current scheduling policy with error "
@@ -727,12 +726,12 @@ static void sched_enable_realtime(int* orig_scheduler)
 	}
 #else
 	*orig_scheduler = -1;
-#endif /* LIRC_FTDIX_SET_SCHEDULER */
+#endif /* HAVE_LINUX_SCHED_H */
 }
 
 static void sched_restore(int* orig_scheduler)
 {
-#ifdef LIRC_FTDIX_SET_SCHEDULER
+#ifdef HAVE_LINUX_SCHED_H
 	if (*orig_scheduler == -1)
 		return;
 
@@ -745,7 +744,7 @@ static void sched_restore(int* orig_scheduler)
 	}
 #else
 	*orig_scheduler = -1;
-#endif /* LIRC_FTDIX_SET_SCHEDULER */
+#endif /* HAVE_LINUX_SCHED_H */
 }
 
 

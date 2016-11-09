@@ -48,9 +48,9 @@ LIBUSB_CONFIG="pkg-config libusb"
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([fcntl.h libudev.h limits.h linux/ioctl.h poll.h \
-		  sys/ioctl.h  sys/poll.h sys/time.h syslog.h unistd.h \
-		  util.h libutil.h pty.h])
+AC_CHECK_HEADERS([fcntl.h libudev.h limits.h linux/ioctl.h linux/sched.h \
+		  poll.h sys/ioctl.h  sys/poll.h sys/time.h syslog.h  \
+		  unistd.h util.h libutil.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -192,6 +192,9 @@ AH_TEMPLATE([HAVE_PTY_H],
 
 AH_TEMPLATE([HAVE_SYS_POLL_H],
         [defined  if sys/poll.h is available])
+
+AH_TEMPLATE([HAVE_LINUX_SCHED_H],
+        [defined  if linux/sched.h is available])
 
 AH_TEMPLATE([HAVE_SCSI],
         [defined if SCSI API is available])
