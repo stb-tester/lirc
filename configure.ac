@@ -47,9 +47,9 @@ AM_PATH_PYTHON([3.1],,)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS([fcntl.h libudev.h libutil.h limits.h linux/ioctl.h poll.h \
-		  sys/ioctl.h sys/poll.h sys/time.h syslog.h unistd.h util.h  \
-		  pty.h])
+AC_CHECK_HEADERS([fcntl.h libudev.h libutil.h limits.h linux/ioctl.h \
+		  linux/sched.h poll.h sys/ioctl.h sys/poll.h sys/time.h \
+		  syslog.h unistd.h util.h pty.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -161,7 +161,11 @@ AH_TEMPLATE([HAVE_POLL_H], [defined  if poll.h is available])
 
 AH_TEMPLATE([HAVE_PTY_H], [defined  if pty.h is available])
 
-AH_TEMPLATE([HAVE_SYS_POLL_H], [defined  if sys/poll.h is available])
+AH_TEMPLATE([HAVE_SYS_POLL_H], [defined if sys/poll.h is available])
+
+AH_TEMPLATE([HAVE_LINUX_SCHED_H], [defined if linux/sched.h is available])
+
+AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
 
 AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
 
@@ -192,9 +196,11 @@ AH_TEMPLATE([HAVE_LIBUSB_1_0_LIBUSB_H],
         [Define if libusb-1.0/libusb.h is installed])
 
 AC_CHECK_HEADERS([usb.h libusb-1.0/libusb.h libusb.h])
-AC_CHECK_LIB([usb],[usb_get_string],[usb_libs="-lusb"],,)
+AC_CHECK_LIB([usb],[usb_get_string],[LIBUSB_LIBS="-lusb"],,)
 AM_CONDITIONAL([BUILD_USB],[test x$usb_libs != x])
-AC_CHECK_LIB([usb-1.0],[libusb_lock_events],[usb_libs="$usb_libs -lusb-1.0"],,)
+AC_CHECK_LIB([usb-1.0],
+	     [libusb_lock_events],
+	     [LIBUSB_LIBS="$LIBUSB_LIBS -lusb-1.0"],,)
 
 PKG_CHECK_MODULES([FTDI],[libftdi >= 1.0],,[true])
 test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1 >= 1.0],,[true])
