@@ -39,6 +39,7 @@
 
 
 #define IRTOY_MINFWVERSION 20
+#define LOWEST_FW_SUPPORTING_SETPIN 22
 
 #define IRTOY_UNIT 21.3333
 #define IRTOY_LONGSPACE 1000000
@@ -146,6 +147,10 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return res;
 }
 
+static int use_signaling_pins(void) {
+	return dev->swVersion >= LOWEST_FW_SUPPORTING_SETPIN;
+}
+
 static unsigned int IOdirections = (unsigned int) -1;
 static unsigned int IOdata = 0U;
 
@@ -170,6 +175,9 @@ static int setIOData(void)
 
 static int setPin(unsigned int pin, int state)
 {
+	if (!use_signaling_pins())
+		return 0;
+
 	unsigned int mask = 1 << pin;
 
 	IOdirections &= ~mask;
