@@ -19,9 +19,9 @@
 * KIND, either express or implied.
 *
 ***************************************************************************/
+#define _XOPEN_SOURCE 700
 
 #include "config.h"
-#include "lirc_log.h"
 
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
@@ -37,7 +37,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include "lirc/curl_poll.h"
+#include "lirc_log.h"
+#include "curl_poll.h"
+
 
 /* Convenience local macros */
 
