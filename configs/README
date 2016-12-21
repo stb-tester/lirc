@@ -44,20 +44,10 @@ describes the driver configuration:
 
               - 'udp_port' [default port]: User can select an udp port
               - '/dev/event/*': User can select a /dev/input/event/* device.
-              - '/bin/sh'....: shell command which lists possible devices.
               - '/dev/tty*': User can select an available tty.
               - 'drvctl': Driver can list devices using DRVCTL_GET_DEVICES.
               - 'None': No device option is configured.
               - 'auto': No configuration, but a message is displayed.
-
-          /bin/sh scripts can either output a list of devices presented
-          more or less as-is or a dictionary. The latter is a YAML dictionary
-          named label_by_device where the keys are devices and values user
-          visible labels. Example:
-
-          label_by_device:
-                  /dev/foo:      My own foo device
-                  /dev/bar:      My bar device
 
   - modprobe;
          Required modprobe configuration. Note that the device_hint in

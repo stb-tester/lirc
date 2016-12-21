@@ -90,12 +90,6 @@ static struct {
 /* Return the absolute difference between two unsigned 8-bit samples */
 #define U8_ABSDIFF(s1, s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
 
-/** Command to list available alsa hw devices. */
-#define LIST_DEVICES \
-" aplay -l | sed -n" \
-" -e '/^card/s/card \\([0-9]\\)\\([^,]*\\),[^:]*\\([0-9]\\)/hw:\\1,\\3 /'" \
-" -e 's/ : .*//p'"
-
 /* Forward declarations */
 static int audio_alsa_deinit(void);
 static void alsa_sig_io(snd_async_handler_t* h);
@@ -533,6 +527,62 @@ char* audio_alsa_rec(struct ir_remote* remotes)
 
 #define audio_alsa_decode receive_decode
 
+static void list_devices(glob_t* glob)
+{
+	void **hints;
+	const char *ifaces[] = {
+		"card", "pcm", "rawmidi", "timer", "seq", "hwdep", NULL
+	};
+	int if_;
+	void **str;
+	char *name;
+	char* desc;
+	char device_path[256];
+	memset(glob, 0, sizeof(glob_t));
+	glob->gl_offs = 32;
+	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
+	for (if_ = 0; ifaces[if_] != NULL; if_ += 1) {
+		if (snd_device_name_hint(-1, ifaces[if_], &hints) < 0)
+			continue;
+		for (str = hints; *str; str++) {
+			name = snd_device_name_get_hint(*str, "NAME");
+			name[strcspn(name, "\n")] = '\0';
+			desc = snd_device_name_get_hint(*str, "DESC");
+			desc[strcspn(desc, "\n")] = '\0';
+			snprintf(device_path, sizeof(device_path),
+				 "%s %s", name, desc);
+			glob->gl_pathv[glob->gl_pathc] = strdup(device_path);
+			glob->gl_pathc += 1;
+			if (glob->gl_pathc >= glob->gl_offs)
+				return;
+		}
+	}
+}
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	glob_t* glob;
+	int i;
+
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		glob = (glob_t*) arg;
+		list_devices(glob);
+		return 0;
+	case DRVCTL_FREE_DEVICES:
+		glob = (glob_t*) arg;
+		for (i = 0; i < glob->gl_pathc; i += 1)
+			free(glob->gl_pathv[i]);
+		free(glob->gl_pathv);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
+
 const struct driver hw_audio_alsa = {
 	.name		= "audio_alsa",
 	.device		= "hw",
@@ -548,12 +598,12 @@ const struct driver hw_audio_alsa = {
 	.send_func	= NULL,
 	.rec_func	= audio_alsa_rec,
 	.decode_func	= audio_alsa_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= audio_alsa_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.9.4",
 	.info		= "See file://" PLUGINDOCS "/audio-alsa.html",
-	.device_hint    = "/bin/sh " LIST_DEVICES,
+	.device_hint    = "drvctl"
 };
 
 const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };
