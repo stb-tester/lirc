@@ -121,6 +121,7 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 				perror("Cannot reset log file owner.");
 		}
 		gethostname(hostname, HOSTNAME_LEN);
+		log_warn("------------------------ Log re-opened ----------------------------");
 	}
 	if (getenv("LIRC_LOGCHANNEL") != NULL) {
 		logged_channels = atoi(getenv("LIRC_LOGCHANNEL"));    // FIXME...

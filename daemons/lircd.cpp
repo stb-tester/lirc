@@ -2348,6 +2348,71 @@ static void lircd_parse_options(int argc, char** const argv)
 }
 
 
+static const char* optvalue(const char* key)
+{
+	const char* s = options_getstring(key);
+	return s ? s : "(null)";
+}
+
+
+static void log_daemon(void)
+{
+	FILE* f;
+	char buff [256];
+
+	log_notice("Version: lircd " VERSION);
+	f = popen("uname -a", "r");
+	if (f == NULL) {
+		log_notice("Cannot run uname -a");
+	} else {
+		if (fgets(buff, sizeof(buff), f) != NULL) {
+			const char* s = strtok(buff, "\n");
+			log_notice("System info: %s", s);
+		}
+	}
+}
+
+
+static void log_options(void)
+{
+	log_notice("Options: driver: %s", optvalue("lircd:driver"));
+	log_notice("Options: output: %s", lircdfile);
+	log_notice("Options: nodaemon: %d", nodaemon);
+	log_notice("Options: plugindir: %s", optvalue("lircd:plugindir"));
+	log_notice("Options: logfile: %s", optvalue("lircd:logfile"));
+	log_notice("Options: immediate-init: %d",
+		   options_getboolean("lircd:immediate-init"));
+	log_notice("Options: permission: %o",
+		   oatoi(optvalue("lircd:permission")));
+	log_notice("Options: driver-options: %s",
+		   optvalue("lircd:driver-options"));
+	log_notice("Options: pidfile: %s", pidfile);
+	log_notice("Options: listen: %s", optvalue("lircd:listen"));
+	log_notice("Options: listen_port: %d", port);
+	log_notice("Options: connect: %s", optvalue("lircd:connect"));
+	log_notice("Options: userelease: %d", userelease);
+	log_notice("Options: effective_user: %s",
+		   optvalue("lircd:effective_user"));
+	log_notice("Options: release_suffix: %s",
+		   optvalue("lircd:release_suffix"));
+	log_notice("Options: allow_simulate: %d", allow_simulate);
+	log_notice("Options: repeat_max: %d", repeat_max);
+	log_notice("Options: configfile: %s", optvalue("lircd:configfile"));
+	log_notice("Options: dynamic_codes: %s",
+		   optvalue("lircd:dynamic_codes"));
+}
+
+
+static void log_driver(void)
+{
+	log_notice("Current driver: %s", curr_driver->name);
+	log_notice("Driver API version: %d", curr_driver->api_version);
+	log_notice("Driver  version: %s", curr_driver->driver_version);
+	if (curr_driver->info)
+		log_notice("Driver  info: %s", curr_driver->info);
+}
+
+
 int main(int argc, char** argv)
 {
 	struct sigaction act;
@@ -2370,6 +2435,7 @@ int main(int argc, char** argv)
 	if (opt != NULL)
 		lirc_log_set_file(opt);
 	lirc_log_open("lircd", 0, LIRC_INFO);
+	log_daemon();
 
 	immediate_init = options_getboolean("lircd:immediate-init");
 	nodaemon = options_getboolean("lircd:nodaemon");
@@ -2389,7 +2455,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Driver `%s' not found or not loadable", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
 		fputs("Use lirc-lsplugins(1) to list available drivers.\n",
-                      stderr);
+		       stderr);
 		hw_print_drivers(stderr);
 		return EXIT_FAILURE;
 	}
@@ -2435,9 +2501,12 @@ int main(int argc, char** argv)
 	}
 	if (curr_driver->device != NULL && strcmp(curr_driver->device, lircdfile) == 0) {
 		fprintf(stderr, "%s: refusing to connect to myself\n", progname);
-		fprintf(stderr, "%s: device and output must not be the same file: %s\n", progname, lircdfile);
+		fprintf(stderr, "%s: device and output must not be the same file: %s\n",
+			progname, lircdfile);
 		return EXIT_FAILURE;
 	}
+	log_options();
+	log_driver();
 
 	signal(SIGPIPE, SIG_IGN);
 
