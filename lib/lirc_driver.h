@@ -13,6 +13,7 @@
 
 #define IN_DRIVER
 
+#include "lirc/drv_enum.h"
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
 #include "lirc/driver.h"

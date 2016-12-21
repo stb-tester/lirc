@@ -372,6 +372,7 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 {
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
+
 	const char* devicetype = "custom";
 	const char* latencytype = "custom";
 	int nrdevices = Pa_GetDeviceCount();
@@ -671,19 +672,12 @@ static void list_devices(glob_t* glob)
 
 static int drvctl_func(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-	int i;
-
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
-		glob = (glob_t*) arg;
-		list_devices(glob);
+		list_devices((glob_t*) arg);
 		return 0;
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		for (i = 0; i < glob->gl_pathc; i += 1)
-			free(glob->gl_pathv[i]);
-		free(glob->gl_pathv);
+		drv_enum_free((glob_t*) arg);
 		return 0;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;

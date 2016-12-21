@@ -530,7 +530,7 @@ char* audio_alsa_rec(struct ir_remote* remotes)
 static void list_devices(glob_t* glob)
 {
 	void **hints;
-	const char *ifaces[] = {
+	static const char* const ifaces[] = {
 		"card", "pcm", "rawmidi", "timer", "seq", "hwdep", NULL
 	};
 	int if_;
@@ -538,6 +538,7 @@ static void list_devices(glob_t* glob)
 	char *name;
 	char* desc;
 	char device_path[256];
+
 	memset(glob, 0, sizeof(glob_t));
 	glob->gl_offs = 32;
 	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
@@ -562,19 +563,12 @@ static void list_devices(glob_t* glob)
 
 static int drvctl_func(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-	int i;
-
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
-		glob = (glob_t*) arg;
-		list_devices(glob);
+		list_devices((glob_t*) arg);
 		return 0;
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		for (i = 0; i < glob->gl_pathc; i += 1)
-			free(glob->gl_pathv[i]);
-		free(glob->gl_pathv);
+		drv_enum_free((glob_t*) arg);
 		return 0;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;

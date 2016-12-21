@@ -40,6 +40,8 @@ liblirc_client_la_SOURCES   = lirc_client.c curl_poll.c curl_poll.h lirc_client.
 
 liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
 liblirc_driver_la_SOURCES   = driver.h \
+                              drv_enum.c \
+                              drv_enum.h \
                               ir_remote.c \
                               ir_remote.h \
                               ir_remote_types.h \
