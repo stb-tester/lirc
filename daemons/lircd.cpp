@@ -2169,7 +2169,7 @@ static int opt2host_port(const char*		optarg_arg,
 {
 	char optarg[strlen(optarg_arg) + 1];
 
-	strncpy(optarg, optarg_arg, strlen(optarg_arg));
+	strcpy(optarg, optarg_arg);
 	long p;
 	char* endptr;
 	char* sep = strchr(optarg, ':');
@@ -2296,8 +2296,8 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:output", optarg);
 			break;
 		case 'l':
-			options_set_opt("lircd:listen", "True");
-			options_set_opt("lircd:listen_hostport", optarg);
+			options_set_opt("lircd:listen",
+					optarg ? optarg : "0.0.0.0:8765");
 			break;
 		case 'c':
 			options_set_opt("lircd:connect", optarg);
@@ -2403,7 +2403,7 @@ int main(int argc, char** argv)
 		lirc_log_set_file(opt);
 	if (options_getstring("lircd:listen") != NULL) {
 		listen_tcpip = 1;
-		opt = options_getstring("lircd:listen_hostport");
+		opt = options_getstring("lircd:listen");
 		if (opt) {
 			if (opt2host_port(opt, &address, &port, errmsg) != 0) {
 				fputs(errmsg, stderr);

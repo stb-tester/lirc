@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Aug 2016" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Dec 2016" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -94,6 +94,7 @@ to all sorts of changes. It has not ben tested thoroughly.
 Let lircd listen for network
 connections on the given address/port. The default address is 0.0.0.0,
 which means that connections on all network interfaces will be accepted.
+The address must be given in dotted numerical form.
 The default port is 8765. No security checks are currently implemented.
 The listening lircd instance will send all IR events to the connecting
 lircd instances.
