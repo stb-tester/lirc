@@ -1,5 +1,7 @@
 0.9.5-devel
-  * TBD
+  * plugins: Add support for irdroid in the irtoy driver.
+  * plugins: Add support for enumerating devices to more plugins.
+  * Many build patches to build on kfreebsd and eventually hurd.
 
 0.9.4c 22/10/16
  * New curl_poll files adds a new MIT license. Lirc now carries
