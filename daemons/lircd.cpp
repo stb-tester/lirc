@@ -2165,7 +2165,7 @@ static int opt2host_port(const char*		optarg_arg,
 {
 	char optarg[strlen(optarg_arg) + 1];
 
-	strncpy(optarg, optarg_arg, strlen(optarg_arg));
+	strcpy(optarg, optarg_arg);
 	long p;
 	char* endptr;
 	char* sep = strchr(optarg, ':');
@@ -2295,8 +2295,8 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:output", optarg);
 			break;
 		case 'l':
-			options_set_opt("lircd:listen", "True");
-			options_set_opt("lircd:listen_hostport", optarg);
+			options_set_opt("lircd:listen",
+					optarg ? optarg : "0.0.0.0:8765");
 			break;
 		case 'c':
 			options_set_opt("lircd:connect", optarg);
@@ -2375,6 +2375,8 @@ static void log_daemon(void)
 
 static void log_options(void)
 {
+	char buff[128];
+
 	log_notice("Options: driver: %s", optvalue("lircd:driver"));
 	log_notice("Options: output: %s", lircdfile);
 	log_notice("Options: nodaemon: %d", nodaemon);
@@ -2387,8 +2389,12 @@ static void log_options(void)
 	log_notice("Options: driver-options: %s",
 		   optvalue("lircd:driver-options"));
 	log_notice("Options: pidfile: %s", pidfile);
-	log_notice("Options: listen: %s", optvalue("lircd:listen"));
-	log_notice("Options: listen_port: %d", port);
+	log_notice("Options: listen: %d", listen_tcpip);
+	if (listen_tcpip) {
+		log_notice("Options: listen_port: %d", port);
+		inet_ntop(AF_INET, &address, buff, sizeof(buff));
+		log_notice("Options: listen address: %s", buff);
+	}
 	log_notice("Options: connect: %s", optvalue("lircd:connect"));
 	log_notice("Options: userelease: %d", userelease);
 	log_notice("Options: effective_user: %s",
@@ -2470,7 +2476,7 @@ int main(int argc, char** argv)
 		lirc_log_set_file(opt);
 	if (options_getstring("lircd:listen") != NULL) {
 		listen_tcpip = 1;
-		opt = options_getstring("lircd:listen_hostport");
+		opt = options_getstring("lircd:listen");
 		if (opt) {
 			if (opt2host_port(opt, &address, &port, errmsg) != 0) {
 				fputs(errmsg, stderr);
