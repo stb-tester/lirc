@@ -95,9 +95,13 @@ Let lircd listen for network
 connections on the given address/port. The default address is 0.0.0.0,
 which means that connections on all network interfaces will be accepted.
 The address must be given in dotted numerical form.
-The default port is 8765. No security checks are currently implemented.
+Port defaults to  8765.
 The listening lircd instance will send all IR events to the connecting
-lircd instances.
+lircd instances without any security checks.
+.IP
+On non-glibc platforms the address:port argument is mandatory, but can be
+given as an empty string e. g. \fI--listen=\fR which then defaults
+to \fB0.0.0.0:8765\fR.
 .TP 4
 \fB-L, --logfile\fR <\fIlogfile path\fR>
 Select the lircd daemon log file. logfile is either the string 'syslog'
@@ -106,10 +110,14 @@ is to use syslog.
 .TP 4
 \fB-D, --loglevel\fR [\fIlevel\fR]
 Determine the amount of logging information. \fIlevel\fR can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'.
+syslog level: 'error','warning, 'info', 'notice' or  'debug'.
+lircd also defines three additional levels 'trace', 'trace1' and 'trace2'
+which gives even more messages ('trace2' bringing the most).
+However, in the log these messages are marked as 'debug'.
+.IP
+On non-glibc platforms the \fIlevel\fR argument is mandatory, but can be
+given as an empty string e. g. \fI--loglevel=\fR which then defaults
+to \fBdebug\fR.
 .IP
 The level can also be an integer in the range 3 (almost no messages) to
 10.
