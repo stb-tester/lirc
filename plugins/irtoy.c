@@ -20,7 +20,6 @@
 *  along with this program; if not, write to the Free Software
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.
 */
-
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +43,12 @@
 #define IRTOY_UNIT 21.3333
 #define IRTOY_LONGSPACE 1000000
 
+/** Keys used to enumerate devices */
+static const struct drv_enum_udev_what UDEV_KEYS[] = {
+	{.idProduct = "04d8", .idVendor = "f58b"},    // irdroid
+	{.idProduct = "fd08", .idVendor = "04d8"},    // irtoy
+	{0, 0}
+};
 
 const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x24, 0x25, 0x26, 0x03 };
 static const unsigned char cmdIOwrite = 0x30; // Sets the IO pins to ground (0) or +5volt (1).
@@ -102,6 +107,8 @@ static int deinit(void);
 static int send(struct ir_remote* remote, struct ir_ncode* code);
 static char* receive(struct ir_remote* remotes);
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int drvctl_func(unsigned int cmd, void* arg);
+
 static lirc_t readdata(lirc_t timeout);
 
 
@@ -119,12 +126,12 @@ const struct driver hw_usbirtoy = {
 	.send_func	= send,
 	.rec_func	= receive,
 	.decode_func	= decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.9.5",
 	.info		= "See file://" PLUGINDOCS "/irtoy.html",
-	.device_hint    = "/dev/ttyACM*",
+	.device_hint    = "drvctl"
 };
 
 
@@ -147,7 +154,8 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return res;
 }
 
-static int use_signaling_pins(void) {
+static int use_signaling_pins(void)
+{
 	return dev->swVersion >= LOWEST_FW_SUPPORTING_SETPIN;
 }
 
@@ -688,4 +696,18 @@ static int send(struct ir_remote* remote, struct ir_ncode* code)
 	res = irtoy_send_double_buffered(rawSB, numToXmit);
 	setPin(sendingPin, 0);
 	return res;
+}
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_udev((glob_t*) arg, UDEV_KEYS);
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
 }

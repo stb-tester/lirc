@@ -1,6 +1,10 @@
 ACLOCAL_AMFLAGS             = -I m4
 
 AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver
+if BUILD_USB
+AM_LDFLAGS                  +=  @LIBUSB_LIBS@
+endif
+
 AM_CFLAGS                   = -pthread -Wall
 AM_CFLAGS                   += -DPLUGINDOCS=\"$(docdir)/plugindocs\"
 AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \

@@ -34,9 +34,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#if defined (HAVE_LIBUSB_1_0_LIBUSB_H)
+#if defined(HAVE_LIBUSB_1_0_LIBUSB_H)
 #include <libusb-1.0/libusb.h>
-#elif defined (HAVE_LIBUSB_H)
+#elif defined(HAVE_LIBUSB_H)
 #include <libusb.h>
 #else
 #error Cannot find required libusb.h header
@@ -129,9 +129,7 @@ static void list_devices(glob_t *buff)
 		ftdi_free(ctx);
 		return;
 	}
-	memset(buff, 0, sizeof(glob_t));
-	buff->gl_offs = 32;
-	buff->gl_pathv = calloc(buff->gl_offs, sizeof(char*));
+	glob_t_init(buff);
 	for (dev = devlist; dev != NULL; dev = dev->next) {
 		r = ftdi_usb_get_strings(ctx,
 					 dev->dev,
@@ -142,19 +140,15 @@ static void list_devices(glob_t *buff)
 			log_warn("List FTDI devices: Cannot get strings");
 			continue;
 		}
-		if (buff->gl_pathc >= buff->gl_offs) {
-			log_warn("List FTDI devices - too many of them");
-			break;
-		}
 		snprintf(device, sizeof(device),
 			 "/dev/bus/usb/%03d/%03d:   %s:%s\n",
 			 libusb_get_bus_number(dev->dev),
 			 libusb_get_port_number(dev->dev),
 			 vendor, descr);
-		buff->gl_pathv[buff->gl_pathc] = strdup(device);
-		buff->gl_pathc += 1;
+		glob_t_add_path(buff, device);
 	}
 	ftdi_free(ctx);
+	drv_enum_add_udev_info(buff);
 }
 
 static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)

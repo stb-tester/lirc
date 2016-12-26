@@ -41,6 +41,7 @@
 #include <pwd.h>
 
 #include "lirc_private.h"
+#include "drv_enum.h"
 
 static const logchannel_t logchannel = LOG_APP;
 
@@ -408,20 +409,33 @@ int next_press(int fd, int mode, int bytes)
 	return 1;
 }
 
+
 static void list_devices(void)
 {
 	glob_t glob;
 	unsigned i;
+	int r;
 
-	if (!curr_driver->drvctl_func  ||
-	    curr_driver->drvctl_func(DRVCTL_GET_DEVICES, &glob) != 0) {
+	r = curr_driver->drvctl_func ? 0 : DRV_ERR_NOT_IMPLEMENTED;
+	if (r == 0) {
+		r = curr_driver->drvctl_func(DRVCTL_GET_DEVICES, &glob);
+	}
+	switch (r) {
+		case DRV_ERR_ENUM_EMPTY:
+		break;
+	case DRV_ERR_NOT_IMPLEMENTED:
 		fputs("Device enumeration is not supported by this driver\n",
-                      stderr);
+			stderr);
+		exit(1);
+	case 0:
+		for (i = 0; i < glob.gl_pathc; i += 1)
+			puts(glob.gl_pathv[i]);
+		curr_driver->drvctl_func(DRVCTL_FREE_DEVICES, &glob);
+		break;
+	default:
+		fputs("Error running enumerate command", stderr);
 		exit(1);
 	}
-	for (i = 0; i < glob.gl_pathc; i += 1)
-		puts(glob.gl_pathv[i]);
-	curr_driver->drvctl_func(DRVCTL_FREE_DEVICES, &glob);
 }
 
 

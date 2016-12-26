@@ -48,15 +48,6 @@ int default_close(void);
 /** Return DRVCTL_ERR_NOTIMPLEMENTED. */
 int default_drvctl(unsigned int cmd, void* arg);
 
-/** Return an malloc'ed glob_t with default capacity. */
-void glob_t_init(glob_t* glob);
-
-/** Free memory obtained using glob_t_new. */
-void glob_t_free(glob_t* glob);
-
-/** Add a malloc'ed copy of path into glob, possibly increasing capacity. */
-void glob_t_add_path(glob_t* glob, const char* path);
-
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
 	char	key[32];
@@ -120,6 +111,10 @@ int drv_handle_options(const char* options);
 
 /** drvctl error: */
 #define  DRV_ERR_BAD_VALUE		4
+
+/** No requested data available. */
+#define  DRV_ERR_ENUM_EMPTY		5
+
 
 /**
  * The data the driver exports i. e., lirc accesses the driver as

@@ -539,9 +539,7 @@ static void list_devices(glob_t* glob)
 	char* desc;
 	char device_path[256];
 
-	memset(glob, 0, sizeof(glob_t));
-	glob->gl_offs = 32;
-	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
+	glob_t_init(glob);
 	for (if_ = 0; ifaces[if_] != NULL; if_ += 1) {
 		if (snd_device_name_hint(-1, ifaces[if_], &hints) < 0)
 			continue;
@@ -552,10 +550,7 @@ static void list_devices(glob_t* glob)
 			desc[strcspn(desc, "\n")] = '\0';
 			snprintf(device_path, sizeof(device_path),
 				 "%s %s", name, desc);
-			glob->gl_pathv[glob->gl_pathc] = strdup(device_path);
-			glob->gl_pathc += 1;
-			if (glob->gl_pathc >= glob->gl_offs)
-				return;
+			glob_t_add_path(glob, device_path);
 		}
 	}
 }

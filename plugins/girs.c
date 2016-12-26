@@ -313,6 +313,16 @@ static int drvctl(unsigned int cmd, void* arg)
 		}
 	}
 		break;
+	case DRVCTL_GET_DEVICES:
+	{
+		static const char* const what[] = {
+			"/dev/ttyACM*", "/dev/ttyUSB*", "/dev/arduino*", NULL
+		};
+		return drv_enum_globs((glob_t*) arg, what);
+	}
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}

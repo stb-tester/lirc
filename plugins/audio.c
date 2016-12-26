@@ -372,7 +372,6 @@ static void audio_choosedevice(PaStreamParameters* streamparameters, int input, 
 {
 	const PaDeviceInfo* deviceinfo;
 	const PaHostApiInfo* hostapiinfo;
-
 	const char* devicetype = "custom";
 	const char* latencytype = "custom";
 	int nrdevices = Pa_GetDeviceCount();
@@ -642,9 +641,7 @@ static void list_devices(glob_t* glob)
 		log_error("Cannot initialize portaudio.");
 		return;
 	}
-	memset(glob, 0, sizeof(glob_t));
-	glob->gl_offs = 32;
-	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
+	glob_t_init(glob);
 	device_count = Pa_GetDeviceCount();
 	if (device_count < 0) {
 		log_warn("list_devices: No devices found");
@@ -661,10 +658,7 @@ static void list_devices(glob_t* glob)
 		}
 		snprintf(device_path, sizeof(device_path),
 			 "%s %s", name, desc);
-		glob->gl_pathv[glob->gl_pathc] = strdup(device_path);
-		glob->gl_pathc += 1;
-		if (glob->gl_pathc >= glob->gl_offs)
-			break;
+		glob_t_add_path(glob, device_path);
 	}
 	Pa_Terminate();
 }

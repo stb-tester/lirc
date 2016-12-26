@@ -35,6 +35,7 @@ static char* zotac_rec(struct ir_remote* remotes);
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static void* zotac_repeat(void* arg);
 static int zotac_getcode(void);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
@@ -79,16 +80,31 @@ const struct driver hw_zotac = {
 	.send_func	= NULL,
 	.rec_func	= zotac_rec,
 	.decode_func	= zotac_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 #endif
 
 const struct driver* hardwares[] = { &hw_zotac, (const struct driver*)NULL };
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/hiddev*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 
 static int zotac_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
