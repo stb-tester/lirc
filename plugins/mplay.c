@@ -145,6 +145,7 @@ static int mplay_init(void);
 static int mplay2_init(void);
 static int mplayfamily_deinit(void);
 static char* mplayfamily_rec(struct ir_remote* remotes);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 
 /**
@@ -217,14 +218,14 @@ const struct driver hw_mplay = {
 	.send_func	= NULL,
 	.rec_func	= mplayfamily_rec,
 	.decode_func	= mplayfamily_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Zalman"
 			  " Hd135 case.",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 /**
@@ -245,16 +246,30 @@ const struct driver hw_mplay2 = {
 	.send_func	= NULL,
 	.rec_func	= mplayfamily_rec,
 	.decode_func	= mplayfamily_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Moneual"
 			  " Moncaso 312 case",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 const struct driver* hardwares[] = { &hw_mplay, &hw_mplay2, NULL };
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
 
 /**
  * @brief Initialises mplay receiver.

@@ -66,6 +66,7 @@ static int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int usbx_init(void);
 static int usbx_deinit(void);
 static char* usbx_rec(struct ir_remote* remotes);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 
 const struct driver hw_usbx = {
@@ -82,16 +83,29 @@ const struct driver hw_usbx = {
 	.send_func	= NULL,
 	.rec_func	= usbx_rec,
 	.decode_func	= usbx_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_usbx, (const struct driver*)NULL };
 
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
 
 int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {

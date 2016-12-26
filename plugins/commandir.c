@@ -394,7 +394,7 @@ const struct driver hw_commandir = {
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available.",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_commandir, NULL };
@@ -617,6 +617,11 @@ static int commandir_ioctl(unsigned int cmd, void* arg)
 		send_this_mask.new_tx_mask = *(unsigned int*)arg;
 
 		chk_write(tochild_write, &send_this_mask, sizeof(send_this_mask));
+		return 0;
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
 		return 0;
 
 	default:

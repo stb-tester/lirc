@@ -63,6 +63,7 @@ static char* tira_rec(struct ir_remote* remotes);
 static char* tira_rec_mode2(struct ir_remote* remotes);
 static int tira_send(struct ir_remote* remote, struct ir_ncode* code);
 static lirc_t tira_readdata(lirc_t timeout);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 const char failwrite[] = "failed writing to device";
 const char strreconly[] = "receive";
@@ -96,12 +97,12 @@ const struct driver hw_tira = {
 	.send_func	= tira_send,
 	.rec_func	= tira_rec,
 	.decode_func	= tira_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/tira.html",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver hw_tira_raw = {
@@ -118,14 +119,29 @@ const struct driver hw_tira_raw = {
 	.send_func	= NULL,              /* Cannot transmit in timing mode */
 	.rec_func	= tira_rec_mode2,
 	.decode_func	= tira_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= tira_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://@plugindocs@/tira.html",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
+
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
 
 
 int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)

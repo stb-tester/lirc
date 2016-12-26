@@ -50,9 +50,6 @@
 #include "lirc/serial.h"
 #include "lirc/curl_poll.h"
 
-/** Devices enumerated by device_hint. */
-#define DEVICE_HINT \
-	"/bin/sh ls /dev/ttyACM* /dev/ttyUSB* /dev/arduino* 2>/dev/null"
 
 #define DRIVER_NAME "girs"
 #define DEFAULT_DEVICE "/dev/ttyACM0"
@@ -191,7 +188,7 @@ const struct driver hw_girs = {
 	.info		= "See file://" PLUGINDOCS "/" DRIVER_NAME ".html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
-	.device_hint    = DEVICE_HINT,
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = {
@@ -232,6 +229,7 @@ static int girs_close(void)
 	dev.connection = none;
 	return 0;
 }
+
 
 /**
  * Driver control.

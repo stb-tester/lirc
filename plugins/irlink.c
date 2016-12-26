@@ -51,6 +51,7 @@ static int irlink_init(void);
 static int irlink_deinit(void);
 static char* irlink_rec(struct ir_remote* remotes);
 static lirc_t irlink_readdata(lirc_t timeout);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 
 const struct driver hw_irlink = {
@@ -67,12 +68,12 @@ const struct driver hw_irlink = {
 	.send_func	= NULL,
 	.rec_func	= irlink_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= irlink_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_irlink, (const struct driver*)NULL };
@@ -103,6 +104,20 @@ static struct timeval last_time = { 0 };
 
 static unsigned char pulse = 1;
 static lirc_t last_code = 0;
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
 
 static int irlink_close(const int port)
 {
