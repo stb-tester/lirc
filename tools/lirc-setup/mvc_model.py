@@ -291,46 +291,6 @@ class DeviceListModel(object):
         return len(self.label_by_device) == 0
 
 
-class EventDeviceListModel(DeviceListModel):
-    ''' List of devinput /dev/input/ devices . '''
-
-    def __init__(self, model):
-        cf = model.db.find_config('id', 'devinput')
-        DeviceListModel.__init__(self, cf)
-
-    def list_devices(self):
-        ''' Return a dict label_by_device, labels from /input/by-id. '''
-        self.label_by_device = {}
-        oldcwd = os.getcwd()
-        try:
-            os.chdir("/dev/input/by-id/")
-            for l in glob.glob("/dev/input/by-id/*"):
-                try:
-                    device = os.path.realpath(os.readlink(l))
-                except OSError:
-                    device = l
-                self.label_by_device[device] = os.path.basename(l)
-        except FileNotFoundError:    # pylint: disable=undefined-variable
-            pass
-        finally:
-            os.chdir(oldcwd)
-
-
-class LircDeviceListModel(DeviceListModel):
-    '''  /dev/lirc? device list. '''
-
-    def __init__(self, model):
-        cf = model.db.find_config('id', 'default')
-        DeviceListModel.__init__(self, cf)
-
-    def list_devices(self):
-        ''' Return a dict label_by_device, labels for /dev/lirc devices. '''
-        self.label_by_device = {}
-        for dev in glob.glob('/dev/lirc?'):
-            rc = find_rc(dev)
-            self.label_by_device[dev] = "%s (%s)" % (dev, rc)
-
-
 class GenericDeviceListModel(DeviceListModel):
     ''' Generic /dev/xxx* device list. '''
 
@@ -363,9 +323,14 @@ class DrvctlDeviceListModel(DeviceListModel):
         trypath = os.path.abspath(_here("../mode2"))
         if not os.path.exists(trypath):
             trypath = os.path.join(config.BINDIR, "mode2")
+            plugindir = None
+        else:
+            plugindir = "../../plugins/.libs"
         if not os.path.exists(trypath):
             raise FileNotFoundError("trypath")
         cmd = [trypath, "--driver", self.driver_id, "--list-devices"]
+        if plugindir:
+            cmd.extend(["-U", plugindir])
         try:
             result = subprocess.check_output(cmd, universal_newlines=True)
         except (OSError, subprocess.CalledProcessError):
@@ -382,35 +347,7 @@ class DrvctlDeviceListModel(DeviceListModel):
             if len(words) == 1:
                 self.label_by_device[words[0]] = words[0]
             else:
-                self.label_by_device[words[0]] = words[1]
-
-
-class ShellCommandDeviceListModel(DeviceListModel):
-    ''' Let user select a device listed by a shell command. '''
-
-    def list_devices(self):
-        ''' Return a dict label_by_device, labels for matching devices. '''
-        self.label_by_device = {}
-        cmd = self.device_pattern.replace("/bin/sh", "")
-        try:
-            result = subprocess.check_output(cmd,
-                                             shell=True,
-                                             universal_newlines=True)
-        except (OSError, subprocess.CalledProcessError):
-            result = None
-        if not result:
-            self.label_by_device['dev_null'] = 'No devices found'
-            return
-        if result.strip().startswith('label_by_device'):
-            try:
-                self.label_by_device = yaml.load(result)['label_by_device']
-            except (yaml.YAMLError, KeyError):
-                pass
-        if not self.label_by_device:
-            for r in result.split():
-                r = r.strip()
-                if r:
-                    self.label_by_device[r] = r
+                self.label_by_device[words[0]] = " ".join(words)
 
 
 class UdpPortDeviceList(DeviceListModel):
@@ -458,15 +395,10 @@ def device_list_factory(driver, model):
         driver['device_hint'] = \
             model.db.drivers[driver['id']]['device_hint']
     hint = driver['device_hint']
+    print("device hint: " + hint)
     devicel_list_model = None
-    if hint.startswith('/dev/input'):
-        devicel_list_model = EventDeviceListModel(model)
-    elif hint.startswith('/dev/lirc'):
-        devicel_list_model = LircDeviceListModel(model)
-    elif hint.startswith('/dev/tty'):
+    if hint.startswith('/dev/tty'):
         devicel_list_model = SerialDeviceListModel(driver)
-    elif hint.startswith('/bin/sh'):
-        devicel_list_model = ShellCommandDeviceListModel(driver)
     elif hint == 'auto':
         devicel_list_model = AutoDeviceList(model)
     elif hint == 'udp_port':

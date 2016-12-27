@@ -43,7 +43,6 @@ describes the driver configuration:
           without user interaction.  There is specific support for:
 
               - 'udp_port' [default port]: User can select an udp port
-              - '/dev/event/*': User can select a /dev/input/event/* device.
               - '/dev/tty*': User can select an available tty.
               - 'drvctl': Driver can list devices using DRVCTL_GET_DEVICES.
               - 'None': No device option is configured.
