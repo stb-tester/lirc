@@ -197,7 +197,7 @@ AH_TEMPLATE([HAVE_LIBUSB_1_0_LIBUSB_H],
 
 AC_CHECK_HEADERS([usb.h libusb-1.0/libusb.h libusb.h])
 AC_CHECK_LIB([usb],[usb_get_string],[LIBUSB_LIBS="-lusb"],,)
-AM_CONDITIONAL([BUILD_USB],[test x$usb_libs != x])
+AM_CONDITIONAL([BUILD_USB],[test x$LIBUSB_LIBS = "x-lusb"])
 AC_CHECK_LIB([usb-1.0],
 	     [libusb_lock_events],
 	     [LIBUSB_LIBS="$LIBUSB_LIBS -lusb-1.0"],,)
@@ -394,6 +394,7 @@ suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
 
 dnl tell the Makefiles what we decided
+AC_SUBST(LIBUSB_LIBS)
 AC_SUBST(daemon)
 AC_SUBST(forkpty)
 AC_SUBST(sysconfdir)
