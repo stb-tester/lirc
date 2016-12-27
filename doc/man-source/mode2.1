@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Aug 2016 "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Dec 2016 "mode2 @version@" "User Commands"
 .SH NAME
 .P
 \fBmode2\fR - Show pulse/space length or decoded input from infrared drivers.
@@ -14,14 +14,18 @@
 
 .SH DESCRIPTION
 .P
-The main purpose of this program is to check operation of your
+The original purpose of this program has been to check operation of
 home-brew LIRC receiver hardware and to see the IR waveform of the
-remote controller without an expensive oscilloscope. Very useful for
-debugging also in situations you just need to verify configuration.
+remote controller without an expensive oscilloscope.
+Over time, \fBmode2\fR has evolved to a generic tool to check what
+kind of output the kernel makes available for lirc.
 .P
 mode2 will simply print pulse and space lengths to stdout for drivers
 supporting LIRC_MODE_MODE2. For drivers supporting LIRC_MODE_LIRCCODE such
 as TV-cards and the irman driver writes the decoded, integer values.
+.P
+From version 0.9.4, \fBmode2\fR also has support for eumerating the
+available devices for many drivers.
 .P
 When given the correct driver mode2 should always work. Without a driver,
 the --raw option should always work for /dev/lirc* devices. At the time
@@ -144,6 +148,13 @@ Invoked with a LIRCCODE type driver \fBmode2\fR prints decoded values:
      code: 0x14709b0000
      code: 0x14709b0000
      ...
+.if
+
+Invoked using --list-devices:
+.nf
+    $ mode2 --driver default --list-devices
+    /dev/lirc0 IguanaWorks USB IR Transceiver [1781:0938] version:  2.00 serial: ?
+
 .if
 
 .P
