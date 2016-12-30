@@ -1,7 +1,6 @@
 import os
 import os.path
 import sys
-import pdb
 import shutil
 
 def relative_ln_s( from_, to_ ):

@@ -313,6 +313,7 @@ class SerialDeviceListModel(DeviceListModel):
             else:
                 self.label_by_device[dev] = dev
 
+
 class DrvctlDeviceListModel(DeviceListModel):
     '''A device list for a driver supporting drvctl enumeration. '''
 

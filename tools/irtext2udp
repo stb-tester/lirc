@@ -29,7 +29,7 @@ def irtext2udp(file_, resolution):
             duration = int(parts[1])
         except ValueError:
             continue
-        ticks = int(duration/resolution)
+        ticks = int(duration / resolution)
         if ticks < (1 << 15):
             payload = ticks
             if parts[0].startswith('pulse'):
@@ -49,7 +49,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-r", "--resolution", "--clocktick", default=1000000/16384,
+        "-r", "--resolution", "--clocktick", default=1000000 / 16384,
         type=int, help="Resolution (us per tick ), see irtext2udp(1).")
     parser.add_argument(
         "-v", "--version", action="store_true", help="Print version.")

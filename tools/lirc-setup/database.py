@@ -43,6 +43,7 @@ def _here(path):
     ''' Return path added to current dir for __file__. '''
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
 
+
 def _load_kerneldrivers(configdir):
     ''' Parse the kerneldrivers.yaml file, discard unavailable
     drivers.
@@ -188,8 +189,8 @@ class Database(object):
         found = [c for c in self.db['configs'].values()
                  if key in c and c[key] == value]
         if len(found) > 1:
-            print("find_config: not properly found %s, %s): " % (key, value)
-                  + ', '.join([c['id'] for c in found]))
+            print("find_config: not properly found %s, %s): " % (key, value) +
+                  ', '.join([c['id'] for c in found]))
             return None
         elif not found:
             print("find_config: Nothing  found for %s, %s): " % (key, value))
