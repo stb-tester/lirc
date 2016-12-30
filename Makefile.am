@@ -36,7 +36,7 @@ dist_lirc_conf_DATA     = lircd.conf \
                           irexec.lircrc
 
 lircdconfigdir		= $(sysconfdir)/lirc/lircd.conf.d
-dist_lircdconfig_DATA	= README.conf.d 
+dist_lircdconfig_DATA	= README.conf.d
 
 if HAVE_DEVINPUT
 nodist_lircdconfig_DATA	= devinput.lircd.conf
@@ -51,7 +51,7 @@ dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h
-header_HEADERS          = paths.h drivers/irpipe/irpipe.h
+header_HEADERS          = paths.h config.h drivers/irpipe/irpipe.h
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
