@@ -1,5 +1,7 @@
 ''' Simple lirc setup tool - common parts of view components '''
 
+# pylint: disable=wrong-import-position
+
 import sys
 
 import gi

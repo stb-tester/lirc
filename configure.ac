@@ -42,7 +42,11 @@ AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 LT_INIT([disable-static])
+
 AM_PATH_PYTHON([3.1],,)
+PKG_CHECK_MODULES([PYTHON],[python-${PYTHON_VERSION}m],,[true])
+test -z "$PYTHON_LIBS" && \
+    PKG_CHECK_MODULES([PYTHON], [python-$PYTHON_VERSION],,[true])
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -432,6 +436,7 @@ AC_CONFIG_FILES([
   systemd/Makefile
 ])
 AC_OUTPUT
+cp VERSION python-pkg/VERSION
 
 AC_DEFUN([AX_REPORT_CONDITIONAL], [
   AS_IF([test -z $$1_TRUE],[enabled="yes"],[enabled="no"])

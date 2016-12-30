@@ -15,9 +15,11 @@ else
 website                 = http://lirc.org
 endif
 
-LIB_SRC                 = $(srcdir)/../lib
+LIB_SRC                 = $(top_srcdir)/lib
+PY_SRC                  = $(top_srcdir)/python-pkg/lirc
 API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.h \
+                          $(PY_SRC)/*.py \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
@@ -107,6 +109,8 @@ endif
 	    $(DESTDIR)$(vardocsdir)/index.html \
 	    $(DESTDIR)$(website_htmldir)/plugins-index.html
 	cp $(srcdir)/plugindocs.mk $(DESTDIR)$(plugindocsdir)/Makefile
+
+fix-urls: .phony
 	sh $(srcdir)/fix-urls.sh $(DESTDIR)$(websitedir)
 
 clean-local:
@@ -137,13 +141,13 @@ $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 table.html: docpage.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=.:$(top_srcdir)/tools \
+	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
 	        | xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=.:$(top_srcdir)/tools \
+	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
 

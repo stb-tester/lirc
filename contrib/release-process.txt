@@ -12,7 +12,7 @@ Pre-requisites:
 - lirc.org linkcheck:
     + cd doc; DESTDIR=$PWD/foo make install
     + linkchecker -r 8 foo/usr/local/share/doc/lirc/lirc.org/index.html
-    + Allow errors for standard tools like sudo, ncat, etc.
+    + cd doc; make fix-urls
 - liblirc_client: version number change required?
     + use abidiff
     + run (more or less)

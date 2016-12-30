@@ -1,6 +1,8 @@
 ''' Simple lirc setup tool - view part. '''
 
+# pylint: disable=consider-iterating-dictionary, wrong-import-position
 # pylint: disable=ungrouped-imports
+
 
 import os.path
 import os
@@ -502,7 +504,7 @@ class View(baseview.Baseview):
     def load_configs(self):
         ''' Load config files into model. -> control... '''
         if not self.model.db:
-            self.view.show_warning("Cannot find the configuration files")
+            self.show_warning("Cannot find the configuration files")
 
     def show_driver(self):
         ''' Display data for current driver. '''

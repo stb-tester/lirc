@@ -11,8 +11,8 @@ import tempfile
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
-from database import Database
-from database import Config
+from lirc.database import Database
+from lirc.database import Config
 import config
 import util
 
@@ -203,11 +203,11 @@ def write_results(model, result_dir, view):
             view.show_error("Download error", text)
 
         if not model.config.lircd_conf \
-            or model.config.lircd_conf == _MANUAL_REMOTE_INSTALL:
-                # pylint: disable=bad-indentation
-                text = "No lircd.conf defined, skipping"
-                view.show_warning("Download error", text)
-                return log
+                or model.config.lircd_conf == _MANUAL_REMOTE_INSTALL:
+            # pylint: disable=bad-indentation
+            text = "No lircd.conf defined, skipping"
+            view.show_warning("Download error", text)
+            return log
         for item in ['lircd_conf', 'lircmd_conf']:
             if not getattr(model.config, item):
                 continue
@@ -485,7 +485,7 @@ class Model(object):
             return
         device = tty_by_com[device.lower()]
         self.config.modinit = \
-           'setserial %s uart none; modprobe lirc_serial' % device
+            'setserial %s uart none; modprobe lirc_serial' % device
         try:
             rc_dir = util.get_rcdir_by_device(self.config.device)
         except LookupError:

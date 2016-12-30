@@ -24,8 +24,9 @@ mode2 will simply print pulse and space lengths to stdout for drivers
 supporting LIRC_MODE_MODE2. For drivers supporting LIRC_MODE_LIRCCODE such
 as TV-cards and the irman driver writes the decoded, integer values.
 .P
-From version 0.9.4, \fBmode2\fR also has support for eumerating the
-available devices for many drivers.
+From version 0.9.4, \fBmode2\fR can also list the devices available for a
+given driver. This requires enumeration support which is available
+in most but not all drivers.
 .P
 When given the correct driver mode2 should always work. Without a driver,
 the --raw option should always work for /dev/lirc* devices. At the time
@@ -34,6 +35,7 @@ tricky to get the path to the usb device, such ones are normally best
 accessed using a driver.
 .P
 Not all drivers requires a device.
+.P
 
 .SH OPTIONS
 

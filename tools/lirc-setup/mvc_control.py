@@ -1,4 +1,8 @@
 ''' Simple lirc setup tool - control part. '''
+
+# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-order
+
 import gi
 gi.require_version('Gtk', '3.0')
 
@@ -88,8 +92,8 @@ class Controller(object):
                     'echo lirc > %s/protocols ' % rc_dir
         else:
             if 'modprobe' in self.model.driver \
-                and self.model.driver['modprobe']:
-                    self.model.config.modprobe = self.model.driver.modprobe
+                    and self.model.driver['modprobe']:
+                self.model.config.modprobe = self.model.driver.modprobe
             self.check(self.CHECK_LIRCD_CONF)
 
     def modprobe_done(self, modprobe):

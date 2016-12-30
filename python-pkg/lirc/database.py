@@ -1,22 +1,39 @@
-''' Simple lirc setup tool - database part.
+''' Read-only configuration database. '''
+##
+#   @file database.py
+#   @author Alec Leamas
+#   @brief python read-only view on configuration data.
+#   @ingroup  database
 
-The database is loaded from some YAML files:
+##
+#
+# @defgroup database python configuration database
+#
+# Python access to the configuration data.
+#
+# The database is loaded from some YAML files:
+#
+#   - kernel-drivers.yaml: Static Info on the kernel drivers. Availability
+#     of these drivers is checked in runtime before being imported into db.
+#   - drivers.yaml, Info on the userspace drivers, collected from their
+#     compiled information by configs/Makefile using lirc-lsplugins(1).
+#   - confs_by_driver.yaml: Mapping of drivers -> suggested remote files,
+#     created by configs/Makefile using irdb-get.
+#
+# The directory used to load these files is (first match used):
+#   - Current directory
+#   - The 'configs' dir.
+#   - The ../../configs
+#
+# Although python cannot guarantee this, the database is designed as a
+# read-only structure.
+#
+# Simple usage examples lives in doc/: data2hwdb and data2table. The
+# lirc-setup script provides a more elaborated example. Data structures
+# are basically documented in the yaml files.
 
-  - kernel-drivers.yaml: Info on the kernel drivers.
-  - drivers,yaml, Info on the uerspace drivers, collected from their
-    compiled information.
-  - confs_by_driver.yaml: Mapping of drivers -> suggested remote files,
-    created by irdb-get.
-
-The directory used to load these files is (first match used):
-  - Current directory
-  - The 'configs' dir.
-  - The ../../configs
-
-Although python cannot guarantee this, the database is designed to be a
-read-only structure.
-
-'''
+##  @addtogroup database
+#   @{
 
 
 import glob
@@ -25,18 +42,17 @@ import os.path
 import subprocess
 import sys
 
-import config
-
-YAML_MSG = '''
+try:
+    import yaml
+except ImportError:
+    _YAML_MSG = '''
 "Cannot import the yaml library. Please install the python3
 yaml package, on many distributions known as python3-PyYAML. It is also
 available as a pypi package at https://pypi.python.org/pypi/PyYAML.'''
-
-try:
-    import yaml    # pylint: disable=wrong-import-position,wrong-import-order
-except ImportError:
-    print(YAML_MSG)
+    print(_YAML_MSG)
     sys.exit(1)
+
+import config
 
 
 def _here(path):
@@ -64,19 +80,24 @@ def _load_kerneldrivers(configdir):
     return drivers
 
 
+class ItemLookupError(Exception):
+    """A lookup failed, either too namy or no matches found. """
+    pass
+
+
 class Config(object):
     ''' The configuration selected, and it's sources. '''
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, cf=None):
-        self.device = None        # << selected device.
-        self.driver = {}          # << Read-only driver dict in db
-        self.config = {}          # << Read-only config dict in db
-        self.modinit = ""         # << Substituted data from driver
-        self.modprobe = ""        # << Substituted data from driver
-        self.lircd_conf = ""      # << Name of lircd.conf file
-        self.lircmd_conf = ""     # << Name of lircmd.conf file
-        self.label = ""           # << Label for driver + device
+        self.device = None        ## selected device.
+        self.driver = {}          ## Read-only driver dict in db
+        self.config = {}          ## Read-only config dict in db
+        self.modinit = ""         ## Substituted data from driver
+        self.modprobe = ""        ## Substituted data from driver
+        self.lircd_conf = ""      ## Name of lircd.conf file
+        self.lircmd_conf = ""     ## Name of lircmd.conf file
+        self.label = ""           ## Label for driver + device
         if cf:
             for key, value in cf.items():
                 setattr(self, key, value)
@@ -103,6 +124,8 @@ class Database(object):
             configdir = _here('configs')
         elif os.path.exists(_here('../configs')):
             configdir = _here('../configs')
+        elif os.path.exists(_here('../../configs')):
+            configdir = _here('../../configs')
         else:
             where = 'configs:../configs'
             if path:
@@ -189,12 +212,12 @@ class Database(object):
         found = [c for c in self.db['configs'].values()
                  if key in c and c[key] == value]
         if len(found) > 1:
-            print("find_config: not properly found %s, %s): " % (key, value) +
-                  ', '.join([c['id'] for c in found]))
-            return None
+            raise ItemLookupError(
+                "find_config: Too many matches for %s, %s): " % (key, value)
+                + ', '.join([c['id'] for c in found]))
         elif not found:
-            print("find_config: Nothing  found for %s, %s): " % (key, value))
-            return None
+            raise ItemLookupError(
+                "find_config: Nothing  found for %s, %s): " % (key, value))
         found = dict(found[0])
         if 'device_hint' not in found:
             try:
@@ -205,5 +228,7 @@ class Database(object):
                     self.db['kernel-drivers'][found['driver']]['device_hint']
         return found
 
+##  @}
+#   database
 
 # vim: set expandtab ts=4 sw=4:

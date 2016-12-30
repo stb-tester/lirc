@@ -1,0 +1,6 @@
+The lirc python bindings are documented in the API docs, look
+for the python_bindings module.
+
+The files here are small proof-of-concepts for various aspects
+of the bindings. Being docs they are not executable, use
+something like 'python3 irw.py [socket path]' to run them.

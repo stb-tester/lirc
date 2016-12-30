@@ -4,6 +4,8 @@
 Classes to select device and remote, part of the MVC view
 '''
 
+# pylint: disable=wrong-import-position
+
 import os
 import gi
 gi.require_version('Gtk', '3.0')

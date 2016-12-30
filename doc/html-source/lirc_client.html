@@ -3,7 +3,8 @@
 <HR WIDTH="70%">
 <p>
   Since 0.6.0, the client API have supported receiving data. Since
-  0.9.2+, the API also supports sending of data.
+  0.9.2+, the API also supports sending of data. Since 0.9.5+ there
+  is also a Python interface supporting both send and receive.
 </p>
 <p>
   This text is also available in the <a href="../api-docs/html/index.html">
@@ -269,14 +270,106 @@ non-blocking IO and/or access other functionality available you need to
 use lirc_command_init() and lirc_command_run(). Example code is in
 irsend.cpp.  </p>
 
+<h3> Using the Python API </h3>
+<p>
+The Python API's  main documentation is in the API docs, look for
+<em> Python Bindings</em> under Modules. This text is just an
+introduction.</p>
+<p>
+Besides the client API described here there are also <code>lirc.config</code>
+and <code>lirc.database</code> interfaces. These are not documented as of
+now. The config is some read-only paths as defined by configure. The database
+is the python view of the configs/ directory; example usage in
+<i>lirc-setup</i> and the <i>data2table</i> and <i>data2html</i> scripts in
+doc/ </p>
+<p>
+In the client API the receive parts supports both raw keypress events
+as displayed by irw(1) or application-specific strings as presented
+by ircat(1). Receiving raw events is done like:
+<pre>
+
+    import lirc
+
+    # Setup path, the lircd output socket path
+    with lirc.RawConnection(path) as conn:
+        press = conn.readline()
+        # ... do something with press
+</pre>
+<p>
+The path argument can be omitted on default installations, lirc_client will
+make an educated guess based on environment, lirc_options.conf and
+hard-coded defaults.</p>
+<p>
+Receiving application-specific strings goes like:
+<pre>
+    import lirc
+
+    # setup lircrc_path and program.
+    with lirc.LircdConnection(
+            program, lircrc_path, socket_path) as conn:
+        while True:
+             string = conn.readline()
+             # ... do something with string
+</pre>
+<p>
+Here, user needs to define program (see ircat(1)), the path to the lircrc config
+file and the socket path. Like in previous example, lirc_client often can guess
+the socket_path and lircrc_path arguments in standard installations..</p>
+<p>
+Sending is slightly more complex. A simple example is to retrieve the lircd
+version over the socket interface which is done like this:
+<pre>
+
+    import lirc
+
+    #... again, the path to the lircd socket might be needed
+    with lirc.CommandConnection(socket_path=...) as conn:
+        reply = lirc.VersionCommand(conn).run()
+    if reply.success:
+        print(parser.data[0])
+    else:
+        print("Error: " + parser.data[0])
+
+</pre>
+<p>
+The object returned by command.run() is a <em>Reply</em> with
+all info on the command outcome.</p>
+<p>
+Asynchronous IO is relatively straight-forward. Using the
+<code>AsyncConnection<code> receiving data from a
+<code RawConnection</code> or a <code>LircdConnection</code>
+goes like:
+<pre>
+
+    import asyncio
+    from lirc import AsyncConnection, LircdConnection
+
+    async def get_lines(raw_conn):
+        async with AsyncConnection(raw_conn, loop) as conn:
+            async for keypress in conn:
+                ... do something with keypress
+
+    loop = asyncio.get_event_loop()
+    with LircdConnection('foo',
+                         socket_path=...,
+                         lircrc_path=....) as conn:
+        loop.run_until_complete(get_lines(conn))
+    loop.close()
+
+
+</pre>
+<p>
+Besides the API docs there is also a directory <i>doc/python-bindings</i>
+in the distribution. This contains a bunch of small snippets which
+demonstrates the python API.</p>
+
 
 <h3>Autoconf support</h3>
 
 <P>
-  I encourage you to use autoconf and automake for your
-  projects. To check for the lirc_client library all you have to
-  insert into your <em>configure.ac</em> (or <em>configure.in</em>)
-  file is the following:
+  LIRC has full support for autocont an pkg-config.
+  To check for the lirc_client library all what is required is to
+  insert the following into <em>configure.ac</em>:
 </P>
 <PRE>
     dnl Check for LIRC client support

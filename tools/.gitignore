@@ -1,4 +1,5 @@
 __pycache__
+.pylint-stamp
 ircat
 irexec
 irpipe

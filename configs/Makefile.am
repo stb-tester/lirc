@@ -13,6 +13,7 @@ nodist_configs_DATA     = drivers.yaml confs_by_driver.yaml
 CLEANFILES              = drivers.yaml confs_by_driver.yaml
 DISTCLEANFILES          = remotes.list
 
+
 drivers.yaml: ../tools/lirc-lsplugins $(menuconfigs)
 	-../tools/lirc-lsplugins  -U ../plugins/.libs --yaml > drivers.yaml
 

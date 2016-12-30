@@ -1,7 +1,14 @@
 0.9.5-devel
-  * plugins: Add support for irdroid in the irtoy driver.
-  * plugins: Add support for enumerating devices to more plugins.
-  * Many build patches to build on kfreebsd and eventually hurd.
+ * plugins: Add support for irdroid in the irtoy driver.
+ * Build patches to build on kfreebsd and hurd. Now builds
+   on Linux, Macos, FreeBSD and Hurd.
+ * Enhanced device enumeration, mode2 --list-devices works for
+   most drivers.
+ * New, shiny (i. e., unstable) python API. See the API docs,
+   module "python bindings". The API is also available as a pypi
+   package, typically at /usr/share/lirc/python-pkg
+ * The configs/*conf files no more supports  enumerating devices
+   using shell scripts.
 
 0.9.4c 22/10/16
  * New curl_poll files adds a new MIT license. Lirc now carries

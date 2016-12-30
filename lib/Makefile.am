@@ -1,11 +1,14 @@
 ACLOCAL_AMFLAGS             = -I m4
 
 DISTCLEANFILES              = input_map.inc lirc/input_map.inc
-CLEANFILES                  = driver_api.dox lirc_client.dox
+CLEANFILES                  = driver_api.dox lirc_client.dox config.py
 EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
                               driver_api.doxhead  lirc_client.doxhead
+
+BUILT_SOURCES               =
+
 if HAVE_DEVINPUT
-BUILT_SOURCES               = lirc/input_map.inc
+BUILT_SOURCES               += lirc/input_map.inc
 endif
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
@@ -36,7 +39,12 @@ libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
 liblirc_client_la_LDFLAGS   = -version-info 4:0:4
-liblirc_client_la_SOURCES   = lirc_client.c curl_poll.c curl_poll.h lirc_client.h lirc_log.c lirc_log.h
+liblirc_client_la_SOURCES   = lirc_client.c\
+			      lirc_client.h \
+			      curl_poll.c \
+			      curl_poll.h \
+			      lirc_log.c \
+			      lirc_log.h
 
 liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
 liblirc_driver_la_SOURCES   = driver.h \
@@ -89,6 +97,8 @@ if HAVE_DEVINPUT
 dist_lircinclude_HEADERS    += input_map.inc
 endif
 
+pep8:   $(py_PYTHON)
+	python3-pep8 --config=../pep8.conf $?
 
 driver_api.dox: $(srcdir)/driver_api.doxhead  \
 		$(top_srcdir)/doc/html-source/driver-api.html
@@ -124,4 +134,6 @@ endif
 
 checkfiles:
 	../git-tools/checkfiles $(SOURCES) $(HEADERS)
+
+.phony:
 
