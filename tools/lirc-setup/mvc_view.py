@@ -1,5 +1,7 @@
 ''' Simple lirc setup tool - view part. '''
 
+# pylint: disable=ungrouped-imports
+
 import os.path
 import os
 import shutil

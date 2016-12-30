@@ -10,7 +10,6 @@ import sys
 import tempfile
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
-import yaml
 
 from database import Database
 from database import Config
@@ -388,6 +387,8 @@ class AutoDeviceList(DeviceListModel):
 
 def device_list_factory(driver, model):
     ''' Given a device_hint: wildcard from driver, return a DeviceList. '''
+
+    # pylint: disable=redefined-variable-type
 
     if isinstance(driver, str):
         driver = model.db.drivers[driver]

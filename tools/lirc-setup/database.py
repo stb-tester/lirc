@@ -33,7 +33,7 @@ yaml package, on many distributions known as python3-PyYAML. It is also
 available as a pypi package at https://pypi.python.org/pypi/PyYAML.'''
 
 try:
-    import yaml
+    import yaml    # pylint: disable=wrong-import-position,wrong-import-order
 except ImportError:
     print(YAML_MSG)
     sys.exit(1)
