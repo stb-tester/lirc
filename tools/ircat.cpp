@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
 {
 	struct lirc_config* config;
 	char* config_file = NULL;
+	int r;
 
 	while (1) {
 		int c;
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
 			{ "version", no_argument,	NULL, 'v' },
 			{ 0,	     0,			0,    0	  }
 		};
-		c = getopt_long(argc, argv, "chv", long_options, NULL);
+		c = getopt_long(argc, argv, "c:hv", long_options, NULL);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -94,20 +95,23 @@ int main(int argc, char* argv[])
 	if (lirc_init(argv[argc - 1], 1) == -1)
 		exit(EXIT_FAILURE);
 
-	if (lirc_readconfig(config_file, &config, NULL) == 0) {
+	r = lirc_readconfig(config_file, &config, NULL);
+	if (r == 0) {
 		char* code;
 		char* c;
-		int ret;
+		int r;
 
 		while (lirc_nextcode(&code) == 0) {
-			if (code == NULL)
+			if (code == NULL || !*code)
 				continue;
-			while ((ret = lirc_code2char(config, code, &c)) == 0 && c != NULL) {
+			while ((r = lirc_code2char(config, code, &c)) == 0) {
+				if (c == NULL || !*c)
+					break;
 				printf("%s\n", c);
 				fflush(stdout);
 			}
 			free(code);
-			if (ret == -1)
+			if (r == -1)
 				break;
 		}
 		lirc_freeconfig(config);
