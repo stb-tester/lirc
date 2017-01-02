@@ -229,7 +229,8 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 		case P_MESSAGE:
 			if (strncasecmp(string, ctx->packet,
 					strlen(string)) != 0
-			    || strlen(string) + 1 != strlen(ctx->packet)) {
+			    || strcspn(string, "\n")
+					!= strcspn(ctx->packet, "\n")) {
 				state = P_BEGIN;
 				break;
 			}
@@ -1424,7 +1425,7 @@ int lirc_identify(int sockfd)
 	do
 		ret = lirc_command_run(&cmd, sockfd);
 	while (ret == EAGAIN || ret == EWOULDBLOCK);
-	return ret == 0;
+	return ret == 0 ? LIRC_RET_SUCCESS : -1;
 }
 
 
@@ -1478,7 +1479,7 @@ int lirc_readconfig(const char* file,
 
 	/* launch lircrcd */
 	snprintf(command, sizeof(command),
-		 "lircrcd %s", (*config)->lircrc_class);
+		 "lircrcd %s", file);
 	ret = system(command);
 	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS)
 		goto lirc_readconfig_compat;
@@ -1800,8 +1801,15 @@ int lirc_code2char(struct lirc_config* config, char* code, char** string)
 	lirc_cmd_ctx cmd;
 	static char static_buff[PACKET_SIZE];
 	int ret;
+	char* my_code;
+	char* pos;
 
-	ret = lirc_command_init(&cmd, "CODE %s\n", code);
+	my_code = strdup(code);
+	pos = rindex(my_code, '\n');
+	if (pos != NULL)
+		*pos = '\0';
+	ret = lirc_command_init(&cmd, "CODE %s\n", my_code);
+	free(my_code);
 	if (ret != 0)
 		return -1;
 	if (config->sockfd != -1) {
@@ -1809,7 +1817,7 @@ int lirc_code2char(struct lirc_config* config, char* code, char** string)
 			ret = lirc_command_run(&cmd, config->sockfd);
 		while (ret == EAGAIN || ret == EWOULDBLOCK);
 		if (ret == 0) {
-			strncpy(static_buff, cmd.buffer, PACKET_SIZE);
+			strncpy(static_buff, cmd.reply, PACKET_SIZE);
 			*string = static_buff;
 		}
 		return ret == 0 ? 0 : -1;
