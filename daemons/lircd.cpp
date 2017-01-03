@@ -1691,13 +1691,17 @@ static int set_inputlog(int fd, char* message, char* arguments)
 	FILE* f;
 	int r;
 
-	r = sscanf(arguments, "%128s", buff);
-	if (r != 1) {
-		return send_error(fd, message,
-				  "Illegal argument (protocol error): %s",
-				  arguments);
+	if (arguments) {
+		r = sscanf(arguments, "%128s", buff);
+		if (r != 1) {
+			return send_error(
+				fd, message,
+				"Illegal argument (protocol error): %s",
+				arguments
+			);
+		}
 	}
-	if (strcasecmp(buff, "null") == 0) {
+	if (!arguments || strcasecmp(buff, "null") == 0) {
 		rec_buffer_set_logfile(NULL);
 		return send_success(fd, message);
 	}
