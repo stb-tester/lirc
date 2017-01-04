@@ -41,6 +41,10 @@
 
 #include "lirc_client.h"
 
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 4096
+#endif
+
 /** Timeout in lirc_read_string. */
 static const struct timeval CMD_TIMEOUT = { .tv_sec = 1, .tv_usec = 0 };
 

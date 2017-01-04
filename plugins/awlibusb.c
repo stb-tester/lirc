@@ -58,7 +58,7 @@ static ir_code code_last;
 static struct timeval time_current = { 0 };
 static struct timeval time_last = { 0 };
 #endif
-static char device_path[PATH_MAX + 1] = {0};
+static char device_path[MAXPATHLEN + 1] = {0};
 
 static int awlibusb_init(void);
 static int awlibusb_deinit(void);

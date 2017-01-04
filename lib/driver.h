@@ -32,6 +32,10 @@
 #include "lirc/ir_remote_types.h"
 #include "lirc/curl_poll.h"
 
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 4096
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -41,7 +41,7 @@
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
-static char device_path[PATH_MAX + 1] = {0};
+static char device_path[MAXPATHLEN + 1] = {0};
 
 static int dfc_init(void);
 static int dfc_deinit(void);

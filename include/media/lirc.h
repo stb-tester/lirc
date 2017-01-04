@@ -21,6 +21,10 @@
 #include <sys/ioctl.h>
 #endif
 
+#if defined(_IOT_SIMPLE) && !defined(_IOT__IOTBASE___u32)
+#define _IOT__IOTBASE___u32 _IOT_SIMPLE(__u32)
+#endif
+
 #define PULSE_BIT       0x01000000
 #define PULSE_MASK      0x00FFFFFF
 

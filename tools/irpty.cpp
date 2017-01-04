@@ -142,6 +142,10 @@ static void copy_loop(int ptym, int ignoreeof)
 	lirc_deinit();
 }
 
+#undef RESET
+#undef RAW
+#undef CBREAK
+
 static struct termios save_termios;
 static int ttysavefd = -1;
 static enum {
