@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS             = -I m4
 
-AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver
+AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver \
+                              -export-symbols-regex hardwares
 if BUILD_USB
 AM_LDFLAGS                  +=  @LIBUSB_LIBS@
 endif
