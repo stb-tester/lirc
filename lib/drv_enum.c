@@ -1,9 +1,9 @@
 /**
+ *  @brief Implemenents drv_enum.h
  *  @file drv_enum.c
  *  @author Alec Leamas
- *  @date August 2014
- *  @ense GPL2 or later
- *  @brief Implemenents drv_enum.h
+ *  @license GPL2 or later
+ *  @date December 2016
  *  @ingroup driver_api
  */
 #ifdef HAVE_CONFIG_H

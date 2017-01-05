@@ -1,11 +1,11 @@
 #ifndef _DRV_ENUM_H
 #define _DRV_ENUM_H
 /**
+ *  @brief dynamic drivers device enumeration support
  *  @file drv_enum.h
  *  @author Alec Leamas
- *  @date August 2014
- *  @ense GPL2 or later
- *  @brief dynamic drivers device enumeration support
+ *  @license GPL2 or later
+ *  @date December 2016
  *  @ingroup driver_api
  *
  *  Functions in this file provides support for enumerating devices

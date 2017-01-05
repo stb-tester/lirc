@@ -1,9 +1,9 @@
 /**
+ *  @brief Implements driver.h
  *  @file driver.c
  *  @author Alec Leamas
- *  @date August 2014
  *  @license GPL2 or later
- *  @brief Implements driver.h
+ *  @date August 2014
  *
  * Access and support for driver.h, the global driver.
  */
