@@ -1159,6 +1159,7 @@ int send_error(int fd, char* message, const char* format_str, ...)
 	va_list ap;
 	char* s1;
 	char* s2;
+	char buffer2[PACKET_SIZE + 2];
 
 	va_start(ap, format_str);
 	vsprintf(buffer, format_str, ap);
@@ -1174,20 +1175,22 @@ int send_error(int fd, char* message, const char* format_str, ...)
 	log_error("%s", buffer);
 	if (s1 != NULL)
 		s1[0] = '\n';
-	if (s2 != NULL)
-		s2[0] = '\n';
+	snprintf(buffer2, sizeof(buffer2), "%s\n", buffer);
 
 	n = 0;
-	len = strlen(buffer);
+	len = strlen(buffer2);
 	for (i = 0; i < len; i++)
-		if (buffer[i] == '\n')
+		if (buffer2[i] == '\n')
 			n++;
 	sprintf(lines, "%d\n", n);
 
-	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
-	      write_socket_len(fd, message) && write_socket_len(fd, protocol_string[P_ERROR])
-	      && write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, lines)
-	      && write_socket_len(fd, buffer) && write_socket_len(fd, protocol_string[P_END])))
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN])
+	      && write_socket_len(fd, message)
+	      && write_socket_len(fd, protocol_string[P_ERROR])
+	      && write_socket_len(fd, protocol_string[P_DATA])
+	      && write_socket_len(fd, lines)
+	      && write_socket_len(fd, buffer2)
+	      && write_socket_len(fd, protocol_string[P_END])))
 		return 0;
 	return 1;
 }
@@ -1679,7 +1682,7 @@ static int drv_option(int fd, char* message, char* arguments)
 	if (r != 0) {
 		log_warn("Cannot set driver option");
 		return send_error(fd, message,
-				  "Cannot set driver option %d", errno);
+				  "Cannot set driver option, code: %d", errno);
 	}
 	return send_success(fd, message);
 }
