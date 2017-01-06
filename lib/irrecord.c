@@ -8,6 +8,11 @@
 *
 */
 
+/**
+* @file irrecord.c
+* @brief Implements irrecord.h
+*/
+
 #define _GNU_SOURCE
 
 #include <stdint.h>

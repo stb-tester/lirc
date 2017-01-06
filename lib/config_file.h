@@ -8,9 +8,8 @@
 
 /**
  * @file config_file.h
- * @brief  Parses the lircd.cont config file.
+ * @brief  Parses the lircd.conf config file.
  * @author Pablo d'Angelo
- * @ingroup private_api
  */
 
 /**

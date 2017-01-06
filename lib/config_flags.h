@@ -2,8 +2,11 @@
 ** config_flags.h ***********************************************************
 ****************************************************************************
 *
-* config_flags.h - Flags shared between config_file and dump_config.
-*
+*/
+
+/**
+* @file config_flags.h
+* @brief Flags shared between config_file and dump_config.
 */
 
 #ifndef _CONFIG_FLAGS_H

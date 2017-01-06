@@ -21,6 +21,12 @@
  * KIND, either express or implied.
  *
  ***************************************************************************/
+
+/**
+ * @file curl_poll.h
+ * @brief  Wrapper for poll(2) using select(2) when poll() is unavailable.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

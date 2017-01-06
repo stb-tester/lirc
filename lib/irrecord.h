@@ -8,6 +8,11 @@
 *
 */
 
+/**
+* @file irrecord.h
+* @brief Library part of irrecord, functions to identify unknown remotes
+*/
+
 #ifndef IRRECORD_H
 #define IRRECORD_H
 

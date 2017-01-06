@@ -19,6 +19,12 @@
 * KIND, either express or implied.
 *
 ***************************************************************************/
+
+/**
+ * @file curl_poll.c
+ * @brief Implements curl_poll.h
+ */
+
 #define _XOPEN_SOURCE 700
 
 #include "config.h"

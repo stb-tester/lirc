@@ -9,8 +9,8 @@
 * */
 
 /**
- * @file line_buffer.cpp
- * This file implements the line buffer class.
+ * @file line_buffer.h
+ * @brief Implements the line buffer class.
  */
 
 #ifndef LIB_LINE_BUFFER_H_
