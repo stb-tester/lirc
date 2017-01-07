@@ -209,7 +209,7 @@ static void parse_options(int argc, char** argv)
 	if (hw_choose_driver(opt_driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found.", opt_driver);
 		fputs(" (Missing -U/--plugins option?)\n", stderr);
-		fputs("Available drivers:\n", stderr);
+		fputs("\nAvailable drivers:\n", stderr);
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}

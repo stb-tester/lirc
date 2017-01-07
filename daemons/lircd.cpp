@@ -2467,7 +2467,7 @@ int main(int argc, char** argv)
 	if (hw_choose_driver(opt) != 0) {
 		fprintf(stderr, "Driver `%s' not found or not loadable", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
-		fputs("Use lirc-lsplugins(1) to list available drivers.\n",
+		fputs("\nAvailable drivers:\n",
 		       stderr);
 		hw_print_drivers(stderr);
 		return EXIT_FAILURE;

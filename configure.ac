@@ -47,6 +47,7 @@ AM_PATH_PYTHON([3.1],,)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
+AC_HEADER_TIOCGWINSZ
 AC_CHECK_HEADERS([fcntl.h libudev.h libutil.h limits.h linux/ioctl.h \
 		  linux/sched.h poll.h sys/ioctl.h sys/poll.h sys/time.h \
 		  syslog.h unistd.h util.h pty.h])

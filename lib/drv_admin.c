@@ -15,6 +15,15 @@
 #include <dirent.h>
 #include <dlfcn.h>
 
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
+
+
 #include "lirc/driver.h"
 #include "lirc/drv_admin.h"
 #include "lirc/lirc_options.h"
@@ -231,6 +240,29 @@ void for_each_plugin(plugin_guest_func plugin_guest,
 }
 
 
+/** Best effort attempt to get column width and # columns for output file. */
+static void get_columns(FILE* f, char_array names, int* cols, int* width)
+{
+	int maxlen = 0;
+	struct winsize winsize;
+	int i;
+
+	*cols = 1;
+	*width = 32;
+	if (!isatty(fileno(f)))
+		return;
+	if (ioctl(fileno(f), TIOCGWINSZ, &winsize) != 0)
+		return;
+	for (i = 0; i < names.size; i += 1) {
+		if (strlen(names.array[i]) > maxlen)
+			maxlen = strlen(names.array[i]);
+	}
+	maxlen += 1;
+	*cols = winsize.ws_col / maxlen;
+	*width = maxlen;
+}
+
+
 /**
  * @brief Prints all drivers known to the system to the file given as argument.
  * @param file File to print to.
@@ -239,6 +271,9 @@ void hw_print_drivers(FILE* file)
 {
 	char_array names;
 	int i;
+	int cols;
+	int width;
+	char format[16];
 
 	names.size = 0;
 	if (for_each_driver(add_hw_name, (void*)&names, NULL) != NULL) {
@@ -246,10 +281,16 @@ void hw_print_drivers(FILE* file)
 		return;
 	}
 	qsort(names.array, names.size, sizeof(char*), line_cmp);
+	get_columns(file, names, &cols, &width);
+	snprintf(format, sizeof(format), "%%-%ds", width);
 	for (i = 0; i < names.size; i += 1) {
-		fprintf(file, "%s\n", names.array[i]);
+		fprintf(file, format, names.array[i]);
+		if ((i + 1) % cols == 0)
+			fprintf(file, "\n");
 		free(names.array[i]);
 	}
+	if ((i + 1) % cols != 0)
+		fprintf(file, "\n");
 }
 
 
