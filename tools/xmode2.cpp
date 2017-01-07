@@ -237,15 +237,15 @@ static void parse_options(int argc, char** const argv)
 	}
 	options_set_opt("lircd:plugindir",
 			options_getstring("xmode2:plugindir"));
+	strncpy(driver,
+		options_getstring("xmode2:driver"),
+		sizeof(driver) - 1);
 	if (hw_choose_driver(driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found", driver);
 		fputs(" (wrong or missing -U/--plugindir?)\n", stderr);
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
-	strncpy(driver,
-		options_getstring("xmode2:driver"),
-		sizeof(driver) - 1);
 }
 
 
