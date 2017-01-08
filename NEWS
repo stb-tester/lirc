@@ -1,3 +1,25 @@
+0.9.4d 22/10/16
+ * The debian packaging means that freebsd and hurd builds are
+   regularly tested, improving build stability.
+ * A multitude of build patches, mostly after building on Debian:
+    + Cross-compilation FTBS fixed (#233)
+    + Fix configuration of configure (#234)
+    + Fix library specification in lirc.pc (#236)
+    + use HAVE_UINPUT=1 to force building uinput code (#238).
+    + lib: Only use local headers in lirc_private.h (#237).
+    + Configure libudev (#242)
+    + Various kfreebsd fixes
+    + Include config.h in installed headers (#250).
+    + Fix _XOPEN_SOURCE related FTBS on some platforms (#248)
+ * lib: Fix some lircrcd-relatd bugs (#254)
+ * systemd: Fix wrong path to irexec (#239)
+ * systemd: Add missing lircd-setup.service to distribution (#243)
+ * lircd: Fix --listen option parsing [#249]
+ * lircd: Fix segfault in SET_INPUTLOG without arguments (#252)
+ * lircd: Fix DRV_OPTION error message handling (#256).
+ * ircat: Fix option parsing bug + empty conditions (#251)
+ * xmode2: Fix handling of --driver option.
+
 0.9.4c 22/10/16
  * New curl_poll files adds a new MIT license. Lirc now carries
    GPL, BSD and MIT licenses.
