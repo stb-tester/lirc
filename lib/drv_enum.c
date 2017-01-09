@@ -47,6 +47,8 @@ void glob_t_init(glob_t* glob)
 
 void glob_t_add_path(glob_t* glob, const char* path)
 {
+	if (path == NULL)
+		return;
 	if (glob->gl_pathc >= glob->gl_offs) {
 		glob->gl_offs += GLOB_CHUNK_SIZE;
 		glob->gl_pathv = realloc(glob->gl_pathv,
@@ -62,6 +64,8 @@ void drv_enum_free(glob_t* glob)
 {
 	int i;
 
+	if (glob == NULL)
+		return;
 	for (i = 0; i < glob->gl_pathc; i += 1)
 		free(glob->gl_pathv[i]);
 	free(glob->gl_pathv);
@@ -154,7 +158,10 @@ void drv_enum_add_udev_info(glob_t* oldbuf)
 				 get_sysattr(udev_device, "version"),
 				 get_sysattr(udev_device, "serial")
 			);
-			glob_t_add_path(&newbuf, line);
+			if (idVendor == NULL && idProduct == NULL)
+				glob_t_add_path(&newbuf, oldbuf->gl_pathv[i]);
+			else
+				glob_t_add_path(&newbuf, line);
 		}
 		free(device_path);
 	}
@@ -178,20 +185,25 @@ int drv_enum_globs(glob_t* globbuf, const char* const* patterns)
 
 	if (!patterns)
 		return DRV_ERR_BAD_VALUE;
-	buff.gl_offs = 128;
+	buff.gl_offs = 0;
 	buff.gl_pathc = 0;
+	buff.gl_pathv = NULL;
 	glob_t_init(globbuf);
 
 	for (flags = 0; *patterns; patterns++) {
 		r = glob(*patterns, flags, NULL, &buff);
-		if (r != 0 && r != GLOB_NOMATCH)
+		if (r == GLOB_NOMATCH)
+			continue;
+		if (r != 0) {
+			globfree(&buff);
 			return DRV_ERR_BAD_STATE;
-		for (i = 0; i < buff.gl_pathc; i += 1) {
-			glob_t_add_path(globbuf, buff.gl_pathv[i]);
 		}
 		flags = GLOB_APPEND;
-		globfree(&buff);
 	}
+	for (i = 0; i < buff.gl_pathc; i += 1) {
+		glob_t_add_path(globbuf, buff.gl_pathv[i]);
+	}
+	globfree(&buff);
 	drv_enum_add_udev_info(globbuf);
 	return globbuf->gl_pathc == 0 ? DRV_ERR_ENUM_EMPTY : 0;
 }

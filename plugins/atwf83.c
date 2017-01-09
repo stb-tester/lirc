@@ -69,9 +69,15 @@ static int drvctl_func(unsigned int cmd, void* arg)
 //		},
 //		{0}
 //	};
+
+//	static const char* what[] = {
+//	    "/dev/dm-*", "/dev/tty*", "/dev/usbmon*", NULL
+//	};
+
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
 		return drv_enum_glob((glob_t*) arg, "/dev/hidraw*");
+		//return drv_enum_globs((glob_t*) arg, what);
 		//return drv_enum_usb((glob_t*) arg, is_device_ok);
 		//return drv_enum_udev((glob_t*) arg, what);
 
