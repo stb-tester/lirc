@@ -7,7 +7,7 @@ Pre-requisites:
     + cd test
     + make
     + ./run-tests
-- 'make distcheck' pass
+- 'make distcheck' without lirc-devel installed pass
 - Encoder/decoder regression tests all pass
 - lirc.org linkcheck:
     + cd doc; DESTDIR=$PWD/foo make install
