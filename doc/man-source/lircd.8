@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Dec 2016" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Jan 2017" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -35,11 +35,11 @@ is currently /dev/lirc0 on most systems.
 .IP "" 4
 When using the devinput driver, you can use \fIname=STRING\fR or
 \fIphys=STRING\fR to select the device; lircd will look in /dev/input
-to find a device with a matching description. This is useful in case
-the device name isn't fixed. \fISTRING\fR may contain the '*' and '?'
-wildcards and '\\' to mark them as literal. Use dmesg(1) to find the
-name and bus address (the names used under /dev/input/by-id are not
-always usable).
+to find a device with a matching description.
+This is useful in case the device name isn't fixed. \fISTRING\fR
+may contain the '*' and '?' wildcards and '\\' to mark them as literal.
+Use \fBmode2 \-\-driver devinput \-\-list-devices \fRto list the
+actual devices.
 .TP
 \fB-H, --driver\fR <\fIdriver\fR>
 The driver to use.  Using

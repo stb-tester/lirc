@@ -1,4 +1,4 @@
-.TH MODE2 "1" "Last change: Dec 2016 "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Jan 2017 "mode2 @version@" "User Commands"
 .SH NAME
 .P
 \fBmode2\fR - Show pulse/space length or decoded input from infrared drivers.
@@ -150,11 +150,15 @@ Invoked with a LIRCCODE type driver \fBmode2\fR prints decoded values:
      ...
 .if
 
-Invoked using --list-devices:
-.nf
-    $ mode2 --driver default --list-devices
-    /dev/lirc0 IguanaWorks USB IR Transceiver [1781:0938] version:  2.00 serial: ?
+.P
 
+Invoked using \fBmode2 --list-devices\fR for the devinput driver with a
+single X10 RF usb device plugged in:
+.nf
+    $ ./mode2 --list-devices --driver devinput
+    /dev/input/event12 [0bc7:0006] X10 WTI RF receiver vers:  1.10 serial: ?
+    /dev/input/by-id/usb-X10_WTI_RF_receiver-event-if00 -> ../event12
+    /dev/input/by-path/pci-0000:0b:00.0-usb-0:1:1.0-event -> ../event12
 .if
 
 .P

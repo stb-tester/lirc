@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: Oct 2015" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: Jan 2017" "irrecord @version@" "User Commands"
 .SH NAME
 .P
 \fBirrecord\fR - IR-codes recording tool for usage with LIRC
@@ -49,7 +49,8 @@ List valid button names.
 Use given driver. -H help lists available drivers.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-Read from given device.
+Read from given device. Use \fBmode2(1) --list-devices\fR to list
+available devices for a driver.
 .TP
 \fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
 Load drivers from directory. See DRIVER LOADING.

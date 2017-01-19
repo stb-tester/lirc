@@ -1,4 +1,4 @@
-.TH IRCAT "1" "Last change: Oct 2016" "ircat @version@" "User Commands"
+.TH IRCAT "1" "Last change: Jan 2017" "ircat @version@" "User Commands"
 .SH NAME
 ircat - print strings when pressing buttons
 .SH SYNOPSIS
@@ -39,6 +39,12 @@ $ ircat myprog
 
 will print "next_file" (followed by newline) every time the
 button bound to KEY_CHANNELUP is pressed.
+.SH ENVIRONMENT
+.TP 4
+.B LIRC_SOCKET_PATH
+The \fBlircd(8)\fR output socket used to retrieve data.
+Defaults to @varrundir@/lirc/lircd
+
 .SH "SEE ALSO"
 .P
 The documentation for
