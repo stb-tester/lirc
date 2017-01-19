@@ -10,7 +10,7 @@ Pre-requisites:
 - Python bindings test pass:
     + cd python-pkg/test
     + python3 -m unittest discover
-- 'make distcheck' pass
+- 'make distcheck' without lirc-devel installed pass
 - Build in separate clone is OK.
 - VPATH build in separate clone is OK.
 - Encoder/decoder regression tests all pass
