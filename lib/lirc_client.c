@@ -91,7 +91,7 @@ enum packet_state {
  */
 unsigned int lirc_flags(char* string);
 
-static int lirc_lircd;
+static int lirc_lircd = -1;
 static int lirc_verbose = 0;
 static char* lirc_prog = NULL;
 static char* lirc_buffer = NULL;
@@ -364,6 +364,8 @@ int lirc_init(const char* prog, int verbose)
 
 int lirc_deinit(void)
 {
+	int r = 0;
+
 	if (lirc_prog != NULL) {
 		free(lirc_prog);
 		lirc_prog = NULL;
@@ -372,7 +374,11 @@ int lirc_deinit(void)
 		free(lirc_buffer);
 		lirc_buffer = NULL;
 	}
-	return close(lirc_lircd);
+	if (lirc_lircd != -1) {
+		r = close(lirc_lircd);
+		lirc_lircd = -1;
+	}
+	return r == 0 ? 1 : 0;
 }
 
 
