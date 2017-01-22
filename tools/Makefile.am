@@ -96,7 +96,7 @@ dist_setup_SCRIPTS      = lirc-setup/lirc-setup
 dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
 
 py_sources              = irdb-get irtext2udp \
-                          $(setup_PYTHON) $(dost_setup_SCRIPTS)
+                          $(setup_PYTHON) $(dist_setup_SCRIPTS)
 
 install-exec-hook:
 	$(SED) -i -e 's/@version@/$(VERSION)/' \

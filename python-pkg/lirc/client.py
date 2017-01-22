@@ -652,6 +652,16 @@ class SetLogCommand(Command):
         cmd = 'SET_INPUTLOG' + (' ' + logfile if logfile else '') + '\n'
         Command.__init__(self, cmd, connection)
 
+##  @}
+
+
+##   @defgroup lircrcd Commands to control lircrcd
+#    Canned classes, one for each command in the lircrcd(l8) socket
+#    interface.
+#
+#    @addtogroup lircrcd
+#    @{
+
 
 class IdentCommand(Command):
     ''' Identify client using the prog token, see IDENT in lircrcd(8) '''
