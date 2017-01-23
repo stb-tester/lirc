@@ -1,4 +1,4 @@
-0.9.4d 22/10/16
+0.9.4d 23/01/1e7
  * The debian packaging means that freebsd and hurd builds are
    regularly tested, improving build stability.
  * A multitude of build patches, mostly after building on Debian:
@@ -11,7 +11,7 @@
     + Various kfreebsd fixes
     + Include config.h in installed headers (#250).
     + Fix _XOPEN_SOURCE related FTBS on some platforms (#248)
- * lib: Fix some lircrcd-relatd bugs (#254)
+ * lib: Fix some lircrcd-related bugs (#254)
  * systemd: Fix wrong path to irexec (#239)
  * systemd: Add missing lircd-setup.service to distribution (#243)
  * lircd: Fix --listen option parsing [#249]
