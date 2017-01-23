@@ -48,7 +48,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <media/lirc.h>
+#include <linux/lirc.h>
 
 #include "irpipe.h"
 
