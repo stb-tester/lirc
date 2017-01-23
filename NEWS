@@ -1,4 +1,4 @@
-0.9.5-devel
+0.10.0-devel
  * plugins: Add support for irdroid in the irtoy driver.
  * Build patches to build on kfreebsd and hurd. Now builds
    on Linux, Macos, FreeBSD and Hurd.
