@@ -1490,7 +1490,7 @@ int lirc_readconfig(const char* file,
 
 	/* launch lircrcd */
 	snprintf(command, sizeof(command),
-		 "lircrcd %s", file);
+		 "lircrcd %s", (*config)->lircrc_class);
 	ret = system(command);
 	if (ret == -1 || WEXITSTATUS(ret) != EXIT_SUCCESS)
 		goto lirc_readconfig_compat;
