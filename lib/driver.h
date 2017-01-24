@@ -49,7 +49,7 @@ int default_open(const char* path);
 /** For now, a placeholder. */
 int default_close(void);
 
-/** Return DRVCTL_ERR_NOTIMPLEMENTED. */
+/** Return DRV_ERR_NOTIMPLEMENTED. */
 int default_drvctl(unsigned int cmd, void* arg);
 
 /** Argument for DRV_SET_OPTION. */
@@ -119,6 +119,8 @@ int drv_handle_options(const char* options);
 /** No requested data available. */
 #define  DRV_ERR_ENUM_EMPTY		5
 
+/** drvctl error: */
+#define  DRV_ERR_INTERNAL		6
 
 /**
  * The data the driver exports i. e., lirc accesses the driver as
@@ -236,15 +238,16 @@ struct driver {
 	/**
 	 *  device_hint is a mean for config tools to autodetect devices.
 	 *    - /dev/tty*     User selects a tty.
-	 *    - /dev/usb/\*   Denotes serial, USB-connectd port.
 	 *    - /dev/event\*  A devinput device
 	 *    - /dev/foo\*    A wildcard listing possible devices, general
 	 *                    fallback.
-	 *    - /bin/sh ...   Shell command listing possible devices.
 	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
 	 *    - None          No device is silently configured.
 	 *    - Auto          No device configured, but a message is
 	 *                    displayed.
+	 *   The following hints are not longer supported:
+	 *    - /dev/usb/\*   Denotes serial, USB-connectd port.
+	 *    - /bin/sh ...   Shell command listing possible devices.
 	 */
 	const char* const  device_hint;
 };

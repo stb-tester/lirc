@@ -76,6 +76,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               curl_poll.h \
                               dictionary.h \
                               drv_admin.h \
+                              drv_enum.h \
                               dump_config.h \
                               driver.h \
                               input_map.h \

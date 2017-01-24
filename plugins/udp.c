@@ -48,6 +48,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <netdb.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -59,8 +60,51 @@
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
+/** First port checked in --list-devices/DRVCTL_GET_DEVIVES. */
+static const int FIRST_PORT = 6000;
+
+/** Last port checked in --list-devices/DRVCTL_GET_DEVIVES. */
+static const int LAST_PORT = 6006;
+
 static int zerofd;              /* /dev/zero */
 static int sockfd;              /* the socket */
+
+
+/** List available udp devices starting at 6000. */
+static int list_devices(glob_t* glob)
+{
+	int port;
+	int fd;
+	int r;
+	const char* info;
+	struct servent* servent;
+	char buff[128];
+	struct sockaddr_in addr;
+
+	glob_t_init(glob);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	for (port = FIRST_PORT; port <= LAST_PORT; port += 1) {
+		fd = socket(AF_INET, SOCK_DGRAM, 0);
+		if (fd < 0) {
+			log_perror_err("error creating socket");
+			drv_enum_free(glob);
+			close(fd);
+			return DRV_ERR_INTERNAL;
+		}
+		addr.sin_port = htons(port);
+		r = bind(fd, (struct sockaddr*)&addr, sizeof(addr));
+		close(fd);
+		if (r != 0)
+			continue;
+		servent = getservbyport(htons(port), "udp");
+		info = servent != NULL ? servent->s_name : "Not registered";
+		snprintf(buff, sizeof(buff),
+			 "%d Available udp port: %s", port, info);
+		glob_t_add_path(glob, buff);
+	}
+	return 0;
+}
 
 
 /**
@@ -80,6 +124,11 @@ static int udp_drvctl_func(unsigned int cmd, void* arg)
 	long value;
 
 	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return list_devices((glob_t*) arg);
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
 	case DRVCTL_SET_OPTION:
 		opt = (struct option_t*)arg;
 		if (strcmp(opt->key, "clocktick") == 0) {
@@ -314,7 +363,7 @@ const struct driver hw_udp = {
 	.api_version	=	3,
 	.driver_version =	"0.9.3",
 	.info		=	"See file://" PLUGINDOCS "/udp.html",
-	.device_hint    = "udp_port",
+	.device_hint    =       "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_udp, (const struct driver*)NULL };

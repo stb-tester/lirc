@@ -411,7 +411,7 @@ int drv_enum_udev(glob_t* globbuf,
 
 int drv_enum_udev(glob_t* globbuf, const struct drv_enum_udev_what* what)
 {
-	return DRVCTL_ERR_NOT_IMPLEMENTED;
+	return DRV_ERR_NOT_IMPLEMENTED;
 }
 
 #endif  // HAVE_LIBUDEV_H
