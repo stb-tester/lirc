@@ -5,6 +5,12 @@ including header files, installed
 import subprocess
 import os.path
 
+try:
+    import lirc.config
+    VERSION = lirc.config.VERSION.replace('-devel','')
+except ImportError:
+    VERSION='0.0.0'
+
 from setuptools import setup, Extension
 
 if os.path.exists('../lirc.pc'):
@@ -24,7 +30,7 @@ c_module = Extension('_client',
                      extra_link_args=libs)
 setup(
     name = 'lirc',
-    version = "0.9.5",
+    version = VERSION,
     author = "Alec Leamas",
     author_email = "leamas@nowhere.net",
     url = "http://sf.net/p/lirc",

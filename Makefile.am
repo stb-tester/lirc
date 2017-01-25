@@ -13,7 +13,8 @@ GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 
 BASE_VERSION            = $(subst -devel,,$(VERSION))
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
-EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog
+EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog \
+                          COPYING.curl COPYING.ciniparser
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~ devinput.lircd.conf
@@ -105,6 +106,9 @@ pylint: .phony
 pep8: $(py_PYTHON)
 	$(MAKE) -C tools pep8
 	python3-pep8 --config=pep8.conf $?
+
+all-local:
+	cd python-pkg; python3 setup.py build
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \

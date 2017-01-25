@@ -17,6 +17,7 @@ if os.path.exists(os.path.join(HERE, '..', 'lib', '.libs', '_client.so')):
                os.path.join(HERE, '_client.so'))
 else:
     # 'python setup.py' artifact:
-    SRC = glob.glob(os.path.join(HERE, '../_client.cpython*.so'))
+    SRC = glob.glob(os.path.join(
+        HERE, '..build/lib.linux*/_client.cpython*.so'))
     if len(SRC) == 1:
         os.symlink(os.path.join(SRC[0]), os.path.join(HERE, '_client.so'))

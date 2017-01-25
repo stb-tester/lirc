@@ -93,7 +93,7 @@ setup_PYTHON            = lirc-setup/mvc_control.py \
                           lirc-setup/baseview.py \
                           lirc-setup/util.py
 dist_setup_SCRIPTS      = lirc-setup/lirc-setup
-dist_pkgpython_DATA     = lirc-setup/lirc-setup.ui
+dist_setup_DATA         = lirc-setup/lirc-setup.ui
 
 py_sources              = irdb-get irtext2udp \
                           $(setup_PYTHON) $(dist_setup_SCRIPTS)

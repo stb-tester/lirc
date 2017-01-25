@@ -31,7 +31,12 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include <include/media/lirc.h>
+#ifdef HAVE_KERNEL_LIRC_H
+#include <linux/lirc.h>
+#else
+#include "media/lirc.h"
+#endif
+
 #include "lirc_driver.h"
 
 

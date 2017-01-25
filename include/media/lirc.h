@@ -1,12 +1,18 @@
 /*
  * lirc.h - linux infrared remote control header file
  * last modified 2010/07/13 by Jarod Wilson
+ *
+ * This file is a bundled copy of /usr/include/linux/lirc.h.  On linux
+ * systems, the configure script checks for the system header and uses
+ * it if it exists in favor of this file. Using the system header is
+ * preferred.
  */
 
 #ifndef _LINUX_LIRC_H
 #define _LINUX_LIRC_H
 
-#include <config.h>
+#include <lirc/config.h>
+
 #include <stdint.h>
 
 #ifdef HAVE_LINUX_TYPES_H
