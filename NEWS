@@ -1,4 +1,6 @@
 0.10.0-devel
+ * The deprecated lircd --uinput option is dropped. Use
+   the lircd-uinput(8) daemon instead.
  * The slinke (a. k. a. slink-e) driver is dropped.
  * plugins: Add support for irdroid in the irtoy driver.
  * Build patches to build on kfreebsd and hurd. Now builds
