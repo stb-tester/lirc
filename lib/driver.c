@@ -19,6 +19,8 @@
 
 static const logchannel_t logchannel = LOG_LIB;
 
+int get_server_version(void) { return VERSION_NODOTS; }
+
 /**
  * The global driver data that drivers etc are accessing.
  * Set by hw_choose_driver().

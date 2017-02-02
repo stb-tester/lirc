@@ -115,6 +115,14 @@ AS_CASE([$host_os],
 )
 AC_SUBST(osflags)
 
+version_nodots=$( python << EOF
+v = "$VERSION".split("-")[[0]].split(".")
+v = dict(enumerate(v))
+print(int(v.get(0)) * 10000 + int(v.get(1)) * 100 + int(v.get(2)))
+EOF
+)
+AC_DEFINE_UNQUOTED(VERSION_NODOTS, [$version_nodots])
+
 AM_CONDITIONAL([DARWIN], [test "$osflags" = "-DDARWIN"])
 
 AC_MSG_CHECKING([for linux kernel])
@@ -196,6 +204,9 @@ AH_TEMPLATE([HAVE_USB_H],
 
 AH_TEMPLATE([HAVE_LIBUSB_H],
         [Define if libusb.h is installed])
+
+AH_TEMPLATE([VERSION_NODOTS],
+        [Numeric version, m.v.r => 10000 * m + 100 * v + r])
 
 AH_TEMPLATE([HAVE_LIBUSB_1_0_LIBUSB_H],
         [Define if libusb-1.0/libusb.h is installed])

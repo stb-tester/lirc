@@ -36,6 +36,13 @@
 #define MAXPATHLEN 4096
 #endif
 
+/** Testable flag for get_server_version() presence. */
+#define HAVE_SERVER_VERSION 1
+
+/** Return numeric server version, m.v.r => 10000 * m + 100 * v + r. */
+int get_server_version(void);
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
