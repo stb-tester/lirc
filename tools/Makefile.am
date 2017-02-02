@@ -23,6 +23,7 @@ bin_PROGRAMS            = ircat \
                           irtestcase \
                           irw \
                           lirc-lsremotes \
+                          lirc-cfg2csv \
                           mode2
 if BUILD_XTOOLS
 bin_PROGRAMS            += xmode2 irxevent
@@ -63,7 +64,8 @@ lirc_lsplugins_SOURCES  = lirc-lsplugins.cpp
 lirc_lsplugins_LDADD    = $(LIRC_LIBS)
 lirc_lsremotes_SOURCES  = lirc-lsremotes.cpp
 lirc_lsremotes_LDADD    = $(LIRC_LIBS)
-
+lirc_cfg2csv_SOURCES    = lirc-cfg2csv.cpp
+lirc_cfg2csv_LDADD      = $(LIRC_LIBS)
 
 ## X programs
 irxevent_SOURCES        = irxevent.cpp

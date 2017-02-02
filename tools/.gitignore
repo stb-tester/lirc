@@ -13,6 +13,7 @@ irw
 irxevent
 lirc-lsplugins
 lirc-lsremotes
+lirc-cfg2csv
 mode2
 xmode2
 config.py
