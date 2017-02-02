@@ -976,6 +976,7 @@ static char* lirc_startupmode(struct lirc_config_entry* first)
 		scan = first;
 		while (scan != NULL) {
 			if (scan->mode != NULL
+			    && lirc_prog != NULL
 			    && strcasecmp(lirc_prog, scan->mode) == 0) {
 				startupmode = lirc_prog;
 				break;
