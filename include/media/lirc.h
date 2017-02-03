@@ -11,7 +11,7 @@
 #ifndef _LINUX_LIRC_H
 #define _LINUX_LIRC_H
 
-#include <lirc/config.h>
+#include <lirc_config.h>
 
 #include <stdint.h>
 
