@@ -255,6 +255,33 @@ else
   AM_CONDITIONAL([BUILD_ALSA_SB_RC],[false])
 fi
 
+AC_MSG_CHECKING(for devinput)
+AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+  #include <unistd.h>
+]],[[
+  return access("/dev/input", R_OK) == 0 ? 0 : 1;
+]])],[
+  have_devinput="yes"
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  have_devinput="no"
+],[
+  test -z "$DEVINPUT_HEADER" -a x$enable_devinput = x$yes && AC_MSG_ERROR([
+    cannot cross-compile without DEVINPUT_HEADER defined, giving up
+  ])
+  test -n "$DEVINPUT_HEADER" -a ! -e "$DEVINPUT_HEADER" && AC_MSG_ERROR([
+    cannot access $DEVINPUT_HEADER, giving up
+  ])
+  if test -n "$DEVINPUT_HEADER" ; then
+    have_devinput="yes"
+  else
+    have_devinput="no"
+  fi
+  AC_MSG_RESULT(yes)
+])
+
+
 dnl see https://daniel.haxx.se/blog/2016/10/11/poll-on-mac-10-12-is-broken/
 AC_MSG_CHECKING(for working poll(2))
 AC_RUN_IFELSE([AC_LANG_PROGRAM([[
@@ -394,6 +421,18 @@ AC_ARG_ENABLE(install_etc,
   [ install_etc="yes"])
 AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
+
+AC_ARG_ENABLE(devinput,
+  [  --enable-devinput         Use /dev/input devices (default=guessed)],
+  [ enable_devinput="${enableval}" ],
+  [ enable_devinput="${have_devinput}"]
+)
+AM_CONDITIONAL([HAVE_DEVINPUT], [test x$enable_devinput = xyes])
+
+AC_ARG_VAR(DEVINPUT_HEADER,[
+  Override default value .../linux/input.h or linux/input-event-codes.h
+  e. g., when cross-compiling.
+])
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
   On cross-compile: Target has a working poll(2) implementation])

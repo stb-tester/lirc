@@ -126,7 +126,7 @@ if HAVE_DEVINPUT
 lirc/input_map.inc:
 	ln -s . lirc || :
 	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
-	$(top_srcdir)/tools/lirc-make-devinput -i > $@
+	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) > $@
 else
 lirc/input_map.inc:
 	touch $@

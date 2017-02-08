@@ -182,6 +182,6 @@ devinput.lircd.conf:
 	echo "# Rename to devinput.lircd.dist if not using devinput driver" > $@
 	echo "# Re-generate for current kernel using lirc-make-devinput" >> $@
 	echo '#' >> $@
-	$(srcdir)/tools/lirc-make-devinput >> $@
+	$(srcdir)/tools/lirc-make-devinput $(DEVINPUT_HEADER) >> $@
 
 .phony:
