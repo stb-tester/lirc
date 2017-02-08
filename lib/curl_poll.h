@@ -27,10 +27,6 @@
  * @brief  Wrapper for poll(2) using select(2) when poll() is unavailable.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

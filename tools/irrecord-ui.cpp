@@ -12,6 +12,10 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <ctype.h>
 #include <stdint.h>
 #include <unistd.h>

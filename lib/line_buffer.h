@@ -16,10 +16,6 @@
 #ifndef LIB_LINE_BUFFER_H_
 #define LIB_LINE_BUFFER_H_
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include <string>
 
 

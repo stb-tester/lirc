@@ -48,10 +48,6 @@ extern "C" {
 #include <syslog.h>
 #include <unistd.h>
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #include "lirc_private.h"
 
 

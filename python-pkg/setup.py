@@ -4,6 +4,7 @@ including header files, installed
 
 import subprocess
 import os.path
+import os
 
 try:
     import lirc.config
@@ -13,10 +14,10 @@ except ImportError:
 
 from setuptools import setup, Extension
 
-if os.path.exists('../lirc.pc'):
-    # development tree
-    cflags = ['-I../lib']
-    libs = ['-L../lib/.libs']
+if 'CFLAGS' in os.environ:
+    cflags = os.environ['CFLAGS'].split()
+    if 'LDFLAGS' in os.environ:
+        libs = os.environ['LDFLAGS'].split()
 else:
     cflags = subprocess.check_output(["pkg-config", "--cflags", 'lirc'])
     cflags = cflags.decode("ascii").strip().split()

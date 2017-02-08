@@ -8,6 +8,10 @@
  * Access and support for driver.h, the global driver.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include	<stdio.h>
 #include	"driver.h"
 #include	"config.h"
