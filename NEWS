@@ -3,8 +3,6 @@
    the lircd-uinput(8) daemon instead.
  * The slinke (a. k. a. slink-e) driver is dropped.
  * plugins: Add support for irdroid in the irtoy driver.
- * Build patches to build on kfreebsd and hurd. Now builds
-   on Linux, Macos, FreeBSD and Hurd.
  * Enhanced device enumeration, mode2 --list-devices works for
    most drivers.
  * New, shiny (i. e., unstable) python API. See the API docs,
@@ -12,12 +10,41 @@
    package, typically at /usr/share/lirc/python-pkg
  * The configs/*conf files no more supports  enumerating devices
    using shell scripts.
+ * Added enumeration support and server version level check to
+   driver API.
+ * Added manual devinput configuration, cross-compile support (#264).
+ * lircd, lircd-uinput: Change default release suffix due to linux
+   kernel changes (#263).
+
+0.9.4d 23/01/17
+ * The debian packaging means that freebsd and hurd builds are
+   regularly tested, improving build stability.
+ * A multitude of build patches, mostly after building on Debian:
+    + Cross-compilation FTBS fixed (#233)
+    + Fix configuration of configure (#234)
+    + Fix library specification in lirc.pc (#236)
+    + use HAVE_UINPUT=1 to force building uinput code (#238).
+    + lib: Only use local headers in lirc_private.h (#237).
+    + Configure libudev (#242)
+    + Various kfreebsd fixes
+    + Include config.h in installed headers (#250).
+    + Fix _XOPEN_SOURCE related FTBS on some platforms (#248)
+ * lib: Fix some lircrcd-related bugs (#254)
+ * systemd: Fix wrong path to irexec (#239)
+ * systemd: Add missing lircd-setup.service to distribution (#243)
+ * lircd: Fix --listen option parsing [#249]
+ * lircd: Fix segfault in SET_INPUTLOG without arguments (#252)
+ * lircd: Fix DRV_OPTION error message handling (#256).
+ * ircat: Fix option parsing bug + empty conditions (#251)
+ * xmode2: Fix handling of --driver option.
 
 0.9.4c 22/10/16
  * New curl_poll files adds a new MIT license. Lirc now carries
    GPL, BSD and MIT licenses.
  * Several patches to make lirc work again on macos (#226, #227).
  * New tool irtext2udp generates udp plugin data (#197).
+ * Fix FTBS errors on linux kernel >= 4.8.0 (#232).
+ * plugins: girs: Add udp/receive support (#201).
  * mode2: Fix broken --raw option (#223).
  * lirc-make-devinput: Fix that two remotes has the same name (#222).
  * lircd: Warn for duplicate remote definitions (#222).
@@ -27,7 +54,6 @@
  * contrib: disable udev /dev/uinput rule requiring lirc user.
  * plugins: audio_alsa: Fix byte truncating in 16-bit data (#218):
  * plugins: irtoy: improve error handling (#220).
- * plugins: girs: girs.c: Mark last of receive as LIRC_MODE2_TIMEOUT.
  * Minor documentation fixes.
 
 0.9.4b 9/8/16
