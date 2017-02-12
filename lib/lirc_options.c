@@ -75,11 +75,6 @@ int  options_getboolean(const char* const key)
 	return ciniparser_getboolean(lirc_options, key, 0);
 }
 
-static const struct option o_option[] = {
-	{ "options-file", required_argument, NULL, 'O' },
-	{ 0,		  0,		     0,	   0   }
-};
-
 
 static char* parse_O_arg(int argc, char** argv)
 {

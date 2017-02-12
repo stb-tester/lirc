@@ -54,8 +54,6 @@
 #define FALSE 0
 #endif
 
-static const logchannel_t logchannel = LOG_LIB;
-
 /*
  * This is a wrapper around poll().  If poll() does not exist, then
  * select() is used instead.  An error is returned if select() is
