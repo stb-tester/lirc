@@ -42,7 +42,7 @@ static const char* const HELP =
 	"\t socket: lircd output socket or test file [" LIRCD "]\n"
 	"\nOptions:\n"
 	"\t -u --uinput=uinput \t\tuinput device [/dev/uinput]\n"
-	"\t -r --release-suffix=suffix \tRelease events suffix [_UP]\n"
+	"\t -r --release-suffix=suffix \tRelease events suffix [_EVUP]\n"
 	"\t -R --repeat=delay[,period]\tSet kernel repeat parameters [none]\n"
 	"\t -a --add-release-events\tAdd synthetic release events [no]\n"
 	"\t -d --disable=file\t\tDisable buttons listed in file\n"
@@ -164,7 +164,7 @@ static void add_defaults(void)
 		LOGFILE_OPT,		"syslog",
 		UINPUT_OPT,		"/dev/uinput",
 		REPEAT_OPT,	 	(const char*) NULL,
-		SUFFIX_OPT,		suffix ? suffix : "_UP",
+		SUFFIX_OPT,		suffix ? suffix : "_EVUP",
 		TIMEOUT_OPT,		"200",
 		INPUT_ARG,		socket ? socket : LIRCD,
 		DISABLED_OPT,		(const char*)NULL,

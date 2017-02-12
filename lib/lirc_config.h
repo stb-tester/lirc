@@ -60,7 +60,7 @@
 #define PIDFILE                 VARRUNDIR "/" PACKAGE "/" PID_LIRCD
 
 /** Suffix added to release events. */
-#define LIRC_RELEASE_SUFFIX     "_UP"
+#define LIRC_RELEASE_SUFFIX     "_EVUP"
 
 /** Default directory for plugins/drivers. */
 #define PLUGINDIR               LIBDIR  "/lirc/plugins"

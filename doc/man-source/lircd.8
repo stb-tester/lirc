@@ -149,7 +149,11 @@ under DRIVER LOADING. The argument is a :-separated search path.
 \fB-r, --release\fR [\fIsuffix\fR]
 Enables automatic generation of release events for each button press.
 lircd will append the given suffix to the button name for each release
-event. If no suffix is given the default suffix is '_UP'.
+event. If no suffix is given the default suffix is '_EVUP'.
+.IP
+Note the suffix _UP, which was used by
+.B lircd
+prior to 0.10.0, is used by the linux kernel for other purposes since 4.7.
 .TP
 \fB-R, --repeat-max\fR <\fIlimit\fR>
 Sets an upper limit to the number of repeats when sending a signal. The
