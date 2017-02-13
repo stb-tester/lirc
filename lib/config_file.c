@@ -631,7 +631,7 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 	path = path != NULL ? path : "unknown file";
 
 	if (!rem->name) {
-		log_error("%s: %s: Missing remote name", path, rem);
+		log_error("%s: Missing remote name", path);
 		return 0;
 	}
 	if (rem->gap == 0) {
@@ -655,6 +655,10 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 		log_warn("%s: %s: Invalid post_data",
 			  path, rem->name);
 		rem->post_data &= gen_mask(rem->post_data_bits);
+	}
+	if (!rem->codes) {
+		log_error("%s: %s: No codes", path, rem->name);
+		return 0;
 	}
 	for (codes = rem->codes; codes->name != NULL; codes++) {
 		if ((codes->code & gen_mask(rem->bits)) != codes->code) {
