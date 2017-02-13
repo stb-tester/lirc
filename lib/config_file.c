@@ -193,18 +193,18 @@ static void* array_guest_code_equals(void* arg1, void* arg2)
 	struct ir_code_node* next2;
 
 	if (code1 == NULL || code2 == NULL)
-		return code1 == code2 ? arg1 : NULL;
+		return NULL;
 	if (code1->code != code2->code)
 		return NULL;
 	next1 = code1->next;
 	next2 = code2->next;
-	while  (code1->next != NULL) {
+	while  (next1 != NULL) {
 		if (!ir_code_node_equals(next1, next2))
 			return NULL;
-		next1 = code1->next;
-		next2 = code2->next;
+		next1 = next1->next;
+		next2 = next2->next;
 	}
-	return arg1;
+	return next2 == NULL ? arg1 : NULL;
 }
 
 
