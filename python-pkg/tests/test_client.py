@@ -30,7 +30,7 @@ def _wait_for_socket():
         time.sleep(0.01)
         i += 1
         if i > 100:
-            raise OSerror('Cannot find socket file')
+            raise OSError('Cannot find socket file')
 
 
 class ReceiveTests(unittest.TestCase):
