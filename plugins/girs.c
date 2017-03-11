@@ -54,7 +54,7 @@
 #define DRIVER_NAME "girs"
 #define DEFAULT_DEVICE "/dev/ttyACM0"
 #define DRIVER_RESOLUTION 50
-#define DRIVER_VERSION "2016-08-19"
+#define DRIVER_VERSION "2017-03-11"
 
 #define DEFAULT_TCP_PORT "33333"
 
@@ -601,7 +601,7 @@ static lirc_t readdata(lirc_t timeout)
 			log_debug("readdata timeout from hardware, continuing");
 			enable_receive();
 			initialized = 0;
-			return 0;
+			// Keep going...
 		}
 		int i = 0;
 		const char* token;
@@ -657,12 +657,6 @@ static lirc_t readdata(lirc_t timeout)
 		// Mark as PULSE if appropriate (otherwise it is SPACE)
 		if ((data_ptr & 1) == 0)
 			x |= PULSE_BIT;
-
-#ifdef REPORT_TIMEOUT
-		if (dev.report_timeouts && (data_ptr == data_length - 1))
-			// Last value, mark it as timeout
-			x |= LIRC_MODE2_TIMEOUT;
-#endif
 
 		data_ptr++;
 	}
@@ -768,6 +762,7 @@ static int initialize_tcp(void)
 
 	if (colon != NULL) {
 		strncpy(ipname, drv.device, colon - drv.device);
+		ipname[colon - drv.device] = '\0';
 		strncpy(portnumber, colon + 1, strlen(colon));
 	} else {
 		strncpy(ipname, drv.device, strlen(drv.device) + 1);
