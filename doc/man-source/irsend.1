@@ -1,50 +1,58 @@
-.TH IRSEND "1" "Last change: Sep 2015" "irsend @version@" "User Commands"
+.TH IRSEND "1" "Last change: Mar 2017" "irsend @version@" "User Commands"
 .SH NAME
 .P
 \fBirsend\fR - basic LIRC program to send infra-red commands
 .SH SYNOPSIS
 .P
-\fBirsend\fR [\fIoptions\fR] \fIDIRECTIVE REMOTE CODE \fR[\fICODE\fR...]
+\fBirsend\fR [\fIoptions\fR] \fIsend_once \fI<remote>\fR \fI<code>\fR [\fIcode...]\fR
+.br
+\fBirsend\fR [\fIoptions\fR] \fIsend_start \fI<remote>\fR \fI<code>\fR
+.br
+\fBirsend\fR [\fIoptions\fR] \fIsend_stop \fI<remote>\fR \fI<code>\fR
+.br
+\fBirsend\fR [\fIoptions\fR] \fIlist\fR \fI<remote>\fR \fI<code>\fR
+.br
+\fBirsend\fR [\fIoptions\fR] \fIset_transmitters\fR \fI<num>\fR \fI[num...]\fR
+.br
+\fBirsend\fR [\fIoptions\fR] \fIsimulate\fR \fI<button press packet>\fR
 .SH DESCRIPTION
 .P
 Asks the \fBlircd\fR daemon to send one or more CIR
-(Consumer Infra-Red) commands. This is intended for remote control
-of electronic devices such as TV boxes, HiFi sets, etc.
+(Consumer Infra-Red) commands.
+This is intended for remote control of electronic devices such as
+TV boxes, HiFi sets, etc.
 .PP
-\fIDIRECTIVE\fR can be:
+\fBirsend\fR supports six sub-commands:
 .nf
-\fBSEND_ONCE\fR         - send \fICODE\fR [\fICODE\fR ...] once
-\fBSEND_START\fR        - start repeating \fICODE\fR
-\fBSEND_STOP\fR         - stop repeating \fICODE\fR
-\fBLIST\fR              - list configured remote items
-\fBSET_TRANSMITTERS\fR  - set transmitters \fINUM\fR [\fINUM\fR ...]
-\fBSIMULATE\fR          - simulate IR event
+\fBsend_once\fR         - send one or more code(s) once
+\fBsend_start\fR        - start repeating a code.
+\fBsend_stop\fR         - stop repeating code.
+\fBlist\fR              - list configured remote items
+\fBset_transmitters\fR  - set active transmitters
+\fBsimulate\fR          - simulate IR event
 .fi
-
-.PP
-\fIREMOTE\fR is the name of a remote, as described in the \fBlircd\fR
+.P
+\fIremote\fR is the name of a remote, as described in the \fBlircd\fR
 configuration file.
-
-.PP
-\fICODE\fR is the name of a remote control key of \fIREMOTE\fR, as it
-appears in the \fBlircd\fR configuration file.
-
-.PP
-\fINUM\fR is the transmitter number of the hardware device.
-
-.PP
-For the \fBLIST\fR \fIDIRECTIVE\fR, \fIREMOTE\fR and/or \fICODE\fR
+.P
+\fIcode\fR is the name of a remote control key of \fIremote\fR, as it
+appears in the \fBlircd.conf\fR configuration file.
+.P
+\fInum\fR is the transmitter number of the hardware device.
+.P
+For the \fBlist\fR command, \fIremote\fR and/or \fIcode\fR
 can be empty:
-
+.IP
 .nf
-\fBLIST\fR   ""    ""   - list all configured remote names
-\fBLIST\fR \fIREMOTE\fR  ""   - list all codes of \fIREMOTE\fR
-\fBLIST\fR \fIREMOTE\fR \fICODE\fR  - list only \fICODE\fR of \fIREMOTE\fR
+\fBlist\fR   ""    ""   - list all configured remote names
+\fBlist\fR \fIremote\fR  ""   - list all codes of \fIremote\fR
+\fBlist\fR \fIremote\fR \fIcode\fR  - list only \fIcode\fR of \fIremote\fR
 .fi
-
-.PP
-The \fBSIMULATE\fR command only works if it has been explicitly
+.P
+The \fBsimulate\fR command only works if it has been explicitly
 enabled in lircd using the --allow-simulate option.
+The required \fIbutton press packet\fR should formatted as a socket
+broadcast message documented in \fBlircd(8)\fR.
 .SH OPTIONS
 .TP
 \fB\-h\fR \fB\-\-help\fR
@@ -97,9 +105,9 @@ irsend SIMULATE "0000000000000476 00 OK TECHNISAT_ST3004S"
 Drivers are loaded dynamically. The directory used for this is determined by (falling
 priority):
 .IP \- 2
-The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
-.IP \- 2
 The environment variable LIRC_PLUGINDIR.
+.IP \- 2
+The 'plugindir' entry in  the [lircd] section of the lirc_options.conf file.
 .IP \- 2
 A hardcoded default (@libpath@/lirc/plugins).
 .SH "SEE ALSO"

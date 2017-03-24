@@ -114,19 +114,19 @@ int drv_handle_options(const char* options);
 /** drvctl error. */
 #define  DRV_ERR_NOT_IMPLEMENTED        1
 
-/** drvctl error: */
+/** drvctl error: cmd and arg is OK, but other errors. */
 #define  DRV_ERR_BAD_STATE              2
 
-/** drvctl error: */
+/** drvctl error: cmd is bad */
 #define  DRV_ERR_BAD_OPTION		3
 
-/** drvctl error: */
+/** drvctl error: arg is bad */
 #define  DRV_ERR_BAD_VALUE		4
 
 /** No requested data available. */
 #define  DRV_ERR_ENUM_EMPTY		5
 
-/** drvctl error: */
+/** drvctl error: "Should not happen" type of errors.  */
 #define  DRV_ERR_INTERNAL		6
 
 /**
@@ -245,16 +245,16 @@ struct driver {
 	/**
 	 *  device_hint is a mean for config tools to autodetect devices.
 	 *    - /dev/tty*     User selects a tty.
-	 *    - /dev/event\*  A devinput device
+	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
+	 *    - auto          No device configured, a message is displayed.
 	 *    - /dev/foo\*    A wildcard listing possible devices, general
 	 *                    fallback.
-	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
-	 *    - None          No device is silently configured.
-	 *    - Auto          No device configured, but a message is
-	 *                    displayed.
+	 *
 	 *   The following hints are not longer supported:
-	 *    - /dev/usb/\*   Denotes serial, USB-connectd port.
+	 *    - /dev/event\*  A devinput device
+	 *    - /dev/usb/\*   A serial, USB-connected port.
 	 *    - /bin/sh ...   Shell command listing possible devices.
+	 *    - None          No device is silently configured.
 	 */
 	const char* const  device_hint;
 };

@@ -12,10 +12,12 @@
  *  i. e., DRVCTL_GET_DEVICES. If libudev is available, all functions
  *  adds udev info to the output.
  *
- *  All drv_enum functions returns a glob_t* with matched devices in
- *  gl_pathv, one device per entry. The first word oin each entry is
+ *  All drv_enum functions returns data in a glob_t* with matched devices in
+ *  gl_pathv, one device per entry. The first word in each entry is
  *  the mandatory device path. The optional remainder is more info
  *  on device, usable in user interfaces.
+ *
+ *  Return codes are DRV_ERR_ constants as of driver.h, or 0 for no errors.
  */
 
 #include <stdint.h>
