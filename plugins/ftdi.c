@@ -85,11 +85,16 @@ static int usb_product = 0x6001;
 static const char* usb_desc = NULL;
 static const char* usb_serial = NULL;
 
+static int tx_baud_mult = 16;
+static int rx_baud_mult = 64;
+
 static int laststate = -1;
 static uint32_t rxctr = 0;
 
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
+
+int old_timings = 0;          /* Use old timings, see #275. */
 
 #if 0
 static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t gap)
@@ -168,7 +173,7 @@ static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 		 * The datasheet indicates that the sample rate in
 		 * bitbang mode is 16 times the baud rate but 32 seems
 		 * to be correct. */
-		usecs = (rxctr * 1000000LL) / (rx_baud_rate * 32);
+		usecs = (rxctr * 1000000LL) / (rx_baud_rate * rx_baud_mult);
 
 		/* Clamp */
 		if (usecs > PULSE_MASK)
@@ -289,19 +294,22 @@ retry:
 
 static int drvctl_func(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-	int i;
+	struct option_t* opt;
 
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
 		list_devices((glob_t*) arg);
 		return 0;
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		for (i = 0; i < glob->gl_pathc; i += 1)
-			free(glob->gl_pathv[i]);
-		free(glob->gl_pathv);
+		drv_enum_free((glob_t*) arg);
 		return 0;
+	case DRVCTL_SET_OPTION:
+		opt = (struct option_t*)arg;
+		if (strcmp(opt->key, "old-timings") == 0) {
+			old_timings = 1;
+			return 0;
+		}
+		return DRV_ERR_BAD_OPTION;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}
@@ -371,6 +379,14 @@ next:
 		if (comma == NULL)
 			break;
 		p = comma + 1;
+	}
+
+	if (old_timings == 1) {         /* original values */
+		tx_baud_mult = 8;
+		rx_baud_mult = 32;
+	} else {
+		tx_baud_mult = 16;
+		rx_baud_mult = 64;       /* hardware *16, libftdi *4 */
 	}
 
 	rec_buffer_init();
@@ -508,7 +524,7 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 static ssize_t write_pulse(unsigned char* buf, size_t size,
 	struct ir_remote* remote, struct ir_ncode* code)
 {
-	uint32_t f_sample = tx_baud_rate * 8;
+	uint32_t f_sample = tx_baud_rate * tx_baud_mult;
 	uint32_t f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	const lirc_t* pulseptr;
 	int n_pulses;
@@ -610,6 +626,8 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 
 	return 1;
 }
+
+
 /*
 * Mode2 transmitter using the bitbang mode of an FTDI USB-to-serial chip such as
 * the FT230X.  The standard FTDI driver with the FT232R is unreliable having a
