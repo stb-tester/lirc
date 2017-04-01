@@ -971,10 +971,12 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		fprintf(stderr, "Too many file descriptors received.\n");
 		goto start_server_failed0;
 	} else if (n == 1) {
+	        log_notice("Using systemd fd");
 		sockfd = SD_LISTEN_FDS_START + 0;
 	}
 #endif
 	if (sockfd == -1) {
+	        log_debug("No systemd fd found");
 		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (sockfd == -1) {
 			perror("Could not create socket");
