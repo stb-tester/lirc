@@ -341,10 +341,13 @@ AC_CHECK_HEADERS([linux/input.h],
                  [AC_MSG_WARN([Cannot find kernel headers])])
 
 dnl check if kernel-headers has lirc.h
+kernel_header_flags='-I $(top_srcdir)/include'
 AC_CHECK_HEADERS([linux/lirc.h], [
   AC_DEFINE(HAVE_KERNEL_LIRC_H)
   AC_SUBST(DRIVER_FLAGS, [-DHAVE_KERNEL_LIRC_H])
+  kernel_header_flags=''
 ])
+AC_SUBST(kernel_header_flags)
 
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[ AC_DEFINE(HAVE_SCSI) ])

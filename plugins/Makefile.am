@@ -9,7 +9,7 @@ endif
 AM_CFLAGS                   = -pthread -Wall @DRIVER_FLAGS@
 AM_CFLAGS                   += -DPLUGINDOCS=\"$(docdir)/plugindocs\"
 AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \
-                              @osflags@
+			      @kernel_header_flags@ @osflags@
 AM_CPPFLAGS                 += -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 DISTCLEANFILES              = pluginlist.am
