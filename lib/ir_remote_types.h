@@ -37,7 +37,7 @@ extern "C" {
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 /**
