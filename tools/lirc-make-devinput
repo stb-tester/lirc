@@ -15,12 +15,10 @@ the kernel-headers package.
 EOF
 }
 
-# Use gnu-sed on Macosx
-if test "`uname`" = 'Darwin'; then
-  SED=gsed
-else
-  SED=sed
-fi
+here=$(dirname $(readlink -fn $0))
+
+# Use gnu-sed if available
+if which gsed >/dev/null; then SED=gsed; else SED=sed; fi
 
 lirc_map=''
 
@@ -35,8 +33,10 @@ fi
 readonly TYPES="KEY BTN"
 if test -e "/usr/include/linux/input-event-codes.h"; then
 readonly file=${1:-/usr/include/linux/input-event-codes.h}
-else
+elif test -e "/usr/include/linux/input.h"; then
 readonly file=${1:-/usr/include/linux/input.h}
+elif test -e "$here/../include/linux/input-event-codes.h"; then
+readonly file=${1:-$here/../include/linux/input-event-codes.h}
 fi
 tmpfile=$( mktemp )
 

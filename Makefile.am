@@ -64,7 +64,8 @@ pkgconfigdir            = $(libdir)/pkgconfig
 dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
 headerdir               = $(includedir)/lirc
-nobase_header_HEADERS   = include/media/lirc.h
+nobase_header_HEADERS   = include/media/lirc.h \
+			  include/linux/input-event-codes.h
 header_HEADERS          = paths.h config.h drivers/irpipe/irpipe.h
 
 py_pkgdir               = $(pkgdatadir)/python-pkg

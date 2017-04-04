@@ -5,11 +5,7 @@ CLEANFILES                  = driver_api.dox lirc_client.dox config.py
 EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
                               driver_api.doxhead  lirc_client.doxhead
 
-BUILT_SOURCES               =
-
-if HAVE_DEVINPUT
-BUILT_SOURCES               += lirc/input_map.inc
-endif
+BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @osflags@ @kernel_header_flags@
@@ -122,16 +118,10 @@ input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
-if HAVE_DEVINPUT
 lirc/input_map.inc:
 	ln -s . lirc || :
 	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
 	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) > $@
-else
-lirc/input_map.inc:
-	touch $@
-	touch input_map.inc
-endif
 
 checkfiles:
 	../git-tools/checkfiles $(SOURCES) $(HEADERS)

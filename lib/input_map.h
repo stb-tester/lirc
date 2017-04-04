@@ -26,7 +26,7 @@ extern "C" {
 #include <sys/types.h>
 #include <unistd.h>
 
-#if defined __linux__
+#ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #include <linux/uinput.h>
 #endif

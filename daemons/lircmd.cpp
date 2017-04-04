@@ -31,7 +31,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#if defined(__linux__)
+#ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #include <linux/uinput.h>
 #endif
