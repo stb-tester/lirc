@@ -171,7 +171,7 @@ void drv_enum_add_udev_info(glob_t* oldbuf)
 
 #else   // HAVE_LIBUDEV_H
 
-static void drv_enum_add_udev_info(glob_t* oldbuf) {}
+void drv_enum_add_udev_info(glob_t* oldbuf) {}
 
 #endif  // HAVE_LIBUDEV_H
 
