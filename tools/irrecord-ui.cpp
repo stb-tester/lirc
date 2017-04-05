@@ -47,6 +47,7 @@ static const char* const help =
 	"\t -U --plugindir=dir\tLoad drivers from dir\n"
 	"\t -f --force\t\tForce raw mode\n"
 	"\t -n --disable-namespace\tDisable namespace checks\n"
+	"\t -A --driver-options=key:value[|key:value...]\n"
 	"\t -Y --dynamic-codes\tEnable dynamic codes\n"
 	"\t -O --options-file\tUse alternative lirc_options.conf file\n"
 	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
@@ -68,6 +69,7 @@ static const struct option long_options[] = {
 	{"list-namespace",    no_argument,	 NULL, 'l'},
 	{"update",	      required_argument, NULL, 'u'},
 	{"plugindir",	      required_argument, NULL, 'U'},
+	{"driver-options",    required_argument, NULL, 'A' },
 	{"dynamic-codes",     no_argument,	 NULL, 'Y'},
 	{"pre",		      no_argument,	 NULL, 'p'},
 	{"post",	      no_argument,	 NULL, 'P'},
@@ -274,6 +276,8 @@ static void add_defaults(void)
 		"irrecord:update",      "False",
 		"irrecord:disable-namespace",
 					"False",
+		"irrecord:driver-options",
+					"",
 		"irrecord:dynamic-codes",
 					"False",
 		"irrecord:list-namespace",
@@ -316,7 +320,7 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fknlO:pPtiTU:uvY";
+	const char* const optstring = "had:D:H:fknlO:pPtiTU:uvYA:";
 
 	add_defaults();
 	optind = 1;
@@ -377,6 +381,9 @@ static void parse_options(int argc, char** const argv)
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
 			break;
+		case 'A':
+			options_set_opt("irrecord:driver-options", optarg);
+			break;
 		case 'Y':
 			options_set_opt("lircd:dynamic-codes", "True");
 			break;
@@ -407,6 +414,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	FILE* f;
 	struct ir_ncode* nc;
 	int fd;
+	const char* opt;
 
 	if (opts->force) {
 		printf("Using raw access on device %s\n",
@@ -506,6 +514,9 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			log_error("Cannot reset root uid");
 	}
 	curr_driver->open_func(opts->device);
+	opt = options_getstring("lircd:driver-options");
+	if (opt != NULL && strlen(opt) != 0)
+		drv_handle_options(opt);
 	if (curr_driver->init_func) {
 		if (!curr_driver->init_func()) {
 			fclose(state->fout);
