@@ -251,13 +251,12 @@ int open_device(int opt_raw_access, const char* device)
 	} else {
 		curr_driver->open_func(device);
 		opt = options_getstring("lircd:driver-options");
-		if (opt != NULL)
-			if (drv_handle_options(opt) != 0) {
-				fprintf(stderr,
+		if (drv_handle_options(opt) != 0) {
+			fprintf(stderr,
 				"Cannot set driver (%s) options (%s)\n",
 				curr_driver->name, opt);
-				exit(EXIT_FAILURE);
-			}
+			exit(EXIT_FAILURE);
+		}
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			fprintf(stderr, "Cannot initiate device %s\n",
 				curr_driver->device);

@@ -515,8 +515,12 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	}
 	curr_driver->open_func(opts->device);
 	opt = options_getstring("lircd:driver-options");
-	if (opt != NULL && strlen(opt) != 0)
-		drv_handle_options(opt);
+	if (drv_handle_options(opt) != 0) {
+		fprintf(stderr,
+			"Cannot set driver (%s) options (%s)\n",
+			curr_driver->name, opt);
+		exit(EXIT_FAILURE);
+	}
 	if (curr_driver->init_func) {
 		if (!curr_driver->init_func()) {
 			fclose(state->fout);

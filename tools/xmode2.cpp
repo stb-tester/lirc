@@ -374,13 +374,12 @@ int main(int argc, char** argv)
 	} else {
 		curr_driver->open_func(device);
 		opt = options_getstring("lircd:driver-options");
-		if (opt != NULL)
-			if (drv_handle_options(opt) != 0) {
-				fprintf(stderr,
+		if (drv_handle_options(opt) != 0) {
+			fprintf(stderr,
 				"Cannot set driver (%s) options (%s)\n",
 				curr_driver->name, opt);
-				return EXIT_FAILURE;
-			}
+			return EXIT_FAILURE;
+		}
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
 			fputs("Cannot initialize hardware\n", stderr);
 			exit(EXIT_FAILURE);

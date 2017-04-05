@@ -69,6 +69,8 @@ int drv_handle_options(const char* options)
 	char* colon;
 	int result;
 
+	if (options == NULL || strlen(options) == 0)
+		return 0;
 	s = alloca(strlen(options) + 1);
 	strcpy(s, options);
 	for (token = strtok(s, "|"); token != NULL; token = strtok(NULL, "|")) {

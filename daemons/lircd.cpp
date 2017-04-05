@@ -2364,9 +2364,7 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 	curr_driver->open_func(device);
-	opt = options_getstring("lircd:driver-options");
-	if (opt != NULL)
-		drv_handle_options(opt);
+	drv_handle_options(options_getstring("lircd:driver-options"));
 	pidfile = options_getstring("lircd:pidfile");
 	lircdfile = options_getstring("lircd:output");
 	opt = options_getstring("lircd:logfile");
