@@ -465,9 +465,9 @@ int main(int argc, char** argv)
 		return 0;
 	}
         if (opt_raw_access) {
-		printf("Using raw access on device %s\n", opt_device);
+		fprintf(stderr, "Using raw access on device %s\n", opt_device);
 	} else {
-		printf("Using driver %s on device %s\n",
+		fprintf(stderr, "Using driver %s on device %s\n",
 		       options_getstring("mode2:driver"),
 		       opt_device);
 	}
