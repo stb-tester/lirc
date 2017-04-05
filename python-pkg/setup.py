@@ -24,7 +24,7 @@ else:
     libs =  subprocess.check_output(["pkg-config", "--libs", 'lirc'])
     libs = libs.decode("ascii").strip().split()
 
-c_module = Extension('_client',
+c_module = Extension('lirc._client',
                      sources=['lirc/_client.c'],
                      libraries=['lirc_client'],
                      extra_compile_args=cflags,
