@@ -12,7 +12,11 @@ GIT_DATE        = $(shell git log -1 --pretty=format:%cd || echo UNKNOWN)
 GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 
 BASE_VERSION            = $(subst -devel,,$(VERSION))
+
+if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
+endif
+
 EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog \
                           COPYING.curl COPYING.ciniparser
 
@@ -70,11 +74,13 @@ dist_py_pkg_DATA        = python-pkg/setup.py \
 
 py_pkg_lircdir          = $(pkgdatadir)/python-pkg/lirc
 py_PYTHON               = python-pkg/lirc/__init__.py \
-                          python-pkg/lirc/async_client.py \
-                          python-pkg/lirc/client.py \
                           python-pkg/lirc/config.py \
                           python-pkg/lirc/database.py \
                           python-pkg/lirc/paths.py
+if HAVE_PYTHON35
+py_PYTHON               += python-pkg/lirc/async_client.py \
+                          python-pkg/lirc/client.py 
+endif
 
 dist_py_pkg_lirc_DATA   = $(py_PYTHON) \
 			  python-pkg/lirc/_client.c \
@@ -107,9 +113,11 @@ pep8: $(py_PYTHON)
 	$(MAKE) -C tools pep8
 	python3-pep8 --config=pep8.conf $?
 
+if HAVE_PYTHON35
 all-local:
 	cd python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
 	    LDFLAGS=-L$(abs_builddir)/lib/.libs python3 setup.py build
+endif
 
 install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
