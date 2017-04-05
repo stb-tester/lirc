@@ -300,6 +300,7 @@ int hw_choose_driver(const char* name)
 
 	if (name == NULL) {
 		memcpy(&drv, &drv_null, sizeof(struct driver));
+		drv.fd = -1;
 		return 0;
 	}
 	if (strcasecmp(name, "dev/input") == 0)
@@ -308,6 +309,7 @@ int hw_choose_driver(const char* name)
 	found = for_each_driver(match_hw_name, (void*)name, NULL);
 	if (found != (struct driver*)NULL) {
 		memcpy(&drv, found, sizeof(struct driver));
+		drv.fd = -1;
 		return 0;
 	}
 	return -1;
