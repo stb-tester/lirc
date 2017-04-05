@@ -47,6 +47,8 @@ AM_PATH_PYTHON([3.1],,)
 PKG_CHECK_MODULES([PYTHON],[python-${PYTHON_VERSION}m],,[true])
 test -z "$PYTHON_LIBS" && \
     PKG_CHECK_MODULES([PYTHON], [python-$PYTHON_VERSION],,[true])
+test -n "$PYTHON_LIBS" || \
+    AC_MSG_WARN([No python package found (missing devel package?)])
 python_version_nodots=$(echo $PYTHON_VERSION | tr -d '.')
 AM_CONDITIONAL(HAVE_PYTHON35, [test $python_version_nodots -ge 35])
 
