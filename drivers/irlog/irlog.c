@@ -1,55 +1,16 @@
 /**
- *  irpipe - lirc test device.
+ *  irlog - logging wrapper for /dev/lirc devices.
  *
- * This is mostly an implementation of a traditional kernel fifo
- * device. Ihe purpose is to provide the same interface as the
- * kernel LIRC drivers.
- *
- * The driver creates some (default 2) devices which can be read and
- * written as a regular fifos. The udev rule can be used to let udev
- * set up the devices /dev/irpipe[0-9].
- *
- * The differences to a regular kernel fifo:
- *
- *    - A subset of the LIRC ioctl commands are supported, see
- *      irpipe_ioctl().
- *    - If the readers goes away during write(2) this fifo blocks
- *      until a reader is back instead of generating a EPIPE error.
- *    - Some extra ioctl commands for testing are in irpipe.h
- *    - No asynchronous mechanisms.
- *    - The select()/poll() support is only implemented on the
- *      reading side. Writing will always block.
- *    - The device does not report itself as a fifo when using
- *      stat().
- *    - Read buffer needs to be at least 2048 bytes (why?)
- *
- * The LIRC attributes reflected by the related ioctls are reset when
- * the device is opened for write.
- *
- * Parameters include nr of devices, buffer size and debug logging. See
- * the 'modinfo irpipe.ko' output.
- *
- * See:
- *    -  http://lwn.net/Kernel/LDD3
- *    -  fifo(7)
  */
 
-#include <asm/ioctls.h>
-#include <asm/current.h>
-#include <asm-generic/ioctl.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/errno.h>
 #include <linux/fcntl.h>
-#include <linux/fs.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/poll.h>
-#include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/uaccess.h>
-#include <media/lirc.h>
-
 
 
 /** Name of device created under /sys/class. */
@@ -58,11 +19,9 @@
 /** Default nr of created minor devices, the first being 0. */
 #define NR_OF_DEVICES   2
 
+/** Default device logged a. k a. device_to_log parameter. */
 #define CHILD_DEVICE    "/dev/lirc0"
 
-
-#define MIN(a, b)       ((a) < (b) ? (a) : (b))
-#define MAX(a, b)       ((a) > (b) ? (a) : (b))
 
 #define IR_WARN(fmt, args ...) \
 	pr_warn("irlog (%d): " fmt "\n", current->pid, ## args)
