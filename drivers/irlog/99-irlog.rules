@@ -1,0 +1,5 @@
+#
+# Copy to /etc/udev/rules.d to let udev set up links.
+#
+KERNEL=="irlog0", SYMLINK+="irlog0", MODE="0666"
+KERNEL=="irlog1", SYMLINK+="irlog1", MODE="0666"

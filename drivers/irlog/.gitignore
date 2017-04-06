@@ -1,0 +1,6 @@
+Module.symvers
+irlog.mod.c
+modules.order
+test
+.irlog*
+.tmp*
