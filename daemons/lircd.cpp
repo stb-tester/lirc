@@ -430,7 +430,13 @@ static int setup_frequency(void)
 
 static int setup_timeout(void)
 {
-	lirc_t val, min_timeout, max_timeout;
+	// Previously, the first three variables used "lirc_t"  here. Since
+	// they are used to denote timeouts (in micro seconds() and can
+	// impossibly be used to denote the durations that are marks, spaces,
+	// or timeouts; lirc_t is not the appropriate data type.
+	uint32_t val;
+	uint32_t min_timeout = 0;
+	uint32_t max_timeout = PULSE_MASK; // largest duration a lirct_t can hold
 	uint32_t enable = 1;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
@@ -438,8 +444,8 @@ static int setup_timeout(void)
 
 	if (setup_max_space == 0)
 		return 1;
-	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1)
+	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) != 0
+	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) != 0)
 		return 0;
 	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
 		/* may help to detect end of signal faster */
@@ -455,7 +461,7 @@ static int setup_timeout(void)
 			val = max_timeout;
 	}
 
-	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
+	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) != 0) {
 		log_error("could not set timeout");
 		log_perror_err(__func__);
 		return 0;
