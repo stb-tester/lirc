@@ -58,6 +58,8 @@ const struct driver hw_dvico = {
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
+	.api_version	= 3,
+	.driver_version = "0.9.3",
 	.info		= "No info available",
 	.device_hint    = "drvctl"
 };
