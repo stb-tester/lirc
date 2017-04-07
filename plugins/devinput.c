@@ -484,7 +484,7 @@ char* devinput_rec(struct ir_remote* remotes)
 
 	code = ((ir_code)(unsigned)event.type) << 48 | ((ir_code)(unsigned)event.code) << 32 | value;
 
-	log_trace("code %.8llx", code);
+	log_trace("code %.16llx", code);
 
 	if (uinputfd != -1) {
 		if (event.type == EV_REL || event.type == EV_ABS

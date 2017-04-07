@@ -193,18 +193,18 @@ static void* array_guest_code_equals(void* arg1, void* arg2)
 	struct ir_code_node* next2;
 
 	if (code1 == NULL || code2 == NULL)
-		return code1 == code2 ? arg1 : NULL;
+		return NULL;
 	if (code1->code != code2->code)
 		return NULL;
 	next1 = code1->next;
 	next2 = code2->next;
-	while  (code1->next != NULL) {
+	while  (next1 != NULL) {
 		if (!ir_code_node_equals(next1, next2))
 			return NULL;
-		next1 = code1->next;
-		next2 = code2->next;
+		next1 = next1->next;
+		next2 = next2->next;
 	}
-	return arg1;
+	return next2 == NULL ? arg1 : NULL;
 }
 
 
@@ -631,7 +631,7 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 	path = path != NULL ? path : "unknown file";
 
 	if (!rem->name) {
-		log_error("%s: %s: Missing remote name", path, rem);
+		log_error("%s: Missing remote name", path);
 		return 0;
 	}
 	if (rem->gap == 0) {
@@ -655,6 +655,10 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 		log_warn("%s: %s: Invalid post_data",
 			  path, rem->name);
 		rem->post_data &= gen_mask(rem->post_data_bits);
+	}
+	if (!rem->codes) {
+		log_error("%s: %s: No codes", path, rem->name);
+		return 0;
 	}
 	for (codes = rem->codes; codes->name != NULL; codes++) {
 		if ((codes->code & gen_mask(rem->bits)) != codes->code) {
