@@ -9,8 +9,12 @@
 #include <linux/fcntl.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
+#include <linux/ktime.h>
 #include <linux/poll.h>
 #include <linux/slab.h>
+
+#define PULSE_BIT       0x01000000
+#define PULSE_MASK      0x00FFFFFF
 
 
 /** Name of device created under /sys/class. */
@@ -39,6 +43,7 @@ const struct file_operations fops;
 /** Persistent data structure for each allocated device. */
 struct ir_device {
 	struct file* filp;               /**< logged file */
+	ktime_t start;
 };
 
 
@@ -141,6 +146,7 @@ static int irlog_open(struct inode* inode, struct file* file)
 		IR_WARN("Error opening %s: %d", device_to_log, err);
 		return err;
 	}
+	dev->start = ktime_get();
 	return 0;
 }
 
@@ -162,9 +168,26 @@ static ssize_t
 irlog_read(struct file* file, char* buff, size_t length, loff_t* ppos)
 {
 	struct ir_device* const dev = (struct ir_device*)file->private_data;
+	char ints[64];
+	char int_[16];
+	uint32_t u32;
+	int r;
+	int i;
+	int delta;
 
-	IR_DEBUG("Reading file")
-	return file_read(dev->filp, buff, length, ppos);
+	r = file_read(dev->filp, buff, length, ppos);
+	ints[0] = '\0';
+	for (i = 0; i < r && i < 16; i += 4) {
+		memcpy(&u32, &buff[i], 4);
+		snprintf(int_, sizeof(int_), "%08x ", u32);
+		strcat(ints, int_);
+	}
+	if (r > 16)
+		strcat(ints,  "...");
+	delta = ktime_to_ns(ktime_sub(ktime_get(), dev->start)) / 1000;
+	IR_DEBUG("[%d] %d bytes of %d read: %s",
+		 delta, r, (int) length, ints);
+	return r;
 }
 
 
@@ -173,9 +196,26 @@ static ssize_t
 irlog_write(struct file* file, const char* buff, size_t length, loff_t* ppos)
 {
 	struct ir_device* const dev = (struct ir_device*)file->private_data;
+	int r;
+	int delta;
+	char ints[1024];
+	char int_[16];
+	uint32_t u32;
+	int i;
 
-	IR_DEBUG("Writing file")
-	return file_write(dev->filp, buff, length, ppos);
+	r = file_write(dev->filp, buff, length, ppos);
+	delta = ktime_to_ns(ktime_sub(ktime_get(), dev->start)) / 1000;
+	IR_DEBUG("[%d] %d bytes of %d (%d ints) written",
+		 delta, r, (int) length, (int) length / 4);
+	ints[0] = '\0';
+	for (i = 0; i < r && i < 128; i += 4) {
+		memcpy(&u32, &buff[i], 4);
+		snprintf(int_, sizeof(int_), "%d ", u32);
+		strcat(ints, int_);
+	}
+	IR_DEBUG("Data: %s", ints);
+
+	return r;
 }
 
 
@@ -183,8 +223,10 @@ irlog_write(struct file* file, const char* buff, size_t length, loff_t* ppos)
 long irlog_ioctl(struct file* file, unsigned int cmd, unsigned long arg)
 {
 	struct ir_device* const dev = (struct ir_device*) file->private_data;
+	int delta;
 
-	IR_DEBUG("ioctl file")
+	delta = ktime_to_ns(ktime_sub(ktime_get(), dev->start)) / 1000;
+	IR_DEBUG("[%d] ioctl file, cmd: %x, arg: %lx", delta, cmd, arg);
 	return dev->filp->f_op->unlocked_ioctl(dev->filp, cmd, arg);
 }
 
@@ -193,9 +235,11 @@ long irlog_ioctl(struct file* file, unsigned int cmd, unsigned long arg)
 static unsigned int irlog_poll(struct file* file, poll_table* wait)
 {
 	struct ir_device* const dev = (struct ir_device*) file->private_data;
+	int r;
 
-	IR_DEBUG("poll file")
-	return dev->filp->f_op->poll(dev->filp, wait);
+	r = dev->filp->f_op->poll(dev->filp, wait);
+	IR_DEBUG("poll, result: %x", r);
+	return r;
 }
 
 
