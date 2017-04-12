@@ -11,7 +11,8 @@ pkgdatadir=@datadir@/lirc
 docdir=@docdir@
 
 Libs: -L${libdir} -llirc_driver
-Cflags: -I${includedir} -fpic -DPLUGINDOCS='"${docdir}/plugindocs"'
+Cflags: -I${includedir} -I${includedir}/lirc -fpic \
+    -DPLUGINDOCS='"${docdir}/plugindocs"'
 
 plugindir=${libdir}/lirc/plugins
 configdir=${pkgdatadir}/configs
