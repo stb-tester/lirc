@@ -792,10 +792,11 @@ static const char* lirc_parse_relative(char*		dst,
 	if (!current)
 		return child;
 
-	/* Not a relative path */
-	if (*child == '/')
-		return child;
-
+	/* Already an absolute path */
+	if (*child == '/') {
+		snprintf(dst, dst_size, "%s", child);
+		return dst;
+	}
 	if (strlen(current) >= dst_size)
 		return NULL;
 	strcpy(dst, current);
