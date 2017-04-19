@@ -453,7 +453,9 @@ static int setup_timeout(void)
 	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) != 0
 	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) != 0)
 		return 0;
-	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
+	if ((uint32_t) setup_max_gap >= min_timeout &&
+	    (uint32_t) setup_max_gap <= max_timeout
+	) {
 		/* may help to detect end of signal faster */
 		val = setup_max_gap;
 	} else {
