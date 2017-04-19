@@ -29,6 +29,9 @@ lircd_uinput_LDADD     = ../lib/liblirc.la
 
 lircmd_SOURCES          = lircmd.cpp
 lircmd_LDADD            = ../lib/liblirc.la
+if ENABLE_UINPUT
+lircmd_CPPFLAGS         = $(AM_CPPFLAGS) -DUSE_UINPUT
+endif
 
 
 install-exec-local:
