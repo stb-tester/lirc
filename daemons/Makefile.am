@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS         = -I m4
 
 AM_CPPFLAGS             = -I$(top_srcdir) -I$(top_srcdir)/lib -Wall
 AM_CPPFLAGS             += -std=c++11 -Wp,-D_FORTIFY_SOURCE=2
-AM_CPPFLAGS             += @kernel_header_flags@ @osflags@
+AM_CPPFLAGS             += @kernel_header_flags@
 AM_LDFLAGS              = -lpthread $(SYSTEMD_LIBS)
 
 CLEANFILES              = *~
@@ -29,8 +29,9 @@ lircd_uinput_LDADD     = ../lib/liblirc.la
 
 lircmd_SOURCES          = lircmd.cpp
 lircmd_LDADD            = ../lib/liblirc.la
+lircmd_CPPFLAGS         = $(AM_CPPFLAGS) 
 if ENABLE_UINPUT
-lircmd_CPPFLAGS         = $(AM_CPPFLAGS) -DUSE_UINPUT
+lircmd_CPPFLAGS         += -DUSE_UINPUT
 endif
 
 

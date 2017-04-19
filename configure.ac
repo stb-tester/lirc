@@ -51,6 +51,7 @@ test -n "$PYTHON_LIBS" || \
     AC_MSG_WARN([No python package found (missing devel package?)])
 python_version_nodots=$(echo $PYTHON_VERSION | tr -d '.')
 AM_CONDITIONAL(HAVE_PYTHON35, [test $python_version_nodots -ge 35])
+CFLAGS="$CFLAGS $PYTHON_CFLAGS"
 
 
 dnl Checks for header files.
@@ -65,7 +66,6 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_TYPE_GETGROUPS
 AC_TYPE_INT8_T
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
@@ -74,6 +74,26 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
+
+dnl AC_TYPE_GETGROUPS seems broken on recent MacOS, so:
+AC_MSG_CHECKING([Figure out if getgrouplist() needs gid_t or int])
+oldcflags="$CFLAGS"
+export CFLAGS=-Werror
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <unistd.h>
+#include <grp.h>
+  ]], [[
+gid_t groups[32]; int ngroups; const char* user = "root";
+getgrouplist(user, 1, groups, &ngroups);
+  ]])],[
+    AC_MSG_RESULT(gid_t)
+    AC_DEFINE(GETGROUPS_T,[gid_t])
+  ],[
+    AC_MSG_RESULT(int)
+    AC_DEFINE(GETGROUPS_T,[int])
+  ]
+)
+export CFLAGS="$oldcflags"
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(gethostname gettimeofday mkfifo select socket strdup \
@@ -94,7 +114,7 @@ if test x$ac_cv_func_clock_gettime = xno; then
   AC_CHECK_LIB(rt, clock_gettime,[ac_cv_func_clock_gettime="yes"])
   AS_IF([test x$ac_cv_func_clock_gettime = xyes],
     [LIBS="-lrt $LIBS"],
-    AC_MSG_ERROR([Required function clock_gettime() not found])
+    AC_MSG_NOTICE([Function clock_gettime() not found])
   )
 fi
 AX_PYTHON_MODULE([yaml])
@@ -113,13 +133,6 @@ test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 enable_uinput_default="no"
 test -e "/dev/uinput" && enable_uinput_default="yes"
 
-AS_CASE([$host_os],
-        [darwin], [osflags='-DDARWIN'],
-        [*bsd],[osflags='-DFREEBSD'],
-        [*],[osflags='']
-)
-AC_SUBST(osflags)
-
 version_nodots=$( python << EOF
 v = "$VERSION".split("-")[[0]].split(".")
 v = dict(enumerate(v))
@@ -127,8 +140,6 @@ print(int(v.get(0)) * 10000 + int(v.get(1)) * 100 + int(v.get(2)))
 EOF
 )
 AC_DEFINE_UNQUOTED(VERSION_NODOTS, [$version_nodots])
-
-AM_CONDITIONAL([DARWIN], [test "$osflags" = "-DDARWIN"])
 
 AC_MSG_CHECKING([for linux kernel])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[
@@ -158,6 +169,9 @@ AH_TEMPLATE([HAVE_DEVINPUT],
 AH_TEMPLATE([HAVE_FORKPTY], [Define if forkpty is available])
 
 AH_TEMPLATE([HAVE_FTDI], [Define if the libftdi library is installed])
+
+AH_TEMPLATE([HAVE_IOKIT_IOCFPLUGIN_H],
+	    [Define if IOKit/IOCFPlugIn.h is available (MacOS) ])
 
 AH_TEMPLATE([HAVE_LIBALSA], [Define if the ALSA library is installed])
 
@@ -193,7 +207,12 @@ AH_TEMPLATE([HAVE_SOUNDCARD], [defined if soundcard API is available])
 
 AH_TEMPLATE([HAVE_SYSTEMD], [defined if systemd API is available])
 
-AH_TEMPLATE([HAVE_KERNEL_LIRC_H], [define if kernel-headers contains lirc.]h)
+AH_TEMPLATE([GETGROUPS_T], [type of argument 3 in getgrouplist()])
+
+AH_TEMPLATE([HAVE_KERNEL_LIRC_H], [define if kernel-headers contains lirc.h])
+
+AH_TEMPLATE([HAVE_MACH_MACH_TIME_H],
+	    [define if mach/mach_time.h is available (MacOS)])
 
 AH_TEMPLATE([LIRC_LOCKDIR],
         [Directory for device locks (usually /var/lock or /var/lock/lockdev)])
@@ -357,6 +376,15 @@ AC_SUBST(kernel_header_flags)
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[ AC_DEFINE(HAVE_SCSI) ])
 
+dnl MacOS  specific headers
+AC_CHECK_HEADERS([mach/mach_time.h])
+AC_CHECK_HEADERS([IOKit/IOCFPlugIn.h],[
+  AM_CONDITIONAL(HAVE_IOKIT, [true])
+  ],[
+  AM_CONDITIONAL(HAVE_IOKIT, [false])
+  ]
+)
+
 dnl dev_input driver requires linux input device api
 AC_CHECK_HEADERS(linux/input.h,[ AC_DEFINE(HAVE_LINUX_DEVINPUT) ])
 
@@ -479,7 +507,7 @@ AH_TOP([
 ])
 
 AH_BOTTOM([
-#include     "lirc_config.h"
+#include     "lirc/lirc_config.h"
 ])
 
 dnl write these decisions out to the Makefiles
@@ -538,7 +566,6 @@ AX_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AX_REPORT_CONDITIONAL([ENABLE_UINPUT])
 AX_REPORT_CONDITIONAL([INSTALL_ETC])
 AX_REPORT_CONDITIONAL([DEVEL])
-AX_REPORT_CONDITIONAL([DARWIN])
 AX_REPORT_CONDITIONAL([LINUX_KERNEL])
 AX_REPORT_CONDITIONAL([HAVE_DEVINPUT])
 AX_REPORT_CONDITIONAL([HAVE_SYSTEMD])

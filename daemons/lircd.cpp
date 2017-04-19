@@ -69,7 +69,12 @@
 
 #include "lirc_private.h"
 
-#ifdef DARWIN
+#ifndef HAVE_CLOCK_GETTIME
+
+#ifndef HAVE_MACH_MACH_TIME_H
+#error "Cannot build without clock_gettime.h or mach_time.h"
+#endif
+
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC SYSTEM_CLOCK
@@ -86,7 +91,8 @@ int clock_gettime(int clk_id, struct timespec *t){
 		   (double)timebase.numer)/((double)timebase.denom * 1e9);
 	return 0;
 }
-#endif
+
+#endif  // HAVE_CLOCK_GETTIME
 
 
 /****************************************************************************

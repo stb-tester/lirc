@@ -77,6 +77,8 @@ int curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
 
 #else
 
+static const logchannel_t logchannel = LOG_LIB;
+
 static struct timeval curlx_tvnow(void)
 {
 	/*

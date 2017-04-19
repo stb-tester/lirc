@@ -9,7 +9,7 @@ endif
 AM_CFLAGS                   = -pthread -Wall @DRIVER_FLAGS@
 AM_CFLAGS                   += -DPLUGINDOCS=\"$(docdir)/plugindocs\"
 AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \
-			      @kernel_header_flags@ @osflags@
+			      @kernel_header_flags@
 AM_CPPFLAGS                 += -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 DISTCLEANFILES              = pluginlist.am
@@ -109,7 +109,7 @@ plugin_LTLIBRARIES          += devinput.la
 devinput_la_SOURCES         = devinput.c
 endif
 
-if DARWIN
+if HAVE_IOKIT
 plugin_LTLIBRARIES          += osx_usbraw.la
 osx_usbraw_la_SOURCES       = osx_usbraw.c
 osx_usbraw_la_LDFLAGS       = $(AM_LDFLAGS) -framework IOKit -framework Cocoa

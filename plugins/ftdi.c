@@ -61,7 +61,10 @@
 
 #include <ftdi.h>
 
+#ifdef HAVE_LINUX_SCHED_H
 #define LIRC_FTDIX_SET_SCHEDULER 1
+#endif
+
 #ifdef LIRC_FTDIX_SET_SCHEDULER
 #include <sched.h>
 #include <linux/sched.h>

@@ -15,10 +15,10 @@ the kernel-headers package.
 EOF
 }
 
-here=$(dirname $(readlink -fn $0))
+here=$(dirname $(python -c "import os; print(os.path.realpath(\"$0\"))"))
 
 # Use gnu-sed if available
-if which gsed >/dev/null; then SED=gsed; else SED=sed; fi
+if which gsed &>/dev/null; then SED=gsed; else SED=sed; fi
 
 lirc_map=''
 
@@ -38,7 +38,7 @@ readonly file=${1:-/usr/include/linux/input.h}
 elif test -e "$here/../include/linux/input-event-codes.h"; then
 readonly file=${1:-$here/../include/linux/input-event-codes.h}
 fi
-tmpfile=$( mktemp )
+tmpfile=$( mktemp "${TMPDIR:-/tmp}/devinput.XXXXXXXXX" )
 
 if ! test -f $file; then
     echo "Cannot access $file. Giving up" >&2

@@ -8,7 +8,7 @@ EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
 BUILT_SOURCES               = lirc/input_map.inc
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
-                              @osflags@ @kernel_header_flags@
+                              @kernel_header_flags@
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
@@ -120,7 +120,8 @@ input_map.inc: lirc/input_map.inc
 
 lirc/input_map.inc:
 	ln -s . lirc || :
-	$(top_srcdir)/tools/lirc-make-devinput -i > input_map.inc
+	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) \
+	    > input_map.inc
 	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) > $@
 
 checkfiles:
