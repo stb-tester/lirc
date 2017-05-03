@@ -65,7 +65,7 @@ dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h \
-			  include/linux/input-event-codes.h
+                          include/linux/input-event-codes.h
 header_HEADERS          = paths.h config.h drivers/irpipe/irpipe.h
 
 py_pkgdir               = $(pkgdatadir)/python-pkg
@@ -80,12 +80,12 @@ py_PYTHON               = python-pkg/lirc/__init__.py \
                           python-pkg/lirc/paths.py
 if HAVE_PYTHON35
 py_PYTHON               += python-pkg/lirc/async_client.py \
-                          python-pkg/lirc/client.py 
+                          python-pkg/lirc/client.py
 endif
 
 dist_py_pkg_lirc_DATA   = $(py_PYTHON) \
-			  python-pkg/lirc/_client.c \
-			  python-pkg/lirc/lirctool.py
+                          python-pkg/lirc/_client.c \
+                          python-pkg/lirc/lirctool.py
 
 py_pkg_docdir           = $(pkgdatadir)/python-pkg/lirc/doc
 dist_py_pkg_doc_DATA    = python-pkg/doc/Doxyfile \
@@ -194,3 +194,6 @@ devinput.lircd.conf:
 	$(srcdir)/tools/lirc-make-devinput $(DEVINPUT_HEADER) >> $@
 
 .phony:
+
+## Apply .SILENT unless $(V) is set and not "0".
+$(subst 0,,$(V)).SILENT:
