@@ -452,7 +452,7 @@ AS_CASE([$kernelversion],
 ])
 
 AC_ARG_WITH(lockdir,
-  [  --with-lockdir=DIR      Old-school device lock files in DIR (/var/lock)],
+  [  --with-lockdir=DIR      Old-school device lock files in DIR (/var/lock{/lockdev})],
   lockdir=${withval},
   lockdir=${lockdir_default})
 AC_DEFINE_UNQUOTED(LIRC_LOCKDIR, "$lockdir")
@@ -471,7 +471,7 @@ AM_CONDITIONAL(INSTALL_ETC, test x$install_etc = xyes)
 
 
 AC_ARG_ENABLE(devinput,
-  [  --enable-devinput         Use /dev/input devices (default=guessed)],
+  [  --enable-devinput       Use /dev/input devices (default=guessed)],
   [ enable_devinput="${enableval}" ],
   [ enable_devinput="${have_devinput}"]
 )
@@ -530,7 +530,7 @@ cp VERSION python-pkg/VERSION
 
 AC_DEFUN([AX_REPORT_CONDITIONAL], [
   AS_IF([test -z $$1_TRUE],[enabled="yes"],[enabled="no"])
-  printf "%-20s%-12s" $1: $enabled
+  printf "%-27s%-12s" $1: $enabled
   AS_CASE([$report_col],[1],[report_col=2],[*],[report_col=1])
   AS_IF(test x$report_col = x2, AS_ECHO,)
 ])
@@ -568,7 +568,7 @@ AX_REPORT_CONDITIONAL([INSTALL_ETC])
 AX_REPORT_CONDITIONAL([DEVEL])
 AX_REPORT_CONDITIONAL([LINUX_KERNEL])
 AX_REPORT_CONDITIONAL([HAVE_DEVINPUT])
-AX_REPORT_CONDITIONAL([HAVE_SYSTEMD])
+AX_REPORT_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR])
 AX_REPORT_CONDITIONAL([HAVE_PYTHON35])
 
 echo
