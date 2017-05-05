@@ -2126,7 +2126,8 @@ static void lircd_add_defaults(void)
 		"lircd:pidfile",	PIDFILE,
 		"lircd:logfile",	"syslog",
 		"lircd:debug",		level,
-		"lircd:release",	NULL,
+		"lircd:release",	"False",
+		"lircd:release_suffix",	LIRC_RELEASE_SUFFIX,
 		"lircd:allow-simulate",	"False",
 		"lircd:dynamic-codes",	"False",
 		"lircd:plugindir",	PLUGINDIR,
@@ -2228,8 +2229,8 @@ static void lircd_parse_options(int argc, char** const argv)
 			break;
 		case 'r':
 			options_set_opt("lircd:release", "True");
-			options_set_opt("lircd:release_suffix",
-					optarg ? optarg : LIRC_RELEASE_SUFFIX);
+			if (optarg)
+				options_set_opt("lircd:release_suffix", optarg);
 			break;
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
