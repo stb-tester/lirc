@@ -249,6 +249,8 @@ static int locate_default_device(char* errmsg, size_t size)
 		 0, NULL, &matches);
 	if (r != 0) {
 		log_perror_warn("Cannot run glob %s", DEV_PATTERN);
+		log_notice("No input device available for devinput driver."
+			   " Consider stopping lircd.socket or reconfigure lirc");
 		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
 		return 0;
 	}
