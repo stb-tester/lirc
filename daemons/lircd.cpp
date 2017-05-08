@@ -1858,7 +1858,7 @@ static union {
 } poll_fds;
 
 
-static int mywaitfordata(unsigned long maxusec)
+static int mywaitfordata(uint32_t maxusec)
 {
 	int i;
 	int ret, reconnect;
@@ -2441,7 +2441,8 @@ int main(int argc, char** argv)
 	sigaction(SIGUSR1, &act, NULL);
 
 	remotes = NULL;
-	config();               /* read config file */
+	config();		/* read config file */
+	set_waitfordata_func(mywaitfordata);  /* receive uses my waitfordata.*/
 
 	act.sa_handler = sighup;
 	sigemptyset(&act.sa_mask);

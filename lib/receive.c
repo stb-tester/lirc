@@ -71,6 +71,8 @@ void rec_set_update_mode(int mode)
 	update_mode = mode;
 }
 
+int (*lircd_waitfordata)(__u32 timeout) = NULL;
+
 
 static lirc_t readdata(lirc_t timeout)
 {
@@ -163,11 +165,21 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 	return 0;
 }
 
+
+void set_waitfordata_func(int(*func)(uint32_t maxusec))
+{
+    lircd_waitfordata = func;
+}
+
+
 int waitfordata(uint32_t maxusec)
 {
 	int ret;
 	struct pollfd pfd = {
 		.fd = curr_driver->fd, .events = POLLIN, .revents = 0 };
+
+	if (lircd_waitfordata != NULL)
+		return lircd_waitfordata(maxusec);
 
 	while (1) {
 		do {

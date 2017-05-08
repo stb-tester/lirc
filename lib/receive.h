@@ -53,7 +53,9 @@ static inline lirc_t receive_timeout(lirc_t usec)
 }
 
 /**
- * Wait until data is available in drv.fd, timeout or a signal is raised.
+ * If set_waitfordata(func) is called, invoke and return function set this
+ * way. Otherwise wait until data is available in drv.fd, timeout or a
+ * signal is raised.
  *
  * @param maxusec timeout in micro seconds, given to poll(2). If <= 0, the
  *       function will block indefinitely until data is available or a
@@ -62,6 +64,10 @@ static inline lirc_t receive_timeout(lirc_t usec)
  *       timeout.
  */
 int waitfordata(uint32_t maxusec);
+
+/** Set the function used by waitfordata().  */
+void set_waitfordata_func(int (*func)(uint32_t maxusec));
+
 
 /** Clear internal buffer to pristine state. */
 void rec_buffer_init(void);
