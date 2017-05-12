@@ -20,7 +20,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_PATH_PROG(SH_PATH,[sh])
+AS_IF([test x$SH_PATH = x], [AC_PATH_PROG(SH_PATH,[sh])])
 AC_CHECK_PROGS([MODINFO], [modinfo], [no], [$PATH:/sbin:/usr/sbin])
 if test x$MODINFO = xno; then
   AC_MSG_WARN(["No modinfo command found - skipping kernel drivers."])
@@ -58,7 +58,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_TIOCGWINSZ
-AC_CHECK_HEADERS([fcntl.h libudev.h libutil.h limits.h linux/ioctl.h \
+AC_CHECK_HEADERS([fcntl.h libutil.h limits.h linux/ioctl.h \
 		  linux/sched.h poll.h sys/ioctl.h sys/poll.h sys/time.h \
 		  syslog.h unistd.h util.h pty.h])
 
@@ -302,11 +302,11 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[
   AC_MSG_RESULT(no)
   have_devinput="no"
 ],[
-  test -z "$DEVINPUT_HEADER" -a x$enable_devinput = x$yes && AC_MSG_ERROR([
-    cannot cross-compile without DEVINPUT_HEADER defined, giving up
-  ])
-  test -n "$DEVINPUT_HEADER" -a ! -e "$DEVINPUT_HEADER" && AC_MSG_ERROR([
-    cannot access $DEVINPUT_HEADER, giving up
+  AS_IF([test x$DEVINPUT_HEADER = x -a x$enable_devinput = xyes], [
+    AC_MSG_ERROR([
+      cannot cross-compile with devinput without DEVINPUT_HEADER
+      defined, giving up
+    ])
   ])
   if test -n "$DEVINPUT_HEADER" ; then
     have_devinput="yes"
@@ -365,7 +365,7 @@ AC_CHECK_HEADERS([linux/input.h],
                  [AC_MSG_WARN([Cannot find kernel headers])])
 
 dnl check if kernel-headers has lirc.h
-kernel_header_flags='-I $(top_srcdir)/include'
+kernel_header_flags='-I$(top_srcdir)/include'
 AC_CHECK_HEADERS([linux/lirc.h], [
   AC_DEFINE(HAVE_KERNEL_LIRC_H)
   AC_SUBST(DRIVER_FLAGS, [-DHAVE_KERNEL_LIRC_H])
@@ -436,9 +436,13 @@ if test -n "$SYSTEMD_LIBS"; then
   AC_DEFINE(HAVE_SYSTEMD)
 fi
 
-PKG_CHECK_MODULES([LIBUDEV],[libudev],,[true])
-CFLAGS="$CFLAGS $LIBUDEV_CFLAGS"
-LIBS="$LIBS $LIBUDEV_LIBS"
+dnl check for usable libudev
+AC_CHECK_LIB([udev], [udev_device_new_from_device_id], [
+  AC_CHECK_HEADERS([libudev.h])
+  PKG_CHECK_MODULES([LIBUDEV],[libudev],,[true])
+  CFLAGS="$CFLAGS $LIBUDEV_CFLAGS"
+  LIBS="$LIBS $LIBUDEV_LIBS"
+])
 
 dnl Ubuntu's systemd pkg-config seems broken beyond repair. So:
 kernelversion=`cat /proc/version || echo "non-linux"`
@@ -483,7 +487,9 @@ AC_ARG_VAR(DEVINPUT_HEADER,[
 ])
 
 AC_ARG_VAR(HAVE_WORKING_POLL,[
-  On cross-compile: Target has a working poll(2) implementation])
+  On cross-compile: Target has a working poll(2) [yes/no]])
+
+AC_ARG_VAR(SH_PATH, [On cross-compile: Path to shell, typically /bin/sh])
 
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
