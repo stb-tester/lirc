@@ -158,6 +158,7 @@ static void add_defaults(void)
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* const suffix = options_getstring("lircd:release");
 	const char* const socket = options_getstring("lircd:output");
+	const char* const timeout = options_getstring(TIMEOUT_OPT);
 
 	const char* const defaults[] = {
 		DEBUG_OPT,		level,
@@ -165,7 +166,7 @@ static void add_defaults(void)
 		UINPUT_OPT,		"/dev/uinput",
 		REPEAT_OPT,	 	(const char*) NULL,
 		SUFFIX_OPT,		suffix ? suffix : "_EVUP",
-		TIMEOUT_OPT,		"200",
+		TIMEOUT_OPT,		timeout ? timeout : "200",
 		INPUT_ARG,		socket ? socket : LIRCD,
 		DISABLED_OPT,		(const char*)NULL,
 		(const char*)NULL,	(const char*)NULL
