@@ -240,7 +240,7 @@ int rec_buffer_clear(void)
 
 	timerclear(&rec_buffer.last_signal_time);
 	if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE) {
-		unsigned char buffer[sizeof(ir_code)];
+		unsigned char buffer[curr_driver->code_length/CHAR_BIT + 1];
 		size_t count;
 
 		count = curr_driver->code_length / CHAR_BIT;
