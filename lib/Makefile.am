@@ -10,6 +10,8 @@ BUILT_SOURCES               = lirc/input_map.inc
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @kernel_header_flags@
 
+AM_LDFLAGS                  = @LIBUSB_LIBS@
+
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
 
