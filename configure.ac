@@ -494,6 +494,8 @@ AC_ARG_VAR(SH_PATH, [On cross-compile: Path to shell, typically /bin/sh])
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
 
+AM_CONDITIONAL(IS_CROSS_COMPILE, [test $host != $build])
+
 dnl tell the Makefiles what we decided
 AC_SUBST(LIBUSB_LIBS)
 AC_SUBST(daemon)
@@ -571,6 +573,7 @@ AX_REPORT_CONDITIONAL([HAVE_MAN2HTML])
 AX_REPORT_CONDITIONAL([HAVE_PYMOD_YAML])
 AX_REPORT_CONDITIONAL([ENABLE_UINPUT])
 AX_REPORT_CONDITIONAL([INSTALL_ETC])
+AX_REPORT_CONDITIONAL([IS_CROSS_COMPILE])
 AX_REPORT_CONDITIONAL([DEVEL])
 AX_REPORT_CONDITIONAL([LINUX_KERNEL])
 AX_REPORT_CONDITIONAL([HAVE_DEVINPUT])
@@ -579,11 +582,11 @@ AX_REPORT_CONDITIONAL([HAVE_PYTHON35])
 
 echo
 
-if test "$HAVE_PYMOD_YAML" != "yes"; then
-    AC_MSG_WARN([python3-yaml is missing. lirc-setup will not work, table.html
-and lirc.hwdb will not be created.])
-fi
+AS_IF([test x$HAVE_PYMOD_YAML != xyes], AC_MSG_WARN([
+  python3-yaml is missing. lirc-setup will not work, table.html
+  and lirc.hwdb will not be created.
+]))
 
-echo
-echo "Now enter 'make' and 'make install' to compile and install the package."
-echo
+AS_IF([test $host != $build], AC_MSG_NOTICE([
+  Cross-compilation requires running lirc-init-db post-install script
+]))

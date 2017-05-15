@@ -7,8 +7,9 @@ configsdir              = $(pkgdatadir)/configs
 dist_configs_DATA       = $(menuconfigs) \
                           kernel-drivers.yaml\
                           remotes.list
-
+if !IS_CROSS_COMPILE
 nodist_configs_DATA     = drivers.yaml confs_by_driver.yaml
+endif
 
 CLEANFILES              = drivers.yaml confs_by_driver.yaml
 DISTCLEANFILES          = remotes.list
