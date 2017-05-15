@@ -80,14 +80,23 @@ static char* parse_O_arg(int argc, char** argv)
 {
 	char* path = NULL;
 	int i;
+	const int opt_len = strlen("--options_file");
 
 	for (i = 0; i < argc; i += 1) {
-		if (strcmp(argv[i], "-O") != 0 &&
-		    strcmp(argv[i], "--options-file") != 0)
+		if (strncmp(argv[i], "-O", 2) != 0 &&
+		    strncmp(argv[i], "--options-file", opt_len) != 0)
 			continue;
-		if (i + 1 >= argc)
+		if (strchr(argv[i], '=') != NULL) {
+			path = strchr(argv[i], '=') + 1;
+		} else if (strncmp(argv[i], "-O", 2) == 0 &&
+			   strlen(argv[i]) > 2
+		) {
+			path = argv[i] + 2;
+		} else if (i + 1 < argc) {
+			path = argv[i + 1];
+		} else {
 			return NULL;
-		path = argv[i + 1];
+		}
 		if (path && access(path, R_OK) != 0) {
 			fprintf(stderr, "Cannot open options file %s for read\n",
 				path);
