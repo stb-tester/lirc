@@ -52,12 +52,16 @@ website_htmldir         = $(docdir)/lirc.org/html
 nodist_website_html_DATA  = $(generated_html) \
                           $(generated_plugindocs) \
                           NEWS.txt html-source/lirc.css
+
+
 if HAVE_MAN2HTML
 nodist_website_html_DATA  += $(manpage_html)
 endif
 
+if !IS_CROSS_COMPILE
 if HAVE_PYMOD_YAML
 nodist_website_html_DATA  += table.html
+endif
 endif
 
 vardocsdir              = $(localstatedir)/lib/lirc/plugins
@@ -75,6 +79,8 @@ htmldir                 = $(docdir)/html
 dist_html_DATA          = html-source/lirc.css
 nodist_html_DATA        =
 
+if !IS_CROSS_COMPILE
+
 if HAVE_PYMOD_YAML
 nodist_html_DATA        += table.html
 endif
@@ -82,6 +88,8 @@ endif
 if HAVE_PYMOD_YAML
 nodist_pkgdata_DATA     = lirc.hwdb
 endif
+
+endif ## CROSS_COMPILE
 
 dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
