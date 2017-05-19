@@ -41,7 +41,7 @@
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
-static char device_path[MAXPATHLEN + 1] = {0};
+static char device_path[10000] = {0};
 
 static int dfc_init(void);
 static int dfc_deinit(void);
@@ -103,7 +103,6 @@ static int drvctl_func(unsigned int cmd, void* arg)
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}
 }
-
 
 
 /* initialize driver -- returns 1 on success, 0 on error */
@@ -169,6 +168,7 @@ fail:
 		close(pipe_fd[1]);
 	return 0;
 }
+
 
 /* deinitialize driver -- returns 1 on success, 0 on error */
 static int dfc_deinit(void)

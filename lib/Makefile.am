@@ -121,10 +121,11 @@ input_map.lo: lirc/input_map.inc
 input_map.inc: lirc/input_map.inc
 
 lirc/input_map.inc:
-	ln -s . lirc || :
-	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) \
-	    > input_map.inc
-	$(top_srcdir)/tools/lirc-make-devinput -i $(DEVINPUT_HEADER) > $@
+	ln -s . lirc 2>/dev/null || :
+	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
+	    -i $(DEVINPUT_HEADER)  > input_map.inc
+	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
+	    -i $(DEVINPUT_HEADER) > $@
 
 checkfiles:
 	../git-tools/checkfiles $(SOURCES) $(HEADERS)

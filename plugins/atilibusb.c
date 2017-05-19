@@ -43,7 +43,7 @@ static char* ati_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
 static int find_device_endpoints(struct usb_device* dev);
-static char device_path[MAXPATHLEN + 1] = {0};
+static char device_path[10000] = {0};
 static int drvctl_func(unsigned int cmd, void* arg);
 
 static const logchannel_t logchannel = LOG_DRIVER;

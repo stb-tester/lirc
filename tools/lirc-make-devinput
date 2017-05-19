@@ -12,10 +12,13 @@ used when building lirc.
 
 input.h path defaults to /usr/include/linux/input.h, often in
 the kernel-headers package.
+
+Script uses the python interpreter defined by the PYTHON
+environment variable, falling back to 'python'
 EOF
 }
 
-here=$(dirname $(python -c "import os; print(os.path.realpath(\"$0\"))"))
+here=$(dirname $(${PYTHON:-'python'} -c "import os; print(os.path.realpath(\"$0\"))"))
 
 # Use gnu-sed if available
 if which gsed &>/dev/null; then SED=gsed; else SED=sed; fi

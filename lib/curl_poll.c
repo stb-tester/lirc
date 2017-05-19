@@ -79,20 +79,6 @@ int curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms)
 
 static const logchannel_t logchannel = LOG_LIB;
 
-static struct timeval curlx_tvnow(void)
-{
-	/*
-	** gettimeofday() is not granted to be increased monotonically, due to
-	** clock drifting and external source time synchronization it can jump
-	** forward or backward in time.
-	*/
-	struct timeval now;
-
-	(void)gettimeofday(&now, NULL);
-	return now;
-}
-
-
 /*
  * Make sure that the first argument is the more recent time, as otherwise
  * we'll get a weird negative time-diff back...

@@ -164,7 +164,7 @@ void print_remotes(const char* path)
 int isdir(const struct dirent* ent)
 {
 	struct stat statbuf;
-	char buff[256];
+	char buff[512];
 
 	snprintf(buff, sizeof(buff), "%s/%s", current_dir, ent->d_name);
 	if (stat(buff, &statbuf) == -1)
@@ -199,8 +199,8 @@ int isfile(const struct dirent* ent)
 /** List all remotes found in files in dir. */
 void listdir(const char* dirname)
 {
-	char dirpath[256];
-	char filepath[256];
+	char dirpath[512];
+	char filepath[512];
 	struct dirent** namelist;
 	int size;
 	int i;

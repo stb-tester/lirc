@@ -228,15 +228,19 @@ void fprint_remote_signal_foot(FILE* f, const struct ir_remote* rem)
 		fprintf(f, "      end raw_codes\n\n");
 }
 
-void fprint_remote_signal(FILE* f, const struct ir_remote* rem, const struct ir_ncode* codes)
+void fprint_remote_signal(FILE* f,
+			  const struct ir_remote* rem,
+			  const struct ir_ncode* codes)
 {
 	int i, j;
 
 	if (!is_raw(rem)) {
-		char format[30];
+		char format[64];
 		const struct ir_code_node* loop;
-
-		sprintf(format, "          %%-24s 0x%%0%dllX", (rem->bits + 3) / 4);
+#pragma GCC diagnostic ignored "-Wformat-overflow"
+		sprintf(format, "          %%-24s 0x%%0%dllX",
+			(rem->bits + 3) / 4);
+#pragma GCC diagnostic warning "-Wformat-overflow"
 		fprintf(f, format, codes->name, codes->code);
 		sprintf(format, " 0x%%0%dlX", (rem->bits + 3) / 4);
 		for (loop = codes->next; loop != NULL; loop = loop->next)
