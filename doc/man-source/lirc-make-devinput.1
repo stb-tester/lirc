@@ -1,4 +1,4 @@
-.TH LIRC_MAKE_DEVINPUT "1" "Last change: Feb 2017" "lirc-make-devinput @version@" "User Commands"
+.TH LIRC_MAKE_DEVINPUT "1" "Last change: May 2017" "lirc-make-devinput @version@" "User Commands"
 .SH NAME
 lirc-make-devinput - create a devinput.lircd.conf for the local site.
 .SH SYNOPSIS
@@ -12,6 +12,10 @@ Header file parsed to create the configuration file.
 Reads the system header files and creates a devinput.lircd.conf which
 matches the local system (i. e., the local kernel). It normally requires
 that the kernel-headers package is installed.
+.SH ENVIRONMENT
+.TP
+PYTHON
+Python interpreter, defaults to \fIpython\fR
 .SH FILES
 .TP
 /usr/include/linux/input-event-codes.h

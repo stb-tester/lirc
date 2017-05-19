@@ -133,7 +133,7 @@ test -d "/var/lock/lockdev" || lockdir_default="/var/lock"
 enable_uinput_default="no"
 test -e "/dev/uinput" && enable_uinput_default="yes"
 
-version_nodots=$( python << EOF
+version_nodots=$( $PYTHON << EOF
 v = "$VERSION".split("-")[[0]].split(".")
 v = dict(enumerate(v))
 print(int(v.get(0)) * 10000 + int(v.get(1)) * 100 + int(v.get(2)))

@@ -224,7 +224,7 @@ int drv_enum_usb(glob_t* glob,
 {
 	struct usb_bus* usb_bus;
 	struct usb_device* dev;
-	char device_path[128];
+	char device_path[2 * MAXPATHLEN + 32];
 
 	usb_init();
 	usb_find_busses();

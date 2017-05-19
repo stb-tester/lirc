@@ -1104,7 +1104,7 @@ int send_success(int fd, char* message)
 int send_error(int fd, char* message, const char* format_str, ...)
 {
 	log_debug("Sending error");
-	char lines[4], buffer[PACKET_SIZE + 1];
+	char lines[16], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
 	char* s1;

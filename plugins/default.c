@@ -132,7 +132,7 @@ static int is_rc(const char* s)
  */
 static int visit_rc(const char* rc_dir, const char* device)
 {
-	char path[64];
+	char path[512];
 	char buff[128];
 	char* enabled = NULL;
 	int fd;

@@ -123,7 +123,7 @@ static int open_i2c_device(void)
 	found = -1;
 
 	while (1) {
-		char s[256];
+		char s[512];
 		FILE* f;
 		struct dirent* de;
 

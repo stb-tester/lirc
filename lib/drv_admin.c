@@ -160,8 +160,8 @@ static struct driver* for_each_plugin_in_dir(const char*	dirpath,
 	DIR* dir;
 	struct dirent* ent;
 	struct driver* result = (struct driver*)NULL;
-	char path[128];
-	char buff[128];
+	char path[1024];
+	char buff[1024];
 
 	dir = opendir(dirpath);
 	if (dir == NULL) {
