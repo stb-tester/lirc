@@ -40,6 +40,7 @@ static char* macmini_rec(struct ir_remote* remotes);
 static int samsung_init(void);
 static char* samsung_rec(struct ir_remote* remotes);
 static char* sonyir_rec(struct ir_remote* remotes);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 const struct driver hw_dvico = {
 	.name		= "dvico",
@@ -55,10 +56,12 @@ const struct driver hw_dvico = {
 	.send_func	= NULL,
 	.rec_func	= hiddev_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
+	.api_version	= 3,
+	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl"
 };
 
 static const logchannel_t logchannel = LOG_DRIVER;
@@ -94,12 +97,12 @@ const struct driver hw_bw6130 = {
 	.send_func	= NULL,
 	.rec_func	= hiddev_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver hw_asusdh = {
@@ -116,12 +119,12 @@ const struct driver hw_asusdh = {
 	.send_func	= NULL,
 	.rec_func	= hiddev_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -140,12 +143,12 @@ const struct driver hw_sb0540 = {
 	.send_func	= NULL,
 	.rec_func	= sb0540_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 #endif
 
@@ -164,12 +167,12 @@ const struct driver hw_macmini = {
 	.send_func	= NULL,
 	.rec_func	= macmini_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 
 #ifdef HAVE_LINUX_HIDDEV_FLAG_UREF
@@ -189,11 +192,11 @@ const struct driver hw_samsung = {
 	.rec_func	= samsung_rec,
 	.decode_func	= hiddev_decode,
 	.drvctl_func	= NULL,
-	.readdata	= NULL,
+	.drvctl_func	= drvctl_func,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 #endif
 
@@ -212,12 +215,12 @@ const struct driver hw_sonyir = {
 	.send_func	= NULL,
 	.rec_func	= sonyir_rec,
 	.decode_func	= hiddev_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/usb/hiddev*",
+	.device_hint    = "drvctl",
 };
 
 
@@ -245,6 +248,21 @@ int hiddev_init(void)
 
 	return 1;
 }
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/hiddev*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 
 int hiddev_deinit(void)
 {

@@ -39,6 +39,7 @@
 
 #include <poll.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -62,6 +63,7 @@ static char* tira_rec(struct ir_remote* remotes);
 static char* tira_rec_mode2(struct ir_remote* remotes);
 static int tira_send(struct ir_remote* remote, struct ir_ncode* code);
 static lirc_t tira_readdata(lirc_t timeout);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 const char failwrite[] = "failed writing to device";
 const char strreconly[] = "receive";
@@ -95,12 +97,12 @@ const struct driver hw_tira = {
 	.send_func	= tira_send,
 	.rec_func	= tira_rec,
 	.decode_func	= tira_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/tira.html",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver hw_tira_raw = {
@@ -117,14 +119,29 @@ const struct driver hw_tira_raw = {
 	.send_func	= NULL,              /* Cannot transmit in timing mode */
 	.rec_func	= tira_rec_mode2,
 	.decode_func	= tira_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= tira_readdata,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://@plugindocs@/tira.html",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
+
 const struct driver* hardwares[] = { &hw_tira, &hw_tira_raw, NULL };
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
 
 
 int tira_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
@@ -194,7 +211,7 @@ int child_process(int pipe_w, int oldprotocol)
 	lirc_t data, tdata;
 	struct pollfd pfd = {.fd = drv.fd, .events = POLLIN, .revents = 0};
 	struct timeval trailtime, currtime;
-	__u32 eusec;
+	uint32_t eusec;
 
 	trailtime.tv_sec = 0;
 	trailtime.tv_usec = 0;
@@ -651,7 +668,7 @@ char* tira_rec(struct ir_remote* remotes)
 		code = code << 8;
 	}
 
-	log_trace(" -> %0llx", (__u64)code);
+	log_trace(" -> %0llx", (uint64_t)code);
 
 	m = decode_all(remotes);
 	return m;

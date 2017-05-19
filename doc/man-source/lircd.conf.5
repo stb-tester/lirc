@@ -1,10 +1,12 @@
-.TH LIRCD.CONF "5" "Last change: Jul 2016" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: Apr 2017" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
+
 The file has two purposes: to provide timing information to the driver
 so it can decode the data to button presses, and to provide a mapping
-from button presses to key symbols used by lircd(8).
+from button presses to key symbols used by
+.BI  lircd(8).
 .PP
 The basic structure is a list of remote blocks.  Whitespace and line
 breaks are used as delimiters.
@@ -189,13 +191,8 @@ Mask defines which bits are inverted for repeats.
 Remote carrier frequency, defaults to 38000.
 .TP 4
 .B duty_cycle <on time>
-The percentage of time during a pulse that infrared light is being sent
-(default is 50).
-.TP 4
-.B suppress_repeat <count>
-Suppress \fIcount\fR repeated events. Use for remotes which sends to
-many signals. This can also be handled in the .lircrc file (the
-\fIdelay\fR token).
+The percentage of time during a pulse that infrared light is being sent.  This
+is an integer between 1-100 inclusive.  default is 50.
 
 .SH FLAGS
 
@@ -208,7 +205,7 @@ The remote uses the RC5 protocol.
 The remote uses the RC6 protocol.
 .TP 4
 .B RCMM
-The remote uses the RC-MM protocol (transmitting not supported).
+The remote uses the RC-MM protocol.
 .TP 4
 .B SHIFT_ENC
 Obsolete flag, now a synonym for RC5. The position of the pulse

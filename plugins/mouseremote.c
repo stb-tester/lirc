@@ -21,6 +21,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -217,7 +218,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 	if (serial_input) {
 		if (((char)(b[0]) & 0x0c) != 0x0c && (char)(b[2]) == 0x3f && ((char)(b[2]) & 0x07)) {
 			code = (ir_code)(char)(b[1]) | (((char)(b[0]) & 0x03) << 6);
-			log_trace("result %llx", (__u64)code);
+			log_trace("result %llx", (uint64_t)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -231,7 +232,7 @@ char* mouseremote_rec(struct ir_remote* remotes)
 				return NULL;
 			}
 			code = (ir_code)b[1];
-			log_trace("result %llx", (__u64)code);
+			log_trace("result %llx", (uint64_t)code);
 			m = decode_all(remotes);
 			return m;
 		}
@@ -268,12 +269,12 @@ char* mouseremote_rec(struct ir_remote* remotes)
 		code |= 0x03;
 	if (code != 0) {
 		code |= 0x0100;
-		log_trace("result %llx", (__u64)code);
+		log_trace("result %llx", (uint64_t)code);
 		m = decode_all(remotes);
 		return m;
 	} else if (dx == 0 && dy == 0) {
 		code = 0x0800 | stat;
-		log_trace("result %llx", (__u64)code);
+		log_trace("result %llx", (uint64_t)code);
 		m = decode_all(remotes);
 		return m;
 	}

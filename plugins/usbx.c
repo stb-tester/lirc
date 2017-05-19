@@ -39,6 +39,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -65,6 +66,7 @@ static int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int usbx_init(void);
 static int usbx_deinit(void);
 static char* usbx_rec(struct ir_remote* remotes);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 
 const struct driver hw_usbx = {
@@ -81,16 +83,29 @@ const struct driver hw_usbx = {
 	.send_func	= NULL,
 	.rec_func	= usbx_rec,
 	.decode_func	= usbx_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_usbx, (const struct driver*)NULL };
 
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
 
 int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
@@ -103,8 +118,11 @@ int usbx_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	ctx->max_remaining_gap = max_gap(remote);
 
 	log_trace("repeat_flagp: %d", ctx->repeat_flag);
-	log_trace("remote->gap range:      %lu %lu\n", (__u32)min_gap(remote), (__u32)max_gap(remote));
-	log_trace("rem: %lu %lu", (__u32)remote->min_remaining_gap, (__u32)remote->max_remaining_gap);
+	log_trace("remote->gap range:      %lu %lu\n",
+		  (uint32_t)min_gap(remote), (uint32_t)max_gap(remote));
+	log_trace("rem: %lu %lu",
+		  (uint32_t)remote->min_remaining_gap,
+		  (uint32_t)remote->max_remaining_gap);
 	return 1;
 }
 
@@ -166,7 +184,7 @@ char* usbx_rec(struct ir_remote* remotes)
 		code |= ((ir_code)b[i]);
 	}
 
-	log_trace(" -> %0llx", (__u64)code);
+	log_trace(" -> %0llx", (uint64_t)code);
 
 	m = decode_all(remotes);
 	return m;

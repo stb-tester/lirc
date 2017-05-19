@@ -58,7 +58,7 @@ static ir_code code_last;
 static struct timeval time_current = { 0 };
 static struct timeval time_last = { 0 };
 #endif
-static char device_path[PATH_MAX + 1] = {0};
+static char device_path[MAXPATHLEN + 1] = {0};
 
 static int awlibusb_init(void);
 static int awlibusb_deinit(void);
@@ -66,6 +66,7 @@ static char* awlibusb_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
 static int find_device_endpoints(struct usb_device* dev);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 #ifdef AW_MODE_LIRCCODE
 const struct driver hw_awlibusb = {
@@ -82,12 +83,12 @@ const struct driver hw_awlibusb = {
 	.send_func	= NULL,
 	.rec_func	= awlibusb_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available.",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 #else
 const struct driver hw_awlibusb = {
@@ -104,10 +105,10 @@ const struct driver hw_awlibusb = {
 	.send_func	= NULL,
 	.rec_func	= awlibusb_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.info		= "No info available.",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 #endif
 
@@ -133,6 +134,20 @@ static struct usb_endpoint_descriptor* dev_ep_in = NULL;
 static pid_t child = -1;
 
 /****/
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
 
 /* initialize driver -- returns 1 on success, 0 on error */
 static int awlibusb_init(void)

@@ -1,5 +1,7 @@
 ''' Simple lirc setup tool - view part. '''
 
+# pylint: disable=consider-iterating-dictionary
+
 import os.path
 import os
 import shutil
@@ -8,18 +10,17 @@ import sys
 import textwrap
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('Vte', '2.91')
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 from gi.repository import Vte         # pylint: disable=no-name-in-module
 from gi.repository import GLib        # pylint: disable=no-name-in-module
 
 import baseview
 import config
+import mvc_model
 import util
 
-from baseview import _on_window_delete_event_cb
-from mvc_model import RESULTS_DIR
+gi.require_version('Gtk', '3.0')
+gi.require_version('Vte', '2.91')
 
 REMOTES_LIST_URL = "http://lirc-remotes.sourceforge.net/remotes.list"
 _DEBUG = 'LIRC_DEBUG' in os.environ
@@ -429,7 +430,7 @@ class View(baseview.Baseview):
         w = self.builder.get_object('view_text_window')
         w.set_title(title)
         if not self.test_and_set_connected('view_text_window'):
-            w.connect('delete-event', _on_window_delete_event_cb)
+            w.connect('delete-event', baseview.on_window_delete_event_cb)
             b = self.builder.get_object('view_text_ok_btn')
             b.connect('clicked', cb_on_view_ok_btn_clicked)
             w.set_focus(b)
@@ -500,7 +501,7 @@ class View(baseview.Baseview):
     def load_configs(self):
         ''' Load config files into model. -> control... '''
         if not self.model.db:
-            self.view.show_warning("Cannot find the configuration files")
+            self.show_warning("Cannot find the configuration files")
 
     def show_driver(self):
         ''' Display data for current driver. '''
@@ -683,7 +684,7 @@ class View(baseview.Baseview):
 
         w = self.builder.get_object('preconfig_window')
         if not self.test_and_set_connected('preconfig_window'):
-            w.connect('delete-event', _on_window_delete_event_cb)
+            w.connect('delete-event', baseview.on_window_delete_event_cb)
             b = self.builder.get_object('preconfig_back_btn')
             b.connect('clicked', lambda b: w.hide())
             b = self.builder.get_object('preconfig_next_btn')
@@ -741,7 +742,7 @@ class View(baseview.Baseview):
         w = self.builder.get_object('preconfig_select_window')
         if not self.test_and_set_connected('preconfig_select_window'):
             build_treeview(menu)
-            w.connect('delete-event', _on_window_delete_event_cb)
+            w.connect('delete-event', baseview.on_window_delete_event_cb)
             b = self.builder.get_object('preconfig_select_back_btn')
             b.connect('clicked', lambda b: w.hide())
             b = self.builder.get_object('preconfig_select_next_btn')
@@ -820,7 +821,7 @@ class View(baseview.Baseview):
         d.format_secondary_markup(RESULTS_DIR_MSG)
         reply = d.run()
         if reply == Gtk.ResponseType.YES:
-            shutil.rmtree(RESULTS_DIR)
+            shutil.rmtree(mvc_model.RESULTS_DIR)
             d.destroy()
         elif reply == Gtk.ResponseType.NO:
             sys.exit(0)
@@ -889,7 +890,7 @@ class View(baseview.Baseview):
 
         w = self.builder.get_object('config_browse_window')
         if not self.test_and_set_connected('config_browse_window'):
-            w.connect('delete-event', _on_window_delete_event_cb)
+            w.connect('delete-event', baseview.on_window_delete_event_cb)
             b = self.builder.get_object('config_browse_back_btn')
             b.connect('clicked', lambda b, d=None: b.get_toplevel().hide())
             b = self.builder.get_object('config_browse_next_btn')

@@ -1,9 +1,9 @@
 /**
+ *  @brief Routines for dynamic drivers.
  *  @file drv_admin.h
  *  @author Alec Leamas
- *  @date August 2014
  *  @license GPL2 or later
- *  @brief Routines for dynamic drivers.
+ *  @date August 2014
  *  @ingroup private_api
  *
  *  Functions in this file provides primitives to iterate over

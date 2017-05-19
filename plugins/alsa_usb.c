@@ -23,6 +23,7 @@ static int init(void);
 static int deinit(void);
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static char* rec(struct ir_remote* remotes);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 static ir_code code, last_code;
 static snd_hwdep_t* hwdep;
@@ -43,24 +44,26 @@ const struct driver hw_alsa_usb = {
 	.send_func	= NULL,
 	.rec_func	= rec,
 	.decode_func	= decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/alsa-usb.html",
-	.device_hint    = "default",
+	.device_hint    = "drvctl"
 };
 
 const struct driver* hardwares[] = { &hw_alsa_usb, (const struct driver*)NULL };
 
 
-static const char* search_device(void)
+static int search_devices(glob_t* glob)
 {
 	int card, err;
 	snd_hwdep_info_t* info;
+	char name[36];
 
 	snd_hwdep_info_alloca(&info);
 	card = -1;
+	glob_t_init(glob);
 	while (snd_card_next(&card) >= 0 && card >= 0) {
 		char ctl_name[20];
 		snd_ctl_t* ctl;
@@ -74,18 +77,31 @@ static const char* search_device(void)
 		while (snd_ctl_hwdep_next_device(ctl, &device) >= 0 && device >= 0) {
 			snd_hwdep_info_set_device(info, device);
 			err = snd_ctl_hwdep_info(ctl, info);
-			if (err >= 0 && snd_hwdep_info_get_iface(info) == SND_HWDEP_IFACE_SB_RC) {
-				static char name[36];
-
+			if (err >= 0 &&
+			    snd_hwdep_info_get_iface(info) == SND_HWDEP_IFACE_SB_RC) {
 				sprintf(name, "hw:CARD=%d,DEV=%d", card, device);
-				snd_ctl_close(ctl);
-				return name;
+				glob_t_add_path(glob, name);
 			}
 		}
 		snd_ctl_close(ctl);
 	}
-	return NULL;
+	return 0;
 }
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return search_devices((glob_t*) arg);
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
 
 static int init(void)
 {
@@ -93,15 +109,19 @@ static int init(void)
 	snd_hwdep_info_t* info;
 	struct pollfd pollfd;
 	int err;
+	glob_t glob;
+	static char my_device[36];
 
 	device = drv.device;
 	if (!device || !*device) {
-		device = search_device();
-		if (!device) {
+		search_devices(&glob);
+		if (glob.gl_pathc == 0) {
 			log_error("device not found");
 			return 0;
 		}
-		drv.device = device;
+		strncpy(my_device, glob.gl_pathv[0], sizeof(my_device) - 1);
+		drv.device = my_device;
+		drv_enum_free(&glob);
 	}
 	err = snd_hwdep_open(&hwdep, device, SND_HWDEP_OPEN_READ);
 	if (err < 0) {
@@ -158,7 +178,7 @@ static char* rec(struct ir_remote* remotes)
 	repeat_flag = code == last_code && current.tv_sec - last_time.tv_sec <= 2
 		      && time_elapsed(&last_time, &current) <= 350000;
 	last_time = current;
-	log_trace("code: %llx", (__u64)code);
+	log_trace("code: %llx", (uint64_t)code);
 	log_trace("repeat_flag: %d", repeat_flag);
 	return decode_all(remotes);
 }

@@ -88,6 +88,17 @@ least pidfile and output socket to it. A more complete example:
     $ ./lircd --nodaemon --plugindir=../plugins/.libs \
     >     --pidfile var/lircd.pd --output var/lircd.socket
 
+You might want to check which runtime libraries actually loaded by lircd when
+running like this. Use something like
+
+    $  lsof -p 4437  | awk '{print $NF}' | grep '.so' | sort  | uniq
+
+where *4437* is the pid of the real lircd process started by the lircd script,
+usualle found using
+
+    $ pgrep lircd
+
+
 ## Generating a stacktrace.
 
 A stacktrace is extremely useful if a lirc program crashes. The common way

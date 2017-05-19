@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-
 import os
 import os.path
 import sys
-import pdb
 import shutil
 
 def relative_ln_s( from_, to_ ):
@@ -37,7 +34,10 @@ if len( sys.argv ) != 3:
 
 if  os.path.isdir(  sys.argv[2] ):
     print("Removing link target dir:" +  sys.argv[2])
-    shutil.rmtree( sys.argv[2])
+    if os.path.islink(sys.argv[2]):
+        os.unlink(sys.argv[2])
+    else:
+        shutil.rmtree(sys.argv[2])
 
 link_path = relative_ln_s( sys.argv[1], sys.argv[2] )
 if just_print:

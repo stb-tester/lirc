@@ -6,11 +6,12 @@ Classes to select device and remote, part of the MVC view
 
 import os
 import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
 
 import mvc_model
 import baseview
+
+gi.require_version('Gtk', '3.0')
 
 _DEBUG = 'LIRC_DEBUG' in os.environ
 

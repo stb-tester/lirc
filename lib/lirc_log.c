@@ -121,6 +121,7 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 				perror("Cannot reset log file owner.");
 		}
 		gethostname(hostname, HOSTNAME_LEN);
+		log_warn("------------------------ Log re-opened ----------------------------");
 	}
 	if (getenv("LIRC_LOGCHANNEL") != NULL) {
 		logged_channels = atoi(getenv("LIRC_LOGCHANNEL"));    // FIXME...
@@ -274,16 +275,7 @@ void logprintf(loglevel_t prio, const char* format_str, ...)
 	int save_errno = errno;
 	va_list ap;
 	char buff[PRIO_LEN + strlen(format_str)];
-#ifdef SYSTEMD_LOGPERROR_FIX
-	if (nodaemon && prio <= loglevel) {
-		fprintf(stderr, "%s: %s ", progname, prio2text(prio));
-		va_start(ap, format_str);
-		vfprintf(stderr, format_str, ap);
-		va_end(ap);
-		fputc('\n', stderr);
-		fflush(stderr);
-	}
-#endif
+
 	if (use_syslog) {
 		snprintf(buff, sizeof(buff),
 			 "%s: %s", prio2text(prio), format_str);

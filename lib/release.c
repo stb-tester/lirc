@@ -25,7 +25,7 @@
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 #include "lirc/release.h"
@@ -61,7 +61,10 @@ void register_input(void)
 	timeradd(&release_time, &gap, &release_time);
 }
 
-void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode, ir_code code, int reps)
+void register_button_press(struct ir_remote* remote,
+			   struct ir_ncode*  ncode,
+			   ir_code           code,
+			   int               reps)
 {
 	if (reps == 0 && release_remote != NULL) {
 		release_remote2 = release_remote;
@@ -75,15 +78,18 @@ void register_button_press(struct ir_remote* remote, struct ir_ncode* ncode, ir_
 	release_reps = reps;
 	/* some additional safety margin */
 	release_gap = upper_limit(remote,
-				  remote->max_total_signal_length - remote->min_gap_length)
-		      + receive_timeout(upper_limit(remote, remote->min_gap_length)) + 10000;
-
+				  remote->max_total_signal_length
+					- remote->min_gap_length)
+		      + receive_timeout(upper_limit(remote,
+						    remote->min_gap_length))
+		      + 10000;
 	log_trace("release_gap: %lu", release_gap);
-
 	register_input();
 }
 
-void get_release_data(const char** remote_name, const char** button_name, int* reps)
+void get_release_data(const char** remote_name,
+		      const char** button_name,
+		      int*         reps)
 {
 	if (release_remote != NULL) {
 		*remote_name = release_remote->name;
@@ -105,7 +111,8 @@ void get_release_time(struct timeval* tv)
 	*tv = release_time;
 }
 
-const char* check_release_event(const char** remote_name, const char** button_name)
+const char* check_release_event(const char** remote_name,
+				const char** button_name)
 {
 	int len = 0;
 
@@ -134,7 +141,8 @@ const char* check_release_event(const char** remote_name, const char** button_na
 	return NULL;
 }
 
-const char* trigger_release_event(const char** remote_name, const char** button_name)
+const char* trigger_release_event(const char** remote_name,
+				  const char** button_name)
 {
 	int len = 0;
 
@@ -164,8 +172,10 @@ const char* trigger_release_event(const char** remote_name, const char** button_
 	return NULL;
 }
 
-const char* release_map_remotes(struct ir_remote* old, struct ir_remote* new, const char** remote_name,
-				const char** button_name)
+const char* release_map_remotes(struct ir_remote* old,
+				struct ir_remote* new,
+				const char**      remote_name,
+				const char**      button_name)
 {
 	struct ir_remote* remote;
 	struct ir_ncode* ncode = NULL;

@@ -8,6 +8,11 @@
 *
 */
 
+/**
+* @file irrecord.h
+* @brief Library part of irrecord, functions to identify unknown remotes
+*/
+
 #ifndef IRRECORD_H
 #define IRRECORD_H
 
@@ -42,10 +47,6 @@ extern "C" {
 #include <sys/un.h>
 #include <syslog.h>
 #include <unistd.h>
-
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
 
 #include "lirc_private.h"
 

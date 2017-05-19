@@ -21,15 +21,27 @@
 #define _HARDWARE_H
 
 #include <glob.h>
+#include <stdint.h>
 
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 #include "lirc/ir_remote_types.h"
 #include "lirc/curl_poll.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 4096
+#endif
+
+/** Testable flag for get_server_version() presence. */
+#define HAVE_SERVER_VERSION 1
+
+/** Return numeric server version, m.v.r => 10000 * m + 100 * v + r. */
+int get_server_version(void);
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,17 +56,8 @@ int default_open(const char* path);
 /** For now, a placeholder. */
 int default_close(void);
 
-/** Return DRVCTL_ERR_NOTIMPLEMENTED. */
+/** Return DRV_ERR_NOTIMPLEMENTED. */
 int default_drvctl(unsigned int cmd, void* arg);
-
-/** Return an malloc'ed glob_t with default capacity. */
-void glob_t_init(glob_t* glob);
-
-/** Free memory obtained using glob_t_new. */
-void glob_t_free(glob_t* glob);
-
-/** Add a malloc'ed copy of path into glob, possibly increasing capacity. */
-void glob_t_add_path(glob_t* glob, const char* path);
 
 /** Argument for DRV_SET_OPTION. */
 struct option_t {
@@ -111,14 +114,20 @@ int drv_handle_options(const char* options);
 /** drvctl error. */
 #define  DRV_ERR_NOT_IMPLEMENTED        1
 
-/** drvctl error: */
+/** drvctl error: cmd and arg is OK, but other errors. */
 #define  DRV_ERR_BAD_STATE              2
 
-/** drvctl error: */
+/** drvctl error: cmd is bad */
 #define  DRV_ERR_BAD_OPTION		3
 
-/** drvctl error: */
+/** drvctl error: arg is bad */
 #define  DRV_ERR_BAD_VALUE		4
+
+/** No requested data available. */
+#define  DRV_ERR_ENUM_EMPTY		5
+
+/** drvctl error: "Should not happen" type of errors.  */
+#define  DRV_ERR_INTERNAL		6
 
 /**
  * The data the driver exports i. e., lirc accesses the driver as
@@ -137,22 +146,22 @@ struct driver {
 	int		fd;
 
 	/** Code for the features of the present device, valid after init(). */
-	__u32		features;
+	uint32_t	features;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32		send_mode;
+	uint32_t	send_mode;
 
 	/**
 	 * Possible values are: LIRC_MODE_RAW, LIRC_MODE_PULSE, LIRC_MODE_MODE2,
 	 * LIRC_MODE_LIRCCODE. These can be combined using bitwise or.
 	 */
-	__u32		rec_mode;
+	uint32_t	rec_mode;
 
 	/** Length in bits of the code. */
-	const __u32	code_length;
+	const uint32_t	code_length;
 
 	 /**
 	 *  Function called to do basic driver setup.
@@ -236,15 +245,16 @@ struct driver {
 	/**
 	 *  device_hint is a mean for config tools to autodetect devices.
 	 *    - /dev/tty*     User selects a tty.
-	 *    - /dev/usb/\*   Denotes serial, USB-connectd port.
-	 *    - /dev/event\*  A devinput device
+	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
+	 *    - auto          No device configured, a message is displayed.
 	 *    - /dev/foo\*    A wildcard listing possible devices, general
 	 *                    fallback.
+	 *
+	 *   The following hints are not longer supported:
+	 *    - /dev/event\*  A devinput device
+	 *    - /dev/usb/\*   A serial, USB-connected port.
 	 *    - /bin/sh ...   Shell command listing possible devices.
-	 *    - drvctl        Driver supports DRVCTL_GET_DEVICES drvctl.
 	 *    - None          No device is silently configured.
-	 *    - Auto          No device configured, but a message is
-	 *                    displayed.
 	 */
 	const char* const  device_hint;
 };

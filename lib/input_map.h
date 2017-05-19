@@ -22,16 +22,17 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#if defined __linux__
+#ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #include <linux/uinput.h>
 #endif
 
 #if defined __linux__
-typedef __u16 linux_input_code;
+typedef uint16_t linux_input_code;
 #else
 typedef unsigned short linux_input_code;
 #endif

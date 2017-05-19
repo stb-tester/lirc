@@ -28,6 +28,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <fcntl.h>
@@ -493,7 +494,7 @@ static int uirt2_send_mode2_struct1(uirt2_t*		dev,
 		int len = buf[i] / tUnit;
 
 		if (len > UCHAR_MAX) {
-			log_trace("signal too long for transmission %lu", (__u32)buf[i]);
+			log_trace("signal too long for transmission %lu", (uint32_t)buf[i]);
 			return 0;
 		}
 		if (i == 0) {

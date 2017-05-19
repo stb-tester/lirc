@@ -56,12 +56,6 @@
 #include <pwd.h>
 #include <poll.h>
 
-#if defined(__linux__)
-#include <linux/input.h>
-#include <linux/uinput.h>
-#include "lirc/input_map.h"
-#endif
-
 #ifdef HAVE_SYSTEMD
 #include "systemd/sd-daemon.h"
 #endif
@@ -75,13 +69,12 @@
 
 #include "lirc_private.h"
 
-#ifdef HAVE_INT_GETGROUPLIST_GROUPS
-#define lirc_gid int
-#else
-#define lirc_gid gid_t
+#ifndef HAVE_CLOCK_GETTIME
+
+#ifndef HAVE_MACH_MACH_TIME_H
+#error "Cannot build without clock_gettime.h or mach_time.h"
 #endif
 
-#ifdef DARWIN
 #include <mach/mach_time.h>
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC SYSTEM_CLOCK
@@ -98,7 +91,8 @@ int clock_gettime(int clk_id, struct timespec *t){
 		   (double)timebase.numer)/((double)timebase.denom * 1e9);
 	return 0;
 }
-#endif
+
+#endif  // HAVE_CLOCK_GETTIME
 
 
 /****************************************************************************
@@ -138,6 +132,7 @@ static const char* const help =
 	"\t -h --help\t\t\tDisplay this message\n"
 	"\t -v --version\t\t\tDisplay version\n"
 	"\t -O --options-file\t\tOptions file\n"
+        "\t -i --immediate-init\t\tInitialize the device immediately at start\n"
 	"\t -n --nodaemon\t\t\tDon't fork to background\n"
 	"\t -p --permission=mode\t\tFile permissions for " LIRCD "\n"
 	"\t -H --driver=driver\t\tUse given driver (-H help lists drivers)\n"
@@ -154,9 +149,6 @@ static const char* const help =
 	"\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
 	"\t -A --driver-options=key:value[|key:value...]\n"
 	"\t\t\t\t\tSet driver options\n"
-#       if defined(__linux__)
-	"\t -u --uinput\t\t\tgenerate Linux input events\n"
-#       endif
 	"\t -e --effective-user=uid\t\tRun as uid after init as root\n"
 	"\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
 
@@ -165,6 +157,7 @@ static const struct option lircd_options[] = {
 	{ "help",	    no_argument,       NULL, 'h' },
 	{ "version",	    no_argument,       NULL, 'v' },
 	{ "nodaemon",	    no_argument,       NULL, 'n' },
+	{ "immediate-init", no_argument,       NULL, 'i' },
 	{ "options-file",   required_argument, NULL, 'O' },
 	{ "permission",	    required_argument, NULL, 'p' },
 	{ "driver",	    required_argument, NULL, 'H' },
@@ -182,9 +175,7 @@ static const struct option lircd_options[] = {
 	{ "dynamic-codes",  no_argument,       NULL, 'Y' },
 	{ "driver-options", required_argument, NULL, 'A' },
 	{ "effective-user", required_argument, NULL, 'e' },
-#        if defined(__linux__)
-	{ "uinput",	    no_argument,       NULL, 'u' },
-#        endif
+	{ "uinput",         no_argument,       NULL, 'u' },
 	{ "repeat-max",	    required_argument, NULL, 'R' },
 	{ 0,		    0,		       0,    0	 }
 };
@@ -227,7 +218,7 @@ static struct ir_remote* free_remotes = NULL;
 
 static int repeat_fd = -1;
 static char* repeat_message = NULL;
-static __u32 repeat_max = REPEAT_MAX_DEFAULT;
+static uint32_t repeat_max = REPEAT_MAX_DEFAULT;
 
 static const char* configfile = NULL;
 static FILE* pidf;
@@ -276,7 +267,6 @@ static const int MAX_CLIENTS = 256;
 static int sockfd, sockinet;
 static int do_shutdown;
 
-static int uinputfd = -1;
 static int clis[MAX_CLIENTS];
 
 static int nodaemon = 0;
@@ -298,12 +288,11 @@ static int peern = 0;
 static int daemonized = 0;
 static int allow_simulate = 0;
 static int userelease = 0;
-static int useuinput = 0;
 
 static sig_atomic_t term = 0, hup = 0, alrm = 0;
 static int termsig;
 
-static __u32 setup_min_freq = 0, setup_max_freq = 0;
+static uint32_t setup_min_freq = 0, setup_max_freq = 0;
 static lirc_t setup_max_gap = 0;
 static lirc_t setup_min_pulse = 0, setup_min_space = 0;
 static lirc_t setup_max_pulse = 0, setup_max_space = 0;
@@ -311,11 +300,11 @@ static lirc_t setup_max_pulse = 0, setup_max_space = 0;
 /* Use already opened hardware? */
 int use_hw(void)
 {
-	return clin > 0 || (useuinput && uinputfd != -1) || repeat_remote != NULL;
+	return clin > 0 || repeat_remote != NULL;
 }
 
 /* set_transmitters only supports 32 bit int */
-#define MAX_TX (CHAR_BIT * sizeof(__u32))
+#define MAX_TX (CHAR_BIT * sizeof(uint32_t))
 
 int max(int a, int b)
 {
@@ -418,7 +407,7 @@ int read_timeout(int fd, char* buf, int len, int timeout_us)
 
 static int setup_frequency(void)
 {
-	__u32 freq;
+	uint32_t freq;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_CARRIER))
 		return 1;
@@ -447,18 +436,26 @@ static int setup_frequency(void)
 
 static int setup_timeout(void)
 {
-	lirc_t val, min_timeout, max_timeout;
-	__u32 enable = 1;
+	// Previously, the first three variables used "lirc_t"  here. Since
+	// they are used to denote timeouts (in micro seconds() and can
+	// impossibly be used to denote the durations that are marks, spaces,
+	// or timeouts; lirc_t is not the appropriate data type.
+	uint32_t val;
+	uint32_t min_timeout = 0;
+	uint32_t max_timeout = PULSE_MASK; // largest duration a lirct_t can hold
+	uint32_t enable = 1;
 
 	if (!(curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT))
 		return 1;
 
 	if (setup_max_space == 0)
 		return 1;
-	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) == -1
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) == -1)
+	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) != 0
+	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) != 0)
 		return 0;
-	if (setup_max_gap >= min_timeout && setup_max_gap <= max_timeout) {
+	if ((uint32_t) setup_max_gap >= min_timeout &&
+	    (uint32_t) setup_max_gap <= max_timeout
+	) {
 		/* may help to detect end of signal faster */
 		val = setup_max_gap;
 	} else {
@@ -472,7 +469,7 @@ static int setup_timeout(void)
 			val = max_timeout;
 	}
 
-	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) == -1) {
+	if (curr_driver->drvctl_func(LIRC_SET_REC_TIMEOUT, &val) != 0) {
 		log_error("could not set timeout");
 		log_perror_err(__func__);
 		return 0;
@@ -579,7 +576,7 @@ void remove_client(int fd)
 			log_info("removed client");
 
 			clin--;
-			if (!useuinput && !use_hw() && curr_driver->deinit_func)
+			if (!use_hw() && curr_driver->deinit_func)
 				curr_driver->deinit_func();
 			for (; i < clin; i++)
 				clis[i] = clis[i + 1];
@@ -619,13 +616,6 @@ void dosigterm(int sig)
 		shutdown(sockfd, 2);
 	close(sockfd);
 
-#if defined(__linux__)
-	if (uinputfd != -1) {
-		ioctl(uinputfd, UI_DEV_DESTROY);
-		close(uinputfd);
-		uinputfd = -1;
-	}
-#endif
 	if (listen_tcpip) {
 		shutdown(sockinet, 2);
 		close(sockinet);
@@ -680,46 +670,6 @@ void dosighup(int sig)
 	}
 }
 
-int setup_uinputfd(const char* name)
-{
-#if defined(__linux__)
-	int fd;
-	int key;
-	struct uinput_user_dev dev;
-
-	fd = open("/dev/input/uinput", O_RDWR);
-	if (fd == -1) {
-		fd = open("/dev/uinput", O_RDWR);
-		if (fd == -1) {
-			fd = open("/dev/misc/uinput", O_RDWR);
-			if (fd == -1) {
-				perrorf("could not open %s", "uinput");
-				return -1;
-			}
-		}
-	}
-	memset(&dev, 0, sizeof(dev));
-	strncpy(dev.name, name, sizeof(dev.name));
-	dev.name[sizeof(dev.name) - 1] = 0;
-	if (write(fd, &dev, sizeof(dev)) != sizeof(dev) || ioctl(fd, UI_SET_EVBIT, EV_KEY) != 0
-	    || ioctl(fd, UI_SET_EVBIT, EV_REP) != 0)
-		goto setup_error;
-
-	for (key = KEY_RESERVED; key <= KEY_UNKNOWN; key++)
-		if (ioctl(fd, UI_SET_KEYBIT, key) != 0)
-			goto setup_error;
-
-	if (ioctl(fd, UI_DEV_CREATE) != 0)
-		goto setup_error;
-	return fd;
-
-setup_error:
-	perrorf("could not setup %s", "uinput");
-	close(fd);
-#endif
-	return -1;
-}
-
 void nolinger(int sock)
 {
 	static struct linger linger = { 0, 0 };
@@ -733,7 +683,7 @@ void drop_privileges(void)
 {
 	const char* user;
 	struct passwd* pw;
-	lirc_gid groups[32];
+	GETGROUPS_T groups[32];
 	int group_cnt = sizeof(groups)/sizeof(gid_t);
 	char groupnames[256] = {0};
 	char buff[12];
@@ -1035,10 +985,12 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		fprintf(stderr, "Too many file descriptors received.\n");
 		goto start_server_failed0;
 	} else if (n == 1) {
+	        log_notice("Using systemd fd");
 		sockfd = SD_LISTEN_FDS_START + 0;
 	}
 #endif
 	if (sockfd == -1) {
+	        log_debug("No systemd fd found");
 		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (sockfd == -1) {
 			perror("Could not create socket");
@@ -1084,8 +1036,6 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 	}
 	nolinger(sockfd);
 
-	if (useuinput)
-		uinputfd = setup_uinputfd(progname);
 	drop_privileges();
 	if (listen_tcpip) {
 		int enable = 1;
@@ -1431,9 +1381,9 @@ static int set_transmitters(int fd, char* message, char* arguments)
 {
 	char* next_arg = NULL;
 	char* end_ptr;
-	__u32 next_tx_int = 0;
-	__u32 next_tx_hex = 0;
-	__u32 channels = 0;
+	uint32_t next_tx_int = 0;
+	uint32_t next_tx_hex = 0;
+	uint32_t channels = 0;
 	int retval = 0;
 	unsigned int i;
 
@@ -1803,41 +1753,7 @@ void input_message(const char* message, const char* remote_name, const char* but
 
 	if (!release || userelease)
 		broadcast_message(message);
-
-#ifdef __linux__
-	if (uinputfd == -1 || reps >= 2)
-		return;
-
-	linux_input_code input_code;
-
-	if (get_input_code(button_name, &input_code) != -1) {
-		struct input_event event;
-
-		memset(&event, 0, sizeof(event));
-		event.type = EV_KEY;
-		event.code = input_code;
-		event.value = release ? 0 : (reps > 0 ? 2 : 1);
-		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			log_perror_err("writing to uinput failed");
-		}
-
-		/* Need to write sync event */
-		memset(&event, 0, sizeof(event));
-		event.type = EV_SYN;
-		event.code = SYN_REPORT;
-		event.value = 0;
-		if (write(uinputfd, &event, sizeof(event)) != sizeof(event)) {
-			log_perror_err("writing EV_SYN to uinput failed");
-		}
-	} else {
-		log_debug(
-			  "Dropping non-standard symbol %s in uinput mode",
-			  button_name == NULL ? "Null" : button_name);
-	}
-#endif
 }
-
-
 
 
 void free_old_remotes(void)
@@ -1942,7 +1858,7 @@ static union {
 } poll_fds;
 
 
-static int mywaitfordata(unsigned long maxusec)
+static int mywaitfordata(uint32_t maxusec)
 {
 	int i;
 	int ret, reconnect;
@@ -2139,14 +2055,6 @@ void loop(void)
 	char* message;
 
 	log_notice("lircd(%s) ready, using %s", curr_driver->name, lircdfile);
-	if(useuinput) {
-		// Don't wait for client to connect when using uinput (#161)
-		if (curr_driver->init_func) {
-			if (!curr_driver->init_func()) {
-				log_warn("Failed to initialize hardware");
-			}
-		}
-	}
 	while (1) {
 		(void)mywaitfordata(0);
 		if (!curr_driver->rec_func)
@@ -2218,11 +2126,11 @@ static void lircd_add_defaults(void)
 		"lircd:pidfile",	PIDFILE,
 		"lircd:logfile",	"syslog",
 		"lircd:debug",		level,
-		"lircd:release",	NULL,
+		"lircd:release",	"False",
+		"lircd:release_suffix",	LIRC_RELEASE_SUFFIX,
 		"lircd:allow-simulate",	"False",
 		"lircd:dynamic-codes",	"False",
 		"lircd:plugindir",	PLUGINDIR,
-		"lircd:uinput",		"False",
 		"lircd:repeat-max",	DEFAULT_REPEAT_MAX,
 		"lircd:configfile",	LIRCDCFGFILE,
 		"lircd:driver-options",	"",
@@ -2254,11 +2162,7 @@ int parse_peer_connections(const char* opt)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring = "A:e:O:hvnp:H:d:o:U:P:l::L:c:r::aR:D::Y"
-#       if defined(__linux__)
-				"u"
-#       endif
-	;
+	const char* optstring = "A:e:O:hvnp:iH:d:o:U:P:l::L:c:r::aR:D::Yu";
 
 	strncpy(progname, "lircd", sizeof(progname));
 	optind = 1;
@@ -2283,6 +2187,9 @@ static void lircd_parse_options(int argc, char** const argv)
 			break;
 		case 'n':
 			options_set_opt("lircd:nodaemon", "True");
+			break;
+                case 'i':
+			options_set_opt("lircd:immediate-init", "True");
 			break;
 		case 'p':
 			options_set_opt("lircd:permission", optarg);
@@ -2322,17 +2229,15 @@ static void lircd_parse_options(int argc, char** const argv)
 			break;
 		case 'r':
 			options_set_opt("lircd:release", "True");
-			options_set_opt("lircd:release_suffix",
-					optarg ? optarg : LIRC_RELEASE_SUFFIX);
+			if (optarg)
+				options_set_opt("lircd:release_suffix", optarg);
 			break;
-#               if defined(__linux__)
-		case 'u':
-			options_set_opt("lircd:uinput", "True");
-			break;
-#               endif
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
 			break;
+		case 'u':fputs("--uinput is replaced by lircd-uinput(8)\n",
+				 stderr);
+			exit(1);
 		case 'R':
 			options_set_opt("lircd:repeat-max", optarg);
 			break;
@@ -2356,6 +2261,77 @@ static void lircd_parse_options(int argc, char** const argv)
 }
 
 
+static const char* optvalue(const char* key)
+{
+	const char* s = options_getstring(key);
+	return s ? s : "(null)";
+}
+
+
+static void log_daemon(void)
+{
+	FILE* f;
+	char buff [256];
+
+	log_notice("Version: lircd " VERSION);
+	f = popen("uname -a", "r");
+	if (f == NULL) {
+		log_notice("Cannot run uname -a");
+	} else {
+		if (fgets(buff, sizeof(buff), f) != NULL) {
+			const char* s = strtok(buff, "\n");
+			log_notice("System info: %s", s);
+		}
+	}
+}
+
+
+static void log_options(void)
+{
+	char buff[128];
+
+	log_notice("Options: driver: %s", optvalue("lircd:driver"));
+	log_notice("Options: output: %s", lircdfile);
+	log_notice("Options: nodaemon: %d", nodaemon);
+	log_notice("Options: plugindir: %s", optvalue("lircd:plugindir"));
+	log_notice("Options: logfile: %s", optvalue("lircd:logfile"));
+	log_notice("Options: immediate-init: %d",
+		   options_getboolean("lircd:immediate-init"));
+	log_notice("Options: permission: %o",
+		   oatoi(optvalue("lircd:permission")));
+	log_notice("Options: driver-options: %s",
+		   optvalue("lircd:driver-options"));
+	log_notice("Options: pidfile: %s", pidfile);
+	log_notice("Options: listen: %d", listen_tcpip);
+	if (listen_tcpip) {
+		log_notice("Options: listen_port: %d", port);
+		inet_ntop(AF_INET, &address, buff, sizeof(buff));
+		log_notice("Options: listen address: %s", buff);
+	}
+	log_notice("Options: connect: %s", optvalue("lircd:connect"));
+	log_notice("Options: userelease: %d", userelease);
+	log_notice("Options: effective_user: %s",
+		   optvalue("lircd:effective_user"));
+	log_notice("Options: release_suffix: %s",
+		   optvalue("lircd:release_suffix"));
+	log_notice("Options: allow_simulate: %d", allow_simulate);
+	log_notice("Options: repeat_max: %d", repeat_max);
+	log_notice("Options: configfile: %s", optvalue("lircd:configfile"));
+	log_notice("Options: dynamic_codes: %s",
+		   optvalue("lircd:dynamic_codes"));
+}
+
+
+static void log_driver(void)
+{
+	log_notice("Current driver: %s", curr_driver->name);
+	log_notice("Driver API version: %d", curr_driver->api_version);
+	log_notice("Driver  version: %s", curr_driver->driver_version);
+	if (curr_driver->info)
+		log_notice("Driver  info: %s", curr_driver->info);
+}
+
+
 int main(int argc, char** argv)
 {
 	struct sigaction act;
@@ -2363,6 +2339,7 @@ int main(int argc, char** argv)
 	const char* device = NULL;
 	char errmsg[128];
 	const char* opt;
+	int immediate_init = 0;
 
 	address.s_addr = htonl(INADDR_ANY);
 	hw_choose_driver(NULL);
@@ -2377,7 +2354,9 @@ int main(int argc, char** argv)
 	if (opt != NULL)
 		lirc_log_set_file(opt);
 	lirc_log_open("lircd", 0, LIRC_INFO);
+	log_daemon();
 
+	immediate_init = options_getboolean("lircd:immediate-init");
 	nodaemon = options_getboolean("lircd:nodaemon");
 	opt = options_getstring("lircd:permission");
 	if (oatoi(opt) == -1) {
@@ -2394,15 +2373,13 @@ int main(int argc, char** argv)
 	if (hw_choose_driver(opt) != 0) {
 		fprintf(stderr, "Driver `%s' not found or not loadable", opt);
 		fprintf(stderr, " (wrong or missing -U/--plugindir?).\n");
-		fputs("Use lirc-lsplugins(1) to list available drivers.\n",
-                      stderr);
+		fputs("\nAvailable drivers:\n",
+		       stderr);
 		hw_print_drivers(stderr);
 		return EXIT_FAILURE;
 	}
 	curr_driver->open_func(device);
-	opt = options_getstring("lircd:driver-options");
-	if (opt != NULL)
-		drv_handle_options(opt);
+	drv_handle_options(options_getstring("lircd:driver-options"));
 	pidfile = options_getstring("lircd:pidfile");
 	lircdfile = options_getstring("lircd:output");
 	opt = options_getstring("lircd:logfile");
@@ -2427,11 +2404,6 @@ int main(int argc, char** argv)
 	userelease = options_getboolean("lircd:release");
 	set_release_suffix(options_getstring("lircd:release_suffix"));
 	allow_simulate = options_getboolean("lircd:allow-simulate");
-#       if defined(__linux__)
-	useuinput = options_getboolean("lircd:uinput");
-	if (useuinput)
-		log_warn("--uinput is deprecated, check the lircd manpage.");
-#       endif
 	repeat_max = options_getint("lircd:repeat-max");
 	configfile = options_getstring("lircd:configfile");
 	curr_driver->open_func(device);
@@ -2441,9 +2413,12 @@ int main(int argc, char** argv)
 	}
 	if (curr_driver->device != NULL && strcmp(curr_driver->device, lircdfile) == 0) {
 		fprintf(stderr, "%s: refusing to connect to myself\n", progname);
-		fprintf(stderr, "%s: device and output must not be the same file: %s\n", progname, lircdfile);
+		fprintf(stderr, "%s: device and output must not be the same file: %s\n",
+			progname, lircdfile);
 		return EXIT_FAILURE;
 	}
+	log_options();
+	log_driver();
 
 	signal(SIGPIPE, SIG_IGN);
 
@@ -2466,12 +2441,29 @@ int main(int argc, char** argv)
 	sigaction(SIGUSR1, &act, NULL);
 
 	remotes = NULL;
-	config();               /* read config file */
+	config();		/* read config file */
+	set_waitfordata_func(mywaitfordata);  /* receive uses my waitfordata.*/
 
 	act.sa_handler = sighup;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 	sigaction(SIGHUP, &act, NULL);
+
+	if (immediate_init && curr_driver->init_func) {
+		log_info("Doing immediate init, as requested");
+		int status = curr_driver->init_func();
+		if (status)
+			setup_hardware();
+		else {
+			log_error("Failed to initialize hardware");
+			return(EXIT_FAILURE);
+		}
+		if (curr_driver->deinit_func) {
+			int status = curr_driver->deinit_func();
+			if (!status)
+				log_error("Failed to de-initialize hardware");
+		}
+	}
 
 	/* ready to accept connections */
 	if (!nodaemon)

@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -243,6 +244,7 @@ static void parse_options(int argc, char** const argv)
 	if (hw_choose_driver(driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found", driver);
 		fputs(" (wrong or missing -U/--plugindir?)\n", stderr);
+		fputs("\nAvailable drivers:\n", stderr);
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
@@ -316,7 +318,7 @@ int main(int argc, char** argv)
 	int xfd, maxfd;
 
 	int fd;
-	__u32 mode;
+	uint32_t mode;
 	lirc_t data = 0;
 	lirc_t x1, y1, dx;
 	int result;
@@ -372,13 +374,12 @@ int main(int argc, char** argv)
 	} else {
 		curr_driver->open_func(device);
 		opt = options_getstring("lircd:driver-options");
-		if (opt != NULL)
-			if (drv_handle_options(opt) != 0) {
-				fprintf(stderr,
+		if (drv_handle_options(opt) != 0) {
+			fprintf(stderr,
 				"Cannot set driver (%s) options (%s)\n",
 				curr_driver->name, opt);
-				return EXIT_FAILURE;
-			}
+			return EXIT_FAILURE;
+		}
 		if (curr_driver->init_func  && !curr_driver->init_func()) {
 			fputs("Cannot initialize hardware\n", stderr);
 			exit(EXIT_FAILURE);

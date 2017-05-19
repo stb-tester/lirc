@@ -43,7 +43,7 @@ static char* ati_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
 static int find_device_endpoints(struct usb_device* dev);
-static char device_path[PATH_MAX + 1] = {0};
+static char device_path[MAXPATHLEN + 1] = {0};
 static int drvctl_func(unsigned int cmd, void* arg);
 
 static const logchannel_t logchannel = LOG_DRIVER;
@@ -109,68 +109,31 @@ static char init2[] = { 0x80, 0x01, 0x00, 0x20, 0x14, 0x20, 0x20, 0x20 };
 /****/
 
 /* returns 1 if the given device should be used, 0 otherwise */
-static int is_device_ok(struct usb_device* dev)
+static int is_device_ok(uint16_t vendor,  uint16_t product)
 {
-	/* TODO: allow exact device to be specified */
+	usb_device_id* d;
 
-	/* check if the device ID is in usb_remote_id_table */
-	usb_device_id* dev_id;
-
-	for (dev_id = usb_remote_id_table; dev_id->vendor; dev_id++)
-		if ((dev->descriptor.idVendor == dev_id->vendor) && (dev->descriptor.idProduct == dev_id->product))
+	for (d = usb_remote_id_table; d->vendor; d++) {
+		if ((vendor == d->vendor) && (product == d->product))
 			return 1;
-
+	}
 	return 0;
 }
 
 
-/** List all available devices in glob_buff. */
-static void list_devices(glob_t* glob)
+static int is_usb_device_ok(struct usb_device* d)
 {
-	// TODO: Add some more info in output
-	struct usb_bus* usb_bus;
-	struct usb_device* dev;
-	char device_path[128];
-
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-	memset(glob, 0, sizeof(glob_t));
-	glob->gl_offs = 32;
-	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
-	for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
-		for (dev = usb_bus->devices; dev; dev = dev->next) {
-			if (!is_device_ok(dev))
-				continue;
-			snprintf(device_path, sizeof(device_path),
-				 "/dev/bus/usb/%s/%s     %04x:%04x",
-				 dev->bus->dirname, dev->filename,
-				 dev->descriptor.idVendor,
-				 dev->descriptor.idProduct);
-			glob->gl_pathv[glob->gl_pathc] = strdup(device_path);
-			glob->gl_pathc += 1;
-			if (glob->gl_pathc >= glob->gl_offs)
-				return;
-		}
-	}
+	return is_device_ok(d->descriptor.idVendor, d->descriptor.idProduct);
 }
 
 
 static int drvctl_func(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-	int i;
-
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
-		glob = (glob_t*) arg;
-		list_devices(glob);
-		return 0;
+		return drv_enum_usb((glob_t*) arg, is_device_ok);
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		for (i = 0; i < glob->gl_pathc; i += 1)
-			free(glob->gl_pathv[i]);
-		free(glob->gl_pathv);
+		drv_enum_free((glob_t*) arg);
 		return 0;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
@@ -309,7 +272,7 @@ static struct usb_device* find_usb_device(void)
 
 	for (usb_bus = usb_busses; usb_bus; usb_bus = usb_bus->next) {
 		for (dev = usb_bus->devices; dev; dev = dev->next)
-			if (is_device_ok(dev))
+			if (is_usb_device_ok(dev))
 				return dev;
 	}
 	return NULL;            /* no suitable device found */

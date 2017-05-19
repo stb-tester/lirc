@@ -1,7 +1,7 @@
-.TH MODE2 "1" "Last change: Oct 2015" "mode2 @version@" "User Commands"
+.TH MODE2 "1" "Last change: Jan 2017 "mode2 @version@" "User Commands"
 .SH NAME
 .P
-\fBmode2\fR - Show pulse/space length or decoded input from infrared drivers.
+\fBmode2\fR - Show kernel output available for LIRC drivers
 
 .SH SYNOPSIS
 .P
@@ -14,14 +14,19 @@
 
 .SH DESCRIPTION
 .P
-The main purpose of this program is to check operation of your
+The original purpose of this program has been to check operation of
 home-brew LIRC receiver hardware and to see the IR waveform of the
-remote controller without an expensive oscilloscope. Very useful for
-debugging also in situations you just need to verify configuration.
+remote controller without an expensive oscilloscope.
+Over time, \fBmode2\fR has evolved to a generic tool to check what
+kind of output the kernel makes available for lirc.
 .P
 mode2 will simply print pulse and space lengths to stdout for drivers
 supporting LIRC_MODE_MODE2. For drivers supporting LIRC_MODE_LIRCCODE such
 as TV-cards and the irman driver writes the decoded, integer values.
+.P
+From version 0.9.4, \fBmode2\fR can also list the devices available for a
+given driver. This requires enumeration support which is available
+in most but not all drivers.
 .P
 When given the correct driver mode2 should always work. Without a driver,
 the --raw option should always work for /dev/lirc* devices. At the time
@@ -30,6 +35,7 @@ tricky to get the path to the usb device, such ones are normally best
 accessed using a driver.
 .P
 Not all drivers requires a device.
+.P
 
 .SH OPTIONS
 
@@ -40,7 +46,7 @@ Read from given device.
 \fB\-H\fR \fB\-\-driver\fR=\fIdriver\fR
 Use given driver.
 .TP
-\fB\-m\fR \fB\-\-mode
+\fB\-m\fR \fB\-\-mode\fR
 Write pulse/space data as raw config files. Does not affect
 LIRCCODE drivers.
 .TP
@@ -144,6 +150,17 @@ Invoked with a LIRCCODE type driver \fBmode2\fR prints decoded values:
      code: 0x14709b0000
      code: 0x14709b0000
      ...
+.if
+
+.P
+
+Invoked using \fBmode2 --list-devices\fR for the devinput driver with a
+single X10 RF usb device plugged in:
+.nf
+    $ ./mode2 --list-devices --driver devinput
+    /dev/input/event12 [0bc7:0006] X10 WTI RF receiver vers:  1.10 serial: ?
+    /dev/input/by-id/usb-X10_WTI_RF_receiver-event-if00 -> ../event12
+    /dev/input/by-path/pci-0000:0b:00.0-usb-0:1:1.0-event -> ../event12
 .if
 
 .P

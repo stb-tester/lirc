@@ -1,0 +1,22 @@
+The irlog driver simple kernel character, stacked on top of another
+driver. It has the potential to log some driver operations before
+handling them to a underlying driver.
+
+The driver attached is a run-time parameter device_to_log, by default
+/dev/lirc0.
+
+The supplied udev rule can be used to set the permissions.
+
+Basic usage:
+
+	# cp 99-irlog.rules /etc/udev/rules.d
+	# udevadm control --reload
+	# udevadm trigger
+	$ make
+	$ modinfo irlog.ko
+	# rmmod irlog || :
+	# insmod irlog.ko
+	$ ls -l /dev/irlog*
+
+The test program provides some crude ways to write(), read() and ioctl()
+the device.

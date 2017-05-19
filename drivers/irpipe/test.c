@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <malloc.h>
-#include <linux/lirc.h>
+#include <media/lirc.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

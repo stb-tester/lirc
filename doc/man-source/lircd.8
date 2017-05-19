@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Dec 2016" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: Mar 2017" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -32,14 +32,18 @@ Common options:
 \fB-d, --device\fR <\fIdevice\fR>
 Select the character device which lircd should read from. The default
 is currently /dev/lirc0 on most systems.
+.IP
+Some drivers, including the default \fIdevinput\fR driver, supports the
+\fIauto\fR device which picks the first usable device found for the actual
+driver.
 .IP "" 4
-When using the devinput driver, you can use \fIname=STRING\fR or
-\fIphys=STRING\fR to select the device; lircd will look in /dev/input
-to find a device with a matching description. This is useful in case
-the device name isn't fixed. \fISTRING\fR may contain the '*' and '?'
-wildcards and '\\' to mark them as literal. Use dmesg(1) to find the
-name and bus address (the names used under /dev/input/by-id are not
-always usable).
+When using the devinput driver \fIname=STRING\fR
+or \fIphys=STRING\fR can be used to select the device; lircd will
+look in /dev/input to find a device with a matching description.
+This is useful in case the device name isn't fixed. \fISTRING\fR
+may contain the '*' and '?' wildcards and '\\' to mark them as literal.
+Use \fBmode2 \-\-driver devinput \-\-list-devices \fRto list the
+actual devices.
 .TP
 \fB-H, --driver\fR <\fIdriver\fR>
 The driver to use.  Using
@@ -95,9 +99,13 @@ Let lircd listen for network
 connections on the given address/port. The default address is 0.0.0.0,
 which means that connections on all network interfaces will be accepted.
 The address must be given in dotted numerical form.
-The default port is 8765. No security checks are currently implemented.
+Port defaults to  8765.
 The listening lircd instance will send all IR events to the connecting
-lircd instances.
+lircd instances without any security checks.
+.IP
+On non-glibc platforms the address:port argument is mandatory, but can be
+given as an empty string e. g. \fI--listen=\fR which then defaults
+to \fB0.0.0.0:8765\fR.
 .TP 4
 \fB-L, --logfile\fR <\fIlogfile path\fR>
 Select the lircd daemon log file. logfile is either the string 'syslog'
@@ -106,10 +114,14 @@ is to use syslog.
 .TP 4
 \fB-D, --loglevel\fR [\fIlevel\fR]
 Determine the amount of logging information. \fIlevel\fR can be a symbolic
-syslog level: 'error','warning, 'info', 'notice' or  'debug'. lircd
-also defines three additional levels 'trace', 'trace1' and 'trace2' which
-gives even more messages ('trace2' bringing the most). However, in the
-log these messages are marked as 'debug'.
+syslog level: 'error','warning, 'info', 'notice' or  'debug'.
+lircd also defines three additional levels 'trace', 'trace1' and 'trace2'
+which gives even more messages ('trace2' bringing the most).
+However, in the log these messages are marked as 'debug'.
+.IP
+On non-glibc platforms the \fIlevel\fR argument is mandatory, but can be
+given as an empty string e. g. \fI--loglevel=\fR which then defaults
+to \fBdebug\fR.
 .IP
 The level can also be an integer in the range 3 (almost no messages) to
 10.
@@ -141,21 +153,17 @@ under DRIVER LOADING. The argument is a :-separated search path.
 \fB-r, --release\fR [\fIsuffix\fR]
 Enables automatic generation of release events for each button press.
 lircd will append the given suffix to the button name for each release
-event. If no suffix is given the default suffix is '_UP'.
+event. If no suffix is given the default suffix is '_EVUP'.
+.IP
+Note the suffix _UP, which was used by
+.B lircd
+prior to 0.10.0, is used by the linux kernel for other purposes since 4.7.
 .TP
 \fB-R, --repeat-max\fR <\fIlimit\fR>
 Sets an upper limit to the number of repeats when sending a signal. The
 current default is 600. A SEND_START request will repeat the signal this
 many times. Also, if the number of repeats in a SEND_ONCE request exceeds
 this number, it will be replaced by this number.
-.TP
-\fB-u, --uinput\fR
-[DEPRECATED] Enable automatic generation of Linux input events. Obsoleted
-by the
-.BR lircd-uinput (8)
-tool and the
-.I lircd-uinput.service
-systemd service.
 
 .SH SOCKET BROADCAST MESSAGES FORMAT
 

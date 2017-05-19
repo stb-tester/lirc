@@ -359,12 +359,18 @@ remote | kernel |   devinput v        |
          <pre>
                 --driver devinput --device /dev/input/event11
          </pre>
-	 If ir-keytable only locates one device (the most common case) you
+	     If ir-keytable only locates one device (the most common case) you
          can use
          <pre>
                 --driver devinput --device auto
          </pre>
-	 This is actually the default setup, and needs no modifications.</li>
+	     This is actually the default setup, and needs no modifications.</li>
+
+       <li> From 0.9.5+ you can list all usable event devices using
+        <pre>
+               mode2 --driver devinput --list-devices
+        </pre> </li>
+
        <li>
          If you dont wan't to use the decoding done by the kernel, but the
          device is recognized by ir-keytable you can have lirc decode the
@@ -373,7 +379,12 @@ remote | kernel |   devinput v        |
          /dev/lirc0.  Use something like:
          <pre>
                --driver default --device /dev/lirc0
-         </pre></li>
+         </pre>
+         From 0.9.5+ you can list all available devices using
+        <pre>
+               mode2 --driver default --list-devices
+        </pre> </li>
+
        <li>
          If you could find out the driver used to record this device in
          the driver database (above) you should try this driver if it
@@ -886,7 +897,17 @@ remote | kernel |   devinput v        |
     like <em>/dev/input/event12</em>, which is connected to your IR
     input.</p>
     <p>
-    The first try is to invoke ir-keytable without any options:
+    The first try is to invoke mode2 to enumerate the available devices:
+    <pre>
+        $ mode2 --driver devinput --list-devices
+        /dev/input/event11 [0bc7:0006] X10 WTI RF receiver version:  1.10 serial: ?
+        /dev/input/by-id/usb-X10_WTI_RF_receiver-event-if00 -> ../event11
+        /dev/input/by-path/pci-0000:0b:00.0-usb-0:1:1.0-event -> ../event11
+    </pre>
+    With this kind of output all is set: the required device is
+    <em>/dev/input/event11</em>.
+    <p>
+    The second try is to invoke ir-keytable(1) without any options:
     <pre>
         $ ir-keytable
         Found /sys/class/rc/rc0/ (/dev/input/event11) with:
@@ -1109,8 +1130,21 @@ remote | kernel |   devinput v        |
     a reboot. If this becomes a problem, you should address the device
     using it's name or it's physical bus address.</p>
     <p>
-    The first step is to inspect dmesg after connecting the device. There you
-    should find something like:</p>
+    From 0.9.5, the easy way is to let mode2 enumerate the available devices,
+    something like
+    <pre>
+        $ mode2 --driver devinput  --list-devices
+        /dev/input/event11 [1784:0001] Topseed eHome Infrared Transceiver version:  1.10 serial: TS0013Yn
+        /dev/input/by-id/usb-Topseed_eHome_Infrared_Transceiver_TS0013Yn-event-if00 -> ../event11
+        /dev/input/by-path/pci-0000:0b:00.0-usb-0:1:1.0-event -> ../event11
+    </pre>
+    This lists not only /dev/input/event device but also a link in /dev/input/by-id. If
+    there is only one device of each kind the link is stable after reboots.Handling cases
+    with more than one device of the same kind is best handled by creating udev rules. The
+    output from <em>mode2 --list-devices</em> can be used to create such rules.
+    <p>
+    On 0.9.5- versions the first step is to inspect dmesg after connecting the device.
+    There you should find something like:</p>
     <pre>
     rc0: Media Center Ed. eHome Infrared Remote Transceiver (1784:0001) as
         /devices/pci0000:00/0000:00:12.0/usb4/4-4/4-4:1.0/rc/rc0
@@ -1130,7 +1164,7 @@ remote | kernel |   devinput v        |
     disconnect the device and reconnect it to another socket. With this
     limitation you can use <em>phys=*usb4/4-4/4-4:1.0*</em> in the same
     way as name. However, in complicated cases like these you might be better
-    off creating a fixed device name udev rule</p>
+    off creating a fixed device name using a udev rule</p>
 
     <A NAME="appendix-7"></A>
     <h3 align="center">A7 : Running irexec</h3>

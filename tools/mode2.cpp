@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -40,6 +41,7 @@
 #include <pwd.h>
 
 #include "lirc_private.h"
+#include "drv_enum.h"
 
 static const logchannel_t logchannel = LOG_APP;
 
@@ -207,7 +209,7 @@ static void parse_options(int argc, char** argv)
 	if (hw_choose_driver(opt_driver) != 0) {
 		fprintf(stderr, "Driver `%s' not found.", opt_driver);
 		fputs(" (Missing -U/--plugins option?)\n", stderr);
-		fputs("Available drivers:\n", stderr);
+		fputs("\nAvailable drivers:\n", stderr);
 		hw_print_drivers(stderr);
 		exit(EXIT_FAILURE);
 	}
@@ -219,7 +221,7 @@ int open_device(int opt_raw_access, const char* device)
 {
 	struct stat s;
 
-	__u32 mode;
+	uint32_t mode;
 	int fd;
 	const char* opt;
 
@@ -249,13 +251,12 @@ int open_device(int opt_raw_access, const char* device)
 	} else {
 		curr_driver->open_func(device);
 		opt = options_getstring("lircd:driver-options");
-		if (opt != NULL)
-			if (drv_handle_options(opt) != 0) {
-				fprintf(stderr,
+		if (drv_handle_options(opt) != 0) {
+			fprintf(stderr,
 				"Cannot set driver (%s) options (%s)\n",
 				curr_driver->name, opt);
-				exit(EXIT_FAILURE);
-			}
+			exit(EXIT_FAILURE);
+		}
 		if (!curr_driver->init_func || !curr_driver->init_func()) {
 			fprintf(stderr, "Cannot initiate device %s\n",
 				curr_driver->device);
@@ -317,11 +318,11 @@ void print_mode2_data(unsigned int data)
 	case 0:
 		printf("%s %u\n", (
 			       data & PULSE_BIT) ? "pulse" : "space",
-		       (__u32)(data & PULSE_MASK));
+		       (uint32_t)(data & PULSE_MASK));
 		break;
 	case 1: {
 		/* print output like irrecord raw config file data */
-		printf(" %8u", (__u32)data & PULSE_MASK);
+		printf(" %8u", (uint32_t)data & PULSE_MASK);
 		++bitno;
 		if (data & PULSE_BIT) {
 			if ((bitno & 1) == 0)
@@ -407,27 +408,40 @@ int next_press(int fd, int mode, int bytes)
 	return 1;
 }
 
+
 static void list_devices(void)
 {
 	glob_t glob;
 	unsigned i;
+	int r;
 
-	if (!curr_driver->drvctl_func  ||
-	    curr_driver->drvctl_func(DRVCTL_GET_DEVICES, &glob) != 0) {
+	r = curr_driver->drvctl_func ? 0 : DRV_ERR_NOT_IMPLEMENTED;
+	if (r == 0) {
+		r = curr_driver->drvctl_func(DRVCTL_GET_DEVICES, &glob);
+	}
+	switch (r) {
+		case DRV_ERR_ENUM_EMPTY:
+		break;
+	case DRV_ERR_NOT_IMPLEMENTED:
 		fputs("Device enumeration is not supported by this driver\n",
-                      stderr);
+			stderr);
+		exit(1);
+	case 0:
+		for (i = 0; i < glob.gl_pathc; i += 1)
+			puts(glob.gl_pathv[i]);
+		curr_driver->drvctl_func(DRVCTL_FREE_DEVICES, &glob);
+		break;
+	default:
+		fputs("Error running enumerate command", stderr);
 		exit(1);
 	}
-	for (i = 0; i < glob.gl_pathc; i += 1)
-		puts(glob.gl_pathv[i]);
-	curr_driver->drvctl_func(DRVCTL_FREE_DEVICES, &glob);
 }
 
 
 int main(int argc, char** argv)
 {
 	int fd;
-	__u32 mode;
+	uint32_t mode;
 	size_t bytes = sizeof(lirc_t);
 	char logpath[256];
 	/**
@@ -435,7 +449,7 @@ int main(int argc, char** argv)
 	 * supplied .conf files is 10826, the longest space defined for any one,
 	 * zero or header is 7590
 	 */
-	__u32 code_length;
+	uint32_t code_length;
 	const loglevel_t level = options_get_app_loglevel("mode2");
 
 	hw_choose_driver(NULL);
@@ -450,9 +464,9 @@ int main(int argc, char** argv)
 		return 0;
 	}
         if (opt_raw_access) {
-		printf("Using raw access on device %s\n", opt_device);
+		fprintf(stderr, "Using raw access on device %s\n", opt_device);
 	} else {
-		printf("Using driver %s on device %s\n",
+		fprintf(stderr, "Using driver %s on device %s\n",
 		       options_getstring("mode2:driver"),
 		       opt_device);
 	}

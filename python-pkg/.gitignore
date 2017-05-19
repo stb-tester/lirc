@@ -1,0 +1,13 @@
+*.pyc
+*.log
+.pylint-stamp
+.dirstamp
+api-docs
+config.py
+dist
+lib
+doxygen.warnings
+libs
+lirc.egg-info
+build
+__pycache__

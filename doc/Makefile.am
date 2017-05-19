@@ -6,7 +6,8 @@ CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
                           doxygen*warning* ext-driver-toc.xsl
 
 EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
-                          make_rel_symlink.py index.html plugindocs.mk
+                          make_rel_symlink.py index.html plugindocs.mk \
+                          fix-urls.sh
 
 if DEVEL
 website                 = http://lirc.sf.net/lirc.org
@@ -14,9 +15,11 @@ else
 website                 = http://lirc.org
 endif
 
-LIB_SRC                 = $(srcdir)/../lib
+LIB_SRC                 = $(top_srcdir)/lib
+PY_SRC                  = $(top_srcdir)/python-pkg/lirc
 API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.h \
+                          $(PY_SRC)/*.py \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
@@ -33,7 +36,6 @@ nodist_man_MANS         += man/xmode2.1 man/irxevent.1
 manpage_html            += man-html/irxevent.html man-html/xmode2.html
 endif
 
-docdir                  = @datadir@/doc/@PACKAGE@
 dist_doc_DATA           = irxevent.keys
 
 if HAVE_DOXYGEN
@@ -50,12 +52,16 @@ website_htmldir         = $(docdir)/lirc.org/html
 nodist_website_html_DATA  = $(generated_html) \
                           $(generated_plugindocs) \
                           NEWS.txt html-source/lirc.css
+
+
 if HAVE_MAN2HTML
 nodist_website_html_DATA  += $(manpage_html)
 endif
 
+if !IS_CROSS_COMPILE
 if HAVE_PYMOD_YAML
 nodist_website_html_DATA  += table.html
+endif
 endif
 
 vardocsdir              = $(localstatedir)/lib/lirc/plugins
@@ -73,6 +79,8 @@ htmldir                 = $(docdir)/html
 dist_html_DATA          = html-source/lirc.css
 nodist_html_DATA        =
 
+if !IS_CROSS_COMPILE
+
 if HAVE_PYMOD_YAML
 nodist_html_DATA        += table.html
 endif
@@ -80,6 +88,8 @@ endif
 if HAVE_PYMOD_YAML
 nodist_pkgdata_DATA     = lirc.hwdb
 endif
+
+endif ## CROSS_COMPILE
 
 dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
@@ -95,6 +105,7 @@ if HAVE_DOXYGEN
 	-mkdir -p $(DESTDIR)$(website_htmldir)
 	ln -sf ../api-docs/html/index.html \
 	    $(DESTDIR)$(website_htmldir)/api-docs
+	cd $(DESTDIR)$(websitedir)/api-docs; ln -sf ../api-docs .
 else
 	ln -sf html/no-api-docs.html $(DESTDIR)$(websitedir)/api-docs
 endif
@@ -107,6 +118,9 @@ endif
 	    $(DESTDIR)$(website_htmldir)/plugins-index.html
 	cp $(srcdir)/plugindocs.mk $(DESTDIR)$(plugindocsdir)/Makefile
 
+fix-urls: .phony
+	sh $(srcdir)/fix-urls.sh $(DESTDIR)$(websitedir)
+
 clean-local:
 	rm -rf api-docs/*
 	rm -f lirc
@@ -114,7 +128,7 @@ clean-local:
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir) \
-            $(DESTDIR)$(mandir)/man4l $(DESTDIR)$(plugindocsdir)
+            $(DESTDIR)$(plugindocsdir)
 
 
 $(abs_builddir)/driver-toc.xsl: $(plugindocs)
@@ -135,13 +149,13 @@ $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
 
 table.html: docpage.xsl
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=$(top_srcdir)/tools/lirc-setup:$(top_srcdir)/tools \
+	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
 	        | xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	test -e lirc || ln -s $(top_srcdir)/tools/lirc-setup lirc || :
-	PYTHONPATH=$(top_srcdir)/tools/lirc-setup:$(top_srcdir)/tools \
+	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
 
@@ -207,6 +221,7 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/irtext2udp.1 \
                            $(srcdir)/man-source/irw.1 \
                            $(srcdir)/man-source/lirc-config-tool.1 \
+                           $(srcdir)/man-source/lirc.4l \
                            $(srcdir)/man-source/lirc-lsplugins.1 \
                            $(srcdir)/man-source/lirc-lsremotes.1 \
                            $(srcdir)/man-source/lirc-setup.1 \
@@ -220,11 +235,14 @@ man_sources             += $(srcdir)/man-source/ircat.1 \
                            $(srcdir)/man-source/pronto2lirc.1
 
 if LINUX_KERNEL
-man_sources             += $(srcdir)/man-source/irpipe.1 \
-                           $(srcdir)/man-source/lirc-make-devinput.1
+man_sources             += $(srcdir)/man-source/irpipe.1
 endif
 
-if HAVE_UINPUT
+if HAVE_DEVINPUT
+man_sources             += $(srcdir)/man-source/lirc-make-devinput.1
+endif
+
+if ENABLE_UINPUT
 man_sources             += $(srcdir)/man-source/lircd-uinput.8
 endif
 
@@ -281,6 +299,7 @@ nodist_man_MANS         += man/ircat.1 \
                            man/irtestcase.1 \
                            man/irw.1 \
                            man/lirc-config-tool.1 \
+                           man/lirc.4l \
                            man/lirc-lsplugins.1 \
                            man/lirc-lsremotes.1 \
                            man/lirc-setup.1 \
@@ -294,11 +313,14 @@ nodist_man_MANS         += man/ircat.1 \
                            man/pronto2lirc.1
 
 if LINUX_KERNEL
-nodist_man_MANS         += man/irpipe.1 \
-                           man/lirc-make-devinput.1
+nodist_man_MANS         += man/irpipe.1
 endif
 
-if HAVE_UINPUT
+if HAVE_DEVINPUT
+nodist_man_MANS         += man/lirc-make-devinput.1
+endif
+
+if ENABLE_UINPUT
 nodist_man_MANS         += man/lircd-uinput.8
 endif
 
@@ -329,11 +351,14 @@ manpage_html            += man-html/ircat.html \
                            man-html/pronto2lirc.html
 
 if LINUX_KERNEL
-manpage_html            += man-html/irpipe.html \
-                           man-html/lirc-make-devinput.html
+manpage_html            += man-html/irpipe.html
 endif
 
-if HAVE_UINPUT
+if HAVE_DEVINPUT
+manpage_html            += man-html/lirc-make-devinput.html
+endif
+
+if ENABLE_UINPUT
 manpage_html            += man-html/lircd-uinput.html
 endif
 

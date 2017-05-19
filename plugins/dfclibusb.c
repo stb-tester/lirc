@@ -41,13 +41,14 @@
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
-static char device_path[PATH_MAX + 1] = {0};
+static char device_path[MAXPATHLEN + 1] = {0};
 
 static int dfc_init(void);
 static int dfc_deinit(void);
 static char* dfc_rec(struct ir_remote* remotes);
 static void usb_read_loop(int fd);
 static struct usb_device* find_usb_device(void);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 const struct driver hw_dfclibusb = {
 	.name		= "dfclibusb",
@@ -63,12 +64,12 @@ const struct driver hw_dfclibusb = {
 	.send_func	= NULL,
 	.rec_func	= dfc_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_dfclibusb, (const struct driver*)NULL };
@@ -89,6 +90,21 @@ static struct usb_dev_handle* dev_handle = NULL;
 static pid_t child = -1;
 
 /****/
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 
 /* initialize driver -- returns 1 on success, 0 on error */
 static int dfc_init(void)

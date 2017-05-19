@@ -1,5 +1,8 @@
     <A NAME="irtoy"></A><HR>
     <H1>The IrToy driver</H1>
+    <p>
+        The irtoy driver supports the irtoy and irdroid devices. </p>
+
 
     <P>
         The <a href="http://dangerousprototypes.com/docs/USB_Infrared_Toy">IrToy</a>
@@ -9,10 +12,15 @@
         Kooiman, contained in Lirc. Previous versions could use it utilizing the
         IrMan emulation in the IrToy.
 
-    <H2>Firmware version</H2>
-    <p>Only version 2.2 is supported by the driver.
+    <p>
+    The <a href="http://www.irdroid.com"> irdroid </a> device  is basically a
+    stripped down irtoy with old firmware and without support for signalling
+    pins. </p>
+
+    <H2>Firmware versions</H2>
+    <p> Driver supports firmware versions 2.0 and 2.2.
         For instructions, programs, and firmware, see
-        <a href="http://dangerousprototypes.com/docs/USB_IR_Toy_firmware_update">this guide</A>.
+        <a href="http://dangerousprototypes.com/docs/USB_IR_Toy_firmware_update">this guide</A>. The support for the old 2.0 version is for irdroid.
 
     <h2>Device file</H2>
     <p>Linux (udev really) assigns a connected IrToy a name of the form <code>/dev/ttyACM<EM>n</EM></code>,

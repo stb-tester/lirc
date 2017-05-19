@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -78,7 +79,7 @@ int livedrive_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	}
 
 	log_trace("repeat_flag: %d", ctx->repeat_flag);
-	log_trace("gap: %lu", (__u32)gap);
+	log_trace("gap: %lu", (uint32_t)gap);
 
 	return 1;
 }

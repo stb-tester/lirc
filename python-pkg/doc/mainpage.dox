@@ -1,0 +1,19 @@
+/**
+\mainpage
+
+These documents are an excerpt from the main LIRC docs.  It is not
+filtered by doxypypy, so the overall look and feel is considerably
+worse than the main LIRC docs.
+
+That said, here is info on how to receive data, see @ref receiving.
+This requires a C extension module which is part of the package
+
+As sending commands to lircd, see @ref sending. This is a pure
+python, no native code is used.
+
+An otherwise undocumented module is config.py. This, which can be
+imported using *import lirc.config*, provides access to the build
+configuration  e. g., SYSCONFDIR (usually /etc) and VARRUNDIR
+(typically /var/run).
+
+*/

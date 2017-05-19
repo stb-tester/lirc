@@ -28,3 +28,47 @@ The available keys are:</p>
 <p>
 The driver has support for listing available devices using e. g.,
 using <i>mode2 -l </i></p>
+<p>
+There has been a long-standing bug in this driver which effectively
+has been using wrong timings. As of 0.10-0, this bug is fixed; however,
+this breaks existing lircd.conf files. Users have the option of using
+the driver option <i>old-timings</i> (the value does not matter) e. g.,
+<code>-A old-timings:1</code>. This option is a transition helper and
+will be removed in a future release.
+
+The proper fix for a broken lircd.conf file is to use one of the following methods:
+<ol>
+  <li>
+    Find a lircd.conf file for your remote in the
+    <a href="http://lirc-remotes.sourceforge.net/remotes-table.html">remotes database</a>.
+    You may need to update your .lircrc file if any of the button names are different.
+  </li>
+  <li>Update the timing parameters in your existing lircd.conf file.
+    This method is not suitable for files with raw_codes definitions.
+    New timings can be obtained from several sources
+    <ul>
+       <li>a lircd.conf file for your remote (or one that uses the same
+           protocol) from the
+           <a href="http://lirc-remotes.sourceforge.net/remotes-table.html">remotes database</a>.
+          </li>
+       <li>configure the driver without the old-timings option and use
+           irrecord to record the remote. There is no need to record any
+           buttons, just press enter and finish.</li>
+       <li>use the timing data from the existing lircd.conf file and
+           divide each value by 2.</li>
+    </ul>
+    Open the existing lircd.conf file and the new timings lircd.conf in a
+    text editor.  Find the line 'begin remote', below this there will be
+    lines with some of the following names
+    <br><b>header, three, two, one, zero, ptrail, plead, foot, repeat, pre,
+        post, gap, repeat_gap.</b>
+    <br>Not all of these will be present in any particular lircd.conf file.
+    Replace these with the equivalent from the new file. If you are using the
+    divide by 2 method just update the value, some parameters have 2 values,
+    both need to be updated.
+  </li>
+  <li>For lircd.conf files with raw_codes the only way is to configure
+      the driver without the old-timings option and use irrecord to
+      re-record the remote.
+  </li>
+</ol>

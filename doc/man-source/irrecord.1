@@ -1,4 +1,4 @@
-.TH IRRECORD "1" "Last change: Oct 2015" "irrecord @version@" "User Commands"
+.TH IRRECORD "1" "Last change: May 2017" "irrecord @version@" "User Commands"
 .SH NAME
 .P
 \fBirrecord\fR - IR-codes recording tool for usage with LIRC
@@ -49,13 +49,21 @@ List valid button names.
 Use given driver. -H help lists available drivers.
 .TP
 \fB\-d\fR \fB\-\-device\fR=\fIdevice\fR
-Read from given device.
+Read from given device. Use \fBmode2(1) --list-devices\fR to list
+available devices for a driver.
 .TP
 \fB\-U\fR \fB\-\-plugindir\fR=\fIdirectory\fR
 Load drivers from directory. See DRIVER LOADING.
 .TP
 \fB\-k\fR \fB\-\-keep-root\fR
 Don't drop root privileges after opening device. See RUNNING AS ROOT.
+.TP
+\fB-A, --driver-options\fR \fIkey:value[|key:value...]\fR
+Set one or more options for the driver. The argument is a list of
+key:value pairs delimited by '|'. The key can not contain spaces, but
+such are allowed in the value part. Certain characters including '#'
+and ';' are used as comment markers in the config file and are not
+allowed anywhere.
 .TP
 \fB\-D\fR \fB\-\-loglevel\fR=\fIlevel\fR
 Determine the amount of logging information. [level] can be a symbolic

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ''' Create the lirc Supported Devices Table using data in hardware.yaml '''
 
 import glob
@@ -25,7 +23,7 @@ _TEMPLATE = '''
 <table border="1">
     <tr>
         <th>Hardware</th>
-        <th>Required LIRC kernel modules</th>
+        <th>Required LIRC kernel setup</th>
         <th>lircd driver</th>
         <th>Default lircd and lircmd config files</th>
         <th>Supported remotes</th>
@@ -69,6 +67,8 @@ def _add_submenu(menu, configs, db):
     for remote in sorted(configs, key=lambda r: getit(r, 'label', '')):
         if remote['id'] == 'irlink':
             pass
+        if remote['id'] == 'none':
+            continue
         s += '<tr>'
         s += '<td>' + getit(remote, 'label') + '</td>'
         s += '<td>' + getit(remote, 'modinit') + '</td>'

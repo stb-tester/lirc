@@ -1,6 +1,7 @@
 # Mostly auto-generated build cruft
 .deps
 .libs
+.pc
 .gdb*
 lirc.pc
 lirc-driver.pc
@@ -29,6 +30,9 @@ remotes.list
 drivers.yaml
 confs_by_driver.yaml
 devinput.lircd.conf
+
+README.md
+README.html
 
 # lirc-setup cruft
 lirc-setup.conf.d

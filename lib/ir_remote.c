@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <fcntl.h>
 #include <limits.h>
 
@@ -32,7 +33,7 @@
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 #include "lirc/ir_remote.h"
@@ -306,9 +307,9 @@ int map_code(const struct ir_remote*	remote,
 	all >>= remote->bits;
 	ctx->pre = (all & gen_mask(remote->pre_data_bits));
 
-	log_trace("pre: %llx", (__u64)(ctx->pre));
-	log_trace("code: %llx", (__u64)(ctx->code));
-	log_trace("post: %llx", (__u64)(ctx->post));
+	log_trace("pre: %llx", (uint64_t)(ctx->pre));
+	log_trace("code: %llx", (uint64_t)(ctx->code));
+	log_trace("post: %llx", (uint64_t)(ctx->post));
 	log_trace("code:                   %016llx\n", code);
 
 	return 1;
@@ -380,16 +381,16 @@ void map_gap(const struct ir_remote*	remote,
 
 	log_trace("repeat_flagp:           %d", (ctx->repeat_flag));
 	log_trace("is_const(remote):       %d", is_const(remote));
-	log_trace("remote->gap range:      %lu %lu", (__u32)min_gap(
-			  remote), (__u32)max_gap(remote));
+	log_trace("remote->gap range:      %lu %lu", (uint32_t)min_gap(
+			  remote), (uint32_t)max_gap(remote));
 	log_trace("remote->remaining_gap:  %lu %lu",
-		  (__u32)remote->min_remaining_gap,
-		  (__u32)remote->max_remaining_gap);
-	log_trace("signal length:          %lu", (__u32)signal_length);
-	log_trace("gap:                    %lu", (__u32)gap);
+		  (uint32_t)remote->min_remaining_gap,
+		  (uint32_t)remote->max_remaining_gap);
+	log_trace("signal length:          %lu", (uint32_t)signal_length);
+	log_trace("gap:                    %lu", (uint32_t)gap);
 	log_trace("extim. remaining_gap:   %lu %lu",
-		  (__u32)(ctx->min_remaining_gap),
-		  (__u32)(ctx->max_remaining_gap));
+		  (uint32_t)(ctx->min_remaining_gap),
+		  (uint32_t)(ctx->max_remaining_gap));
 }
 
 
@@ -611,7 +612,7 @@ static struct ir_ncode* get_code(struct ir_remote*	remote,
 }
 
 
-static __u64 set_code(struct ir_remote*		remote,
+static uint64_t set_code(struct ir_remote*		remote,
 		      struct ir_ncode*		found,
 		      ir_code			toggle_bit_mask_state,
 		      struct decode_ctx_t*	ctx)
@@ -722,7 +723,8 @@ int write_message(char*		buffer,
 
 	len = snprintf(buffer, size, "%016llx %02x %s%s %s\n",
 		       (unsigned long long)code, reps, button_name,
-		       button_suffix, remote_name);
+		       button_suffix != NULL ? button_suffix : "",
+		       remote_name);
 
 	return len;
 }

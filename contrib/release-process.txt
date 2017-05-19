@@ -7,12 +7,12 @@ Pre-requisites:
     + cd test
     + make
     + ./run-tests
-- 'make distcheck' without lirc-devel installed pass
+- 'make distcheck' pass
 - Encoder/decoder regression tests all pass
 - lirc.org linkcheck:
     + cd doc; DESTDIR=$PWD/foo make install
-    + linkchecker foo/usr/local/share/doc/lirc/lirc.org/index.html
-    + Allow errors for standard tools like sudo, ncat, etc.
+    + linkchecker -r 8 foo/usr/local/share/doc/lirc/lirc.org/index.html
+    + cd doc; make fix-urls
 - liblirc_client: version number change required?
     + use abidiff
     + run (more or less)
@@ -43,7 +43,6 @@ Steps for a new release (pre or final)
 4) Update version number in:
         README, NEWS, configure.ac
         Makefile.am (ChangeLog entries)
-	doc/lirc.org/index.html (Last version).
    Update the news entry in README.
 
 5) Commit and push branch:
@@ -81,15 +80,3 @@ For final release:
 
 3) Send announcement email to lirc-list@lists.sourceforge.net, include top
    of NEWS.
-
-Ubuntu PPA update:
-
-   $ make debian
-   $ cd debian-src
-   $ dpkg-source -x *dsc
-   $ cd lirc-0.9.4*
-   $ vi debian/changelog # change experimental to Ubuntu channel like 'Trusty'.
-   $ debuild -S -sa -us -uc
-   $ cd ..
-   $ debsign *source.changes
-   $ dput ppa:leamas-alec/lirc-0.9.4 *source.changes

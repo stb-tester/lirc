@@ -1,0 +1,92 @@
+#!/usr/bin/expect
+
+log_file -noappend backend.log
+
+remove_nulls
+
+if {$argc > 0 } { set timeout [lindex $argv 0]}
+set timeout $timeout
+send_log "Timeout: $timeout\n"
+
+while (1) {
+    expect {
+        "SEND_ONCE*\n" {
+            send_log "Command: $expect_out(0,string)"
+            send "BEGIN\n"
+            send "SEND_ONCE\n"
+            send "SUCCESS\n"
+            send "END\n"
+        }
+        "SEND_START*\n" {
+            send_log "SEND_START\n"
+            send "BEGIN\n"
+            send "SEND_START\n"
+            send "SUCCESS\n"
+            send "END\n"
+        }
+        "SEND_STOP*\n" {
+            send_log "SEND_STOP\n"
+            send "BEGIN\n"
+            send "SIGHUP\n"
+            send "END\n"
+            send "BEGIN\n"
+            send "SEND_STOP\n"
+            send "SUCCESS\n"
+            send "END\n"
+        }
+        "SET_TRANSMITTERS*\n" {
+            send_log "SET_TRANSMITTERS\n"
+            send "BEGIN\n"
+            send "SET_TRANSMITTERS\n"
+            send "SUCCESS\n"
+            send "END\n"
+        }
+        "SIMULATE*\n" {
+            send_log "SIMULATE\n"
+            send "BEGIN\n"
+            send "SIMULATE\n"
+            send "SUCCESS\n"
+            send "END\n"
+        }
+          "LIST\n" {
+            send_log "LIST_REMOTES\n"
+            send "BEGIN\n"
+            send "LIST_REMOTES\n"
+            send "SUCCESS\n"
+            send "DATA\n"
+            send "2\n"
+            send "mceusb1\n"
+            send "mceusb2\n"
+            send "END\n"
+        }
+        "LIST_CODES*\n" {
+            send_log "LIST_CODES\n"
+            send "BEGIN\n"
+            send "LIST_CODES\n"
+            send "SUCCESS\n"
+            send "DATA\n"
+            send "11\n"
+	    send "KEY_0\n"
+	    send "KEY_1\n"
+	    send "KEY_2\n"
+	    send "KEY_3\n"
+	    send "KEY_4\n"
+	    send "KEY_5\n"
+	    send "KEY_6\n"
+	    send "KEY_7\n"
+	    send "KEY_8\n"
+	    send "KEY_9\n"
+	    send "KEY_HOME\n"
+            send "END\n"
+        }
+        eof {
+            send_log "eof"
+        }
+        timeout {
+                send_log "Event: #! @000000000000000000 01 mceusb KEY_1\n"
+                for {set i 0} {$i < 10} {incr i} {
+                    send "0123456789abcdef 0$i KEY_1 mceusb\n"
+                }
+        }
+    }
+}

@@ -2,8 +2,8 @@
 
 import glob
 import grp
-import os.path
 import os
+import os.path
 import re
 
 DEVICE_PERMISSIONS_MSG = """

@@ -1,4 +1,5 @@
 __pycache__
+.pylint-stamp
 ircat
 irexec
 irpipe
@@ -13,7 +14,6 @@ irxevent
 lirc-lsplugins
 lirc-lsremotes
 mode2
-python3
 xmode2
 config.py
 

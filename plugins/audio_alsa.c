@@ -27,7 +27,6 @@
 #include <unistd.h>
 #include <limits.h>
 #include <signal.h>
-#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -91,62 +90,11 @@ static struct {
 /* Return the absolute difference between two unsigned 8-bit samples */
 #define U8_ABSDIFF(s1, s2) (((s1) >= (s2)) ? ((s1) - (s2)) : ((s2) - (s1)))
 
-/** Command to list available alsa hw devices. */
-#define LIST_DEVICES \
-" aplay -l | sed -n" \
-" -e '/^card/s/card \\([0-9]\\)\\([^,]*\\),[^:]*\\([0-9]\\)/hw:\\1,\\3 /'" \
-" -e 's/ : .*//p'"
-
 /* Forward declarations */
-static int audio_alsa_init(void);
 static int audio_alsa_deinit(void);
 static void alsa_sig_io(snd_async_handler_t* h);
 
 static const logchannel_t logchannel = LOG_DRIVER;
-
-static int mywaitfordata(long maxusec)
-{
-	int  ret, poll_ms;
-	struct timeval start, now;
-
-	while (1) {
-		do {
-			struct pollfd pfd  = {
-				.fd = drv.fd, .events = POLLIN, .revents = 0
-			};
-
-			gettimeofday(&start, NULL);
-			poll_ms = MAX(0, maxusec / 1000);
-			if (drv.fd == -1) {
-				/* try to reconnect */
-				if (poll_ms > 1000 || poll_ms == 0)
-					poll_ms = 1000;
-			}
-			ret = curl_poll(&pfd, 1, poll_ms == 0 ? -1 : poll_ms);
-			if (ret == -1 && errno != EINTR) {
-				log_perror_err("curl_poll() failed");
-				continue;
-			}
-			gettimeofday(&now, NULL);
-			if (maxusec > 0) {
-				if (ret == 0 || time_elapsed(&start, &now) >= maxusec)
-					return 0;
-				maxusec -= time_elapsed(&start, &now);
-			}
-		} while (ret == -1 && errno == EINTR);
-
-		if (drv.fd == -1) {
-			loglevel_t saved_level = loglevel;
-
-			lirc_log_setlevel(LIRC_NOLOG);
-			audio_alsa_init();
-			lirc_log_setlevel(saved_level);
-		} else if (ret >= 1) {
-			/* we will read later */
-			return 1;
-		}
-	}
-}
 
 static int alsa_error(const char* errstr, int errcode)
 {
@@ -210,7 +158,7 @@ static int alsa_set_hwparams(void)
 	return 0;
 }
 
-static int audio_alsa_init(void)
+int audio_alsa_init(void)
 {
 	int fd, err;
 	char* pcm_rate;
@@ -557,7 +505,7 @@ lirc_t audio_alsa_readdata(lirc_t timeout)
 	lirc_t data;
 	int ret;
 
-	if (!mywaitfordata((long)timeout))
+	if (!waitfordata((long)timeout))
 		return 0;
 
 	ret = read(drv.fd, &data, sizeof(data));
@@ -579,6 +527,51 @@ char* audio_alsa_rec(struct ir_remote* remotes)
 
 #define audio_alsa_decode receive_decode
 
+static void list_devices(glob_t* glob)
+{
+	void **hints;
+	static const char* const ifaces[] = {
+		"card", "pcm", "rawmidi", "timer", "seq", "hwdep", NULL
+	};
+	int if_;
+	void **str;
+	char *name;
+	char* desc;
+	char device_path[256];
+
+	glob_t_init(glob);
+	for (if_ = 0; ifaces[if_] != NULL; if_ += 1) {
+		if (snd_device_name_hint(-1, ifaces[if_], &hints) < 0)
+			continue;
+		for (str = hints; *str; str++) {
+			name = snd_device_name_get_hint(*str, "NAME");
+			name[strcspn(name, "\n")] = '\0';
+			desc = snd_device_name_get_hint(*str, "DESC");
+			desc[strcspn(desc, "\n")] = '\0';
+			snprintf(device_path, sizeof(device_path),
+				 "%s %s", name, desc);
+			glob_t_add_path(glob, device_path);
+		}
+	}
+}
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		list_devices((glob_t*) arg);
+		return 0;
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
+
 const struct driver hw_audio_alsa = {
 	.name		= "audio_alsa",
 	.device		= "hw",
@@ -594,12 +587,12 @@ const struct driver hw_audio_alsa = {
 	.send_func	= NULL,
 	.rec_func	= audio_alsa_rec,
 	.decode_func	= audio_alsa_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= audio_alsa_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.9.4",
 	.info		= "See file://" PLUGINDOCS "/audio-alsa.html",
-	.device_hint    = "/bin/sh " LIST_DEVICES,
+	.device_hint    = "drvctl"
 };
 
 const struct driver* hardwares[] = { &hw_audio_alsa, (const struct driver*)NULL };

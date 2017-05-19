@@ -48,17 +48,6 @@ static int ptyfd;               /* the pty */
 #define NUM_CHANNELS           (2)
 #define PI           (3.141592654)
 
-#define LIST_DEVICES \
-"exec 2>/dev/null\n \
-python -b - << EOF\n\
-import pyaudio\n\
-p = pyaudio.PyAudio()\n\
-print(\"label_by_device:\")\n\
-for i in range(p.get_device_count()):\n\
-    d = p.get_device_info_by_index(i)\n\
-    print(\"    '%s:%s':  '%s'\" % (d['hostApi'], d['index'], d['name']))\n\
-EOF\n"
-
 
 /* Select sample format. */
 #define PA_SAMPLE_TYPE  paUInt8
@@ -635,6 +624,61 @@ char* audio_rec(struct ir_remote* remotes)
 	return decode_all(remotes);
 }
 
+static void list_devices(glob_t* glob)
+{
+	const PaDeviceInfo* device_info;
+	char device_path[256];
+	int device_count;
+	char buff[256];
+	const char* desc;
+	const char* name;
+	int i;
+	int r;
+
+	fclose(stderr);
+	r = Pa_Initialize();
+	if (r != paNoError) {
+		log_error("Cannot initialize portaudio.");
+		return;
+	}
+	glob_t_init(glob);
+	device_count = Pa_GetDeviceCount();
+	if (device_count < 0) {
+		log_warn("list_devices: No devices found");
+		return;
+	}
+	for (i = 0; i < device_count; i += 1) {
+		device_info = Pa_GetDeviceInfo(i);
+		strncpy(buff, device_info->name, sizeof(buff) - 1);
+		desc = strtok(buff, "(");
+		name = strtok(NULL, ")");
+		if (name == NULL || *name == '\0') {
+			name = desc;
+			desc = "";
+		}
+		snprintf(device_path, sizeof(device_path),
+			 "%s %s", name, desc);
+		glob_t_add_path(glob, device_path);
+	}
+	Pa_Terminate();
+}
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		list_devices((glob_t*) arg);
+		return 0;
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 const struct driver hw_audio = {
 	.name		= "audio",
 	.device		= "",
@@ -649,12 +693,12 @@ const struct driver hw_audio = {
 	.send_func	= audio_send,
 	.rec_func	= audio_rec,
 	.decode_func	= receive_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= audio_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.9.4",
 	.info		= "See file://" PLUGINDOCS "/audio.html",
-	.device_hint    = "/bin/sh " LIST_DEVICES,
+	.device_hint    = "drvctl"
 };
 
 const struct driver* hardwares[] = { &hw_audio, (const struct driver*)NULL };

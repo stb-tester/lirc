@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <sys/param.h>
@@ -39,6 +40,10 @@
 #include <unistd.h>
 
 #include "lirc_client.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 4096
+#endif
 
 /** Timeout in lirc_read_string. */
 static const struct timeval CMD_TIMEOUT = { .tv_sec = 1, .tv_usec = 0 };
@@ -86,7 +91,7 @@ enum packet_state {
  */
 unsigned int lirc_flags(char* string);
 
-static int lirc_lircd;
+static int lirc_lircd = -1;
 static int lirc_verbose = 0;
 static char* lirc_prog = NULL;
 static char* lirc_buffer = NULL;
@@ -190,7 +195,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 	char* endptr;
 	enum packet_state state;
 	int status, n, r;
-	__u32 data_n = 0;
+	uint32_t data_n = 0;
 
 	todo = strlen(ctx->packet);
 	data = ctx->packet;
@@ -269,7 +274,7 @@ int lirc_command_run(lirc_cmd_ctx* ctx, int fd)
 			goto bad_packet;
 		case P_N:
 			errno = 0;
-			data_n = (__u32)strtoul(string, &endptr, 0);
+			data_n = (uint32_t)strtoul(string, &endptr, 0);
 			if (!*string || *endptr)
 				goto bad_packet;
 			if (data_n == 0)
@@ -359,6 +364,8 @@ int lirc_init(const char* prog, int verbose)
 
 int lirc_deinit(void)
 {
+	int r = 0;
+
 	if (lirc_prog != NULL) {
 		free(lirc_prog);
 		lirc_prog = NULL;
@@ -367,7 +374,11 @@ int lirc_deinit(void)
 		free(lirc_buffer);
 		lirc_buffer = NULL;
 	}
-	return close(lirc_lircd);
+	if (lirc_lircd != -1) {
+		r = close(lirc_lircd);
+		lirc_lircd = -1;
+	}
+	return r == 0 ? 1 : 0;
 }
 
 
@@ -965,6 +976,7 @@ static char* lirc_startupmode(struct lirc_config_entry* first)
 		scan = first;
 		while (scan != NULL) {
 			if (scan->mode != NULL
+			    && lirc_prog != NULL
 			    && strcasecmp(lirc_prog, scan->mode) == 0) {
 				startupmode = lirc_prog;
 				break;

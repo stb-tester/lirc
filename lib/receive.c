@@ -18,14 +18,15 @@
 # include <config.h>
 #endif
 
-#include <limits.h>
 #include <errno.h>
+#include <limits.h>
 #include <poll.h>
+#include <stdint.h>
 
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 #include "lirc/driver.h"
@@ -70,6 +71,8 @@ void rec_set_update_mode(int mode)
 	update_mode = mode;
 }
 
+int (*lircd_waitfordata)(__u32 timeout) = NULL;
+
 
 static lirc_t readdata(lirc_t timeout)
 {
@@ -112,7 +115,7 @@ static void log_input(lirc_t data)
 static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 {
 	if (rec_buffer.rptr < rec_buffer.wptr) {
-		log_trace2("<%c%lu", rec_buffer.data[rec_buffer.rptr] & PULSE_BIT ? 'p' : 's', (__u32)
+		log_trace2("<%c%lu", rec_buffer.data[rec_buffer.rptr] & PULSE_BIT ? 'p' : 's', (uint32_t)
 			  rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK));
 		rec_buffer.sum += rec_buffer.data[rec_buffer.rptr] & (PULSE_MASK);
 		return rec_buffer.data[rec_buffer.rptr++];
@@ -138,7 +141,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 			return data;
 		}
 		if (LIRC_IS_TIMEOUT(data)) {
-			log_trace("timeout received: %lu", (__u32)LIRC_VALUE(data));
+			log_trace("timeout received: %lu", (uint32_t)LIRC_VALUE(data));
 			if (LIRC_VALUE(data) < maxusec)
 				return get_next_rec_buffer_internal(maxusec - LIRC_VALUE(data));
 			return 0;
@@ -153,7 +156,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 				  & (PULSE_MASK);
 		rec_buffer.wptr++;
 		rec_buffer.rptr++;
-		log_trace2("+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (__u32)
+		log_trace2("+%c%lu", rec_buffer.data[rec_buffer.rptr - 1] & PULSE_BIT ? 'p' : 's', (uint32_t)
 			  rec_buffer.data[rec_buffer.rptr - 1]
 			  & (PULSE_MASK));
 		return rec_buffer.data[rec_buffer.rptr - 1];
@@ -162,11 +165,21 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 	return 0;
 }
 
-int waitfordata(__u32 maxusec)
+
+void set_waitfordata_func(int(*func)(uint32_t maxusec))
+{
+    lircd_waitfordata = func;
+}
+
+
+int waitfordata(uint32_t maxusec)
 {
 	int ret;
 	struct pollfd pfd = {
 		.fd = curr_driver->fd, .events = POLLIN, .revents = 0 };
+
+	if (lircd_waitfordata != NULL)
+		return lircd_waitfordata(maxusec);
 
 	while (1) {
 		do {
@@ -227,7 +240,7 @@ int rec_buffer_clear(void)
 
 	timerclear(&rec_buffer.last_signal_time);
 	if (curr_driver->rec_mode == LIRC_MODE_LIRCCODE) {
-		unsigned char buffer[sizeof(ir_code)];
+		unsigned char buffer[curr_driver->code_length/CHAR_BIT + 1];
 		size_t count;
 
 		count = curr_driver->code_length / CHAR_BIT;
@@ -252,7 +265,7 @@ int rec_buffer_clear(void)
 			rec_buffer.wptr = 0;
 			data = readdata(0);
 
-			log_trace2("c%lu", (__u32)data & (PULSE_MASK));
+			log_trace2("c%lu", (uint32_t)data & (PULSE_MASK));
 
 			rec_buffer.data[rec_buffer.wptr] = data;
 			rec_buffer.wptr++;
@@ -675,7 +688,7 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				return (ir_code) -1;
 			}
 			sum = deltap + deltas;
-			log_trace2("rcmm: sum %ld", (__u32)sum);
+			log_trace2("rcmm: sum %ld", (uint32_t)sum);
 			if (expect(remote, sum, remote->pzero + remote->szero)) {
 				code |= 0;
 				log_trace1("00");
@@ -712,7 +725,7 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 				return (ir_code) -1;
 			}
 			sum = deltas + deltap;
-			log_trace2("grundig: sum %ld", (__u32)sum);
+			log_trace2("grundig: sum %ld", (uint32_t)sum);
 			if (expect(remote, sum, remote->szero + remote->pzero)) {
 				state = 0;
 				log_trace1("2T");

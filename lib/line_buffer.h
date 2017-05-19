@@ -9,16 +9,12 @@
 * */
 
 /**
- * @file line_buffer.cpp
- * This file implements the line buffer class.
+ * @file line_buffer.h
+ * @brief Implements the line buffer class.
  */
 
 #ifndef LIB_LINE_BUFFER_H_
 #define LIB_LINE_BUFFER_H_
-
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
 
 #include <string>
 

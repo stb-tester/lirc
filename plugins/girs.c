@@ -50,14 +50,11 @@
 #include "lirc/serial.h"
 #include "lirc/curl_poll.h"
 
-/** Devices enumerated by device_hint. */
-#define DEVICE_HINT \
-	"/bin/sh ls /dev/ttyACM* /dev/ttyUSB* /dev/arduino* 2>/dev/null"
 
 #define DRIVER_NAME "girs"
 #define DEFAULT_DEVICE "/dev/ttyACM0"
 #define DRIVER_RESOLUTION 50
-#define DRIVER_VERSION "2016-08-19"
+#define DRIVER_VERSION "2017-03-11"
 
 #define DEFAULT_TCP_PORT "33333"
 
@@ -191,7 +188,7 @@ const struct driver hw_girs = {
 	.info		= "See file://" PLUGINDOCS "/" DRIVER_NAME ".html",
 	.open_func	= girs_open,  // does not open, just string copying
 	.close_func	= girs_close, // when really terminating the program
-	.device_hint    = DEVICE_HINT,
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = {
@@ -232,6 +229,7 @@ static int girs_close(void)
 	dev.connection = none;
 	return 0;
 }
+
 
 /**
  * Driver control.
@@ -313,6 +311,16 @@ static int drvctl(unsigned int cmd, void* arg)
 		}
 	}
 		break;
+	case DRVCTL_GET_DEVICES:
+	{
+		static const char* const what[] = {
+			"/dev/ttyACM*", "/dev/ttyUSB*", "/dev/arduino*", NULL
+		};
+		return drv_enum_globs((glob_t*) arg, what);
+	}
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}
@@ -593,7 +601,7 @@ static lirc_t readdata(lirc_t timeout)
 			log_debug("readdata timeout from hardware, continuing");
 			enable_receive();
 			initialized = 0;
-			return 0;
+			// Keep going...
 		}
 		int i = 0;
 		const char* token;
@@ -649,12 +657,6 @@ static lirc_t readdata(lirc_t timeout)
 		// Mark as PULSE if appropriate (otherwise it is SPACE)
 		if ((data_ptr & 1) == 0)
 			x |= PULSE_BIT;
-
-#ifdef REPORT_TIMEOUT
-		if (dev.report_timeouts && (data_ptr == data_length - 1))
-			// Last value, mark it as timeout
-			x |= LIRC_MODE2_TIMEOUT;
-#endif
 
 		data_ptr++;
 	}
@@ -760,6 +762,7 @@ static int initialize_tcp(void)
 
 	if (colon != NULL) {
 		strncpy(ipname, drv.device, colon - drv.device);
+		ipname[colon - drv.device] = '\0';
 		strncpy(portnumber, colon + 1, strlen(colon));
 	} else {
 		strncpy(ipname, drv.device, strlen(drv.device) + 1);

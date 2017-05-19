@@ -13,11 +13,7 @@
 
 #define IN_DRIVER
 
-#ifndef __u32
-#include <stdint.h>
-#define __u32 uint32_t
-#endif
-
+#include "lirc/drv_enum.h"
 #include "lirc/ir_remote_types.h"
 #include "lirc/lirc_log.h"
 #include "lirc/driver.h"

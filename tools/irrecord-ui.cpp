@@ -12,7 +12,12 @@
 #define _GNU_SOURCE
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <ctype.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "lirc_private.h"
@@ -42,6 +47,7 @@ static const char* const help =
 	"\t -U --plugindir=dir\tLoad drivers from dir\n"
 	"\t -f --force\t\tForce raw mode\n"
 	"\t -n --disable-namespace\tDisable namespace checks\n"
+	"\t -A --driver-options=key:value[|key:value...]\n"
 	"\t -Y --dynamic-codes\tEnable dynamic codes\n"
 	"\t -O --options-file\tUse alternative lirc_options.conf file\n"
 	"\t -D --loglevel=level\t'error', 'info', 'notice',... or 3..10\n"
@@ -63,6 +69,7 @@ static const struct option long_options[] = {
 	{"list-namespace",    no_argument,	 NULL, 'l'},
 	{"update",	      required_argument, NULL, 'u'},
 	{"plugindir",	      required_argument, NULL, 'U'},
+	{"driver-options",    required_argument, NULL, 'A' },
 	{"dynamic-codes",     no_argument,	 NULL, 'Y'},
 	{"pre",		      no_argument,	 NULL, 'p'},
 	{"post",	      no_argument,	 NULL, 'P'},
@@ -269,6 +276,8 @@ static void add_defaults(void)
 		"irrecord:update",      "False",
 		"irrecord:disable-namespace",
 					"False",
+		"irrecord:driver-options",
+					"",
 		"irrecord:dynamic-codes",
 					"False",
 		"irrecord:list-namespace",
@@ -311,7 +320,7 @@ static void parse_options(int argc, char** const argv)
 {
 	int c;
 
-	const char* const optstring = "had:D:H:fknlO:pPtiTU:uvY";
+	const char* const optstring = "had:D:H:fknlO:pPtiTU:uvYA:";
 
 	add_defaults();
 	optind = 1;
@@ -372,6 +381,9 @@ static void parse_options(int argc, char** const argv)
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
 			break;
+		case 'A':
+			options_set_opt("irrecord:driver-options", optarg);
+			break;
 		case 'Y':
 			options_set_opt("lircd:dynamic-codes", "True");
 			break;
@@ -402,6 +414,7 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 	FILE* f;
 	struct ir_ncode* nc;
 	int fd;
+	const char* opt;
 
 	if (opts->force) {
 		printf("Using raw access on device %s\n",
@@ -501,6 +514,13 @@ static enum init_status init(struct opts* opts, struct main_state* state)
 			log_error("Cannot reset root uid");
 	}
 	curr_driver->open_func(opts->device);
+	opt = options_getstring("lircd:driver-options");
+	if (drv_handle_options(opt) != 0) {
+		fprintf(stderr,
+			"Cannot set driver (%s) options (%s)\n",
+			curr_driver->name, opt);
+		exit(EXIT_FAILURE);
+	}
 	if (curr_driver->init_func) {
 		if (!curr_driver->init_func()) {
 			fclose(state->fout);
@@ -590,11 +610,11 @@ static void do_get_toggle_bit_mask(struct ir_remote* remote,
 			sts = STS_TGL_AGAIN;
 			continue;
 		case STS_TGL_FOUND:
-			printf("\nToggle bit mask is 0x%llx.\n",
-			       (__u64)remote->toggle_bit_mask);
+			printf("\nToggle bit mask is 0x%lx.\n",
+			       (uint64_t)remote->toggle_bit_mask);
 			if (is_rc6(remote))
-				printf("RC6 mask is 0x%llx.\n",
-				       (__u64)remote->rc6_mask);
+				printf("RC6 mask is 0x%lx.\n",
+				       (uint64_t)remote->rc6_mask);
 			fflush(stdout);
 			return;
 		case STS_TGL_NOT_FOUND:
@@ -885,10 +905,10 @@ static void remote_report(struct ir_remote* remote)
 	else if (is_bo(remote)) printf("Bang & Olufsen encoding\n");
 	else printf("Unknown encoding\n");
 	log_debug("%d %u %u %u %u %u %d %d %d %u\n",
-		  remote->bits, (__u32)remote->pone, (__u32)remote->sone,
-		  (__u32)remote->pzero, (__u32)remote->szero,
-		  (__u32)remote->ptrail, remote->flags, remote->eps,
-		  remote->aeps, (__u32)remote->gap);
+		  remote->bits, (uint32_t)remote->pone, (uint32_t)remote->sone,
+		  (uint32_t)remote->pzero, (uint32_t)remote->szero,
+		  (uint32_t)remote->ptrail, remote->flags, remote->eps,
+		  remote->aeps, (uint32_t)remote->gap);
 }
 
 

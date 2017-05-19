@@ -45,7 +45,8 @@
 	"# E:\tEmpty: Plugin loaded OK, but is empty (is this a plugin?).\n" \
 	"# F:\tFail: Plugin failed to load (unresolved references?).\n" \
 	"# a:\tAny: Driver can be used with any remote or capture device.\n" \
-	"# s:\tSend: The driver can send data.\n"
+	"# s:\tSend: The driver can send data.\n" \
+	"# L:\tList: The driver can enumerate devices.\n"
 
 #define LONG_LEGEND \
 	"# Feature flags (see lirc(4)):\n" \
@@ -197,9 +198,6 @@ static void print_folded_item(const char* arg)
 static void line_print_yaml(const line_t* line)
 // Print line as a yaml 'driver' definition.
 {
-        size_t src;
-	char next;
-
 	if (line->errors){
 		fputs("\n", stdout);
 		fputs(line->errors, stdout);
@@ -209,26 +207,10 @@ static void line_print_yaml(const line_t* line)
 	printf("        %-16s%s\n", "type:", line->type );
 	printf("        %-16s%s\n", "can_send:", line->can_send);
 	printf("        %-16s'%s'\n",
-
 	       "info:", line->info ? line->info : "None");
-	if (!line->device_hint) {
-		printf("        %-16s%s\n", "device_hint:","None");
-	} else {
-		printf("        %-16s\n", "device_hint: |");
-		fputs("            \"", stdout);
-		for(src = 0; line->device_hint[src] != '\0'; src += 1) {
-			next = line->device_hint[src];
-			if (next == '\n' && src != 0)
-				printf("\"\n            \"");
-			else if (next == '"')
-				printf("\\\"");
-			else if (next == '\\')
-				printf("\\\\");
-			else
-				putc(next, stdout);
-		}
-		fputs("\"\n", stdout);
-	}
+        printf("        %-16s%s\n",
+	       "device_hint:",
+	       line->device_hint ? line->device_hint  : "None");
 }
 
 
@@ -238,6 +220,7 @@ static void line_print_long(const line_t* line)
 	const char* loadstate;
 	const char* handles_timing;
 	const char* can_send;
+	const char* can_list;
 
 	switch (line->flags[0]) {
 	case '-':
@@ -275,6 +258,18 @@ static void line_print_long(const line_t* line)
 		can_send = "?";
 		break;
 	}
+	switch (line->flags[3]) {
+	case '-':
+		can_list = "No";
+		break;
+	case 'L':
+		can_list = "Yes";
+		break;
+	default:
+		can_list = "?";
+		break;
+	}
+
 
 	printf("Plugin path:\t%s\n", line->path);
 	printf("Driver name:\t%s\n", line->name ? line->name : "-");
@@ -282,6 +277,7 @@ static void line_print_long(const line_t* line)
 	printf("Load state:\t%s\n", loadstate);
 	printf("Timing info:\t%s\n", handles_timing);
 	printf("Can send:\t%s\n", can_send);
+	printf("Can list devices:\t%s\n", can_list);
 	printf("Capabilities:\t%s\n", line->features);
 	printf("Version:\t%s\n", line->version ? line->version : "(None)");
 	printf("Driver info:\t");
@@ -322,6 +318,7 @@ static void format_drivers(struct driver**	drivers,
 {
 	char buf[1024];
 	const char* what;
+	int can_list = 0;
 
 	if (!drivers)
 		return;
@@ -352,13 +349,15 @@ static void format_drivers(struct driver**	drivers,
 			strncpy(buf, (*drivers)->device_hint, sizeof(buf) - 1);
 			line->device_hint = strdup(buf);
 		}
-		what = ((*drivers)->features & CAN_ANY) ? "code" : "mode2";
+		what = ((*drivers)->features & CAN_ANY) ? "mode2" : "code";
 		line->type = what;
 		what = ((*drivers)->features & CAN_SEND) ? "yes" : "no";
 		line->can_send = what;
-		snprintf(buf, sizeof(buf), "-%c%c",
+		can_list = strcmp((*drivers)->device_hint, "drvctl") == 0;
+		snprintf(buf, sizeof(buf), "-%c%c%c",
 			 get(CAN_ANY, 'a', *drivers),
-			 get(CAN_SEND, 's', *drivers));
+			 get(CAN_SEND, 's', *drivers),
+			 can_list ? 'L' : '-');
 		line->flags = strdup(buf);
 		format_features(*drivers, line);
 		lines_next(line);

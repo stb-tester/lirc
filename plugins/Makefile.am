@@ -1,17 +1,16 @@
 ACLOCAL_AMFLAGS             = -I m4
 
-AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver
-AM_CFLAGS                   = -pthread -Wall
-AM_CFLAGS                   += -DPLUGINDOCS=\"$(docdir)/plugindocs\"
-AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \
-                              @osflags@
-AM_CPPFLAGS                 += -Wall -Wp,-D_FORTIFY_SOURCE=2
-
-if HAVE_LIBUDEV
-AM_LDFLAGS                  += -ludev
-AM_CFLAGS                   += -DHAVE_LIBUDEV_H
+AM_LDFLAGS                  = -module -avoid-version -L../lib -llirc_driver \
+                              -export-symbols-regex hardwares
+if BUILD_USB
+AM_LDFLAGS                  +=  @LIBUSB_LIBS@
 endif
 
+AM_CFLAGS                   = -pthread -Wall @DRIVER_FLAGS@
+AM_CFLAGS                   += -DPLUGINDOCS=\"$(docdir)/plugindocs\"
+AM_CPPFLAGS                 = -I../lib  -I$(top_srcdir)/lib -I$(top_srcdir) \
+			      @kernel_header_flags@
+AM_CPPFLAGS                 += -Wall -Wp,-D_FORTIFY_SOURCE=2
 
 DISTCLEANFILES              = pluginlist.am
 
@@ -23,48 +22,46 @@ if BUILD_USB
 
 plugin_LTLIBRARIES          += atilibusb.la
 atilibusb_la_SOURCES        = atilibusb.c
-atilibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+atilibusb_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 atilibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += awlibusb.la
 awlibusb_la_SOURCES         = awlibusb.c
-awlibusb_la_LDFLAGS         = $(AM_LDFLAGS) @usb_libs@
+awlibusb_la_LDFLAGS         = $(AM_LDFLAGS) @LIBUSB_LIBS@
 awlibusb_la_CFLAGS          = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += dfclibusb.la
 dfclibusb_la_SOURCES        = dfclibusb.c
-dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+dfclibusb_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 dfclibusb_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 plugin_LTLIBRARIES          += srm7500libusb.la
 srm7500libusb_la_SOURCES    = srm7500libusb.c
-srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @usb_libs@
+srm7500libusb_la_LDFLAGS    = $(AM_LDFLAGS) @LIBUSB_LIBS@
 srm7500libusb_la_CFLAGS     = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 
 if LINUX_KERNEL
 plugin_LTLIBRARIES          += commandir.la
 commandir_la_SOURCES        = commandir.c
-commandir_la_LDFLAGS        = $(AM_LDFLAGS) @usb_libs@
+commandir_la_LDFLAGS        = $(AM_LDFLAGS) @LIBUSB_LIBS@
 commandir_la_CFLAGS         = $(AM_CFLAGS) $(LIBUSB_CFLAGS)
 endif
 
 endif
 
 if BUILD_FTDI
-plugin_LTLIBRARIES          += ftdi.la ftdix.la
+plugin_LTLIBRARIES          += ftdi.la
 ftdi_la_SOURCES             = ftdi.c
 ftdi_la_LDFLAGS             = $(AM_LDFLAGS) @FTDI_LIBS@
 ftdi_la_CFLAGS              = $(AM_CFLAGS) @FTDI_CFLAGS@
-ftdix_la_SOURCES            = ftdix.c
-ftdix_la_LDFLAGS            = $(AM_LDFLAGS) @FTDI_LIBS@
-ftdix_la_CFLAGS             = $(AM_CFLAGS) @FTDI_CFLAGS@
 endif
 
 if BUILD_LIBPORTAUDIO
 plugin_LTLIBRARIES          += audio.la
 audio_la_SOURCES            = audio.c
+audio_la_CFLAGS             = $(AM_CFLAGS) $(PORTAUDIO_CFLAGS)
 audio_la_LDFLAGS            = $(AM_LDFLAGS) -lportaudio \
-                              $(portaudio_lib_other)  @forkpty@
+                              @PORTAUDIO_LIBS@  @forkpty@
 endif
 
 if BUILD_LIBALSA
@@ -107,7 +104,12 @@ uirt2_la_SOURCES            = uirt2.c uirt2_common.c uirt2_common.h
 plugin_LTLIBRARIES          += uirt2_raw.la
 uirt2_raw_la_SOURCES        = uirt2_raw.c uirt2_common.c uirt2_common.h
 
-if DARWIN
+if HAVE_DEVINPUT
+plugin_LTLIBRARIES          += devinput.la
+devinput_la_SOURCES         = devinput.c
+endif
+
+if HAVE_IOKIT
 plugin_LTLIBRARIES          += osx_usbraw.la
 osx_usbraw_la_SOURCES       = osx_usbraw.c
 osx_usbraw_la_LDFLAGS       = $(AM_LDFLAGS) -framework IOKit -framework Cocoa
@@ -122,9 +124,6 @@ hiddev_la_SOURCES           = hiddev.c
 
 plugin_LTLIBRARIES          += creative_infracd.la
 creative_infracd_la_SOURCES = creative_infracd.c
-
-plugin_LTLIBRARIES          += devinput.la
-devinput_la_SOURCES         = devinput.c
 
 plugin_LTLIBRARIES          += zotac.la
 zotac_la_SOURCES            = zotac.c

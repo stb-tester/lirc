@@ -1,9 +1,6 @@
 ''' Simple lirc setup tool - control part. '''
-import gi
-gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk         # pylint: disable=no-name-in-module
-from gi.repository import GObject     # pylint: disable=no-name-in-module
+
 
 import grp
 import os
@@ -12,10 +9,16 @@ import sys
 import urllib.error          # pylint: disable=no-name-in-module,F0401,E0611
 import urllib.request        # pylint: disable=no-name-in-module,F0401,E0611
 
+import gi
+from gi.repository import Gtk         # pylint: disable=no-name-in-module
+from gi.repository import GObject     # pylint: disable=no-name-in-module
+
+import choosers
 import mvc_model
 import mvc_view
-import choosers
 import util
+
+gi.require_version('Gtk', '3.0')
 
 _DEBUG = 'LIRC_DEBUG' in os.environ
 _REMOTES_BASE_URI = "http://sf.net/p/lirc-remotes/code/ci/master/tree/remotes"
@@ -88,8 +91,8 @@ class Controller(object):
                     'echo lirc > %s/protocols ' % rc_dir
         else:
             if 'modprobe' in self.model.driver \
-                and self.model.driver['modprobe']:
-                    self.model.config.modprobe = self.model.driver.modprobe
+                    and self.model.driver['modprobe']:
+                self.model.config.modprobe = self.model.driver.modprobe
             self.check(self.CHECK_LIRCD_CONF)
 
     def modprobe_done(self, modprobe):

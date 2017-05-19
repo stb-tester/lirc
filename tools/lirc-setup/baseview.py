@@ -1,18 +1,17 @@
 ''' Simple lirc setup tool - common parts of view components '''
 
+
 import sys
-
 import gi
-gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk         # pylint: disable=no-name-in-module
-
+gi.require_version('Gtk', '3.0')
 
 def _hasitem(dict_, key_):
     ''' Test if dict contains a non-null value for key. '''
     return key_ in dict_ and dict_[key_]
 
 
-def _on_window_delete_event_cb(window, event):
+def on_window_delete_event_cb(window, event):
     ''' Generic window close event. '''
     window.hide()
     return True

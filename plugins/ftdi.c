@@ -31,9 +31,12 @@
 # include <config.h>
 #endif
 
-#if defined (HAVE_LIBUSB_1_0_LIBUSB_H)
+#include <assert.h>
+#include <stdint.h>
+
+#if defined(HAVE_LIBUSB_1_0_LIBUSB_H)
 #include <libusb-1.0/libusb.h>
-#elif defined (HAVE_LIBUSB_H)
+#elif defined(HAVE_LIBUSB_H)
 #include <libusb.h>
 #else
 #error Cannot find required libusb.h header
@@ -50,12 +53,22 @@
 #include <errno.h>
 #include <glob.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <signal.h>
 
 #include "lirc_driver.h"
 
 #include <ftdi.h>
+
+#ifdef HAVE_LINUX_SCHED_H
+#define LIRC_FTDIX_SET_SCHEDULER 1
+#endif
+
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+#include <sched.h>
+#include <linux/sched.h>
+#endif
 
 static const logchannel_t logchannel = LOG_DRIVER;
 
@@ -75,16 +88,21 @@ static int usb_product = 0x6001;
 static const char* usb_desc = NULL;
 static const char* usb_serial = NULL;
 
+static int tx_baud_mult = 16;
+static int rx_baud_mult = 64;
+
 static int laststate = -1;
-static __u32 rxctr = 0;
+static uint32_t rxctr = 0;
 
 static int pipe_main2tx[2] = { -1, -1 };
 static int pipe_tx2main[2] = { -1, -1 };
 
+int old_timings = 0;          /* Use old timings, see #275. */
+
 #if 0
 static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t gap)
 {
-	__u32 secs, diff;
+	uint32_t secs, diff;
 
 	secs = current->tv_sec - last->tv_sec;
 
@@ -93,6 +111,10 @@ static lirc_t time_left(struct timeval* current, struct timeval* last, lirc_t ga
 	return (lirc_t)(diff < gap ? gap - diff : 0);
 }
 #endif
+
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, uint32_t f_sample, uint32_t f_carrier,
+	unsigned int duty_cycle);
 
 static void list_devices(glob_t *buff)
 {
@@ -115,9 +137,7 @@ static void list_devices(glob_t *buff)
 		ftdi_free(ctx);
 		return;
 	}
-	memset(buff, 0, sizeof(glob_t));
-	buff->gl_offs = 32;
-	buff->gl_pathv = calloc(buff->gl_offs, sizeof(char*));
+	glob_t_init(buff);
 	for (dev = devlist; dev != NULL; dev = dev->next) {
 		r = ftdi_usb_get_strings(ctx,
 					 dev->dev,
@@ -128,19 +148,15 @@ static void list_devices(glob_t *buff)
 			log_warn("List FTDI devices: Cannot get strings");
 			continue;
 		}
-		if (buff->gl_pathc >= buff->gl_offs) {
-			log_warn("List FTDI devices - too many of them");
-			break;
-		}
 		snprintf(device, sizeof(device),
 			 "/dev/bus/usb/%03d/%03d:   %s:%s\n",
 			 libusb_get_bus_number(dev->dev),
 			 libusb_get_port_number(dev->dev),
 			 vendor, descr);
-		buff->gl_pathv[buff->gl_pathc] = strdup(device);
-		buff->gl_pathc += 1;
+		glob_t_add_path(buff, device);
 	}
 	ftdi_free(ctx);
+	drv_enum_add_udev_info(buff);
 }
 
 static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
@@ -160,7 +176,7 @@ static void parsesamples(unsigned char* buf, int n, int pipe_rxir_w)
 		 * The datasheet indicates that the sample rate in
 		 * bitbang mode is 16 times the baud rate but 32 seems
 		 * to be correct. */
-		usecs = (rxctr * 1000000LL) / (rx_baud_rate * 32);
+		usecs = (rxctr * 1000000LL) / (rx_baud_rate * rx_baud_mult);
 
 		/* Clamp */
 		if (usecs > PULSE_MASK)
@@ -218,7 +234,7 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 		log_debug("opened FTDI device '%s' OK", drv.device);
 
-		do {
+		while (1) {
 			unsigned char buf[RXBUFSZ > TXBUFSZ ? RXBUFSZ : TXBUFSZ];
 
 			/* transmit IR */
@@ -246,6 +262,11 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 				/* signal transmission ready: */
 				ret = write(fd_tx2main, &ret, 1);
+				if (ret <= 0) {
+					log_error("unable to post success to lircd (%s)",
+						  strerror(errno));
+					goto retry;
+				}
 
 				continue;
 			} else if (ret == 0) {
@@ -255,12 +276,20 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 
 			/* receive IR */
 			ret = ftdi_read_data(&ftdic, buf, RXBUFSZ);
-			if (ret > 0)
+			if (ret > 0) {
 				parsesamples(buf, ret, fd_rx2main);
-		} while (ret > 0);
+			} else if (ret < 0) {
+				log_error("ftdi: error reading data from device: %s",
+					  ftdi_get_error_string(&ftdic));
+				goto retry;
+			} else {
+				log_info("ftdi: no data available for reading from device");
+			}
+		};
 
 retry:
 		/* Wait a while and try again */
+		ftdi_usb_close(&ftdic);
 		usleep(500000);
 	}
 }
@@ -268,19 +297,22 @@ retry:
 
 static int drvctl_func(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-	int i;
+	struct option_t* opt;
 
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
 		list_devices((glob_t*) arg);
 		return 0;
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		for (i = 0; i < glob->gl_pathc; i += 1)
-			free(glob->gl_pathv[i]);
-		free(glob->gl_pathv);
+		drv_enum_free((glob_t*) arg);
 		return 0;
+	case DRVCTL_SET_OPTION:
+		opt = (struct option_t*)arg;
+		if (strcmp(opt->key, "old-timings") == 0) {
+			old_timings = 1;
+			return 0;
+		}
+		return DRV_ERR_BAD_OPTION;
 	default:
 		return DRV_ERR_NOT_IMPLEMENTED;
 	}
@@ -350,6 +382,14 @@ next:
 		if (comma == NULL)
 			break;
 		p = comma + 1;
+	}
+
+	if (old_timings == 1) {         /* original values */
+		tx_baud_mult = 8;
+		rx_baud_mult = 32;
+	} else {
+		tx_baud_mult = 16;
+		rx_baud_mult = 64;       /* hardware *16, libftdi *4 */
 	}
 
 	rec_buffer_init();
@@ -484,40 +524,60 @@ static lirc_t hwftdi_readdata(lirc_t timeout)
 	return res;
 }
 
-static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
+static ssize_t write_pulse(unsigned char* buf, size_t size,
+	struct ir_remote* remote, struct ir_ncode* code)
 {
-	__u32 f_sample = tx_baud_rate * 8;
-	__u32 f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
-	__u32 div_carrier;
-	int val_carrier;
+	uint32_t f_sample = tx_baud_rate * tx_baud_mult;
+	uint32_t f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
 	const lirc_t* pulseptr;
-	lirc_t pulse;
 	int n_pulses;
-	int pulsewidth;
-	int bufidx;
-	int sendpulse;
-	unsigned char buf[TXBUFSZ];
 
 	log_debug("hwftdi_send() carrier=%dHz f_sample=%dHz ", f_carrier, f_sample);
 
 	/* initialize decoded buffer: */
 	if (!send_buffer_put(remote, code))
-		return 0;
+		return -1;
 
 	/* init vars: */
 	n_pulses = send_buffer_length();
 	pulseptr = send_buffer_data();
+
+	return modulate_pulses(buf, size, pulseptr, n_pulses, f_sample, f_carrier,
+	    get_duty_cycle(remote));
+}
+
+static int modulate_pulses(unsigned char* buf, size_t size,
+	const int* pulseptr, int n_pulses, uint32_t f_sample, uint32_t f_carrier,
+	unsigned int duty_cycle)
+{
+	uint32_t div_carrier;
+	uint32_t duty;
+	lirc_t pulse;
+	int pulsewidth;
+	int val_carrier;
+	int bufidx;
+	int sendpulse;
+
 	bufidx = 0;
 	div_carrier = 0;
 	val_carrier = 0;
 	sendpulse = 0;
+
+	/* Calculate the carrier on time (in # samples) */
+	duty = f_sample * duty_cycle / 100;  /* duty_cycle is 1-100 */
+	if (duty <= 1)
+		duty = 1;
+	else if (duty >= f_sample)
+		duty = f_sample - 1;
 
 	while (n_pulses--) {
 		/* take pulse from buffer */
 		pulse = *pulseptr++;
 
 		/* compute the pulsewidth (in # samples) */
-		pulsewidth = ((__u64)f_sample) * ((__u32)(pulse & PULSE_MASK)) / 1000000ul;
+		pulsewidth =
+		    ((uint64_t)f_sample) * ((uint32_t)(pulse & PULSE_MASK))
+			/ 1000000ul;
 
 		/* toggle pulse / space */
 		sendpulse = sendpulse ? 0 : 1;
@@ -526,11 +586,11 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 			/* carrier generator (generates a carrier
 			 * continously, will be modulated by the
 			 * requested signal): */
-			div_carrier += f_carrier * 2;
+			div_carrier += f_carrier;
 			if (div_carrier >= f_sample) {
 				div_carrier -= f_sample;
-				val_carrier = val_carrier ? 0 : 255;
 			}
+			val_carrier = div_carrier < duty ? 255 : 0;
 
 			/* send carrier or send space ? */
 			if (sendpulse)
@@ -540,18 +600,29 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 
 			/* flush txbuffer? */
 			/* note: be sure to have room for last '0' */
-			if (bufidx >= (TXBUFSZ - 1)) {
+			if (bufidx >= (size - 1)) {
 				log_error("buffer overflow while generating IR pattern");
-				return 0;
+				return -1;
 			}
 		}
 	}
 
 	/* always end with 0 to turn off transmitter: */
 	buf[bufidx++] = 0;
+	return bufidx;
+}
+
+static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
+{
+	unsigned char buf[TXBUFSZ];
+	ssize_t pulse_len;
+
+	pulse_len = write_pulse(buf, sizeof(buf), remote, code);
+	if (pulse_len == -1)
+		return 0;
 
 	/* let the child process transmit the pattern */
-	chk_write(pipe_main2tx[1], buf, bufidx);
+	chk_write(pipe_main2tx[1], buf, pulse_len);
 
 	/* wait for child process to be ready with it */
 	chk_read(pipe_tx2main[0], buf, 1);
@@ -559,11 +630,280 @@ static int hwftdi_send(struct ir_remote* remote, struct ir_ncode* code)
 	return 1;
 }
 
+
+/*
+* Mode2 transmitter using the bitbang mode of an FTDI USB-to-serial chip such as
+* the FT230X.  The standard FTDI driver with the FT232R is unreliable having a
+* IR failure rate of ~2%.  The FT232R also becomes unusable if you set the
+* tx_baud_rate to values other than 65536.
+*
+* This driver works differently modifying its tx_baud_rate according to the
+* carrier frequency set.  This is ok because the FT230X does not have the timing
+* bugs present in the FT232R.  This allows much lower data rates over USB and
+* so improves reliablity, particularly if other devices are connect to the same
+* USB port.
+*
+* Receive is not included to significantly simplify design of this driver.
+*/
+
+struct ftdix_config {
+	uint32_t vendor;
+	uint32_t product;
+	char* desc;
+	char* serial;
+	uint32_t output;
+
+	char* _config_text;
+};
+
+static struct ftdix_config ftdix_default_config = {
+	.vendor = 0x0403,
+	.product = 0x6015,
+	.output = 2,  /* RTS as output */
+};
+
+static int is_open = 0;
+static struct ftdi_context ftdic;
+
+static int parse_config(const char* device_config, struct ftdix_config* config);
+static void hwftdix_clear_config(struct ftdix_config* config);
+
+static int hwftdix_open(const char* device)
+{
+	struct ftdix_config config = {0};
+
+	if (is_open) {
+		log_info("Ignoring attempt to reopen ftdi device");
+		return 0;
+	}
+
+	log_info("Opening FTDI-X device: %s", device);
+
+	if (parse_config(device, &config) != 0) {
+		goto fail;
+	}
+
+	drv.fd = -1;
+
+	if (ftdi_init(&ftdic) < 0) {
+		log_error(
+			"ftdi_init failed: %s", ftdi_get_error_string(&ftdic));
+		goto fail;
+	}
+
+	/* Open the USB device */
+	if (ftdi_usb_open_desc(&ftdic, config.vendor, config.product,
+			       config.desc, config.serial) < 0) {
+		log_error("unable to open FTDI device (%s)",
+			  ftdi_get_error_string(&ftdic));
+		goto fail_inited;
+	}
+
+	/* Enable bit-bang mode, setting output & input pins direction */
+	if (ftdi_set_bitmode(&ftdic, 1 << config.output, BITMODE_BITBANG) < 0) {
+		log_error("unable to enable bitbang mode (%s)",
+			  ftdi_get_error_string(&ftdic));
+		goto fail_opened;
+	}
+
+	log_debug("opened FTDI device '%s' OK", device);
+	is_open = 1;
+	return 0;
+fail_opened:
+	ftdi_usb_close(&ftdic);
+fail_inited:
+	ftdi_deinit(&ftdic);
+	hwftdix_clear_config(&config);
+fail:
+	log_debug("Failed to open FTDI device '%s'", device);
+	return 1;
+}
+
+static int hwftdix_close(void)
+{
+	if (ftdi_usb_close(&ftdic) < 0) {
+		log_error("ftdi_usb_close() failed: %s",
+			  ftdi_get_error_string(&ftdic));
+	}
+	ftdi_deinit(&ftdic);
+	is_open = 0;
+	return 0;
+}
+
+static void sched_enable_realtime(int* orig_scheduler)
+{
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+	*orig_scheduler = sched_getscheduler(0);
+	if (*orig_scheduler == -1) {
+		log_warn("Failed to get current scheduling policy with error "
+			 "%s  Sending will not run with real-time priority and "
+			 "you may suffer USB buffer underruns causing corrupt "
+			 "IR signals", strerror(errno));
+		return;
+	}
+	if (*orig_scheduler != SCHED_BATCH && *orig_scheduler != SCHED_OTHER &&
+	    *orig_scheduler != SCHED_IDLE) {
+		/* We only know how to restore these schedulers */
+		*orig_scheduler = -1;
+		return;
+	}
+	struct sched_param param = {
+		.sched_priority = 1,
+	};
+	if (sched_setscheduler(0, SCHED_FIFO, &param) < 0) {
+		log_warn("Failed to set scheduling policy to SCHED_FIFO: %s "
+			 "Sending will not run with real-time priority and you "
+			 "may suffer USB buffer underruns causing corrupt IR "
+			 "signals", strerror(errno));
+		*orig_scheduler = -1;
+	}
+#else
+	*orig_scheduler = -1;
+#endif /* LIRC_FTDIX_SET_SCHEDULER */
+}
+
+static void sched_restore(int* orig_scheduler)
+{
+#ifdef LIRC_FTDIX_SET_SCHEDULER
+	if (*orig_scheduler == -1)
+		return;
+
+	struct sched_param param = {
+		.sched_priority = 0,
+	};
+	if (sched_setscheduler(0, *orig_scheduler, &param) < 0) {
+		log_warn("Restoring scheduling policy failed: %s",
+			 strerror(errno));
+	}
+#else
+	*orig_scheduler = -1;
+#endif /* LIRC_FTDIX_SET_SCHEDULER */
+}
+
+
+static int parse_config(const char* device_config, struct ftdix_config* config)
+{
+	char* p;
+
+	*config = ftdix_default_config;
+
+	/* Parse the device string, which has the form key=value,
+	 * key=value, ...  This isn't very nice, but it's not a lot
+	 * more complicated than what some of the other drivers do. */
+	config->_config_text = p = strdup(device_config);
+	assert(p);
+	while (p) {
+		char* comma;
+		char* value;
+
+		comma = strchr(p, ',');
+		if (comma != NULL)
+			*comma = '\0';
+
+		/* Skip empty options. */
+		if (*p == '\0')
+			goto next;
+
+		value = strchr(p, '=');
+		if (value == NULL) {
+			log_error("device configuration option must contain an "
+				  "'=': '%s'", p);
+			goto error;
+		}
+		*value++ = '\0';
+
+		if (strcmp(p, "vendor") == 0) {
+			config->vendor = strtol(value, NULL, 0);
+		} else if (strcmp(p, "product") == 0) {
+			config->product = strtol(value, NULL, 0);
+		} else if (strcmp(p, "desc") == 0) {
+			config->desc = value;
+		} else if (strcmp(p, "serial") == 0) {
+			config->serial = value;
+		} else if (strcmp(p, "output") == 0) {
+			config->output = strtol(value, NULL, 0);
+		} else {
+			log_error("unrecognised device configuration option: "
+				  "'%s'", p);
+			goto error;
+		}
+
+next:
+		if (comma == NULL)
+			break;
+		p = comma + 1;
+	}
+	return 0;
+error:
+	hwftdix_clear_config(config);
+	return 1;
+}
+
+static void hwftdix_clear_config(struct ftdix_config* config)
+{
+	free(config->_config_text);
+	memset(config, 0, sizeof(*config));
+}
+
+
+static int hwftdix_send(struct ir_remote* remote, struct ir_ncode* code)
+{
+	int success = 1;
+	unsigned char buf[TXBUFSZ];
+	ssize_t buf_len;
+	int orig_scheduler;
+	uint32_t f_carrier = remote->freq == 0 ? DEFAULT_FREQ : remote->freq;
+
+	/* A sample rate of carrier*2 means we will get the pattern 1010101010
+	 * when the blaster is on and 0000000000 when it is off. */
+	uint32_t f_sample = f_carrier * 2;
+	uint32_t tx_baud = f_carrier * 2 / 64;
+
+	const lirc_t* pulseptr;
+	int n_pulses;
+
+	log_debug("hwftdix_send() carrier=%dHz f_sample=%dHz tx_baud=%d",
+		  f_carrier, f_sample, tx_baud);
+
+	/* initialize decoded buffer: */
+	if (!send_buffer_put(remote, code))
+		return -1;
+
+	/* init vars: */
+	n_pulses = send_buffer_length();
+	pulseptr = send_buffer_data();
+
+	buf_len = modulate_pulses(buf, sizeof(buf), pulseptr, n_pulses, f_sample,
+				  f_carrier, 50);
+
+	/* select correct transmit baudrate */
+	if (ftdi_set_baudrate(&ftdic, tx_baud) < 0) {
+		log_error("unable to set required baud rate for transmission "
+			  "(%s)", ftdi_get_error_string(&ftdic));
+		success = 0;
+		goto out;
+	}
+
+	/* buffer underruns will mess up our IR signal, go into realtime mode
+	   if possible: */
+	sched_enable_realtime(&orig_scheduler);
+
+	if (ftdi_write_data(&ftdic, buf, buf_len) < buf_len) {
+		log_error("enable to write ftdi buffer (%s)",
+			  ftdi_get_error_string(&ftdic));
+		return 1;
+	}
+
+	sched_restore(&orig_scheduler);
+out:
+	return success;
+}
+
 const struct driver hw_ftdi = {
 	.name		= "ftdi",
 	.device		= "",
-	.features	= LIRC_CAN_REC_MODE2 | \
-			  LIRC_CAN_SEND_PULSE | \
+	.features	= LIRC_CAN_REC_MODE2 |
+			  LIRC_CAN_SEND_PULSE |
 			  LIRC_CAN_SET_SEND_CARRIER,
 	.send_mode	= LIRC_MODE_PULSE,
 	.rec_mode	= LIRC_MODE_MODE2,
@@ -577,9 +917,33 @@ const struct driver hw_ftdi = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= hwftdi_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
-	.info		= "No info available",
-	.device_hint    = "/dev/ttyUSB*",
+	.driver_version = "0.9.5",
+	.info		= "See file://" PLUGINDOCS "/ftdi.html",
+	.device_hint    = "drvctl",
 };
 
-const struct driver* hardwares[] = { &hw_ftdi, (const struct driver*)NULL };
+
+const struct driver hw_ftdix = {
+	.name		= "ftdix",
+	.device		= "",
+	.features	= LIRC_CAN_SEND_PULSE |
+			  LIRC_CAN_SET_SEND_CARRIER,
+	.send_mode	= LIRC_MODE_PULSE,
+	.rec_mode	= 0,
+	.code_length	= 0,
+	.init_func	= NULL,
+	.open_func	= hwftdix_open,
+	.close_func	= hwftdix_close,
+	.send_func	= hwftdix_send,
+	.rec_func	= NULL,
+	.decode_func	= receive_decode,
+	.drvctl_func	= drvctl_func,
+	.readdata	= NULL,
+	.api_version	= 3,
+	.driver_version = "0.9.5",
+	.info		= "See file://" PLUGINDOCS "/ftdix.html",
+	.device_hint    = "drvctl",
+};
+
+const struct driver* hardwares[] = {
+	&hw_ftdi, &hw_ftdix, (const struct driver*)NULL };

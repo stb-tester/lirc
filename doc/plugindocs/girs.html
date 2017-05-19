@@ -2,8 +2,8 @@
     <H1>The Girs driver</H1>
 
     <P>The <a href="https://www.arduino.cc">Arduino platform</A> has gained an
-        incredible popularity the last few years. For simple applications  using
-        IR signaling, it is more than adequate. One of the main reasons is the
+        incredible popularity the last few years.
+        One of the main reasons is the
         availability of "far-east" clones, often to the price of a hamburger or less.
         LEDs (for IR or for visible light), as well as IR detectors and receivers,
         can be soldered directly to these PCBs.
@@ -13,40 +13,41 @@
     <p>The present document requires a fair amount of prerequisite knowledge both on soft- and hardware.
         Easier to read documents are planned.
 
-    <p><a href="http://www.harctoolbox.org/Girs.html">Girs (General InfraRed Server Command Language)</a>
+    <p><a href="http://www.harctoolbox.org/Girs.html"><em>Girs</EM> (General InfraRed Server Command Language)</a>
         is the attempt to specify a general communication language for IR servers, in a wide sense.
         <em>AGirs</EM> is an implementation of Girs for the Arduino. (The name "ArduinoGirs"
-        or such was avoided for legal reasons.) It consists of a library, GirsLib,
+        or such was avoided for legal reasons.) It consists of a library, <em>GirsLib</em>,
         with which different "programs" ("sketches") can be written. As in the Girs specification,
         there is a number of different, optional modules. These are selected at compile time through
         defining certain C preprocessor symbols in a configuration file. Also the
         hardware layout is defined in configuration files.
 
     <p>The AGirs package is available on <a href="https://github.com/bengtmartensson/AGirs">Github</a>.
-        For the time being, the user is supposed to clone that repository and to
-        compile the Girs4Lirc sketch himself/herself. See <a href="https://www.arduino.cc/">the Arduino site</A>
+        Currently, the user is supposed to clone that repository, to
+        compile and upload the GirsLite sketch himself/herself. See <a href="https://www.arduino.cc/">the Arduino site</A>
         for instructions on how to do this.
 
-    <p>For the convenience of the user, this guide covers both the firmware and the driver.
-        The next chapter covers the firmware; in Arduino lingo, the "sketch" Girs4Lirc.
+    <p>This guide covers both the firmware and the driver.
+        The next chapter covers the firmware; in Arduino lingo, the "sketch" GirsLite.
         The chapter following deals with the Lirc driver.
 
-    <h2>The firmware: Girs4Lirc</H2>
-    <p>Girs4Lirc is a version of AGirs, optimized for usage with Lirc using the Lirc driver <code>girs</CODE>.
-        It can also be used with <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>,
-        however, using a decoding receiver (TSOP-*) only, it cannot determine the modulation
+    <h2>The firmware GirsLite</H2>
+    <p><em>GirsLite</EM> is a light-weight configuration of AGirs, intended for usage with
+        <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>,
+        and with Lirc, using the driver <code>girs</CODE>.
+        However, using a decoding receiver (TSOP-*) only, it cannot determine the modulation
         frequency of a measured signal, nor can it capture signals with a modulation
-        frequency different from the nominal frequency of the demodulator. (A 38kHz
+        frequency "too" different from the nominal frequency of the demodulator. (A 38kHz
         demodulator TSOP-*38 in practice works well for the commonly used frequencies
-        36--40 kHz though.)
+        36--40 kHz. For optimal performance, select the "right" one.)
 
     <h3>Hardware requirements and configuration</H3>
     <p>
 All components are optional. The sketch can be configured for sending
 and/or receiving, optionally supporting signaling LEDs and an
 I2C-connected LCD display. Sending of non-modulated signals,
-e.g. using an RF sender, is supported. Thanks to the <code>module</CODE> command of Girs, the
-<code>girs</CODE> driver at run-time informs itself about the capacities of the current device, and
+e.g. using an RF sender like TX-433, is supported. Thanks to the <code>module</CODE> command of Girs, the
+driver at run-time informs itself about the capacities of the current hardware, and
 informs Lirc in its turn.
 
     <p>Configuration is done by adapting the file <code>config.h</CODE>, selecting the desired
@@ -54,52 +55,52 @@ components and their parameters. By convention,
 it includes a hardware configuration file, where the actual
 pin configuration is defined. Either use an existing one, or create your own.
 
-<p>A more detailed configuration guide for AGirs is in the planning stage.
+The Arduino can either be connected over USB, or, if equipped with suitable
+(W5100-compatible, like the official Ethernet shield) Ethernet shield, accessed over Ethernet using TCP sockets.
+
+<p>A more detailed configuration guide for AGirs is planned.
 
 <h4>Sending</h4>
-<p>For sending, define the C preprocessor symbol TRANSMIT. Connect a suitable IR LED to the sending
+<p>For sending, define the C preprocessor symbol <code>TRANSMIT</CODE>. Connect a suitable IR LED to the sending
 pin (pin 9 on Mega2560 and Leonardo/Mini, pin 3 on most others), using
 suitable resistor and/or driver transistor.
 
 <h4>Sending non-demodulating signals</h4>
 <p>
-If NON_MOD is defined, and a suitable sender is connected  to pin
-NON_MOD_PIN, it will be possible to send non-modulated
+    If <code>NON_MOD</CODE> is defined, and a suitable sender is connected to pin
+    with the number <code>NON_MOD_PIN</CODE>, it will be possible to send non-modulated
 signals. This can be another IR LED, but more interestingly, it can be an
 RF sender, used for controlling e.g. remotely controlled power outlets
 etc. (Signals can be generated by IrScrutinizer, using e.g. the <code>arctech</CODE>
-protocol.) If (and only if) the frequency of a signal is 0,
-the signal is sent to the non modulating receiver at NON_MOD_PIN,
+protocol.) If the frequency of a signal is 0,
+the signal is sent to the non modulating receiver at <code>NON_MOD_PIN</CODE>,
 otherwise the normal, modulating, sender will be used.
 
 <p>Having the user select transmitter manually (e.g. <code>irsend SET_TRANSMITTERS ...</code>)
 might have been a cleaner solution than the auto-routing -- but definitely less convenient.
 Opinions are welcome.
 
-<p>Current lircd parses remotes having no explicit frequency as having
+<p>Until recently, lircd parsed remotes having no explicit frequency as having
 frequency 0 (<a href="https://sourceforge.net/p/lirc/tickets/132/">ticket</A>). To avoid
 problems, make sure that all used remotes have explicit frequencies in
-their lircd.conf. (If unsure, just add "frequency 38000" to the
+their <code>lircd.conf</CODE>. (If unsure, just add "<code>frequency 38000</CODE>" to the
 preamble of each remote.)
 
 <h4>Receiving</H4>
-<p>For receiving, define RECEIVE.  Use a demodulating receiver, TSOP*,
-the data pin connected to IRSENSOR_1_PIN. (Warning: Different
-receivers look similar, but have different pin-outs. Check the data sheet.)
+<p>For receiving, define <code>RECEIVE</CODE>.  Use a demodulating receiver, TSOP*,
+    with the data pin connected to <code>IRSENSOR_1_PIN</CODE>. (<strong>Warning:</STRONG> Different
+receivers look similar, but have different pin-outs. Check their data sheet, or be prepared to fry the components.)
 
 <h4>LEDs (for visible light)</H4>
 <p>
-For using attached LEDs, define the symbol LED. If desired, define one as COMMANDLED, another as
-RECEIVELED, and a third one as TRANSMITLED.
+    For using attached LEDs, define the symbol LED. If desired, define one as <code>COMMANDLED</CODE>, another as
+    <code>RECEIVELED</CODE>, and a third one as <code>TRANSMITLED</CODE>.
 <ul>
-        <LI>The COMMANDLED led will be
-lit when the device is listening for commands,
-        <LI>the RECEIVELED led will
-be lit when the receiver is "listening",
-        <LI>he TRANSMITLED led will
-light up when transmission takes place.
+    <LI>The <code>COMMANDLED</CODE> led will be lit when the device is listening for commands,
+    <LI>the <code>RECEIVELED</CODE> led will be lit when the receiver is "listening",
+    <LI>the <code>TRANSMITLED</CODE> led will light up when transmission takes place.
     </ul>
-<p>This behavior is roughly the same as in <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>.
+<p>This behavior is the same as in <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>.
 
 <p><A href="https://www.google.de/search?q=led+resistor+built-in">LEDs with
             build-in resistor</A> are recommended. Otherwise, be sure to include a
@@ -108,10 +109,9 @@ light up when transmission takes place.
             Also note that "multicolored" LEDs (which is nothing but several LEDs within
             one package), can be used in creative ways.
 
-<h4>LCD</h4>
+<h4>LCD display</h4>
 <p>If the use of an I2C connected LCD display is desired, define
-I2C_LCD. This will allow the Lirc driver to send message to it for
-display. Also, it is used during start-up to signalize the current
+I2C_LCD. This will be used during start-up to signalize the current
 firmware version.
 
 <p>As an extra feature, a received signal will be decoded using the
@@ -120,53 +120,49 @@ outcome of the decoding is displayed, but (at least currently) not
 sent to Lirc.
 
 <h3>Self test</h3>
-<p>As a simple self test, when starting the sketch, all the LEDs come on and the
-    name and version of the firmware is displayed on the LCD display, if configured.
+<p>As a simple self test, when starting the sketch, all the LEDs come on. If an LCD display
+    is connected, it will show the name and version of the firmware.
 
 <h3>Future development</H3>
 <p>AGirs is work in development, and may change, including the interface,
 at any time.
 
-<p>As Girs is intended to be a general solution, having a separate
-version for Lirc is a contradiction. Girs4Lirc may therefore in the
-future be replaced by some other sketch.
-
-<h2>The "girs" driver.</h2>
+<h2>The <code>girs</CODE> driver</h2>
 <p>Using the <code>modules</CODE> command of Girs, the driver informs itself during runtime of
     the capacities of the firmware, and informs Lircd in its turn. For example,
-    if TRANSMIT is not defined in the firmware, Lircd knows that it cannot send.
+    if <code>TRANSMIT</CODE> is not defined in the firmware, Lircd knows that it cannot send.
+    This may lead to a performance improvement.
 <h3>Driver parameters</h3>
 <p>There are a few parameter with which the user can customize the behavior of the driver.
     They are given at the command line to Lircd (alternatively in the file <code>lirc_options.conf</CODE>).
     For the syntax, see the documentation for Lircd.
     The parameters are:
 <dl>
-    <dt>substitute_0_frequency<dt><dd>Define if the problem of
-        <a href="https://sourceforge.net/p/lirc/tickets/132/">this ticket</a> is present
-            in the used lircd, and the old behavior is wanted. If the frequency is 0, and this parameters is non-zero,
-            the frequency will be substituted by this value, typically 38000.
-            Not needed if all your remotes have explict, non-zero frequencies.
-            Defining this makes it impossible to send non-modulated signals.</dd>
-    <dt>connectled</dt><dd>If non-zero, the LED with this number will be turned
-        on the first time the driver is accessed and stays on until the device is closed,
-        normally at the end of the Lircd run.</DD>
-    <dt>initedled</dt><dd>If non-zero, the LED with this number will be turned
-        on by the init function ("has been inited", motivating the "funny" name),
-        and turned on by the deinit function.</dd>
-    <dt>transmitled</dt><dd>If non-zero, the LED with this number will be turned
-        on by the send function and turned on by the deinit function. (This behavior has been
-        selected instead of the more natural one -- having the send function turn it off when ending --
-        since the latter has timing penalty.)</dd>
-        <dt>drop_dtr_when_initing</dt><dd>If non-zero, the "DTR line" will be lowered for 100 ms when
+    <dt><code>drop_dtr_when_initing</CODE></dt><dd>(Only relevant for USB connected Arduinos)
+            If non-zero, the "DTR line" will be lowered for 100 ms when
             making the first connect, causing most Arduinos to reset (see
             <a href="https://www.arduino.cc/en/Main/ArduinoBoardUno#documentation">Arduino documentaton</a>,
             paragraph "Automatic (Software) Reset").</dd>
 </dl>
-<p>Note that the LEDs defined here are controlled from the driver, independently of
-    the ones in the previous chapter, which are controlled directly from the firmware.
-    Using both may look confusing in deployment.
 
-    <h3>Device file</H3>
+    <h3>The device name</H3>
+    <p>As previously mentioned, the driver support both USB- as well as Ethernet connected operation.
+        For the latter case, the "device" is interpreted as a hostname/IP number,
+        optionally followed by a colon (":") and port number (default 33333). The exact rules are: If the device name
+    <ul>
+        <li>starts with a slash ("/"), or
+        <li>is empty, or
+        <li>starts with "<code>auto</CODE>",
+    </ul>
+    the device is assumed to be a connected with a USB-serial connection, otherwise it is assumed to
+    be a hostname/portnumber.
+
+    <h4>(USB-)Serial connection</H4>
+    <p>If an absolute file name was given, it is used as entered.
+        Otherwise, the Lirc device enumeration is used to locate the device,
+        using the globbing patterns <code>/dev/ttyACM*</CODE>, <code>/dev/ttyUSB*</CODE>,
+        <code>/dev/arduino*</CODE>.
+
     <p>Linux (the subsystem <code>udev</CODE> really) assigns a connected Arduino
         a device file name of the form <code>/dev/ttyACM<EM>n</EM></code>,
         in some cases <code>/dev/ttyUSB<EM>n</EM></code>,
@@ -190,8 +186,17 @@ SUBSYSTEMS=="usb", ATTRS{idProduct}=="8037", ATTRS{idVendor}=="2341", SYMLINK+="
 SUBSYSTEMS=="usb", ATTRS{idProduct}=="8036", ATTRS{idVendor}=="2341", SYMLINK+="arduino arduino_leonardo"
 SUBSYSTEMS=="usb", ATTRS{idProduct}=="0042", ATTRS{idVendor}=="2341", SYMLINK+="arduino arduino_mega arduino_mega_$attr{serial}"
 </PRE>
+    <h5>Access rights</H5>
+    <p>The thus created device files in general are accessible only for root and for members of a group like <code>dialout</CODE> (system dependent).
+        To allow yourself, or a Lirc user, access to that device, make that user a member of the said group,
+        using for example a command like <code>sudo usermod -a -G dialout $USER</code>.
 
-
+    <h4>Ethernet TCP connection</H4>
+    <p>If the device name given is not interpreted as a serial device, it is assumed to denote a host name,
+        optionally with a port number. If the string contains a comma (":"), the substring up to the comma is
+        assumed to be the host name, the substring after the comma the port number. The "hostname" can be either
+        a numerical IP4 address (like 192.168.1.29), or anything that the name resolver on the host can resolve. The default
+        port number is 33333.
 
     <h2>FAQs</H2>
     <h3>Is there a forum for AGirs?</H3>
@@ -199,14 +204,14 @@ SUBSYSTEMS=="usb", ATTRS{idProduct}=="0042", ATTRS{idVendor}=="2341", SYMLINK+="
             href="https://github.com/bengtmartensson/AGirs/issues">here</a>,
             while problems with the driver can be posted to the
             <a href="https://lists.sourceforge.net/lists/listinfo/lirc-list">Lirc mailing list</a>,
-            or, (formally not before the driver is official) issued raised
-            <a href=https://sourceforge.net/p/lirc/tickets/">here</a>.
+            or, issued <a href="https://sourceforge.net/p/lirc/tickets/">here</a>.
     <h3>Does this driver need to be run as root?</H3>
     <p>No, provided that the device file and the lock directory (on e.g. Fedora this is
         <code>/var/run/lock/lockdev</code>)
         are accessible by the current user. (On most systems, this means that the current
-        user should be a member of the group <code>lock</code>.) Lircd itself may need
-        privileges e.g. for creating lock files and pipes, but this is outside of the scope of this document.
+        user should be a member of the group <code>lock</code> and/or <code>dialout</CODE>.)
+        Lircd itself may need
+        privileges e.g. for creating lock files and pipes, but this is outside of the scope of the present document.
     <h3>Why is the receive LED coming on for a short time before transmitting,
         and when Lircd is executing commands like "version"?</H3>
     <p>Because Lirc was designed that way; ask Christoph... It is not in the driver. If Lirc was designed today,
@@ -214,10 +219,24 @@ SUBSYSTEMS=="usb", ATTRS{idProduct}=="0042", ATTRS{idVendor}=="2341", SYMLINK+="
         Having said that, if using the hardware only for sending, consider disabling the receive feature
         in the Arduino sketch. This might improve the total systems robustness and performance.</P>
     <h3>I am looking for a hardware guide for "dummies".</H3>
-    <p>It is in the planning stage.
+    <p>See <a href="http://www.harctoolbox.org/arduino_nano.html">this guide</A>,
+        and possibly its <a href="http://harctoolbox.org/arduino_nano_part2.html">second part</a>.
+    <h3>What is Infrared4Arduino</H3>
+    <p><a href="http://www.harctoolbox.org/Infrared4Arduino.html">Infrared4Arduino</a> is a low-level library for IR signals on the Arduino,
+        on which (the "high level") AGirs is built.
+        It is hosted on <a href="https://github.com/bengtmartensson/Infrared4Arduino">Github</A>.
+        API documentation is found <a href="http://harctoolbox.org/infrared-apidocs/index.html">here</A>.
+        It is known to the Arduino library manager, so it can/should be installed using it (Sketch -> Include library -> Manage libraries;
+        select Topic "Other" and Type "Contributed!, scroll down to "Infrared").
     <h3>Why is the Arduino taking so long on its start?</h3>
-    <p>Because of its bootloader. Try programming the sketch using a programmer connected to the ICSP header,
-        removing the bootloader. (It can easily be restored from the Arduino IDE.)
-        The self test does not add anything significant to the startup time.
+    <p>Recently (2017-03-11), the selftest time was reduced from 2 seconds to 0.2 seconds.
+        You may also disable the Arduino bootloader by programming the sketch
+        using an external programmer connected to the ICSP header.
+        (It can easily be restored from the Arduino IDE, using the programmer.)
+        Also, consider adding the flag <code>--immediate-init</CODE> to the options to lircd.
+    <h3>I have seen a document saying that I should use "Girs4Lirc"; what is that?</H3>
+    <p>Girs4Lirc has been replaced by GirsLite, which now works with both Lirc and IrScrutinizer.
+    <h3>How is "Girs" to be pronounced?</H3>
+    <p>Who cares?
 
 <p class="footer"/>

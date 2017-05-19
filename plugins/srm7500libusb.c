@@ -133,6 +133,7 @@ static int srm7500_deinitialize_usbdongle(void);
 static int philipsrf_input(philipsrf_incoming_t* buffer_in);
 static int philipsrf_output(philipsrf_outgoing_t buffer_out);
 static void srm7500_sigterm(int sig);
+static int drvctl_func(unsigned int cmd, void* arg);
 
 const struct driver hw_srm7500libusb = {
 	.name		= "srm7500libusb",
@@ -148,12 +149,12 @@ const struct driver hw_srm7500libusb = {
 	.send_func	= NULL,
 	.rec_func	= srm7500_rec,
 	.decode_func	= srm7500_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/srm7500atilibusb.html",
-	.device_hint    = "/dev/ttyUSB*",
+	.device_hint    = "drvctl",
 };
 
 const struct driver* hardwares[] = { &hw_srm7500libusb, NULL };
@@ -188,6 +189,21 @@ static int macBeaconPayloadGiven = 0;
 static int requested_usb_bus_number = -1;
 static int requested_usb_device_number = -1;
 static int srm7500_terminate = 0;
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 
 /* initialize driver -- returns 1 on success, 0 on error */
 static int srm7500_init(void)

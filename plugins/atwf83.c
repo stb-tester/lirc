@@ -54,6 +54,42 @@ static signed int main_code = 0;
 static struct timeval start, end, last;
 static int repeat_state = RPT_NO;
 
+//static int is_device_ok(uint16_t vendor, uint16_t product)
+//{
+//	return vendor == 0x20e8 && product == 0x5820;
+//}
+
+
+static int drvctl_func(unsigned int cmd, void* arg)
+{
+//	static const struct drv_enum_udev_what what[] = {
+//		{
+//			.idVendor = "20e8",
+//			.idProduct =  "5820",
+//		},
+//		{0}
+//	};
+
+//	static const char* what[] = {
+//	    "/dev/dm-*", "/dev/tty*", "/dev/usbmon*", NULL
+//	};
+
+	switch (cmd) {
+	case DRVCTL_GET_DEVICES:
+		return drv_enum_glob((glob_t*) arg, "/dev/hidraw*");
+		//return drv_enum_globs((glob_t*) arg, what);
+		//return drv_enum_usb((glob_t*) arg, is_device_ok);
+		//return drv_enum_udev((glob_t*) arg, what);
+
+	case DRVCTL_FREE_DEVICES:
+		drv_enum_free((glob_t*) arg);
+		return 0;
+	default:
+		return DRV_ERR_NOT_IMPLEMENTED;
+	}
+}
+
+
 /* Aureal USB iR Receiver */
 const struct driver hw_atwf83 = {
 	.name		= "atwf83",
@@ -70,12 +106,12 @@ const struct driver hw_atwf83 = {
 	.send_func	= NULL,
 	.rec_func	= atwf83_rec,
 	.decode_func	= atwf83_decode,
-	.drvctl_func	= NULL,
+	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/atwf83.html",
-	.device_hint    = "/dev/hidraw*",
+	.device_hint    = "drvctl"
 };
 
 const struct driver* hardwares[] = { &hw_atwf83, (const struct driver*)NULL };

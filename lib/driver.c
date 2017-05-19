@@ -1,12 +1,16 @@
 /**
+ *  @brief Implements driver.h
  *  @file driver.c
  *  @author Alec Leamas
- *  @date August 2014
  *  @license GPL2 or later
- *  @brief Implements driver.h
+ *  @date August 2014
  *
  * Access and support for driver.h, the global driver.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include	<stdio.h>
 #include	"driver.h"
@@ -14,6 +18,8 @@
 #include	"lirc_log.h"
 
 static const logchannel_t logchannel = LOG_LIB;
+
+int get_server_version(void) { return VERSION_NODOTS; }
 
 /**
  * The global driver data that drivers etc are accessing.
@@ -26,39 +32,6 @@ const char* const OPTION_FMT = "%32s%64s";
 
 /** Read-only access to drv for client code. */
 const struct driver* const curr_driver = &drv;
-
-/** Allocation chunk in  glob_t_* routines. */
-const int GLOB_CHUNK_SIZE = 32;
-
-
-void glob_t_init(glob_t* glob)
-{
-	memset(glob, 0, sizeof(glob_t));
-	glob->gl_offs = GLOB_CHUNK_SIZE;
-	glob->gl_pathv = (char**) calloc(glob->gl_offs, sizeof(char*));
-}
-
-
-void glob_t_add_path(glob_t* glob, const char* path)
-{
-	if (glob->gl_pathc >= glob->gl_offs) {
-		glob->gl_offs += GLOB_CHUNK_SIZE;
-		glob->gl_pathv = realloc(glob->gl_pathv,
-					 glob->gl_offs * sizeof(char*));
-	}
-	glob->gl_pathv[glob->gl_pathc] = strdup(path);
-	glob->gl_pathc += 1;
-}
-
-
-void glob_t_free(glob_t* glob)
-{
-	int i;
-
-	for (i = 0; i < glob->gl_pathc; i += 1)
-		free(glob->gl_pathv[i]);
-	free(glob->gl_pathv);
-}
 
 
 int default_open(const char* path)
@@ -96,6 +69,8 @@ int drv_handle_options(const char* options)
 	char* colon;
 	int result;
 
+	if (options == NULL || strlen(options) == 0)
+		return 0;
 	s = alloca(strlen(options) + 1);
 	strcpy(s, options);
 	for (token = strtok(s, "|"); token != NULL; token = strtok(NULL, "|")) {

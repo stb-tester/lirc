@@ -14,10 +14,15 @@
  */
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __linux__
 #include "lirc/input_map.h"
+#else
+typedef unsigned short linux_input_code;
+#endif
 
 struct {
 	char*			name;

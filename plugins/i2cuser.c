@@ -76,7 +76,7 @@ static char* i2cuser_rec(struct ir_remote* remotes);
 
 const struct driver hw_i2cuser = {
 	.name		= "i2cuser",
-	.device		= NULL,
+	.device		= "auto",
 	.features	= LIRC_CAN_REC_LIRCCODE,
 	.send_mode	= 0,
 	.rec_mode	= LIRC_MODE_LIRCCODE,
@@ -93,7 +93,7 @@ const struct driver hw_i2cuser = {
 	.api_version	= 3,
 	.driver_version = "0.9.3",
 	.info		= "No info available",
-	.device_hint    = "/dev/lirc*",
+	.device_hint    = "/dev/i2c-*",
 };
 
 

@@ -16,6 +16,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
@@ -30,19 +31,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#if defined(__linux__)
+#ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #include <linux/uinput.h>
-#else
-#include <stdint.h>
-typedef int8_t __s8;
-typedef uint8_t __u8;
-typedef int16_t __s16;
-typedef uint16_t __u16;
-typedef int32_t __s32;
-typedef uint32_t __u32;
-typedef int64_t __s64;
-typedef uint64_t __u64;
 #endif
 
 #include "lirc_options.h"
@@ -81,7 +72,7 @@ static const struct option lircmd_options[] = {
 	{ "nodaemon",	  no_argument,	     NULL, 'n' },
 	{ "socket",       required_argument, NULL, 's' },
 	{ "options-file", required_argument, NULL, 'O' },
-#       if defined(__linux__)
+#       if defined(USE_UINPUT)
 	{ "uinput",	  no_argument,	     NULL, 'u' },
 #       endif
 	{ "loglevel",	  optional_argument, NULL, 'D' },
@@ -95,7 +86,7 @@ static const char* const help =
 	"\t -n --nodaemon\t\tDon't fork to background\n"
 	"\t -s --socket=lircd socket\t\tUse alternate lircd socket\n"
 	"\t -O --options-file=file\tAlternative default options file\n"
-#       if defined(__linux__)
+#       if defined(USE_UINPUT)
 	"\t -u --uinput\t\tGenerate Linux input events\n"
 #       endif
 	"\t -D[level] --loglevel[=level]\n"
@@ -219,7 +210,7 @@ void sigterm(int sig)
 		close(lircm);
 		lircm = -1;
 	}
-#if defined(__linux__)
+#if defined(USE_UINPUT)
 	if (uinputfd != -1) {
 		ioctl(uinputfd, UI_DEV_DESTROY);
 		close(uinputfd);
@@ -270,7 +261,7 @@ void daemonize(void)
 
 int setup_uinputfd(const char* name)
 {
-#if defined(__linux__)
+#if defined(USE_UINPUT)
 	int fd;
 	struct uinput_user_dev dev;
 
@@ -314,9 +305,9 @@ setup_error:
 	return -1;
 }
 
-void write_uinput(__u16 type, __u16 code, __s32 value)
+void write_uinput(uint16_t type, uint16_t code, int32_t value)
 {
-#ifdef __linux__
+#ifdef USE_UINPUT
 	struct input_event event;
 
 	memset(&event, 0, sizeof(event));
@@ -395,7 +386,7 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		break;
 	}
 
-#if defined(__linux__)
+#if defined(USE_UINPUT)
 	if (uinputfd != -1) {
 		for (i = 0; i < f; i++) {
 			if ((dx != 0) || (dy != 0)) {
@@ -753,12 +744,15 @@ static void lircmd_add_defaults(void)
 
 	snprintf(level, sizeof(level), "%d", lirc_log_defaultlevel());
 	const char* socket = options_getstring("lircd:output");
+	const char* loglevel = options_getstring("lircmd:debug");
+	loglevel = loglevel ? loglevel : options_getstring("lircd:debug");
 
 	const char* const defaults[] = {
 		"lircmd:nodaemon",   "False",
 		"lircmd:uinput",     "False",
 		"lircmd:configfile", LIRCMDCFGFILE,
 		"lircmd:socket",     socket ? socket : LIRCD,
+		"lircmd:debug",      loglevel ? loglevel : "notice",
 		(const char*)NULL,   (const char*)NULL
 	};
 	options_add_defaults(defaults);
@@ -769,10 +763,10 @@ static void lircmd_parse_options(int argc, char** const argv)
 {
 	int c;
 
-#       if defined(__linux__)
-	const char* const optstring = "hDvns:uO";
+#       if defined(USE_UINPUT)
+	const char* const optstring = "hD::vns:uO";
 #       else
-	const char* const optstring = "hDvns:O";
+	const char* const optstring = "hD::vns:O";
 #       endif
 
 	lircmd_add_defaults();
@@ -789,20 +783,15 @@ static void lircmd_parse_options(int argc, char** const argv)
 		case 'O':
 			break;
 		case 'D':
-			loglevel_opt = (loglevel_t) options_set_loglevel(
-				optarg ? optarg : "debug");
-			if (loglevel_opt == LIRC_BADLEVEL) {
-				fprintf(stderr, DEBUG_HELP, optarg);
-				exit(EXIT_FAILURE);
-			}
-			break;
+			options_set_opt("lircmd:debug",
+					optarg ? optarg: "debug");
 		case 'n':
 			options_set_opt("lircmd:nodaemon", "True");
 			break;
 		case 's':
 			options_set_opt("lircmd:socket", optarg);
 			break;
-#               if defined(__linux__)
+#               if defined(USE_UINPUT)
 		case 'u':
 			options_set_opt("lircmd:uinput", "True");
 			break;
@@ -812,6 +801,12 @@ static void lircmd_parse_options(int argc, char** const argv)
 				"Usage: lircmd [options] [config-file]\n");
 			exit(EXIT_FAILURE);
 		}
+	}
+	loglevel_opt =
+		options_set_loglevel(options_getstring("lircmd:debug"));
+	if (loglevel_opt == LIRC_BADLEVEL) {
+		fprintf(stderr, DEBUG_HELP, optarg);
+		exit(EXIT_FAILURE);
 	}
 	if (optind == argc - 1) {
 		options_set_opt("lircmd:configfile", argv[optind]);

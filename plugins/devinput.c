@@ -16,10 +16,6 @@
 # include <config.h>
 #endif
 
-#ifdef HAVE_LIBUDEV_H
-# include <libudev.h>
-#endif
-
 #include <dirent.h>
 #include <errno.h>
 #include <fnmatch.h>
@@ -27,6 +23,7 @@
 #include <libgen.h>
 #include <limits.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -76,7 +73,7 @@ const struct driver hw_devinput = {
 	.features	= LIRC_CAN_REC_LIRCCODE,
 	.send_mode	= 0,
 	.rec_mode	= LIRC_MODE_LIRCCODE,
-	.code_length	= sizeof(struct input_event) * 8,
+	.code_length	= sizeof(ir_code) * 8,
 	.init_func	= devinput_init_fwd,
 	.deinit_func	= devinput_deinit,
 	.open_func	= default_open,
@@ -89,11 +86,7 @@ const struct driver hw_devinput = {
 	.api_version	= 4,
 	.driver_version = "0.9.3",
 	.info		= "See file://" PLUGINDOCS "/devinput.html",
-#ifdef HAVE_LIBUDEV_H
-	.device_hint    = "drvctl",
-#else
-	.device_hint    = "/dev/input/event*",
-#endif
+	.device_hint    = "drvctl"
 };
 
 
@@ -256,6 +249,8 @@ static int locate_default_device(char* errmsg, size_t size)
 		 0, NULL, &matches);
 	if (r != 0) {
 		log_perror_warn("Cannot run glob %s", DEV_PATTERN);
+		log_notice("No input device available for devinput driver."
+			   " Consider stopping lircd.socket or reconfigure lirc");
 		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
 		return 0;
 	}
@@ -333,79 +328,21 @@ static int locate_dev(const char* pattern, enum locate_type type)
 	return 1;
 }
 
-#ifdef HAVE_LIBUDEV_H
 
-static void list_device(struct udev_device* device, glob_t* glob)
+static int list_devices(glob_t* glob)
 {
-	char buff[256];
-	const char* devnode;
-	struct udev_device* usb_device;
-	struct udev_list_entry* links;
+	int r;
+	static const struct drv_enum_udev_what what[] = {
+		{.subsystem = "input", .parent_subsys = "rc" },
+		{0}
+	};
 
-	devnode = udev_device_get_devnode(device);
-	if (devnode == NULL)
-			return;
-	if (udev_device_get_parent_with_subsystem_devtype(device,
-							  "rc",
-							  NULL) == NULL) {
-		return;
+	r = drv_enum_udev(glob, what);
+	if (r == DRV_ERR_NOT_IMPLEMENTED) {
+		r = drv_enum_glob(glob, "/dev/input/by-id/*");
 	}
-	links =  udev_device_get_devlinks_list_entry(device);
-	while (links != NULL) {
-		snprintf(buff, sizeof(buff), "%s  -> %s",
-			 udev_list_entry_get_name(links), devnode);
-		links = udev_list_entry_get_next(links);
-		glob->gl_pathv[glob->gl_pathc] = strdup(buff);
-		glob->gl_pathc += 1;
-	}
-	device = udev_device_get_parent_with_subsystem_devtype(device,
-							       "input",
-							       NULL);
-	usb_device = udev_device_get_parent_with_subsystem_devtype(
-						device, "usb", "usb_device");
-	if (usb_device != NULL) {
-		snprintf(buff, sizeof(buff), "%s %s [%s]",
-			 devnode,
-			 udev_device_get_sysattr_value(device, "name"),
-			 udev_device_get_syspath(usb_device));
-	} else {
-		snprintf(buff, sizeof(buff), "%s %s [%s]",
-			 devnode,
-			 udev_device_get_sysattr_value(device, "name"),
-			 udev_device_get_syspath(device));
-	}
-	glob_t_add_path(glob, buff);
+	return r;
 }
-
-
-static void list_devices(glob_t* glob)
-{
-	struct udev* udev;
-	struct udev_enumerate* enumerate;
-	struct udev_list_entry* devices;
-	struct udev_list_entry* device;
-
-	glob_t_init(glob);
-
-	udev = udev_new();
-	if (udev == NULL) {
-		log_error("Cannot run udev_new()");
-		return;
-	}
-	enumerate = udev_enumerate_new(udev);
-	udev_enumerate_add_match_subsystem(enumerate, "input");
-	udev_enumerate_scan_devices(enumerate);
-	devices = udev_enumerate_get_list_entry(enumerate);
-	udev_list_entry_foreach(device, devices) {
-		const char* const syspath = udev_list_entry_get_name(device);
-		struct udev_device* udev_device =
-			udev_device_new_from_syspath(udev, syspath);
-		list_device(udev_device, glob);
-	}
-	udev_enumerate_unref(enumerate);
-	udev_unref(udev);
-}
-#endif  // HAVE_LIBUDEV_H
 
 
 int devinput_init(void)
@@ -549,7 +486,7 @@ char* devinput_rec(struct ir_remote* remotes)
 
 	code = ((ir_code)(unsigned)event.type) << 48 | ((ir_code)(unsigned)event.code) << 32 | value;
 
-	log_trace("code %.8llx", code);
+	log_trace("code %.16llx", code);
 
 	if (uinputfd != -1) {
 		if (event.type == EV_REL || event.type == EV_ABS
@@ -573,19 +510,12 @@ char* devinput_rec(struct ir_remote* remotes)
 
 static int drvctl(unsigned int cmd, void* arg)
 {
-	glob_t* glob;
-
 	switch (cmd) {
-#ifdef HAVE_LIBUDEV_H
 	case DRVCTL_GET_DEVICES:
-		glob = (glob_t*) arg;
-		list_devices(glob);
-		return 0;
+		return list_devices((glob_t*) arg);
 	case DRVCTL_FREE_DEVICES:
-		glob = (glob_t*) arg;
-		glob_t_free(glob);
+		drv_enum_free((glob_t*)arg);
 		return 0;
-#endif
 	case DRVCTL_GET_RAW_CODELENGTH:
 		*(unsigned int*)arg = sizeof(struct input_event) * 8;
 		return 0;

@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
@@ -37,7 +38,7 @@
 #ifdef HAVE_KERNEL_LIRC_H
 #include <linux/lirc.h>
 #else
-#include "include/media/lirc.h"
+#include "media/lirc.h"
 #endif
 
 #include "lirc/lirc_log.h"
@@ -192,18 +193,18 @@ static void* array_guest_code_equals(void* arg1, void* arg2)
 	struct ir_code_node* next2;
 
 	if (code1 == NULL || code2 == NULL)
-		return code1 == code2 ? arg1 : NULL;
+		return NULL;
 	if (code1->code != code2->code)
 		return NULL;
 	next1 = code1->next;
 	next2 = code2->next;
-	while  (code1->next != NULL) {
+	while  (next1 != NULL) {
 		if (!ir_code_node_equals(next1, next2))
 			return NULL;
-		next1 = code1->next;
-		next2 = code2->next;
+		next1 = next1->next;
+		next2 = next2->next;
 	}
-	return arg1;
+	return next2 == NULL ? arg1 : NULL;
 }
 
 
@@ -257,24 +258,24 @@ ir_code s_strtocode(const char* val)
 
 	errno = 0;
 	code = strtoull(val, &endptr, 0);
-	if ((code == (__u64) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
+	if ((code == (uint64_t) -1 && errno == ERANGE) || strlen(endptr) != 0 || strlen(val) == 0) {
 		log_error("error in configfile line %d:", line);
-		log_error("\"%s\": must be a valid (__u64) number", val);
+		log_error("\"%s\": must be a valid (uint64_t) number", val);
 		parse_error = 1;
 		return 0;
 	}
 	return code;
 }
 
-__u32 s_strtou32(char* val)
+uint32_t s_strtou32(char* val)
 {
-	__u32 n;
+	uint32_t n;
 	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
 	if (!*val || *endptr) {
 		log_error("error in configfile line %d:", line);
-		log_error("\"%s\": must be a valid (__u32) number", val);
+		log_error("\"%s\": must be a valid (uint32_t) number", val);
 		parse_error = 1;
 		return 0;
 	}
@@ -301,12 +302,12 @@ int s_strtoi(char* val)
 unsigned int s_strtoui(char* val)
 {
 	char* endptr;
-	__u32 n;
+	uint32_t n;
 	unsigned int h;
 
 	n = strtoul(val, &endptr, 0);
 	h = (unsigned int)n;
-	if (!*val || *endptr || n != ((__u32)h)) {
+	if (!*val || *endptr || n != ((uint32_t)h)) {
 		log_error("error in configfile line %d:", line);
 		log_error("\"%s\": must be a valid (unsigned int) number", val);
 		parse_error = 1;
@@ -317,13 +318,13 @@ unsigned int s_strtoui(char* val)
 
 lirc_t s_strtolirc_t(char* val)
 {
-	__u32 n;
+	uint32_t n;
 	lirc_t h;
 	char* endptr;
 
 	n = strtoul(val, &endptr, 0);
 	h = (lirc_t)n;
-	if (!*val || *endptr || n != ((__u32)h)) {
+	if (!*val || *endptr || n != ((uint32_t)h)) {
 		log_error("error in configfile line %d:", line);
 		log_error("\"%s\": must be a valid (lirc_t) number", val);
 		parse_error = 1;
@@ -630,7 +631,7 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 	path = path != NULL ? path : "unknown file";
 
 	if (!rem->name) {
-		log_error("%s: %s: Missing remote name", path, rem);
+		log_error("%s: Missing remote name", path);
 		return 0;
 	}
 	if (rem->gap == 0) {
@@ -654,6 +655,10 @@ static int sanityChecks(struct ir_remote* rem, const char* path)
 		log_warn("%s: %s: Invalid post_data",
 			  path, rem->name);
 		rem->post_data &= gen_mask(rem->post_data_bits);
+	}
+	if (!rem->codes) {
+		log_error("%s: %s: No codes", path, rem->name);
+		return 0;
 	}
 	for (codes = rem->codes; codes->name != NULL; codes++) {
 		if ((codes->code & gen_mask(rem->bits)) != codes->code) {
@@ -787,10 +792,11 @@ static const char* lirc_parse_relative(char*		dst,
 	if (!current)
 		return child;
 
-	/* Not a relative path */
-	if (*child == '/')
-		return child;
-
+	/* Already an absolute path */
+	if (*child == '/') {
+		snprintf(dst, dst_size, "%s", child);
+		return dst;
+	}
 	if (strlen(current) >= dst_size)
 		return NULL;
 	strcpy(dst, current);

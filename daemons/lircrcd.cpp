@@ -31,6 +31,9 @@
 #include <sys/types.h>
 #include <syslog.h>
 
+#include <string>
+#include <deque>
+
 #include "lirc_client.h"
 #include "lirc/lirc_log.h"
 
@@ -53,8 +56,9 @@ struct event_info {
 struct client_data {
 	int			fd;
 	char*			ident_string;
-	struct event_info*	first_event;
-	char*			pending_code;
+	std::deque<std::string> pending_codes;
+	std::deque<std::string> pending_strings;
+	std::string             last_code;
 };
 
 struct protocol_directive {
@@ -64,7 +68,6 @@ struct protocol_directive {
 
 struct pfd_byname{
 	struct pollfd sockfd;
-	struct pollfd lircdfd;
 	struct pollfd clis[MAX_CLIENTS];
 };
 
@@ -117,7 +120,6 @@ static int daemonized = 0;
 static struct lirc_config* config;
 
 static int send_error(int fd, char* message, const char* format_str, ...);
-static int handle_input(void);
 
 
 static int get_client_index(int fd)
@@ -229,45 +231,12 @@ static void nolinger(int sock)
 	setsockopt(sock, SOL_SOCKET, SO_LINGER, (void*)&linger, lsize);
 }
 
-static void free_config_info(struct config_info* ci)
-{
-	struct config_info* next;
-
-	while (ci != NULL) {
-		if (ci->config_string != NULL)
-			free(ci->config_string);
-
-		next = ci->next;
-		free(ci);
-		ci = next;
-	}
-}
-
-static void free_event_info(struct event_info* ei)
-{
-	struct event_info* next;
-
-	while (ei != NULL) {
-		if (ei->code != NULL)
-			free(ei->code);
-
-		free_config_info(ei->first);
-
-		next = ei->next;
-		free(ei);
-		ei = next;
-	}
-}
-
 static void remove_client(int i)
 {
 	shutdown(clis[i].fd, 2);
 	close(clis[i].fd);
 	if (clis[i].ident_string)
 		free(clis[i].ident_string);
-	if (clis[i].pending_code)
-		free(clis[i].pending_code);
-	free_event_info(clis[i].first_event);
 
 	log_trace("removed client");
 
@@ -304,10 +273,9 @@ void add_client(int sock)
         log_trace2( "accepted new client");
 	clis[clin].fd = fd;
 	clis[clin].ident_string = NULL;
-	clis[clin].first_event = NULL;
-	clis[clin].pending_code = NULL;
 	clin++;
 }
+
 
 static int opensocket(const char* socket_id, const char* socketname, mode_t permission, struct sockaddr_un* addr)
 {
@@ -379,50 +347,57 @@ opensocket_failed:
 	return -1;
 }
 
+
 static int code_func(int fd, char* message, char* arguments)
 {
 	int index;
-	struct event_info* ei;
-	struct config_info* ci;
-	int ret;
 
 	if (arguments == NULL)
 		return send_error(fd, message, "protocol error\n");
 	index = get_client_index(fd);
 	if (index == -1)
 		return send_error(fd, message, "identify yourself first!\n");
-	if (clis[index].pending_code != NULL)
-		return send_error(fd, message, "protocol error\n");
-
 	log_trace2("%s asking for code -%s-", clis[index].ident_string, arguments);
 
-	ei = clis[index].first_event;
-	if (ei != NULL) {
-		log_trace2("compare: -%s- -%s-", ei->code, arguments);
-		if (strcmp(ei->code, arguments) == 0) {
-			ci = ei->first;
-			if (ci != NULL) {
-				log_trace2("result: -%s-", ci->config_string);
-				ret = send_result(fd, message, ci->config_string);
-				ei->first = ci->next;
-				free(ci->config_string);
-				free(ci);
-				return ret;
-			}
-			clis[index].first_event = ei->next;
-			free(ei->code);
-			free(ei);
-			return send_success(fd, message);
+	if (clis[index].last_code == arguments) {
+		// client checking for more strings
+		if (!clis[index].pending_strings.empty()) {
+			std::string s = clis[index].pending_strings.front();
+			clis[index].pending_strings.pop_front();
+			return send_result(fd, message, s.c_str());
 		} else {
+			clis[index].last_code = "A never used code";
 			return send_success(fd, message);
 		}
 	}
+	clis[index].last_code = arguments;
+	clis[index].pending_codes.push_back(arguments);
 
-	clis[index].pending_code = strdup(arguments);
-	if (clis[index].pending_code == NULL)
-		return send_error(fd, message, "out of memory\n");
-	return 1;
+	const char* const_code = clis[index].pending_codes.front().c_str();
+	char* var_code = strdup(const_code);
+	char* prog = clis[index].ident_string;
+	char* s;
+	int r;
+
+	clis[index].pending_codes.pop_front();
+	while (true) {
+		r = lirc_code2charprog(config, var_code, &s, &prog);
+		if ( r != 0 || s == NULL || *s == '\0')
+			break;
+		clis[index].pending_strings.push_back(s);
+	}
+	free(var_code);
+	if ( r != 0 ) {
+		return send_error(fd, message, "Cannor decode: %s", arguments);
+	} else if (clis[index].pending_strings.size() == 0) {
+		return send_success(fd, message);
+	} else {
+		std::string s = clis[index].pending_strings.front();
+		clis[index].pending_strings.pop_front();
+		return send_result(fd, message, s.c_str());
+	}
 }
+
 
 static int ident_func(int fd, char* message, char* arguments)
 {
@@ -442,6 +417,7 @@ static int ident_func(int fd, char* message, char* arguments)
 	return send_success(fd, message);
 }
 
+
 static int getmode_func(int fd, char* message, char* arguments)
 {
 	if (arguments != NULL)
@@ -451,6 +427,7 @@ static int getmode_func(int fd, char* message, char* arguments)
 		return send_result(fd, message, lirc_getmode(config));
 	return send_success(fd, message);
 }
+
 
 static int setmode_func(int fd, char* message, char* arguments)
 {
@@ -462,6 +439,7 @@ static int setmode_func(int fd, char* message, char* arguments)
 		return send_result(fd, message, mode);
 	return arguments == NULL ? send_success(fd, message) : send_error(fd, message, "out of memory\n");
 }
+
 
 static int send_result(int fd, char* message, const char* result)
 {
@@ -480,6 +458,7 @@ static int send_result(int fd, char* message, const char* result)
 	return 1;
 }
 
+
 static int send_success(int fd, char* message)
 {
 	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
@@ -488,6 +467,7 @@ static int send_success(int fd, char* message)
 		return 0;
 	return 1;
 }
+
 
 static int send_error(int fd, char* message, const char* format_str, ...)
 {
@@ -530,6 +510,7 @@ static int send_error(int fd, char* message, const char* format_str, ...)
 		return 0;
 	return 1;
 }
+
 
 static int get_command(int fd)
 {
@@ -597,7 +578,7 @@ skip:
 
 
 
-static void loop(int sockfd, int lircdfd)
+static void loop(int sockfd)
 {
 	static const int POLLFDS_SIZE =
 		sizeof(struct pfd_byname) / sizeof(struct pollfd);
@@ -620,8 +601,6 @@ static void loop(int sockfd, int lircdfd)
 				poll_fds.byindex[i].fd = -1;
 			poll_fds.byname.sockfd.fd = sockfd;
 			poll_fds.byname.sockfd.events = POLLIN;
-			poll_fds.byname.lircdfd.fd = lircdfd;
-			poll_fds.byname.lircdfd.events = POLLIN;
 
 			for (i = 0; i < clin; i++) {
 				poll_fds.byname.clis[i].fd = clis[i].fd;
@@ -655,123 +634,7 @@ static void loop(int sockfd, int lircdfd)
 			log_trace("registering local client");
 			add_client(sockfd);
 		}
-		if (poll_fds.byname.lircdfd.revents & POLLIN) {
-			if (!handle_input()) {
-				while (clin > 0)
-					remove_client(0);
-				log_error("connection lost");
-				return;
-			}
-		}
 	}
-}
-
-static int schedule(int index, char* config_string)
-{
-	struct event_info* e;
-	struct config_info* c;
-	struct config_info* n;
-
-	log_trace1("schedule(%s): -%s-", clis[index].ident_string, config_string);
-
-	e = clis[index].first_event;
-	while (e->next)
-		e = e->next;
-
-	c = e->first;
-	while (c && c->next)
-		c = c->next;
-
-	n = (struct config_info*) malloc(sizeof(*c));
-
-	if (n == NULL)
-		return 0;
-
-	n->config_string = strdup(config_string);
-
-	if (n->config_string == NULL) {
-		free(n);
-		return 0;
-	}
-	n->next = NULL;
-
-	if (c == NULL)
-		e->first = n;
-	else
-		c->next = n;
-	return 1;
-}
-
-static int handle_input(void)
-{
-	char* code;
-	char* config_string;
-	char* prog;
-	int ret;
-	struct event_info* e;
-	struct event_info* n;
-	int i;
-
-	log_trace("input from lircd");
-	if (lirc_nextcode(&code) != 0)
-		return 0;
-
-	for (i = 0; i < clin; i++) {
-		n = (struct event_info*) malloc(sizeof(*n));
-
-		if (n == NULL)
-			return 0;
-
-		n->code = strdup(code);
-
-		if (n->code == NULL) {
-			free(n);
-			return 0;
-		}
-
-		/* remove trailing \n */
-		n->code[strlen(n->code) - 1] = 0;
-
-		n->first = NULL;
-		n->next = NULL;
-
-		e = clis[i].first_event;
-		while (e && e->next)
-			e = e->next;
-
-		if (e == NULL)
-			clis[i].first_event = n;
-		else
-			e->next = n;
-	}
-	log_trace2("input from lircd: \"%s\"", code);
-	while ((ret = lirc_code2charprog(config, code, &config_string, &prog)) == 0 && config_string != NULL) {
-		int i;
-
-		log_trace2("%s: -%s-", prog, config_string);
-		for (i = 0; i < clin; i++) {
-			if (strcmp(prog, clis[i].ident_string) == 0)
-				if (!schedule(i, config_string))
-					return 0;
-		}
-	}
-	for (i = 0; i < clin; i++) {
-		if (clis[i].pending_code != NULL) {
-			char message[strlen(clis[i].pending_code) + 1];
-			char* backup;
-
-			log_trace2("pending_code(%s): -%s-", clis[i].ident_string, clis[i].pending_code);
-			backup = clis[i].pending_code;
-			clis[i].pending_code = NULL;
-
-			sprintf(message, "CODE %s\n", backup);
-			(void)code_func(clis[i].fd, message, backup);
-			free(backup);
-		}
-	}
-	free(code);
-
-	return 1;
 }
 
 int main(int argc, char** argv)
@@ -780,7 +643,6 @@ int main(int argc, char** argv)
 	const char* socketfile = NULL;
 	mode_t permission = S_IRUSR | S_IWUSR;
 	int socket;
-	int lircdfd;
 	struct sigaction act;
 	struct sockaddr_un addr;
 	char dir[FILENAME_MAX + 1] = { 0 };
@@ -831,10 +693,6 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	lircdfd = lirc_init("lircrcd", 0);
-	if (lircdfd == -1)
-		return EXIT_FAILURE;
-
 	/* read config file */
 	if (lirc_readconfig_only(configfile, &config, NULL) != 0) {
 		lirc_deinit();
@@ -878,7 +736,7 @@ int main(int argc, char** argv)
 	sigaction(SIGHUP, &act, NULL);
 
 	log_notice("%s started", progname);
-	loop(socket, lircdfd);
+	loop(socket);
 
 	closelog();
 	shutdown(socket, 2);
