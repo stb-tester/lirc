@@ -1,4 +1,4 @@
-0.10.0-devel
+0.10.0 07/06/17
  * The deprecated lircd --uinput option is dropped. Use
    the lircd-uinput(8) daemon instead.
  * The slinke (a. k. a. slink-e) driver is dropped.
