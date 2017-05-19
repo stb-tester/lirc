@@ -80,4 +80,3 @@ For final release:
 
 3) Send announcement email to lirc-list@lists.sourceforge.net, include top
    of NEWS.
-
