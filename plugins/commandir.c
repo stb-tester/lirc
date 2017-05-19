@@ -260,7 +260,7 @@ struct commandir_device {
 
 	unsigned char			commandir_tx_start[MAX_TX_TIMERS * 4];
 	unsigned char			commandir_tx_end[MAX_TX_TIMERS * 4];
-	unsigned char			commandir_tx_available[MAX_TX_TIMERS];
+	unsigned int			commandir_tx_available[MAX_TX_TIMERS];
 	unsigned char			tx_timer_to_channel_map[MAX_TX_TIMERS];
 
 	struct commandir_device*	next_commandir_device;
@@ -719,7 +719,7 @@ static void commandir_iii_update_status(struct commandir_device* cd)
 	if (receive_status == 8) {
 		// Update the commandir_device with what we just received.
 		sptr = (struct commandirIII_status*)commandir_data_buffer;
-		cd->num_transmitters = (sptr->tx_status & 0x1F) + 1;
+		cd->num_transmitters = (int)(sptr->tx_status & 0x1F) + 1;
 		cd->num_receivers = (sptr->rx_status & 0x60) >> 5;
 		cd->tx_jack_sense =
 			sptr->jack_status[3] * 0x01000000 + sptr->jack_status[2] * 0x010000 +

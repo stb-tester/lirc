@@ -241,10 +241,8 @@ static int drvctl_func(unsigned int cmd, void* arg)
 {
 	struct option_t* opt;
 	long value;
-	char buff[64];
-#pragma GCC diagnostic ignored "-Wformat-truncation"
+	char buff[256];
 	const char* const open_msg = "# Reading from %s\n";
-#pragma GCC diagnostic pop
 
 	switch (cmd) {
 	case DRVCTL_SET_OPTION:

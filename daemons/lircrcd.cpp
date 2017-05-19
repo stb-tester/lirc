@@ -468,10 +468,9 @@ static int send_success(int fd, char* message)
 	return 1;
 }
 
-#pragma GCC diagnostic ignored "-Wformat-overflow"
 static int send_error(int fd, char* message, const char* format_str, ...)
 {
-	char lines[10], buffer[PACKET_SIZE + 1];
+	char lines[12], buffer[PACKET_SIZE + 1];
 	int i, n, len;
 	va_list ap;
 	char* s1;
@@ -510,7 +509,6 @@ static int send_error(int fd, char* message, const char* format_str, ...)
 		return 0;
 	return 1;
 }
-#pragma GCC diagnostic pop
 
 
 static int get_command(int fd)
