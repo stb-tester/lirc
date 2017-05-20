@@ -48,7 +48,12 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
+
+#ifdef USE_BUNDLED_LIRC_H
 #include <media/lirc.h>
+#else
+#include <linux/lirc.h>
+#endif
 
 #include "irpipe.h"
 
