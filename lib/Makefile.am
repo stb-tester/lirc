@@ -36,7 +36,7 @@ liblirc_la_SOURCES          = config_file.c \
 libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
-liblirc_client_la_LDFLAGS   = -version-info 4:0:4
+liblirc_client_la_LDFLAGS   = -version-info 5:0:5
 liblirc_client_la_SOURCES   = lirc_client.c\
 			      lirc_client.h \
 			      curl_poll.c \
