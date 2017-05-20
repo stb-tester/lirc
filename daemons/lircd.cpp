@@ -144,7 +144,7 @@ static const char* const help =
 	"\t -P --pidfile=file\t\tDaemon pid file\n"
 	"\t -L --logfile=file\t\tLog file path (default: use syslog)'\n"
 	"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 3..10.\n"
-	"\t -r --release[=suffix]\t\tAuto-generate release events\n"
+	"\t -r --release[=suffix]\t\tDEPRECATED: Auto-generate release events\n"
 	"\t -a --allow-simulate\t\tAccept SIMULATE command\n"
 	"\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
 	"\t -A --driver-options=key:value[|key:value...]\n"
