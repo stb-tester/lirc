@@ -1,32 +1,35 @@
 0.10.0 07/06/17
- * The deprecated lircd --uinput option is dropped. Use
+ * lircd: the deprecated --uinput option is dropped. Use
    the lircd-uinput(8) daemon instead.
- * The slinke (a. k. a. slink-e) driver is dropped.
- * plugins: Add support for irdroid in the irtoy driver.
+ * lircd: The --release option is deprecated.
  * lircd: Adding a --immediate-init option which initiates
    the hardware direct on start and exits on errors.
+ * The slinke (a. k. a. slink-e) driver is dropped.
+ * plugins: Add support for irdroid in the irtoy driver.
  * Enhanced device enumeration, mode2 --list-devices works for
    most drivers.
- * lircd-uinput: Multiple config file parsing errors (#284).
  * New, shiny (i. e., unstable) python API. See the API docs,
    module "python bindings". The API is also available as a pypi
    package, typically at /usr/share/lirc/python-pkg
+ * lircd-uinput: Multiple config file parsing errors (#284).
  * The configs/*conf files no more supports  enumerating devices
    using shell scripts.
  * Added enumeration support and server version level check to
    driver API.
  * irrecord: Add --driver-options for lircd symmetry (#277).
  * lircd: Fix devices not connected at first attempt (#279).
- * lib: Fix failera parsing absolute paths config files (#281).
+ * lib: Fix failure when parsing absolute paths config files (#281).
  * lircd/irsend: Fix bug when sending/receiving concurrently for
    some remotes (#278, 5 pages!)
  * Added manual devinput configuration, cross-compile support (#264).
  * Various cross-compilation support patches (#264, #278)
  * ftdi driver: Fix off-by-2 timings (#275).
+ * devinput driver: Fix bad codelength (#263).
  * OSX patches(#273)
  * Fix missing systemd support due to upstream changes (#274).
  * lircd, lircd-uinput: Change default release suffix due to linux
    kernel changes (#263).
+ * Build: More quiet, enhanced V=0/V=1 support.
 
 0.9.4d 23/01/17
  * The debian packaging means that freebsd and hurd builds are
