@@ -13,6 +13,8 @@ GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 
 BASE_VERSION            = $(subst -devel,,$(VERSION))
 
+VERBOSE                 = $(subst 0,,$(V))
+
 if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
 endif
@@ -117,7 +119,8 @@ pep8: $(py_PYTHON)
 if HAVE_PYTHON35
 all-local:
 	cd python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
-	    LDFLAGS=-L$(abs_builddir)/lib/.libs python3 setup.py build
+	    LDFLAGS=-L$(abs_builddir)/lib/.libs python3 setup.py \
+	        $(if $(VERBOSE),,-q) build
 endif
 
 install-data-hook:
