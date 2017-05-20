@@ -1,4 +1,4 @@
-.TH LIRCD "8" "Last change: Mar 2017" "lircd @version@" "System Administration Utilities"
+.TH LIRCD "8" "Last change: May 2017" "lircd @version@" "System Administration Utilities"
 .SH NAME
 .P
 \fBlircd\fR - Decode infrared signals and provide them on a socket.
@@ -151,6 +151,9 @@ userspace drivers. These are *.so files, by default found as described
 under DRIVER LOADING. The argument is a :-separated search path.
 .TP 4
 \fB-r, --release\fR [\fIsuffix\fR]
+This option is deprecated and will be removed in an upcoming release. See
+lircd-uinput(8) for a replacement.
+.IP
 Enables automatic generation of release events for each button press.
 lircd will append the given suffix to the button name for each release
 event. If no suffix is given the default suffix is '_EVUP'.
