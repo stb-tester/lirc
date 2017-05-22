@@ -181,10 +181,10 @@
     <p>
     On the other hand, this is a more complex setup.</p>
     <p>
-    Last option is to connect the LIRC driver to the linux input layer
-    using LIRC's --uinput option. This means that application sees the
-    input as coming from the kernel, and LIRC's other capabilities are
-    not available. This is not described here.  </p>
+    It is also possible to use lirc as a pure low-level driver, and let the
+    application receive the data from /dev/input, just as for a device
+    supported by the kernel.
+    See <a href="lircd-uinput.html">lircd-uinput(8)</a>
     <p>
     The lirc configuration consists of several files described in
     <a href="#appendix-10">Appendix 10</a>. There are some tools to
@@ -493,10 +493,9 @@
     </pre>
     <p>
     If the  devinput.lircd.dist file is not available or have some problem
-    it can be re-generated using the script <i>lirc-make-devinput</i>. This
-    requires the kernel-headers package installed. It might become necessary
-    to do this if the  running kernel is different from the  one used when
-    packaging the lirc files.</p>
+    it can be re-generated using the script <a href="lirc-make-devinput.html">
+    lirc-make-devinput(1)</a>. This might become necessary if the  running
+    kernel is different from the one used when packaging the lirc files.</p>
     <p>
     Start the lircd daemon and use irw to check:</p>
     <pre>
