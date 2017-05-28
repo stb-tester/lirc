@@ -1,9 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.10.0])
+AC_INIT([lirc], [0.10.0rc1])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
+DISTCHECK_CONFIGURE_FLAGS="--enable-silent-rules"
 
 # support runstatedir
 DEFINE_RUNSTATEDIR
@@ -134,7 +135,7 @@ enable_uinput_default="no"
 test -e "/dev/uinput" && enable_uinput_default="yes"
 
 version_nodots=$( $PYTHON << EOF
-v = "$VERSION".split("-")[[0]].split(".")
+v = "$VERSION".split("rc")[[0]].split("-")[[0]].split(".")
 v = dict(enumerate(v))
 print(int(v.get(0)) * 10000 + int(v.get(1)) * 100 + int(v.get(2)))
 EOF
