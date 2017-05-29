@@ -31,6 +31,10 @@
 extern "C" {
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef HAVE_SYS_POLL_H
 #include <sys/poll.h>
 #else
