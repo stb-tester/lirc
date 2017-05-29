@@ -535,6 +535,8 @@ AC_CONFIG_FILES([
   systemd/Makefile
 ])
 AC_OUTPUT
+cp VERSION python-pkg/VERSION
+cp config.h lib/lirc
 
 AC_DEFUN([AX_REPORT_CONDITIONAL], [
   AS_IF([test -z $$1_TRUE],[enabled="yes"],[enabled="no"])
