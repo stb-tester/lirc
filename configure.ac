@@ -135,9 +135,8 @@ enable_uinput_default="no"
 test -e "/dev/uinput" && enable_uinput_default="yes"
 
 version_nodots=$( $PYTHON << EOF
-v = "$VERSION".split("rc")[[0]].split("-")[[0]].split(".")
-v = dict(enumerate(v))
-print(int(v.get(0)) * 10000 + int(v.get(1)) * 100 + int(v.get(2)))
+v = "$VERSION".split("rc").pop(0).split("-").pop(0).split(".")
+print(int(v.pop(0)) * 10000 + int(v.pop(0)) * 100 + int(v.pop(0)))
 EOF
 )
 AC_DEFINE_UNQUOTED(VERSION_NODOTS, [$version_nodots])
