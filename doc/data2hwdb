@@ -10,9 +10,11 @@ import database
 HEADER = '''
 # LIRC - Hardware DataBase
 #
-# THIS IS A GENERATED FILE. DO NOT EDIT.
+# THIS FILE IS DEPRECATED AND WILL BE REMOVED IN NEXT RELEASE.
 #
-# This file lists all the remote controls supported by LIRC
+# This is a generated file. Do not edit.
+#
+# The file lists all the remote controls supported by LIRC
 # in a parseable form. It's legacy file kept for compatiblity.
 # The current yaml files configs/*.conf should be a better
 # source in most cases.
