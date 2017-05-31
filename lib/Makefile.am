@@ -10,8 +10,6 @@ BUILT_SOURCES               = lirc/input_map.inc
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @kernel_header_flags@
 
-AM_LDFLAGS                  = @LIBUSB_LIBS@
-
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
 
@@ -45,6 +43,7 @@ liblirc_client_la_SOURCES   = lirc_client.c\
 			      lirc_log.h
 
 liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
+liblirc_driver_la_LIBADD    = liblirc.la $(LIBUSB_LIBS)
 liblirc_driver_la_SOURCES   = driver.h \
                               drv_enum.c \
                               drv_enum.h \
