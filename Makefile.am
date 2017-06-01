@@ -10,6 +10,7 @@ include                 pylint.mak
 GIT_COMMIT      = $(shell git log -1 --pretty=format:%h || echo UNKNOWN)
 GIT_DATE        = $(shell git log -1 --pretty=format:%cd || echo UNKNOWN)
 GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
+GIT_DATE_ISO    = $(shell git log -1 --pretty=format:%ci || date +"%F %T")
 
 BASE_VERSION            = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
@@ -143,6 +144,7 @@ uninstall-hook:
 	        $(DESTDIR)/$(pkgdatadir)/contrib
 
 dist-hook: ChangeLog fix-version
+	touch -d "$(GIT_DATE_ISO)" $(distdir)/lib/lirc/* VERSION
 	cp -pr $(srcdir)/contrib $(distdir)
 
 clean-local:
