@@ -1,0 +1,1 @@
+../python-pkg/lirc/config.py

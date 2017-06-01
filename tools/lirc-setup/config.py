@@ -1,1 +1,1 @@
-../config.py
+../../python-pkg/lirc/config.py
