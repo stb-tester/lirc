@@ -128,7 +128,7 @@ pep8: $(py_PYTHON)
 if HAVE_PYTHON35
 all-local:
 	cd python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
-	    LDFLAGS=-L$(abs_builddir)/lib/.libs python3 setup.py \
+	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py \
 	        $(if $(VERBOSE),,-q) build
 endif
 
@@ -170,7 +170,7 @@ $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
 	test $(top_srcdir) == $(top_builddir) || \
 	    cp $(top_srcdir)/lirc.pc $(top_builddir)
 	cd $(abs_builddir)/python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
-	    LDFLAGS=-L$(abs_builddir)/lib/.libs python3 setup.py -q sdist
+	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py -q sdist
 
 $(top_builddir)/python-pkg/VERSION: VERSION
 	cp $? $@
