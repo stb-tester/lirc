@@ -48,6 +48,7 @@ img.menuimg {
     margin-right: 0px;
     margin-left: 0px }
 .menu {
+    margin-left: 0;
     height: 150px;
     width: 100%;
     border-width: 0px;
