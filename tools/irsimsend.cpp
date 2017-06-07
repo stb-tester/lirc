@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
 {
 	struct ir_remote* remote;
 	char path[128];
-	const loglevel_t level = options_get_app_loglevel("irsimsimsend");
+	const loglevel_t level = options_get_app_loglevel("irsimsend");
 
 	lirc_log_get_clientlog("irsimsend", path, sizeof(path));
 	lirc_log_set_file(path);
