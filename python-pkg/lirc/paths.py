@@ -8,8 +8,12 @@ import os.path
 HERE = os.path.abspath(os.path.dirname(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
+
 if os.path.exists(os.path.join(HERE, '_client.so')):
-    os.unlink(os.path.join(HERE, '_client.so'))
+    try:
+        os.unlink(os.path.join(HERE, '_client.so'))
+    except PermissionError:
+        pass
 if os.path.exists(os.path.join(HERE, '..', 'lib', '.libs', '_client.so')):
     # development tree Makefile.am creates lib/libs/_client.so
     # after 'make install'; plain 'make' isn't enough.

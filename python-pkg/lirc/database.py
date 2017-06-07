@@ -116,21 +116,18 @@ class Database(object):
 
     def __init__(self, path=None, yamlpath=None):
 
+        devel_path = _here('../../configs')
+        installed_path = os.path.join(config.DATADIR, 'lirc','configs')
         if path and os.path.exists(path):
             configdir = path
         elif path:
             raise FileNotFoundError(path)
-        elif os.path.exists(_here('configs')):
-            configdir = _here('configs')
-        elif os.path.exists(_here('../configs')):
-            configdir = _here('../configs')
-        elif os.path.exists(_here('../../configs')):
-            configdir = _here('../../configs')
+        elif os.path.exists(devel_path):
+            configdir = devel_path
+        elif os.path.exists(installed_path):
+            configdir = installed_path
         else:
-            where = 'configs:../configs'
-            if path:
-                where += ':' + path
-            raise FileNotFoundError(where)
+            raise FileNotFoundError(devel_path + ':' + installed_path)
         if not yamlpath:
             yamlpath = configdir
         db = {}

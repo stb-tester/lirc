@@ -7,7 +7,11 @@
 import sys
 import os.path
 
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+_HERE = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, _HERE)
+
+if os.path.exists(os.path.join(_HERE, '..','..', 'lirc.pc.in')):
+    sys.path.insert(0, os.path.join(_HERE, '..','..', 'python-pkg'))
 
 import mvc_control
 mvc_control.main()
