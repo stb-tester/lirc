@@ -103,11 +103,24 @@ const char* const USE_RAW_MSG =
 
 static void add_defaults(void)
 {
-	const char* const device = options_getstring("lircd:device");
-	const char* const driver = options_getstring("lircd:driver");
-	const char* const plugindir = options_getstring("lircd:plugindir");
-	const char* const lircd_level = options_getstring("lircd:debug");
-	const char* const env_level = getenv("LIRC_LOGELEVL");
+        const char* tmp;
+	tmp = options_getstring("mode2:device");
+	const char* const device =
+		tmp ? tmp : options_getstring("lircd:device");
+	tmp = options_getstring("mode2:driver");
+	const char* const driver =
+		tmp ? tmp : options_getstring("lircd:driver");
+	tmp = options_getstring("mode2:plugindir");
+	const char* const plugindir =
+		tmp ? tmp : options_getstring("lircd:plugindir");
+	tmp = options_getstring("mode2:debug");
+	const char* const lircd_level =
+		tmp ? tmp : options_getstring("lircd:debug");
+	tmp = options_getstring("mode2:output");
+	const char* const output =
+		tmp ? tmp : options_getstring("lircd:output");
+
+	const char* const env_level = getenv("LIRC_LOGLEVEL");
 	char level[12];
 
 	if (env_level != NULL) {
@@ -125,7 +138,7 @@ static void add_defaults(void)
 	}
 	const char* const defaults[] = {
 		"mode2:driver",     driver ? driver : "default",
-		"mode2:lircdfile",  LIRCD,
+		"mode2:lircdfile",  output ? output : LIRCD,
 		"lircd:logfile",    "syslog",
 		"mode2:plugindir",  plugindir ? plugindir : PLUGINDIR,
 		"lircd:configfile", LIRCDCFGFILE,
