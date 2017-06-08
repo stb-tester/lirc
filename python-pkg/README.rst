@@ -25,8 +25,8 @@ Installation
 
     - Build and install lirc from source or install a LIRC package.
     - Locate the python source distribution, typically in a location like
-      /usr/share/lirc/lirc-0.9.5.tar.gz
-    - Use cmd like  *pip3 install /usr/share/lirc/lirc-0.9.5.tar.gz*.
+      /usr/share/lirc/lirc-0.10.0.tar.gz
+    - Use cmd like  *pip3 install /usr/share/lirc/lirc-0.10.0.tar.gz*.
     - As a shortcut, the python package is available in python-pkg/dist
       after a plain *make* in the lirc source tree.
 

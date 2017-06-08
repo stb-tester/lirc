@@ -1,4 +1,4 @@
-.TH LIRCD-UINPUT "8" "Last change: Feb 2017" "lircd.uinput @version@" "System Managers Manual"
+.TH LIRCD-UINPUT "8" "Last change: Jun 2017" "lircd.uinput @version@" "System Managers Manual"
 
 .\" Copyright (c) 2015, Alec Leamas
 .\"
@@ -42,7 +42,7 @@ output socket and
 injects these as key events to the kernel uinput device.
 The kernel makes these events available to other applications on a
 .I /dev/input/event
-device, just as for any other input device.
+device, just as for regular input hardware.
 .P
 .B lircd-uinput
 is designed to run as a systemd service.
@@ -88,11 +88,7 @@ uinput kernel device, defaults to /dev/uinput.
 .B lircd-uinput
 generates different events depending on if the button name
 ends with the \fIrelease-suffix\fR or not.
-The setting should usually match the
-.BR lircd(8)
-.I --release
-option.
-Defaults to the lircd setting, falling back to
+Defaults to
 .I _EVUP
 \&. See REPEAT HANDLING
 .TP
@@ -113,7 +109,7 @@ See REPEAT HANDLING.
 Generate synthetic release events.
 This option is mandatory unless
 .BR lircd
-is using the
+is using the deprecated
 .I --release
 option.
 The timeout used can be modified using the
@@ -167,15 +163,16 @@ events to applications until
 emits a corresponding release event.
 The release events could be created by
 .BR lircd(8)
-using the
+using the deprecated
 .I --release
 option.
 Such events typically has an
 .I _EVUP
 suffix appended to the original keypress event.
-As an alternative,
+.P
+The preferred way is that
 .B lircd-uinput
-can create release events using the
+creates release events using the
 .I --add-release-events
 option.
 Combining both of these options might give unexpected results.

@@ -105,64 +105,81 @@
 
     <A NAME="overall-configuration-decisions"></A><HR>
     <h2 align="center">Overall Configuration Decisions.</h2>
-    <pre>
-       ----------         ---------------                     ----------
-       |        |         | Linux input |                     |        |
-       |        |---->----| layer       |---------->----------| Appli- |
-       |        |         |             |  /dev/input/eventX  | cation |
-       |        |         ---------------                     |        |
---->---|        |                |                            ----------
-remote | kernel |       devinput v
-       |        |                |
-       |        |                |                            ----------
-       |        |         ---------------                     | Appli- |
-       |        |---->----|    lirc     |---------->----------| cation |--
-       |        |         |             | /var/run/lirc/lircd |        | |
-       ----------         ---------------                     ---------- |--
-                                                                |        | |
-                                                                ---------- |
-                                                                  |        |
-                                                                  ----------
-    </pre>
     <p>
     LIRC can be run together with the kernel in different ways. You need
     to decide on a general approach.
     </p>
+    The first is to use the kernel decoding and the linux input layer,
+    something like
+     <pre>
+       +--------+         +-------------+                     +--------+
+       |        |         | Linux input |                     | Appli- |
+--->---| kernel |---->----| layer       |---------->----------| cation |
+       |        |         |             |  /dev/input/eventX  |        |
+       +--------+         +-------------+                     +--------+
+     </pre>
+     <p>
+     For remotes supported by the kernel, this works in the basic sense that
+     the remote is seen by the application as a regular input device. It
+     does not involve lirc at all.</p>
+     <p>
+     However, if you want to use lirc for reasons described
+     <a href="#why-use-lirc">above</a>, there are two other setups.
+     The first is to use the kernel decoding, but use LIRC
+     to deliver the decoded data to the applications, like:
+     <pre>
+       +--------+         +-------------+
+       |        |         | Linux input |
+--->---| kernel |---->----| layer       |
+       |        |         |             |
+       +--------+         +-------------+
+                                 |
+                                 v
+                                 |
+                                 |                            +--------+
+                          +-------------+                     | Appli- |
+                          |    lirc     |---------->----------| cation |-+
+                          |             |     lirc socket     |        | |
+                          +-------------+                     +--------+ |-+
+                                                                |        | |
+                                                                +--------+ |
+                                                                  |        |
+                                                                  +--------+
+    </pre>
     <p>
-    Depending on whether lirc is used or not application will get data
-    either from the input layer (/dev/input) or from LIRC
-    (/var/run/lirc/lircd). Using the LIRC data requires application support.
-    Support for LIRC is common in typical linux htpc applications like mythtv,
-    kodi and vlc; of course also LIRC applications like irexec, lircmd and
-    irpty supports this.
-    </p>
+    In this setup, the linux input layer decodes the remote, and lirc just
+    delivers the decoded events to the applications on a socket, typically
+    /var/run/lirc/lircd. lirc's receiving capabilities like using multiple
+    applications together, modes and long keypresses are available. The
+    basic limitation comes from that the devinput driver only can receive
+    data, so sending (blasting) isn't supported. Also, not all remotes are
+    supported by the kernel. </p>
     <p>
-    The /var/run/lirc/lircd interfaces allows several applications to receive
-    input events. On the other hand, the /dev/input interfaces only allows
-    one  application to receive each event. Despite these limitations,
-    a common scenario is to not involve lirc at all, the upmost
-    path in the picture (kernel -&gt; Linux input layer -&gt; application).
-    Unless there is reason to use lirc <a href="#why-use-lirc">(above)</a>)
-    this is probably the way to go.
-    </p>
+    Using the LIRC socket requires application support. Support for LIRC is
+    common in typical linux htpc applications like mythtv, kodi and vlc; of
+    course also LIRC applications like irexec, lircmd and irpty supports
+    this. </p>
     <p>
-    If you need to use lirc, there are two cases depending on if your
-    remote is supported by the kernel or not.
-    </p>
-    <ul>
-    <li>
-    If it's supported, the easiest path usually is using the
-    linux input layer decoding and use that as input to lirc. This is the
-    devinput data path in picture (kernel -&gt; Linux input layer -&gt; lirc
-    -&gt; app).
-    </li>
-    <li>
-    If the kernel built-in decoding can't be used (e. g., due to need of
-    IR blasting or remote not being supported by the kernel) you should
-    use a lirc driver instead. This is the bottom data path
-    (kernel -&gt; lirc -&gt; app).
-    </li>
-    </ul>
+    The third option is to use lirc also for decoding:
+    <pre>
+
+       +--------+         +-------------+                     +--------+
+       |        |         |             |                     | Appli- |
+--->---| kernel |---->----|    lirc     |---------->----------| cation |-+
+       |        |         |             |     lirc socket     |        | |
+       +--------+         +-------------+                     +--------+ |-+
+                                                                |        | |
+                                                                +--------+ |
+                                                                  |        |
+                                                                  +--------+
+    </pre>
+    <p>
+    Here, the kernel delivers raw data from the hardware to lirc, which
+    decodes it. This setup supports more remotes, and is also the one
+    used when using a remote not supported by neither kernel nor lirc. It
+    also supports IR sending (blasting) if the hardware can handle it.</p>
+    <p>
+    On the other hand, this is a more complex setup.</p>
     <p>
     It is also possible to use lirc as a pure low-level driver, and let the
     application receive the data from /dev/input, just as for a device
@@ -229,7 +246,7 @@ remote | kernel |       devinput v
             as an IR dongle or a built-in IR port.</li>
        <li> Data from the capture device is caught by a linux kernel
             driver and made available on a kernel device such as
-            /dev/lirc0, /dev/ttyS0 or /dev/input/eventXX.</li>
+            /dev/lirc0, /dev/ttyS0 or /dev/input/event6.</li>
        <li> Data from the kernel is then caught by LIRC using a
             lircd driver.</li>
        <li> In the next step, <em>lircd</em> converts the kernel data
@@ -254,18 +271,17 @@ remote | kernel |       devinput v
            Determine driver and device</a>.</li>
         <li>
            To convert IR pulse data to key symbols <em>lircd</em> needs
-           a <em>lircd.conf</em> configuration file. Creating this is
-           done either by using
+           a <em>lircd.conf</em> configuration file. This is created
+           according to
            <A HREF="#key-symbols-using-linux-input-layer">
            the linux input layer</a> or
-           <A HREF="#key-symbols-using-lirc-drivers">an lirc driver</a>.</li>
+           <A HREF="#key-symbols-using-lirc-drivers">using an lirc driver</a>
+           .</li>
          <li>
            Converting key symbols to application strings is done using
            a <em>lircrc</em> config file. This is created according to
             <A HREF="#converting-key-symbols-to-application-strings">
             Convert the key symbols to application strings</a> .</li>
-
-
     </ul>
 
     <p>
@@ -364,12 +380,12 @@ remote | kernel |       devinput v
          <pre>
                 --driver devinput --device auto
          </pre>
-	     This is actually the default setup, and needs no modifications.</li>
-
-       <li> From 0.9.5+ you can list all usable event devices using
+	     This is actually the default setup, and needs no modifications.
+         From 0.10.0+ you can list all available devices using
         <pre>
                mode2 --driver devinput --list-devices
         </pre> </li>
+
 
        <li>
          If you dont wan't to use the decoding done by the kernel, but the
@@ -380,7 +396,7 @@ remote | kernel |       devinput v
          <pre>
                --driver default --device /dev/lirc0
          </pre>
-         From 0.9.5+ you can list all available devices using
+         From 0.10.0+ you can list all available devices using
         <pre>
                mode2 --driver default --list-devices
         </pre> </li>
@@ -487,8 +503,12 @@ remote | kernel |       devinput v
     $ irw
     </pre>
     <p>
-    Press remote buttons. You should see the key symbols being printed.
-    When so you are done and can proceed to
+    Stop the daemon using
+    <pre>
+    $ pkill lircd
+    </pre>
+    <p>
+    When irw prints button events you are done and can proceed to
     <A HREF="#systemd-setup">Configure systemd</a></p>
     <p>
     Depending on your box, it might be that the event device found this
@@ -1129,7 +1149,7 @@ remote | kernel |       devinput v
     a reboot. If this becomes a problem, you should address the device
     using it's name or it's physical bus address.</p>
     <p>
-    From 0.9.5, the easy way is to let mode2 enumerate the available devices,
+    From 0.10.0, the easy way is to let mode2 enumerate the available devices,
     something like
     <pre>
         $ mode2 --driver devinput  --list-devices
@@ -1142,7 +1162,7 @@ remote | kernel |       devinput v
     with more than one device of the same kind is best handled by creating udev rules. The
     output from <em>mode2 --list-devices</em> can be used to create such rules.
     <p>
-    On 0.9.5- versions the first step is to inspect dmesg after connecting the device.
+    On 0.10.0- versions the first step is to inspect dmesg after connecting the device.
     There you should find something like:</p>
     <pre>
     rc0: Media Center Ed. eHome Infrared Remote Transceiver (1784:0001) as

@@ -108,6 +108,10 @@
          a remote together with the decoded symbols. It can also send the
          data to lircd and check that the decoded symbols matches the
          logged ones. </li>
+      <li>
+         <a href="irtext2udp.html">irtext2udp</a> converts regular, printable
+         timing data to the binary format used by the
+         <a href="udp.html">udp driver</a>
      </ul>
     <a name="drivers"/>
     <h3>User-space drivers</h3>
@@ -140,6 +144,9 @@
          durations) otherwise sent, and can also be used to "receive"
          simulated data from a file.</li>
       <li>
+         <a href="ftdi.html">ftdi</a>  and <a href="ftdix.html">ftdix</a>
+         supports hardware based on the FTDI chip. </li>
+       <li>
          <a href="girs.html">girs driver</a> receives and sends
 	 IR data using a serially connected remote device compliant
 	 with the Girs standard (for example for usage with the Arduino).</li>
@@ -150,7 +157,7 @@
          <a href="imon.html">imon</a> handles data from various
          iMON remotes.</li>
       <li>
-         <a href="https://github.com/iguanaworks/iguanair-lirc">iguanair></a>
+         <a href="https://github.com/iguanaworks/iguanair-lirc">iguanair</a>
          receives and sends IR data using the IguanaIR devices.</li>
       <li>
          <a href="irtoy.html">irtoy</a> recieves and sends IR data
@@ -171,8 +178,9 @@
     <h3>Devices and data formats</h3>
     <ul>
       <li>
-         <em>lirc(4)</em> data formats and ioctl
-          commands for the <em>/dev/lirc[0-9]</em> devices. This  manpage
+          <a href="http://man7.org/linux/man-pages/man4/lirc.4.html">
+          lirc(4)</a> data formats and ioctl commands for the
+          <em>/dev/lirc[0-9]</em> devices. This manpage
           has been upstreamed to the linux manpages project.</li>
       <li>
          <a href="lircd.conf.html">lircd.conf</a>: the

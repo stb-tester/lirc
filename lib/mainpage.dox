@@ -9,7 +9,7 @@ four views:
      This is a mature, reasonably stable interface.  See @ref lirc_client
      and @ref client_manual.
 
-   - External python code could from 0.9.5 use the new python API. See
+   - External python code could from 0.10.0 use the new python API. See
      @ref python_bindings and @ref client_manual.
 
    - User space drivers includes the lirc_driver.h header and links to
