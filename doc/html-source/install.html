@@ -31,18 +31,19 @@
           including <em>make</em>, <em>gcc</em>, <em>g++</em>
           and <em>ld</em>.</li>
       <li>python3 </li>
-      <li>Building requires <em>modinfo</em>, often in the package
-          kmod. Without modinfo, all kernel drivers are excluded
-          from the build. </li>
       <li>Building requires <em>pkg-config</em>.</li>
-      <li>Building requires kernel headers, often in the kernel-headers
-          package.</li>
       <li>xsltproc </li>
      </ul>
      <p><b>Optional dependencies</b></p>
      If these are missing, ./configure can cope with it and still
      build LIRC in a more or less limited way.
      <ul>
+      <li>On linux building requires <em>modinfo</em>, often in the
+          package kmod. Without modinfo, all kernel drivers are excluded
+          from the build.</li>
+      <li>On Linux building requires kernel headers, often in the
+          kernel-headers package. Building without these is possible,
+          but strongly discouraged (on linux).</li>
       <li>Several scripts need the python3 PyYaml at
           http://pyyaml.org/wiki/PyYAML. Some distributions includes a
           python3-yaml package. There is also a pypi package at
@@ -50,6 +51,9 @@
           this is possible but not recommended.</li>
       <li>Generating the HTML manpages requires man2html. </li>
       <li>Generating the API documentation requires Doxygen. </li>
+      <li>The Python bindings needs python 3.5+ to enable all
+          functionality. Other python3 version should work, but
+          will limit the python bindings API.</li>
       <li>The <em>lirc-setup</em> GUI configuration tool
           needs python3-gi and thus also the Gtk
           libs and icons. These are not required for the build, though. </li>
@@ -120,6 +124,11 @@
         with the <em>--prefix=/usr</em> option, installing in /etc/lirc,
         /usr/bin etc.</li>
       <li>
+        When cross-compiling, the configure script cannot use the defaults
+        determined from the build host. Hence, cross-compiling requires a
+        close look to the <i>./configure --help</i> output which have some
+        hints for this.</li>
+      <li>
         The build system supports VPATH builds which does not
         clutter the source tree. To use this do something like:
 <pre>
@@ -150,6 +159,15 @@
      <em>lirc-lsplugins</em> has a -h option providing help, and
      <em> nroff -man ../doc/man/lirc-lsplugins.1 | more </em>
      provides more complete info.</p>
+     <p>
+     From 0.10.0, the python-pkg has some traditional unittests. These
+     tests requires the <em>socat</em> and <em>expect</em> packages, both of
+     which packaged for major linux distributions. To invoke: </p>
+     <pre>
+          $ cd python-pkg/tests
+          $ python3 -m unittest discover
+     </pre>
+
      <!-- Install LIRC ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
     <A NAME="configuration"></A><HR>
@@ -178,7 +196,6 @@
 
     <A NAME="uninstall"></A><HR>
     <H1 ALIGN="CENTER">Uninstall</H1>
-
     <UL>
       <LI>Remove the installed artifacts:<BR>
         <BR>
