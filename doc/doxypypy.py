@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Filters Python code for use with Doxygen, using a syntax-aware approach.

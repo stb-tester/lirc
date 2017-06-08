@@ -1,2 +1,2 @@
 #!/bin/bash
-./doxypypy.py -a -c $1
+${PYTHON:-'python3'} ./doxypypy.py -a -c $1
