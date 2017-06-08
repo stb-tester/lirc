@@ -7,7 +7,7 @@ CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
 
 EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
                           make_rel_symlink.py index.html plugindocs.mk \
-                          fix-urls.sh
+                          fix-urls.sh doxypypy.py py_filter
 
 if DEVEL
 website                 = http://lirc.sf.net/lirc.org
@@ -205,7 +205,7 @@ $(nodist_man_MANS): $(man_sources)
 
 api-docs.tar.gz: $(API_SRC)
 	cd ../lib;  $(MAKE) dox
-	doxygen $(srcdir)/Doxyfile >doxygen-warnings.txt 2>&1
+	PYTHON=$(PYTHON) doxygen $(srcdir)/Doxyfile >doxygen-warnings.txt 2>&1
 	find api-docs -name \*.tmp -delete
 	tar czf $@ api-docs
 
