@@ -20,7 +20,7 @@ import lirc
 _PACKET_ONE = '0123456789abcdef 00 KEY_1 mceusb'
 _LINE_0 = '0123456789abcdef 00 KEY_1 mceusb'
 _SOCKET = 'lircd.socket'
-_NCAT = '/usr/bin/ncat'
+_SOCAT = '/usr/bin/socat'
 
 
 def _wait_for_socket():
@@ -41,7 +41,8 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', 'echo ' + _PACKET_ONE, '-l', '-U', _SOCKET]
+        cmd = [_SOCAT,  'UNIX-LISTEN:' + _SOCKET,
+               'EXEC:"echo %s"' % _PACKET_ONE]
         with subprocess.Popen(cmd) as child:
             _wait_for_socket()
             with RawConnection(socket_path=_SOCKET) as conn:
@@ -53,7 +54,7 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', './dummy-server 0', '-l', '-U', _SOCKET]
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 0"']
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
@@ -70,7 +71,8 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', 'echo ' + _PACKET_ONE, '-l', '-U', _SOCKET]
+        cmd = [_SOCAT,  'UNIX-LISTEN:' + _SOCKET,
+               'EXEC:"echo %s"' % _PACKET_ONE]
         with subprocess.Popen(cmd) as child:
             _wait_for_socket()
             with LircdConnection('foo',
@@ -93,7 +95,7 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', './dummy-server 0', '-l', '-U', _SOCKET]
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 0"']
         lines = []
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
@@ -115,7 +117,7 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', 'sleep 1', '-l', '-U', _SOCKET]
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"sleep 1"']
         with subprocess.Popen(cmd) as child:
             _wait_for_socket()
             with LircdConnection('foo',
@@ -132,7 +134,7 @@ class CommandTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', './dummy-server 100', '-l', '-U', _SOCKET]
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 100"']
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
@@ -150,7 +152,7 @@ class CommandTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_NCAT, '-c', './dummy-server 100', '-l', '-U', _SOCKET]
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 100"']
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
