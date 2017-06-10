@@ -122,9 +122,8 @@ fix-urls: .phony
 	sh $(srcdir)/fix-urls.sh $(DESTDIR)$(websitedir)
 
 clean-local:
-	rm -rf api-docs/*
-	rm -f lirc
-	rm -f html/programs.html api-docs.tar.gz driver-toc.xsl
+	rm -f lirc api-docs.tar.gz driver-toc.xsl
+	rm -rf man-html man api-docs html examples/.libs
 
 uninstall-hook:
 	rm -rf $(DESTDIR)$(websitedir) $(DESTDIR)$(htmldir) \

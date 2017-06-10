@@ -73,7 +73,6 @@ header_HEADERS          = paths.h config.h drivers/irpipe/irpipe.h
 
 py_pkgdir               = $(pkgdatadir)/python-pkg
 dist_py_pkg_DATA        = python-pkg/setup.py \
-                          python-pkg/VERSION \
                           python-pkg/README.rst
 
 py_pkg_lircdir          = $(pkgdatadir)/python-pkg/lirc
@@ -141,7 +140,8 @@ dist-hook: ChangeLog fix-version
 	cp -a $(distdir)/VERSION $(distdir)/python-pkg/VERSION
 
 clean-local:
-	rm -rf python-pkg/dist python-pkg/lirc.egg-info python-pgk/VERSION
+	cd python-pkg; rm -rf dist lib lirc/__pycache lirc.egg-info \
+	    lirc/config.py lirc/config.py VERSION
 	test $(abs_builddir) == $(abs_srcdir) || rm -rf python-pkg
 
 maintainer-clean-local:
