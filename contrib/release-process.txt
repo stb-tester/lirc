@@ -45,7 +45,7 @@ Steps for a new release (pre or final)
         Makefile.am (ChangeLog entries)
         doc/lirc.org/index.html (Add NEWS entry, update download link)
    Update the news entry in README.
-   Remove athe attic/ directory
+   Remove the attic/ directory
 
 5) Commit and push branch:
         git commit -a -s -m "Update for lirc <version> release"
