@@ -86,7 +86,8 @@ endif
 
 dist_py_pkg_lirc_DATA   = $(py_PYTHON) \
                           python-pkg/lirc/_client.c \
-                          python-pkg/lirc/lirctool.py
+                          python-pkg/lirc/lirctool.py \
+                          python-pkg/lirc/lirctool
 
 py_pkg_docdir           = $(pkgdatadir)/python-pkg/lirc/doc
 dist_py_pkg_doc_DATA    = python-pkg/doc/Doxyfile \

@@ -71,7 +71,7 @@ xmode2_SOURCES          = xmode2.cpp
 xmode2_LDADD            = @X_LIBS@ @X_PRE_LIBS@ -lX11 @X_EXTRA_LIBS@ \
                           $(LIRC_LIBS)
 
-dist_bin_SCRIPTS        = lirc-config-tool
+dist_bin_SCRIPTS        = lirc-config-tool lirc-init-db
 
 if HAVE_DEVINPUT
 dist_bin_SCRIPTS        += lirc-make-devinput
@@ -100,6 +100,15 @@ install-exec-hook:
 	$(SED) -i -e 's/@version@/$(VERSION)/' \
 	    $(DESTDIR)$(bindir)/lirc-config-tool \
 	    $(DESTDIR)$(bindir)/irdb-get
+	cd $(DESTDIR)$(bindir);  \
+	    $(SED) -i '\|^#!/usr/bin/env|s|python3|$(PYTHON)|' \
+	    irdb-get \
+	    irtext2udp \
+	    lirc-init-db \
+	    pronto2lirc
+	cd $(DESTDIR)$(sbindir);  \
+	    $(SED) -i '\|^#!/usr/bin/env|s|python3|$(PYTHON)|' lircd-setup
+
 
 install-data-hook:
 	cd $(DESTDIR)/$(setupdir);  \
@@ -108,6 +117,7 @@ install-data-hook:
 	$(PYTHON) $(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(setupdir)/lirc-setup \
 	    $(DESTDIR)/$(bindir)/lirc-setup
+	rm -rf $(DESTDIR)/$(setupdir)/configs
 	$(PYTHON) $(srcdir)/make_rel_symlink.py \
 	    $(DESTDIR)/$(pkgdatadir)/configs \
 	        $(DESTDIR)/$(setupdir)/configs

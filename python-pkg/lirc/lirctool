@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+
+# pylint: disable=invalid-name, wrong-import-position, import-error
+
+''' Wrapper for lirctool thing, intended to be a symlink. '''
+
+import sys
+import os.path
+
+here = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, here)
+if os.path.exists(os.path.join(here, '..', 'lirc')):
+    sys.path.insert(0, os.path.join(here, '..'))
+
+import lirctool
+lirctool.main()
