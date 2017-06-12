@@ -1,5 +1,17 @@
 0.10.0-devel
  * The deprecated lircd --uinput option is dropped. Use
+0.10.0-rc2 13/6/17
+ * Fixed lirc-setup fail-on-start (#290).
+ * Make python unit tests work on Debian (#289).
+ * Fix mode2 config file parsing [292].
+ * Documentation update.
+ * Build fixes.
+0.10.0rc1 28/5/17
+ * ftdi driver: Fix off-by-2 timings (#275). This is a breaking
+   change, see ftdi driver docs or source at doc/plugins/ftdi.html.
+ * doc: The lirc.hwdb parsable driver list is deprecated - use
+   the python database or the configs/*.yaml files instead.
+ * lircd: the deprecated --uinput option is dropped. Use
    the lircd-uinput(8) daemon instead.
  * lircd: The --release option is deprecated.
  * lircd: Adding a --immediate-init option which initiates
