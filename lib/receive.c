@@ -71,7 +71,7 @@ void rec_set_update_mode(int mode)
 	update_mode = mode;
 }
 
-int (*lircd_waitfordata)(__u32 timeout) = NULL;
+int (*lircd_waitfordata)(uint32_t timeout) = NULL;
 
 
 static lirc_t readdata(lirc_t timeout)
@@ -168,7 +168,7 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 
 void set_waitfordata_func(int(*func)(uint32_t maxusec))
 {
-    lircd_waitfordata = func;
+	lircd_waitfordata = func;
 }
 
 
