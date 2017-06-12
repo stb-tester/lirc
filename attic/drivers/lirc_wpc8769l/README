@@ -1,7 +1,0 @@
-# Here is an example how to buid a lirc kernel module. This module
-# was formerly a part of the lirc distribution, but didn't make it
-# when the other modules was moved to the kernel.
-#
-# Building kernel modules requires that the kernel sources are
-# installed. Besides that, there are no particular dependencies.
-# There is no need for lirc to be installed for this build.
