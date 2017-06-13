@@ -1,5 +1,3 @@
-#!/usr/bin/expect
-
 log_file -noappend backend.log
 
 remove_nulls
