@@ -79,6 +79,12 @@ py_PYTHON               = python-pkg/lirc/__init__.py \
                           python-pkg/lirc/config.py \
                           python-pkg/lirc/database.py \
                           python-pkg/lirc/paths.py
+
+py_pkg_testdir          = $(pkgdatadir)/python-pkg/tests
+dist_py_pkg_test_DATA   = python-pkg/tests/test_client.py \
+                          python-pkg/tests/dummy-server \
+                          python-pkg/tests/lircrc.conf
+
 if HAVE_PYTHON35
 py_PYTHON               += python-pkg/lirc/async_client.py \
                           python-pkg/lirc/client.py
@@ -139,7 +145,7 @@ dist-hook: ChangeLog fix-version
 
 clean-local:
 	cd python-pkg; rm -rf dist lib build lirc/__pycache__ lirc.egg-info \
-	    lirc/config.py lirc/_client.so lirc/config.py VERSION
+	    lirc/config.py lirc/_client.so  tests/__pycache__  VERSION
 	test $(abs_builddir) == $(abs_srcdir) || rm -rf python-pkg
 
 maintainer-clean-local:
