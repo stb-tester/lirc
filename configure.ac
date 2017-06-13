@@ -4,7 +4,6 @@ dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 AC_INIT([lirc], [0.10.0rc1])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
-DISTCHECK_CONFIGURE_FLAGS="--enable-silent-rules"
 
 # support runstatedir
 DEFINE_RUNSTATEDIR
@@ -534,8 +533,6 @@ AC_CONFIG_FILES([
   systemd/Makefile
 ])
 AC_OUTPUT
-cp VERSION python-pkg/VERSION
-cp config.h lib/lirc
 
 AC_DEFUN([AX_REPORT_CONDITIONAL], [
   AS_IF([test -z $$1_TRUE],[enabled="yes"],[enabled="no"])
