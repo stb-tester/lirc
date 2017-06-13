@@ -1,11 +1,12 @@
 ACLOCAL_AMFLAGS             = -I m4
 
-DISTCLEANFILES              = input_map.inc lirc/input_map.inc
-CLEANFILES                  = driver_api.dox lirc_client.dox config.py
-EXTRA_DIST                  = driver_api.dox  lirc_client.dox  mainpage.dox \
-                              driver_api.doxhead  lirc_client.doxhead
+CLEANFILES                  = $(BUILT_SOURCES) config.py driver_api.dox \
+                              lirc_client.dox
 
-BUILT_SOURCES               = lirc/input_map.inc
+EXTRA_DIST                  = driver_api.dox lirc_client.dox mainpage.dox \
+                              driver_api.doxhead lirc_client.doxhead
+
+BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @kernel_header_flags@
@@ -115,6 +116,10 @@ dox: driver_api.dox lirc_client.dox
 dist-hook:
 	mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
+
+config.h: ../config.h
+	cp $? $@
+
 
 input_map.lo: lirc/input_map.inc
 
