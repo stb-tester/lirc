@@ -118,19 +118,20 @@ dist-hook:
 	mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
+lirc: .phony
+	ln -s . lirc 2>/dev/null || :
+
 config.h: ../config.h
 	cp $? $@
 
-lirc/config.h: ../config.h
-	cp $? $@
-
+lirc/config.h: ../config.h lirc
+	cp ../config.h $@
 
 input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
-lirc/input_map.inc:
-	ln -s . lirc 2>/dev/null || :
+lirc/input_map.inc: lirc
 	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
 	    -i $(DEVINPUT_HEADER)  > input_map.inc
 	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
