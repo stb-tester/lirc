@@ -168,7 +168,7 @@ $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
 	cd $(abs_builddir)/python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
 	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py -q sdist
 
-python-pkg/VERSION: VERSION
+$(top_builddir)/python-pkg/VERSION: VERSION
 	cp $? $@
 
 python-pkg/lirc/config.py: Makefile  $(abs_builddir)/python-pkg/setup.py
