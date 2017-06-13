@@ -6,7 +6,8 @@ CLEANFILES                  = $(BUILT_SOURCES) config.py driver_api.dox \
 EXTRA_DIST                  = driver_api.dox lirc_client.dox mainpage.dox \
                               driver_api.doxhead lirc_client.doxhead
 
-BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h
+BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h \
+			      lirc/config.h
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
                               @kernel_header_flags@
@@ -117,6 +118,9 @@ dist-hook:
 	cp $(srcdir)/*.h $(distdir)/lirc
 
 config.h: ../config.h
+	cp $? $@
+
+lirc/config.h: ../config.h
 	cp $? $@
 
 
