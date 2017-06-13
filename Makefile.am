@@ -138,8 +138,8 @@ dist-hook: ChangeLog fix-version
 	cp -pr $(srcdir)/contrib $(distdir)
 
 clean-local:
-	cd python-pkg; rm -rf dist lib lirc/__pycache lirc.egg-info \
-	    lirc/config.py lirc/config.py VERSION
+	cd python-pkg; rm -rf dist lib build lirc/__pycache__ lirc.egg-info \
+	    lirc/config.py lirc/_client.so lirc/config.py VERSION
 	test $(abs_builddir) == $(abs_srcdir) || rm -rf python-pkg
 
 maintainer-clean-local:
