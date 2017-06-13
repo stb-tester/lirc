@@ -20,7 +20,10 @@ import lirc
 _PACKET_ONE = '0123456789abcdef 00 KEY_1 mceusb'
 _LINE_0 = '0123456789abcdef 00 KEY_1 mceusb'
 _SOCKET = 'lircd.socket'
-_SOCAT = '/usr/bin/socat'
+_SOCAT = subprocess.check_output('which socat', shell=True) \
+    .decode('ascii').strip()
+_EXPECT = subprocess.check_output('which expect', shell=True) \
+    .decode('ascii').strip()
 
 
 def _wait_for_socket():
@@ -54,7 +57,8 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 0"']
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET,
+                'EXEC:"%s ./dummy-server 0"' % _EXPECT]
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
@@ -95,7 +99,8 @@ class ReceiveTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 0"']
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET,
+               'EXEC:"%s ./dummy-server 0"' % _EXPECT]
         lines = []
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
@@ -134,7 +139,8 @@ class CommandTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 100"']
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET,
+               'EXEC:"%s ./dummy-server 100"' % _EXPECT]
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
@@ -152,7 +158,8 @@ class CommandTests(unittest.TestCase):
 
         if os.path.exists(_SOCKET):
             os.unlink(_SOCKET)
-        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"./dummy-server 100"']
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET,
+               'EXEC:"%s ./dummy-server 100"' % _EXPECT]
         with subprocess.Popen(cmd,
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
