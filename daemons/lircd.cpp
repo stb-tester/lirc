@@ -412,8 +412,12 @@ static int setup_frequency(void)
 		setup_min_freq = DEFAULT_FREQ;
 		setup_max_freq = DEFAULT_FREQ;
 	}
-	if (curr_driver->features & LIRC_CAN_SET_REC_CARRIER_RANGE && setup_min_freq != setup_max_freq) {
-		if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER_RANGE, &setup_min_freq) == -1) {
+	if (curr_driver->features & LIRC_CAN_SET_REC_CARRIER_RANGE
+	    && setup_min_freq != setup_max_freq
+	) {
+		if (curr_driver->drvctl_func(LIRC_SET_REC_CARRIER_RANGE,
+					     &setup_min_freq) == -1
+		) {
 			log_error("could not set receive carrier");
 			log_perror_err(__func__);
 			return 0;
@@ -448,8 +452,10 @@ static int setup_timeout(void)
 	if (setup_max_space == 0)
 		return 1;
 	if (curr_driver->drvctl_func(LIRC_GET_MIN_TIMEOUT, &min_timeout) != 0
-	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) != 0)
+	    || curr_driver->drvctl_func(LIRC_GET_MAX_TIMEOUT, &max_timeout) != 0
+	) {
 		return 0;
+	}
 	if ((uint32_t) setup_max_gap >= min_timeout &&
 	    (uint32_t) setup_max_gap <= max_timeout
 	) {
@@ -554,7 +560,8 @@ void config(void)
 		remotes = config_remotes;
 
 		get_frequency_range(remotes, &setup_min_freq, &setup_max_freq);
-		get_filter_parameters(remotes, &setup_max_gap, &setup_min_pulse, &setup_min_space, &setup_max_pulse,
+		get_filter_parameters(remotes, &setup_max_gap, &setup_min_pulse,
+				      &setup_min_space, &setup_max_pulse,
 				      &setup_max_space);
 
 		setup_hardware();
@@ -758,8 +765,11 @@ void add_client(int sock)
 		log_notice("accepted new client on %s", lircdfile);
 	} else if (client_addr.sa_family == AF_INET) {
 		cli_type[clin] = CT_REMOTE;
-		log_notice("accepted new client from %s",
-			  inet_ntoa(((struct sockaddr_in*)&client_addr)->sin_addr));
+		log_notice(
+			"accepted new client from %s",
+			inet_ntoa(
+				((struct sockaddr_in*)&client_addr)->sin_addr)
+		);
 	} else {
 		cli_type[clin] = 0;     /* what? */
 	}
@@ -802,25 +812,32 @@ int add_peer_connection(const char* server_arg)
 				peers[peern]->host = strdup(server);
 				service = getservbyname(sep, "tcp");
 				if (service) {
-					peers[peern]->port = ntohs(service->s_port);
+					peers[peern]->port =
+						ntohs(service->s_port);
 				} else {
 					long p;
 					char* endptr;
 
 					p = strtol(sep, &endptr, 10);
-					if (!*sep || *endptr || p < 1 || p > USHRT_MAX) {
-						fprintf(stderr, "%s: bad port number \"%s\"\n", progname, sep);
+					if (!*sep || *endptr || p < 1
+					    || p > USHRT_MAX
+					) {
+						fprintf(stderr,
+							"%s: bad port number \"%s\"\n",
+							progname, sep);
 						return 0;
 					}
 
-					peers[peern]->port = (unsigned short int)p;
+					peers[peern]->port =
+						(unsigned short int)p;
 				}
 			} else {
 				peers[peern]->host = strdup(server);
 				peers[peern]->port = LIRC_INET_PORT;
 			}
 			if (peers[peern]->host == NULL)
-				fprintf(stderr, "%s: out of memory\n", progname);
+				fprintf(stderr,
+					"%s: out of memory\n", progname);
 		} else {
 			fprintf(stderr, "%s: out of memory\n", progname);
 			return 0;
@@ -957,11 +974,15 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 		pid_t otherpid;
 
 		if (fscanf(pidf, "%d\n", &otherpid) > 0) {
-			fprintf(stderr, "%s: there seems to already be a lircd process with pid %d\n", progname,
-				otherpid);
-			fprintf(stderr, "%s: otherwise delete stale lockfile %s\n", progname, pidfile);
+			fprintf(stderr,
+				"%s: there seems to be a lircd process with pid %d\n",
+				progname, otherpid);
+			fprintf(stderr,
+				"%s: otherwise delete stale lockfile %s\n",
+				progname, pidfile);
 		} else {
-			fprintf(stderr, "%s: invalid %s encountered\n", progname, pidfile);
+			fprintf(stderr, "%s: invalid %s encountered\n",
+				progname, pidfile);
 		}
 		exit(EXIT_FAILURE);
 	}
@@ -1017,18 +1038,22 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 
 		serv_addr.sun_family = AF_UNIX;
 		strcpy(serv_addr.sun_path, lircdfile);
-		if (bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-			perrorf("Could not assign address to socket%s", lircdfile);
+		if (bind(sockfd,
+			 (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1
+		) {
+			perrorf("Could not assign address to socket%s",
+				lircdfile);
 			goto start_server_failed1;
 		}
 
 		if (new_socket ? chmod(lircdfile, permission)
-		    : (chmod(lircdfile, s.st_mode) == -1 || chown(lircdfile, s.st_uid, s.st_gid) == -1)
-		    ) {
-			perrorf("Could not set file permissions on %s", lircdfile);
+		    : (chmod(lircdfile, s.st_mode) == -1
+			  || chown(lircdfile, s.st_uid, s.st_gid) == -1)
+		) {
+			perrorf("Could not set file permissions on %s",
+				lircdfile);
 			goto start_server_failed1;
 		}
-
 		listen(sockfd, 3);
 	}
 	nolinger(sockfd);
@@ -1043,14 +1068,20 @@ void start_server(mode_t permission, int nodaemon, loglevel_t loglevel)
 			perror("Could not create TCP/IP socket");
 			goto start_server_failed1;
 		}
-		(void)setsockopt(sockinet, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+		(void)setsockopt(sockinet,
+				 SOL_SOCKET, SO_REUSEADDR,
+				 &enable, sizeof(enable));
 		serv_addr_in.sin_family = AF_INET;
 		serv_addr_in.sin_addr = address;
 		serv_addr_in.sin_port = htons(port);
 
-		if (bind(sockinet, (struct sockaddr*)&serv_addr_in, sizeof(serv_addr_in)) == -1) {
+		if (bind(sockinet,
+			 (struct sockaddr*)&serv_addr_in,
+			 sizeof(serv_addr_in)) == -1
+		) {
 			perror("could not assign address to socket");
 			goto start_server_failed2;
+
 		}
 
 		listen(sockinet, 3);
@@ -1090,10 +1121,13 @@ void daemonize(void)
 int send_success(int fd, char* message)
 {
 	log_debug("Sending success");
-	if (!
-	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
-	     && write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_END])))
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN])
+	      && write_socket_len(fd, message)
+	      && write_socket_len(fd, protocol_string[P_SUCCESS])
+	      && write_socket_len(fd, protocol_string[P_END]))
+	) {
 		return 0;
+	}
 	return 1;
 }
 
@@ -1178,7 +1212,8 @@ void dosigalrm(int sig)
 		 * remote control we could repeat the wrong code so
 		 * better stop repeating */
 		if (repeat_fd != -1)
-			send_error(repeat_fd, repeat_message, "repeating interrupted\n");
+			send_error(repeat_fd, repeat_message,
+				   "repeating interrupted\n");
 
 		repeat_remote = NULL;
 		repeat_code = NULL;
@@ -1192,11 +1227,16 @@ void dosigalrm(int sig)
 		return;
 	}
 	if (repeat_code->next == NULL
-	    || (repeat_code->transmit_state != NULL && repeat_code->transmit_state->next == NULL))
+	    || (repeat_code->transmit_state != NULL
+		&& repeat_code->transmit_state->next == NULL)
+	) {
 		repeat_remote->repeat_countdown--;
+	}
 	struct timespec before_send;
 	clock_gettime (CLOCK_MONOTONIC, &before_send);
-	if (send_ir_ncode(repeat_remote, repeat_code, 1) && repeat_remote->repeat_countdown > 0) {
+	if (send_ir_ncode(repeat_remote, repeat_code, 1)
+	    && repeat_remote->repeat_countdown > 0
+	) {
 		schedule_repeat_timer(&before_send);
 		return;
 	}
@@ -1233,29 +1273,42 @@ int parse_rc(int fd,
 	if (name == NULL)
 		goto arg_check;
 	*remote = get_ir_remote(remotes, name);
-	if (*remote == NULL)
-		return send_error(fd, message, "unknown remote: \"%s\"\n", name);
+	if (*remote == NULL) {
+		return send_error(fd, message,
+				  "unknown remote: \"%s\"\n",
+				  name);
+	}
 	command = strtok(NULL, WHITE_SPACE);
 	if (command == NULL)
 		goto arg_check;
 	*code = get_code_by_name(*remote, command);
-	if (*code == NULL)
-		return send_error(fd, message, "unknown command: \"%s\"\n", command);
+	if (*code == NULL) {
+		return send_error(fd, message,
+				  "unknown command: \"%s\"\n",
+				  command);
+	}
 	if (reps != NULL) {
 		repeats = strtok(NULL, WHITE_SPACE);
 		if (repeats != NULL) {
 			*reps = strtol(repeats, &end_ptr, 10);
-			if (*end_ptr || *reps < 0)
-				return send_error(fd, message, "bad send packet (reps/eol)\n");
-			if (*reps > repeat_max)
-				return send_error
-					       (fd, message, "too many repeats: \"%d\" > \"%u\"\n", *reps, repeat_max);
+			if (*end_ptr || *reps < 0) {
+				return send_error(
+					fd, message,
+					"bad send packet (reps/eol)\n");
+			}
+			if (*reps > repeat_max) {
+				return send_error(
+					fd, message,
+					"too many repeats: \"%d\" > \"%u\"\n",
+					*reps, repeat_max);
+			}
 		} else {
 			*reps = -1;
 		}
 	}
 	if (strtok(NULL, WHITE_SPACE) != NULL)
-		return send_error(fd, message, "bad send packet (trailing ws)\n");
+		return send_error(fd, message,
+				  "bad send packet (trailing ws)\n");
 arg_check:
 	if (n > 0 && *remote == NULL)
 		return send_error(fd, message, "remote missing\n");
@@ -1279,17 +1332,20 @@ int send_remote_list(int fd, char* message)
 		all = all->next;
 	}
 
-	if (!
-	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
-	     && write_socket_len(fd, protocol_string[P_SUCCESS])))
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN])
+	      && write_socket_len(fd, message)
+	      && write_socket_len(fd, protocol_string[P_SUCCESS]))
+	) {
 		return 0;
-
+	}
 	if (n == 0)
 		return write_socket_len(fd, protocol_string[P_END]);
 	sprintf(buffer, "%d\n", n);
-	if (!(write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, buffer)))
+	if (!(write_socket_len(fd, protocol_string[P_DATA])
+	      && write_socket_len(fd, buffer))
+	) {
 		return 0;
-
+	}
 	all = remotes;
 	while (all) {
 		len = snprintf(buffer, PACKET_SIZE + 1, "%s\n", all->name);
@@ -1317,19 +1373,25 @@ int send_remote(int fd, char* message, struct ir_remote* remote)
 		}
 	}
 
-	if (!
-	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
-	     && write_socket_len(fd, protocol_string[P_SUCCESS])))
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN])
+	      && write_socket_len(fd, message)
+	      && write_socket_len(fd, protocol_string[P_SUCCESS]))
+	) {
 		return 0;
+	}
 	if (n == 0)
 		return write_socket_len(fd, protocol_string[P_END]);
 	sprintf(buffer, "%d\n", n);
-	if (!(write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, buffer)))
+	if (!(write_socket_len(fd, protocol_string[P_DATA])
+	      && write_socket_len(fd, buffer))
+	) {
 		return 0;
+	}
 
 	codes = remote->codes;
 	while (codes->name != NULL) {
-		len = snprintf(buffer, PACKET_SIZE, "%016llx %s\n", (unsigned long long)codes->code, codes->name);
+		len = snprintf(buffer, PACKET_SIZE, "%016llx %s\n",
+			       (unsigned long long)codes->code, codes->name);
 		if (len >= PACKET_SIZE + 1)
 			len = sprintf(buffer, "code_too_long\n");
 		if (write_socket(fd, buffer, len) < len)
@@ -1344,11 +1406,15 @@ int send_name(int fd, char* message, struct ir_ncode* code)
 	char buffer[PACKET_SIZE + 1];
 	int len;
 
-	if (!
-	    (write_socket_len(fd, protocol_string[P_BEGIN]) && write_socket_len(fd, message)
-	     && write_socket_len(fd, protocol_string[P_SUCCESS]) && write_socket_len(fd, protocol_string[P_DATA])))
+	if (!(write_socket_len(fd, protocol_string[P_BEGIN])
+	     && write_socket_len(fd, message)
+	     && write_socket_len(fd, protocol_string[P_SUCCESS])
+	     && write_socket_len(fd, protocol_string[P_DATA]))
+	) {
 		return 0;
-	len = snprintf(buffer, PACKET_SIZE, "1\n%016llx %s\n", (unsigned long long)code->code, code->name);
+	}
+	len = snprintf(buffer, PACKET_SIZE, "1\n%016llx %s\n",
+		       (unsigned long long)code->code, code->name);
 	if (len >= PACKET_SIZE + 1)
 		len = sprintf(buffer, "1\ncode_too_long\n");
 	if (write_socket(fd, buffer, len) < len)
@@ -1386,31 +1452,51 @@ static int set_transmitters(int fd, char* message, char* arguments)
 
 	if (arguments == NULL)
 		goto string_error;
-	if (curr_driver->send_mode == 0)
-		return send_error(fd, message, "hardware does not support sending\n");
-	if (curr_driver->drvctl_func == NULL || !(curr_driver->features & LIRC_CAN_SET_TRANSMITTER_MASK))
-		return send_error(fd, message, "hardware does not support multiple transmitters\n");
-
+	if (curr_driver->send_mode == 0) {
+		return send_error(fd,
+				  message,
+				  "hardware does not support sending\n");
+	}
+	if (curr_driver->drvctl_func == NULL
+	    || !(curr_driver->features & LIRC_CAN_SET_TRANSMITTER_MASK)
+	) {
+		return send_error(
+			fd,
+			message,
+			"hardware does not support multiple transmitters\n");
+	}
 	next_arg = strtok(arguments, WHITE_SPACE);
 	if (next_arg == NULL)
 		goto string_error;
 	do {
 		next_tx_int = strtoul(next_arg, &end_ptr, 10);
-		if (*end_ptr || next_tx_int == 0 || (next_tx_int == ULONG_MAX && errno == ERANGE))
+		if (*end_ptr || next_tx_int == 0
+		    || (next_tx_int == ULONG_MAX && errno == ERANGE)
+		) {
 			return send_error(fd, message, "invalid argument\n");
+		}
 		if (next_tx_int > MAX_TX)
-			return send_error(fd, message, "cannot support more than %d transmitters\n", MAX_TX);
+			return send_error(
+				fd, message,
+				"cannot support more than %d transmitters\n",
+				MAX_TX);
 		next_tx_hex = 1;
 		for (i = 1; i < next_tx_int; i++)
 			next_tx_hex = next_tx_hex << 1;
 		channels |= next_tx_hex;
 	} while ((next_arg = strtok(NULL, WHITE_SPACE)) != NULL);
 
-	retval = curr_driver->drvctl_func(LIRC_SET_TRANSMITTER_MASK, &channels);
-	if (retval < 0)
-		return send_error(fd, message, "error - could not set transmitters\n");
-	if (retval > 0)
-		return send_error(fd, message, "error - maximum of %d transmitters\n", retval);
+	retval = curr_driver->drvctl_func(LIRC_SET_TRANSMITTER_MASK,
+					  &channels);
+	if (retval < 0) {
+		return send_error(fd, message,
+				  "error - could not set transmitters\n");
+	}
+	if (retval > 0) {
+		return send_error(fd, message,
+				  "error - maximum of %d transmitters\n",
+				  retval);
+	}
 	return send_success(fd, message);
 
 string_error:
@@ -1444,7 +1530,8 @@ static int simulate(int fd, char* message, char* arguments)
 	log_debug("simulate: enter");
 
 	if (!allow_simulate)
-		return send_error(fd, message, "SIMULATE command is disabled\n");
+		return send_error(fd, message,
+				  "SIMULATE command is disabled\n");
 	if (arguments == NULL)
 		return send_error(fd, message, "no arguments given\n");
 
@@ -1502,10 +1589,14 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	log_debug("Sending once, msg: %s, args: %s, once: %d",
 		  message, arguments, once);
 	if (curr_driver->send_mode == 0)
-		return send_error(fd, message, "hardware does not support sending\n");
+		return send_error(fd, message,
+				  "hardware does not support sending\n");
 
-	if (parse_rc(fd, message, arguments, &remote, &code, once ? &reps : NULL, 2, &err) == 0)
+	if (parse_rc(fd, message, arguments,
+		     &remote, &code, once ? &reps : NULL, 2, &err) == 0
+	) {
 		return 0;
+	}
 	if (err)
 		return 1;
 
@@ -1519,7 +1610,9 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	if (has_toggle_mask(remote))
 		remote->toggle_mask_state = 0;
 	if (has_toggle_bit_mask(remote))
-		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
+		remote->toggle_bit_mask_state =
+			(remote->toggle_bit_mask_state
+				^ remote->toggle_bit_mask);
 	code->transmit_state = NULL;
 	struct timespec before_send;
 	clock_gettime (CLOCK_MONOTONIC, &before_send);
@@ -1540,7 +1633,8 @@ static int send_core(int fd, char* message, char* arguments, int once)
 			if (repeat_message == NULL) {
 				repeat_remote = NULL;
 				repeat_code = NULL;
-				return send_error(fd, message, "out of memory\n");
+				return send_error(fd, message,
+						  "out of memory\n");
 			}
 			repeat_fd = fd;
 		} else if (!send_success(fd, message)) {
@@ -1570,15 +1664,21 @@ static int send_stop(int fd, char* message, char* arguments)
 	if (repeat_remote && repeat_code) {
 		int done;
 
-		if (remote && strcasecmp(remote->name, repeat_remote->name) != 0)
-			return send_error(fd, message, "specified remote does not match\n");
+		if (remote && strcasecmp(remote->name,
+					 repeat_remote->name) != 0
+		) {
+			return send_error(fd, message,
+					  "specified remote does not match\n");
+		}
 		if (code && strcasecmp(code->name, repeat_code->name) != 0)
-			return send_error(fd, message, "specified code does not match\n");
+			return send_error(fd, message,
+					  "specified code does not match\n");
 
 		done = repeat_max - repeat_remote->repeat_countdown;
 		if (done < repeat_remote->min_repeat) {
 			/* we still have some repeats to do */
-			repeat_remote->repeat_countdown = repeat_remote->min_repeat - done;
+			repeat_remote->repeat_countdown =
+				repeat_remote->min_repeat - done;
 			return send_success(fd, message);
 		}
 		repeat_timer.it_value.tv_sec = 0;
@@ -1606,9 +1706,11 @@ static int version(int fd, char* message, char* arguments)
 
 	sprintf(buffer, "1\n%s\n", VERSION);
 	if (!(write_socket_len(fd, protocol_string[P_BEGIN]) &&
-	      write_socket_len(fd, message) && write_socket_len(fd, protocol_string[P_SUCCESS])
-	      && write_socket_len(fd, protocol_string[P_DATA]) && write_socket_len(fd, buffer)
-	      && write_socket_len(fd, protocol_string[P_END])))
+	      write_socket_len(fd, message)
+			&& write_socket_len(fd, protocol_string[P_SUCCESS])
+			&& write_socket_len(fd, protocol_string[P_DATA])
+			&& write_socket_len(fd, buffer)
+			&& write_socket_len(fd, protocol_string[P_END])))
 		return 0;
 	return 1;
 }
@@ -1705,25 +1807,38 @@ int get_command(int fd)
 		}
 		for (i = 0; directives[i].name != NULL; i++) {
 			if (strcasecmp(directive, directives[i].name) == 0) {
-				if (!directives[i].function(fd, backup, strtok(NULL, "")))
+				if (!directives[i].function(fd,
+							    backup,
+							    strtok(NULL, ""))
+				) {
 					return 0;
+				}
 				goto skip;
 			}
 		}
 
-		if (!send_error(fd, backup, "unknown directive: \"%s\"\n", directive))
+		if (!send_error(fd, backup,
+			        "unknown directive: \"%s\"\n", directive)
+		) {
 			return 0;
+		}
 skip:
 		if (length > packet_length) {
 			int new_length;
 
-			memmove(buffer, buffer + packet_length, length - packet_length + 1);
+			memmove(buffer,
+				buffer + packet_length,
+				length - packet_length + 1);
 			if (strchr(buffer, '\n') == NULL) {
-				new_length =
-					read_timeout(fd, buffer + length - packet_length,
-						     PACKET_SIZE - (length - packet_length), 5);
+				new_length = read_timeout(
+					fd,
+					buffer + length - packet_length,
+					PACKET_SIZE
+						- (length - packet_length),
+					5);
 				if (new_length > 0)
-					length = length - packet_length + new_length;
+					length = length - packet_length
+						+ new_length;
 				else
 					length = new_length;
 			} else {
@@ -1738,8 +1853,9 @@ skip:
 	return 1;
 }
 
-static void
-input_message(const char* message, const char* remote_name, const char* button_name, int reps)
+static void input_message(const char* message,
+			  const char* remote_name,
+			  const char* button_name, int reps)
 {
 	broadcast_message(message);
 }
@@ -1759,8 +1875,9 @@ void free_old_remotes(void)
 			log_info("last_remote found");
 			found = get_ir_remote(remotes, last_remote->name);
 			if (found != NULL) {
-				code = get_code_by_name(found,
-							last_remote->last_code->name);
+				code = get_code_by_name(
+						found,
+						last_remote->last_code->name);
 				if (code != NULL) {
 					found->reps = last_remote->reps;
 					found->toggle_bit_mask_state =
@@ -1769,7 +1886,8 @@ void free_old_remotes(void)
 						last_remote->min_remaining_gap;
 					found->max_remaining_gap =
 						last_remote->max_remaining_gap;
-					found->last_send = last_remote->last_send;
+					found->last_send =
+						last_remote->last_send;
 					last_remote = found;
 					last_remote->last_code = code;
 					log_info("mapped last_remote");
@@ -1793,7 +1911,8 @@ void free_old_remotes(void)
 		if (found != NULL) {
 			found = get_ir_remote(remotes, repeat_remote->name);
 			if (found != NULL) {
-				code = get_code_by_name(found, repeat_code->name);
+				code = get_code_by_name(found,
+							repeat_code->name);
 				if (code != NULL) {
 					struct itimerval repeat_timer;
 
@@ -1803,12 +1922,18 @@ void free_old_remotes(void)
 					repeat_timer.it_interval.tv_usec = 0;
 
 					found->last_code = code;
-					found->last_send = repeat_remote->last_send;
-					found->toggle_bit_mask_state = repeat_remote->toggle_bit_mask_state;
-					found->min_remaining_gap = repeat_remote->min_remaining_gap;
-					found->max_remaining_gap = repeat_remote->max_remaining_gap;
+					found->last_send =
+						repeat_remote->last_send;
+					found->toggle_bit_mask_state =
+						repeat_remote->toggle_bit_mask_state;
+					found->min_remaining_gap =
+						repeat_remote->min_remaining_gap;
+					found->max_remaining_gap =
+						repeat_remote->max_remaining_gap;
 
-					setitimer(ITIMER_REAL, &repeat_timer, &repeat_timer);
+					setitimer(ITIMER_REAL,
+						  &repeat_timer,
+						  &repeat_timer);
 					/* "atomic" (shouldn't be necessary any more) */
 					repeat_remote = found;
 					repeat_code = code;
@@ -1857,7 +1982,7 @@ static int mywaitfordata(uint32_t maxusec)
 			/* handle signals */
 			if (term)
 				dosigterm(termsig);
-			/* never reached */
+				/* never reached */
 			if (hup) {
 				dosighup(SIGHUP);
 				hup = 0;
@@ -1877,9 +2002,13 @@ static int mywaitfordata(uint32_t maxusec)
 				poll_fds.byname.sockinet.fd = sockinet;
 				poll_fds.byname.sockinet.events = POLLIN;
 			}
-			if (use_hw() && curr_driver->rec_mode != 0 && curr_driver->fd != -1) {
-				poll_fds.byname.curr_driver.fd = curr_driver->fd;
-				poll_fds.byname.curr_driver.events = POLLIN;
+			if (use_hw() && curr_driver->rec_mode != 0
+			    && curr_driver->fd != -1
+			) {
+				poll_fds.byname.curr_driver.fd =
+					curr_driver->fd;
+				poll_fds.byname.curr_driver.events =
+					POLLIN;
 			}
 
 			for (i = 0; i < clin; i++) {
@@ -1889,18 +2018,24 @@ static int mywaitfordata(uint32_t maxusec)
 				 * them back in the wrong order. */
 				if (clis[i] != repeat_fd) {
 					poll_fds.byname.clis[i].fd = clis[i];
-					poll_fds.byname.clis[i].events = POLLIN;
+					poll_fds.byname.clis[i].events =
+						POLLIN;
 				}
 			}
 			timerclear(&tv);
 			reconnect = 0;
 			for (i = 0; i < peern; i++) {
 				if (peers[i]->socket != -1) {
-					poll_fds.byname.peers[i].fd = peers[i]->socket;
-					poll_fds.byname.peers[i].events = POLLIN;
+					poll_fds.byname.peers[i].fd =
+						peers[i]->socket;
+					poll_fds.byname.peers[i].events =
+						POLLIN;
 				} else if (timerisset(&tv)) {
-					if (timercmp(&tv, &peers[i]->reconnect, >))
+					if (timercmp(&tv,
+						     &peers[i]->reconnect, >)
+					) {
 						tv = peers[i]->reconnect;
+					}
 				} else {
 					tv = peers[i]->reconnect;
 				}
@@ -1944,15 +2079,19 @@ static int mywaitfordata(uint32_t maxusec)
 						tv = gap;
 				}
 			}
-			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
-				ret = curl_poll((struct pollfd *) &poll_fds.byindex,
-					         POLLFDS_SIZE,
-					         tv.tv_sec * 1000 + tv.tv_usec / 1000);
-			else
-				ret = curl_poll((struct pollfd*)&poll_fds.byindex,
-					         POLLFDS_SIZE,
-						 -1);
-
+			if (timerisset(&tv) || timerisset(&release_time)
+			    || reconnect
+			) {
+				ret = curl_poll((
+					struct pollfd *) &poll_fds.byindex,
+					POLLFDS_SIZE,
+					tv.tv_sec * 1000 + tv.tv_usec / 1000);
+			} else {
+				ret = curl_poll((
+					struct pollfd*)&poll_fds.byindex,
+					POLLFDS_SIZE,
+					-1);
+			}
 			if (ret == -1 && errno != EINTR) {
 				log_perror_err("curl_poll()() failed");
 				raise(SIGTERM);
@@ -1972,7 +2111,9 @@ static int mywaitfordata(uint32_t maxusec)
 				connect_to_peers();
 		} while (ret == -1 && errno == EINTR);
 
-		if (curr_driver->fd == -1 && use_hw() && curr_driver->init_func) {
+		if (curr_driver->fd == -1 && use_hw()
+		    && curr_driver->init_func
+		) {
 			oldlevel = loglevel;
 			lirc_log_setlevel(LIRC_ERROR);
 			curr_driver->init_func();
@@ -1989,19 +2130,20 @@ static int mywaitfordata(uint32_t maxusec)
 			}
 		}
 		for (i = 0; i < peern; i++) {
-			if (peers[i]->socket != -1 && poll_fds.byname.peers[i].revents & POLLIN) {
+			if (peers[i]->socket != -1
+			    && poll_fds.byname.peers[i].revents & POLLIN) {
 				poll_fds.byname.peers[i].revents = 0;
 				if (get_peer_message(peers[i]) == 0) {
 					shutdown(peers[i]->socket, 2);
 					close(peers[i]->socket);
 					peers[i]->socket = -1;
 					peers[i]->connection_failure = 1;
-					gettimeofday(&peers[i]->reconnect, NULL);
+					gettimeofday(&peers[i]->reconnect,
+						     NULL);
 					peers[i]->reconnect.tv_sec += 5;
 				}
 			}
 		}
-
 		if (poll_fds.byname.sockfd.revents & POLLIN) {
 			poll_fds.byname.sockfd.revents = 0;
 			log_trace("registering local client");
@@ -2038,8 +2180,12 @@ void loop(void)
 			const char* button_name;
 			int reps;
 
-			if (curr_driver->drvctl_func && (curr_driver->features & LIRC_CAN_NOTIFY_DECODE))
-				curr_driver->drvctl_func(DRVCTL_NOTIFY_DECODE, NULL);
+			if (curr_driver->drvctl_func
+			    && (curr_driver->features & LIRC_CAN_NOTIFY_DECODE)
+			) {
+				curr_driver->drvctl_func(DRVCTL_NOTIFY_DECODE,
+							 NULL);
+			}
 
 			get_release_data(&remote_name, &button_name, &reps);
 
@@ -2213,7 +2359,8 @@ static void lircd_parse_options(int argc, char** const argv)
 			options_set_opt("lircd:driver-options", optarg);
 			break;
 		default:
-			printf("Usage: %s [options] [config-file]\n", progname);
+			printf("Usage: %s [options] [config-file]\n",
+			       progname);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -2351,7 +2498,8 @@ int main(int argc, char** argv)
 		listen_tcpip = 1;
 		opt = options_getstring("lircd:listen");
 		if (opt) {
-			if (opt2host_port(opt, &address, &port, errmsg) != 0) {
+			if (opt2host_port(opt, &address, &port, errmsg) != 0
+			) {
 				fputs(errmsg, stderr);
 				return EXIT_FAILURE;
 			}
@@ -2368,12 +2516,18 @@ int main(int argc, char** argv)
 	configfile = options_getstring("lircd:configfile");
 	curr_driver->open_func(device);
 	if (strcmp(curr_driver->name, "null") == 0 && peern == 0) {
-		fprintf(stderr, "%s: there's no hardware I can use and no peers are specified\n", progname);
+		fprintf(stderr,
+			"%s: there's no hardware I can use and no peers are specified\n",
+			progname);
 		return EXIT_FAILURE;
 	}
-	if (curr_driver->device != NULL && strcmp(curr_driver->device, lircdfile) == 0) {
-		fprintf(stderr, "%s: refusing to connect to myself\n", progname);
-		fprintf(stderr, "%s: device and output must not be the same file: %s\n",
+	if (curr_driver->device != NULL
+	    && strcmp(curr_driver->device,lircdfile) == 0
+	) {
+		fprintf(stderr,
+			"%s: refusing to connect to myself\n", progname);
+		fprintf(stderr,
+			"%s: device and output cannot be same file: %s\n",
 			progname, lircdfile);
 		return EXIT_FAILURE;
 	}
