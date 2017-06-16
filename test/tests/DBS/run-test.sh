@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-##set -x
 ##env > testenv
+
 
 export LD_LIBRARY_PATH=../../../lib/.libs
 here=$( dirname $( readlink -fn $0))

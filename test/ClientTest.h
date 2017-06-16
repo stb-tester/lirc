@@ -35,6 +35,8 @@ static const int SEND_DELAY  = 2000000;
 
 using namespace std;
 
+const char* const oldpath = getenv("PATH");
+
 class ClientTest : public CppUnit::TestFixture
 {
     private:
@@ -45,7 +47,7 @@ class ClientTest : public CppUnit::TestFixture
         {
             CppUnit::TestSuite* testSuite =
                  new CppUnit::TestSuite( "ClientTest" );
-            //ADD_TEST("testReceive", testReceive);
+            ADD_TEST("testReceive", testReceive);
             ADD_TEST("testReadConfig", testReadConfig);
             ADD_TEST("testReadConfig1", testReadConfig1);
             ADD_TEST("testReadConfig2", testReadConfig2);
@@ -80,6 +82,7 @@ class ClientTest : public CppUnit::TestFixture
         void setUp()
         {
             char s[128];
+
             if (access("var/lircd.pid", R_OK) == 0) {
                 ifstream pidfile("var/lircd.pid");
                 stringstream buffer;
@@ -98,11 +101,16 @@ class ClientTest : public CppUnit::TestFixture
             unlink("var/file-driver.out");
 
             int status;
+            char newpath[128];
+
+            snprintf(newpath, sizeof(newpath), "../daemons:%s",  oldpath);
+            setenv("PATH", newpath, 1);
             status = system(RUN_LIRCD);
+
             setenv("LIRC_SOCKET_PATH", "var/lircd.socket", 1);
             lirc_deinit();
             fd = lirc_init("mythtv", 1);
-                usleep(2000);
+            usleep(2000);
             CPPUNIT_ASSERT(fd != -1);
         };
 
@@ -123,6 +131,7 @@ class ClientTest : public CppUnit::TestFixture
                 perror(s);
             }
             lirc_log_close();
+            setenv("PATH", oldpath, 1);
         };
 
 
@@ -221,8 +230,8 @@ class ClientTest : public CppUnit::TestFixture
 
         void testReadConfigNew()
         {
-            struct lirc_config* config; 
-            cout << "Please ignore message about deprecared lircrc shebang\n";
+            struct lirc_config* config;
+            cout << "Please ignore message about deprecated lircrc shebang\n";
             CPPUNIT_ASSERT(
                 lirc_readconfig_only("etc/mythtv-new.lircrc", &config, NULL) == 0);
             CPPUNIT_ASSERT(strcmp(config->lircrc_class, "mythtv-new.lircrc") == 0);
