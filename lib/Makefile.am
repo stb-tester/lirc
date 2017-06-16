@@ -122,10 +122,10 @@ lirc: .phony
 	ln -s . lirc 2>/dev/null || :
 
 config.h: ../config.h
-	cp $? $@
+	-cp $? $@
 
 lirc/config.h: ../config.h lirc
-	cp ../config.h $@
+	-cp ../config.h $@
 
 input_map.lo: lirc/input_map.inc
 

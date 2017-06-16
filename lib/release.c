@@ -44,10 +44,8 @@ static lirc_t release_gap;
 static struct ir_remote* release_remote2;
 static struct ir_ncode* release_ncode2;
 static ir_code release_code2;
-static const char* release_suffix = LIRC_RELEASE_SUFFIX;
-static char message[PACKET_SIZE + 1];
 
-void register_input(void)
+static void register_input(void)
 {
 	struct timeval gap;
 
@@ -101,100 +99,8 @@ void get_release_data(const char** remote_name,
 	}
 }
 
-void set_release_suffix(const char* s)
-{
-	release_suffix = s;
-}
 
 void get_release_time(struct timeval* tv)
 {
 	*tv = release_time;
-}
-
-const char* check_release_event(const char** remote_name,
-				const char** button_name)
-{
-	int len = 0;
-
-	if (release_remote2 != NULL) {
-		*remote_name = release_remote2->name;
-		*button_name = release_ncode2->name;
-		len = write_message(message,
-				    PACKET_SIZE + 1,
-				    release_remote2->name,
-				    release_ncode2->name,
-				    release_suffix,
-				    release_code2,
-				    0);
-		release_remote2 = NULL;
-		release_ncode2 = NULL;
-		release_code2 = 0;
-
-		if (len >= PACKET_SIZE + 1) {
-			log_error("message buffer overflow");
-			return NULL;
-		}
-
-		log_trace2("check");
-		return message;
-	}
-	return NULL;
-}
-
-const char* trigger_release_event(const char** remote_name,
-				  const char** button_name)
-{
-	int len = 0;
-
-	if (release_remote != NULL) {
-		release_remote->release_detected = 1;
-		*remote_name = release_remote->name;
-		*button_name = release_ncode->name;
-		len = write_message(message,
-				    PACKET_SIZE + 1,
-				    release_remote->name,
-				    release_ncode->name,
-				    release_suffix,
-				    release_code,
-				    0);
-		timerclear(&release_time);
-		release_remote = NULL;
-		release_ncode = NULL;
-		release_code = 0;
-
-		if (len >= PACKET_SIZE + 1) {
-			log_error("message buffer overflow");
-			return NULL;
-		}
-		log_trace2("trigger");
-		return message;
-	}
-	return NULL;
-}
-
-const char* release_map_remotes(struct ir_remote* old,
-				struct ir_remote* new,
-				const char**      remote_name,
-				const char**      button_name)
-{
-	struct ir_remote* remote;
-	struct ir_ncode* ncode = NULL;
-
-	if (release_remote2 != NULL) {
-		/* should not happen */
-		log_error("release_remote2 still in use");
-		release_remote2 = NULL;
-	}
-	if (release_remote && is_in_remotes(old, release_remote)) {
-		remote = get_ir_remote(new, release_remote->name);
-		if (remote)
-			ncode = get_code_by_name(remote, release_ncode->name);
-		if (remote && ncode) {
-			release_remote = remote;
-			release_ncode = ncode;
-		} else {
-			return trigger_release_event(remote_name, button_name);
-		}
-	}
-	return NULL;
 }

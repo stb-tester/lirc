@@ -144,7 +144,6 @@ static const char* const help =
 	"\t -P --pidfile=file\t\tDaemon pid file\n"
 	"\t -L --logfile=file\t\tLog file path (default: use syslog)'\n"
 	"\t -D[level] --loglevel[=level]\t'info', 'warning', 'notice', etc., or 3..10.\n"
-	"\t -r --release[=suffix]\t\tDEPRECATED: Auto-generate release events\n"
 	"\t -a --allow-simulate\t\tAccept SIMULATE command\n"
 	"\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
 	"\t -A --driver-options=key:value[|key:value...]\n"
@@ -170,7 +169,6 @@ static const struct option lircd_options[] = {
 	{ "logfile",	    required_argument, NULL, 'L' },
 	{ "debug",	    optional_argument, NULL, 'D' }, // compatibility
 	{ "loglevel",	    optional_argument, NULL, 'D' },
-	{ "release",	    optional_argument, NULL, 'r' },
 	{ "allow-simulate", no_argument,       NULL, 'a' },
 	{ "dynamic-codes",  no_argument,       NULL, 'Y' },
 	{ "driver-options", required_argument, NULL, 'A' },
@@ -287,7 +285,6 @@ static int peern = 0;
 
 static int daemonized = 0;
 static int allow_simulate = 0;
-static int userelease = 0;
 
 static sig_atomic_t term = 0, hup = 0, alrm = 0;
 static int termsig;
@@ -1741,18 +1738,10 @@ skip:
 	return 1;
 }
 
-void input_message(const char* message, const char* remote_name, const char* button_name, int reps, int release)
+static void
+input_message(const char* message, const char* remote_name, const char* button_name, int reps)
 {
-	const char* release_message;
-	const char* release_remote_name;
-	const char* release_button_name;
-
-	release_message = check_release_event(&release_remote_name, &release_button_name);
-	if (release_message)
-		input_message(release_message, release_remote_name, release_button_name, 0, 1);
-
-	if (!release || userelease)
-		broadcast_message(message);
+	broadcast_message(message);
 }
 
 
@@ -1761,27 +1750,25 @@ void free_old_remotes(void)
 	struct ir_remote* scan_remotes;
 	struct ir_remote* found;
 	struct ir_ncode* code;
-	const char* release_event;
-	const char* release_remote_name;
-	const char* release_button_name;
 
 	if (get_decoding() == free_remotes)
 		return;
 
-	release_event = release_map_remotes(free_remotes, remotes, &release_remote_name, &release_button_name);
-	if (release_event != NULL)
-		input_message(release_event, release_remote_name, release_button_name, 0, 1);
 	if (last_remote != NULL) {
 		if (is_in_remotes(free_remotes, last_remote)) {
 			log_info("last_remote found");
 			found = get_ir_remote(remotes, last_remote->name);
 			if (found != NULL) {
-				code = get_code_by_name(found, last_remote->last_code->name);
+				code = get_code_by_name(found,
+							last_remote->last_code->name);
 				if (code != NULL) {
 					found->reps = last_remote->reps;
-					found->toggle_bit_mask_state = last_remote->toggle_bit_mask_state;
-					found->min_remaining_gap = last_remote->min_remaining_gap;
-					found->max_remaining_gap = last_remote->max_remaining_gap;
+					found->toggle_bit_mask_state =
+						last_remote->toggle_bit_mask_state;
+					found->min_remaining_gap =
+						last_remote->min_remaining_gap;
+					found->max_remaining_gap =
+						last_remote->max_remaining_gap;
 					found->last_send = last_remote->last_send;
 					last_remote = found;
 					last_remote->last_code = code;
@@ -1972,21 +1959,6 @@ static int mywaitfordata(uint32_t maxusec)
 				continue;
 			}
 			gettimeofday(&now, NULL);
-			if (timerisset(&release_time) && timercmp(&now, &release_time, >)) {
-				const char* release_message;
-				const char* release_remote_name;
-				const char* release_button_name;
-
-				release_message =
-					trigger_release_event(&release_remote_name,
-							      &release_button_name);
-				if (release_message) {
-					input_message(release_message,
-						      release_remote_name,
-						      release_button_name,
-						      0, 1);
-				}
-			}
 			if (free_remotes != NULL)
 				free_old_remotes();
 			if (maxusec > 0) {
@@ -2042,8 +2014,8 @@ static int mywaitfordata(uint32_t maxusec)
 		}
 		if (use_hw() && curr_driver->rec_mode != 0
 		    && curr_driver->fd != -1
-		    && poll_fds.byname.curr_driver.revents & POLLIN) {
-			register_input();
+		    && poll_fds.byname.curr_driver.revents & POLLIN
+		) {
 			/* we will read later */
 			return 1;
 		}
@@ -2071,7 +2043,7 @@ void loop(void)
 
 			get_release_data(&remote_name, &button_name, &reps);
 
-			input_message(message, remote_name, button_name, reps, 0);
+			input_message(message, remote_name, button_name, reps);
 		}
 	}
 }
@@ -2126,8 +2098,6 @@ static void lircd_add_defaults(void)
 		"lircd:pidfile",	PIDFILE,
 		"lircd:logfile",	"syslog",
 		"lircd:debug",		level,
-		"lircd:release",	"False",
-		"lircd:release_suffix",	LIRC_RELEASE_SUFFIX,
 		"lircd:allow-simulate",	"False",
 		"lircd:dynamic-codes",	"False",
 		"lircd:plugindir",	PLUGINDIR,
@@ -2162,7 +2132,7 @@ int parse_peer_connections(const char* opt)
 static void lircd_parse_options(int argc, char** const argv)
 {
 	int c;
-	const char* optstring = "A:e:O:hvnp:iH:d:o:U:P:l::L:c:r::aR:D::Yu";
+	const char* optstring = "A:e:O:hvnp:iH:d:o:U:P:l::L:c:aR:D::Yu";
 
 	strncpy(progname, "lircd", sizeof(progname));
 	optind = 1;
@@ -2226,11 +2196,6 @@ static void lircd_parse_options(int argc, char** const argv)
 			break;
 		case 'a':
 			options_set_opt("lircd:allow-simulate", "True");
-			break;
-		case 'r':
-			options_set_opt("lircd:release", "True");
-			if (optarg)
-				options_set_opt("lircd:release_suffix", optarg);
 			break;
 		case 'U':
 			options_set_opt("lircd:plugindir", optarg);
@@ -2309,11 +2274,8 @@ static void log_options(void)
 		log_notice("Options: listen address: %s", buff);
 	}
 	log_notice("Options: connect: %s", optvalue("lircd:connect"));
-	log_notice("Options: userelease: %d", userelease);
 	log_notice("Options: effective_user: %s",
 		   optvalue("lircd:effective_user"));
-	log_notice("Options: release_suffix: %s",
-		   optvalue("lircd:release_suffix"));
 	log_notice("Options: allow_simulate: %d", allow_simulate);
 	log_notice("Options: repeat_max: %d", repeat_max);
 	log_notice("Options: configfile: %s", optvalue("lircd:configfile"));
@@ -2401,8 +2363,6 @@ int main(int argc, char** argv)
 	if (!parse_peer_connections(opt))
 		return(EXIT_FAILURE);
 	loglevel_opt = (loglevel_t) options_getint("lircd:debug");
-	userelease = options_getboolean("lircd:release");
-	set_release_suffix(options_getstring("lircd:release_suffix"));
 	allow_simulate = options_getboolean("lircd:allow-simulate");
 	repeat_max = options_getint("lircd:repeat-max");
 	configfile = options_getstring("lircd:configfile");
