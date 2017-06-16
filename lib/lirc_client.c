@@ -381,6 +381,8 @@ int lirc_deinit(void)
 	return r == 0 ? 1 : 0;
 }
 
+void lirc_set_verbose(int v) { lirc_verbose = v; }
+
 
 static int lirc_readline(char** line, FILE* f)
 {

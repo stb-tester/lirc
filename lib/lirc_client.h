@@ -203,6 +203,9 @@ typedef struct {
  */
 int lirc_init(const char* prog, int verbose);
 
+/** Dynamically change the verbose level defined by lirc_init(). */
+void lirc_set_verbose(int verbose);
+
 /**
  * Release resources allocated by lirc_init(), basically disconnect
  * from socket.
