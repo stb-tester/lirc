@@ -21,5 +21,7 @@ int main()
         runner.addTest(DrvAdminTest::suite());
         runner.addTest(DecodeTest::suite());
         runner.run();
+        system("pkill lircd");
+        unlink("var/lircd.pid");
         return 0;
 };
