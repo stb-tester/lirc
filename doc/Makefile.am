@@ -149,14 +149,14 @@ $(srcdir)/manpage.xsl: $(abs_builddir)/driver-toc.xsl
 table.html: docpage.xsl
 	test -e lirc || \
 	    ln -s $(top_srcdir)/tools/lirc-setup lirc 2>/dev/null || :
-	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
+	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
 	        | xsltproc --html docpage.xsl - > table.html
 
 lirc.hwdb:
 	test -e lirc || \
 	    ln -s $(top_srcdir)/tools/lirc-setup lirc  2>/dev/null || :
-	PYTHONPATH=$(top_srcdir)/python-pkg/lirc \
+	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
 	    > lirc.hwdb
 
