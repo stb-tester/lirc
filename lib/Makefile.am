@@ -7,10 +7,11 @@ EXTRA_DIST                  = driver_api.dox lirc_client.dox mainpage.dox \
                               driver_api.doxhead lirc_client.doxhead
 
 BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h \
-			      lirc/config.h
+			      lirc/config.h paths.h
 
-AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
-                              @kernel_header_flags@
+AM_CPPFLAGS                 = -I$(top_srcdir) -I$(top_srcdir)/lib \
+                              -Wall \
+                              -Wp,-D_FORTIFY_SOURCE=2 @kernel_header_flags@
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
@@ -72,6 +73,7 @@ lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
                               config_flags.h \
                               ciniparser.h \
+                              config.h \
                               curl_poll.h \
                               dictionary.h \
                               drv_admin.h \
@@ -88,6 +90,7 @@ dist_lircinclude_HEADERS    = config_file.h \
                               lirc_log.h \
                               lirc_options.h \
                               lirc-utils.h \
+                              paths.h \
                               release.h \
                               receive.h \
                               serial.h \
@@ -121,10 +124,17 @@ lirc: .phony
 	ln -s . lirc 2>/dev/null || :
 
 config.h: ../config.h
-	cp $? $@
+	-cp $? $@
 
 lirc/config.h: ../config.h lirc
-	cp ../config.h $@
+	-cp ../config.h $@
+
+paths.h: ../paths.h
+	-cp $? $@
+
+lirc/paths.h: ../paths.h lirc
+	-cp ../paths.h $@
+
 
 input_map.lo: lirc/input_map.inc
 
