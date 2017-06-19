@@ -1,2 +1,4 @@
 lirc_client.dox
 driver_api.dox
+config.h
+paths.h
