@@ -79,9 +79,10 @@ dist_py_pkg_DATA        = python-pkg/setup.py \
 
 py_pkg_lircdir          = $(pkgdatadir)/python-pkg/lirc
 py_PYTHON               = python-pkg/lirc/__init__.py \
-                          python-pkg/lirc/config.py \
                           python-pkg/lirc/database.py \
                           python-pkg/lirc/paths.py
+
+nodist_py_pkg_PYTHON    = python-pkg/lirc/config.py
 
 py_pkg_testdir          = $(pkgdatadir)/python-pkg/tests
 dist_py_pkg_test_DATA   = python-pkg/tests/test_client.py \

@@ -73,7 +73,6 @@ lircincludedir              = $(includedir)/lirc
 dist_lircinclude_HEADERS    = config_file.h \
                               config_flags.h \
                               ciniparser.h \
-                              config.h \
                               curl_poll.h \
                               dictionary.h \
                               drv_admin.h \
@@ -90,7 +89,6 @@ dist_lircinclude_HEADERS    = config_file.h \
                               lirc_log.h \
                               lirc_options.h \
                               lirc-utils.h \
-                              paths.h \
                               release.h \
                               receive.h \
                               serial.h \
@@ -99,6 +97,8 @@ dist_lircinclude_HEADERS    = config_file.h \
 if HAVE_DEVINPUT
 dist_lircinclude_HEADERS    += input_map.inc
 endif
+
+nodist_lircinclude_HEADERS  = config.h paths.h
 
 pep8:   $(py_PYTHON)
 	python3-pep8 --config=../pep8.conf $?
