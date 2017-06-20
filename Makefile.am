@@ -84,14 +84,14 @@ py_PYTHON               = python-pkg/lirc/__init__.py \
 
 nodist_py_pkg_PYTHON    = python-pkg/lirc/config.py
 
+if HAVE_PYTHON35
+py_PYTHON               += python-pkg/lirc/async_client.py \
+                          python-pkg/lirc/client.py
+
 py_pkg_testdir          = $(pkgdatadir)/python-pkg/tests
 dist_py_pkg_test_DATA   = python-pkg/tests/test_client.py \
                           python-pkg/tests/dummy-server \
                           python-pkg/tests/lircrc.conf
-
-if HAVE_PYTHON35
-py_PYTHON               += python-pkg/lirc/async_client.py \
-                          python-pkg/lirc/client.py
 endif
 
 dist_py_pkg_lirc_DATA   = $(py_PYTHON) \
