@@ -37,7 +37,7 @@ liblirc_la_SOURCES          = config_file.c \
 libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
-liblirc_client_la_LDFLAGS   = -version-info 5:0:5
+liblirc_client_la_LDFLAGS   = -version-info 6:0:6
 liblirc_client_la_SOURCES   = lirc_client.c\
 			      lirc_client.h \
 			      curl_poll.c \
@@ -45,7 +45,7 @@ liblirc_client_la_SOURCES   = lirc_client.c\
 			      lirc_log.c \
 			      lirc_log.h
 
-liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
+liblirc_driver_la_LDFLAGS   = -version-info 3:0:3
 liblirc_driver_la_LIBADD    = liblirc.la $(LIBUSB_LIBS)
 liblirc_driver_la_SOURCES   = driver.h \
                               drv_enum.c \
