@@ -43,7 +43,9 @@ liblirc_client_la_SOURCES   = lirc_client.c\
 			      curl_poll.c \
 			      curl_poll.h \
 			      lirc_log.c \
-			      lirc_log.h
+			      lirc_log.h \
+			      lirc/paths.h
+
 
 liblirc_driver_la_LDFLAGS   = -version-info 3:0:3
 liblirc_driver_la_LIBADD    = liblirc.la $(LIBUSB_LIBS)
@@ -117,7 +119,7 @@ lirc_client.dox: $(srcdir)/lirc_client.doxhead \
 dox: driver_api.dox lirc_client.dox
 
 dist-hook:
-	mkdir $(distdir)/lirc
+	-mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
 lirc: .phony
@@ -128,6 +130,9 @@ config.h: ../config.h
 
 lirc/config.h: ../config.h lirc
 	-cp ../config.h $@
+
+../paths.h: .phony
+	cd ..; $(MAKE) paths.h
 
 paths.h: ../paths.h
 	-cp $? $@
