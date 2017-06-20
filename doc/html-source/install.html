@@ -154,15 +154,27 @@
      installs it's libraries (by default, /usr/local/lib) to the runtime
      linker path. Refer to generic ld.so(1) documentation.</p>
      <p>
-     With working paths lirc-lsplugins will create a list of the all drivers
+     With working paths lirc-lsplugins will create a list of all drivers
      available, and also possible link errors not revealed during the build.
-     <em>lirc-lsplugins</em> has a -h option providing help, and
+     <em>lirc-lsplugins</em> has a <em> -h</em> option providing help, and
      <em> nroff -man ../doc/man/lirc-lsplugins.1 | more </em>
      provides more complete info.</p>
      <p>
+     The test/ directory contains some (but too few) unit tests. Compiling
+     these requires the <em>cppunit</em> library from
+     https://www.freedesktop.org/wiki/Software/cppunit. <em>cppunit</em> is
+     packaged in most linux distribtutions. With this in place,
+     do:</p>
+     <pre>
+         $ cd test
+         $ make
+         $ ./run-tests
+     </pre>
+     <p>
      From 0.10.0, the python-pkg has some traditional unittests. These
      tests requires the <em>socat</em> and <em>expect</em> packages, both of
-     which packaged for major linux distributions. To invoke: </p>
+     which packaged for major linux distributions.  The python version
+     needs to be 3.5+. To invoke: </p>
      <pre>
           $ cd python-pkg/tests
           $ python3 -m unittest discover

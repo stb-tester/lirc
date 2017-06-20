@@ -1,11 +1,21 @@
 0.10.0-devel
  * The deprecated lircd --uinput option is dropped. Use
+   lircd-uinput(8) instead.
+
+0.10.0-rc3 21/6/17
+ * lircmd: Fix bogus, excessive logging using --uinput (#295).
+ * build: VPATH fixes (#294).
+ * build: kfreebsd debian builds fixes.
+ * python tests: Portability fixes for in python-pkg/test.
+ * unit tests in test/ dir: Portability fixes and some docs.
+
 0.10.0-rc2 13/6/17
  * Fixed lirc-setup fail-on-start (#290).
  * Make python unit tests work on Debian (#289).
  * Fix mode2 config file parsing [292].
  * Documentation update.
  * Build fixes.
+
 0.10.0rc1 28/5/17
  * ftdi driver: Fix off-by-2 timings (#275). This is a breaking
    change, see ftdi driver docs or source at doc/plugins/ftdi.html.
