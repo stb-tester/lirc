@@ -153,7 +153,8 @@ dist-hook: ChangeLog fix-version
 
 clean-local:
 	cd $(builddir)/python-pkg; rm -rf  lirc/__pycache__ lirc.egg-info \
-	    lirc/config.py tests/__pycache__  VERSION dist build lib
+	    lirc/config.py lirc/_client.so tests/__pycache__  VERSION \
+	    dist build lib
 
 distclean-local:
 	test $(abs_builddir) = $(abs_srcdir) || \
@@ -205,7 +206,7 @@ paths.h: Makefile
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \
-	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	    $(top_srcdir)/git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 
