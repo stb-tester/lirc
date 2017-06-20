@@ -7,7 +7,12 @@ Pre-requisites:
     + cd test
     + make
     + ./run-tests
+- Python bindings test pass:
+    + cd python-pkg/test
+    + python3 -m unittest discover
 - 'make distcheck' pass
+- Build in separate clone is OK.
+- VPATH build in separate clone is OK.
 - Encoder/decoder regression tests all pass
 - lirc.org linkcheck:
     + cd doc; DESTDIR=$PWD/foo make install
@@ -20,6 +25,7 @@ Pre-requisites:
          >     lirc-new/lib/.libs/liblirc_client.so.0.3.0
         current:release:age
         https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+- Same for liblirc_driver.so.3.0.3
 - git master branch is committed and pushed
 - Update NEWS.
 - Create a new git release branch:
@@ -28,7 +34,7 @@ Pre-requisites:
 
 Steps for a new release (pre or final)
 
-1) Checkout the release branch form master:
+1) Checkout the release branch from master:
 
       git checkout master
       git checkout -b <release branch>
@@ -62,7 +68,7 @@ Steps for a new release (pre or final)
 7) Merge release branch into the 'release' branch:
        git checkout release
        git merge <release branch>
-       git tag -a  lirc-<version> HEAD    # Using version like lirc-0_9_0
+       git tag -a  lirc-<version> HEAD    # Using version like lirc-0.10.0
        git push --tags origin <release-branch>
    Check that the tags are present also in the release branch (no rebase
    problems):
