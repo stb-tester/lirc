@@ -354,9 +354,10 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx;
 		buffer[2] = dy;
 		buffer[3] = buffer[4] = 0;
-		for (i = 0; i < f; i++)
-			chk_write(lircm, buffer, 5);
-		break;
+		if (lircm != -1) {
+			for (i = 0; i < f; i++)
+				chk_write(lircm, buffer, 4);
+		}
 	case imps_2:
 		buffer[0] = ((buttons & BUTTON1) ? 0x01 : 0x00)
 			    | ((buttons & BUTTON3) ? 0x02 : 0x00)
@@ -366,8 +367,10 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[1] = dx + (dx >= 0 ? 0 : 256);
 		buffer[2] = dy + (dy >= 0 ? 0 : 256);
 		buffer[3] = dz;
-		for (i = 0; i < f; i++)
-			chk_write(lircm, buffer, 4);
+		if (lircm != -1) {
+			for (i = 0; i < f; i++)
+				chk_write(lircm, buffer, 4);
+		}
 		break;
 	case im_serial:
 		dy = -dy;
@@ -380,10 +383,10 @@ void msend(int dx, int dy, int dz, int rep, int buttp, int buttr)
 		buffer[3] = ((dz < 0) ? 0x0f : 0x00)
 			    | ((dz > 0) ? 0x01 : 0x00)
 			    | ((buttons & BUTTON2) ? 0x10 : 0x00);
-
-		for (i = 0; i < f; i++)
-			chk_write(lircm, buffer, 4);
-		break;
+		if (lircm != -1) {
+			for (i = 0; i < f; i++)
+				chk_write(lircm, buffer, 4);
+		}
 	}
 
 #if defined(USE_UINPUT)
