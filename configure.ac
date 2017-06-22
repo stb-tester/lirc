@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 
-AC_INIT([lirc], [0.10.0-rc2])
+AC_INIT([lirc], [0.10.0-rc3])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -238,12 +238,13 @@ AC_CHECK_HEADERS([usb.h libusb-1.0/libusb.h libusb.h])
 AC_CHECK_LIB([usb],[usb_get_string],[LIBUSB_LIBS="-lusb"],,)
 AM_CONDITIONAL([BUILD_USB],[test x$LIBUSB_LIBS = "x-lusb"])
 AC_CHECK_LIB([usb-1.0],
-	     [libusb_lock_events],
+	     [libusb_get_port_number],
 	     [LIBUSB_LIBS="$LIBUSB_LIBS -lusb-1.0"],,)
 
 PKG_CHECK_MODULES([FTDI],[libftdi >= 1.0],,[true])
 test -z "$FTDI_LIBS" && PKG_CHECK_MODULES([FTDI], [libftdi1 >= 1.0],,[true])
-if test -n "$FTDI_LIBS"; then
+dnl Walk around  BTS #864785
+if test -n "$FTDI_LIBS" -a x$ac_cv_lib_usb_1_0_libusb_get_port_number =  xyes; then
   AC_DEFINE(HAVE_FTDI)
   AM_CONDITIONAL([BUILD_FTDI],[true])
   AC_SUBST(FTDI_LIBS)
@@ -259,7 +260,7 @@ AM_CONDITIONAL(BUILD_LIBPORTAUDIO, [test x$portaudio = xyes])
 dnl audio_alsa driver requires ALSA library installed and some linker flags
 have_alsa=no
 AC_CHECK_HEADERS(alsa/asoundlib.h,[
-  AC_CHECK_LIB(asound, snd_pcm_open,[
+  AC_CHECK_LIB([asound], [snd_async_del_handler],[
     AM_CONDITIONAL([BUILD_LIBALSA],[true])
     AC_DEFINE(HAVE_LIBALSA)
     have_alsa=yes

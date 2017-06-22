@@ -68,7 +68,7 @@ dist_pkgconfig_DATA     = lirc.pc lirc-driver.pc
 headerdir               = $(includedir)/lirc
 nobase_header_HEADERS   = include/media/lirc.h \
                           include/linux/input-event-codes.h
-header_HEADERS          = paths.h config.h drivers/irpipe/irpipe.h
+header_HEADERS          = drivers/irpipe/irpipe.h
 
 py_pkgdir               = $(pkgdatadir)/python-pkg
 dist_py_pkg_DATA        = python-pkg/setup.py \
@@ -76,18 +76,19 @@ dist_py_pkg_DATA        = python-pkg/setup.py \
 
 py_pkg_lircdir          = $(pkgdatadir)/python-pkg/lirc
 py_PYTHON               = python-pkg/lirc/__init__.py \
-                          python-pkg/lirc/config.py \
                           python-pkg/lirc/database.py \
                           python-pkg/lirc/paths.py
+
+nodist_py_pkg_PYTHON    = python-pkg/lirc/config.py
+
+if HAVE_PYTHON35
+py_PYTHON               += python-pkg/lirc/async_client.py \
+                          python-pkg/lirc/client.py
 
 py_pkg_testdir          = $(pkgdatadir)/python-pkg/tests
 dist_py_pkg_test_DATA   = python-pkg/tests/test_client.py \
                           python-pkg/tests/dummy-server \
                           python-pkg/tests/lircrc.conf
-
-if HAVE_PYTHON35
-py_PYTHON               += python-pkg/lirc/async_client.py \
-                          python-pkg/lirc/client.py
 endif
 
 dist_py_pkg_lirc_DATA   = $(py_PYTHON) \
@@ -106,7 +107,9 @@ py_LTLIBRARIES          = python-pkg/lib/_client.la
 python_pkg_lib__client_la_SOURCES = \
                           python-pkg/lirc/_client.c
 python_pkg_lib__client_la_CPPFLAGS = \
-                          $(PYTHON_CFLAGS) $(AM_CPPFLAGS) -I$(abs_srcdir)/lib
+                          $(PYTHON_CFLAGS) $(AM_CPPFLAGS) \
+			  -I$(abs_builddir)/lib -I$(abs_srcdir)/lib
+
 python_pkg_lib__client_la_LDFLAGS  = \
                           -module -avoid-version -export-symbols-regex client \
                           $(PYTHON_LIBS)
@@ -124,9 +127,10 @@ pep8: $(py_PYTHON)
 
 if HAVE_PYTHON35
 all-local:
-	cd python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
+	cd python-pkg; \
+	    CFLAGS="-I$(abs_top_srcdir)/lib -I$(abs_builddir)/lib" \
 	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py \
-	        $(if $(VERBOSE),,-q) build
+	    $(if $(VERBOSE),,-q) build
 endif
 
 install-data-hook:
@@ -144,9 +148,14 @@ dist-hook: ChangeLog fix-version
 	cp -pr $(srcdir)/contrib $(distdir)
 
 clean-local:
-	cd python-pkg; rm -rf dist lib build lirc/__pycache__ lirc.egg-info \
-	    lirc/config.py lirc/_client.so  tests/__pycache__  VERSION
-	test $(abs_builddir) == $(abs_srcdir) || rm -rf python-pkg
+	cd $(builddir)/python-pkg; rm -rf  lirc/__pycache__ lirc.egg-info \
+	    lirc/config.py lirc/_client.so tests/__pycache__  VERSION \
+	    dist build lib
+
+distclean-local:
+	test $(abs_builddir) = $(abs_srcdir) || \
+	    rm -rf $(abs_builddir)/python-pkg
+
 
 maintainer-clean-local:
 	find . -name Makefile.in -delete
@@ -162,9 +171,7 @@ $(abs_builddir)/python-pkg/setup.py:
 	chmod -R u+w  python-pkg
 
 $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
-	cp $(top_srcdir)/VERSION $(abs_builddir)/python-pkg
-	test $(top_srcdir) == $(top_builddir) || \
-	    cp $(top_srcdir)/lirc.pc $(top_builddir)
+	cp $(top_builddir)/VERSION $(abs_builddir)/python-pkg
 	cd $(abs_builddir)/python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
 	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py -q sdist
 
@@ -195,7 +202,7 @@ paths.h: Makefile
 
 ChangeLog: .phony
 	test -s ChangeLog || ( \
-	    git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
+	    $(top_srcdir)/git-tools/gitlog-to-changelog $(CHANGELOG_REVS) || \
 	        echo "See http://sf.net/p/lirc/git/ci//tree/"  \
 	) > ChangeLog
 

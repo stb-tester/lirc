@@ -7,10 +7,11 @@ EXTRA_DIST                  = driver_api.dox lirc_client.dox mainpage.dox \
                               driver_api.doxhead lirc_client.doxhead
 
 BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h \
-			      lirc/config.h
+			      lirc/config.h paths.h
 
-AM_CPPFLAGS                 = -I$(top_srcdir) -Wall -Wp,-D_FORTIFY_SOURCE=2 \
-                              @kernel_header_flags@
+AM_CPPFLAGS                 = -I$(top_srcdir) -I$(top_srcdir)/lib \
+                              -Wall \
+                              -Wp,-D_FORTIFY_SOURCE=2 @kernel_header_flags@
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la
@@ -36,15 +37,17 @@ liblirc_la_SOURCES          = config_file.c \
 libirrecord_la_LIBADD       = liblirc.la
 libirrecord_la_SOURCES      = irrecord.c
 
-liblirc_client_la_LDFLAGS   = -version-info 5:0:5
+liblirc_client_la_LDFLAGS   = -version-info 6:0:6
 liblirc_client_la_SOURCES   = lirc_client.c\
 			      lirc_client.h \
 			      curl_poll.c \
 			      curl_poll.h \
 			      lirc_log.c \
-			      lirc_log.h
+			      lirc_log.h \
+			      lirc/paths.h
 
-liblirc_driver_la_LDFLAGS   = -version-info 0:0:0
+
+liblirc_driver_la_LDFLAGS   = -version-info 3:0:3
 liblirc_driver_la_LIBADD    = liblirc.la $(LIBUSB_LIBS)
 liblirc_driver_la_SOURCES   = driver.h \
                               drv_enum.c \
@@ -97,6 +100,8 @@ if HAVE_DEVINPUT
 dist_lircinclude_HEADERS    += input_map.inc
 endif
 
+nodist_lircinclude_HEADERS  = config.h paths.h
+
 pep8:   $(py_PYTHON)
 	python3-pep8 --config=../pep8.conf $?
 
@@ -114,17 +119,27 @@ lirc_client.dox: $(srcdir)/lirc_client.doxhead \
 dox: driver_api.dox lirc_client.dox
 
 dist-hook:
-	mkdir $(distdir)/lirc
+	-mkdir $(distdir)/lirc
 	cp $(srcdir)/*.h $(distdir)/lirc
 
 lirc: .phony
 	ln -s . lirc 2>/dev/null || :
 
 config.h: ../config.h
-	cp $? $@
+	-cp $? $@
 
 lirc/config.h: ../config.h lirc
-	cp ../config.h $@
+	-cp ../config.h $@
+
+../paths.h: .phony
+	cd ..; $(MAKE) paths.h
+
+paths.h: ../paths.h
+	-cp $? $@
+
+lirc/paths.h: ../paths.h lirc
+	-cp ../paths.h $@
+
 
 input_map.lo: lirc/input_map.inc
 
