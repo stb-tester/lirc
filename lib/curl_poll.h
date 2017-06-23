@@ -1,5 +1,5 @@
-#ifndef _POLL_H
-#define _POLL_H
+#ifndef HEADER_LIB_CURL_POLL_H
+#define HEADER_LIB_CURL_POLL_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -48,4 +48,4 @@ int curl_poll(struct pollfd ufds[], unsigned int nfds, int timeout_ms);
 #endif
 
 
-#endif /* _POLL_H */
+#endif /* HEADER_LIB_CURL_POLL_H */
