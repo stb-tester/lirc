@@ -14,6 +14,7 @@ GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 BASE_VERSION            = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
 VERBOSE                 = $(subst 0,,$(V))
+AM_LIBTOOLFLAGS         = $(if $(VERBOSE),,--silent)
 
 if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
