@@ -15,6 +15,7 @@ GIT_DATE_ISO    = $(shell git log -1 --pretty=format:%ci || date +"%F %T")
 BASE_VERSION    = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
 VERBOSE         = $(subst 0,,$(V))
+AM_LIBTOOLFLAGS = $(if $(VERBOSE),,--silent)
 
 DPY_PKG          = notused
 PY_PKG_CFLAGS   = -I$(abs_top_srcdir)/lib -I$(abs_builddir)/lib $(CFLAGS)
