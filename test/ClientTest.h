@@ -231,12 +231,10 @@ class ClientTest : public CppUnit::TestFixture
         void testReadConfigNew()
         {
             struct lirc_config* config;
-            lirc_set_verbose(0);
-            CPPUNIT_ASSERT( lirc_readconfig_only("etc/mythtv-new.lircrc",
-                                                  &config, NULL) == 0);
-            lirc_set_verbose(1);
-            CPPUNIT_ASSERT(strcmp(config->lircrc_class,
-                                  "mythtv-new.lircrc") == 0);
+            cout << "Please ignore message about deprecated lircrc shebang\n";
+            CPPUNIT_ASSERT(
+                lirc_readconfig_only("etc/mythtv-new.lircrc", &config, NULL) == 0);
+            CPPUNIT_ASSERT(strcmp(config->lircrc_class, "mythtv-new.lircrc") == 0);
         }
 
 
