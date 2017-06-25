@@ -221,7 +221,7 @@ const struct driver hw_mplay = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Zalman"
 			  " Hd135 case.",
@@ -249,7 +249,7 @@ const struct driver hw_mplay2 = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "LIRC driver for Vlsys mplay usb ftdi serial"
 			  " port remote control, tested with a Moneual"
 			  " Moncaso 312 case",

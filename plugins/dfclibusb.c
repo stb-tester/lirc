@@ -67,7 +67,7 @@ const struct driver hw_dfclibusb = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };

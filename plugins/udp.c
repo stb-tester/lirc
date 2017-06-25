@@ -361,7 +361,7 @@ const struct driver hw_udp = {
 	.readdata	=	udp_readdata,
 	.resolution	=	61,
 	.api_version	=	3,
-	.driver_version =	"0.9.3",
+	.driver_version =	"0.10.0",
 	.info		=	"See file://" PLUGINDOCS "/udp.html",
 	.device_hint    =       "drvctl",
 };

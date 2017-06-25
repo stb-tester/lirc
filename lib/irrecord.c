@@ -51,7 +51,7 @@ static const struct driver hw_emulation = {
 	.open_func	= default_open,
 	.close_func	= default_close,
 	.api_version	= 2,
-	.driver_version = "0.9.2"
+	.driver_version = "0.11.0"
 };
 
 static const int IR_CODE_NODE_SIZE = sizeof(struct ir_code_node);

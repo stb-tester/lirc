@@ -66,7 +66,7 @@ const struct driver hw_silitek = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "No info available",
 	.device_hint    = "/dev/tty[0-9]*",
 };

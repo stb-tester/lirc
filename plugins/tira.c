@@ -100,7 +100,7 @@ const struct driver hw_tira = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "See file://" PLUGINDOCS "/tira.html",
 	.device_hint    = "drvctl",
 };
@@ -122,7 +122,7 @@ const struct driver hw_tira_raw = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= tira_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "See file://@plugindocs@/tira.html",
 	.device_hint    = "drvctl",
 };

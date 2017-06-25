@@ -68,7 +68,7 @@ const struct driver drv_null = {
 	.open_func	= default_open,
 	.close_func	= default_close,
 	.api_version	= 2,
-	.driver_version = "0.9.2"
+	.driver_version = "0.11.0"
 };
 
 

@@ -590,7 +590,7 @@ const struct driver hw_audio_alsa = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= audio_alsa_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.4",
+	.driver_version = "0.11.0",
 	.info		= "See file://" PLUGINDOCS "/audio-alsa.html",
 	.device_hint    = "drvctl"
 };

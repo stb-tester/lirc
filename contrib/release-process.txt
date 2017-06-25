@@ -49,6 +49,7 @@ Steps for a new release (pre or final)
 4) Update version number in:
         README, NEWS, configure.ac
         Makefile.am (ChangeLog entries)
+        Update driver_version in  plugins/*.c.
    Update the news entry in README.
    Remove the attic/ directory
 

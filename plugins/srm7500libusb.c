@@ -164,7 +164,7 @@ const struct driver hw_srm7500libusb = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.11.0",
 	.info		= "See file://" PLUGINDOCS "/srm7500atilibusb.html",
 	.device_hint    = "drvctl",
 };
