@@ -91,7 +91,7 @@ const struct driver hw_i2cuser = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.10.0",
 	.info		= "No info available",
 	.device_hint    = "/dev/i2c-*",
 };

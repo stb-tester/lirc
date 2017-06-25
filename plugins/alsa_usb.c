@@ -47,7 +47,7 @@ const struct driver hw_alsa_usb = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.10.0",
 	.info		= "See file://" PLUGINDOCS "/alsa-usb.html",
 	.device_hint    = "drvctl"
 };

@@ -50,6 +50,7 @@ Steps for a new release (pre or final)
         README, NEWS, configure.ac
         Makefile.am (ChangeLog entries)
         doc/lirc.org/index.html (Add NEWS entry, update download link)
+   Update driver_version in  plugins/*.c.
    Update the news entry in README.
    Remove the attic/ directory
 

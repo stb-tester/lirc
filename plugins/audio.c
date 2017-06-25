@@ -696,7 +696,7 @@ const struct driver hw_audio = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= audio_readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.4",
+	.driver_version = "0.10.0",
 	.info		= "See file://" PLUGINDOCS "/audio.html",
 	.device_hint    = "drvctl"
 };

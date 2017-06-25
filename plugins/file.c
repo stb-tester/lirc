@@ -79,7 +79,7 @@ const struct driver drv_test = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= readdata,
 	.api_version	= 3,
-	.driver_version = "0.9.3",
+	.driver_version = "0.10.0",
 	.info		= "See file://" PLUGINDOCS "/file.html",
 	.device_hint    = "/tmp/*",
 };
