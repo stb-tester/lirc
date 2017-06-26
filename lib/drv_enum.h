@@ -18,6 +18,8 @@
  *  on device, usable in user interfaces.
  *
  *  Return codes are DRV_ERR_ constants as of driver.h, or 0 for no errors.
+ *
+ *  @since 0.10.0
  */
 
 #include <stdint.h>
