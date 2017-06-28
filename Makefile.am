@@ -16,8 +16,6 @@ BASE_VERSION            = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
 VERBOSE                 = $(subst 0,,$(V))
 
-VERBOSE                 = $(subst 0,,$(V))
-
 if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
 endif
