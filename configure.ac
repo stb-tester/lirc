@@ -4,6 +4,7 @@ dnl configure.ac, (c)1999 Tom Wheeley <tw104@york.ac.uk>
 AC_INIT([lirc], [0.10.0-devel])
 AC_CONFIG_SRCDIR([daemons/lircd.cpp])
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([.])
 
 # support runstatedir
 DEFINE_RUNSTATEDIR
