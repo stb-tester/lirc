@@ -247,15 +247,15 @@ static int locate_default_device(char* errmsg, size_t size)
 
 	r = glob("/sys/class/rc/rc0/input[0-9]*/event[0-9]*",
 		 0, NULL, &matches);
-	if (r != 0) {
-		log_perror_warn("Cannot run glob %s", DEV_PATTERN);
+	if (r == GLOB_NOMATCH) {
+		strncpy(errmsg, "No /sys/class/rc/ devices found", size - 1);
 		log_notice("No input device available for devinput driver."
 			   " Consider stopping lircd.socket or reconfigure lirc");
-		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
 		return 0;
 	}
-	if (matches.gl_pathc == 0) {
-		strncpy(errmsg, "No /sys/class/rc/ devices found", size - 1);
+	if (r != 0) {
+		log_perror_warn("Cannot run glob %s", DEV_PATTERN);
+		snprintf(errmsg, size, "Cannot glob %s", DEV_PATTERN);
 		return 0;
 	}
 	if (matches.gl_pathc > 1) {
