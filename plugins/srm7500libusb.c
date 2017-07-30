@@ -339,6 +339,7 @@ static int srm7500_init(void)
 	} else if (child == 0) {
 		struct sigaction act;
 		int status = 1;
+		struct timespec nanosleep_delay;
 
 		alarm(0);
 
@@ -367,7 +368,7 @@ static int srm7500_init(void)
 			log_info("USB receiver initialized");
 			status = usb_read_loop(pipe_fd[1]);
 fail:
-			sleep(2);
+			SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		}
 		srm7500_deinitialize_usbdongle();
 		_exit(status);
