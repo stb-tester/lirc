@@ -449,25 +449,55 @@ open_dev_sequence:
 
 	/* device initialization */
 	memset(control_buffer, 0, sizeof(control_buffer));
-	usb_control_msg(dev_handle, USB_TYPE_STANDARD | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_INTERFACE,
+	res = usb_control_msg(dev_handle, USB_TYPE_STANDARD | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_INTERFACE,
 			0x0000, 0x0000, (char*)control_buffer, 0x0000, USB_TIMEOUT);
+	if (res < 0) {
+		log_error("usb dev_init_01 %p, %d, %s", dev_handle, res, usb_strerror());
+	} else {
+		log_notice("usb dev_init_01 %p, %d", dev_handle, res);
+	}
+
 	control_buffer[0] = 0xe4;
-	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
+	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
+	if (res < 0) {
+		log_error("usb dev_init_02 %p, %d, %s", dev_handle, res, usb_strerror());
+	} else {
+		log_notice("usb dev_init_02 %p, %d", dev_handle, res);
+	}
+
 	control_buffer[0] = 0;
-	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
+	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
+	if (res < 0) {
+		log_error("usb dev_init_03 %p, %d, %s", dev_handle, res, usb_strerror());
+	} else {
+		log_notice("usb dev_init_03 %p, %d", dev_handle, res);
+	}
+
 	/*
 	 * HG: with this the red control light on usb receiver is
 	 * switched on seems like the command to enable transceiver
 	 */
 	memset(control_buffer, 0, sizeof(control_buffer));
 	control_buffer[0] = 0xe2;
-	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
+	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
+	if (res < 0) {
+		log_error("usb dev_init_04 %p, %d, %s", dev_handle, res, usb_strerror());
+	} else {
+		log_notice("usb dev_init_04 %p, %d", dev_handle, res);
+	}
+
 	memset(control_buffer, 0, sizeof(control_buffer));
-	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
+	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
+	if (res < 0) {
+		log_error("usb dev_init_05 %p, %d, %s", dev_handle, res, usb_strerror());
+	} else {
+		log_notice("usb dev_init_05 %p, %d", dev_handle, res);
+	}
+
 	return 1;
 }
 
