@@ -283,7 +283,7 @@ static int srm7500_init(void)
 
 			strncpy(erroroptionstring, op_start, op_end - op_start + 1);
 			erroroptionstring[op_end - op_start] = 0;
-			log_warn("enparsable option: %s", erroroptionstring);
+			log_warn("unparsable option: %s", erroroptionstring);
 		}
 		op_start = op_end + 1;
 	}
