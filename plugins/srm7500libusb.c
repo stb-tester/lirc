@@ -394,6 +394,7 @@ static int srm7500_initialize_usbdongle(void)
 	int res;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 	int reset_needed = 1;
+	struct timespec nanosleep_delay;
 
 open_dev_sequence:
 	log_info("initializing Philips USB receiver");
@@ -450,7 +451,7 @@ open_dev_sequence:
 		}
 		usb_close(dev_handle);
 		log_notice("reset USB", dev_handle);
-		sleep(1);
+		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		reset_needed = 0;
 		goto open_dev_sequence;
 	}
