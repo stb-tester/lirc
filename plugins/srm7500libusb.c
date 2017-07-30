@@ -349,10 +349,14 @@ static int srm7500_init(void)
 
 		close(pipe_fd[0]);
 		while (!srm7500_terminate) {
-			if (!srm7500_initialize_usbdongle())
+			if (!srm7500_initialize_usbdongle()) {
+				log_error("failed to initialize usb dongle");
 				goto fail;
-			if (!srm7500_initialize_802154_stack())
+			}
+			if (!srm7500_initialize_802154_stack()) {
+				log_error("failed to initialize usb dongle 802.15.4 stack");
 				goto fail;
+			}
 			log_info("USB receiver initialized");
 			status = usb_read_loop(pipe_fd[1]);
 fail:
