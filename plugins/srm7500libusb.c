@@ -404,14 +404,14 @@ open_dev_sequence:
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
 		log_error("could not find a compatible USB device");
-		return 0;
+		goto error_label;
 	}
 
 	log_notice("found USB device");
 
 	if (!find_device_endpoints(usb_dev)) {
 		log_error("could not find device endpoints");
-		return 0;
+		goto error_label;
 	}
 
 	log_notice("found USB device endpoints");
@@ -419,7 +419,7 @@ open_dev_sequence:
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
 		log_perror_err("could not open USB receiver");
-		return 0;
+		goto error_label;
 	}
 
 	log_notice("opened USB %p", dev_handle);
@@ -429,7 +429,7 @@ open_dev_sequence:
 	if (res < 0) {
 		if ((res != -ENODATA) && (res != -EINVAL)) {
 			log_error("could not detach kernel driver: %s", usb_strerror());
-			return 0;
+			goto error_label;
 		} else {
 			log_debug("No kernel driver was attached to device");
 		}
@@ -440,7 +440,7 @@ open_dev_sequence:
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
 		log_perror_err("could not claim USB interface");
-		return 0;
+		goto error_label;
 	}
 
 	log_notice("claimed usb %p", dev_handle);
@@ -449,7 +449,7 @@ open_dev_sequence:
 		if (usb_reset(dev_handle) < 0) {
 			log_error("failed to reset USB %p: %s", dev_handle, usb_strerror());
 			usb_close(dev_handle);
-			return 0;
+			goto error_label;
 		}
 		usb_close(dev_handle);
 		log_notice("reset USB", dev_handle);
@@ -464,6 +464,7 @@ open_dev_sequence:
 			0x0000, 0x0000, (char*)control_buffer, 0x0000, USB_TIMEOUT);
 	if (res < 0) {
 		log_error("usb dev_init_01 %p, %d, %s", dev_handle, res, usb_strerror());
+		goto error_label;
 	} else {
 		log_notice("usb dev_init_01 %p, %d", dev_handle, res);
 	}
@@ -474,6 +475,7 @@ open_dev_sequence:
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	if (res < 0) {
 		log_error("usb dev_init_02 %p, %d, %s", dev_handle, res, usb_strerror());
+		goto error_label;
 	} else {
 		log_notice("usb dev_init_02 %p, %d", dev_handle, res);
 	}
@@ -484,6 +486,7 @@ open_dev_sequence:
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	if (res < 0) {
 		log_error("usb dev_init_03 %p, %d, %s", dev_handle, res, usb_strerror());
+		goto error_label;
 	} else {
 		log_notice("usb dev_init_03 %p, %d", dev_handle, res);
 	}
@@ -499,6 +502,7 @@ open_dev_sequence:
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	if (res < 0) {
 		log_error("usb dev_init_04 %p, %d, %s", dev_handle, res, usb_strerror());
+		goto error_label;
 	} else {
 		log_notice("usb dev_init_04 %p, %d", dev_handle, res);
 	}
@@ -509,12 +513,16 @@ open_dev_sequence:
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
 	if (res < 0) {
 		log_error("usb dev_init_05 %p, %d, %s", dev_handle, res, usb_strerror());
+		goto error_label;
 	} else {
 		log_notice("usb dev_init_05 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
 	return 1;
+
+error_label:
+	return 0;
 }
 
 static int srm7500_deinitialize_usbdongle(void)
