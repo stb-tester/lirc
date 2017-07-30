@@ -397,6 +397,8 @@ static int srm7500_initialize_usbdongle(void)
 	struct timespec nanosleep_delay;
 
 open_dev_sequence:
+	dev_handle = NULL;
+
 	log_info("initializing Philips USB receiver");
 
 	usb_dev = find_usb_device();
