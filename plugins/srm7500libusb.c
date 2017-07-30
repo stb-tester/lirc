@@ -41,6 +41,7 @@
 #include <usb.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #include "lirc_driver.h"
 
@@ -76,6 +77,12 @@
 #define SRM7500_KEY_DOWN 1
 #define SRM7500_KEY_REPEAT 2
 #define SRM7500_KEY_UP 3
+
+// you need to have "struct timespec nanosleep_deleay" in your current scope
+#define SLEEP_NANO(THIS_DELAY) \
+	nanosleep_delay.tv_sec = 0; \
+	nanosleep_delay.tv_nsec = THIS_DELAY; \
+	while (nanosleep(&nanosleep_delay, &nanosleep_delay));
 
 #pragma pack(1)
 typedef struct {
