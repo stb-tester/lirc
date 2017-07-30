@@ -385,7 +385,9 @@ static int srm7500_initialize_usbdongle(void)
 	struct usb_device* usb_dev;
 	int res;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
+	int reset_needed = 1;
 
+open_dev_sequence:
 	log_info("initializing Philips USB receiver");
 
 	usb_dev = find_usb_device();
@@ -431,6 +433,19 @@ static int srm7500_initialize_usbdongle(void)
 	}
 
 	log_notice("claimed usb %p", dev_handle);
+	
+	if (reset_needed) {
+		if (usb_reset(dev_handle) < 0) {
+			log_error("failed to reset USB %p: %s", dev_handle, usb_strerror());
+			usb_close(dev_handle);
+			return 0;
+		}
+		usb_close(dev_handle);
+		log_notice("reset USB", dev_handle);
+		sleep(1);
+		reset_needed = 0;
+		goto open_dev_sequence;
+	}
 
 	/* device initialization */
 	memset(control_buffer, 0, sizeof(control_buffer));
