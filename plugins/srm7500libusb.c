@@ -426,7 +426,7 @@ open_dev_sequence:
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
 	if (res < 0) {
 		if ((res != -ENODATA) && (res != -EINVAL)) {
-			log_perror_err("could not detach kernel driver: %s", usb_strerror());
+			log_error("could not detach kernel driver: %s", usb_strerror());
 			return 0;
 		} else {
 			log_debug("No kernel driver was attached to device");
