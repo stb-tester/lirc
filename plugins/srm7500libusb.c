@@ -394,21 +394,34 @@ static int srm7500_initialize_usbdongle(void)
 		return 0;
 	}
 
+	log_notice("found USB device");
+
 	if (!find_device_endpoints(usb_dev)) {
 		log_error("could not find device endpoints");
 		return 0;
 	}
+
+	log_notice("found USB device endpoints");
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
 		log_perror_err("could not open USB receiver");
 		return 0;
 	}
+
+	log_notice("opened USB %p", dev_handle);
+
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
-	if ((res < 0) && (res != -ENODATA) && (res != -EINVAL)) {
-		log_perror_err("could not detach kernel driver");
-		return 0;
+	if (res < 0) {
+		if ((res != -ENODATA) && (res != -EINVAL)) {
+			log_perror_err("could not detach kernel driver: %s", usb_strerror());
+			return 0;
+		} else {
+			log_debug("No kernel driver was attached to device");
+		}
+	} else {
+		log_notice("detached USB kernel driver %p", dev_handle);
 	}
 #endif
 
@@ -416,6 +429,8 @@ static int srm7500_initialize_usbdongle(void)
 		log_perror_err("could not claim USB interface");
 		return 0;
 	}
+
+	log_notice("claimed usb %p", dev_handle);
 
 	/* device initialization */
 	memset(control_buffer, 0, sizeof(control_buffer));
