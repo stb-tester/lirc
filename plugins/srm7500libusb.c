@@ -522,6 +522,15 @@ open_dev_sequence:
 	return 1;
 
 error_label:
+	if (dev_handle != NULL) {
+		res = usb_close(dev_handle);
+		if (res <0) {
+			log_error("error_label closing '%p'", dev_handle);
+		} else {
+			log_info("error_label closing '%p'", dev_handle);
+		}
+		dev_handle = NULL;
+	}
 	return 0;
 }
 
