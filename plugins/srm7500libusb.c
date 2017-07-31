@@ -361,6 +361,7 @@ static int srm7500_init(void)
 				log_error("failed to initialize usb dongle");
 				goto fail;
 			}
+			log_info("Low-level initialization of usb dongle successful");
 			if (!srm7500_initialize_802154_stack()) {
 				log_error("failed to initialize usb dongle 802.15.4 stack");
 				goto fail;
@@ -396,33 +397,32 @@ static int srm7500_initialize_usbdongle(void)
 	int reset_needed = 1;
 	struct timespec nanosleep_delay;
 
-open_dev_sequence:
-	dev_handle = NULL;
-
 	log_info("initializing Philips USB receiver");
 
+open_dev_sequence:
+	dev_handle = NULL;
 	usb_dev = find_usb_device();
 	if (usb_dev == NULL) {
 		log_error("could not find a compatible USB device");
 		goto error_label;
 	}
 
-	log_notice("found USB device");
+	log_debug("found USB device");
 
 	if (!find_device_endpoints(usb_dev)) {
 		log_error("could not find device endpoints");
 		goto error_label;
 	}
 
-	log_notice("found USB device endpoints");
+	log_debug("found USB device endpoints");
 
 	dev_handle = usb_open(usb_dev);
 	if (dev_handle == NULL) {
-		log_perror_err("could not open USB receiver");
+		log_error("could not open USB receiver: %s", usb_strerror());
 		goto error_label;
 	}
 
-	log_notice("opened USB %p", dev_handle);
+	log_debug("opened USB %p", dev_handle);
 
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
 	res = usb_detach_kernel_driver_np(dev_handle, 0);
@@ -434,16 +434,16 @@ open_dev_sequence:
 			log_debug("No kernel driver was attached to device");
 		}
 	} else {
-		log_notice("detached USB kernel driver %p", dev_handle);
+		log_debug("detached USB kernel driver %p", dev_handle);
 	}
 #endif
 
 	if (usb_claim_interface(dev_handle, 0) != 0) {
-		log_perror_err("could not claim USB interface");
+		log_error("could not claim USB interface: %s", usb_strerror());
 		goto error_label;
 	}
 
-	log_notice("claimed usb %p", dev_handle);
+	log_debug("claimed usb %p", dev_handle);
 	
 	if (reset_needed) {
 		if (usb_reset(dev_handle) < 0) {
@@ -452,7 +452,7 @@ open_dev_sequence:
 			goto error_label;
 		}
 		usb_close(dev_handle);
-		log_notice("reset USB", dev_handle);
+		log_debug("reset USB", dev_handle);
 		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		reset_needed = 0;
 		goto open_dev_sequence;
@@ -466,7 +466,7 @@ open_dev_sequence:
 		log_error("usb dev_init_01 %p, %d, %s", dev_handle, res, usb_strerror());
 		goto error_label;
 	} else {
-		log_notice("usb dev_init_01 %p, %d", dev_handle, res);
+		log_debug("usb dev_init_01 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
@@ -477,7 +477,7 @@ open_dev_sequence:
 		log_error("usb dev_init_02 %p, %d, %s", dev_handle, res, usb_strerror());
 		goto error_label;
 	} else {
-		log_notice("usb dev_init_02 %p, %d", dev_handle, res);
+		log_debug("usb dev_init_02 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
@@ -488,7 +488,7 @@ open_dev_sequence:
 		log_error("usb dev_init_03 %p, %d, %s", dev_handle, res, usb_strerror());
 		goto error_label;
 	} else {
-		log_notice("usb dev_init_03 %p, %d", dev_handle, res);
+		log_debug("usb dev_init_03 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
@@ -504,7 +504,7 @@ open_dev_sequence:
 		log_error("usb dev_init_04 %p, %d, %s", dev_handle, res, usb_strerror());
 		goto error_label;
 	} else {
-		log_notice("usb dev_init_04 %p, %d", dev_handle, res);
+		log_debug("usb dev_init_04 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
@@ -515,7 +515,7 @@ open_dev_sequence:
 		log_error("usb dev_init_05 %p, %d, %s", dev_handle, res, usb_strerror());
 		goto error_label;
 	} else {
-		log_notice("usb dev_init_05 %p, %d", dev_handle, res);
+		log_debug("usb dev_init_05 %p, %d", dev_handle, res);
 	}
 	SLEEP_NANO(500*1000); // wait for 500 microseconds
 
@@ -525,9 +525,9 @@ error_label:
 	if (dev_handle != NULL) {
 		res = usb_close(dev_handle);
 		if (res <0) {
-			log_error("error_label closing '%p'", dev_handle);
+			log_error("error closing device at error_label: %p, %d, %s", dev_handle, res, usb_strerror());
 		} else {
-			log_info("error_label closing '%p'", dev_handle);
+			log_debug("closed device at error_label '%p'", dev_handle);
 		}
 		dev_handle = NULL;
 	}
