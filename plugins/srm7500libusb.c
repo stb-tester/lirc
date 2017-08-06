@@ -396,15 +396,21 @@ static int srm7500_initialize_usbdongle(void)
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
 	int reset_needed = 1;
 	struct timespec nanosleep_delay;
+	int printed_waiting_msg;
 
 	log_info("initializing Philips USB receiver");
 
 open_dev_sequence:
 	dev_handle = NULL;
-	usb_dev = find_usb_device();
-	if (usb_dev == NULL) {
-		log_error("could not find a compatible USB device");
-		goto error_label;
+	printed_waiting_msg = 0;
+	while (1) {
+		usb_dev = find_usb_device();
+		if (usb_dev != NULL) break;
+		if (! printed_waiting_msg) {
+			printed_waiting_msg = 1;
+			log_info("waiting for USB receiver to be plugged in");
+		}
+		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 	}
 
 	log_debug("found USB device");
