@@ -453,7 +453,7 @@ open_dev_sequence:
 	}
 
 	log_debug("claimed usb %p", dev_handle);
-	
+
 	if (reset_needed) {
 		if (usb_reset(dev_handle) < 0) {
 			log_error("failed to reset USB %p: %s", dev_handle, usb_strerror());
