@@ -340,6 +340,7 @@ static int srm7500_init(void)
 		struct sigaction act;
 		int status = 1;
 		struct timespec nanosleep_delay;
+		close(pipe_fd[0]);
 
 		alarm(0);
 
@@ -354,8 +355,6 @@ static int srm7500_init(void)
 		signal(SIGPIPE, SIG_DFL);
 		signal(SIGHUP, SIG_IGN);
 		signal(SIGALRM, SIG_IGN);
-
-		close(pipe_fd[0]);
 
 		usb_init();
 		while (!srm7500_terminate) {
