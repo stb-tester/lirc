@@ -540,6 +540,8 @@ static int srm7500_deinitialize_usbdongle(void)
 {
 	int result = 1;
 	u_int8_t control_buffer[CONTROL_BUFFERSIZE];
+	int ret;
+	struct timespec nanosleep_delay;
 
 	log_info("disabling USB receiver");
 
@@ -551,8 +553,14 @@ static int srm7500_deinitialize_usbdongle(void)
 	 */
 	memset(control_buffer, 0, sizeof(control_buffer));
 	control_buffer[0] = 0xe1;
-	usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
+	ret = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
 			0x0300, 0x0000, (char*)control_buffer, 0x0010, USB_TIMEOUT);
+	if (ret < 0) {
+		log_error("usb dev_deinit_01 %p, %d, %s", dev_handle, ret, usb_strerror());
+	} else {
+		log_debug("usb dev_deinit_01 %p, %d", dev_handle, ret);
+	}
+	SLEEP_NANO(500*1000); // wait for 500 microseconds
 	usb_reset(dev_handle);
 	if (usb_close(dev_handle) < 0)
 		result = 0;
