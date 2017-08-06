@@ -371,9 +371,9 @@ static int srm7500_init(void)
 			log_info("USB receiver initialized");
 			status = usb_read_loop(pipe_fd[1]);
 fail:
+			srm7500_deinitialize_usbdongle();
 			SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		}
-		srm7500_deinitialize_usbdongle();
 		_exit(status);
 	}
 
