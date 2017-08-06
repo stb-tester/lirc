@@ -714,6 +714,12 @@ static int philipsrf_input(philipsrf_incoming_t* buffer_in)
 												       time[0])),
 			  buffer_in->length, buffer_in->type);
 		hexdump("in  data:", buffer_in->data, buffer_in->length - 1);
+	} else if (ret < 0) {
+		if (ret == -110) {
+			log_trace("timeout in philipsrf_input");
+		} else {
+			log_error("error in philipsrf_input: %d, %s", ret, usb_strerror());
+		}
 	}
 	return ret;
 }
@@ -728,6 +734,13 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 	ret =
 		usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, (char*)&buffer_out, buffer_out.length + 1,
 				    USB_TIMEOUT);
+	if (ret < 0) {
+		if (ret == -110) {
+			log_trace("timeout in philipsrf_output");
+		} else {
+			log_error("error in philipsrf_output: %d, %s", ret, usb_strerror());
+		}
+	}
 	return ret;
 }
 
