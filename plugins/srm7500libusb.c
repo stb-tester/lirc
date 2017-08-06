@@ -588,9 +588,10 @@ static int srm7500_initialize_802154_stack(void)
 	philipsrf_output(packet_buffer_out);
 	philipsrf_input(&packet_buffer_in);
 	if (!((packet_buffer_in.type == MLME_RESET_confirm) && (packet_buffer_in.data[0] == 0))) {
-		log_error("could not reset USB dongle!");
+		log_error("reset of USB 802.15.4 MAC failed");
 		return 0;
 	}
+	log_debug("reset of USB 802.15.4 MAC successful");
 
 	packet_buffer_out.length = 4;
 	packet_buffer_out.type = MLME_SET_request;
@@ -603,6 +604,7 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macCoordShort_Address!");
 		return 0;
 	}
+	log_debug("successfully set macCoordShort_Adress");
 
 	packet_buffer_out.length = 4;
 	packet_buffer_out.type = MLME_SET_request;
@@ -615,6 +617,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macPANId!");
 		return 0;
 	}
+	log_debug("successfully set macPANId");
+
 
 	packet_buffer_out.length = 4;
 	packet_buffer_out.type = MLME_SET_request;
@@ -627,6 +631,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macShortAddress!");
 		return 0;
 	}
+	log_debug("successfully set macShortAdress");
+
 
 	packet_buffer_out.length = 3;
 	packet_buffer_out.type = MLME_SET_request;
@@ -638,6 +644,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macAssociation_Permit!");
 		return 0;
 	}
+	log_debug("successfully set macAssociation_Permit");
+
 
 	packet_buffer_out.length = 3;
 	packet_buffer_out.type = MLME_SET_request;
@@ -649,6 +657,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macRxOnWhenIdle!");
 		return 0;
 	}
+	log_debug("successfully set macRxOnWhenIdle");
+
 
 	/* beacon data:
 	 * contents: ASCII PHILIPS + hostname */
@@ -666,6 +676,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macBeaconPayload_Length!");
 		return 0;
 	}
+	log_debug("successfully set macBeaconPayload_Length");
+
 
 	/* beacon data */
 	packet_buffer_out.length = 2 + beacon_length;
@@ -679,6 +691,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not set macBeaconPayload!");
 		return 0;
 	}
+	log_debug("successfully set macBeaconPayload");
+
 
 	packet_buffer_out.length = 6;
 	packet_buffer_out.type = MLME_START_request;
@@ -699,6 +713,8 @@ static int srm7500_initialize_802154_stack(void)
 		log_error("could not start PAN!");
 		return 0;
 	}
+	log_debug("successfully started PAN");
+
 	return 1;
 }
 
