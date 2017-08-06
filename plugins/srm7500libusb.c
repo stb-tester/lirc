@@ -356,6 +356,8 @@ static int srm7500_init(void)
 		signal(SIGALRM, SIG_IGN);
 
 		close(pipe_fd[0]);
+
+		usb_init();
 		while (!srm7500_terminate) {
 			if (!srm7500_initialize_usbdongle()) {
 				log_error("failed to initialize usb dongle");
@@ -847,7 +849,6 @@ static struct usb_device* find_usb_device(void)
 	struct usb_bus* usb_bus;
 	struct usb_device* dev;
 
-	usb_init();
 	usb_find_busses();
 	usb_find_devices();
 
