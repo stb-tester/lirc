@@ -373,6 +373,7 @@ fail:
 			srm7500_deinitialize_usbdongle();
 			SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		}
+		log_debug("child exits");
 		_exit(status);
 	}
 
