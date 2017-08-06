@@ -568,18 +568,18 @@ static int srm7500_initialize_802154_stack(void)
 	philipsrf_incoming_t packet_buffer_in;
 
 	int i;
-	int tries = 3;
-	int answer_received = 0;
+	log_info("srm7500_initialize_802154_stack");
 
-	while ((!answer_received) && (tries > 0)) {
-		philipsrf_input(&packet_buffer_in);
-		if ((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0)
-		    && (packet_buffer_in.data[1] == PIB_ATTR_macExtendedAddress))
-			answer_received = 1;
-		tries--;
+	// make sure that input queue is empty
+	while (1) {
+		int ret = philipsrf_input(&packet_buffer_in);
+		if (ret == -110) {
+			break; // received timout, assume empty queue
+		} else if (ret < 0) {
+			log_error("error polling USB dongle");
+			return 0;
+		}
 	}
-	if ((tries == 0) && (packet_buffer_in.type != MLME_SET_confirm))
-		return 0;
 
 	packet_buffer_out.length = 2;
 	packet_buffer_out.type = MLME_RESET_request;
