@@ -449,9 +449,11 @@ open_dev_sequence:
 		if (usb_reset(dev_handle) < 0) {
 			log_error("failed to reset USB %p: %s", dev_handle, usb_strerror());
 			usb_close(dev_handle);
+			log_debug("closed USB %p", dev_handle);
 			goto error_label;
 		}
 		usb_close(dev_handle);
+		log_debug("closed USB %p", dev_handle);
 		log_debug("reset USB", dev_handle);
 		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		reset_needed = 0;
@@ -554,6 +556,7 @@ static int srm7500_deinitialize_usbdongle(void)
 	usb_reset(dev_handle);
 	if (usb_close(dev_handle) < 0)
 		result = 0;
+	log_debug("closed USB %p", dev_handle);
 	dev_handle = NULL;
 
 	return result;
