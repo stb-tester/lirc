@@ -374,6 +374,7 @@ fail:
 			SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
 		}
 		log_debug("child exits");
+		close(pipe_fd[1]);
 		_exit(status);
 	}
 
