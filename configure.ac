@@ -511,11 +511,14 @@ AC_DEFINE(LIRC_OPTIONS_VAR, ["LIRC_OPTIONS_PATH"],[
         Environment variable overriding options file path])
 
 AH_TOP([
+#ifndef ROOT_CONFIG_H
+#define ROOT_CONFIG_H
 #include     "paths.h"
 ])
 
 AH_BOTTOM([
 #include     "lirc/lirc_config.h"
+#endif // ROOT_CONFIG_H
 ])
 
 dnl write these decisions out to the Makefiles

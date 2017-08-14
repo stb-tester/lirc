@@ -138,12 +138,15 @@ install-data-hook:
 	$(SED) -i -e '/^plugindir/s|/usr/lib|$(libdir)|' \
 	    $(DESTDIR)$(lirc_confdir)/lirc_options.conf
 	cp -pr $(srcdir)/contrib $(DESTDIR)$(pkgdatadir)
+	chmod u+w $(DESTDIR)$(includedir)
+	cd $(DESTDIR)$(includedir)/lirc; ln -s include/media .
 
 uninstall-hook:
 	-chmod -R u+w $(DESTDIR)/$(pkgdatadir)/contrib
 	-rm -rf $(DESTDIR)/$(pkgdatadir) \
 	        $(DESTDIR)/$(pkgpythondir) \
-	        $(DESTDIR)/$(pkgdatadir)/contrib
+	        $(DESTDIR)/$(pkgdatadir)/contrib \
+		$(DESTDIR)$(includedir)/lirc
 
 dist-hook: ChangeLog fix-version
 	cp -pr $(srcdir)/contrib $(distdir)
