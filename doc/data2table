@@ -95,7 +95,7 @@ def main():
     elif len(sys.argv) == 1:
         configdir = None
     else:
-        print("Usage: data2hwdb [configuration directory]")
+        print("Usage: data2table [configuration directory]")
         sys.exit(1)
 
     db = database.Database(configdir, yamldir)

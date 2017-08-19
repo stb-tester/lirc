@@ -2,7 +2,7 @@
 ACLOCAL_AMFLAGS         = -I m4
 
 CLEANFILES              = man/* html/* man-html/* driver-toc.xsl table.html \
-                          api-docs.tar.gz NEWS.txt lirc.hwdb table.html \
+                          api-docs.tar.gz NEWS.txt table.html \
                           doxygen*warning* ext-driver-toc.xsl
 
 EXTRA_DIST              = Doxyfile manpage.xsl make-driver-toc.sh \
@@ -23,7 +23,7 @@ API_SRC                 = $(LIB_SRC)/*.c \
                           $(LIB_SRC)/*.dox \
                           $(LIB_SRC)/*.doxhead
 
-dist_noinst_SCRIPTS     = data2table data2hwdb
+dist_noinst_SCRIPTS     = data2table
 
 manpage_html            =
 man_sources             =
@@ -85,11 +85,7 @@ if HAVE_PYMOD_YAML
 nodist_html_DATA        += table.html
 endif
 
-if HAVE_PYMOD_YAML
-nodist_pkgdata_DATA     = lirc.hwdb
-endif
-
-endif ## CROSS_COMPILE
+endif ## ! CROSS_COMPILE
 
 dist_noinst_DATA        = $(man_sources) $(html_sources) $(plugindocs)
 
@@ -152,13 +148,6 @@ table.html: docpage.xsl
 	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
 	$(PYTHON) $(srcdir)/data2table $(top_srcdir)/configs ../configs \
 	        | xsltproc --html docpage.xsl - > table.html
-
-lirc.hwdb:
-	test -e lirc || \
-	    ln -s $(top_srcdir)/tools/lirc-setup lirc  2>/dev/null || :
-	PYTHONPATH=$(top_builddir)/python-pkg/lirc \
-	$(PYTHON) $(srcdir)/data2hwdb $(top_srcdir)/configs ../configs \
-	    > lirc.hwdb
 
 NEWS.txt: $(top_srcdir)/NEWS
 	cp -a $(top_srcdir)/NEWS $@

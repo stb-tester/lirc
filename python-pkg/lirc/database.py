@@ -28,9 +28,9 @@
 # Although python cannot guarantee this, the database is designed as a
 # read-only structure.
 #
-# Simple usage examples lives in doc/: data2hwdb and data2table. The
-# lirc-setup script provides a more elaborated example. Data structures
-# are basically documented in the yaml files.
+# A simple usage examples is doc/data2table. The lirc-setup script
+# provides a more elaborated example. Data structures are basically
+# documented in the yaml files.
 
 ##  @addtogroup database
 #   @{
