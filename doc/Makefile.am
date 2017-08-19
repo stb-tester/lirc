@@ -139,7 +139,7 @@ $(srcdir)/driver-toc.xsl: $(plugindocs)
 $(srcdir)/empty_toc.tmpl: $(generated_html)
 	cp html/empty_toc.html $@
 
-elugins.index.html: $(srcdir)/empty_toc.tmpl
+plugins.index.html: $(srcdir)/empty_toc.tmpl
 	cp -a $? $@
 
 docpage.xsl: $(abs_builddir)/driver-toc.xsl
