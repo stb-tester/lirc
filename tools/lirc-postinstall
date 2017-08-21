@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Perform post-install updates:
+#  - Create the drivers.yaml list from the configs directory
+#  - Add kernel drivers as present in current kernel.
+#  - Update hardcoded paths in doc generation tools
+#  - Update the table.html driver info page.
+#
+# Usage:
+#  [DESTDIR=foo] lirc-postinstall [config.py]
+#
+# config.py defines numerous paths which can be set environment; see below.
+
+readonly PYTHON=${PYTHON:-'python3'}
+readonly HERE=$($PYTHON -c "import os.path; print(os.path.realpath(\"$0\"))")
+
+test -f $1 && source $1 || :
+
+readonly DESTDIR="${DESTDIR:-'.'}"
+if test -n "$DOCDIR"; then
+    readonly DOCDIR="$DESTDIR/${DOCDIR}"
+else
+    readonly DOCDIR="../doc"
+fi
+
+if test -n "$BINDIR"; then
+    readonly BINDIR="$DESTDIR/${BINDIR}"
+else
+    readonly BINDIR="../tools"
+fi
+
+readonly DATADIR="$DESTDIR/${DATADIR:-'..'}"
+if test -n "$LIBDIR"; then
+    readonly PLUGINDIR=$DESTDIR/${LIBDIR}"/lirc/plugins"
+else
+    readonly PLUGINDIR=$DESTDIR'/../plugins/.libs'
+fi
+
+
+cd $DATADIR/lirc/configs
+lirc-lsplugins  -U $PLUGINDIR --yaml > drivers.yaml
+
+if ping -c 1 sourceforge.net &> /dev/null; then
+    XDG_CACHE_HOME=$DATADIR irdb-get update
+fi
+XDG_CACHE_HOME=$DATADIR irdb-get yaml-config > confs_by_driver.yaml
+
+readonly TOOLDOCDIR="$DATADIR/lirc/doc"
+readonly DESTDOCDIR="$DATADIR/doc/lirc"
+readonly PLUGINDOCS="$DATADIR/doc/lirc/plugindocs"
+readonly PYTHON_PKG="$DATADIR/lirc/python-pkg/lirc"
+readonly PYTHON_PATH="$PYTHON_PKG:$DATADIR/lirc/python-pkg"
+
+sed -e '/page.xsl"/s|=.*/>|="'$PLUGINDOCS'/page.xsl"/>|' \
+    -e '/driver-toc.xsl"/s|=.*/>|="'$PLUGINDOCS'/driver-toc.xsl"/>|' \
+    -i $TOOLDOCDIR/docpage.xsl
+
+for table in $DESTDOCDIR/html/table.html $DESTDOCDIR/lirc.org/html/table.html
+do
+    PYTHONPATH="$PYTHON_PATH" $PYTHON $BINDIR/lirc-data2table $PWD $PWD \
+        | xsltproc --html $TOOLDOCDIR/docpage.xsl - > $table
+done

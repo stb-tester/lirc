@@ -77,7 +77,7 @@ if HAVE_DEVINPUT
 dist_bin_SCRIPTS        += lirc-make-devinput
 endif
 
-dist_bin_SCRIPTS        += pronto2lirc irdb-get irtext2udp
+dist_bin_SCRIPTS        += pronto2lirc irdb-get irtext2udp lirc-postinstall
 dist_sbin_SCRIPTS       = lircd-setup
 dist_noinst_SCRIPTS     = make_rel_symlink.py check_configs.py
 
@@ -105,6 +105,7 @@ install-exec-hook:
 	    irdb-get \
 	    irtext2udp \
 	    lirc-init-db \
+	    lirc-postinstall \
 	    pronto2lirc
 	cd $(DESTDIR)$(sbindir);  \
 	    $(SED) -i '\|^#!/usr/bin/env|s|python3|$(PYTHON)|' lircd-setup
