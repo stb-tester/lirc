@@ -21,7 +21,6 @@ readonly HERE=$($PYTHON -c "import os.path; print(os.path.realpath(\"$0\"))")
 
 test -f $1 && source $1 || :
 
-readonly DESTDIR="${DESTDIR:-''}"
 if test -n "$DOCDIR"; then
     readonly DOCDIR="$DESTDIR/${DOCDIR}"
 else

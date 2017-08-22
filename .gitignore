@@ -44,8 +44,6 @@ doc/man/*.[1-9]
 doc/man
 doc/html
 doc/NEWS*
-doc/lirc.hwdb
-doc/table.html
 doc/driver-toc.xsl
 doc/docpage.xsl
 doc/lirc.org/html
