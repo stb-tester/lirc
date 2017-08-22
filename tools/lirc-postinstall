@@ -1,22 +1,27 @@
 #!/usr/bin/env bash
-
-# Perform post-install updates:
+#
+# Perform post-install updates after lirc or externak driver install:
 #  - Create the drivers.yaml list from the configs directory
 #  - Add kernel drivers as present in current kernel.
 #  - Update hardcoded paths in doc generation tools
 #  - Update the table.html driver info page.
+#  - Update the external driver documentation
 #
 # Usage:
-#  [DESTDIR=foo] lirc-postinstall [config.py]
+#  [DESTDIR=foo] [PYTHON=bar] lirc-postinstall [config.py]
 #
 # config.py defines numerous paths which can be set environment; see below.
+#
+# Why is it needed:
+#  Part of this cannot be run during cross-compile builds.
+#
 
 readonly PYTHON=${PYTHON:-'python3'}
 readonly HERE=$($PYTHON -c "import os.path; print(os.path.realpath(\"$0\"))")
 
 test -f $1 && source $1 || :
 
-readonly DESTDIR="${DESTDIR:-'.'}"
+readonly DESTDIR="${DESTDIR:-''}"
 if test -n "$DOCDIR"; then
     readonly DOCDIR="$DESTDIR/${DOCDIR}"
 else
@@ -60,3 +65,5 @@ do
     PYTHONPATH="$PYTHON_PATH" $PYTHON $BINDIR/lirc-data2table $PWD $PWD \
         | xsltproc --html $TOOLDOCDIR/docpage.xsl - > $table
 done
+
+make -C $PLUGINDOCS
