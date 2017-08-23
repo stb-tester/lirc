@@ -1,6 +1,8 @@
-0.10.0-devel
+0.11.0-devel
  * The deprecated lircd --uinput option is dropped. Use
    lircd-uinput(8) instead.
+ * The deprecated generation of lirc.hwdb is dropped. Use
+   the configs/*.conf or the python database.py instead.
 
 0.10.0-rc3 21/6/17
  * lircmd: Fix bogus, excessive logging using --uinput (#295).

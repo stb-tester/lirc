@@ -25,7 +25,7 @@ EXTRA_DIST              = README autogen.sh CONTRIBUTE.md ChangeLog \
 
 DISTCLEANFILES          = configure.sh  ChangeLog paths.h
 CLEANFILES              = *~ remotes/*~ contrib/*~ devinput.lircd.conf
-CHANGELOG_REVS          = lirc-0_9_4..HEAD
+CHANGELOG_REVS          = lirc-0.10.0..HEAD
 MANTAINERCLEANFILES     = config.sub install-sh depcomp py-compile \
                           missing libtool plugins/Makefile.am
 
