@@ -25,6 +25,11 @@ else:
     REMOTE_CODEBASE = \
         "https://sourceforge.net/p/lirc-remotes/code/ci/master/tree"
 
+if 'LIRC_IRDB_CACHE_ID' in os.environ:
+    CACHE_ID = os.environ['LIRC_IRDB_CACHE_ID']
+else:
+    CACHE_ID = time.ctime()
+
 if 'LIRC_REMOTES_LIST' in os.environ:
     REMOTES_LIST_URL = os.environ['LIRC_REMOTES_LIST']
 else:
@@ -193,7 +198,7 @@ def do_yaml_config():
         lircmd_by_driver[driver].append("%s/%s" % (tokens[0], tokens[2]))
 
     print("#")
-    print("# Created by 'irdb-get yaml-config' at " + time.ctime())
+    print("# Created by 'irdb-get yaml-config' as of " + CACHE_ID)
     print("#")
     print("\nlircd_by_driver:")
     print_yaml_dict(lircd_by_driver)

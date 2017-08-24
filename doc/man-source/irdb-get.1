@@ -1,4 +1,4 @@
-.TH irdb-get "1" "Last change: Sep 2015" "irdb-get @version@" "User Commands"
+.TH irdb-get "1" "Last change: Aug 2017" "irdb-get @version@" "User Commands"
 .SH NAME
 .P
 \fBirdb-get\fR - list, search and download lirc configuration files.
@@ -98,6 +98,11 @@ The  base URL used when downloading config files, defaults to
 URL to a file listing all remotes, as created by lirc-lsremotes(1).
 Defaults to  \fIhttp://lirc-remotes.sourceforge.net/remotes.list\fR.
 
+.TP 4
+\fBLIRC_IRDB_CACHE_ID\fR
+If defined, replaces the date otherwise printed in the yaml-config
+output. Ignored for other commands. Useful for reproducible builds
+together with \fIXDG_CACHE_HOME\fR.
 .TP 4
 \fBXDG_CACHE_HOME\fR
 If defined, relocates the cached, downloaded remotes listing file to
