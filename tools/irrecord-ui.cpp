@@ -900,7 +900,6 @@ static void remote_report(struct ir_remote* remote)
 	if (is_rc5(remote)) printf("RC5 encoding\n");
 	else if (is_rc6(remote)) printf("RC6 encoding\n");
 	else if (is_rcmm(remote)) printf("RCMM encoding\n");
-	else if (is_goldstar(remote)) printf("GOLDSTAR encoding\n");
 	else if (is_grundig(remote)) printf("GRUNDIG encoding\n");
 	else if (is_bo(remote)) printf("Bang & Olufsen encoding\n");
 	else printf("Unknown encoding\n");

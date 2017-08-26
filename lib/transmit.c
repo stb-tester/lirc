@@ -390,7 +390,7 @@ static int init_send_or_sim(struct ir_remote* remote, struct ir_ncode* code, int
 {
 	int i, repeat = repeat_preset;
 
-	if (is_grundig(remote) || is_goldstar(remote) || is_serial(remote) || is_bo(remote)) {
+	if (is_grundig(remote) || is_serial(remote) || is_bo(remote)) {
 		if (!sim)
 			log_error("sorry, can't send this protocol yet");
 		return 0;

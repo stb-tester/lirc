@@ -104,7 +104,6 @@ const struct flaglist all_flags[] = {
 	{ "RCMM",	   RCMM		 },
 	{ "SPACE_ENC",	   SPACE_ENC	 },
 	{ "SPACE_FIRST",   SPACE_FIRST	 },
-	{ "GOLDSTAR",	   GOLDSTAR	 },
 	{ "GRUNDIG",	   GRUNDIG	 },
 	{ "BO",		   BO		 },
 	{ "SERIAL",	   SERIAL	 },

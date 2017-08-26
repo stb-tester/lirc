@@ -112,7 +112,6 @@ struct ir_ncode {
 #define RCMM            0x0008  /**< IR data follows RC-MM protocol */
 #define SPACE_ENC       0x0010  /**< IR data is space encoded */
 #define SPACE_FIRST     0x0020  /**< bits are encoded as space+pulse */
-#define GOLDSTAR        0x0040  /**< encoding found on Goldstar remote */
 #define GRUNDIG         0x0080  /**< encoding found on Grundig remote */
 #define BO              0x0100  /**< encoding found on Bang & Olufsen remote */
 #define SERIAL          0x0200  /**< serial protocol */

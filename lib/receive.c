@@ -970,18 +970,6 @@ static ir_code get_data(struct ir_remote* remote, int bits, int done)
 
 	for (i = 0; i < bits; i++) {
 		code = code << 1;
-		if (is_goldstar(remote)) {
-			if ((done + i) % 2) {
-				log_trace1("$1");
-				remote->pone = remote->ptwo;
-				remote->sone = remote->stwo;
-			} else {
-				log_trace1("$2");
-				remote->pone = remote->pthree;
-				remote->sone = remote->sthree;
-			}
-		}
-
 		if (expectone(remote, done + i)) {
 			log_trace1("1");
 			code |= 1;

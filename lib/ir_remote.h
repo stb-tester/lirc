@@ -188,14 +188,6 @@ static inline int is_rcmm(const struct ir_remote* remote)
 		return 0;
 }
 
-static inline int is_goldstar(const struct ir_remote* remote)
-{
-	if ((remote->flags & IR_PROTOCOL_MASK) == GOLDSTAR)
-		return 1;
-	else
-		return 0;
-}
-
 static inline int is_grundig(const struct ir_remote* remote)
 {
 	if ((remote->flags & IR_PROTOCOL_MASK) == GRUNDIG)
