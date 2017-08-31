@@ -128,7 +128,7 @@ lirc: .phony
 config.h: ../config.h
 	-cp $? $@
 
-lirc/config.h: ../config.h lirc
+lirc/config.h: ../config.h | lirc
 	-cp ../config.h $@
 
 ../paths.h: .phony
@@ -137,7 +137,7 @@ lirc/config.h: ../config.h lirc
 paths.h: ../paths.h
 	-cp $? $@
 
-lirc/paths.h: ../paths.h lirc
+lirc/paths.h: ../paths.h | lirc
 	-cp ../paths.h $@
 
 
@@ -145,7 +145,7 @@ input_map.lo: lirc/input_map.inc
 
 input_map.inc: lirc/input_map.inc
 
-lirc/input_map.inc: lirc
+lirc/input_map.inc: | lirc
 	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
 	    -i $(DEVINPUT_HEADER)  > input_map.inc
 	PYTHON=$(PYTHON) $(top_srcdir)/tools/lirc-make-devinput \
