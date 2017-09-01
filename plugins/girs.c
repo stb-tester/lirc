@@ -1,4 +1,4 @@
-/* Copyright (C) 2015, 2016 Bengt Martensson
+/* Copyright (C) 2015, 2016, 2017 Bengt Martensson
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@
  *	If non-zero, if using serial device,
  *      the "DTR line" will be lowered for 100 ms when
  *	making the first connect, causing most Arduinos to reset.
+ *
+ * ending_timeout
+ *      Set Girs' receiveendingtimeout to this value, denoting timeout
+ *      in milliseconds.
  */
 
 #include <poll.h>
@@ -54,7 +58,7 @@
 #define DRIVER_NAME "girs"
 #define DEFAULT_DEVICE "/dev/ttyACM0"
 #define DRIVER_RESOLUTION 50
-#define DRIVER_VERSION "2017-03-11"
+#define DRIVER_VERSION "2017-08-30"
 
 #define DEFAULT_TCP_PORT "33333"
 
@@ -78,11 +82,7 @@
 #define RECEIVE_COMMAND "receive"
 #define TRANSMIT_COMMAND "transmit"
 
-// Min value of ending timeout in the sense of LIRC_GET_MIN_TIMEOUT, in ms.
-#define GIRS_MIN_TIMEOUT 1000 // 1 ms, fairly arbitrary
-
-// Max value of ending timeout in the sense of LIRC_GET_MAX_TIMEOUT, in ms.
-#define GIRS_MAX_TIMEOUT 1000000 // 1 s, fairly arbitrary
+#define DEFAULT_ENDING_TIMEOUT 25U
 
 /* Longest expected line */
 #define LONG_LINE_SIZE 1000
@@ -123,9 +123,8 @@ typedef struct {
 	int transmit; // Implements the transmit modle
 	int transmitters;// Implements the transmitter modle
 	int parameters; // Implements the parameters module
-	int last_sent_timeout; // the last timeout value sent to the hardware
+	unsigned int ending_timeout; // the last timeout value sent to the hardware
 	int initialized;
-	int report_timeouts; // If true "report timeouts"
 	unsigned int transmitter_mask;
 	char version[LONG_LINE_SIZE]; // Use to indicate valid device
 	char driver_version[LONG_LINE_SIZE];
@@ -141,9 +140,8 @@ static girs_t dev = {
 	.transmit = 0,
 	.transmitters = 0,
 	.parameters = 0,
-	.last_sent_timeout = -1,
+	.ending_timeout = DEFAULT_ENDING_TIMEOUT,
 	.initialized = 0,
-	.report_timeouts = 0,
 	.transmitter_mask = 0,
 	.version = "",
 	.driver_version = ""
@@ -198,10 +196,10 @@ const struct driver* hardwares[] = {
 
 static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
-	log_trace(DRIVER_NAME " decode: enter");
+	log_trace(DRIVER_NAME ": decode: enter");
 	int res = receive_decode(remote, ctx);
 
-	log_trace(DRIVER_NAME " decode returned: %d", res);
+	log_trace(DRIVER_NAME ": decode returned: %d", res);
 	return res;
 }
 
@@ -218,7 +216,7 @@ static int min(int x, int y)
 // Public function through hw_girs
 static int girs_close(void)
 {
-	log_debug("girs_close called");
+	log_debug(DRIVER_NAME ": girs_close called");
 	if (dev.fd >= 0)
 		close(dev.fd);
 
@@ -230,6 +228,27 @@ static int girs_close(void)
 	return 0;
 }
 
+static int set_ending_timeout(void)
+{
+	if (!dev.parameters) {
+		log_error(DRIVER_NAME ": Current firmware does not support setting parameters");
+		return 0;
+	}
+
+	if (dev.read_pending)
+		syncronize();
+	char command[LONG_LINE_SIZE];
+
+	snprintf(command, LONG_LINE_SIZE, "parameter receiveending %d", dev.ending_timeout);
+	char answer[LONG_LINE_SIZE];
+
+	snprintf(answer, LONG_LINE_SIZE, "receiveending=%d", dev.ending_timeout);
+	int success = sendcommand_answer(command, answer, LONG_LINE_SIZE);
+
+	log_info(DRIVER_NAME ": %s setting timeout to %d ms",
+		success ? "succeded" : "failed", dev.ending_timeout);
+	return success;
+}
 
 /**
  * Driver control.
@@ -249,48 +268,9 @@ static int drvctl(unsigned int cmd, void* arg)
 			return DRV_ERR_NOT_IMPLEMENTED;
 		}
 		log_warn(DRIVER_NAME
-			"setting of transmitter mask accepted, but not yet implemented: 0x%x, ignored.",
+			": setting of transmitter mask accepted, but not yet implemented: 0x%x, ignored.",
 			*(unsigned int*) arg);
 		dev.transmitter_mask = *(unsigned int*) arg;
-		break;
-	case LIRC_SET_REC_TIMEOUT:
-		if (!dev.parameters)
-			return DRV_ERR_NOT_IMPLEMENTED;
-		int value = *(int*) arg;
-		int millisecs = value / 1000;
-
-		// Do not send the parameter command if it is not necessary,
-		// since it interrupts the reception-
-		if (millisecs != dev.last_sent_timeout) {
-			if (dev.read_pending)
-				syncronize();
-			char command[LONG_LINE_SIZE];
-
-			snprintf(command, LONG_LINE_SIZE, "parameter receiveending %d", millisecs);
-			char answer[LONG_LINE_SIZE];
-
-			snprintf(answer, LONG_LINE_SIZE, "receiveending=%d", millisecs);
-			int success = sendcommand_answer(command, answer, LONG_LINE_SIZE);
-
-			if (!success)
-				return DRV_ERR_BAD_STATE; // ???
-			log_info(DRIVER_NAME ": setting timeout to %d ms", millisecs);
-			enable_receive();
-			dev.last_sent_timeout = millisecs;
-		}
-		break;
-	case LIRC_GET_MIN_TIMEOUT:
-		if (!dev.parameters)
-			return DRV_ERR_NOT_IMPLEMENTED;
-		*(int*) arg = GIRS_MIN_TIMEOUT;
-		break;
-	case LIRC_GET_MAX_TIMEOUT:
-		if (!dev.parameters)
-			return DRV_ERR_NOT_IMPLEMENTED;
-		*(int*) arg = GIRS_MAX_TIMEOUT;
-		break;
-	case LIRC_SET_REC_TIMEOUT_REPORTS:
-		dev.report_timeouts = *(int*) arg;
 		break;
 	case DRVCTL_SET_OPTION:
 	{
@@ -305,8 +285,17 @@ static int drvctl(unsigned int cmd, void* arg)
 				return DRV_ERR_BAD_VALUE;
 			}
 			dev.drop_dtr_when_initing = (int) value;
+		} else if (strcmp(opt->key, "ending_timeout") == 0) {
+			if (value < 0 || value > 65) {
+				log_error(DRIVER_NAME
+					": invalid ending timeout: %d, ignored.",
+					value);
+				return DRV_ERR_BAD_VALUE;
+			}
+			dev.ending_timeout = (unsigned int) value;
 		} else {
-			log_error("unknown key \"%s\", ignored.", opt->key);
+			log_error(DRIVER_NAME ": unknown key \"%s\", ignored.",
+				opt->key);
 			return DRV_ERR_BAD_OPTION;
 		}
 	}
@@ -577,7 +566,7 @@ static lirc_t readdata(lirc_t timeout)
 			int success = enable_receive();
 
 			if (!success) {
-				log_debug("readdata FAILED");
+				log_debug(DRIVER_NAME ": readdata FAILED");
 				return 0;
 			}
 
@@ -588,7 +577,7 @@ static lirc_t readdata(lirc_t timeout)
 			int success = readline(buf, LONG_LINE_SIZE, timeout);
 
 			if (!success) {
-				log_debug("readdata 0 (timeout)");
+				log_debug(DRIVER_NAME ": readdata 0 (timeout)");
 				// no need to restart receive
 				return 0;
 			}
@@ -598,7 +587,7 @@ static lirc_t readdata(lirc_t timeout)
 				// Got something that is not timeout; go on
 				break;
 
-			log_debug("readdata timeout from hardware, continuing");
+			log_debug(DRIVER_NAME ": readdata timeout from hardware, continuing");
 			enable_receive();
 			initialized = 0;
 			// Keep going...
@@ -641,7 +630,7 @@ static lirc_t readdata(lirc_t timeout)
 	if (!initialized) {
 		// The Lirc decoder expects every signal to start with a
 		// gap to be thrown away!!!
-		log_debug("girs: initial silly gap");
+		log_debug(DRIVER_NAME ": initial silly gap");
 		initialized = 1;
 		x = SILLY_INITIAL_GAP;
 	} else {
@@ -692,9 +681,8 @@ static void decode_modules(char* buf)
 		} else if (strcasecmp(token, "parameters") == 0) {
 			log_info(DRIVER_NAME ": parameters module found");
 			dev.parameters = 1;
-			drv.features |= LIRC_CAN_SET_REC_TIMEOUT;
 		} else {
-			log_debug(DRIVER_NAME ": unknown module \"%s", token);
+			log_debug(DRIVER_NAME ": unknown module \"%s\"", token);
 		}
 	}
 }
@@ -708,7 +696,7 @@ static void kick_device(void)
 static int initialize_serial(void)
 {
 		if (access(drv.device, R_OK) != 0) {
-			log_debug(DRIVER_NAME ": cannot access %s",
+			log_debug(DRIVER_NAME ": cannot access \"%s\"",
 				  drv.device);
 			return 0;
 		}
@@ -783,7 +771,7 @@ static int initialize_tcp(void)
 	int status = getaddrinfo(ipname, portnumber, &hints, &result);
 
 	if (status != 0) {
-		log_error("getaddrinfo: %s", gai_strerror(status));
+		log_error(DRIVER_NAME ": getaddrinfo: %s", gai_strerror(status));
 		return 0;
 	}
 
@@ -800,7 +788,7 @@ static int initialize_tcp(void)
 			continue;
 
 		if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1) {
-			log_info("Successful connect to %s:%s",
+			log_info(DRIVER_NAME ": Successful connect to %s:%s",
 				ipname, portnumber);
 			break; /* Success */
 		}
@@ -809,7 +797,7 @@ static int initialize_tcp(void)
 
 	if (rp == NULL) {
 		/* No address succeeded */
-		log_error("Could not connect to %s:%s", ipname, portnumber);
+		log_error(DRIVER_NAME ": Could not connect to %s:%s", ipname, portnumber);
 		return 0;
 	}
 	drv.fd = sock;
@@ -867,6 +855,9 @@ static int initialize(void)
 		} else
 			decode_modules(buf);
 	}
+	if (success) {
+		(void) set_ending_timeout(); // failing to sent timeout OK.
+	}
 
 	if (!success) {
 		log_error(DRIVER_NAME
@@ -876,7 +867,7 @@ static int initialize(void)
 		tty_delete_lock();
 		return 0;
 	}
-	log_info("girr: Found version \"%s\"", dev.version);
+	log_info(DRIVER_NAME ": Found firmware version \"%s\"", dev.version);
 	return 1;
 }
 
@@ -914,7 +905,7 @@ static int girs_open(const char* path)
 		strncpy(buff, path, sizeof(buff) - 1);
 		drv.device = buff;
 	}
-	log_info("girs_open: Initial device: %s", drv.device);
+	log_info(DRIVER_NAME ": Initial device: %s", drv.device);
 	return 0;
 }
 
@@ -939,7 +930,7 @@ static char* receive(struct ir_remote* remotes)
 		return NULL;
 	}
 
-	log_debug("girs_receive");
+	log_debug(DRIVER_NAME ": receive");
 	if (!rec_buffer_clear())
 		return NULL;
 	return decode_all(remotes);

@@ -31,6 +31,18 @@
         The next chapter covers the firmware; in Arduino lingo, the "sketch" GirsLite.
         The chapter following deals with the Lirc driver.
 
+    <h3 id="atomic_operation">Atomic operation</H3>
+    <p>As opposed to most other drivers, sending and receiving of IR sequences are atomic operations
+        (in the sense that there is <em>one</EM> send/receive command for each sent/received IR sequence).
+        When sending, a one-line command is sent from the driver to the firmware,
+        containing the complete timing data for the full sequence.
+        Correspondingly, when a <code>receive</CODE> command is received by the firmware,
+        it collects IR gaps and flashes,
+        up until a gap of length <code>receiveendingtimeout</CODE> (default 25 milliseconds) has
+        been received. (This should be short enough to split "different" IR signals, as well as splitting
+        between the intro sequence and subsequent repeats.) Only then, the received IR sequence is sent to
+        the driver, as one single line.
+
     <h2>The firmware GirsLite</H2>
     <p><em>GirsLite</EM> is a light-weight configuration of AGirs, intended for usage with
         <a href="http://www.harctoolbox.org/IrScrutinizer.html">IrScrutinizer</A>,
@@ -143,6 +155,10 @@ at any time.
             making the first connect, causing most Arduinos to reset (see
             <a href="https://www.arduino.cc/en/Main/ArduinoBoardUno#documentation">Arduino documentaton</a>,
             paragraph "Automatic (Software) Reset").</dd>
+    <dt><code>ending_timeout</CODE></dt>
+    <dd>Sets the parameter <code>receiveendingtimeout</CODE>,
+            (as described <a href="#atomic_operation">here</a>) to the value of the parameter, interpreted as milliseconds.
+    (Default is 25 milliseconds. The firmware's own default is overwritten.)</dd>
 </dl>
 
     <h3>The device name</H3>
@@ -227,16 +243,20 @@ SUBSYSTEMS=="usb", ATTRS{idProduct}=="0042", ATTRS{idVendor}=="2341", SYMLINK+="
         It is hosted on <a href="https://github.com/bengtmartensson/Infrared4Arduino">Github</A>.
         API documentation is found <a href="http://harctoolbox.org/infrared-apidocs/index.html">here</A>.
         It is known to the Arduino library manager, so it can/should be installed using it (Sketch -> Include library -> Manage libraries;
-        select Topic "Other" and Type "Contributed!, scroll down to "Infrared").
+        select Topic "Other" and Type "Contributed", scroll down to "Infrared").
     <h3>Why is the Arduino taking so long on its start?</h3>
-    <p>Recently (2017-03-11), the selftest time was reduced from 2 seconds to 0.2 seconds.
-        You may also disable the Arduino bootloader by programming the sketch
+    <p>Recently (2017-03-11), the self test time in the firmware was reduced from 2 seconds to 0.2 seconds.
+    <p>
+        If the hardware has a ICSP header (which excludes for example <a href="http://www.harctoolbox.org/arduino_nano.html">this</A>,)
+        you may also disable the Arduino bootloader by programming the sketch
         using an external programmer connected to the ICSP header.
         (It can easily be restored from the Arduino IDE, using the programmer.)
+    <p>
         Also, consider adding the flag <code>--immediate-init</CODE> to the options to lircd.
     <h3>I have seen a document saying that I should use "Girs4Lirc"; what is that?</H3>
     <p>Girs4Lirc has been replaced by GirsLite, which now works with both Lirc and IrScrutinizer.
     <h3>How is "Girs" to be pronounced?</H3>
-    <p>Who cares?
+    <p>It is pronounced like in "girl".
+        The "language" Girs is written capitalized, the name of an implementation is usually written in lower case.
 
 <p class="footer"/>
