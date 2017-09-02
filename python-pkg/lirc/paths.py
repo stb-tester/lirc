@@ -19,7 +19,7 @@ if os.path.exists(os.path.join(HERE, '..', 'lib', '.libs', '_client.so')):
         # development tree Makefile.am creates lib/libs/_client.so
         # after 'make install'; plain 'make' isn't enough.
         os.symlink(os.path.join('..', 'lib', '.libs', '_client.so'),
-                                os.path.join(HERE, '_client.so'))
+                   os.path.join(HERE, '_client.so'))
 else:
     # 'python setup.py' artifact:
     SRC = glob.glob(os.path.join(
