@@ -7,7 +7,9 @@
    configuration and docs in final install destination (#286).
  * Using LIRC_IRDB_CACHE_ID lirc now supports reproducible
    builds. See #301 and updated irdb-get(1) manpage.
- * Support for the GOLDSTAR flag in lircd.conf(5) is dropped.
+ * lircd: Support for the GOLDSTAR flag in lircd.conf(5) is dropped.
+ * plugins:girs: Drop support for LIRC_SET_REC_TIMEOUT, add new
+   driver option ending_timeout (#302).
 
 0.10.0-rc3 21/6/17
  * lircmd: Fix bogus, excessive logging using --uinput (#295).
