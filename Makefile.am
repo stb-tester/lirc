@@ -12,9 +12,12 @@ GIT_DATE        = $(shell git log -1 --pretty=format:%cd || echo UNKNOWN)
 GIT_REFS        = $(shell git log -1 --pretty=format:%d || echo UNKNOWN)
 GIT_DATE_ISO    = $(shell git log -1 --pretty=format:%ci || date +"%F %T")
 
-BASE_VERSION            = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
+BASE_VERSION    = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
-VERBOSE                 = $(subst 0,,$(V))
+VERBOSE         = $(subst 0,,$(V))
+
+PY_PKG_CFLAGS   = -I$(abs_top_srcdir)/lib -I$(abs_builddir)/lib $(CFLAGS)
+PY_PKG_LDFLAGS  = -L$(abs_builddir)/lib/.libs $(LDFLAGS)
 
 if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
@@ -131,9 +134,8 @@ pep8: $(py_PYTHON)
 if HAVE_PYTHON35
 all-local:
 	cd python-pkg; \
-	    CFLAGS="-I$(abs_top_srcdir)/lib -I$(abs_builddir)/lib" \
-	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py \
-	    $(if $(VERBOSE),,-q) build
+	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LDFLAGS)" \
+	    $(PYTHON) setup.py $(if $(VERBOSE),,-q) build
 endif
 
 install-data-hook:
@@ -176,8 +178,9 @@ $(abs_builddir)/python-pkg/setup.py:
 
 $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
 	cp $(top_builddir)/VERSION $(abs_builddir)/python-pkg
-	cd $(abs_builddir)/python-pkg; CFLAGS=-I$(abs_top_srcdir)/lib \
-	    LDFLAGS=-L$(abs_builddir)/lib/.libs $(PYTHON) setup.py -q sdist
+	cd $(abs_builddir)/python-pkg; \
+	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LDFLAGS)" \
+	    $(PYTHON) setup.py -q sdist
 
 $(top_builddir)/python-pkg/VERSION: VERSION
 	cp $? $@
