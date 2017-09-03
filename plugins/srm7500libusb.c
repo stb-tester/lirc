@@ -84,6 +84,7 @@
 	nanosleep_delay.tv_nsec = THIS_DELAY; \
 	while (nanosleep(&nanosleep_delay, &nanosleep_delay));
 #define SLEEP_NANO_20_ms 20*1000*1000
+#define SLEEP_NANO_500_us 500*1000
 
 #pragma pack(1)
 typedef struct {
@@ -480,7 +481,7 @@ open_dev_sequence:
 	} else {
 		log_debug("usb dev_init_01 %p, %d", dev_handle, res);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 
 	control_buffer[0] = 0xe4;
 	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_OUT, USB_REQ_SET_CONFIGURATION,
@@ -491,7 +492,7 @@ open_dev_sequence:
 	} else {
 		log_debug("usb dev_init_02 %p, %d", dev_handle, res);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 
 	control_buffer[0] = 0;
 	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
@@ -502,7 +503,7 @@ open_dev_sequence:
 	} else {
 		log_debug("usb dev_init_03 %p, %d", dev_handle, res);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 
 	/*
 	 * HG: with this the red control light on usb receiver is
@@ -518,7 +519,7 @@ open_dev_sequence:
 	} else {
 		log_debug("usb dev_init_04 %p, %d", dev_handle, res);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 
 	memset(control_buffer, 0, sizeof(control_buffer));
 	res = usb_control_msg(dev_handle, USB_TYPE_CLASS | USB_RECIP_INTERFACE | USB_ENDPOINT_IN, USB_REQ_CLEAR_FEATURE,
@@ -529,7 +530,7 @@ open_dev_sequence:
 	} else {
 		log_debug("usb dev_init_05 %p, %d", dev_handle, res);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 
 	return 1;
 
@@ -570,7 +571,7 @@ static int srm7500_deinitialize_usbdongle(void)
 	} else {
 		log_debug("usb dev_deinit_01 %p, %d", dev_handle, ret);
 	}
-	SLEEP_NANO(500*1000); // wait for 500 microseconds
+	SLEEP_NANO(SLEEP_NANO_500_us); // wait for 500 microseconds
 	usb_reset(dev_handle);
 	if (usb_close(dev_handle) < 0)
 		result = 0;
