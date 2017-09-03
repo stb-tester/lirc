@@ -140,7 +140,7 @@ static int srm7500_initialize_usbdongle(void);
 static int srm7500_initialize_802154_stack(void);
 static int srm7500_deinitialize_usbdongle(void);
 static int philipsrf_input(philipsrf_incoming_t* buffer_in, int timeout);
-static int philipsrf_output(philipsrf_outgoing_t buffer_out);
+static int philipsrf_output(philipsrf_outgoing_t buffer_out, int timeout);
 static void srm7500_sigterm(int sig);
 static int drvctl_func(unsigned int cmd, void* arg);
 
@@ -603,7 +603,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.type = MLME_RESET_request;
 	packet_buffer_out.data[0] = MLME_TRUE;  /* SetDefaultPIB */
 
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_RESET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("reset of USB 802.15.4 MAC failed");
@@ -616,7 +616,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.data[0] = PIB_ATTR_macCoordShort_Address;
 	packet_buffer_out.data[1] = macShortAddress[0];
 	packet_buffer_out.data[2] = macShortAddress[1];
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macCoordShort_Address!");
@@ -629,7 +629,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.data[0] = PIB_ATTR_macPANId;
 	packet_buffer_out.data[1] = macPANId[0];
 	packet_buffer_out.data[2] = macPANId[1];
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macPANId!");
@@ -643,7 +643,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.data[0] = PIB_ATTR_macShortAddress;
 	packet_buffer_out.data[1] = macShortAddress[0];
 	packet_buffer_out.data[2] = macShortAddress[1];
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macShortAddress!");
@@ -656,7 +656,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.type = MLME_SET_request;
 	packet_buffer_out.data[0] = PIB_ATTR_macAssociation_Permit;
 	packet_buffer_out.data[1] = MLME_TRUE;
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macAssociation_Permit!");
@@ -669,7 +669,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.type = MLME_SET_request;
 	packet_buffer_out.data[0] = PIB_ATTR_macRxOnWhenIdle;
 	packet_buffer_out.data[1] = MLME_TRUE;
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macRxOnWhenIdle!");
@@ -688,7 +688,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.type = MLME_SET_request;
 	packet_buffer_out.data[0] = PIB_ATTR_macBeaconPayload_Length;
 	packet_buffer_out.data[1] = beacon_length;
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macBeaconPayload_Length!");
@@ -703,7 +703,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.data[0] = PIB_ATTR_macBeaconPayload;
 	for (i = 0; i < beacon_length; i++)
 		packet_buffer_out.data[i + 1] = macBeaconPayload[i];
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_SET_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not set macBeaconPayload!");
@@ -725,7 +725,7 @@ static int srm7500_initialize_802154_stack(void)
 	packet_buffer_out.data[4] = MLME_TRUE;  /* PANCoordinator */
 	/* In RFC, there is a bunch of other data for this primitive
 	 * (Table 72), which will be interpreted as set to 0 */
-	philipsrf_output(packet_buffer_out);
+	philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 	philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 	if (!((packet_buffer_in.type == MLME_START_confirm) && (packet_buffer_in.data[0] == 0))) {
 		log_error("could not start PAN!");
@@ -758,7 +758,7 @@ static int philipsrf_input(philipsrf_incoming_t* buffer_in, int timeout)
 	return ret;
 }
 
-static int philipsrf_output(philipsrf_outgoing_t buffer_out)
+static int philipsrf_output(philipsrf_outgoing_t buffer_out, int timeout)
 {
 	int ret = 0;
 
@@ -767,7 +767,7 @@ static int philipsrf_output(philipsrf_outgoing_t buffer_out)
 
 	ret =
 		usb_interrupt_write(dev_handle, dev_ep_out->bEndpointAddress, (char*)&buffer_out, buffer_out.length + 1,
-				    USB_TIMEOUT);
+				    timeout);
 	if (ret < 0) {
 		if (ret == -110) {
 			log_trace("timeout in philipsrf_output");
@@ -994,7 +994,7 @@ static int usb_read_loop(int fd)
 			}
 			/* SecurityLevel,KeyIdMode */
 			packet_buffer_out.data[11] = 0;
-			philipsrf_output(packet_buffer_out);
+			philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 			inret = philipsrf_input(&packet_buffer_in, USB_TIMEOUT); // FIXME: never read.
 			if ((packet_buffer_in.type == MLME_COMM_STATUS_indication)
 			    && (packet_buffer_in.data[packet_buffer_in.length - 2] == 0)) {
@@ -1044,7 +1044,7 @@ static int usb_read_loop(int fd)
 				packet_buffer_out.data[10] = MLME_FALSE;
 			}
 
-			philipsrf_output(packet_buffer_out);
+			philipsrf_output(packet_buffer_out, USB_TIMEOUT);
 			philipsrf_input(&packet_buffer_in, USB_TIMEOUT);
 			break;
 		case MCPS_DATA_indication:
