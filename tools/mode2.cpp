@@ -74,7 +74,7 @@ static const char* const help =
 
 static const struct option options[] = {
 	{"help",           no_argument,       NULL, 'h'},
-	{"debug",          required_argument, NULL, 'D'},
+	{"loglevel",       required_argument, NULL, 'D'},
 	{"version",        no_argument,       NULL, 'v'},
 	{"device",         required_argument, NULL, 'd'},
 	{"driver",         required_argument, NULL, 'H'},
