@@ -83,6 +83,7 @@
 	nanosleep_delay.tv_sec = 0; \
 	nanosleep_delay.tv_nsec = THIS_DELAY; \
 	while (nanosleep(&nanosleep_delay, &nanosleep_delay));
+#define SLEEP_NANO_20_ms 20*1000*1000
 
 #pragma pack(1)
 typedef struct {
@@ -371,7 +372,7 @@ static int srm7500_init(void)
 			status = usb_read_loop(pipe_fd[1]);
 fail:
 			srm7500_deinitialize_usbdongle();
-			SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
+			SLEEP_NANO(SLEEP_NANO_20_ms); // wait for 20 milliseconds
 		}
 		log_debug("child exits");
 		close(pipe_fd[1]);
@@ -413,7 +414,7 @@ open_dev_sequence:
 			printed_waiting_msg = 1;
 			log_info("waiting for USB receiver to be plugged in");
 		}
-		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
+		SLEEP_NANO(SLEEP_NANO_20_ms); // wait for 20 milliseconds
 	}
 
 	log_debug("found USB device");
@@ -464,7 +465,7 @@ open_dev_sequence:
 		usb_close(dev_handle);
 		log_debug("closed USB %p", dev_handle);
 		log_debug("reset USB", dev_handle);
-		SLEEP_NANO(20*1000*1000); // wait for 20 milliseconds
+		SLEEP_NANO(SLEEP_NANO_20_ms); // wait for 20 milliseconds
 		reset_needed = 0;
 		goto open_dev_sequence;
 	}
