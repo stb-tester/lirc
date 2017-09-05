@@ -16,8 +16,9 @@ BASE_VERSION    = $(subst -rc,rc,$(subst -devel,,$(VERSION)))
 
 VERBOSE         = $(subst 0,,$(V))
 
+DPY_PKG          = notused
 PY_PKG_CFLAGS   = -I$(abs_top_srcdir)/lib -I$(abs_builddir)/lib $(CFLAGS)
-PY_PKG_LDFLAGS  = -L$(abs_builddir)/lib/.libs $(LDFLAGS)
+PY_PKG_LFLAGS   = -L$(abs_builddir)/lib/.libs $(LDFLAGS)
 
 if HAVE_PYTHON35
 PYTHON_TARBALL          = python-pkg/dist/lirc-$(BASE_VERSION).tar.gz
@@ -134,7 +135,7 @@ pep8: $(py_PYTHON)
 if HAVE_PYTHON35
 all-local:
 	cd python-pkg; \
-	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LDFLAGS)" \
+	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LFLAGS)" \
 	    $(PYTHON) setup.py $(if $(VERBOSE),,-q) build
 endif
 
@@ -179,7 +180,7 @@ $(abs_builddir)/python-pkg/setup.py:
 $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
 	cp $(top_builddir)/VERSION $(abs_builddir)/python-pkg
 	cd $(abs_builddir)/python-pkg; \
-	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LDFLAGS)" \
+	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LFLAGS)" \
 	    $(PYTHON) setup.py -q sdist
 
 $(top_builddir)/python-pkg/VERSION: VERSION
