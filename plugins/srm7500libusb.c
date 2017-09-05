@@ -202,11 +202,23 @@ static int requested_usb_bus_number = -1;
 static int requested_usb_device_number = -1;
 static int srm7500_terminate = 0;
 
+/* device enumeration support. */
+static int is_enum_device_ok(uint16_t vendor, uint16_t product)
+{
+	usb_device_id* id;
+
+	for (id = usb_remote_id_table; id->vendor; id++)
+		if (id->vendor == vendor && id->product == product)
+			return 1;
+	return 0;
+}
+
+
 static int drvctl_func(unsigned int cmd, void* arg)
 {
 	switch (cmd) {
 	case DRVCTL_GET_DEVICES:
-		return drv_enum_glob((glob_t*) arg, "/dev/ttyUSB*");
+		return drv_enum_usb((glob_t*) arg, is_enum_device_ok);
 	case DRVCTL_FREE_DEVICES:
 		drv_enum_free((glob_t*) arg);
 		return 0;
