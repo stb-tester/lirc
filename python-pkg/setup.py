@@ -6,13 +6,10 @@ import subprocess
 import os.path
 import os
 
-try:
-    import lirc.config
-    VERSION = lirc.config.VERSION.replace('-devel','')
-except ImportError:
-    VERSION='0.0.0'
-
 from setuptools import setup, Extension
+
+exec(open("lirc/config.py").read())
+VERSION = VERSION.replace('-devel','')
 
 if 'CFLAGS' in os.environ:
     cflags = os.environ['CFLAGS'].split()
