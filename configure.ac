@@ -51,7 +51,8 @@ test -z "$PYTHON_LIBS" && \
 test -n "$PYTHON_LIBS" || \
     AC_MSG_WARN([No python package found (missing devel package?)])
 python_version_nodots=$(echo $PYTHON_VERSION | tr -d '.')
-AM_CONDITIONAL(HAVE_PYTHON35, [test $python_version_nodots -ge 35])
+AM_CONDITIONAL(HAVE_PYTHON35, [test -n "$PYTHON_LIBS" && \
+			       test $python_version_nodots -ge 35])
 CFLAGS="$CFLAGS $PYTHON_CFLAGS"
 
 

@@ -110,6 +110,7 @@ dist_py_pkg_doc_DATA    = python-pkg/doc/Doxyfile \
 
 libpython               = $(libdir)/python$(PYTHON_VERSION)
 pydir                   = $(libpython)/site-packages/lirc
+if HAVE_PYTHON35
 py_LTLIBRARIES          = python-pkg/lib/_client.la
 python_pkg_lib__client_la_SOURCES = \
                           python-pkg/lirc/_client.c
@@ -122,6 +123,7 @@ python_pkg_lib__client_la_LDFLAGS  = \
                           $(PYTHON_LIBS)
 python_pkg_lib__client_la_LIBADD = \
                           lib/liblirc_client.la
+endif
 
 pylint: .phony
 	$(MAKE) -C tools pylint
