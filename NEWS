@@ -1,3 +1,9 @@
+0.10.1 10/9/17
+ * mode2: Fix inconsistent loglevel/debug option (#307).
+ * build: install media/lirc.h (Debian BTS #872074).
+ * build: Fix make "always build all" error - c6eb8ec.
+ * plugins: devinput: Fix glob "no match" error - 14685b2.
+
 0.10.0 12/8/17
  * lib/curl_poll.h: Fix header guard build error on müsl libc.
  * Build: Mute libtool when V=0, typo.
