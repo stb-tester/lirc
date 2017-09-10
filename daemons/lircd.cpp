@@ -2488,7 +2488,12 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 	curr_driver->open_func(device);
-	drv_handle_options(options_getstring("lircd:driver-options"));
+	if (drv_handle_options(options_getstring("lircd:driver-options")) != 0
+	) {
+		fprintf(stderr, "Error when setting driver options: \"%s\"\n",
+			options_getstring("lircd:driver-options"));
+		return EXIT_FAILURE;
+	}
 	pidfile = options_getstring("lircd:pidfile");
 	lircdfile = options_getstring("lircd:output");
 	opt = options_getstring("lircd:logfile");
