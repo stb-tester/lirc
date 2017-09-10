@@ -200,8 +200,6 @@ AH_TEMPLATE([HAVE_LINUX_SCHED_H], [defined if linux/sched.h is available])
 
 AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
 
-AH_TEMPLATE([HAVE_SCSI], [defined if SCSI API is available])
-
 AH_TEMPLATE([HAVE_SELECT], [defined if select(2) is available])
 
 AH_TEMPLATE([HAVE_SOUNDCARD], [defined if soundcard API is available])
@@ -224,11 +222,9 @@ AH_TEMPLATE([HAVE_LIBUDEV_H], [Define if libudev is installed])
 
 AH_TEMPLATE([HAVE_UTIL_H], [Define if util.h is installed])
 
-AH_TEMPLATE([HAVE_USB_H],
-        [Define if usb.h is installed])
+AH_TEMPLATE([HAVE_USB_H], [Define if usb.h is installed])
 
-AH_TEMPLATE([HAVE_LIBUSB_H],
-        [Define if libusb.h is installed])
+AH_TEMPLATE([HAVE_LIBUSB_H], [Define if libusb.h is installed])
 
 AH_TEMPLATE([VERSION_NODOTS],
         [Numeric version, m.v.r => 10000 * m + 100 * v + r])
@@ -581,13 +577,9 @@ AX_REPORT_CONDITIONAL([HAVE_DEVINPUT])
 AX_REPORT_CONDITIONAL([WITH_SYSTEMDSYSTEMUNITDIR])
 AX_REPORT_CONDITIONAL([HAVE_PYTHON35])
 
-echo
-
 AS_IF([test x$HAVE_PYMOD_YAML != xyes], AC_MSG_WARN([
   python3-yaml is missing. lirc-setup will not work, table.html
-  and lirc.hwdb will not be created.
+  will not be created.
 ]))
-
-AS_IF([test $host != $build], AC_MSG_NOTICE([
-  Cross-compilation requires running lirc-init-db post-install script
-]))
+echo
+AC_MSG_NOTICE([Don't forget to run lirc-postinstall after "make install"])
