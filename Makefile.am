@@ -137,6 +137,7 @@ pep8: $(py_PYTHON)
 if HAVE_PYTHON35
 all-local:
 	cd python-pkg; \
+	    $(SETUPTOOLS_ENV) \
 	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LFLAGS)" \
 	    $(PYTHON) setup.py $(if $(VERBOSE),,-q) build
 endif
@@ -183,6 +184,7 @@ $(PYTHON_TARBALL): $(abs_builddir)/python-pkg/setup.py
 	cp $(top_builddir)/VERSION $(abs_builddir)/python-pkg
 	cd $(abs_builddir)/python-pkg; \
 	    CFLAGS="$(PY_PKG_CFLAGS)" LDFLAGS="$(PY_PKG_LFLAGS)" \
+	    $(SETUPTOOLS_ENV) \
 	    $(PYTHON) setup.py -q sdist
 
 $(top_builddir)/python-pkg/VERSION: VERSION

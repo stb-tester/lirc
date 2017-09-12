@@ -489,6 +489,11 @@ AC_ARG_VAR(HAVE_WORKING_POLL,[
 
 AC_ARG_VAR(SH_PATH, [On cross-compile: Path to shell, typically /bin/sh])
 
+AC_ARG_VAR(SETUPTOOLS_ENV,
+  [On cross-compile: Python setuptools wrapper environment variables]
+)
+
+
 suffix=$(echo "$VERSION" | sed 's/.*-//')
 AM_CONDITIONAL(DEVEL, [test x$suffix = xdevel])
 
