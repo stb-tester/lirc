@@ -8,6 +8,7 @@
  * Using LIRC_IRDB_CACHE_ID lirc now supports reproducible
    builds. See #301 and updated irdb-get(1) manpage.
  * lircd: Support for the GOLDSTAR flag in lircd.conf(5) is dropped.
+ * plugins: srm7500libusb: Major overhaul.
  * plugins:girs: Drop support for LIRC_SET_REC_TIMEOUT, add new
    driver option ending_timeout (#302).
 
