@@ -131,14 +131,14 @@ static const char* const help =
 	"Usage: lircd [options] <config-file>\n"
 	"\t -h --help\t\t\tDisplay this message\n"
 	"\t -v --version\t\t\tDisplay version\n"
-	"\t -O --options-file\t\tOptions file\n"
+	"\t -O --options-file\t\tOptions file path\n"
         "\t -i --immediate-init\t\tInitialize the device immediately at start\n"
 	"\t -n --nodaemon\t\t\tDon't fork to background\n"
 	"\t -p --permission=mode\t\tFile permissions for " LIRCD "\n"
 	"\t -H --driver=driver\t\tUse given driver (-H help lists drivers)\n"
 	"\t -d --device=device\t\tRead from given device\n"
 	"\t -U --plugindir=dir\t\tDir where drivers are loaded from\n"
-	"\t -l --listen[=[address:]port]\tListen for network connections\n"
+	"\t -l --listen[=[[address:]port]\tListen for network connections\n"
 	"\t -c --connect=host[:port]\tConnect to remote lircd server\n"
 	"\t -o --output=socket\t\tOutput socket filename\n"
 	"\t -P --pidfile=file\t\tDaemon pid file\n"
@@ -148,8 +148,8 @@ static const char* const help =
 	"\t -Y --dynamic-codes\t\tEnable dynamic code generation\n"
 	"\t -A --driver-options=key:value[|key:value...]\n"
 	"\t\t\t\t\tSet driver options\n"
-	"\t -e --effective-user=uid\t\tRun as uid after init as root\n"
-	"\t -R --repeat-max=limit\t\tallow at most this many repeats\n";
+	"\t -e --effective-user=uid\tRun as uid after init as root\n"
+	"\t -R --repeat-max=limit\t\tAllow at most this many repeats\n";
 
 
 static const struct option lircd_options[] = {
