@@ -403,7 +403,7 @@ static bool write_event(int fd, unsigned type, linux_input_code code, int val)
 
 
 /** Given a button, format and send struct input_events to /dev/uinput. */
-static void send_message(const struct options* opts, const char* button)
+static void send_message(const struct options* opts, const char* button, int reps)
 {
 	linux_input_code code;
 	bool is_release;
@@ -418,8 +418,9 @@ static void send_message(const struct options* opts, const char* button)
 		log_info("Dropping non-standard symbol %s", button);
 		return;
 	}
-	// event.value: 0 => release, 1 => press, 2 => autorepeat (not used).
-	const int value = is_release ? 0 : 1;
+	// event.value: 0 => release, 1 => press, 2 => repeat
+	//       reps: -1 => release, 0 => press, > 0 => repeat
+	const int value = reps + 1 > 2 ? 2 : reps + 1;
 	log_debug("Sending %s as %d:%d", button, code, value);
 
 	if (!write_event(opts->uinputfd, EV_KEY, code, value))
@@ -450,7 +451,7 @@ static void process_line(const struct options* opts, std::string line)
 	if (opts->disabled_path && opts->disabled_buttons.count(button) == 1)
 		log_debug("Skipping disabled key %s", button)
 	else
-		send_message(opts, button);
+		send_message(opts, button, reps);
 }
 
 
@@ -478,7 +479,7 @@ static void send_release_event(const struct options* opts)
 	if (last_button_press == "")
 		return;
 	std::string button_name = last_button_press + opts->release_suffix;
-	send_message(opts, button_name.c_str());
+	send_message(opts, button_name.c_str(), -1);
 	last_button_press = "";
 }
 
