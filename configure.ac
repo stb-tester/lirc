@@ -38,8 +38,10 @@ AC_CHECK_PROG([XSLTPROC],[xsltproc],[yes],[no])
 if test x$XSLTPROC != "xyes"; then
     AC_MSG_ERROR([xsltproc is required. It sometimes comes with libxml])
 fi
-AC_CHECK_PROG([MAN2HTML],[man2html],[yes],[no])
-AM_CONDITIONAL(HAVE_MAN2HTML, test x$MAN2HTML = xyes)
+AC_MSG_CHECKING([Checking for usable man2html])
+AM_CONDITIONAL(HAVE_MAN2HTML,[
+    test $(man2html -r -M index.html doc/man-source/irexec.1 2>/dev/null \
+           | wc -l) -gt 100])
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 LT_INIT([disable-static])
