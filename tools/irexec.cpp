@@ -82,9 +82,10 @@ static void run_command(const char* cmd)
 			      NULL
 			};
 			execvp(SH_PATH, vp);
-			/* not reached */
+			/* not reached, unless there was an error */
 			log_perror_err("execvp failed");
 			fputs("execvp failed\n", stderr);
+			exit(EXIT_FAILURE);
 		} else {
 			waitpid(pid2, NULL, WNOHANG);
 			exit(0);
