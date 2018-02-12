@@ -40,8 +40,9 @@ if test x$XSLTPROC != "xyes"; then
 fi
 AC_MSG_CHECKING([Checking for usable man2html])
 AM_CONDITIONAL(HAVE_MAN2HTML,[
-    test $(man2html -r -M index.html doc/man-source/irexec.1 2>/dev/null \
-           | wc -l) -gt 100])
+    man2html_cmd="man2html -r -M index.html doc/man-source/irexec.1"
+    test $($man2html_cmd 2>/dev/null | wc -l) -gt 100])
+AS_IF([test x$HAVE_MAN2HTML_TRUE = x],AC_MSG_RESULT([yes]),AC_MSG_RESULT([no]))
 AC_CHECK_PROG([DOXYGEN],[doxygen],[yes],[no])
 AM_CONDITIONAL(HAVE_DOXYGEN, test x$DOXYGEN = xyes)
 LT_INIT([disable-static])
