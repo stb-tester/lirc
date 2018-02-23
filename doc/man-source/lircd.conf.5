@@ -1,4 +1,4 @@
-.TH LIRCD.CONF "5" "Last change: Apr 2017" "lircd.conf @version@" "File Formats Manual"
+.TH LIRCD.CONF "5" "Last change: Feb 2018" "lircd.conf @version@" "File Formats Manual"
 .SH NAME
 lircd.conf \- lirc main configuration file
 .SH DESCRIPTION
@@ -159,7 +159,8 @@ Hexadecimal code indicating the sequence of ones and zeros immediately
 following the post signal.
 .TP 4
 .B pre <ppre> <spre>
-A pulse and space immediately following the pre_data.
+A pulse and space immediately following the pre_data, used as delimiter
+between \fIpre data\fR and \fIdata\fR.
 .TP 4
 .B post <ppost> <spost>
 A pulse and space immediately following the button code.
