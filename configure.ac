@@ -302,7 +302,7 @@ AC_CHECK_HEADERS(linux/i2c-dev.h,[
 )
 
 
-PKG_CHECK_MODULES([SYSTEMD],[libsystemd-daemon],,[true])
+PKG_CHECK_MODULES([SYSTEMD],[libsystemd],,[true])
 if test -n "$SYSTEMD_LIBS"; then
     CFLAGS="$CFLAGS $SYSTEMD_CFLAGS"
     AC_DEFINE(HAVE_SYSTEMD)
