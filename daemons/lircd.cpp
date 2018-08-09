@@ -2588,6 +2588,11 @@ int main(int argc, char** argv)
 	if (!nodaemon)
 		daemonize();
 
+#ifdef HAVE_SYSTEMD
+	/* Tell systemd that we started up correctly */
+	sd_notify(0, "READY=1");
+#endif
+
 	loop();
 
 	/* never reached */
