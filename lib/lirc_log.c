@@ -49,6 +49,7 @@ loglevel_t loglevel = LIRC_NOLOG;
 logchannel_t logged_channels = LOG_ALL;
 
 static int use_syslog = 1;
+static int use_stderr = 0;
 
 const char* syslogident = "lircd-" VERSION;
 const char* logfile = "syslog";
@@ -85,9 +86,9 @@ void lirc_log_set_file(const char* s)
 {
 	if (strcmp(s, "syslog") == 0) {
 		use_syslog = 1;
-	} else {
-		logfile = s;
+	} else if (strcmp(s, "stderr") == 0) {
 		use_syslog = 0;
+		use_stderr = 1;
 	}
 }
 
@@ -105,6 +106,8 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 			openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LOG_LOCAL0);
 		else
 			openlog(syslogident, LOG_CONS | LOG_PID, LOG_LOCAL0);
+	} else if (use_stderr) {
+		lf = stderr;
 	} else {
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
@@ -138,6 +141,9 @@ int lirc_log_close(void)
 	if (use_syslog) {
 		closelog();
 		return 0;
+	} else if (use_stderr) {
+		/* We didn't open stderr, so we shouldn't close it */
+		return 0;
 	} else if (lf) {
 		return fclose(lf);
 	} else {
@@ -152,6 +158,10 @@ int lirc_log_reopen(void)
 
 	if (use_syslog)
 		/* Don't need to do anything; this is syslogd's task */
+		return 0;
+
+	if (use_stderr)
+		/* We didn't open stderr, so we shouldn't reopen it */
 		return 0;
 
 	log_info("closing logfile");
