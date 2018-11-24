@@ -102,9 +102,9 @@ int lirc_log_open(const char* _progname, int _nodaemon, loglevel_t level)
 
 	if (use_syslog) {
 		if (nodaemon)
-			openlog(syslogident, LOG_CONS | LOG_PID | LOG_PERROR, LOG_LOCAL0);
+			openlog(syslogident, LOG_PID | LOG_PERROR, LOG_LOCAL0);
 		else
-			openlog(syslogident, LOG_CONS | LOG_PID, LOG_LOCAL0);
+			openlog(syslogident, LOG_PID, LOG_LOCAL0);
 	} else {
 		lf = fopen(logfile, "a");
 		if (lf == NULL) {
