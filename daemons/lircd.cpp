@@ -797,7 +797,7 @@ int add_peer_connection(const char* server_arg)
 	struct servent* service;
 	char server[strlen(server_arg) + 1];
 
-	strncpy(server, server_arg, sizeof(server) - 1);
+	strncpy(server, server_arg, sizeof(server));
 
 	if (peern < MAX_PEERS) {
 		peers[peern] = (struct peer_connection*) malloc(sizeof(
