@@ -229,7 +229,10 @@ class RawConnection(AbstractConnection):
                         "readline: no data within %f seconds" % timeout)
                 else:
                     return None
-            self._buffer += self._socket.recv(4096)
+            recv = self._socket.recv(4096)
+            if len(recv) == 0:
+                raise ConnectionResetError('Connection lost')
+            self._buffer += recv
         line, self._buffer = self._buffer.split(b'\n', 1)
         return line.decode('ascii', 'ignore')
 
