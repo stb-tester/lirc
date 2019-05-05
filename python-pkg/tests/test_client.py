@@ -35,15 +35,24 @@ class TimeoutException(Exception):
 
 @contextmanager
 def event_loop():
+
+    ex = []
+    def exception_handler(loop, context):
+        nonlocal ex
+        ex.append(context['exception'])
+
     loop = asyncio.get_event_loop()
     if loop.is_closed():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+    loop.set_exception_handler(exception_handler)
 
     try:
         yield loop
     finally:
         loop.close()
+        if len(ex):
+            raise Exception('Unhandled exceptions in async code') from ex[0]
 
 def _wait_for_socket():
     ''' Wait until the ncat process has setup the lircd.socket dummy. '''
