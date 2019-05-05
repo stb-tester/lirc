@@ -193,6 +193,21 @@ class ReceiveTests(unittest.TestCase):
                                  lircrc_path='lircrc.conf') as conn:
                 self.assertRaises(lirc.TimeoutException, conn.readline, 0.1)
 
+    def testReceiveDisconnect(self):
+        ''' Generate a ConnectionResetError if connection is lost '''
+
+        if os.path.exists(_SOCKET):
+            os.unlink(_SOCKET)
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"sleep 1"']
+        with subprocess.Popen(cmd) as child:
+            _wait_for_socket()
+            with LircdConnection('foo',
+                                 socket_path=_SOCKET,
+                                 lircrc_path='lircrc.conf') as conn:
+                with self.assertRaises(ConnectionResetError):
+                    with self.assertCompletedBeforeTimeout(3):
+                        conn.readline(2)
+
     def testReceiveAsyncDisconnectDontBlock(self):
         ''' Do not block the loop if connection is lost '''
 
