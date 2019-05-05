@@ -208,7 +208,7 @@ class ReceiveTests(unittest.TestCase):
             with LircdConnection('foo',
                                  socket_path=_SOCKET,
                                  lircrc_path='lircrc.conf') as conn:
-                with event_loop() as loop:
+                with event_loop(suppress=[ConnectionResetError, TimeoutException]) as loop:
                     with self.assertCompletedBeforeTimeout(3):
                         with suppress(TimeoutError):
                             loop.run_until_complete(asyncio.wait_for(readline(conn), 2))
