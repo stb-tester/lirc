@@ -87,7 +87,10 @@ class AsyncConnection(object):
 
     async def __anext__(self):
         ''' Implement async iterator.next(). '''
-        return await self._queue.get()
+        line = await self._queue.get()
+        if isinstance(line, Exception):
+            raise StopAsyncIteration
+        return line
 
     async def __aenter__(self):
         ''' Implement "async with". '''
