@@ -248,6 +248,26 @@ class ReceiveTests(unittest.TestCase):
                         with self.assertRaises(ConnectionResetError):
                             loop.run_until_complete(readline(conn))
 
+    def testReceiveAsyncExceptionEndsIterator(self):
+        ''' Async iterator should stop if an exception occurs in the select loop '''
+
+        async def get_lines(raw_conn):
+            async with AsyncConnection(raw_conn, loop) as conn:
+                async for keypress in conn:
+                    pass
+
+        if os.path.exists(_SOCKET):
+            os.unlink(_SOCKET)
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"sleep 1"']
+        with subprocess.Popen(cmd) as child:
+            _wait_for_socket()
+            with LircdConnection('foo',
+                                 socket_path=_SOCKET,
+                                 lircrc_path='lircrc.conf') as conn:
+                with event_loop() as loop:
+                    with self.assertCompletedBeforeTimeout(2):
+                        self.assertIsNone(loop.run_until_complete(get_lines(conn)))
+
 class CommandTests(unittest.TestCase):
     ''' Test Command, Reply, ReplyParser and some Commands samples. '''
 
