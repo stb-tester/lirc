@@ -57,9 +57,13 @@ class AsyncConnection(object):
 
         def read_from_fd():
             ''' Read data from the connection fd and put into queue. '''
-            line = self._conn.readline(0)
-            if line:
-                asyncio.ensure_future(self._queue.put(line))
+            try:
+                line = self._conn.readline(0)
+                if line:
+                    asyncio.ensure_future(self._queue.put(line))
+            except Exception as e:
+                self.close()
+                self._queue.put_nowait(e)
 
         self._conn = connection
         self._loop = loop
