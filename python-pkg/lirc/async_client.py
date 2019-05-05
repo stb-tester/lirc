@@ -76,7 +76,10 @@ class AsyncConnection(object):
 
     async def readline(self) -> str:
         ''' Asynchronous get next line from the connection. '''
-        return await self._queue.get()
+        line = await self._queue.get()
+        if isinstance(line, Exception):
+            raise line
+        return line
 
     def __aiter__(self):
         ''' Return async iterator. '''

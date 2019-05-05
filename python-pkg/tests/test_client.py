@@ -225,7 +225,7 @@ class ReceiveTests(unittest.TestCase):
                                  lircrc_path='lircrc.conf') as conn:
                 with event_loop(suppress=[ConnectionResetError, TimeoutException]) as loop:
                     with self.assertCompletedBeforeTimeout(3):
-                        with suppress(TimeoutError):
+                        with suppress(TimeoutError, ConnectionResetError):
                             loop.run_until_complete(asyncio.wait_for(readline(conn), 2))
 
     def testReceiveAsyncExceptionReraises(self):
@@ -243,7 +243,7 @@ class ReceiveTests(unittest.TestCase):
             with LircdConnection('foo',
                                  socket_path=_SOCKET,
                                  lircrc_path='lircrc.conf') as conn:
-                with event_loop() as loop:
+                with event_loop(suppress=[ConnectionResetError, TimeoutException]) as loop:
                     with self.assertCompletedBeforeTimeout(2):
                         with self.assertRaises(ConnectionResetError):
                             loop.run_until_complete(readline(conn))
