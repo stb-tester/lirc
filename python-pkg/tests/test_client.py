@@ -17,7 +17,8 @@ from lirc import RawConnection, LircdConnection, CommandConnection
 from lirc import AsyncConnection
 import lirc
 
-from contextlib import contextmanager
+import signal
+from contextlib import contextmanager, suppress
 
 _PACKET_ONE = '0123456789abcdef 00 KEY_1 mceusb'
 _LINE_0 = '0123456789abcdef 00 KEY_1 mceusb'
@@ -27,6 +28,9 @@ _SOCAT = subprocess.check_output('which socat', shell=True) \
 _EXPECT = subprocess.check_output('which expect', shell=True) \
     .decode('ascii').strip()
 
+
+class TimeoutException(Exception):
+    pass
 
 @contextmanager
 def event_loop():
@@ -52,6 +56,29 @@ def _wait_for_socket():
 
 class ReceiveTests(unittest.TestCase):
     ''' Test various Connections. '''
+
+    @contextmanager
+    def assertCompletedBeforeTimeout(self, timeout):
+
+        triggered = False
+
+        def handle_timeout(signum, frame):
+            nonlocal triggered
+            triggered = True
+            for task in asyncio.Task.all_tasks():
+                task.cancel()
+            raise TimeoutException()
+
+        try:
+            signal.signal(signal.SIGALRM, handle_timeout)
+            signal.alarm(timeout)
+            with suppress(TimeoutException, asyncio.CancelledError):
+                yield
+        finally:
+            signal.signal(signal.SIGALRM, signal.SIG_DFL)
+            signal.alarm(0)
+            if triggered:
+                raise self.failureException('Code block did not complete before the {} seconds timeout'.format(timeout)) from None
 
     def testReceiveOneRawLine(self):
         ''' Receive a single, raw line. '''
