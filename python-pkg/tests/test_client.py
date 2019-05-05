@@ -19,6 +19,7 @@ import lirc
 
 import signal
 from contextlib import contextmanager, suppress
+from concurrent.futures import TimeoutError
 
 _PACKET_ONE = '0123456789abcdef 00 KEY_1 mceusb'
 _LINE_0 = '0123456789abcdef 00 KEY_1 mceusb'
@@ -170,6 +171,25 @@ class ReceiveTests(unittest.TestCase):
                                  lircrc_path='lircrc.conf') as conn:
                 self.assertRaises(lirc.TimeoutException, conn.readline, 0.1)
 
+    def testReceiveAsyncDisconnectDontBlock(self):
+        ''' Do not block the loop if connection is lost '''
+
+        async def readline(raw_conn):
+            async with AsyncConnection(raw_conn, loop) as conn:
+                return await conn.readline()
+
+        if os.path.exists(_SOCKET):
+            os.unlink(_SOCKET)
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"sleep 1"']
+        with subprocess.Popen(cmd) as child:
+            _wait_for_socket()
+            with LircdConnection('foo',
+                                 socket_path=_SOCKET,
+                                 lircrc_path='lircrc.conf') as conn:
+                with event_loop() as loop:
+                    with self.assertCompletedBeforeTimeout(3):
+                        with suppress(TimeoutError):
+                            loop.run_until_complete(asyncio.wait_for(readline(conn), 2))
 
 class CommandTests(unittest.TestCase):
     ''' Test Command, Reply, ReplyParser and some Commands samples. '''
