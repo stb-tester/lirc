@@ -17,6 +17,8 @@ from lirc import RawConnection, LircdConnection, CommandConnection
 from lirc import AsyncConnection
 import lirc
 
+from contextlib import contextmanager
+
 _PACKET_ONE = '0123456789abcdef 00 KEY_1 mceusb'
 _LINE_0 = '0123456789abcdef 00 KEY_1 mceusb'
 _SOCKET = 'lircd.socket'
@@ -25,6 +27,18 @@ _SOCAT = subprocess.check_output('which socat', shell=True) \
 _EXPECT = subprocess.check_output('which expect', shell=True) \
     .decode('ascii').strip()
 
+
+@contextmanager
+def event_loop():
+    loop = asyncio.get_event_loop()
+    if loop.is_closed():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    try:
+        yield loop
+    finally:
+        loop.close()
 
 def _wait_for_socket():
     ''' Wait until the ncat process has setup the lircd.socket dummy. '''
@@ -88,7 +102,7 @@ class ReceiveTests(unittest.TestCase):
     def testReceive1AsyncLines(self):
         ''' Receive 1000 lines using the async interface. '''
 
-        async def get_lines(raw_conn, count):
+        async def get_lines(raw_conn, count, loop):
 
             nonlocal lines
             async with AsyncConnection(raw_conn, loop) as conn:
@@ -106,12 +120,11 @@ class ReceiveTests(unittest.TestCase):
                               stdout = subprocess.PIPE,
                               stderr = subprocess.STDOUT) as child:
             _wait_for_socket()
-            loop = asyncio.get_event_loop()
             with LircdConnection('foo',
                                  socket_path=_SOCKET,
                                  lircrc_path='lircrc.conf') as conn:
-                loop.run_until_complete(get_lines(conn, 1000))
-            loop.close()
+                with event_loop() as loop:
+                    loop.run_until_complete(get_lines(conn, 1000, loop))
 
         self.assertEqual(len(lines), 1000)
         self.assertEqual(lines[0], 'foo-cmd')
