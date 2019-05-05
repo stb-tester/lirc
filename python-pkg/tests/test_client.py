@@ -34,11 +34,24 @@ class TimeoutException(Exception):
     pass
 
 @contextmanager
-def event_loop():
+def event_loop(suppress=[]):
+
+    if isinstance(suppress, type) and issubclass(suppress, Exception):
+        suppress = [suppress]
+    elif isinstance(suppress, list):
+        for ex_type in suppress:
+            if not isinstance(ex_type, type) or not issubclass(ex_type, Exception):
+                raise ValueError('suppress is not an array of exception types')
+    else:
+        raise ValueError('suppress is not an exception type')
 
     ex = []
     def exception_handler(loop, context):
         nonlocal ex
+        nonlocal suppress
+        for ex_type in suppress:
+            if isinstance(context['exception'], ex_type):
+                return
         ex.append(context['exception'])
 
     loop = asyncio.get_event_loop()
