@@ -228,6 +228,26 @@ class ReceiveTests(unittest.TestCase):
                         with suppress(TimeoutError):
                             loop.run_until_complete(asyncio.wait_for(readline(conn), 2))
 
+    def testReceiveAsyncExceptionReraises(self):
+        ''' Async readline should reraise if an exception occurs during select loop '''
+
+        async def readline(raw_conn):
+            async with AsyncConnection(raw_conn, loop) as conn:
+                return await conn.readline()
+
+        if os.path.exists(_SOCKET):
+            os.unlink(_SOCKET)
+        cmd = [_SOCAT, 'UNIX-LISTEN:' + _SOCKET, 'EXEC:"sleep 1"']
+        with subprocess.Popen(cmd) as child:
+            _wait_for_socket()
+            with LircdConnection('foo',
+                                 socket_path=_SOCKET,
+                                 lircrc_path='lircrc.conf') as conn:
+                with event_loop() as loop:
+                    with self.assertCompletedBeforeTimeout(2):
+                        with self.assertRaises(ConnectionResetError):
+                            loop.run_until_complete(readline(conn))
+
 class CommandTests(unittest.TestCase):
     ''' Test Command, Reply, ReplyParser and some Commands samples. '''
 
