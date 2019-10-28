@@ -32,6 +32,7 @@ def lircd(tmpdir):
     p = subprocess.Popen(
         [_find_file("../daemons/lircd"),
          "--nodaemon",
+         "--loglevel=trace",
          "--plugindir", _find_file("../plugins/.libs"),
          "--pidfile", tmpdir.join("lircd.pid").strpath,
          "--driver=file",
@@ -69,14 +70,45 @@ def lircd(tmpdir):
      (2, 5, 6),
     ])
 @pytest.mark.parametrize("has_release_mask", [1, 0])
-def test_release_mask(lircd, has_release_mask, min_repeats_in_config,
-                      irsend_count, expected_signals):
+def test_release_mask_send_once(lircd, has_release_mask, min_repeats_in_config,
+                                irsend_count, expected_signals):
 
     if has_release_mask:
         remote = "has_release_%i_repeats" % min_repeats_in_config
     else:
         remote = "no_release_%i_repeats" % min_repeats_in_config
     lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
+    expected = (single_signal * expected_signals +
+                release_signal * has_release_mask)
+    actual = open(lircd.output).read()
+    assert expected_signals + has_release_mask == sum(
+        1 for line in actual.split("\n") if line == "space 90000")
+    assert expected == actual
+
+
+@pytest.mark.parametrize(
+    "min_repeats_in_config,sleep,expected_signals",
+    [(0, 0, 1),
+     (0, 0.1, 2),
+     (0, 0.2, 3),
+     (1, 0, 2),
+     (1, 0.1, 2),
+     (1, 0.2, 3),
+     (5, 0, 6),
+    ])
+@pytest.mark.parametrize("has_release_mask", [1, 0])
+def test_release_mask_send_start(lircd, min_repeats_in_config, sleep,
+                                 expected_signals, has_release_mask):
+
+    if has_release_mask:
+        remote = "has_release_%i_repeats" % min_repeats_in_config
+    else:
+        remote = "no_release_%i_repeats" % min_repeats_in_config
+    expires = time.time() + 0.1 * (expected_signals + has_release_mask)
+    lircd.irsend("SEND_START", remote, "KEY_1")
+    time.sleep(sleep)
+    lircd.irsend("SEND_STOP", remote, "KEY_1")
+    time.sleep(expires - time.time())  # wait for lirc to finish sending
     expected = (single_signal * expected_signals +
                 release_signal * has_release_mask)
     actual = open(lircd.output).read()
