@@ -68,14 +68,19 @@ def lircd(tmpdir):
      (2, 2, 3),
      (2, 5, 6),
     ])
-def test_release_mask(lircd, min_repeats_in_config, irsend_count,
-                      expected_signals):
+@pytest.mark.parametrize("has_release_mask", [1, 0])
+def test_release_mask(lircd, has_release_mask, min_repeats_in_config,
+                      irsend_count, expected_signals):
 
-    remote = "no_release_%i_repeats" % min_repeats_in_config
+    if has_release_mask:
+        remote = "has_release_%i_repeats" % min_repeats_in_config
+    else:
+        remote = "no_release_%i_repeats" % min_repeats_in_config
     lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
-    expected = single_signal * expected_signals
+    expected = (single_signal * expected_signals +
+                release_signal * has_release_mask)
     actual = open(lircd.output).read()
-    assert expected_signals == sum(
+    assert expected_signals + has_release_mask == sum(
         1 for line in actual.split("\n") if line == "space 90000")
     assert expected == actual
 
@@ -122,3 +127,8 @@ single_signal = dedent("""\
     pulse 167
     space 90000
     """)
+
+release_signal = "\n".join(
+    single_signal.split("\n")[:19] +
+    ["space 611"] +
+    single_signal.split("\n")[20:])
