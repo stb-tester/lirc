@@ -1619,8 +1619,12 @@ static int send_core(int fd, char* message, char* arguments, int once)
 		return send_error(fd, message, "transmission failed\n");
 	gettimeofday(&remote->last_send, NULL);
 	remote->last_code = code;
-	if (once)
+	if (once) {
 		remote->repeat_countdown = max(remote->repeat_countdown, reps);
+		if (remote->release_mask) {
+			remote->repeat_countdown++;
+		}
+	}
 	else
 		/* you've been warned, now we have a limit */
 		remote->repeat_countdown = repeat_max;
@@ -1678,6 +1682,14 @@ static int send_stop(int fd, char* message, char* arguments)
 			/* we still have some repeats to do */
 			repeat_remote->repeat_countdown =
 				repeat_remote->min_repeat - done;
+		}
+		else {
+			repeat_remote->repeat_countdown = 0;
+		}
+		if (repeat_remote->release_mask) {
+			repeat_remote->repeat_countdown++;
+		}
+		if (repeat_remote->repeat_countdown > 0) {
 			return send_success(fd, message);
 		}
 		repeat_timer.it_value.tv_sec = 0;
