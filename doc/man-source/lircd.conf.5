@@ -177,6 +177,11 @@ The mask is applied to the concatenated value of pre data - data - post_data.
 .B repeat_mask <mask>
 Mask defines which bits are inverted for repeats.
 .TP 4
+.B release_mask <mask>
+If specified and non-zero, an extra "key released" signal is sent after all
+the repeat signals. This is the same as a repeat signal, but with the bits
+specified in release_mask inverted.
+.TP 4
 .B frequency <hertz>
 Remote carrier frequency, defaults to 38000.
 .TP 4
