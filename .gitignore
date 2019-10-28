@@ -82,3 +82,6 @@ libtool
 paths.h
 stamp-h1
 
+# tests
+.cache
+__pycache__
