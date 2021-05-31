@@ -170,9 +170,6 @@ AH_TEMPLATE([HAVE_SYSTEMD],
 AH_TEMPLATE([HAVE_VSYSLOG],
         [define if you have vsyslog( prio, fmt, va_arg )])
 
-AH_TEMPLATE([HAVE_KERNEL_LIRC_H],
-        [define if kernel-headers contains lirc.]h)
-
 AH_TEMPLATE([LIRC_HAVE_DEVFS],
         [Define if devfs support is present in current kernel])
 
@@ -252,9 +249,6 @@ dnl check for kernel-headers
 AC_CHECK_HEADERS([linux/input.h],
                  [:],
                  [AC_MSG_WARN([Cannot find kernel headers])])
-
-dnl check if kernel-headers has lirc.h
-AC_CHECK_HEADERS([linux/lirc.h], [AC_DEFINE(HAVE_KERNEL_LIRC_H)])
 
 dnl creative_infracd driver requires linux scsi api
 AC_CHECK_HEADERS(scsi/sg.h,[ AC_DEFINE(HAVE_SCSI) ])
