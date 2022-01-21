@@ -4,12 +4,16 @@
 
 import glob
 import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 def main():
     configs = {}
     for path in glob.glob('*.conf'):
         with open(path) as f:
-            cf = yaml.load(f.read())
+            cf = yaml.load(f.read(), Loader = Loader)
         if cf['config']['id'] + '.conf' != path:
             print( "Id: %s, path: %s" % (cf['config']['id'], path))
         configs[cf['config']['id']] = cf['config']

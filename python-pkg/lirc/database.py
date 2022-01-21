@@ -44,6 +44,10 @@ import sys
 
 try:
     import yaml
+    try:
+        from yaml import CLoader as Loader, CDumper as Dumper
+    except ImportError:
+        from yaml import Loader, Dumper
 except ImportError:
     _YAML_MSG = '''
 "Cannot import the yaml library. Please install the python3
@@ -66,7 +70,7 @@ def _load_kerneldrivers(configdir):
     '''
 
     with open(os.path.join(configdir, "kernel-drivers.yaml")) as f:
-        cf = yaml.load(f.read())
+        cf = yaml.load(f.read(), Loader = Loader)
     drivers = cf['drivers'].copy()
     for driver in cf['drivers']:
         if driver == 'default':
@@ -132,14 +136,14 @@ class Database(object):
             yamlpath = configdir
         db = {}
         with open(os.path.join(yamlpath, "confs_by_driver.yaml")) as f:
-            cf = yaml.load(f.read())
+            cf = yaml.load(f.read(), Loader = Loader)
         db['lircd_by_driver'] = cf['lircd_by_driver'].copy()
         db['lircmd_by_driver'] = cf['lircmd_by_driver'].copy()
 
         db['kernel-drivers'] = _load_kerneldrivers(configdir)
         db['drivers'] = db['kernel-drivers'].copy()
         with open(os.path.join(yamlpath, "drivers.yaml")) as f:
-            cf = yaml.load(f.read())
+            cf = yaml.load(f.read(), Loader = Loader)
         db['drivers'].update(cf['drivers'].copy())
         for key, d in db['drivers'].items():
             d['id'] = key
@@ -158,7 +162,7 @@ class Database(object):
         configs = {}
         for path in glob.glob(configdir + '/*.conf'):
             with open(path) as f:
-                cf = yaml.load(f.read())
+                cf = yaml.load(f.read(), Loader = Loader)
             configs[cf['config']['id']] = cf['config']
         db['configs'] = configs
         self.db = db
