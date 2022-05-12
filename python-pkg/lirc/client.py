@@ -219,10 +219,10 @@ class RawConnection(AbstractConnection):
     def readline(self, timeout: float = None) -> str:
         ''' Implements AbstractConnection.readline(). '''
         if timeout:
-            start = time.clock()
+            start = time.perf_counter()
         while b'\n' not in self._buffer:
             ready = self._select.select(
-                start + timeout - time.clock() if timeout else timeout)
+                start + timeout - time.perf_counter() if timeout else timeout)
             if ready == []:
                 if timeout:
                     raise TimeoutException(
