@@ -485,6 +485,7 @@ int default_ioctl(unsigned int cmd, void* arg)
 }
 
 
+#ifdef HAVE_LIBUDEV_H
 static void list_device(struct udev_device* device, glob_t* glob)
 {
 	char buff[256];
@@ -507,8 +508,6 @@ static void list_device(struct udev_device* device, glob_t* glob)
 	glob_t_add_path(glob, buff);
 }
 
-
-#ifdef HAVE_LIBUDEV_H
 static void list_devices(glob_t* glob)
 {
 	struct udev* udev;
