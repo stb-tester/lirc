@@ -488,8 +488,7 @@ static int setup_hardware(void)
 
 	if (curr_driver->fd != -1 && curr_driver->drvctl_func) {
 		if ((curr_driver->features & LIRC_CAN_SET_REC_CARRIER)
-		    || (curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT)
-		    || (curr_driver->features & LIRC_CAN_SET_REC_FILTER)) {
+		    || (curr_driver->features & LIRC_CAN_SET_REC_TIMEOUT)) {
 				ret = setup_frequency() && setup_timeout();
 		}
 	}
@@ -2179,13 +2178,6 @@ void loop(void)
 			const char* remote_name;
 			const char* button_name;
 			int reps;
-
-			if (curr_driver->drvctl_func
-			    && (curr_driver->features & LIRC_CAN_NOTIFY_DECODE)
-			) {
-				curr_driver->drvctl_func(DRVCTL_NOTIFY_DECODE,
-							 NULL);
-			}
 
 			get_release_data(&remote_name, &button_name, &reps);
 

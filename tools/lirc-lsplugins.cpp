@@ -57,8 +57,7 @@
 	"#    c: LIRC_CAN_SET_SEND_CARRIER\n" \
 	"#    d: LIRC_CAN_SET_SEND_DUTY_CYCLE\n" \
 	"#    t: LIRC_CAN_SET_TRANSMITTER_MASK\n" \
-	"#    C: LIRC_CAN_MEASURE_CARRIER\n" \
-	"#    D: LIRC_CAN_NOTIFY_DECODE\n"
+	"#    C: LIRC_CAN_MEASURE_CARRIER\n"
 
 const struct option options[] = {
 	{ "plugindir",	  required_argument, NULL, 'U' },
@@ -291,7 +290,7 @@ static void format_features(struct driver* hw, line_t* line)
 	char buff[256];
 
 	snprintf(buff, sizeof(buff),
-		 "%c%c%c%c%c%c%c%c%c%c%c%c%c ",
+		 "%c%c%c%c%c%c%c%c%c%c%c%c ",
 		 get(LIRC_CAN_SEND_RAW, 'R', hw),
 		 get(LIRC_CAN_SEND_PULSE, 'P', hw),
 		 get(LIRC_CAN_SEND_MODE2, 'M', hw),
@@ -303,8 +302,7 @@ static void format_features(struct driver* hw, line_t* line)
 		 get(LIRC_CAN_SET_SEND_CARRIER, 'c', hw),
 		 get(LIRC_CAN_SET_SEND_DUTY_CYCLE, 'd', hw),
 		 get(LIRC_CAN_SET_TRANSMITTER_MASK, 't', hw),
-		 get(LIRC_CAN_MEASURE_CARRIER, 'C', hw),
-		 get(LIRC_CAN_NOTIFY_DECODE, 'D', hw)
+		 get(LIRC_CAN_MEASURE_CARRIER, 'C', hw)
 		 );
 	line->features = strdup(buff);
 }
