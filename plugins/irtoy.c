@@ -50,7 +50,12 @@ static const struct drv_enum_udev_what UDEV_KEYS[] = {
 	{0, 0}
 };
 
-const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x24, 0x25, 0x26, 0x03 };
+const unsigned char IRTOY_COMMAND_TXSTART[] = { 0x03 };
+const unsigned char IRTOY_COMMAND24[] = { 0x24 };
+const unsigned char IRTOY_COMMAND25[] = { 0x25 };
+const unsigned char IRTOY_COMMAND26[] = { 0x26 };
+
+
 static const unsigned char cmdIOwrite = 0x30; // Sets the IO pins to ground (0) or +5volt (1).
 static const unsigned char cmdIOdirection = 0x31; // Sets the IO pins to input (1) or output (0).
 #define IRTOY_COMMAND_RESET 0
@@ -379,7 +384,8 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		log_error("irtoy_enter_samplemode: couldn't write command");
 		return 0;
 	}
-
+	//delay needed before reading the command result from Irtoy / Irdroid
+	usleep(100000);
 	res = read_with_timeout(dev->fd, buf,
 				IRTOY_LEN_SAMPLEMODEPROTO,
 				IRTOY_TIMEOUT_SMODE_ENTER);
@@ -387,6 +393,28 @@ static int irtoy_enter_samplemode(irtoy_t* dev)
 		log_error("irtoy_enter_samplemode: Can't read command result");
 		return 0;
 	}
+	// See gist https://gist.github.com/Irdroid/384d5144d24cba7c94e58dde75388968
+	res = write(dev->fd, IRTOY_COMMAND24, sizeof(IRTOY_COMMAND24));
+
+	if (res != sizeof(IRTOY_COMMAND24)) {
+		log_error("irtoy_send: couldn't write command 24");
+		return 0;
+	}
+	usleep(20000);
+	res = write(dev->fd, IRTOY_COMMAND25, sizeof(IRTOY_COMMAND25));
+
+        if (res != sizeof(IRTOY_COMMAND25)) {
+                log_error("irtoy_send: couldn't write command 25");
+                return 0;
+        }
+	usleep(20000);
+	res = write(dev->fd, IRTOY_COMMAND26, sizeof(IRTOY_COMMAND26));
+
+        if (res != sizeof(IRTOY_COMMAND26)) {
+                log_error("irtoy_send: couldn't write command 26");
+                return 0;
+        }
+	usleep(20000);
 
 	buf[IRTOY_LEN_SAMPLEMODEPROTO] = 0;
 	if (buf[0] != IRTOY_REPLY_SAMPLEMODEPROTO) {
