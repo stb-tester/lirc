@@ -95,6 +95,7 @@ struct tag_irtoy_t {
 	int	protoVersion;
 	int	fd;
 	int	awaitingNewSig;
+	int	receivedLongPausesInARow;
 	int	pulse;
 };
 
@@ -115,7 +116,7 @@ static int decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
 static int drvctl_func(unsigned int cmd, void* arg);
 
 static lirc_t readdata(lirc_t timeout);
-
+static int irtoy_enter_samplemode(irtoy_t* dev);
 
 const struct driver hw_usbirtoy = {
 	.name		= "irtoy",
@@ -284,8 +285,22 @@ static lirc_t irtoy_read(irtoy_t* dev, lirc_t timeout)
 	log_trace2("read_raw %02x%02x", dur[0], dur[1]);
 	if (dur[0] == 0xff && dur[1] == 0xff) {
 		dev->awaitingNewSig = 1;
+		dev->receivedLongPausesInARow++;
+
+		if (dev->receivedLongPausesInARow == 3) {
+			// According to IRToy documentation, when device sends three long pauses in a row, it
+			// signals buffer overflow (We were not reading it fast enough to process IR data in real time)
+			// When this happens, IRToy resets to IRMan mode. We need to put it back into sampling mode.
+			log_warn("Irtoy got buffer overflow. Resetting to sample mode...");
+			irtoy_enter_samplemode(dev);
+
+		}
+		log_trace("Got %d Long Pauses in a row so far", dev->receivedLongPausesInARow);
 		return IRTOY_LONGSPACE;
 	}
+
+	dev->receivedLongPausesInARow = 0;
+
 	data = (lirc_t)(IRTOY_UNIT * (double)(256 * dur[0] + dur[1]));
 	log_trace2("read_raw %d", data);
 
@@ -443,6 +458,7 @@ static irtoy_t* irtoy_hw_init(int fd)
 	dev->awaitingNewSig = 1;
 	dev->fd = fd;
 	dev->pulse = 1;
+	dev->receivedLongPausesInARow = 0;
 
 	irtoy_readflush(dev, IRTOY_TIMEOUT_FLUSH);
 
