@@ -110,12 +110,17 @@ static inline ir_code reverse(ir_code data, int bits)
 
 static inline int is_pulse(lirc_t data)
 {
-	return data & PULSE_BIT ? 1 : 0;
+	return ((data & LIRC_MODE2_MASK)==LIRC_MODE2_PULSE) ? 1 : 0;
 }
 
 static inline int is_space(lirc_t data)
 {
-	return !is_pulse(data);
+	return ((data & LIRC_MODE2_MASK)==LIRC_MODE2_SPACE) ? 1 : 0;
+}
+
+static inline int is_timeout(lirc_t data)
+{
+	return ((data & LIRC_MODE2_MASK)==LIRC_MODE2_TIMEOUT) ? 1 : 0;
 }
 
 static inline int has_repeat(const struct ir_remote* remote)

@@ -1398,9 +1398,16 @@ enum lengths_status get_lengths(struct lengths_state* state,
 		state->retval = 0;
 		return STS_LEN_TIMEOUT;
 	}
+	if (is_timeout(state->data)) {
+		return STS_LEN_AGAIN;
+	}
 	state->count++;
 	if (state->mode == MODE_GET_GAP) {
-		state->sum += state->data & PULSE_MASK;
+		if (state->sum != 0 || is_pulse(state->data)) {
+			state->sum += state->data & PULSE_MASK;
+		}else{
+			return STS_LEN_AGAIN;
+		}
 		if (state->average == 0 && is_space(state->data)) {
 			if (state->data > 100000) {
 				state->sum = 0;
@@ -1472,6 +1479,10 @@ enum lengths_status get_lengths(struct lengths_state* state,
 		state->keypresses = lastmaxcount;
 		return STS_LEN_AGAIN;
 	} else if (state->mode == MODE_HAVE_GAP) {
+		if (state->count==1 && is_space(state->data))  {
+			state->count = 0;
+			return STS_LEN_AGAIN;
+		}
 		if (state->count <= MAX_SIGNALS) {
 			signals[state->count - 1] = state->data & PULSE_MASK;
 		} else {
@@ -1510,7 +1521,7 @@ enum lengths_status get_lengths(struct lengths_state* state,
 			/* such long pulses may appear with
 			 * crappy hardware (receiver? / remote?)
 			 */
-			else {
+			else if(is_pulse(state->data)) {
 				remote->gap = 0;
 				return STS_LEN_NO_GAP_FOUND;
 			}
@@ -1811,22 +1822,24 @@ ssize_t raw_read(void* buffer, size_t size, unsigned int timeout_us)
 
 static int raw_data_ok(struct button_state* btn_state)
 {
-	int r;
+	int r = 0;
 	int ref;
 
-	if (!is_space(btn_state->data)) {
+	if (is_pulse(btn_state->data)) {
 		r = 0;
-	} else if (is_const(&remote)) {
-		if (remote.gap > btn_state->sum) {
-			ref = (remote.gap - btn_state->sum);
-			ref *= (100 - remote.eps);
-			ref /= 100;
+	} else if (is_space(btn_state->data)) {
+		if (is_const(&remote)) {
+			if (remote.gap > btn_state->sum) {
+				ref = (remote.gap - btn_state->sum);
+				ref *= (100 - remote.eps);
+				ref /= 100;
+			} else {
+				ref = 0;
+			}
+			r = btn_state->data > ref;
 		} else {
-			ref = 0;
+			r = btn_state->data > (remote.gap * (100 - remote.eps)) / 100;
 		}
-		r = btn_state->data > ref;
-	} else {
-		r = btn_state->data > (remote.gap * (100 - remote.eps)) / 100;
 	}
 	return r;
 }
@@ -1970,7 +1983,7 @@ enum button_status record_buttons(struct button_state*	btn_state,
 				btn_state->data = remote.gap;
 			}
 			if (btn_state->count == 0) {
-				if (!is_space(btn_state->data)
+				if (is_pulse(btn_state->data)
 				    || btn_state->data <
 				    remote.gap - remote.gap * remote.eps /
 				    100) {

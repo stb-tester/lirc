@@ -326,18 +326,38 @@ unsigned int get_codelength(int fd, int use_raw_access)
 void print_mode2_data(unsigned int data)
 {
 	static int bitno = 1;
+	static bool leading_space = true;
+	unsigned int msg = data & LIRC_MODE2_MASK;
+	unsigned int value = data & LIRC_VALUE_MASK;
+
+	if (leading_space && msg == LIRC_MODE2_SPACE) {
+		return;
+	} else {
+		leading_space = (msg == LIRC_MODE2_TIMEOUT);
+	}
 
 	switch (opt_dmode) {
 	case 0:
-		printf("%s %u\n", (
-			       data & PULSE_BIT) ? "pulse" : "space",
-		       (uint32_t)(data & PULSE_MASK));
+		switch (msg) {
+		case LIRC_MODE2_PULSE:
+			printf("pulse %u\n", value);
+			break;
+		case LIRC_MODE2_SPACE:
+			printf("space %u\n", value);
+			break;
+		case LIRC_MODE2_TIMEOUT:
+			printf("timeout %u\n", value);
+			break;
+		case LIRC_MODE2_FREQUENCY:
+			printf("carrier %u\n", value);
+			break;
+		}
 		break;
 	case 1: {
 		/* print output like irrecord raw config file data */
-		printf(" %8u", (uint32_t)data & PULSE_MASK);
+		printf(" %8u", value);
 		++bitno;
-		if (data & PULSE_BIT) {
+		if (is_pulse(data)) {
 			if ((bitno & 1) == 0)
 				/* not in expected order */
 				fputs("-pulse", stdout);
@@ -345,11 +365,11 @@ void print_mode2_data(unsigned int data)
 			if (bitno & 1)
 				/* not in expected order */
 				fputs("-space", stdout);
-			if (((data & PULSE_MASK) > opt_gap) || (bitno >= 6)) {
+			if ((value > opt_gap) || (bitno >= 6)) {
 				/* real long space or more
 				 * than 6 codes, start new line */
 				puts("");
-				if ((data & PULSE_MASK) > opt_gap)
+				if (value > opt_gap)
 					puts("");
 				bitno = 0;
 			}
@@ -357,12 +377,12 @@ void print_mode2_data(unsigned int data)
 		break;
 	}
 	case 2:
-		if ((data & PULSE_MASK) > opt_gap) {
+		if (value > opt_gap) {
 			fputs("_\n\n_", stdout);
 		} else {
 			printf("%.*s",
-			       ((data & PULSE_MASK) + t_div / 2) / t_div,
-			       (data & PULSE_BIT) ?
+			       (value + t_div / 2) / t_div,
+			       is_pulse(data) ?
 			       "------------" : "____________");
 		}
 		break;
