@@ -67,7 +67,7 @@ class AsyncConnection(object):
 
         self._conn = connection
         self._loop = loop
-        self._queue = asyncio.Queue(loop=self._loop)
+        self._queue = asyncio.Queue()
         self._loop.add_reader(self._conn.fileno(), read_from_fd)
 
     def close(self):
