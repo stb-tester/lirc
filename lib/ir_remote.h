@@ -123,6 +123,11 @@ static inline int is_timeout(lirc_t data)
 	return ((data & LIRC_MODE2_MASK)==LIRC_MODE2_TIMEOUT) ? 1 : 0;
 }
 
+static inline int is_overflow(lirc_t data)
+{
+	return ((data & LIRC_MODE2_MASK)==LIRC_MODE2_OVERFLOW) ? 1 : 0;
+}
+
 static inline int has_repeat(const struct ir_remote* remote)
 {
 	if (remote->prepeat > 0 && remote->srepeat > 0)

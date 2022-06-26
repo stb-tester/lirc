@@ -351,6 +351,9 @@ void print_mode2_data(unsigned int data)
 		case LIRC_MODE2_FREQUENCY:
 			printf("carrier %u\n", value);
 			break;
+		case LIRC_MODE2_OVERFLOW:
+			printf("overflow\n");
+			break;
 		}
 		break;
 	case 1: {

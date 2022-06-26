@@ -1398,7 +1398,7 @@ enum lengths_status get_lengths(struct lengths_state* state,
 		state->retval = 0;
 		return STS_LEN_TIMEOUT;
 	}
-	if (is_timeout(state->data)) {
+	if (is_timeout(state->data) || is_overflow(state->data)) {
 		return STS_LEN_AGAIN;
 	}
 	state->count++;
