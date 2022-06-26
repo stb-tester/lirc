@@ -34,11 +34,7 @@ extern "C" {
 #include <linux/types.h>
 #endif
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 /**
  * Denotes an internal coded representation for an IR transmission.

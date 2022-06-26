@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS        = subdir-objects
 include                 ../pylint.mak
 
 AM_CPPFLAGS             = -I$(top_builddir)/lib -I$(top_builddir) -I$(top_srcdir)/lib \
-                           @X_CFLAGS@  @kernel_header_flags@
+                          -I$(top_srcdir)/include @X_CFLAGS@
 AM_CPPFLAGS             += -g -Wall -Wp,-D_FORTIFY_SOURCE=2
 AM_LDFLAGS              =  -L../lib -llirc -llirc_client
 

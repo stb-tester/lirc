@@ -13,11 +13,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 #include "irpipe.h"
 

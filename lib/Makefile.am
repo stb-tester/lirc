@@ -11,7 +11,7 @@ BUILT_SOURCES               = input_map.inc lirc/input_map.inc config.h \
 
 AM_CPPFLAGS                 = -I$(top_srcdir) -I$(top_srcdir)/lib \
                               -Wall \
-                              -Wp,-D_FORTIFY_SOURCE=2 @kernel_header_flags@
+                              -Wp,-D_FORTIFY_SOURCE=2 -I$(top_srcdir)/include
 
 lib_LTLIBRARIES             = liblirc.la liblirc_client.la liblirc_driver.la \
                               libirrecord.la

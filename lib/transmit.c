@@ -22,11 +22,7 @@
  * signals and send the signal chain at a single blow */
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 #include "lirc/lirc_log.h"
 #include "lirc/transmit.h"

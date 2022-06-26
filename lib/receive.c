@@ -23,11 +23,7 @@
 #include <poll.h>
 #include <stdint.h>
 
-#ifdef HAVE_KERNEL_LIRC_H
-#include <linux/lirc.h>
-#else
 #include "media/lirc.h"
-#endif
 
 #include "lirc/driver.h"
 #include "lirc/lirc_log.h"
