@@ -151,6 +151,7 @@ static int visit_rc(const char* rc_dir, const char* device)
 		return -1;
 	}
 	r = read(fd, buff, sizeof(buff));
+	close(fd);
 	if (r < 0) {
 		log_debug("Cannot read from %s", path);
 		return -1;
