@@ -32,6 +32,7 @@ import os
 import os.path
 import selectors
 import socket
+import sys
 import time
 
 import lirc.config
@@ -53,7 +54,10 @@ def get_default_socket_path() -> str:
     if 'LIRC_SOCKET_PATH' in os.environ:
         return os.environ['LIRC_SOCKET_PATH']
     path = lirc.config.SYSCONFDIR + '/lirc/lirc_options.conf'
-    parser = configparser.SafeConfigParser()
+    if sys.version_info < (3, 2):
+        parser = configparser.SafeConfigParser()
+    else:
+        parser = configparser.ConfigParser()
     try:
         parser.read(path)
     except configparser.Error:

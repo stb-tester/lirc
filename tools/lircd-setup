@@ -34,7 +34,10 @@ def main():
     else:
         sys.stderr.write(_HELP + '\n')
         sys.exit(1)
-    parser = configparser.SafeConfigParser()
+    if sys.version_info < (3, 2):
+        parser = configparser.SafeConfigParser()
+    else:
+        parser = configparser.ConfigParser()
     try:
         found = parser.read(path)
     except configparser.Error:
