@@ -436,6 +436,7 @@ static void wait_ready_to_send(void) {
 	int err;
 	sem_t *sem = NULL;
 	while(1) {
+	    umask(0);
 		sem = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0777, 0);
 		if (sem)
 			break;
