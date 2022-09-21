@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/sysmacros.h>
 #include <sys/un.h>
 
 #include <include/media/lirc.h>
