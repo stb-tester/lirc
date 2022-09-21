@@ -17,9 +17,12 @@
 #endif
 
 #include <dirent.h>
+#include <err.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +32,7 @@
 #include <sys/socket.h>
 #include <sys/sysmacros.h>
 #include <sys/un.h>
+#include <time.h>
 
 #include <include/media/lirc.h>
 #include "lirc_driver.h"
@@ -426,12 +430,53 @@ int default_deinit(void)
 	return 1;
 }
 
+const char* SEM_NAME = "/lirc-vidcap-sem";
+
+static void wait_ready_to_send(void) {
+	int err;
+	sem_t *sem = NULL;
+	while(1) {
+		sem = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0777, 0);
+		if (sem)
+			break;
+		if (errno == EEXIST) {
+			warnx("semaphore %s already exists: Removing", SEM_NAME);
+			/* Maybe this semaphore is left over from a previous lirc invocation
+			 */
+			err = sem_unlink(SEM_NAME);
+			if (err) {
+				warn("sem_unlink failed - can't create semaphore - ignoring");
+				return;
+			}
+		} else {
+			warnx("sem_open(O_CREAT | O_EXCL) failed - can't create semaphore - ignoring");
+			return;
+		}
+	};
+
+	if (sem) {
+		struct timespec abs_timeout = {0};
+		err = clock_gettime(CLOCK_REALTIME, &abs_timeout);
+		if (err) {
+			warn("clock_gettime");
+		}
+		abs_timeout.tv_sec += 1;
+		err = sem_timedwait(sem, &abs_timeout);
+		if (err)
+			warn("sem_timedwait failed: ");
+	}
+	err = sem_unlink(SEM_NAME);
+	if (err)
+		warn("sem_unlink failed: ");
+}
+
 static int write_send_buffer(int lirc)
 {
 	if (send_buffer_length() == 0) {
 		log_trace("nothing to send");
 		return 0;
 	}
+	wait_ready_to_send();
 	return write(lirc, send_buffer_data(), send_buffer_length() * sizeof(lirc_t));
 }
 
