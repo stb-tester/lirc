@@ -1,4 +1,8 @@
 0.11.0-devel
+ * Vendor latest linux/lirc.h and handle lirc overflows.
+ * mode2: support lirc overflows, carrier reports, and timeouts
+ * Lots of fixes for python 3.
+ * irdroid: fix hang after transmit
  * The deprecated lircd --uinput option is dropped. Use
    lircd-uinput(8) instead.
  * The deprecated generation of lirc.hwdb is dropped. Use
@@ -11,6 +15,17 @@
  * plugins: srm7500libusb: Major overhaul.
  * plugins:girs: Drop support for LIRC_SET_REC_TIMEOUT, add new
    driver option ending_timeout (#302).
+
+0.10.1 10/9/17
+ * mode2: Fix inconsistent loglevel/debug option (#307).
+ * build: install media/lirc.h (Debian BTS #872074).
+ * build: Fix make "always build all" error - c6eb8ec.
+ * plugins: devinput: Fix glob "no match" error - 14685b2.
+
+0.10.0 12/8/17
+ * lib/curl_poll.h: Fix header guard build error on müsl libc.
+ * Build: Mute libtool when V=0, typo.
+ * Update driver version info.
 
 0.10.0-rc3 21/6/17
  * lircmd: Fix bogus, excessive logging using --uinput (#295).
