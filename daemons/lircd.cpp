@@ -30,6 +30,7 @@
 # include <config.h>
 #endif
 
+#include <err.h>
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -293,6 +294,10 @@ static int useuinput = 0;
 
 static sig_atomic_t term = 0, hup = 0, alrm = 0;
 static int termsig;
+
+/* Wall clock time at which the next repeat should begin. {0, 0} means no
+ * repeat scheduled: */
+static timeval repeat_deadline = {0, 0};
 
 static __u32 setup_min_freq = 0, setup_max_freq = 0;
 static lirc_t setup_max_gap = 0;
@@ -1211,30 +1216,38 @@ void sigalrm(int sig)
 }
 
 
-static void schedule_repeat_timer (struct timespec* last)
+static void schedule_repeat_timer (struct timeval* last)
 {
-	unsigned long secs;
-	lirc_t usecs, gap, diff;
-	struct timespec current;
-	struct itimerval repeat_timer;
-	gap = send_buffer_sum() + repeat_remote->min_remaining_gap;
-	clock_gettime (CLOCK_MONOTONIC, &current);
-	secs = current.tv_sec - last->tv_sec;
-	diff = 1000000 * secs + (current.tv_nsec - last->tv_nsec) / 1000;
-	usecs = (diff < gap ? gap - diff : 0);
-	if (usecs < 10)
-		usecs = 10;
-	log_trace("alarm in %lu usecs", (unsigned long)usecs);
-	repeat_timer.it_value.tv_sec = 0;
-	repeat_timer.it_value.tv_usec = usecs;
-	repeat_timer.it_interval.tv_sec = 0;
-	repeat_timer.it_interval.tv_usec = 0;
+	lirc_t gap_us = send_buffer_sum() + repeat_remote->min_remaining_gap;
+	log_trace("scheduling repeat at %lu usecs", (unsigned long)gap_us);
 
-	setitimer(ITIMER_REAL, &repeat_timer, NULL);
+	struct timeval gap_tv = {gap_us / 1000000, gap_us % 1000000};
+
+	if (timerisset(&repeat_deadline))
+		log_warn("Overriding already set repeat timer");
+	timeradd(last, &gap_tv, &repeat_deadline);
 }
 
-void dosigalrm(int sig)
+static void clear_repeat_timer (void) {
+	timerclear(&repeat_deadline);
+}
+
+static void poll_repeat(void)
 {
+	if (repeat_deadline.tv_sec == 0)
+		/* No deadline set */
+		return;
+
+	struct timeval now;
+	if (gettimeofday(&now, NULL) != 0)
+		err(1, "gettimeofday");
+
+	if (timercmp(&now, &repeat_deadline, <))
+		/* Deadline still in the future */
+		return;
+
+	clear_repeat_timer();
+
 	if (repeat_remote->last_code != repeat_code) {
 		/* we received a different code from the original
 		 * remote control we could repeat the wrong code so
@@ -1256,10 +1269,9 @@ void dosigalrm(int sig)
 	if (repeat_code->next == NULL
 	    || (repeat_code->transmit_state != NULL && repeat_code->transmit_state->next == NULL))
 		repeat_remote->repeat_countdown--;
-	struct timespec before_send;
-	clock_gettime (CLOCK_MONOTONIC, &before_send);
+
 	if (send_ir_ncode(repeat_remote, repeat_code, 1) && repeat_remote->repeat_countdown > 0) {
-		schedule_repeat_timer(&before_send);
+		schedule_repeat_timer(&now);
 		return;
 	}
 	repeat_remote = NULL;
@@ -1583,8 +1595,8 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	if (has_toggle_bit_mask(remote))
 		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
 	code->transmit_state = NULL;
-	struct timespec before_send;
-	clock_gettime (CLOCK_MONOTONIC, &before_send);
+	struct timeval before_send;
+	gettimeofday (&before_send, NULL);
 	if (!send_ir_ncode(remote, code, 1))
 		return send_error(fd, message, "transmission failed\n");
 	gettimeofday(&remote->last_send, NULL);
@@ -1625,7 +1637,6 @@ static int send_stop(int fd, char* message, char* arguments)
 {
 	struct ir_remote* remote;
 	struct ir_ncode* code;
-	struct itimerval repeat_timer;
 	int err;
 
 	if (parse_rc(fd, message, arguments, &remote, &code, 0, 0, &err) == 0)
@@ -1655,12 +1666,8 @@ static int send_stop(int fd, char* message, char* arguments)
 		if (repeat_remote->repeat_countdown > 0) {
 			return send_success(fd, message);
 		}
-		repeat_timer.it_value.tv_sec = 0;
-		repeat_timer.it_value.tv_usec = 0;
-		repeat_timer.it_interval.tv_sec = 0;
-		repeat_timer.it_interval.tv_usec = 0;
 
-		setitimer(ITIMER_REAL, &repeat_timer, NULL);
+		clear_repeat_timer ();
 
 		repeat_remote->toggle_mask_state = 0;
 		repeat_remote = NULL;
@@ -1909,25 +1916,13 @@ void free_old_remotes(void)
 			if (found != NULL) {
 				code = get_code_by_name(found, repeat_code->name);
 				if (code != NULL) {
-					struct itimerval repeat_timer;
-
-					repeat_timer.it_value.tv_sec = 0;
-					repeat_timer.it_value.tv_usec = 0;
-					repeat_timer.it_interval.tv_sec = 0;
-					repeat_timer.it_interval.tv_usec = 0;
-
 					found->last_code = code;
 					found->last_send = repeat_remote->last_send;
 					found->toggle_bit_mask_state = repeat_remote->toggle_bit_mask_state;
 					found->min_remaining_gap = repeat_remote->min_remaining_gap;
 					found->max_remaining_gap = repeat_remote->max_remaining_gap;
-
-					setitimer(ITIMER_REAL, &repeat_timer, &repeat_timer);
-					/* "atomic" (shouldn't be necessary any more) */
 					repeat_remote = found;
 					repeat_code = code;
-					/* end "atomic" */
-					setitimer(ITIMER_REAL, &repeat_timer, NULL);
 					found = NULL;
 				}
 			} else {
@@ -1976,10 +1971,7 @@ static int mywaitfordata(unsigned long maxusec)
 				dosighup(SIGHUP);
 				hup = 0;
 			}
-			if (alrm) {
-				dosigalrm(SIGALRM);
-				alrm = 0;
-			}
+			poll_repeat();
 			memset(&poll_fds, 0, sizeof(poll_fds));
 			for (i = 0; i < (int)POLLFDS_SIZE; i += 1)
 				poll_fds.byindex[i].fd = -1;
@@ -2058,15 +2050,39 @@ static int mywaitfordata(unsigned long maxusec)
 						tv = gap;
 				}
 			}
-			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
-				ret = poll((struct pollfd *) &poll_fds.byindex,
+			if (timerisset(&repeat_deadline)) {
+				struct timeval now;
+				if (gettimeofday(&now, NULL) != 0)
+					err(1, "gettimeofday");
+				timeval remaining = {0};
+				if (timercmp(&now, &repeat_deadline, <)) {
+					timersub(&repeat_deadline, &now, &remaining);
+				} else {
+					/* 1 here because timerisset(0) will return false */
+					remaining.tv_usec = 1;
+				}
+				if (!timerisset(&tv) || timercmp(&remaining, &tv, <)) {
+					tv = remaining;
+				}
+			}
+			if (timerisset(&tv) || timerisset(&release_time) || reconnect) {
+				struct timespec poll_timeout;
+				poll_timeout.tv_sec = tv.tv_sec;
+				poll_timeout.tv_nsec = tv.tv_usec * 1000;
+				log_trace("poll timeout: %lus %luns",
+					(unsigned long) poll_timeout.tv_sec,
+					(unsigned long) poll_timeout.tv_nsec);
+				ret = ppoll((struct pollfd *) &poll_fds.byindex,
 					    POLLFDS_SIZE,
-					    tv.tv_sec * 1000 + tv.tv_usec / 1000);
-			else
-				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, -1);
+					    &poll_timeout,
+					    NULL);
+			} else {
+				log_trace("poll timeout: forever");
+				ret = ppoll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, NULL, NULL);
+			}
 
 			if (ret == -1 && errno != EINTR) {
-				log_perror_err("poll()() failed");
+				log_perror_err("ppoll() failed");
 				raise(SIGTERM);
 				continue;
 			}
