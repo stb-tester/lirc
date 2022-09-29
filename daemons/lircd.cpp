@@ -30,6 +30,7 @@
 # include <config.h>
 #endif
 
+#include <err.h>
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1966,9 +1967,21 @@ static int mywaitfordata(unsigned long maxusec)
 	struct timeval tv, start, now, timeout, release_time;
 	loglevel_t oldlevel;
 
+	sigset_t listening_signals, prev_sigmask;
+	sigemptyset(&listening_signals);
+	sigaddset(&listening_signals, SIGALRM);
+	sigaddset(&listening_signals, SIGTERM);
+	sigaddset(&listening_signals, SIGHUP);
+
 	while (1) {
 		do {
-			/* handle signals */
+			/* handle signals - we need to block them before checking the flags
+			 * to avoid a race where the signal arrives between the check and the
+			 * poll() */
+			if (sigprocmask(SIG_BLOCK, &listening_signals, &prev_sigmask) != 0) {
+				warn("sigprocmask(SIG_BLOCK) failed: ");
+				sigemptyset(&prev_sigmask);
+			}
 			if (term)
 				dosigterm(termsig);
 			/* never reached */
@@ -2058,12 +2071,22 @@ static int mywaitfordata(unsigned long maxusec)
 						tv = gap;
 				}
 			}
-			if (timerisset(&tv) || timerisset(&release_time) || reconnect)
-				ret = poll((struct pollfd *) &poll_fds.byindex,
+			if (timerisset(&tv) || timerisset(&release_time) || reconnect) {
+				struct timespec poll_timeout;
+				poll_timeout.tv_sec = tv.tv_sec;
+				poll_timeout.tv_nsec = tv.tv_usec * 1000;
+
+				ret = ppoll((struct pollfd *) &poll_fds.byindex,
 					    POLLFDS_SIZE,
-					    tv.tv_sec * 1000 + tv.tv_usec / 1000);
-			else
-				ret = poll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, -1);
+					    &poll_timeout,
+						&listening_signals);
+			} else
+				ret = ppoll((struct pollfd*)&poll_fds.byindex, POLLFDS_SIZE, NULL, &listening_signals);
+
+			int errno_saved = errno;
+			if (sigprocmask(SIG_SETMASK, &prev_sigmask, NULL) != 0)
+				warn("sigprocmask(SIG_SETMASK) failed: ");
+			errno = errno_saved;
 
 			if (ret == -1 && errno != EINTR) {
 				log_perror_err("poll()() failed");
