@@ -181,12 +181,10 @@ int tira_setup_sixbytes(void)
 //as PULSE/SPACE data
 int child_process(int pipe_w, int oldprotocol)
 {
-	alarm(0);
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	unsigned char tirabuffer[64];
 	int tirabuflen = 0;

@@ -362,12 +362,10 @@ static void usb_read_loop(int fd)
 	int inited = 0;
 	int err = 0;
 
-	alarm(0);
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	for (;; ) {
 		char buf[CODE_BYTES];

@@ -230,12 +230,10 @@ static void usb_read_loop(int fd)
 	char rcv_code[6];
 	int ptr = 0, count;
 
-	alarm(0);
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	for (;; ) {
 		char buf[16];   // CODE_BYTES

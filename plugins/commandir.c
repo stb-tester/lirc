@@ -678,12 +678,10 @@ static void commandir_child_init(void)
 
 	first_commandir_device = NULL;
 
-	alarm(0);
 	signal(SIGTERM, shutdown_usb);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, shutdown_usb);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	usb_init();
 	hardware_scan();

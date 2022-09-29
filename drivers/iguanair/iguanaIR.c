@@ -47,12 +47,10 @@ static void recv_loop(int fd, int notify)
 {
 	int conn;
 
-	alarm(0);
 	signal(SIGTERM, quitHandler);
 	/*    signal(SIGPIPE, SIG_DFL); */
 	signal(SIGINT, quitHandler);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	/* notify parent by closing notify */
 	close(notify);

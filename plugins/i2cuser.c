@@ -241,12 +241,10 @@ static void i2cuser_read_loop(int out_fd)
 	ir_code last_code = 0;
 	double last_time = 0.0;
 
-	alarm(0);
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	for (;; ) {
 		unsigned char buf[3], code_buf[CODE_SIZE];

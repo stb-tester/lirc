@@ -292,7 +292,7 @@ static int allow_simulate = 0;
 static int userelease = 0;
 static int useuinput = 0;
 
-static sig_atomic_t term = 0, hup = 0, alrm = 0;
+static sig_atomic_t term = 0, hup = 0;
 static int termsig;
 
 /* Wall clock time at which the next repeat should begin. {0, 0} means no
@@ -618,7 +618,6 @@ void dosigterm(int sig)
 {
 	int i;
 
-	signal(SIGALRM, SIG_IGN);
 	log_notice("caught signal");
 
 	if (free_remotes != NULL)
@@ -1209,13 +1208,6 @@ int send_error(int fd, char* message, const char* format_str, ...)
 	return 1;
 }
 
-
-void sigalrm(int sig)
-{
-	alrm = 1;
-}
-
-
 static void schedule_repeat_timer (struct timeval* last)
 {
 	lirc_t gap_us = send_buffer_sum() + repeat_remote->min_remaining_gap;
@@ -1673,7 +1665,6 @@ static int send_stop(int fd, char* message, char* arguments)
 		repeat_remote = NULL;
 		repeat_code = NULL;
 		/* clin!=0, so we don't have to deinit hardware */
-		alrm = 0;
 		return send_success(fd, message);
 	} else {
 		return send_error(fd, message, "not repeating\n");
@@ -2485,11 +2476,6 @@ int main(int argc, char** argv)
 	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
 	sigaction(SIGTERM, &act, NULL);
 	sigaction(SIGINT, &act, NULL);
-
-	act.sa_handler = sigalrm;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = SA_RESTART;      /* don't fiddle with EINTR */
-	sigaction(SIGALRM, &act, NULL);
 
 	act.sa_handler = dosigterm;
 	sigemptyset(&act.sa_mask);

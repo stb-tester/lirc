@@ -309,8 +309,6 @@ static int srm7500_init(void)
 		struct sigaction act;
 		int status = 1;
 
-		alarm(0);
-
 		srm7500_terminate = 0;
 
 		act.sa_handler = srm7500_sigterm;
@@ -321,7 +319,6 @@ static int srm7500_init(void)
 
 		signal(SIGPIPE, SIG_DFL);
 		signal(SIGHUP, SIG_IGN);
-		signal(SIGALRM, SIG_IGN);
 
 		close(pipe_fd[0]);
 		while (!srm7500_terminate) {

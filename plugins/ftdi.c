@@ -204,12 +204,10 @@ static void child_process(int fd_rx2main, int fd_main2tx, int fd_tx2main)
 	int ret = 0;
 	struct ftdi_context ftdic;
 
-	alarm(0);
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGHUP, SIG_IGN);
-	signal(SIGALRM, SIG_IGN);
 
 	ftdi_init(&ftdic);
 
