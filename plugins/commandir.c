@@ -392,7 +392,7 @@ const struct driver hw_commandir = {
 	.drvctl_func	= commandir_ioctl,
 	.readdata	= commandir_readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available.",
 	.device_hint    = "drvctl",
 };

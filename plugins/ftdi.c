@@ -917,7 +917,7 @@ const struct driver hw_ftdi = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= hwftdi_readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/ftdi.html",
 	.device_hint    = "drvctl",
 };
@@ -940,7 +940,7 @@ const struct driver hw_ftdix = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/ftdix.html",
 	.device_hint    = "drvctl",
 };

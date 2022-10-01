@@ -135,7 +135,7 @@ const struct driver hw_usbirtoy = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/irtoy.html",
 	.device_hint    = "drvctl"
 };

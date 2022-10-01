@@ -63,7 +63,7 @@ struct driver hw_logitech = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "/dev/tty[0-9]*",
 };

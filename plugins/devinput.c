@@ -84,7 +84,7 @@ const struct driver hw_devinput = {
 	.drvctl_func	= drvctl,
 	.readdata	= NULL,
 	.api_version	= 4,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/devinput.html",
 	.device_hint    = "drvctl"
 };

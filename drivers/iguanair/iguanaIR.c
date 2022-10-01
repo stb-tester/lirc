@@ -356,7 +356,7 @@ const struct driver hw_iguanaIR = {
 	.drvctl_func	= iguana_ioctl,
 	.readdata	= readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/iguanair.html",
 	.device_hint    = "/var/run/iguanaIR/*",
 };

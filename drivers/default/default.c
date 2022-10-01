@@ -72,7 +72,7 @@ static const const struct driver hw_default = {
 	.drvctl_func	=	default_ioctl,
 	.readdata	=	default_readdata,
 	.api_version	=	2,
-	.driver_version = 	"0.11.0",
+	.driver_version = 	"0.10.2",
 	.info		=	"No info available"
 };
 

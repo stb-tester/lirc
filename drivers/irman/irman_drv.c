@@ -64,7 +64,7 @@ const struct driver hw_irman = {
 	.drvctl_func	= NULL,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "See file://" PLUGINDOCS "/irman.html",
 	.device_hint    = "/dev/tty[0-9]*",
 };

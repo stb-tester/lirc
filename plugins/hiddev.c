@@ -59,7 +59,7 @@ const struct driver hw_dvico = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl"
 };
@@ -100,7 +100,7 @@ const struct driver hw_bw6130 = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };
@@ -122,7 +122,7 @@ const struct driver hw_asusdh = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };
@@ -146,7 +146,7 @@ const struct driver hw_sb0540 = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };
@@ -170,7 +170,7 @@ const struct driver hw_macmini = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };
@@ -194,7 +194,7 @@ const struct driver hw_samsung = {
 	.drvctl_func	= NULL,
 	.drvctl_func	= drvctl_func,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };
@@ -218,7 +218,7 @@ const struct driver hw_sonyir = {
 	.drvctl_func	= drvctl_func,
 	.readdata	= NULL,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "drvctl",
 };

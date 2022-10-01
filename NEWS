@@ -1,4 +1,4 @@
-0.11.0-devel
+0.10.2-devel
  * Vendor latest linux/lirc.h and handle lirc overflows.
  * mode2: support lirc overflows, carrier reports, and timeouts
  * Lots of fixes for python 3.

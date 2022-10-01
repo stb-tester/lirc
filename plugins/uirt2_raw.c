@@ -86,7 +86,7 @@ const struct driver hw_uirt2_raw = {
 	.drvctl_func	= NULL,
 	.readdata	= uirt2_raw_readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "/dev/tty[0-9]*",
 };
@@ -108,7 +108,7 @@ const struct driver hw_usb_uirt_raw = {
 	.drvctl_func	= NULL,
 	.readdata	= uirt2_raw_readdata,
 	.api_version	= 3,
-	.driver_version = "0.11.0",
+	.driver_version = "0.10.2",
 	.info		= "No info available",
 	.device_hint    = "/dev/tty[0-9]*",
 };
