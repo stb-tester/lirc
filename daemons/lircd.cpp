@@ -2078,9 +2078,7 @@ static int mywaitfordata(uint32_t maxusec)
 						tv = gap;
 				}
 			}
-			if (timerisset(&tv) || timerisset(&release_time)
-			    || reconnect
-			) {
+			if (timerisset(&tv) || reconnect) {
 				ret = curl_poll((
 					struct pollfd *) &poll_fds.byindex,
 					POLLFDS_SIZE,
