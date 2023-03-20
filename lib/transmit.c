@@ -30,6 +30,7 @@
 
 #include "lirc/lirc_log.h"
 #include "lirc/transmit.h"
+#include "stdint.h"
 
 static const logchannel_t logchannel = LOG_LIB;
 
@@ -253,6 +254,7 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 			send_space(remote->szero + nibble * remote->sone);
 			data >>= 4;
 		}
+		send_pulse(remote->pzero);
 		return;
 	}
 
@@ -436,6 +438,22 @@ init_send_loop:
 			if (repeat && remote->repeat_countdown == 0)
 				next_code ^= remote->release_mask;
 
+			if (repeat && is_xmp(remote)) {
+				uint32_t bb, csum = 0;
+
+				next_code ^= 0x00800000;
+
+				/* Replace checksum */
+				bb = next_code & 0xf0ffffff;
+				for (i = 0; i < 8; i++) {
+					csum += bb & 0xf;
+					bb >>= 4;
+				}
+				csum = (256 - csum) & 0xf;
+				next_code &= 0xfffffffff0ffffff;
+				next_code |= csum << 24;
+			}
+
 			send_code(remote, next_code, repeat);
 			if (!sim && has_toggle_mask(remote)) {
 				remote->toggle_mask_state++;
@@ -491,8 +509,6 @@ init_send_loop:
 			code->transmit_state = code->next;
 		} else {
 			code->transmit_state = code->transmit_state->next;
-			if (is_xmp(remote) && code->transmit_state == NULL)
-				code->transmit_state = code->next;
 		}
 	}
 	if ((remote->repeat_countdown > 0 || code->transmit_state != NULL)
