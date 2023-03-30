@@ -1298,12 +1298,13 @@ int parse_rc(int fd,
 	name = strtok(arguments, WHITE_SPACE);
 	if (name == NULL)
 		goto arg_check;
-	*remote = get_ir_remote(remotes, name);
-	if (*remote == NULL)
-		return send_error(fd, message, "unknown remote: \"%s\"\n", name);
 	command = strtok(NULL, WHITE_SPACE);
 	if (command == NULL)
 		goto arg_check;
+
+	*remote = get_ir_remote(remotes, name, command);
+	if (*remote == NULL)
+		return send_error(fd, message, "unknown remote: \"%s\"\n", name);
 	*code = get_code_by_name(*remote, command);
 	if (*code == NULL)
 		return send_error(fd, message, "unknown command: \"%s\"\n", command);
@@ -1323,9 +1324,9 @@ int parse_rc(int fd,
 	if (strtok(NULL, WHITE_SPACE) != NULL)
 		return send_error(fd, message, "bad send packet (trailing ws)\n");
 arg_check:
-	if (n > 0 && *remote == NULL)
+	if (name == NULL)
 		return send_error(fd, message, "remote missing\n");
-	if (n > 1 && *code == NULL)
+	if (command == NULL)
 		return send_error(fd, message, "code missing\n");
 	*err = 0;
 	return 1;
@@ -1873,7 +1874,7 @@ void free_old_remotes(void)
 	if (last_remote != NULL) {
 		if (is_in_remotes(free_remotes, last_remote)) {
 			log_info("last_remote found");
-			found = get_ir_remote(remotes, last_remote->name);
+			found = get_ir_remote(remotes, last_remote->name, last_remote->last_code->name);
 			if (found != NULL) {
 				code = get_code_by_name(found, last_remote->last_code->name);
 				if (code != NULL) {
@@ -1903,7 +1904,7 @@ void free_old_remotes(void)
 			scan_remotes = scan_remotes->next;
 		}
 		if (found != NULL) {
-			found = get_ir_remote(remotes, repeat_remote->name);
+			found = get_ir_remote(remotes, repeat_remote->name, repeat_code->name);
 			if (found != NULL) {
 				code = get_code_by_name(found, repeat_code->name);
 				if (code != NULL) {

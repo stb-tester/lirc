@@ -456,7 +456,8 @@ const struct ir_remote* is_in_remotes(const struct ir_remote*	remotes,
 
 /** Return ir_remote with given name in remotes list, or NULL if not found. */
 struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
-				const char*		name);
+				const char*		name,
+				const char*		command);
 
 void get_frequency_range(const struct ir_remote*	remotes,
 			 unsigned int*			min_freq,

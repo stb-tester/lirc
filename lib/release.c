@@ -176,7 +176,7 @@ const char* release_map_remotes(struct ir_remote* old, struct ir_remote* new, co
 		release_remote2 = NULL;
 	}
 	if (release_remote && is_in_remotes(old, release_remote)) {
-		remote = get_ir_remote(new, release_remote->name);
+		remote = get_ir_remote(new, release_remote->name, release_ncode->name);
 		if (remote)
 			ncode = get_code_by_name(remote, release_ncode->name);
 		if (remote && ncode) {

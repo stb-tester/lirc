@@ -53,6 +53,8 @@ static const char* const PACKET_EOF = "0000000008000000 00 __EOF lirc\n";
 /** Const dummy remote used for lirc internal decoding. */
 static struct ir_remote lirc_internal_remote = { "lirc" };
 
+static struct ir_remote empty_any_remote = { "ANY" };
+
 struct ir_remote* decoding = NULL;
 
 struct ir_remote* last_remote = NULL;
@@ -248,7 +250,8 @@ const struct ir_remote* is_in_remotes(const struct ir_remote*	remotes,
 
 
 struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
-				const char*		name)
+				const char*		name,
+				const char*		command)
 {
 	const struct ir_remote* all;
 
@@ -256,12 +259,21 @@ struct ir_remote* get_ir_remote(const struct ir_remote* remotes,
 	all = remotes;
 	if (strcmp(name, "lirc") == 0)
 		return &lirc_internal_remote;
-	while (all) {
-		if (strcasecmp(all->name, name) == 0)
-			return (struct ir_remote*)all;
-		all = all->next;
+	else if (strcmp(name, "ANY") == 0) {
+		while (all) {
+			if (get_code_by_name(all, command))
+				return (struct ir_remote*)all;
+			all = all->next;
+		}
+		return &empty_any_remote;
+	} else {
+		while (all) {
+			if (strcasecmp(all->name, name) == 0)
+				return (struct ir_remote*)all;
+			all = all->next;
+		}
+		return NULL;
 	}
-	return NULL;
 }
 
 
