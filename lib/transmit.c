@@ -246,7 +246,7 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 
 			if (i == 32) {
 				send_pulse(remote->pzero);
-				send_space(13000);
+				send_space(remote->stwo ? remote->stwo : 13000);
 			}
 
 			nibble = reverse(data & 0xf, 4);
