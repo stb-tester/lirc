@@ -1314,6 +1314,10 @@ read_config_recursive(FILE* f, const char* name, int depth)
 			}
 		}
 		calculate_signal_lengths(rem);
+		if (rem->flags & XMP && rem->ptrail == 0) {
+		    /* Backwards compat */
+		    rem->ptrail = rem->pzero;
+		}
 		rem = rem->next;
 	}
 

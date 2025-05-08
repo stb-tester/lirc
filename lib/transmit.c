@@ -254,7 +254,6 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 			send_space(remote->szero + nibble * remote->sone);
 			data >>= 4;
 		}
-		send_pulse(remote->pzero);
 		return;
 	}
 
