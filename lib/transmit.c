@@ -203,9 +203,18 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 {
 	int i;
 	int all_bits = bit_count(remote);
-	int toggle_bit_mask_bits = bits_set(remote->toggle_bit_mask);
 	ir_code mask;
 
+	if (has_toggle_bit_mask(remote)) {
+		ir_code shift = all_bits - done - bits;
+		ir_code toggle = (remote->toggle_bit_mask >> shift) & gen_mask(bits);
+		ir_code state = (remote->toggle_bit_mask_state >> shift) & gen_mask(bits);
+		if (bits_set(remote->toggle_bit_mask) == 1)
+			/* backwards compatibility: set bit from state */
+			data = (data & ~toggle) | (state & toggle);
+		else
+			data ^= state & toggle;
+	}
 	data = reverse(data, bits);
 	if (is_rcmm(remote)) {
 		mask = 1 << (all_bits - 1 - done);
@@ -259,17 +268,6 @@ static void send_data(struct ir_remote* remote, ir_code data, int bits, int done
 
 	mask = ((ir_code)1) << (all_bits - 1 - done);
 	for (i = 0; i < bits; i++, mask >>= 1) {
-		if (has_toggle_bit_mask(remote) && mask & remote->toggle_bit_mask) {
-			if (toggle_bit_mask_bits == 1) {
-				/* backwards compatibility */
-				data &= ~((ir_code)1);
-				if (remote->toggle_bit_mask_state & mask)
-					data |= (ir_code)1;
-			} else {
-				if (remote->toggle_bit_mask_state & mask)
-					data ^= (ir_code)1;
-			}
-		}
 		if (has_toggle_mask(remote) && mask & remote->toggle_mask && remote->toggle_mask_state % 2)
 			data ^= 1;
 		if (data & 1) {

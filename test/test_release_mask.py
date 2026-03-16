@@ -176,3 +176,19 @@ SIGNAL = dedent("""\
 # toggle_bit_mask/release_mask 0x00008000 flips bit 15 of code 0x30002601,
 # changing dibit 8 from 00 (space 278) to 10 (space 611).
 SIGNAL_WITH_TOGGLED_MASK = (SIGNAL[:19] + ["space 611"] + SIGNAL[20:])
+
+
+def test_toggle_bit_mask_rcmm(lircd: Lircd):
+    """toggle_bit_mask must affect the transmitted RCMM signal.
+
+    toggle_bit_mask_state starts at 0 and is XOR'd with toggle_bit_mask
+    before each SEND_ONCE, so the first send has state=mask (toggled) and
+    the second send has state=0 (original).
+    """
+    lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1")
+    lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1")
+    with open(lircd.output) as f:
+        actual = "".join(
+            line for line in f if not line.startswith("#"))
+    expected = SIGNAL_WITH_TOGGLED_MASK + SIGNAL
+    assert expected == actual

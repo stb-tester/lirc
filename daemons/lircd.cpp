@@ -1586,7 +1586,7 @@ static int send_core(int fd, char* message, char* arguments, int once)
 	if (has_toggle_mask(remote))
 		remote->toggle_mask_state = 0;
 	if (has_toggle_bit_mask(remote))
-		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
+		remote->toggle_bit_mask_state ^= remote->toggle_bit_mask;
 	code->transmit_state = NULL;
 	struct timeval before_send;
 	gettimeofday (&before_send, NULL);
