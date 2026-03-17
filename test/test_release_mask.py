@@ -23,6 +23,11 @@ class Lircd(object):
              "--device", self.socket,
             ] + count_args + list(args))
 
+    def read_output(self):
+        with open(self.output, encoding="utf-8") as f:
+            return [
+                line for line in f.read().splitlines() if not line.startswith("#")]
+
 
 @pytest.fixture(scope="function")
 def lircd(tmpdir):
@@ -70,19 +75,23 @@ def lircd(tmpdir):
      (2, 5, 6),
     ])
 @pytest.mark.parametrize("has_release_mask", [1, 0])
-def test_release_mask_send_once(lircd, has_release_mask, min_repeats_in_config,
-                                irsend_count, expected_signals):
-
+def test_release_mask_send_once(
+        lircd: Lircd,
+        has_release_mask: int,
+        min_repeats_in_config: int,
+        irsend_count: "int | None",
+        expected_signals: int,
+):
     if has_release_mask:
         remote = "has_release_%i_repeats" % min_repeats_in_config
     else:
         remote = "no_release_%i_repeats" % min_repeats_in_config
     lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
-    expected = (single_signal * expected_signals +
-                release_signal * has_release_mask)
-    actual = open(lircd.output).read()
+    expected = (SIGNAL * expected_signals +
+                SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
+    actual = lircd.read_output()
     assert expected_signals + has_release_mask == sum(
-        1 for line in actual.split("\n") if line == "space 90000")
+        1 for line in actual if line == "space 90000")
     assert expected == actual
 
 
@@ -97,9 +106,13 @@ def test_release_mask_send_once(lircd, has_release_mask, min_repeats_in_config,
      (5, 0, 6),
     ])
 @pytest.mark.parametrize("has_release_mask", [1, 0])
-def test_release_mask_send_start(lircd, min_repeats_in_config, sleep,
-                                 expected_signals, has_release_mask):
-
+def test_release_mask_send_start(
+        lircd: Lircd,
+        min_repeats_in_config: int,
+        sleep: float,
+        expected_signals: int,
+        has_release_mask: int,
+):
     if has_release_mask:
         remote = "has_release_%i_repeats" % min_repeats_in_config
     else:
@@ -109,11 +122,9 @@ def test_release_mask_send_start(lircd, min_repeats_in_config, sleep,
     time.sleep(sleep)
     lircd.irsend("SEND_STOP", remote, "KEY_1")
     time.sleep(expires - time.time())  # wait for lirc to finish sending
-    expected = (single_signal.splitlines() * expected_signals +
-                release_signal.splitlines() * has_release_mask)
-    with open(lircd.output, encoding="utf-8") as f:
-        actual = [
-            line for line in f.read().splitlines() if not line.startswith("#")]
+    expected = (SIGNAL * expected_signals +
+                SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
+    actual = lircd.read_output()
     assert expected_signals + has_release_mask == sum(
         1 for line in actual if line == "space 90000")
     assert expected == actual
@@ -123,7 +134,7 @@ def _find_file(f, root=os.path.dirname(__file__)):
     return os.path.join(root, f)
 
 
-single_signal = dedent("""\
+SIGNAL = dedent("""\
     pulse 417
     space 278
     pulse 167
@@ -160,9 +171,8 @@ single_signal = dedent("""\
     space 444
     pulse 167
     space 90000
-    """)
+    """).splitlines()
 
-release_signal = "\n".join(
-    single_signal.split("\n")[:19] +
-    ["space 611"] +
-    single_signal.split("\n")[20:])
+# toggle_bit_mask/release_mask 0x00008000 flips bit 15 of code 0x30002601,
+# changing dibit 8 from 00 (space 278) to 10 (space 611).
+SIGNAL_WITH_TOGGLED_MASK = (SIGNAL[:19] + ["space 611"] + SIGNAL[20:])
