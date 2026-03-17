@@ -12,6 +12,7 @@ class Lircd(object):
     def __init__(self, socket, output):
         self.socket = socket
         self.output = output
+        self._offset = 0
 
     def irsend(self, *args, count=None):
         if count is not None:
@@ -23,10 +24,18 @@ class Lircd(object):
              "--device", self.socket,
             ] + count_args + list(args))
 
-    def read_output(self):
-        with open(self.output, encoding="utf-8") as f:
-            return [
-                line for line in f.read().splitlines() if not line.startswith("#")]
+        return self.read_output(skip=self._offset)
+
+    def read_output(self, skip=None):
+        with open(self.output, "rb") as f:
+            if skip is not None:
+                f.seek(skip)
+            contents = f.read()
+        if skip is not None:
+            self._offset = skip + len(contents)
+        return [
+            line for line in contents.decode().splitlines()
+            if not line.startswith("#")]
 
 
 @pytest.fixture(scope="function")
@@ -86,10 +95,9 @@ def test_release_mask_send_once(
         remote = "has_release_%i_repeats" % min_repeats_in_config
     else:
         remote = "no_release_%i_repeats" % min_repeats_in_config
-    lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
+    actual = lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
     expected = (SIGNAL * expected_signals +
                 SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
-    actual = lircd.read_output()
     assert expected_signals + has_release_mask == sum(
         1 for line in actual if line == "space 90000")
     assert expected == actual
@@ -175,7 +183,7 @@ SIGNAL = dedent("""\
 
 # toggle_bit_mask/release_mask 0x00008000 flips bit 15 of code 0x30002601,
 # changing dibit 8 from 00 (space 278) to 10 (space 611).
-SIGNAL_WITH_TOGGLED_MASK = (SIGNAL[:19] + ["space 611"] + SIGNAL[20:])
+SIGNAL_WITH_TOGGLED_MASK = SIGNAL[:19] + ["space 611"] + SIGNAL[20:]
 
 
 def test_toggle_bit_mask_rcmm(lircd: Lircd):
@@ -185,10 +193,5 @@ def test_toggle_bit_mask_rcmm(lircd: Lircd):
     before each SEND_ONCE, so the first send has state=mask (toggled) and
     the second send has state=0 (original).
     """
-    lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1")
-    lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1")
-    with open(lircd.output) as f:
-        actual = "".join(
-            line for line in f if not line.startswith("#"))
-    expected = SIGNAL_WITH_TOGGLED_MASK + SIGNAL
-    assert expected == actual
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == SIGNAL_WITH_TOGGLED_MASK
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == SIGNAL
