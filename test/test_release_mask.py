@@ -96,8 +96,8 @@ def test_release_mask_send_once(
     else:
         remote = "no_release_%i_repeats" % min_repeats_in_config
     actual = lircd.irsend("SEND_ONCE", remote, "KEY_1", count=irsend_count)
-    expected = (SIGNAL * expected_signals +
-                SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
+    expected = (KEY_1_SIGNAL * expected_signals +
+                KEY_1_SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
     assert expected_signals + has_release_mask == sum(
         1 for line in actual if line == "space 90000")
     assert expected == actual
@@ -130,8 +130,8 @@ def test_release_mask_send_start(
     time.sleep(sleep)
     lircd.irsend("SEND_STOP", remote, "KEY_1")
     time.sleep(expires - time.time())  # wait for lirc to finish sending
-    expected = (SIGNAL * expected_signals +
-                SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
+    expected = (KEY_1_SIGNAL * expected_signals +
+                KEY_1_SIGNAL_WITH_TOGGLED_MASK * has_release_mask)
     actual = lircd.read_output()
     assert expected_signals + has_release_mask == sum(
         1 for line in actual if line == "space 90000")
@@ -142,7 +142,7 @@ def _find_file(f, root=os.path.dirname(__file__)):
     return os.path.join(root, f)
 
 
-SIGNAL = dedent("""\
+KEY_1_SIGNAL = dedent("""\
     pulse 417
     space 278
     pulse 167
@@ -183,7 +183,10 @@ SIGNAL = dedent("""\
 
 # toggle_bit_mask/release_mask 0x00008000 flips bit 15 of code 0x30002601,
 # changing dibit 8 from 00 (space 278) to 10 (space 611).
-SIGNAL_WITH_TOGGLED_MASK = SIGNAL[:19] + ["space 611"] + SIGNAL[20:]
+KEY_1_SIGNAL_WITH_TOGGLED_MASK = KEY_1_SIGNAL[:19] + ["space 611"] + KEY_1_SIGNAL[20:]
+
+KEY_2_SIGNAL = KEY_1_SIGNAL[:33] + ["space 611"] + KEY_1_SIGNAL[34:]
+KEY_2_SIGNAL_WITH_TOGGLED_MASK = KEY_2_SIGNAL[:19] + ["space 611"] + KEY_2_SIGNAL[20:]
 
 
 def test_toggle_bit_mask_rcmm(lircd: Lircd):
@@ -193,5 +196,9 @@ def test_toggle_bit_mask_rcmm(lircd: Lircd):
     before each SEND_ONCE, so the first send has state=mask (toggled) and
     the second send has state=0 (original).
     """
-    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == SIGNAL_WITH_TOGGLED_MASK
-    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == SIGNAL
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == KEY_1_SIGNAL_WITH_TOGGLED_MASK
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == KEY_1_SIGNAL
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_2") == KEY_2_SIGNAL_WITH_TOGGLED_MASK
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_2") == KEY_2_SIGNAL
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_2") == KEY_2_SIGNAL_WITH_TOGGLED_MASK
+    assert lircd.irsend("SEND_ONCE", "has_toggle_bit_mask", "KEY_1") == KEY_1_SIGNAL
