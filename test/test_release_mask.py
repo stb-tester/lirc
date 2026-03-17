@@ -109,11 +109,13 @@ def test_release_mask_send_start(lircd, min_repeats_in_config, sleep,
     time.sleep(sleep)
     lircd.irsend("SEND_STOP", remote, "KEY_1")
     time.sleep(expires - time.time())  # wait for lirc to finish sending
-    expected = (single_signal * expected_signals +
-                release_signal * has_release_mask)
-    actual = open(lircd.output).read()
+    expected = (single_signal.splitlines() * expected_signals +
+                release_signal.splitlines() * has_release_mask)
+    with open(lircd.output, encoding="utf-8") as f:
+        actual = [
+            line for line in f.read().splitlines() if not line.startswith("#")]
     assert expected_signals + has_release_mask == sum(
-        1 for line in actual.split("\n") if line == "space 90000")
+        1 for line in actual if line == "space 90000")
     assert expected == actual
 
 
